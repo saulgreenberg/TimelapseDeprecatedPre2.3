@@ -8,9 +8,21 @@ packages/
 obj/
 **/StyleCop.Cache
 
+# NuGet Packages
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+
 # Profiling results
 *.vsp
 *.vspx
+
+# Visual Studio 2015 cache/options directory
+.vs/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
 
 # Timelapse output
 Backups/
@@ -22,3 +34,4 @@ Backups/
 ToDo.docx
 ~$ToDo.docx
 *.tmp
+

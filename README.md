@@ -17,7 +17,9 @@ Bug reports, feature requests, and feedback are most welcome. Let us know! We ca
 ### History
 Timelapse was originally designed for a fisheries biologist who ran many field cameras in Timelapse mode, hence its name. Over time, its interface and functionality has been extended to meet the needs of a broad variety of biologists who use field cameras in many different ways. 
 
-In 2016, another developer joined forces to overhaul Timelapse for improved code quality and flexibility. In late 2016, our coding effort diverged: see [Carnassial](https://github.com/CascadesCarnivoreProject/Carnassial). Divergence happened mostly due to differing project requirements. Having said that, idea and code sharing between the two still occurs.
+In 2016, another developer joined forces to overhaul Timelapse for improved code quality and flexibility. In late 2016, our coding effort diverged: see [Carnassial](https://github.com/CascadesCarnivoreProject/Carnassial). Divergence happened mostly due to differing project requirements. Having said that, idea and code sharing between the two still occurs. 
+
+This repository begins at Timelapse Version 2.2.0.0
 
 ## For Developers
 If you wish to co-develop this project, contact saul.greenberg@ucalgary.ca to see if our project goals coincide.
