@@ -1,0 +1,279 @@
+﻿using Microsoft.Win32;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Forms;
+using Clipboard = System.Windows.Clipboard;
+using DataFormats = System.Windows.DataFormats;
+using DragDropEffects = System.Windows.DragDropEffects;
+using DragEventArgs = System.Windows.DragEventArgs;
+using MessageBox = Timelapse.Dialog.MessageBox;
+using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
+using Rectangle = System.Drawing.Rectangle;
+
+namespace Timelapse.Util
+{
+    /// <summary>
+    /// A variety of miscellaneous utility functions
+    /// </summary>
+    public class Utilities
+    {
+        // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
+        public static string GetDotNetVersion()
+        {
+            // adapted from https://msdn.microsoft.com/en-us/library/hh925568.aspx.
+            int release = 0;
+            using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
+            {
+                if (ndpKey != null)
+                {
+                    object releaseAsObject = ndpKey.GetValue("Release");
+                    if (releaseAsObject != null)
+                    {
+                        release = (int)releaseAsObject;
+                    }
+                }
+            }
+
+            if (release >= 394802)
+            {
+                return "4.6.2 or later";
+            }
+            if (release >= 394254)
+            {
+                return "4.6.1";
+            }
+            if (release >= 393295)
+            {
+                return "4.6";
+            }
+            if (release >= 379893)
+            {
+                return "4.5.2";
+            }
+            if (release >= 378675)
+            {
+                return "4.5.1";
+            }
+            if (release >= 378389)
+            {
+                return "4.5";
+            }
+
+            return "4.5 or later not detected";
+        }
+
+        public static ParallelOptions GetParallelOptions(int maximumDegreeOfParallelism)
+        {
+            ParallelOptions parallelOptions = new ParallelOptions();
+            parallelOptions.MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, maximumDegreeOfParallelism);
+            return parallelOptions;
+        }
+
+        public static bool IsSingleTemplateFileDrag(DragEventArgs dragEvent, out string templateDatabasePath)
+        {
+            if (dragEvent.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] droppedFiles = (string[])dragEvent.Data.GetData(DataFormats.FileDrop);
+                if (droppedFiles != null && droppedFiles.Length == 1)
+                {
+                    templateDatabasePath = droppedFiles[0];
+                    if (Path.GetExtension(templateDatabasePath) == Constant.File.TemplateDatabaseFileExtension)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            templateDatabasePath = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true only if every character in the string is a digit
+        /// </summary>
+        public static bool IsDigits(string value)
+        {
+            foreach (char character in value)
+            {
+                if (!Char.IsDigit(character))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Returns true only if every character in the string is a letter or a digit
+        /// </summary>
+        public static bool IsLetterOrDigit(string str)
+        {
+            foreach (char c in str)
+            {
+                if (!Char.IsLetterOrDigit(c))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
+        {
+            string templateDatabaseFilePath;
+            if (Utilities.IsSingleTemplateFileDrag(dragEvent, out templateDatabaseFilePath))
+            {
+                dragEvent.Effects = DragDropEffects.All;
+            }
+            else
+            {
+                dragEvent.Effects = DragDropEffects.None;
+            }
+            dragEvent.Handled = true;
+        }
+
+        public static void SetDefaultDialogPosition(Window window)
+        {
+            Debug.Assert(window.Owner != null, "Window's owner property is null.  Is a set of it prior to calling ShowDialog() missing?");
+            window.Left = window.Owner.Left + (window.Owner.Width - window.ActualWidth) / 2; // Center it horizontally
+            window.Top = window.Owner.Top + 20; // Offset it from the windows'top by 20 pixels downwards
+        }
+
+        public static void ShowExceptionReportingDialog(string title, UnhandledExceptionEventArgs e, Window owner)
+        {
+            // once .NET 4.5+ is used it's meaningful to also report the .NET release version
+            // See https://msdn.microsoft.com/en-us/library/hh925568.aspx.
+            MessageBox exitNotification = new MessageBox(title, owner);
+            exitNotification.Message.Icon = MessageBoxImage.Error;
+            exitNotification.Message.Title = title;
+            exitNotification.Message.Problem = "Timelapse encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
+            exitNotification.Message.What = "Please help us fix it! You should be able to paste the entire content of the Reason section below into an email to saul@ucalgary.ca , along with a description of what you were doing at the time.  To quickly copy the text, click on the 'Reason' details, hit ctrl+a to select all of it, ctrl+c to copy, and then email all that.";
+            exitNotification.Message.Reason = String.Format("{0}, {1}, .NET runtime {2}{3}", typeof(TimelapseWindow).Assembly.GetName(), Environment.OSVersion, Environment.Version, Environment.NewLine);
+            if (e.ExceptionObject != null)
+            {
+                exitNotification.Message.Reason += e.ExceptionObject.ToString();
+            }
+            exitNotification.Message.Result = String.Format("The data file is likely OK.  If it's not you can restore from the {0} folder.", Constant.File.BackupFolder);
+            exitNotification.Message.Hint = "\u2022 If you do the same thing this'll probably happen again.  If so, that's helpful to know as well." + Environment.NewLine;
+            Clipboard.SetText(exitNotification.Message.Reason);
+            exitNotification.ShowDialog();
+        }
+
+        public static bool TryFitWindowInWorkingArea(Window window)
+        {
+            if (window == null)
+            {
+                return false;
+            }
+            if (Double.IsNaN(window.Left))
+            {
+                window.Left = 0;
+            }
+            if (Double.IsNaN(window.Top))
+            {
+                window.Top = 0;
+            }
+
+            Rectangle windowPosition = new Rectangle((int)window.Left, (int)window.Top, (int)window.Width, (int)window.Height);
+            Rectangle workingArea = Screen.GetWorkingArea(windowPosition);
+            bool windowFitsInWorkingArea = true;
+
+            // move window up if it extends below the working area
+            if (windowPosition.Bottom > workingArea.Bottom)
+            {
+                int pixelsToMoveUp = windowPosition.Bottom - workingArea.Bottom;
+                if (pixelsToMoveUp > windowPosition.Top)
+                {
+                    // window is too tall and has to shorten to fit screen
+                    window.Top = 0;
+                    window.Height = workingArea.Bottom;
+                    windowFitsInWorkingArea = false;
+                }
+                else if (pixelsToMoveUp > 0)
+                {
+                    // move window up
+                    window.Top -= pixelsToMoveUp;
+                }
+            }
+
+            // move window left if it extends right of the working area
+            if (windowPosition.Right > workingArea.Right)
+            {
+                int pixelsToMoveLeft = windowPosition.Right - workingArea.Right;
+                if (pixelsToMoveLeft > windowPosition.Left)
+                {
+                    // window is too wide and has to narrow to fit screen
+                    window.Left = 0;
+                    window.Width = workingArea.Width;
+                    windowFitsInWorkingArea = false;
+                }
+                else if (pixelsToMoveLeft > 0)
+                {
+                    // move window left
+                    window.Left -= pixelsToMoveLeft;
+                }
+            }
+
+            return windowFitsInWorkingArea;
+        }
+
+        // get a location for the template database from the user
+        public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, out string selectedFilePath)
+        {
+            // Get the template file, which should be located where the images reside
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = title;
+            openFileDialog.CheckFileExists = true;
+            openFileDialog.CheckPathExists = true;
+            openFileDialog.Multiselect = false;
+            if (String.IsNullOrWhiteSpace(defaultFilePath))
+            {
+                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            }
+            else
+            {
+                openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
+                openFileDialog.FileName = Path.GetFileName(defaultFilePath);
+            }
+            openFileDialog.AutoUpgradeEnabled = true;
+
+            // Set filter for file extension and default file extension 
+            openFileDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension;
+            openFileDialog.Filter = filter;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                selectedFilePath = openFileDialog.FileName;
+                return true;
+            }
+
+            selectedFilePath = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Format the passed value for use as string value in a SQL statement or query.
+        /// </summary>
+        public static string QuoteForSql(string value)
+        {
+            // promote null values to empty strings
+            if (value == null)
+            {
+                return "''";
+            }
+
+            // for an input of "foo's bar" the output is "'foo''s bar'"
+            return "'" + value.Replace("'", "''") + "'";
+        }
+
+        // We can alter in source how we want failure messages to print
+        public static void PrintFailure(string message)
+        {
+            // Debug.Print("PrintFailure: " + message);
+            // Debug.Fail(message)
+        }
+    }
+}

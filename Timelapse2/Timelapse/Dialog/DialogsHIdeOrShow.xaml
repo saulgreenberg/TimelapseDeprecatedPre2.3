@@ -1,0 +1,38 @@
+﻿<Window x:Class="Timelapse.Dialog.DialogsHideOrShow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Timelapse.Dialog"
+        xmlns:controls="clr-namespace:Timelapse.Controls"
+        mc:Ignorable="d"
+        Title="Hide or Show Various Informational Dialogs" Height="550" Width="820" Loaded="Window_Loaded">
+    <StackPanel Orientation="Vertical" Margin="2,0,1,3">
+        <controls:StockMessageControl x:Name="Message" Margin="15,10,15,10" Icon="Question"
+                            Title="Hide or Show Various Informational Dialogs"
+                            What="Various dialog boxes provide information and warnings as you work. When you are familiar with Timelapse, you may choose to hide particular dialogs. 
+                                      &#10;&#x2022; You can hide dialogs here, or by checking the 'Don't show this message again' checkbox in that appears in these dialog boxes. 
+                                      &#10;&#x2022; You can also show a previously hidden dialog box by unchecking it here. " />
+        <GroupBox Header="A checkmarks hides these dialogs:" Margin="15,15,0,10" Padding="10,10,10,10" HorizontalAlignment="Left" VerticalAlignment="Top" FontWeight="Bold" FontSize="12" >
+            <StackPanel Orientation="Vertical" >
+                <CheckBox FontWeight="Normal" Content="_Ambiguous dates imported dialog" Name="SuppressAmbiguousDatesDialog"  Click="SuppressAmbiguousDatesDialog_Click" ToolTip="Turn on or off the informational dialog displayed when files with ambiguous dates are added to an image set" />
+                <CheckBox FontWeight="Normal" Content="_Ambiguous dates selection prompt" Name="SuppressSelectedAmbiguousDatesPrompt" Click="SuppressSelectedAmbiguousDatesPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when ambiguous date clarification is performed with a over selected files" />
+                <CheckBox FontWeight="Normal" Content="Counts when files are added" Name="SuppressFileCountOnImportDialog" Click="SuppressFileCountOnImportDialog_Click" ToolTip="Turn on or off the informational dialog displaying image counts when files are loaded into an image set" />
+                <CheckBox FontWeight="Normal" Content="Clock drift selection prompt" Name="SuppressSelectedDateTimeLinearCorrectionPrompt" Click="SuppressSelectedDateTimeLinearCorrectionPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when clock drift correction is performed with a over selected files" />
+                <CheckBox FontWeight="Normal" Content=".csv export dialog" Name="SuppressCsvExportDialog" Click="SuppressCsvExportDialog_Click" ToolTip="Turn on or off the informational dialog displayed when CSV files are exported" />
+                <CheckBox FontWeight="Normal" Content=".csv export selection prompt" Name="SuppressSelectedCsvExportPrompt" Click="SuppressSelectedCsvExportPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when CSV export is performed over selected files" />
+                <CheckBox FontWeight="Normal" Content=".csv import prompt" Name="SuppressCsvImportPrompt" Click="SuppressCsvImportPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when a CSV file is imported" />
+                <CheckBox FontWeight="Normal" Content="Dark threshold selection prompt" Name="SuppressSelectedDarkThresholdPrompt" Click="SuppressSelectedDarkThresholdPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when adjusting the dark threshold over selected files" />
+                <CheckBox FontWeight="Normal" Content="Daylight savings correction selection prompt" Name="SuppressSelectedDaylightSavingsCorrectionPrompt" Click="SuppressSelectedDaylightSavingsCorrectionPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when corrections for daylight savings time is performed with over selected files" />
+                <CheckBox FontWeight="Normal" Content="Fixed date/time correction selection prompt" Name="SuppressSelectedDateTimeFixedCorrectionPrompt" Click="SuppressSelectedDateTimeFixedCorrectionPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when fixed date/time correction is performed with over selected files" />
+                <CheckBox FontWeight="Normal" Content="Metadata selection prompt" Name="SuppressSelectedPopulateFieldFromMetadataPrompt" Click="SuppressSelectedPopulateFieldFromMetadataPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when metadata is read from over selected files" />
+                <CheckBox FontWeight="Normal" Content="Reread dates selection prompt" Name="SuppressSelectedRereadDatesFromFilesPrompt" Click="SuppressSelectedRereadDatesFromFilesPrompt_Click" ToolTip="Turn on or off the informational dialog displayed when dates are reloaded from files over selected files" />
+                <CheckBox FontWeight="Normal" Content="Set time _zone selection prompt" Name="SuppressSelectedSetTimeZonePrompt" Click="SuppressSelectedSetTimeZonePrompt_Click" ToolTip="Turn on or off the informational dialog displayed when time zones are assigned over selected files" />
+            </StackPanel >
+        </GroupBox>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OkButton" Content="_Okay" IsDefault="True" Margin="10,10,10,10" Padding="10" Click="OkButton_Click" AutomationProperties.AutomationId="OkButton" />
+
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -1,0 +1,19 @@
+﻿<Window x:Class="Timelapse.Dialog.DarkImagesClassifyAutomatically"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Timelapse.Controls"
+        Title="Classify Dark Images When First Loading" Height="400" Width="849.108" >
+    <StackPanel Orientation="Vertical" Width="811" Margin="2,0,1,3">
+        <controls:StockMessageControl x:Name="Message" Margin="15,0,15,10" Icon="Question"
+                            Title="Classify Dark Images when First Loading an Image Set"
+                            What="Automatically or manually classify images as either 'Ok' or 'Dark' (e.g., nighttime shots).  
+                                  &#10;&#x2022; automatic: set the checkbox below to automatically classify images when loading your image set for the very first time. 
+                                  &#10;&#x2022; manual:  alternately, select 'Edit/Classify dark images' from the menu, where you can classify images at any time."                                 
+                            Reason="Classification is optional, as not all projects need it. For convenience, you can set Timelapse to classify images automatically as it first loads your image set, although this does slows down loading."
+                            Result="Settings will be remembered and applied every time you run Timelapse on this machine. "/>
+
+        <TextBlock Text="Classify Dark Images Automatically:" Margin="27,0,0,0" HorizontalAlignment="Left" FontWeight="Bold" FontSize="12" Height="Auto" Width="Auto"/>
+        <CheckBox Name="CheckBoxClassifyDarkImagesAutomatically" Margin="95,15,0,0" Content="Automatically classify dark images when first loading an image set." Height="27" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxClassifyDarkImagesWhenLoading_Click" />
+        <Button Margin="698,10,37,0" x:Name="OkButton" Content="Ok" IsDefault="True" Height="34" Click="OkButton_Click" AutomationProperties.AutomationId="OkButton" />
+    </StackPanel>
+</Window>

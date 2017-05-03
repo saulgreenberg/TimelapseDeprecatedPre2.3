@@ -1,0 +1,2 @@
+exiftool(-k).exe retrieved from http://www.sno.phy.queensu.ca/~phil/exiftool/
+  - version 10.14 2016-04-08

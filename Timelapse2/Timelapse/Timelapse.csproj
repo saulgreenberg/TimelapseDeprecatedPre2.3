@@ -1,0 +1,594 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F223A2F9-F2C2-47A8-80F3-472349176579}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Timelapse</RootNamespace>
+    <AssemblyName>Timelapse2</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <IsWebBootstrapper>true</IsWebBootstrapper>
+    <TargetFrameworkProfile />
+    <SccProjectName>Svn</SccProjectName>
+    <SccLocalPath>Svn</SccLocalPath>
+    <SccAuxPath>Svn</SccAuxPath>
+    <SccProvider>SubversionScc</SccProvider>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Web</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse/</InstallUrl>
+    <SupportUrl>http://saul.cpsc.ucalgary.ca/timelapse/</SupportUrl>
+    <TargetCulture>en-CA</TargetCulture>
+    <ProductName>Timelapse 2 Image Analyzer</ProductName>
+    <PublisherName>Saul Greenberg - Greenberg Consulting Inc</PublisherName>
+    <SuiteName>Timelapse</SuiteName>
+    <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
+    <WebPage>publish.htm</WebPage>
+    <ApplicationRevision>9</ApplicationRevision>
+    <ApplicationVersion>1.1.9.9</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>0744795F13F850C9EC610B9A48630CB31A2D2F1D</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Timelapse_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Icons\Timelapse.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>Internet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MetadataExtractor, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MetadataExtractor.2.0.0-rc2\lib\net35\MetadataExtractor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WindowsAPICodePack-Core.1.1.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WindowsAPICodePack-Shell.1.1.1\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.105.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Data.SQLite.Core.1.0.105.0\lib\net40\System.Data.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Speech" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.3.17121.18230, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\avalondock-102592\Version2.0\Xceed.Wpf.AvalonDock\bin\Release\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="XmpCore, Version=5.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\XmpCore.5.1.3\lib\net35\XmpCore.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Controls\AutocompleteTextBox.cs" />
+    <Compile Include="Controls\DataEntryDateTime.cs" />
+    <Compile Include="Controls\DataEntryUtcOffset.cs" />
+    <Compile Include="Controls\FilePlayer.xaml.cs">
+      <DependentUpon>FilePlayer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FilePlayerEventArgs.cs" />
+    <Compile Include="Controls\TimeZonePicker.cs" />
+    <Compile Include="Controls\AutoToolTipSlider.cs" />
+    <Compile Include="Controls\UtcOffsetUpDown.cs" />
+    <Compile Include="Controls\VideoPlayer.xaml.cs">
+      <DependentUpon>VideoPlayer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Database\ColumnDefinition.cs" />
+    <Compile Include="Database\ControlRow.cs" />
+    <Compile Include="Database\CustomSelectionOperator.cs" />
+    <Compile Include="Database\DataTableBackedList.cs" />
+    <Compile Include="Database\FileTableChoiceColumn.cs" />
+    <Compile Include="Database\FileTableColumn.cs" />
+    <Compile Include="Database\DataRowExtensions.cs" />
+    <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
+    <Compile Include="Database\FileTableDateTimeColumn.cs" />
+    <Compile Include="Database\FileTableFlagColumn.cs" />
+    <Compile Include="Database\FileTableNoteColumn.cs" />
+    <Compile Include="Database\FileTable.cs" />
+    <Compile Include="Database\ImageSetRow.cs" />
+    <Compile Include="Database\MarkerRow.cs" />
+    <Compile Include="Database\VideoRow.cs" />
+    <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
+      <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DarkImagesClassifyAutomatically.xaml.cs">
+      <DependentUpon>DarkImagesClassifyAutomatically.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DateCorrectAmbiguous.xaml.cs">
+      <DependentUpon>DateCorrectAmbiguous.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\DateChangesFeedbackControl.xaml.cs">
+      <DependentUpon>DateChangesFeedbackControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
+      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DateTimeLinearCorrection.xaml.cs">
+      <DependentUpon>DateTimeLinearCorrection.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
+      <DependentUpon>DialogsHideOrShow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\NewVersionNotification.xaml.cs">
+      <DependentUpon>NewVersionNotification.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Images\FolderLoadProgress.cs" />
+    <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="Util\DataGridExtensions.cs" />
+    <Compile Include="Util\DateTimeExtensions.cs" />
+    <Compile Include="Util\DateTimeOffsetExtensions.cs" />
+    <Compile Include="Util\Metadata.cs" />
+    <Compile Include="Util\MetadataDictionary.cs" />
+    <Compile Include="Util\RegistryKeyExtensions.cs" />
+    <Compile Include="Util\SequentialPartitioner.cs" />
+    <Compile Include="Util\Throttles.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Images\BitmapSourceExtensions.cs" />
+    <Compile Include="Images\ImageDifferenceResult.cs" />
+    <Compile Include="Images\ImageCache.cs" />
+    <Compile Include="Database\FileTableEnumerator.cs" />
+    <Compile Include="Dialog\DateTimeRereadFeedbackTuple.cs" />
+    <Compile Include="Database\DateTimeAdjustment.cs" />
+    <Compile Include="Images\ImageDifference.cs" />
+    <Compile Include="Images\ImageDisplayIntent.cs" />
+    <Compile Include="Images\ImageQuality.cs" />
+    <Compile Include="Images\MagnifyingGlass.cs" />
+    <Compile Include="Images\MarkerEventArgs.cs" />
+    <Compile Include="Controls\StockMessageControl.xaml.cs">
+      <DependentUpon>StockMessageControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Database\DataRowBackedObject.cs" />
+    <Compile Include="Util\Dependencies.cs" />
+    <Compile Include="Util\VersionClient.cs" />
+    <Compile Include="Constant.cs" />
+    <Compile Include="Database\CustomSelection.cs" />
+    <Compile Include="Database\ColumnTuple.cs" />
+    <Compile Include="Database\ColumnTuplesWithWhere.cs" />
+    <Compile Include="Database\FileDatabase.cs" />
+    <Compile Include="Database\SearchTerm.cs" />
+    <Compile Include="Dialog\AboutTimelapse.xaml.cs">
+      <DependentUpon>AboutTimelapse.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\ChooseFileDatabase.xaml.cs">
+      <DependentUpon>ChooseFileDatabase.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\CustomSelection.xaml.cs">
+      <DependentUpon>CustomSelection.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DateTimeRereadFromFiles.xaml.cs">
+      <DependentUpon>DateTimeRereadFromFiles.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DeleteImages.xaml.cs">
+      <DependentUpon>DeleteImages.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Controls\FilePlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\AdvancedImageSetOptions.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\DarkImagesClassifyAutomatically.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DateCorrectAmbiguous.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DateChangesFeedbackControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\AboutTimelapse.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\ChooseFileDatabase.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\CustomSelection.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\DateTimeLinearCorrection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\DateTimeFixedCorrection.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DateTimeRereadFromFiles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DeleteImages.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\DialogsHideOrShow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\EditLog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\ImportImageSetXmlFile.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\MessageBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\DarkImagesThreshold.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\NewVersionNotification.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\PopulateFieldWithMetadata.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\RenameFileDatabaseFile.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\FileCountsByQuality.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\TemplateSynchronization.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DateDaylightSavingsTimeCorrection.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FeedbackControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\HelpUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\DataEntryControls.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\AdvancedTimelapseOptions.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\StockMessageControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TimelapseWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Images\Marker.cs" />
+    <Compile Include="Images\WriteableBitmapExtensions.cs" />
+    <Compile Include="Dialog\ImportImageSetXmlFile.xaml.cs">
+      <DependentUpon>ImportImageSetXmlFile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\MessageBox.xaml.cs">
+      <DependentUpon>MessageBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DarkImagesThreshold.xaml.cs">
+      <DependentUpon>DarkImagesThreshold.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\PopulateFieldWithMetadata.xaml.cs">
+      <DependentUpon>PopulateFieldWithMetadata.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\RenameFileDatabaseFile.xaml.cs">
+      <DependentUpon>RenameFileDatabaseFile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\TemplateSynchronization.xaml.cs">
+      <DependentUpon>TemplateSynchronization.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FeedbackControl.xaml.cs">
+      <DependentUpon>FeedbackControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Database\FileBackup.cs" />
+    <Compile Include="Images\ImageDataXml.cs" />
+    <Compile Include="Database\ImageRow.cs" />
+    <Compile Include="Database\FileSelection.cs" />
+    <Compile Include="Images\MarkersForCounter.cs" />
+    <Compile Include="Controls\ControlLabelStyle.cs" />
+    <Compile Include="Controls\ControlContentStyle.cs" />
+    <Compile Include="Util\MostRecentlyUsedList.cs" />
+    <Compile Include="Controls\DataEntryControl.cs" />
+    <Compile Include="Controls\DataEntryCounter.cs" />
+    <Compile Include="Controls\DataEntryChoice.cs" />
+    <Compile Include="Controls\DataEntryFlag.cs" />
+    <Compile Include="Controls\DataEntryNote.cs" />
+    <Compile Include="Util\NativeMethods.cs" />
+    <Compile Include="Database\CsvReaderWriter.cs" />
+    <Compile Include="Dialog\DateTimeFixedCorrection.xaml.cs">
+      <DependentUpon>DateTimeFixedCorrection.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\EditLog.xaml.cs">
+      <DependentUpon>EditLog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\FileCountsByQuality.xaml.cs">
+      <DependentUpon>FileCountsByQuality.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\DateDaylightSavingsTimeCorrection.xaml.cs">
+      <DependentUpon>DateDaylightSavingsTimeCorrection.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HelpUserControl.xaml.cs">
+      <DependentUpon>HelpUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Images\MarkableCanvas.cs" />
+    <Compile Include="Util\DateTimeHandler.cs" />
+    <Compile Include="Util\UserRegistrySettings.cs" />
+    <Compile Include="Controls\DataEntryControls.xaml.cs">
+      <DependentUpon>DataEntryControls.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\AdvancedTimelapseOptions.xaml.cs">
+      <DependentUpon>AdvancedTimelapseOptions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\TimelapseUserRegistrySettings.cs" />
+    <Compile Include="Controls\DataEntryHandler.cs">
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Database\SQLiteWrapper.cs" />
+    <Compile Include="Controls\StatusBarExtensions.cs" />
+    <Compile Include="Database\TemplateDatabase.cs" />
+    <Compile Include="Util\TimelapseState.cs" />
+    <Compile Include="Util\Utilities.cs" />
+    <Compile Include="TimelapseWindow.xaml.cs">
+      <DependentUpon>TimelapseWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\app.manifest" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\TimelapseHelp.rtf" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\Timelapse.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\16x16.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\NoFilesAvailable.jpg" />
+    <Resource Include="Resources\Corrupted.jpg" />
+    <Resource Include="Resources\FileNoLongerAvailable.jpg" />
+    <Resource Include="Resources\VideoPlayIcon.png" />
+    <Resource Include="Resources\VideoPauseIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\About_32x.png" />
+    <Resource Include="Icons\ConvertFile_32x.png" />
+    <Resource Include="Icons\Download_32x.png" />
+    <Resource Include="Icons\EmailSend_32x.png" />
+    <Resource Include="Icons\Exit_22x.png" />
+    <Resource Include="Icons\Home_32x.png" />
+    <Resource Include="Icons\InspectMetadata_32x.png" />
+    <Resource Include="Icons\JoinMailingList_32x.png" />
+    <Resource Include="Icons\NewFile_40x.png" />
+    <Resource Include="Icons\OpenFile_32x.png" />
+    <Resource Include="Icons\ShowColumns_32x.png" />
+    <Resource Include="Icons\ShowUTCTime_32x.png" />
+    <Resource Include="Icons\UserManual_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\CSVImport_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\CSVExport_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ImageExport_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-Pause.png" />
+    <Resource Include="Icons\MediaControl-PlaySpeed1.png" />
+    <Resource Include="Icons\MediaControl-PlaySpeed2.png" />
+    <Resource Include="Icons\MediaControl-PlaySpeed3.png" />
+    <Resource Include="Icons\MediaControl-Rewind-Speed2.png" />
+    <Resource Include="Icons\MediaControl-Rewind-Speed3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-Stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-First.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-Last.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-Rewind-Speed1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\BlankVideo.jpg" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.105.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.105.0\build\net40\System.Data.SQLite.Core.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\System.Data.SQLite.Core.1.0.105.0\build\net40\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\System.Data.SQLite.Core.1.0.105.0\build\net40\System.Data.SQLite.Core.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
