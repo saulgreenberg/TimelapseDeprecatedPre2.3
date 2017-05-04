@@ -2,6 +2,10 @@
 *.suo
 *.user
 *.sln
+*.dll
+
+# But keep these dll as they are custom and not retrievable via NuGet
+!**/CustomAvalonDll/Xceed.Wpf.AvalonDock.dll
 
 # Build results 
 bin/
@@ -13,10 +17,8 @@ obj/
 **/packages/*
 
 # except build/, which is used as an MSBuild target.
+# and any custom dlls that aren't from NuGet
 !**/packages/build/
-
-# Keep these dlls as they are not from NuGet
-
 
 # Profiling results
 *.vsp
