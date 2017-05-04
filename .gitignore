@@ -1,6 +1,7 @@
 # User-specific files 
 *.suo
 *.user
+*.sln
 
 # Build results 
 bin/
@@ -10,8 +11,12 @@ obj/
 
 # NuGet Packages
 **/packages/*
+
 # except build/, which is used as an MSBuild target.
 !**/packages/build/
+
+# Keep these dlls as they are not from NuGet
+
 
 # Profiling results
 *.vsp
