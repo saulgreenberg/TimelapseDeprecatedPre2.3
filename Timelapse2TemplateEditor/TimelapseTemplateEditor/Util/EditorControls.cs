@@ -137,7 +137,7 @@ namespace Timelapse.Editor.Util
             textBox.ToolTip = control.Tooltip;
             textBox.Width = control.Width;
 
-            Style style = styleProvider.FindResource(ControlContentStyle.NoteCounterTextBox.ToString()) as Style;
+            Style style = styleProvider.FindResource(ControlContentStyle.NoteTextBox.ToString()) as Style;
             textBox.Style = style;
             return textBox;
         }

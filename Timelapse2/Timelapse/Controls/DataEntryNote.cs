@@ -25,7 +25,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryNote(ControlRow control, List<string> autocompletions, DataEntryControls styleProvider) :
-            base(control, styleProvider, ControlContentStyle.NoteCounterTextBox, ControlLabelStyle.DefaultLabel)
+            base(control, styleProvider, ControlContentStyle.NoteTextBox, ControlLabelStyle.DefaultLabel)
         {
             // Now configure the various elements
             this.ContentControl.Autocompletions = autocompletions;

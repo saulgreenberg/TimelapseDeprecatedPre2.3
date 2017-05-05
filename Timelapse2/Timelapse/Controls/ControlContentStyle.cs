@@ -4,6 +4,7 @@
     {
         ChoiceComboBox,
         FlagCheckBox,
-        NoteCounterTextBox
+        NoteTextBox,
+        CounterTextBox     
     }
 }
