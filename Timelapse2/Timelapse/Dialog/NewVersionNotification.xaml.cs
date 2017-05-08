@@ -33,6 +33,7 @@ namespace Timelapse.Dialog
         {
             this.InitializeComponent();
 
+            this.Owner = owner;
             this.applicationName = application_name;
             this.currentVersionNumber = current_version_number;
             this.lastestVersionNumber = latest_version_number;
