@@ -705,7 +705,7 @@ namespace Timelapse.Editor
             }
         }
 
-        bool manualCommitEdit = false;
+        private bool manualCommitEdit = false;
         // After editing is complete, validate the data labels, default values, and widths as needed.
         // Also commit the edit, which will raise the RowChanged event
         private void TemplateDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
