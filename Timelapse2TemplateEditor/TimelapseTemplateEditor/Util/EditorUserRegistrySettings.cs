@@ -6,7 +6,7 @@ namespace Timelapse.Editor.Util
 {
     internal class EditorUserRegistrySettings : UserRegistrySettings
     {
-        // same key as Timelapse uses; intentional as both Carnassial and template editor are released together
+        // same key as Timelapse uses; intentional as both Timelapse and template editor are released together
         public DateTime MostRecentCheckForUpdates { get; set; }
 
         public MostRecentlyUsedList<string> MostRecentTemplates { get; private set; }
