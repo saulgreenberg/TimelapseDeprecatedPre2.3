@@ -433,7 +433,7 @@ namespace Timelapse
                                 // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
                                 // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
                                 // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
-                                // Yup, its a hack, and there is a small chance that the failur may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
+                                // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
                                 const int MAX_RETRIES = 3;
                                 int retries_attempted = 0;
                                 file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
@@ -471,8 +471,7 @@ namespace Timelapse
                         filesPendingInsert = filesToInsert.Count;
                     }
 
-                    // Depending on the state, show either every image or only every nth image (currently 10th).  
-                    // However, if the throttle interval isn't reached then skip showing the image.
+                    // If the throttle interval isn't reached then skip showing the image.
                     DateTime utcNow = DateTime.UtcNow;
                     if ((this.state.SuppressThrottleWhenLoading == true) ||
                     (utcNow - previousImageRender > this.state.Throttles.DesiredIntervalBetweenRenders))
@@ -522,6 +521,7 @@ namespace Timelapse
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
+                this.ImageSetPane.IsActive = true;
                 // this gets called on the UI thread
                 this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, folderLoadProgress.GetMessage());
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
@@ -574,7 +574,7 @@ namespace Timelapse
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Folder loading beginning...");
             this.StatusBar.SetMessage("Loading folders...");
-            this.ImageSetPane.IsActive = true;
+
 
             backgroundWorker.RunWorkerAsync();
             externallyVisibleWorker = backgroundWorker;

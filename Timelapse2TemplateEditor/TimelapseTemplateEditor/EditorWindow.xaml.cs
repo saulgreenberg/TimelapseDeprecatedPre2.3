@@ -450,9 +450,11 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataTable_RowChanged(object sender, DataRowChangeEventArgs e)
         {
+            Debug.Print("InRowChanged");
             if (!this.dataGridBeingUpdatedByCode)
             {
                 this.SyncControlToDatabase(new ControlRow(e.Row));
+                Debug.Print("---Syncing");
             }
         }
         #endregion Data Changed Listeners and Methods
@@ -660,7 +662,7 @@ namespace Timelapse.Editor
                     break;
                 default:
                     // no restrictions on any of the other editable coumns
-                    break;
+                    break;  
             }
         }
 
@@ -703,9 +705,17 @@ namespace Timelapse.Editor
             }
         }
 
+        private bool manualCommitEdit = false;
         // After editing is complete, validate the data labels, default values, and widths as needed.
+        // Also commit the edit, which will raise the RowChanged event
         private void TemplateDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
+            // Stop re-entering, which can occur after we manually perform a CommitEdit (see below) 
+            if (this.manualCommitEdit == true)
+            {
+                this.manualCommitEdit = false;
+                return;
+            }
             DataGridCell currentCell;
             DataGridRow currentRow;
             if (this.TryGetCurrentCell(out currentCell, out currentRow) == false)
@@ -728,6 +738,12 @@ namespace Timelapse.Editor
                     // no restrictions on any of the other editable columns
                     break;
             }
+
+            // While hitting return after editing (say) a note will raise a RowChanged event, 
+            // clicking out of that cell does not raise a RowChangedEvent, even though the cell has been edited. 
+            // Thus we manuallly commit the edit. 
+            this.manualCommitEdit = true;
+            this.TemplateDataGrid.CommitEdit(DataGridEditingUnit.Row, true);
         }
 
         /// <summary>

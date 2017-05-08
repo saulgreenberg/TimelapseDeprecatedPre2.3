@@ -1122,7 +1122,7 @@ namespace Timelapse.Database
         public void SyncImageSetToDatabase()
         {
             // don't trigger backups on image set updates as none of the properties in the image set table is particularly important
-            // For example, this avoids creating a backup when a custom selection is reverted to all when Carnassial exits.
+            // For example, this avoids creating a backup when a custom selection is reverted to all when Timelapse exits.
             this.Database.Update(Constant.DatabaseTable.ImageSet, this.ImageSet.GetColumnTuples());
         }
 
