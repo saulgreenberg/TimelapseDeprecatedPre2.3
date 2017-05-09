@@ -394,8 +394,7 @@ namespace Timelapse.Images
                 {
                     this.isDoubleClick = false;
                     this.mouseDoubleClickTime = DateTime.Now;
-                }
-                
+                }   
             }
         }
 
@@ -421,7 +420,6 @@ namespace Timelapse.Images
                 (sender == this.mouseDownSender) &&
                 (this.mouseDownLocation - mouseLocation).Length <= 2.0)
             {
-
                 // If its more than the given time interval since we moused down and since the last click, then we are on the rapid 1st click of a potential double click
                 // So reset the time of the first click
                 TimeSpan timeSinceDown = DateTime.Now - this.mouseDownTime;
