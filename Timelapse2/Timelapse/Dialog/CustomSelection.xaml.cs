@@ -425,7 +425,7 @@ namespace Timelapse.Dialog
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
                 {
                     numberOfDateTimesSearchTerms++;
-                    System.Diagnostics.Debug.Print(numberOfDateTimesSearchTerms.ToString());
+                    // System.Diagnostics.Debug.Print(numberOfDateTimesSearchTerms.ToString());
                 }
 
                 // Construct the search term 
