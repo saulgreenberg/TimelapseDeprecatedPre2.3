@@ -45,6 +45,8 @@ namespace Timelapse.Images
         // mouse and position states used to discriminate clicks from drags
         private UIElement mouseDownSender;
         private DateTime mouseDownTime;
+        private DateTime mouseDoubleClickTime = DateTime.Now;
+        private bool isDoubleClick = false;
         private Point mouseDownLocation;
         private Point previousMousePosition;
 
@@ -380,6 +382,20 @@ namespace Timelapse.Images
                 this.mouseDownLocation = e.GetPosition(this.ImageToDisplay);
                 this.mouseDownSender = (UIElement)sender;
                 this.mouseDownTime = DateTime.Now;
+
+                // If its more than the given time interval since the last click, then we are on the 2nd click of a potential double click\
+                // So reset the time of the first click
+                TimeSpan timeSinceLastClick = DateTime.Now - this.mouseDoubleClickTime;
+                if (timeSinceLastClick.TotalMilliseconds < System.Windows.Forms.SystemInformation.DoubleClickTime)
+                {
+                    this.isDoubleClick = true;
+                }
+                else
+                {
+                    this.isDoubleClick = false;
+                    this.mouseDoubleClickTime = DateTime.Now;
+                }
+                
             }
         }
 
@@ -405,9 +421,11 @@ namespace Timelapse.Images
                 (sender == this.mouseDownSender) &&
                 (this.mouseDownLocation - mouseLocation).Length <= 2.0)
             {
-                // SAULXX: Maybe redo. Instead of timer, check to see if its been panned???
+
+                // If its more than the given time interval since we moused down and since the last click, then we are on the rapid 1st click of a potential double click
+                // So reset the time of the first click
                 TimeSpan timeSinceDown = DateTime.Now - this.mouseDownTime;
-                if (timeSinceDown.TotalMilliseconds < 200)
+                if (timeSinceDown.TotalMilliseconds < 200 && this.isDoubleClick == false)
                 {
                     // Get the current point, and create a marker on it.
                     Point position = e.GetPosition(this.ImageToDisplay);

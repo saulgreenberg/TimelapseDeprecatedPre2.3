@@ -83,6 +83,7 @@ namespace Timelapse.Editor
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             // apply any pending edits
+            this.dataGridBeingUpdatedByCode = false;
             this.TemplateDataGrid.CommitEdit();
             // persist state to registry
             this.userSettings.WriteToRegistry();
@@ -101,6 +102,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileNewTemplate_Click(object sender, RoutedEventArgs e)
         {
+            this.dataGridBeingUpdatedByCode = false;
             this.TemplateDataGrid.CommitEdit(); // to apply edits that the enter key was not pressed
 
             // Configure save file dialog box
@@ -134,6 +136,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileOpenTemplate_Click(object sender, RoutedEventArgs e)
         {
+            this.dataGridBeingUpdatedByCode = false;
             this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -168,7 +171,7 @@ namespace Timelapse.Editor
         private void MenuFileConvertTemplate_Click(object sender, RoutedEventArgs e)
         {
             string codeTemplateFileName = String.Empty;  // The code template file name
-
+            this.dataGridBeingUpdatedByCode = false;
             this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
 
             // Get the name of the Code Template file to open
@@ -255,6 +258,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileExit_Click(object sender, RoutedEventArgs e)
         {
+            this.dataGridBeingUpdatedByCode = false;
             this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
             Application.Current.Shutdown();
         }
@@ -450,11 +454,9 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataTable_RowChanged(object sender, DataRowChangeEventArgs e)
         {
-            Debug.Print("InRowChanged");
             if (!this.dataGridBeingUpdatedByCode)
             {
                 this.SyncControlToDatabase(new ControlRow(e.Row));
-                Debug.Print("---Syncing");
             }
         }
         #endregion Data Changed Listeners and Methods
@@ -580,6 +582,7 @@ namespace Timelapse.Editor
                     // If its a tab, commit the edit before going to the next cell
                     if (e.Key == Key.Tab)
                     {
+                        this.dataGridBeingUpdatedByCode = false;
                         TemplateDataGrid.CommitEdit();
                     }
                     break;
@@ -741,7 +744,8 @@ namespace Timelapse.Editor
 
             // While hitting return after editing (say) a note will raise a RowChanged event, 
             // clicking out of that cell does not raise a RowChangedEvent, even though the cell has been edited. 
-            // Thus we manuallly commit the edit. 
+            // Thus we manually commit the edit. 
+            this.dataGridBeingUpdatedByCode = false;
             this.manualCommitEdit = true;
             this.TemplateDataGrid.CommitEdit(DataGridEditingUnit.Row, true);
         }
