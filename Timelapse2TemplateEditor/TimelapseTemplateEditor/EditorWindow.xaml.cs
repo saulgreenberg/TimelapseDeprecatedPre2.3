@@ -488,6 +488,10 @@ namespace Timelapse.Editor
             Button button = sender as Button;
             string controlType = button.Tag.ToString();
 
+            // Commit any edits that are in progress
+            this.dataGridBeingUpdatedByCode = false;
+            TemplateDataGrid.CommitEdit();
+
             this.dataGridBeingUpdatedByCode = true;
 
             this.templateDatabase.AddUserDefinedControl(controlType);
@@ -498,7 +502,7 @@ namespace Timelapse.Editor
             this.GenerateSpreadsheet();
             this.OnControlOrderChanged();
 
-            this.dataGridBeingUpdatedByCode = true;
+            this.dataGridBeingUpdatedByCode = false;
         }
 
         /// <summary>
@@ -507,6 +511,10 @@ namespace Timelapse.Editor
         /// </summary>
         private void RemoveControlButton_Click(object sender, RoutedEventArgs e)
         {
+            // Commit any edits that are in progress
+            this.dataGridBeingUpdatedByCode = false;
+            TemplateDataGrid.CommitEdit();
+
             DataRowView selectedRowView = this.TemplateDataGrid.SelectedItem as DataRowView;
             if (selectedRowView == null || selectedRowView.Row == null)
             {
