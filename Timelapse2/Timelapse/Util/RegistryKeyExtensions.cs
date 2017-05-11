@@ -100,6 +100,16 @@ namespace Timelapse.Util
             return Size.Parse(sizeAsString);
         }
 
+        public static string ReadString(this RegistryKey registryKey, string subKeyPath, string defaultValue)
+        {
+            string valueAsString = registryKey.ReadString(subKeyPath);
+            if (valueAsString == null)
+            {
+                return defaultValue;
+            }
+            return valueAsString;
+        }
+
         // read a REG_SZ key's value from the registry
         public static string ReadString(this RegistryKey registryKey, string subKeyPath)
         {

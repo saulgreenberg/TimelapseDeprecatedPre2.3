@@ -410,7 +410,10 @@ namespace Timelapse
                 public const string SuppressSelectedDaylightSavingsCorrectionPrompt = "SuppressSelectedDaylightSavingsCorrectionPrompt";
                 public const string SuppressSelectedPopulateFieldFromMetadataPrompt = "SuppressSelectedPopulateFieldFromMetadataPrompt";
                 public const string SuppressSelectedRereadDatesFromFilesPrompt = "SuppressSelectedRereadDatesFromFilesPrompt";
-                public const string SuppressSelectedSetTimeZonePrompt = "SuppressSelectedSetTimeZonePrompt"; 
+                public const string SuppressSelectedSetTimeZonePrompt = "SuppressSelectedSetTimeZonePrompt";
+
+                // Avalon doc state
+                public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
             }
             public const string RootKey = @"Software\Greenberg Consulting\Timelapse\2.0";   // Defines the KEY path under HKEY_CURRENT_USER
         }
@@ -492,6 +495,9 @@ namespace Timelapse
 
         public static class Time
         {
+            // The time threshold for a double click duration
+            public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
+
             // The standard date format, e.g., 05-Apr-2011
             public const string DateFormat = "dd-MMM-yyyy";
             public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";

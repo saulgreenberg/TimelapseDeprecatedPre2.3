@@ -16,6 +16,7 @@ namespace Timelapse.Util
         public DateTime MostRecentCheckForUpdates { get; set; }
         public MostRecentlyUsedList<string> MostRecentImageSets { get; private set; }
         public bool OrderFilesByDateTime { get; set; }
+        public string AvalonDockSavedLayout { get; set; }
 
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
@@ -62,6 +63,8 @@ namespace Timelapse.Util
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.ReadMostRecentlyUsedList(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets);
                 this.OrderFilesByDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.OrderFilesByDateTime, false);
+                // SAULXXX Work in progress
+                // this.AvalonDockSavedLayout = registryKey.ReadString(Constant.Registry.TimelapseKey.AvalonDockSavedLayout, "");
 
                 this.SuppressAmbiguousDatesDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, false);
@@ -96,6 +99,8 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets, this.MostRecentImageSets);
                 registryKey.Write(Constant.Registry.TimelapseKey.OrderFilesByDateTime, this.OrderFilesByDateTime);
+                // SAULXXX Work in progress
+                // registryKey.Write(Constant.Registry.TimelapseKey.AvalonDockSavedLayout, this.AvalonDockSavedLayout);
 
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, this.SuppressAmbiguousDatesDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, this.SuppressCsvExportDialog);
