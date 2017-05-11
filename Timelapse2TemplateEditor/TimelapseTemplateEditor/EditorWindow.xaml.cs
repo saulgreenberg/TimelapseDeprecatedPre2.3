@@ -511,7 +511,8 @@ namespace Timelapse.Editor
         /// </summary>
         private void RemoveControlButton_Click(object sender, RoutedEventArgs e)
         {
-            // Commit any edits that are in progress
+            // Commit any edits that are in progress. 
+            // Likely not needed as this row will be removed anyways, but just in case.
             this.dataGridBeingUpdatedByCode = false;
             TemplateDataGrid.CommitEdit();
 

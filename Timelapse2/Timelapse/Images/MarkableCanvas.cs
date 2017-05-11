@@ -386,7 +386,8 @@ namespace Timelapse.Images
                 // If its more than the given time interval since the last click, then we are on the 2nd click of a potential double click\
                 // So reset the time of the first click
                 TimeSpan timeSinceLastClick = DateTime.Now - this.mouseDoubleClickTime;
-                if (timeSinceLastClick.TotalMilliseconds < System.Windows.Forms.SystemInformation.DoubleClickTime)
+                // System.Diagnostics.Debug.Print(timeSinceLastClick.TotalMilliseconds.ToString() + " " + Constant.Time.DoubleClickTimeThreshold.TotalMilliseconds.ToString());
+                if (timeSinceLastClick.TotalMilliseconds < Constant.Time.DoubleClickTimeThreshold.TotalMilliseconds)
                 {
                     this.isDoubleClick = true;
                 }

@@ -26,7 +26,6 @@ using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using Xceed.Wpf.AvalonDock.Layout.Serialization;
 
-
 namespace Timelapse
 {
     /// <summary>
@@ -123,6 +122,9 @@ namespace Timelapse
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
 
+            //SAULXX This is where we should restore the layout, but there is a bug in how it is restored.
+            //this.DockingManager_RestoreLayout(this.state.AvalonDockSavedLayout);
+
             // Avalon Dock: Initially hide the Date Entry Control Panel
             // For some reason, it doesn't hide it if visibility is set to false in XAML
             this.DataEntryControlPanel.IsVisible = false;
@@ -132,6 +134,7 @@ namespace Timelapse
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             this.FilePlayer_Stop();
+
 
             if ((this.dataHandler != null) &&
                 (this.dataHandler.FileDatabase != null) &&
@@ -169,12 +172,11 @@ namespace Timelapse
             }
             this.state.TimelapseWindowSize = new Size(this.Width, this.Height);
 
+            //SAULXX This is where we should save the layout
+            //this.state.AvalonDockSavedLayout = this.DockingManager_SaveLayout();
+
             // persist user specific state to the registry
             this.state.WriteToRegistry();
-
-            //SAULXX This is where we should save the layout, but there is a bug in how it is restored.
-            //string path = "foobar.config";
-            //this.DockingManager_SaveLayout(path);
         }
 
         public void Dispose()
@@ -685,9 +687,7 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetInDatabase();
 
-            //SAULXX This is where we should restore the layout, but there is a bug in how it is restored.
-            string path = "foobar.config";
-            this.DockingManager_RestoreLayout(path);
+
         }
 
         private void EnableOrDisableMenusAndControls()
@@ -3095,11 +3095,13 @@ namespace Timelapse
         // Also shows floating windows in the task bar if it can be hidden
         private void DockingManager_FloatingWindowTopmost(bool topMost)
         {
+            
             foreach (var floatingWindow in this.DockingManager.FloatingWindows)
             {
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
                 floatingWindow.MinWidth = Constant.AvalonDock.FloatingWindowMinimumWidth;
 
+                // SAULXXX: Need a way to discern DataGridPane from other panes, so we can make only that floating window topmost.
                 if (topMost)
                 {
                     if (floatingWindow.Owner == null)
@@ -3109,8 +3111,9 @@ namespace Timelapse
                 }
                 else if (floatingWindow.Owner != null)
                 {
-                    floatingWindow.Owner = null;
-                    floatingWindow.ShowInTaskbar = true;
+                    // Set this to null if we want windows NOT to appear always on top, otherwise to true
+                    // floatingWindow.Owner = null;
+                   floatingWindow.ShowInTaskbar = true;
                 }
             }
         }
@@ -3140,25 +3143,31 @@ namespace Timelapse
             }
         }
 
-        // SAULXX Not yet used, as the Serializer does not seem to save all the tabs.
-        // SAULXX Needs investigation. 
-        // SAULXX Calling stubs are in code above.
-        private void DockingManager_SaveLayout(string filepath)
-        {
-            XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
-            layoutSerializer.Serialize(filepath);
-        }
-        // SAULXX Not yet used, as the Serializer does not seem to save all the tabs.
-        // SAULXX Needs investigation. 
-        // SAULXX Calling stubs are in code above.
-        private void DockingManager_RestoreLayout(string filepath)
-        {
-            if (File.Exists(filepath))
-            {
-                var layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
-                layoutSerializer.Deserialize(filepath);
-            }
-        }
+        // SAULXX Not yet used, as some bugs remain in it.
+        //private string DockingManager_SaveLayout()
+        //{
+        //    //string configFile = Utilities.CreateConfigurationFolderIfNeededAndGetFileName(filepath);
+
+        //    XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
+        //    //layoutSerializer.Serialize(configFile);
+        //    System.Text.StringBuilder str = new System.Text.StringBuilder();
+        //    StringWriter writer = new StringWriter(str);
+        //    layoutSerializer.Serialize(writer);
+        //    //  Debug.Print(str.ToString());
+        //    return str.ToString();
+
+        //}
+        //// SAULXX PlaceholderNot yet used, as some bugs remain in it.
+        //private void DockingManager_RestoreLayout(string layout)
+        //{
+        //    return;
+        //    if (layout == "") return;
+        //    StreamReader streamReader = new StreamReader(new MemoryStream(System.Text.Encoding.ASCII.GetBytes(layout)));
+        //    XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
+        //    Debug.Print(streamReader.ReadToEnd());
+        //    layoutSerializer.Deserialize(streamReader);
+        //}
+
         #endregion
 
         #region FilePlayer and FilePlayerTimer
