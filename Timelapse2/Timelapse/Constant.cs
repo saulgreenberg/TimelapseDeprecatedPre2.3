@@ -358,6 +358,10 @@ namespace Timelapse
             public const double MarkerGlowOpacity = 0.35;
             public const int MarkerGlowStrokeThickness = 7;
             public const int MarkerStrokeThickness = 2;
+
+            // Threshold for a double click duration and for differentiating between marking and panning
+            public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
+            public static readonly double MarkingVsPanningDistanceThreshold = 2.0;
         }
 
         public static class Registry
@@ -495,9 +499,6 @@ namespace Timelapse
 
         public static class Time
         {
-            // The time threshold for a double click duration
-            public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
-
             // The standard date format, e.g., 05-Apr-2011
             public const string DateFormat = "dd-MMM-yyyy";
             public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";

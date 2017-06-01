@@ -378,7 +378,8 @@ namespace Timelapse.Dialog
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
                 Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                {
+//                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(1), (ImageRow file, ParallelLoopState loopState) =>
+                    {
                     if (this.stop)
                     {
                         loopState.Break();

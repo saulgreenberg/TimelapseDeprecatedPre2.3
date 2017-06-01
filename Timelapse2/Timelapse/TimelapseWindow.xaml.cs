@@ -395,6 +395,7 @@ namespace Timelapse
                 DateTime previousImageRender = DateTime.UtcNow - this.state.Throttles.DesiredIntervalBetweenRenders;
 
                 Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
+ //               Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(1), (FileInfo fileInfo) =>
                 {
                     ImageRow file;
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out file))
@@ -439,18 +440,24 @@ namespace Timelapse
                                 const int MAX_RETRIES = 3;
                                 int retries_attempted = 0;
                                 file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-
-                                while (file.ImageQuality == FileSelection.Corrupted && retries_attempted < MAX_RETRIES)
+                                // We don't check videos for darkness, so set it as ok.
+                                if (file.IsVideo)
                                 {
-                                    // See what images were retried
-                                    Utilities.PrintFailure("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
-                                    retries_attempted++;
-                                    file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                                }
-                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelection.Corrupted)
-                                {
-                                    // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
                                     file.ImageQuality = FileSelection.Ok;
+                                }
+                                else {
+                                    while (file.ImageQuality == FileSelection.Corrupted && retries_attempted < MAX_RETRIES)
+                                    {
+                                        // See what images were retried
+                                        Utilities.PrintFailure("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
+                                        retries_attempted++;
+                                        file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+                                    }
+                                    if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelection.Corrupted)
+                                    {
+                                        // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
+                                        file.ImageQuality = FileSelection.Ok;
+                                    }
                                 }
                             }
                             // see if the datetime can be updated from the metadata
@@ -685,9 +692,9 @@ namespace Timelapse
             this.EnableOrDisableMenusAndControls();
 
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
-            this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetInDatabase();
-
-
+            // SAULXXX CHANGED TO EXCLUDE ONLY IF UTC OFFSET ISN"T VISIBLE
+            //this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetInDatabase();
+            this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
         }
 
         private void EnableOrDisableMenusAndControls()
@@ -3026,6 +3033,20 @@ namespace Timelapse
                 if (controlType == Constant.DatabaseColumn.UtcOffset)
                 {
                     return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsUTCOffsetVisible()
+        {
+            // Find the Utcoffset control
+            foreach (ControlRow control in this.templateDatabase.Controls)
+            {
+                string controlType = control.Type;
+                if (controlType == Constant.DatabaseColumn.UtcOffset)
+                {
+                    return control.Visible;
                 }
             }
             return false;

@@ -49,7 +49,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return Constant.Images.Corrupt.Value;
+                        return Constant.Images.BlankVideo.Value;
                     }
                 }
 
@@ -108,7 +108,7 @@ namespace Timelapse.Database
             catch 
             {
                 // We don't print the exception // (Exception exception)
-                Utilities.PrintFailure(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}"));
+                Utilities.PrintFailure(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
                 return Constant.Images.BlankVideo.Value;
             }
         }
