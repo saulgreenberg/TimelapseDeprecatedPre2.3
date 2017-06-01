@@ -377,8 +377,11 @@ namespace Timelapse.Dialog
 
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-//                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(1), (ImageRow file, ParallelLoopState loopState) =>
+                // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
+                // As I am not sure if it also affects this loop, I am disabling it.
+                // For now, we set it to non-parallel until it is properly fixed.
+//                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
+                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(1), (ImageRow file, ParallelLoopState loopState) =>
                     {
                     if (this.stop)
                     {
