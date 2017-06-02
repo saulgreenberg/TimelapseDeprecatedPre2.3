@@ -724,6 +724,8 @@ namespace Timelapse
             // options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = true;
+            this.MenuItemOrderFilesByDateTime.IsEnabled = filesSelected;
+            this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected;
             this.MenuItemAudioFeedback.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = filesSelected;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
@@ -731,6 +733,7 @@ namespace Timelapse
 
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = filesSelected;
+
             // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
 
             // Also adjust the enablement of the various other UI components.
@@ -2547,6 +2550,48 @@ namespace Timelapse
             advancedTimelapseOptions.ShowDialog();
         }
 
+        // SaulXXX This is a temporary function to allow a user to check for and to delete any duplicate records.
+        private void MenuItemDeleteDuplicates_Click(object sender, RoutedEventArgs e)
+        {
+            // Warn user that they are in a selected view, and verify that they want to continue
+            if (this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelection.All)
+            {
+                // Need to be viewing all files
+                MessageBox messageBox = new MessageBox("You need to select All Files before deleting duplicates", this);
+                messageBox.Message.Problem = "Delete Duplicates should be applied to All Files, but you only have a subset selected";
+                messageBox.Message.Solution = "On the Select menu, choose 'All Files' and try again" ;
+                messageBox.Message.Icon = MessageBoxImage.Exclamation;
+                messageBox.ShowDialog();
+                return;
+            }
+            else
+            {
+                // Generate a list of duplicate rows showing their filenames (including relative path) 
+                List<string> filenames = new List<string>();
+                FileTable table = this.dataHandler.FileDatabase.GetDuplicateFiles();
+                if (table != null && table.Count() != 0)
+                { 
+                    // populate the list
+                    foreach (ImageRow image in table)
+                    {
+                        string separator = (image.RelativePath == String.Empty) ? "" : "/";
+                        filenames.Add(image.RelativePath + separator + image.FileName );
+                    }
+                }
+
+                // Raise a dialog box that shows the duplicate files (if any), where the user needs to confirm their deletion
+                DeleteDuplicates deleteDuplicates = new DeleteDuplicates(this, filenames);
+                bool? result = deleteDuplicates.ShowDialog();
+                if (result == true)
+                {
+                    // Delete the duplicate files
+                   this.dataHandler.FileDatabase.DeleteDuplicateFiles();
+                   // Reselect on the current select settings, which updates the view to remove the deleted files
+                   this.SelectFilesAndShowFile();
+                }  
+            }
+        }
+
         /// <summary>Toggle the magnifier on and off</summary>
         private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)
         {
@@ -3252,6 +3297,7 @@ namespace Timelapse
             }
         }
         #endregion
+
 
     }
 }
