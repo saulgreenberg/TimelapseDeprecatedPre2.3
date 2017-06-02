@@ -446,10 +446,12 @@ namespace Timelapse
             public const string Comma = ", ";
             public const string DataSource = "Data Source=";
             public const string Default = " DEFAULT ";
+            public const string DeleteFrom = "DELETE FROM ";
             public const string DropTable = " DROP TABLE ";
             public const string End = " END ";
             public const string EqualsCaseID = " = CASE Id";
             public const string From = " FROM ";
+            public const string GroupBy = " GROUP BY ";
             public const string InsertInto = "INSERT INTO ";
             public const string Integer = "INTEGER";
             public const string Name = " NAME ";
@@ -472,12 +474,13 @@ namespace Timelapse
             public const string Text = "TEXT";
             public const string Trim = " TRIM ";
             public const string TypeEqualsTable = " TYPE='table' ";
-            public const string UnionAll = " UNION ALL";            public const string DeleteFrom = " DELETE FROM ";
+            public const string UnionAll = " UNION ALL"; 
             public const string Update = " UPDATE ";
             public const string Values = " VALUES ";
             public const string When = " WHEN ";
             public const string Where = " WHERE ";
             public const string WhereIDIn = Where + "Id IN ";
+            public const string WhereIDNotIn = Where + " Id NOT IN ";
             public const string Then = " THEN ";
         }
 

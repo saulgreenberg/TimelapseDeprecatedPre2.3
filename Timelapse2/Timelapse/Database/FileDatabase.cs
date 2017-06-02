@@ -595,6 +595,25 @@ namespace Timelapse.Database
             return new FileTable(images);
         }
 
+        // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
+        // Get a table containing a subset of rows that have duplicate File and RelativePaths 
+        public FileTable GetDuplicateFiles()
+        {
+            string query = Constant.Sql.Select + " RelativePath, File, COUNT(*) " + Constant.Sql.From + Constant.DatabaseTable.FileData;
+            query += Constant.Sql.GroupBy + " RelativePath, File HAVING COUNT(*) > 1";
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(images);
+        }
+
+        // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
+        // Delete duplicate rows from the database, identified by identical File and RelativePath contents.
+        public void DeleteDuplicateFiles()
+        {
+            string query = Constant.Sql.DeleteFrom + Constant.DatabaseTable.FileData + Constant.Sql.WhereIDNotIn;
+            query += Constant.Sql.OpenParenthesis + Constant.Sql.Select + " MIN(Id) " + Constant.Sql.From + Constant.DatabaseTable.FileData + Constant.Sql.GroupBy +  "RelativePath, File)";
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+        }
+
         /// <summary>
         /// Get the row matching the specified image or create a new image.  The caller is responsible for adding newly created images the database and data table.
         /// </summary>
