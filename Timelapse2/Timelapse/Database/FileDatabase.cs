@@ -610,7 +610,7 @@ namespace Timelapse.Database
         public void DeleteDuplicateFiles()
         {
             string query = Constant.Sql.DeleteFrom + Constant.DatabaseTable.FileData + Constant.Sql.WhereIDNotIn;
-            query += Constant.Sql.OpenParenthesis + Constant.Sql.Select + " MIN(Id) " + Constant.Sql.From + Constant.DatabaseTable.FileData + Constant.Sql.GroupBy +  "RelativePath, File)";
+            query += Constant.Sql.OpenParenthesis + Constant.Sql.Select + " MIN(Id) " + Constant.Sql.From + Constant.DatabaseTable.FileData + Constant.Sql.GroupBy + "RelativePath, File)";
             DataTable images = this.Database.GetDataTableFromSelect(query);
         }
 
