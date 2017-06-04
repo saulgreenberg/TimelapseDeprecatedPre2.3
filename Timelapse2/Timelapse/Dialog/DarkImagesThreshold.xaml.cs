@@ -33,7 +33,7 @@ namespace Timelapse.Dialog
         private bool stop;
         private TimelapseUserRegistrySettings userSettings;
 
-        public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, Window owner)
+        public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, TimelapseWindow owner)
         {
             this.InitializeComponent();
             this.Owner = owner;
@@ -377,12 +377,10 @@ namespace Timelapse.Dialog
 
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-                // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
-                // As I am not sure if it also affects this loop, I am disabling it.
-                // For now, we set it to non-parallel until it is properly fixed.
-//                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(1), (ImageRow file, ParallelLoopState loopState) =>
-                    {
+                // SaulXXX There was a bug in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
+                // While it may also affect this loop, the consequences are small if the occassional file is skipped (duplicate testing won't hurt)
+                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
+                {
                     if (this.stop)
                     {
                         loopState.Break();
@@ -399,9 +397,10 @@ namespace Timelapse.Dialog
 
                     try
                     {
-                        // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
+                        // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath).AsWriteable();
+                        // We also use a TransientLoading, as the estimate of darkness will work just fine on thate
+                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntent.TransientLoading).AsWriteable();
                         imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;
@@ -472,8 +471,9 @@ namespace Timelapse.Dialog
                 this.DisplayImageAndDetails();
                 this.ApplyButton.IsEnabled = true;
                 this.CancelButton.IsEnabled = false;
+                TimelapseWindow tw = (TimelapseWindow)this.Owner;
+                tw.MaybeShowFileCountsDialog(false, this);
             };
-
             backgroundWorker.RunWorkerAsync();
         }
     }

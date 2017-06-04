@@ -273,7 +273,7 @@ namespace Timelapse.Util
         public static void PrintFailure(string message)
         {
             // Debug.Print("PrintFailure: " + message);
-            // Debug.Fail(message)
+            // Debug.Fail(message);
         }
     }
 }

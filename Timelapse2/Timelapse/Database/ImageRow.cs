@@ -197,8 +197,7 @@ namespace Timelapse.Database
         {
             if (imageExpectedUsage == ImageDisplayIntent.TransientNavigating)
             { 
-                // TODOSAUL: why load the image at icon size rather than, say, ThumbnailSmall?  Why is this value not in Constants?
-                return this.LoadBitmap(baseFolderPath, 32, imageExpectedUsage);
+                return this.LoadBitmap(baseFolderPath, Constant.Images.ThumbnailWidth, imageExpectedUsage);
             }
             else
             {

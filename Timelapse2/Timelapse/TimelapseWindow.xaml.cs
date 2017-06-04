@@ -395,9 +395,10 @@ namespace Timelapse
                 DateTime previousImageRender = DateTime.UtcNow - this.state.Throttles.DesiredIntervalBetweenRenders;
 
                 // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
-                // For now, we set it to non-parallel until it is properly fixed.
-                //               Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
-                Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(1), (FileInfo fileInfo) =>
+                // It also occassion produces an SQLite Database locked error. 
+                // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
+                // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
+                foreach (FileInfo fileInfo in filesToAdd)
                 {
                     ImageRow file;
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out file))
@@ -415,7 +416,7 @@ namespace Timelapse
                             file.ImageQuality = FileSelection.Ok;
                         }
                         else
-                        { 
+                        {
                             // Create the bitmap and determine its quality
                             // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                             // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
@@ -447,7 +448,8 @@ namespace Timelapse
                                 {
                                     file.ImageQuality = FileSelection.Ok;
                                 }
-                                else {
+                                else
+                                {
                                     while (file.ImageQuality == FileSelection.Corrupted && retries_attempted < MAX_RETRIES)
                                     {
                                         // See what images were retried
@@ -516,7 +518,9 @@ namespace Timelapse
                         // Console.WriteLine("Skipped");
                         folderLoadProgress.BitmapSource = null;
                     }
-                });
+                    // }); // SAULXXX Parallel.ForEach
+                }
+
 
                 // Second pass: Update database
                 filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.FileName)).ToList();
@@ -561,7 +565,7 @@ namespace Timelapse
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
                 bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
                 this.MarkableCanvas.MagnifyingGlassEnabled = false;
-                this.MaybeShowFileCountsDialog(true);
+                this.MaybeShowFileCountsDialog(true, this);
                 this.MarkableCanvas.MagnifyingGlassEnabled = saveMagnifierState;
 
                 // If we want to import old data from the ImageData.xml file, we can do it here...
@@ -2812,11 +2816,7 @@ namespace Timelapse
             this.TryViewCombinedDifference();
         }
 
-        /// <summary>Show a dialog box telling the user how many images were loaded, etc.</summary>
-        public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        {
-            this.MaybeShowFileCountsDialog(false);
-        }
+
 
         #endregion
 
@@ -2915,6 +2915,12 @@ namespace Timelapse
                 this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelection.Custom);
             }
         }
+
+        /// <summary>Show a dialog box telling the user how many images were loaded, etc.</summary>
+        public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
+        {
+            this.MaybeShowFileCountsDialog(false, this);
+        }
         #endregion
 
         #region Help Menu Callbacks
@@ -2970,7 +2976,7 @@ namespace Timelapse
         #endregion
 
         #region Utilities
-        private void MaybeShowFileCountsDialog(bool onFileLoading)
+        public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
         {
             if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
             {
@@ -2978,7 +2984,7 @@ namespace Timelapse
             }
 
             Dictionary<FileSelection, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
-            FileCountsByQuality imageStats = new FileCountsByQuality(counts, this);
+            FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
             if (onFileLoading)
             {
                 imageStats.Message.Hint = "\u2022 " + imageStats.Message.Hint + Environment.NewLine + "\u2022 If you check don't show this message again this dialog can be turned back on via the Options menu.";
