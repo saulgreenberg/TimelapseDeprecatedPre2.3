@@ -81,16 +81,15 @@ namespace Timelapse.Dialog
             else
             {
                 int numberOfImagesToDelete = this.filesToDelete.Count;
-                this.Message.Result = String.Empty;
                 this.Message.Title = String.Format("Delete {0} image and/or video(s) marked for deletion ", numberOfImagesToDelete.ToString());
                 this.Message.What = String.Format("Deletes {0} image and/or video(s) that are marked for deletion (shown below), ",  numberOfImagesToDelete.ToString());
                 this.Message.Result = String.Empty;
                 this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
                 if (numberOfImagesToDelete > Constant.Images.LargeNumberOfDeletedImages)
                 {
-                    this.Message.Result += String.Format("Deleting {0} files will take a few moments. Please be patient.{1)", numberOfImagesToDelete.ToString(), Environment.NewLine);
+                    this.Message.Result += String.Format("Deleting {0} files will take a few moments. Please be patient.{1}", numberOfImagesToDelete.ToString(), Environment.NewLine);
                 }
-                this.Message.Result = String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
+                this.Message.Result += String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
                 if (deleteImageAndData == false)
                 {
                     // Case 3: Delete the images that have the delete flag set, but not their data
@@ -138,6 +137,8 @@ namespace Timelapse.Dialog
                     // A new row is started every five columns
                     columnIndex = 0;
                     rowIndex += 2;
+                    this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
+                    this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
                 }
             }
             Mouse.OverrideCursor = null;
