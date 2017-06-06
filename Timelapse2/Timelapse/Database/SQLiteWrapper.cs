@@ -694,6 +694,20 @@ namespace Timelapse.Database
             }
         }
 
+        /// <summary>
+        /// Drop the database table 'tableName' from the connected database.
+        /// </summary>
+        /// <param name="connection">the open and valid connection to the database</param>
+        /// <param name="tableName">the name of the table</param>
+        public void DropTable(string tableName)
+        {
+            using (SQLiteConnection connection = new SQLiteConnection(this.connectionString))
+            {
+                connection.Open();
+                this.DropTable(connection, tableName);
+            }
+        }
+
         private List<string> GetColumnDefinitions(SQLiteConnection connection, string tableName)
         {
             using (SQLiteDataReader reader = this.GetSchema(connection, tableName))

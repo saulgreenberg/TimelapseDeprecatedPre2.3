@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -61,7 +62,7 @@ namespace Timelapse.Database
 
         public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator)
         {
-            // check for an existing database before instantiating the databse as SQL wrapper instantiation creates the database file
+            // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
@@ -341,15 +342,88 @@ namespace Timelapse.Database
             List<string> templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
             List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
             List<string> dataLabelsInTemplateButNotImageDatabase = templateDataLabels.Except(dataLabels).ToList();
-            foreach (string dataLabel in dataLabelsInTemplateButNotImageDatabase)
-            {
-                this.ControlSynchronizationIssues.Add("- A field with the DataLabel '" + dataLabel + "' was found in the template, but nothing matches that in the image data file." + Environment.NewLine);
-            }
             List<string> dataLabelsInImageButNotTemplateDatabase = dataLabels.Except(templateDataLabels).ToList();
-            foreach (string dataLabel in dataLabelsInImageButNotTemplateDatabase)
+
+            // Check for differences between the TemplateTable in the .tdb and .ddb database.
+            bool areNewColumnsInTemplate = dataLabelsInImageButNotTemplateDatabase.Count == 0 && dataLabelsInTemplateButNotImageDatabase.Count > 0;
+            bool areDeletedColumnsInTemplate = dataLabelsInImageButNotTemplateDatabase.Count > 0 && dataLabelsInTemplateButNotImageDatabase.Count == 0;
+            bool areRenamedColumns = dataLabelsInTemplateButNotImageDatabase.Count == 1 && dataLabelsInImageButNotTemplateDatabase.Count == 1;
+
+            // The template in the .tdb differs from the .tdb template. Update the .tdb template 
+            if (areNewColumnsInTemplate || areDeletedColumnsInTemplate || areRenamedColumns)
             {
-                this.ControlSynchronizationIssues.Add("- A field with the DataLabel '" + dataLabel + "' was found in the image data file, but nothing matches that in the template." + Environment.NewLine);
+                // Update the .ddb Template table by dropping the .ddb template Table and replacing it with the .tdb table. 
+                base.Database.DropTable(Constant.DatabaseTable.Controls);
+                base.OnDatabaseCreated(templateDatabase);
             }
+
+            // Condition 1: the template table contains controls not found in the image table, and the image table contains controls not found in the template table. 
+            // This could result from new or deleted controls, or renamed controls. 
+            // To test, lets treate it as a rename of there is one added / deleted row
+            if (areRenamedColumns)
+            {
+                // Rename the control
+                this.Database.RenameColumn(Constant.DatabaseTable.FileData, dataLabelsInImageButNotTemplateDatabase[0], dataLabelsInTemplateButNotImageDatabase[0]);
+                Debug.Print("The control " + dataLabelsInImageButNotTemplateDatabase[0] + " has been renamed to " + dataLabelsInTemplateButNotImageDatabase[0]);
+            }
+
+            // Condition 2: the template table and image table are identical, except that the template table contains one or more additional columns.
+            // That is, the only difference is that the .tdb defines one or more new controls
+            // Action: update the TemplateTable in the .ddb to match the .tdb table, and add the control 
+            else
+            {
+                if (areNewColumnsInTemplate)
+                {
+                    // For each new control in the tempalte table, add a corresponding data column in the ImageTable
+                    foreach (string dataLabel in dataLabelsInTemplateButNotImageDatabase)
+                    {
+                        long id = this.GetControlIDFromTemplateTable(dataLabel);
+                        ControlRow control = this.Controls.Find(id);
+                        ColumnDefinition columnDefinition = this.CreateFileDataColumnDefinition(control);
+                        this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
+                        Debug.Print("The control " + dataLabel + " has been added");
+                    }
+                }
+
+                // Condition 3: the template table and image table are identical, except that the image table contains one or more additional columns.
+                // That is, the only difference is that the .ddb defines a control (and thus may contain coded data for that control) not found in the .tdb
+                // Action: update the TemplateTable in the .ddb to match the .tdb table, and add 
+
+                if (areDeletedColumnsInTemplate)
+                {
+                    foreach (string dataLabel in dataLabelsInImageButNotTemplateDatabase)
+                    {
+                        //long id = this.GetControlIDFromTemplateTable(dataLabel);
+                        //ControlRow control = this.Controls.Find(id);
+                        //ColumnDefinition columnDefinition = this.CreateFileDataColumnDefinition(control);
+                        this.Database.DeleteColumn(Constant.DatabaseTable.FileData, dataLabel);
+                        Debug.Print("The control " + dataLabel + " and its associated data has been deleted");
+                    }
+                }
+            }
+
+            // Condition 3: We haven't accounted for the case where there are unequal deleted / added columns (i.e., possible mix of rename, with add and deleted)
+            
+
+            // Refetch these as they will have changed
+            if (areNewColumnsInTemplate || areDeletedColumnsInTemplate || areRenamedColumns)
+            {
+                templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
+                dataLabelsInTemplateButNotImageDatabase = templateDataLabels.Except(dataLabels).ToList();
+                dataLabelsInImageButNotTemplateDatabase = dataLabels.Except(templateDataLabels).ToList();
+            }
+
+            // SAULXXX Original exceptions
+            //foreach (string dataLabel in dataLabelsInTemplateButNotImageDatabase)
+            //{
+            //    this.ControlSynchronizationIssues.Add("- A field with the DataLabel '" + dataLabel + "' was found in the template, but nothing matches that in the image data file." + Environment.NewLine);
+            //}
+
+            //foreach (string dataLabel in dataLabelsInImageButNotTemplateDatabase)
+            //{
+            //    this.ControlSynchronizationIssues.Add("- A field with the DataLabel '" + dataLabel + "' was found in the image data file, but nothing matches that in the template." + Environment.NewLine);
+            //}
 
             if (this.ControlSynchronizationIssues.Count == 0)
             {

@@ -41,7 +41,7 @@ namespace Timelapse
         private string mostRecentFileAddFolderPath;
         private SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
         private TimelapseState state;                                   // Status information concerning the state of the UI
-        private TemplateDatabase templateDatabase;                              // The database that holds the template
+        private TemplateDatabase templateDatabase;                      // The database that holds the template
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
         private DispatcherTimer timerFileNavigator;
@@ -243,7 +243,6 @@ namespace Timelapse
         public bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath, out BackgroundWorker backgroundWorker)
         {
             backgroundWorker = null;
-            // SAULXXX: Todd created a local templateDatabase, which he then disposed. However, we still need that to determine IsUTCTimeControlHidden - check to see if there is another way to do that. See Todds perf: parallel import
             // Try to create or open the template database
             if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
             {
@@ -260,6 +259,7 @@ namespace Timelapse
                 messageBox.ShowDialog();
                 return false;
             }
+            // this.templateDatabase should now refer to the loaded the .tdb file
 
             // Try to get the image database file path 
             // importImages will be true if its a new image database file, (meaning we should later ask the user to try to import some images)
