@@ -259,7 +259,7 @@ namespace Timelapse
                 messageBox.ShowDialog();
                 return false;
             }
-            // this.templateDatabase should now refer to the loaded the .tdb file
+            // The .tdb templateDatabase should now be loaded
 
             // Try to get the image database file path 
             // importImages will be true if its a new image database file, (meaning we should later ask the user to try to import some images)
@@ -271,23 +271,47 @@ namespace Timelapse
                 return false;
             }
 
-            // Before running from an existing image database, check that the controls in the template database for compatability with the image database
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator);
-            if (fileDatabase.ControlSynchronizationIssues.Count > 0)
+            // Before fully loading an existing image database, compare the controls in the .tdb and .ddb database templates for compatability 
+            bool useTemplateDBTemplate = true;
+            FileDatabase tempFileDatabase = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase);
+            if (tempFileDatabase != null)
             {
-                TemplateSynchronization templatesNotCompatibleDialog = new TemplateSynchronization(fileDatabase.ControlSynchronizationIssues, this);
-                templatesNotCompatibleDialog.Owner = this;
-                bool? result = templatesNotCompatibleDialog.ShowDialog();
-                if (result == true)
+                // If there are any reported syncronization issues, report them as we cannot use this template.
+                // Depending on the user response, either abort Timelapse or use the old template
+                if (tempFileDatabase.ControlSynchronizationIssues.Count > 0)
                 {
-                    // user indicated not to update to the current template so exit.
-                    Application.Current.Shutdown();
-                    return false;
+                    TemplateSynchronization templatesNotCompatibleDialog = new TemplateSynchronization(tempFileDatabase.ControlSynchronizationIssues, this);
+                    bool? result = templatesNotCompatibleDialog.ShowDialog();
+                    if (result == true)
+                    {
+                        // user indicates exiting rather than continuing.
+                        Application.Current.Shutdown();
+                        return false;
+                    }
+                    else
+                    {
+                        useTemplateDBTemplate = false;
+                    }
                 }
-                // user indicated to run with the stale copy of the template found in the image database
+                else if (tempFileDatabase.DataLabelsInImageButNotTemplateDatabase.Count > 0 || tempFileDatabase.DataLabelsInTemplateButNotImageDatabase.Count > 0)
+                {
+                    // if there are any new or missing columns, report them 
+                    // Depending on the user response, either 
+                    // -update the template and image data columns in the image database, or
+                    // -use the old template
+                    TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(tempFileDatabase.DataLabelsInImageButNotTemplateDatabase, tempFileDatabase.DataLabelsInTemplateButNotImageDatabase, this);
+                    bool? result1 = templateChangedAndUpdate.ShowDialog();
+                    useTemplateDBTemplate = (result1 == true) ? true : false;
+                }
             }
 
-            // At this point, we should have a valid template and image database loaded
+            // At this point:
+            // - we should have a valid template and image database loaded
+            // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
+            // - we know if the user wants to use the old or the new template
+            // So lets load the database for real.
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, useTemplateDBTemplate);
+
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.dataHandler = new DataEntryHandler(fileDatabase);
             this.DataEntryControls.CreateControls(fileDatabase, this.dataHandler);

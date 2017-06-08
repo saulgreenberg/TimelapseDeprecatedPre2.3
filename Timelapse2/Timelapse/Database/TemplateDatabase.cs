@@ -198,7 +198,7 @@ namespace Timelapse.Database
                 controlType = Constant.ControlsDeprecated.MarkForDeletion;
             }
             else
-            { 
+            {
                 controlType = controlToRemove.Type;
             }
             if (Constant.Control.StandardTypes.Contains(controlType))
@@ -302,10 +302,10 @@ namespace Timelapse.Database
 
             // Commented out, as we now don't have some controls showing up due to optional Utc 
             // Saul TODO: Replace by a better test?
-//            if (newOrderByDataLabel.Count != this.Controls.RowCount)
-//            {
-//                throw new NotSupportedException(String.Format("Partial order updates are not supported.  New ordering for {0} controls was passed but {1} controls are present for '{2}'.", newOrderByDataLabel.Count, this.Controls.RowCount, orderColumnName));
-//            }
+            //            if (newOrderByDataLabel.Count != this.Controls.RowCount)
+            //            {
+            //                throw new NotSupportedException(String.Format("Partial order updates are not supported.  New ordering for {0} controls was passed but {1} controls are present for '{2}'.", newOrderByDataLabel.Count, this.Controls.RowCount, orderColumnName));
+            //            }
 
             List<long> uniqueOrderValues = newOrderByDataLabel.Values.Distinct().ToList();
             if (uniqueOrderValues.Count != newOrderByDataLabel.Count)
@@ -516,6 +516,13 @@ namespace Timelapse.Database
 
             // populate the in memory version of the template table
             this.GetControlsSortedByControlOrder();
+        }
+
+        protected virtual void UpgradeAndCompare(TemplateDatabase other)
+        {
+            this.GetControlsSortedByControlOrder();
+            this.EnsureDataLabelsAndLabelsNotEmpty();
+            this.EnsureCurrentSchema();
         }
 
         protected virtual void OnExistingDatabaseOpened(TemplateDatabase other)
