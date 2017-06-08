@@ -18,7 +18,7 @@ namespace Timelapse.Database
         private DataGrid boundGrid;
         private bool disposed;
         private DataRowChangeEventHandler onFileDataTableRowChanged;
-        private bool UseTemplateDBTemplate = true; // Whether or not to use the template found in the Image databaseinstead of the Template database
+        private bool useTemplateDBTemplate = true; // Whether or not to use the template found in the Image databaseinstead of the Template database
 
         public CustomSelection CustomSelection { get; private set; }
 
@@ -62,14 +62,13 @@ namespace Timelapse.Database
             this.OrderFilesByDateTime = false;
         }
 
-
         public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, bool useTemplateDBTemplate)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UseTemplateDBTemplate = useTemplateDBTemplate;
+            fileDatabase.useTemplateDBTemplate = useTemplateDBTemplate;
 
             if (populateDatabase)
             {
@@ -341,7 +340,6 @@ namespace Timelapse.Database
 
         public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase)
         {
-           
             // If the file doesn't exist, then no immediate action is needed
             if (!File.Exists(filePath))
             {
@@ -349,14 +347,14 @@ namespace Timelapse.Database
             }
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UpgradeAndCompare(templateDatabase);
+            fileDatabase.UpgradeAndCompareTemplates(templateDatabase);
             return fileDatabase;
         }
 
-        protected override void UpgradeAndCompare (TemplateDatabase templateDatabase)
+        protected override void UpgradeAndCompareTemplates(TemplateDatabase templateDatabase)
         {
             // perform TemplateTable initializations and migrations, then check for synchronization issues
-            base.UpgradeAndCompare (templateDatabase);
+            base.UpgradeAndCompareTemplates(templateDatabase);
 
             // Migrate the database from older to newer formats
             this.UpgradeDatabasesAsNeeded(templateDatabase);
@@ -369,9 +367,9 @@ namespace Timelapse.Database
 
             // Check for differences between the TemplateTable in the .tdb and .ddb database.
             bool areNewColumnsInTemplate = this.DataLabelsInTemplateButNotImageDatabase.Count > 0;
-            bool areDeletedColumnsInTemplate = this.DataLabelsInImageButNotTemplateDatabase.Count > 0 ;
+            bool areDeletedColumnsInTemplate = this.DataLabelsInImageButNotTemplateDatabase.Count > 0;
 
-            // Condition 1: Mismatch control types: Unable to update as there is at least one control type mismatch 
+            // Synchronization Issues 1: Mismatch control types. Unable to update as there is at least one control type mismatch 
             // We need to check that the dataLabels in the .ddb template are of the same type as those in the .ttd template
             // If they are not, then we need to flag that.
             foreach (string dataLabel in dataLabels)
@@ -400,20 +398,20 @@ namespace Timelapse.Database
                 }
             }
 
-            // Don't bother continuing if there are synchronization issues, as we can't do anything more here.
+            // Synchronization Issues 2: Unresolved warnings. Due to existence of other new / deleted columns.
             if (this.ControlSynchronizationIssues.Count > 0)
             {
                 if (areNewColumnsInTemplate || areDeletedColumnsInTemplate)
                 { 
                     this.ControlSynchronizationIssues.Add(String.Format("The following additional differences cannot be resolved until the above issues are handled.{0}", Environment.NewLine));
                 }
-                if (areNewColumnsInTemplate )
+                if (areNewColumnsInTemplate)
                 {
-                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the template data file but not in the image  file.{1}", DataLabelsInTemplateButNotImageDatabase.Count, Environment.NewLine));
+                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the template data file but not in the image  file.{1}", this.DataLabelsInTemplateButNotImageDatabase.Count, Environment.NewLine));
                 }
                 if (areDeletedColumnsInTemplate)
                 { 
-                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the image data file but not in the template file.{1}", DataLabelsInImageButNotTemplateDatabase, Environment.NewLine));
+                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the image data file but not in the template file.{1}", this.DataLabelsInImageButNotTemplateDatabase, Environment.NewLine));
                 }
             }
         }
@@ -548,6 +546,8 @@ namespace Timelapse.Database
                 this.Database.Update(Constant.DatabaseTable.FileData, updateQuery);
             }
         }
+
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
         protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase)
         {
             // perform TemplateTable initializations and migrations, then check for synchronization issues
@@ -555,7 +555,7 @@ namespace Timelapse.Database
             List<string> templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
             List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
 
-            if (this.UseTemplateDBTemplate)
+            if (this.useTemplateDBTemplate)
             {
                 // Check for missing or added controls, and update them if needed.
                 List<string> dataLabelsInTemplateButNotImageDatabase = templateDataLabels.Except(dataLabels).ToList();

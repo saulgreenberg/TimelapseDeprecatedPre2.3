@@ -518,7 +518,7 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void UpgradeAndCompare(TemplateDatabase other)
+        protected virtual void UpgradeAndCompareTemplates(TemplateDatabase other)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();

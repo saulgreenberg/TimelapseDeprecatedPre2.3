@@ -28,9 +28,9 @@ namespace Timelapse.Dialog
 
                 foreach (string datalabel in dataLabelsInTemplateButNotImageDatabase)
                 {
-                    this.TextBlockDetails.Inlines.Add(new Run { Text = "  o " + datalabel + Environment.NewLine});
+                    this.TextBlockDetails.Inlines.Add(new Run { Text = "  o " + datalabel + Environment.NewLine });
                 }
-                this.TextBlockDetails.Inlines.Add(new Run { Text = Environment.NewLine});
+                this.TextBlockDetails.Inlines.Add(new Run { Text = Environment.NewLine });
             }
 
             if (dataLabelsInImageButNotTemplateDatabase.Count > 0)
@@ -41,7 +41,7 @@ namespace Timelapse.Dialog
                 this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Any associated data is also permanently deleted: " + Environment.NewLine });
                 foreach (string datalabel in dataLabelsInImageButNotTemplateDatabase)
                 {
-                    this.TextBlockDetails.Inlines.Add(new Run { Text = "  o " + datalabel + Environment.NewLine});
+                    this.TextBlockDetails.Inlines.Add(new Run { Text = "  o " + datalabel + Environment.NewLine });
                 }
             }
         }
