@@ -271,45 +271,63 @@ namespace Timelapse
                 return false;
             }
 
-            // Before fully loading an existing image database, compare the controls in the .tdb and .ddb database templates for compatability 
+            // Before fully loading an existing image database, 
+            // - upgrade the template tables if needed for backwards compatability (done automatically)
+            // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             bool useTemplateDBTemplate = true;
-            FileDatabase tempFileDatabase = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase);
-            if (tempFileDatabase != null)
-            {
-                // If there are any reported syncronization issues, report them as we cannot use this template.
-                // Depending on the user response, either abort Timelapse or use the old template
-                if (tempFileDatabase.ControlSynchronizationIssues.Count > 0)
+            using (FileDatabase tempFileDatabase = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase))
+            { 
+                // A file database was available to open
+                if (tempFileDatabase != null)
                 {
-                    TemplateSynchronization templatesNotCompatibleDialog = new TemplateSynchronization(tempFileDatabase.ControlSynchronizationIssues, this);
-                    bool? result = templatesNotCompatibleDialog.ShowDialog();
-                    if (result == true)
+
+                    if (tempFileDatabase.ControlSynchronizationIssues.Count > 0)
                     {
-                        // user indicates exiting rather than continuing.
-                        Application.Current.Shutdown();
-                        return false;
+                        TemplateSynchronization templatesNotCompatibleDialog;
+                        // If there are any reported syncronization issues, report them now as we cannot use this template.
+                        // Depending on the user response, we either abort Timelapse or use the template found in the ddb file
+                        if (tempFileDatabase.ControlSynchronizationWarnings.Count > 0)
+                        {
+                            List<string> errorsAndWarnings = (List<string>)tempFileDatabase.ControlSynchronizationIssues;
+                            errorsAndWarnings.Add(Environment.NewLine);
+                            errorsAndWarnings.AddRange(tempFileDatabase.ControlSynchronizationWarnings);
+                            templatesNotCompatibleDialog = new TemplateSynchronization(errorsAndWarnings, this);
+                        }
+                        else
+                        {
+                            templatesNotCompatibleDialog = new TemplateSynchronization(tempFileDatabase.ControlSynchronizationIssues, this);
+                        }
+                        
+                        bool? result = templatesNotCompatibleDialog.ShowDialog();
+                        if (result == true)
+                        {
+                            // user indicates exiting rather than continuing.
+                            Application.Current.Shutdown();
+                            return false;
+                        }
+                        else
+                        {
+                            useTemplateDBTemplate = false;
+                        }
                     }
-                    else
+                    else if (tempFileDatabase.DataLabelsInImageButNotTemplateDatabase.Count > 0 || tempFileDatabase.DataLabelsInTemplateButNotImageDatabase.Count > 0)
                     {
-                        useTemplateDBTemplate = false;
+                        // if there are any new or missing columns, report them now
+                        // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
+                        // - update the template and image data columns in the image database 
+                        // - use the old template
+                        TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(tempFileDatabase.DataLabelsInImageButNotTemplateDatabase, tempFileDatabase.DataLabelsInTemplateButNotImageDatabase, tempFileDatabase.ControlSynchronizationWarnings, this);
+                        bool? result1 = templateChangedAndUpdate.ShowDialog();
+                        useTemplateDBTemplate = (result1 == true) ? true : false;
                     }
-                }
-                else if (tempFileDatabase.DataLabelsInImageButNotTemplateDatabase.Count > 0 || tempFileDatabase.DataLabelsInTemplateButNotImageDatabase.Count > 0)
-                {
-                    // if there are any new or missing columns, report them 
-                    // Depending on the user response, either 
-                    // -update the template and image data columns in the image database, or
-                    // -use the old template
-                    TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(tempFileDatabase.DataLabelsInImageButNotTemplateDatabase, tempFileDatabase.DataLabelsInTemplateButNotImageDatabase, this);
-                    bool? result1 = templateChangedAndUpdate.ShowDialog();
-                    useTemplateDBTemplate = (result1 == true) ? true : false;
                 }
             }
 
             // At this point:
-            // - we should have a valid template and image database loaded
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
+            // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
-            // So lets load the database for real.
+            // So lets load the database for real. The useTemplateDBTemplate signals whether to use the DDB template or the TDB template.
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, useTemplateDBTemplate);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.

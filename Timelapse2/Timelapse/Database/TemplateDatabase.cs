@@ -179,6 +179,28 @@ namespace Timelapse.Database
             return dataLabels;
         }
 
+        public Dictionary<string, string> GetTypedDataLabelsExceptIDInSpreadsheetOrder()
+        {
+            Dictionary<string, string> typedDataLabels = new Dictionary<string, string>();
+            IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
+            foreach (ControlRow control in controlsInSpreadsheetOrder)
+            {
+                string dataLabel = control.DataLabel;
+                if (dataLabel == String.Empty)
+                {
+                    dataLabel = control.Label;
+                }
+                Debug.Assert(String.IsNullOrWhiteSpace(dataLabel) == false, String.Format("Encountered empty data label and label at ID {0} in template table.", control.ID));
+
+                // get a list of datalabels so we can add columns in the order that matches the current template table order
+                if (Constant.DatabaseColumn.ID != dataLabel)
+                {
+                    typedDataLabels.Add(dataLabel, control.Type);
+                }
+            }
+            return typedDataLabels;
+        }
+
         public bool IsControlCopyable(string dataLabel)
         {
             long id = this.GetControlIDFromTemplateTable(dataLabel);
@@ -518,7 +540,7 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void UpgradeAndCompareTemplates(TemplateDatabase other)
+        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();
