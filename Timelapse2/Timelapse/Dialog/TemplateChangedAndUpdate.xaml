@@ -32,8 +32,8 @@
             <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"></Rectangle>
             
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">Open using Old Template</Button>
-                <Button IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="UseOriginalTemplateButton_Click" IsEnabled="True">Open using New Template</Button>
+                <Button IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="UseOldTemplate_Click">Open using Old Template</Button>
+                <Button IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="UseNewTemplateButton_Click" IsEnabled="True">Open using New Template</Button>
             </StackPanel>
 
             <ScrollViewer DockPanel.Dock="Top" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

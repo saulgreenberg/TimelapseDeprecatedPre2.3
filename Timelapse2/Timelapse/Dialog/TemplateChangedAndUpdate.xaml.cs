@@ -16,15 +16,26 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TemplateChangedAndUpdate : Window
     {
+        private string actionAdd = "Add";
+        private string actionDelete = "Delete";
+
         private Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
         private Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
         private List<ComboBox> comboBoxes = new List<ComboBox>();
         private List<int> actionRows = new List<int>();
 
+        public List<String> DataLabelsToAdd { get; set; }  
+        public List<String> DataLabelsToDelete { get; set; }
+        public List<KeyValuePair<string, string>> DataLabelsToRename { get; set; }
+
         public TemplateChangedAndUpdate(Dictionary<string, string> dataLabelsInImageButNotTemplateDatabase, Dictionary<string, string> dataLabelsInTemplateButNotImageDatabase, List<string> controlSynchronizationWarnings, Window owner)
         {
             this.InitializeComponent();
             this.Owner = owner;
+
+            this.DataLabelsToAdd = new List<String>();
+            this.DataLabelsToDelete = new List<String>();
+            this.DataLabelsToRename = new List<KeyValuePair<string, string>>();
 
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
             if (dataLabelsInTemplateButNotImageDatabase.Count > 0 || dataLabelsInImageButNotTemplateDatabase.Count > 0)
@@ -55,13 +66,13 @@ namespace Timelapse.Dialog
                         foreach (string datalabel in this.inImageOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, false, "Add");
+                            this.CreateRow(datalabel, type, row, false, this.actionAdd);
                         }
                         // Iterated throught the datalabels that can be added or renamed
                         foreach (string datalabel in this.inTemplateOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, true, "Delete");
+                            this.CreateRow(datalabel, type, row, true, this.actionDelete);
                         }
                     }
                     else if (inTemplateCount > 0)
@@ -70,7 +81,7 @@ namespace Timelapse.Dialog
                         foreach (string datalabel in this.inTemplateOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, true, "Add");
+                            this.CreateRow(datalabel, type, row, true, this.actionAdd);
                         }
                     }
                     else if (inImageOnlyCount > 0)
@@ -79,7 +90,7 @@ namespace Timelapse.Dialog
                         foreach (string datalabel in this.inImageOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, true, "Delete");
+                            this.CreateRow(datalabel, type, row, true, this.actionDelete);
                         }
                     }
                     if (inTemplateCount > 0 || inImageOnlyCount > 0)
@@ -211,7 +222,7 @@ namespace Timelapse.Dialog
             RadioButton rb = o as RadioButton;
             ComboBox cb = rb.Tag as ComboBox;
             cb.IsEnabled = (rb.IsChecked == true) ? true : false;
-            this.ShowOrHideDeletedItems();
+            this.ShowHideItemsAsNeeded();
         }
 
         // Check other combo box selected values to see if it matches the just-selected combobox data label item, 
@@ -239,14 +250,15 @@ namespace Timelapse.Dialog
                     }
                 }
             }
-            this.ShowOrHideDeletedItems();
+            this.ShowHideItemsAsNeeded();
         }
 
         // For each row, if it contains an enabled rename combobox, then collect its currently selected datalabel (if any)
         // For other rows, if it is a 'Deleted' row, hide or show it depending if it matches one of the currently selected datalabels
         // Note that this is fragile, as it depends on various UI Elements being in various columns and row orders 
         // - eg., arranged by type with delete after renames.
-        private void ShowOrHideDeletedItems()
+        // Also, collect all the datalabels to add, delete and rename
+        private void ShowHideItemsAsNeeded()
         {
             List<string> selectedDataLabels = new List<string>();
 
@@ -271,7 +283,7 @@ namespace Timelapse.Dialog
 
                 // If this is a Delete action row and a previously selected data label matches it, hide it. 
                 Label labelAction = this.GetUIElement(row, 2) as Label;
-                if (labelAction == null || labelAction.Content.ToString() != "Delete")
+                if (labelAction == null || labelAction.Content.ToString() != this.actionDelete)
                 {
                     continue;
                 }
@@ -286,6 +298,58 @@ namespace Timelapse.Dialog
             }
         }
 
+        private void CollectItems()
+        {
+            GridLength activeGridHeight = new GridLength(30);
+
+            foreach (int row in this.actionRows)
+            {
+                // Check if row is active
+                if (this.ActionGrid.RowDefinitions[row].Height != activeGridHeight)
+                {
+                    continue;
+                }
+
+                // Retrieve the data label
+                string datalabel = String.Empty;
+                TextBlock textblockDataLabel = this.GetUIElement(row, 1) as TextBlock;
+                if (textblockDataLabel != null)
+                {
+                    datalabel = textblockDataLabel.Text;
+                }
+
+                // Retrieve the command type
+                // If this is a Delete action row and a previously selected data label matches it, hide it.
+                Label labelAction = this.GetUIElement(row, 2) as Label;
+                if (labelAction != null && labelAction.Content.ToString() == this.actionDelete)
+                {
+                    // System.Diagnostics.Debug.Print("Delete: " + datalabel);
+                    this.DataLabelsToDelete.Add(datalabel);
+                    continue;
+                }
+
+                // For Add actions, we need to first check to see if it has been renamed
+                UIElement uiComboBox = this.GetUIElement(row, 4);
+                if (uiComboBox != null)
+                {
+                    ComboBox cb = uiComboBox as ComboBox;
+                    if (cb != null && cb.IsEnabled == true)
+                    {
+                        ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
+                        if (cb.SelectedItem != null)
+                        {
+                            // System.Diagnostics.Debug.Print("Renamed: " + datalabel + " to " + cbi.Content.ToString());
+                            this.DataLabelsToRename.Add(new KeyValuePair<string, string>(datalabel, cbi.Content.ToString()));
+                            continue;
+                        }   
+                    }
+                }
+
+                // If we arrived here, it must be an ACTION_ADD
+                // System.Diagnostics.Debug.Print("Added: " + datalabel );
+                this.DataLabelsToAdd.Add(datalabel);
+            }
+        }
         // Get the UI Element in the indicated row and column from the Action Grid.
         // returns null if no such element exists.
         private UIElement GetUIElement(int row, int column)
@@ -311,13 +375,14 @@ namespace Timelapse.Dialog
             this.ActionGrid.Children.Add(rect);
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        private void UseOldTemplate_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
         }
 
-        private void UseOriginalTemplateButton_Click(object sender, RoutedEventArgs e)
+        private void UseNewTemplateButton_Click(object sender, RoutedEventArgs e)
         {
+            this.CollectItems();
             this.DialogResult = true;
         }
     }
