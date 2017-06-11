@@ -19,7 +19,6 @@ namespace Timelapse.Database
         private DataGrid boundGrid;
         private bool disposed;
         private DataRowChangeEventHandler onFileDataTableRowChanged;
-        private bool useTemplateDBTemplate = true; // Whether or not to use the template found in the Image databaseinstead of the Template database
         #endregion
 
         #region Properties 
@@ -46,21 +45,11 @@ namespace Timelapse.Database
         // flags
         public bool OrderFilesByDateTime { get; set; }
 
-        // These  lists collect information about possible mismatches between the .tdb and the .ddb template
-        public List<string> ControlSynchronizationIssues { get; private set; }
-        public List<string> ControlSynchronizationWarnings { get; private set; }
-        public Dictionary<string, string> DataLabelsInTemplateButNotImageDatabase { get; private set; }
-        public Dictionary<string, string> DataLabelsInImageButNotTemplateDatabase { get; private set; }
         #endregion
 
         private FileDatabase(string filePath)
             : base(filePath)
         {
-            this.ControlSynchronizationIssues = new List<string>();
-            this.ControlSynchronizationWarnings = new List<string>();
-            this.DataLabelsInImageButNotTemplateDatabase = new Dictionary<string, string>();
-            this.DataLabelsInTemplateButNotImageDatabase = new Dictionary<string, string>();
-
             this.DataLabelFromStandardControlType = new Dictionary<string, string>();
             this.disposed = false;
             this.FolderPath = Path.GetDirectoryName(filePath);
@@ -69,13 +58,12 @@ namespace Timelapse.Database
             this.OrderFilesByDateTime = false;
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, bool useTemplateDBTemplate)
+        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults filetableDifferences)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.useTemplateDBTemplate = useTemplateDBTemplate;
 
             if (populateDatabase)
             {
@@ -85,7 +73,7 @@ namespace Timelapse.Database
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                fileDatabase.OnExistingDatabaseOpened(templateDatabase);
+                fileDatabase.OnExistingDatabaseOpened(templateDatabase, filetableDifferences);
             }
 
             // ensure all tables have been loaded from the database
@@ -345,7 +333,7 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
         }
 
-        public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase)
+        public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
         {
             // If the file doesn't exist, then no immediate action is needed
             if (!File.Exists(filePath))
@@ -354,14 +342,14 @@ namespace Timelapse.Database
             }
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase);
+            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, filetableDifferences); 
             return fileDatabase;
         }
 
-        protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase)
+        protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
         {
             // perform TemplateTable initializations and migrations, then check for synchronization issues
-            base.UpgradeDatabasesAndCompareTemplates(templateDatabase);
+            base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
             this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
@@ -369,12 +357,12 @@ namespace Timelapse.Database
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
             Dictionary<string, string> imageDataLabels = this.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
-            this.DataLabelsInTemplateButNotImageDatabase = Utilities.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
-            this.DataLabelsInImageButNotTemplateDatabase = Utilities.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
+            filetableDifferences.DataLabelsInTemplateButNotImageDatabase = Utilities.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
+            filetableDifferences.DataLabelsInImageButNotTemplateDatabase = Utilities.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
 
             // Check for differences between the TemplateTable in the .tdb and .ddb database.
-            bool areNewColumnsInTemplate = this.DataLabelsInTemplateButNotImageDatabase.Count > 0;
-            bool areDeletedColumnsInTemplate = this.DataLabelsInImageButNotTemplateDatabase.Count > 0;
+            bool areNewColumnsInTemplate = filetableDifferences.DataLabelsInTemplateButNotImageDatabase.Count > 0;
+            bool areDeletedColumnsInTemplate = filetableDifferences.DataLabelsInImageButNotTemplateDatabase.Count > 0;
 
             // Synchronization Issues 1: Mismatch control types. Unable to update as there is at least one control type mismatch 
             // We need to check that the dataLabels in the .ddb template are of the same type as those in the .ttd template
@@ -391,7 +379,7 @@ namespace Timelapse.Database
 
                 if (imageDatabaseControl.Type != templateControl.Type)
                 {
-                    this.ControlSynchronizationIssues.Add(String.Format("- The field with DataLabel '{0}' is of type '{1}' in the image data file but of type '{2}' in the template.{3}", dataLabel, imageDatabaseControl.Type, templateControl.Type, Environment.NewLine));
+                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format("- The field with DataLabel '{0}' is of type '{1}' in the image data file but of type '{2}' in the template.{3}", dataLabel, imageDatabaseControl.Type, templateControl.Type, Environment.NewLine));
                 }
 
                 // Check if  item(s) in the choice list has been removed. If so, a data field set with the removed value will not be displayable
@@ -403,26 +391,26 @@ namespace Timelapse.Database
                     // Add warnings due to changes in the Choice control's menu
                     foreach (string removedValue in choiceValuesRemovedInTemplate)
                     {
-                        this.ControlSynchronizationWarnings.Add(String.Format("- The choice control '{0}', defined in the template, no longer includes the '{1}' menu item. ", dataLabel, removedValue));
-                        this.ControlSynchronizationWarnings.Add(String.Format("  Consequently, Timelapse cannot display previously entered data that has a value of '{1}'.", dataLabel, removedValue));
+                        filetableDifferences.ControlSynchronizationWarnings.Add(String.Format("- The choice control '{0}', defined in the template, no longer includes the '{1}' menu item. ", dataLabel, removedValue));
+                        filetableDifferences.ControlSynchronizationWarnings.Add(String.Format("  Consequently, Timelapse cannot display previously entered data that has a value of '{1}'.", dataLabel, removedValue));
                     }
                 }
             }
 
             // Synchronization Issues 2: Unresolved warnings. Due to existence of other new / deleted columns.
-            if (this.ControlSynchronizationIssues.Count > 0)
+            if (filetableDifferences.ControlSynchronizationErrors.Count > 0)
             {
                 if (areNewColumnsInTemplate || areDeletedColumnsInTemplate)
-                { 
-                    this.ControlSynchronizationIssues.Add(String.Format("{0}The following additional differences cannot be resolved until the above issues are handled.{1}", Environment.NewLine, Environment.NewLine));
+                {
+                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format("{0}The following additional differences cannot be resolved until the above issues are handled.{1}", Environment.NewLine, Environment.NewLine));
                 }
                 if (areNewColumnsInTemplate)
                 {
-                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the template data file but not in the image  file.{1}", this.DataLabelsInTemplateButNotImageDatabase.Count, Environment.NewLine));
+                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format(" - {0} data field(s) were found in the template data file but not in the image  file.{1}", filetableDifferences.DataLabelsInTemplateButNotImageDatabase.Count, Environment.NewLine));
                 }
                 if (areDeletedColumnsInTemplate)
-                { 
-                    this.ControlSynchronizationIssues.Add(String.Format(" - {0} data field(s) were found in the image data file but not in the template file.{1}", this.DataLabelsInImageButNotTemplateDatabase, Environment.NewLine));
+                {
+                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format(" - {0} data field(s) were found in the image data file but not in the template file.{1}", filetableDifferences.DataLabelsInImageButNotTemplateDatabase, Environment.NewLine));
                 }
             }
         }
@@ -558,17 +546,17 @@ namespace Timelapse.Database
         }
 
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
-        protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase)
+        protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
         {
             // Perform TemplateTable initializations.
 
-            base.OnExistingDatabaseOpened(templateDatabase);
+            base.OnExistingDatabaseOpened(templateDatabase, null);
             List<string> templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
             List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
 
             // If directed to use the template found in the template database, 
             // check and repair differences between the .tdb and .ddb template tables due to  missing or added controls 
-            if (this.useTemplateDBTemplate)
+            if (filetableDifferences.UseTemplateDBTemplate)
             {
                 // Check for missing or added controls, and update them if needed.
                 List<string> dataLabelsInTemplateButNotImageDatabase = templateDataLabels.Except(dataLabels).ToList();

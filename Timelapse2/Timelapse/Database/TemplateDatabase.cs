@@ -69,7 +69,7 @@ namespace Timelapse.Database
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                templateDatabase.OnExistingDatabaseOpened(null);
+                templateDatabase.OnExistingDatabaseOpened(null, null);
             }
             return templateDatabase;
         }
@@ -540,14 +540,14 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other)
+        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other, TemplateSyncResults filetableDifferences)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();
             this.EnsureCurrentSchema();
         }
 
-        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other)
+        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other, TemplateSyncResults filetableDifferences)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();

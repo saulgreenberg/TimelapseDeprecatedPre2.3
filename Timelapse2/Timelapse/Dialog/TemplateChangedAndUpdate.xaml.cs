@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Timelapse.Database;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
@@ -24,33 +25,30 @@ namespace Timelapse.Dialog
         private List<ComboBox> comboBoxes = new List<ComboBox>();
         private List<int> actionRows = new List<int>();
 
-        public List<String> DataLabelsToAdd { get; set; }  
-        public List<String> DataLabelsToDelete { get; set; }
-        public List<KeyValuePair<string, string>> DataLabelsToRename { get; set; }
+        private TemplateSyncResults TemplateSyncResults { get; set; }
 
-        public TemplateChangedAndUpdate(Dictionary<string, string> dataLabelsInImageButNotTemplateDatabase, Dictionary<string, string> dataLabelsInTemplateButNotImageDatabase, List<string> controlSynchronizationWarnings, Window owner)
+        public TemplateChangedAndUpdate(
+            TemplateSyncResults templateSyncResults,
+            Window owner)
         {
             this.InitializeComponent();
             this.Owner = owner;
 
-            this.DataLabelsToAdd = new List<String>();
-            this.DataLabelsToDelete = new List<String>();
-            this.DataLabelsToRename = new List<KeyValuePair<string, string>>();
-
+            this.TemplateSyncResults = templateSyncResults;
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
-            if (dataLabelsInTemplateButNotImageDatabase.Count > 0 || dataLabelsInImageButNotTemplateDatabase.Count > 0)
+            if (this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count > 0 || this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count > 0)
             {
-                this.inImageOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(dataLabelsInImageButNotTemplateDatabase, Constant.Control.Note));
-                this.inTemplateOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(dataLabelsInTemplateButNotImageDatabase, Constant.Control.Note));
+                this.inImageOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Note));
+                this.inTemplateOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Note));
 
-                this.inImageOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(dataLabelsInImageButNotTemplateDatabase, Constant.Control.Counter));
-                this.inTemplateOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(dataLabelsInTemplateButNotImageDatabase, Constant.Control.Counter));
+                this.inImageOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Counter));
+                this.inTemplateOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Counter));
 
-                this.inImageOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(dataLabelsInImageButNotTemplateDatabase, Constant.Control.FixedChoice));
-                this.inTemplateOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(dataLabelsInTemplateButNotImageDatabase, Constant.Control.FixedChoice));
+                this.inImageOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.FixedChoice));
+                this.inTemplateOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.FixedChoice));
 
-                this.inImageOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(dataLabelsInImageButNotTemplateDatabase, Constant.Control.Flag));
-                this.inTemplateOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(dataLabelsInTemplateButNotImageDatabase, Constant.Control.Flag));
+                this.inImageOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Flag));
+                this.inTemplateOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Flag));
 
                 int row = 0;
                 string[] types = { Constant.Control.Note, Constant.Control.Counter, Constant.Control.FixedChoice, Constant.Control.Flag };
@@ -100,11 +98,11 @@ namespace Timelapse.Dialog
                     }
                 }
             }
-            if (controlSynchronizationWarnings.Count > 0)
+            if (templateSyncResults.ControlSynchronizationWarnings.Count > 0)
             { 
                 this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
                 
-                foreach (string warning in controlSynchronizationWarnings)
+                foreach (string warning in templateSyncResults.ControlSynchronizationWarnings)
                 {
                     this.TextBlockDetails.Inlines.Add(Environment.NewLine);
                     this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Normal, Text = warning });
@@ -324,7 +322,7 @@ namespace Timelapse.Dialog
                 if (labelAction != null && labelAction.Content.ToString() == this.actionDelete)
                 {
                     // System.Diagnostics.Debug.Print("Delete: " + datalabel);
-                    this.DataLabelsToDelete.Add(datalabel);
+                    this.TemplateSyncResults.DataLabelsToDelete.Add(datalabel);
                     continue;
                 }
 
@@ -339,7 +337,7 @@ namespace Timelapse.Dialog
                         if (cb.SelectedItem != null)
                         {
                             // System.Diagnostics.Debug.Print("Renamed: " + datalabel + " to " + cbi.Content.ToString());
-                            this.DataLabelsToRename.Add(new KeyValuePair<string, string>(datalabel, cbi.Content.ToString()));
+                            this.TemplateSyncResults.DataLabelsToRename.Add(new KeyValuePair<string, string>(datalabel, cbi.Content.ToString()));
                             continue;
                         }   
                     }
@@ -347,7 +345,7 @@ namespace Timelapse.Dialog
 
                 // If we arrived here, it must be an ACTION_ADD
                 // System.Diagnostics.Debug.Print("Added: " + datalabel );
-                this.DataLabelsToAdd.Add(datalabel);
+                this.TemplateSyncResults.DataLabelsToAdd.Add(datalabel);
             }
         }
         // Get the UI Element in the indicated row and column from the Action Grid.

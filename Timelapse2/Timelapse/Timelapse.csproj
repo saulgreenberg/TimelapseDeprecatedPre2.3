@@ -180,6 +180,7 @@
     <Compile Include="Database\FileTableColumn.cs" />
     <Compile Include="Database\DataRowExtensions.cs" />
     <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="Database\TemplateSyncResults.cs" />
     <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
     <Compile Include="Database\FileTableDateTimeColumn.cs" />
     <Compile Include="Database\FileTableFlagColumn.cs" />

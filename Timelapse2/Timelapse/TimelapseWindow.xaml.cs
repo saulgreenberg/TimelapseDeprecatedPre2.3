@@ -274,28 +274,27 @@ namespace Timelapse
             // Before fully loading an existing image database, 
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
-            bool useTemplateDBTemplate = true;
-            using (FileDatabase tempFileDatabase = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase))
+            Database.TemplateSyncResults templateSynchronization = new Database.TemplateSyncResults();
+            using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSynchronization))
             { 
                 // A file database was available to open
-                if (tempFileDatabase != null)
+                if (fileDB != null)
                 {
-
-                    if (tempFileDatabase.ControlSynchronizationIssues.Count > 0)
+                    if (templateSynchronization.ControlSynchronizationErrors.Count > 0)
                     {
-                        TemplateSynchronization templatesNotCompatibleDialog;
+                        Dialog.TemplateSynchronization templatesNotCompatibleDialog;
                         // If there are any reported syncronization issues, report them now as we cannot use this template.
                         // Depending on the user response, we either abort Timelapse or use the template found in the ddb file
-                        if (tempFileDatabase.ControlSynchronizationWarnings.Count > 0)
+                        if (templateSynchronization.ControlSynchronizationWarnings.Count > 0)
                         {
-                            List<string> errorsAndWarnings = (List<string>)tempFileDatabase.ControlSynchronizationIssues;
+                            List<string> errorsAndWarnings = (List<string>)templateSynchronization.ControlSynchronizationErrors;
                             errorsAndWarnings.Add(Environment.NewLine);
-                            errorsAndWarnings.AddRange(tempFileDatabase.ControlSynchronizationWarnings);
-                            templatesNotCompatibleDialog = new TemplateSynchronization(errorsAndWarnings, this);
+                            errorsAndWarnings.AddRange(templateSynchronization.ControlSynchronizationWarnings);
+                            templatesNotCompatibleDialog = new Dialog.TemplateSynchronization(errorsAndWarnings, this);
                         }
                         else
                         {
-                            templatesNotCompatibleDialog = new TemplateSynchronization(tempFileDatabase.ControlSynchronizationIssues, this);
+                            templatesNotCompatibleDialog = new Dialog.TemplateSynchronization(templateSynchronization.ControlSynchronizationErrors, this);
                         }
                         
                         bool? result = templatesNotCompatibleDialog.ShowDialog();
@@ -307,28 +306,34 @@ namespace Timelapse
                         }
                         else
                         {
-                            useTemplateDBTemplate = false;
+                            templateSynchronization.UseTemplateDBTemplate = false;
                         }
                     }
-                    else if (tempFileDatabase.DataLabelsInImageButNotTemplateDatabase.Count > 0 || tempFileDatabase.DataLabelsInTemplateButNotImageDatabase.Count > 0)
+                    else if (templateSynchronization.DataLabelsInImageButNotTemplateDatabase.Count > 0 || templateSynchronization.DataLabelsInTemplateButNotImageDatabase.Count > 0)
                     {
                         // if there are any new or missing columns, report them now
                         // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
                         // - update the template and image data columns in the image database 
                         // - use the old template
-                        TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(tempFileDatabase.DataLabelsInImageButNotTemplateDatabase, tempFileDatabase.DataLabelsInTemplateButNotImageDatabase, tempFileDatabase.ControlSynchronizationWarnings, this);
+                        TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(
+                            templateSynchronization, this);
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
-                        useTemplateDBTemplate = (result1 == true) ? true : false;
+                        templateSynchronization.UseTemplateDBTemplate = (result1 == true) ? true : false;
+                        foreach (string foo in templateSynchronization.DataLabelsToAdd)
+                        {
+                            Debug.Print("Check: Adding: " + foo);
+                        }
                     }
                 }
             }
+
 
             // At this point:
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the DDB template or the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, useTemplateDBTemplate);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSynchronization);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.dataHandler = new DataEntryHandler(fileDatabase);
