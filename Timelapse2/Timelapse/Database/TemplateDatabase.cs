@@ -540,14 +540,14 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other, TemplateSyncResults filetableDifferences)
+        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();
             this.EnsureCurrentSchema();
         }
 
-        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other, TemplateSyncResults filetableDifferences)
+        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();

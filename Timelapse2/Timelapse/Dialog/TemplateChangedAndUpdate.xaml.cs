@@ -27,16 +27,14 @@ namespace Timelapse.Dialog
 
         private TemplateSyncResults TemplateSyncResults { get; set; }
 
-        public TemplateChangedAndUpdate(
-            TemplateSyncResults templateSyncResults,
-            Window owner)
+        public TemplateChangedAndUpdate(TemplateSyncResults templateSyncResults, Window owner)
         {
             this.InitializeComponent();
+            this.TemplateSyncResults = templateSyncResults;
             this.Owner = owner;
 
-            this.TemplateSyncResults = templateSyncResults;
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
-            if (this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count > 0 || this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count > 0)
+            if (this.TemplateSyncResults.SyncRequiredAsDataLabelsDiffer)
             {
                 this.inImageOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Note));
                 this.inTemplateOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Note));
@@ -64,13 +62,13 @@ namespace Timelapse.Dialog
                         foreach (string datalabel in this.inImageOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, false, this.actionAdd);
+                            this.CreateRow(datalabel, type, row, false, this.actionDelete);
                         }
                         // Iterated throught the datalabels that can be added or renamed
                         foreach (string datalabel in this.inTemplateOnly[type].Keys)
                         {
                             row++;
-                            this.CreateRow(datalabel, type, row, true, this.actionDelete);
+                            this.CreateRow(datalabel, type, row, true, this.actionAdd);
                         }
                     }
                     else if (inTemplateCount > 0)
@@ -99,8 +97,9 @@ namespace Timelapse.Dialog
                 }
             }
             if (templateSyncResults.ControlSynchronizationWarnings.Count > 0)
-            { 
-                this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
+            {
+                this.TextBlockDetails.Inlines.Add(Environment.NewLine);
+                    this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
                 
                 foreach (string warning in templateSyncResults.ControlSynchronizationWarnings)
                 {
@@ -281,7 +280,7 @@ namespace Timelapse.Dialog
 
                 // If this is a Delete action row and a previously selected data label matches it, hide it. 
                 Label labelAction = this.GetUIElement(row, 2) as Label;
-                if (labelAction == null || labelAction.Content.ToString() != this.actionDelete)
+                if (labelAction == null || labelAction.Content.ToString() != this.actionAdd)
                 {
                     continue;
                 }
@@ -317,16 +316,16 @@ namespace Timelapse.Dialog
                 }
 
                 // Retrieve the command type
-                // If this is a Delete action row and a previously selected data label matches it, hide it.
+                // Add action 
                 Label labelAction = this.GetUIElement(row, 2) as Label;
-                if (labelAction != null && labelAction.Content.ToString() == this.actionDelete)
+                if (labelAction != null && labelAction.Content.ToString() == this.actionAdd)
                 {
-                    // System.Diagnostics.Debug.Print("Delete: " + datalabel);
-                    this.TemplateSyncResults.DataLabelsToDelete.Add(datalabel);
+                    // System.Diagnostics.Debug.Print("Add: " + datalabel);
+                    this.TemplateSyncResults.DataLabelsToAdd.Add(datalabel);
                     continue;
                 }
 
-                // For Add actions, we need to first check to see if it has been renamed
+                // Before checking for Delete actions, we need to first check to see if it has been renamed with a valid value
                 UIElement uiComboBox = this.GetUIElement(row, 4);
                 if (uiComboBox != null)
                 {
@@ -343,9 +342,9 @@ namespace Timelapse.Dialog
                     }
                 }
 
-                // If we arrived here, it must be an ACTION_ADD
-                // System.Diagnostics.Debug.Print("Added: " + datalabel );
-                this.TemplateSyncResults.DataLabelsToAdd.Add(datalabel);
+                // If we arrived here, it must be an ACTION_DELETED
+                // System.Diagnostics.Debug.Print("Deleted: " + datalabel );
+                this.TemplateSyncResults.DataLabelsToDelete.Add(datalabel);
             }
         }
         // Get the UI Element in the indicated row and column from the Action Grid.

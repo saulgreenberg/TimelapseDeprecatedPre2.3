@@ -58,7 +58,7 @@ namespace Timelapse.Database
             this.OrderFilesByDateTime = false;
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults filetableDifferences)
+        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -73,7 +73,7 @@ namespace Timelapse.Database
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                fileDatabase.OnExistingDatabaseOpened(templateDatabase, filetableDifferences);
+                fileDatabase.OnExistingDatabaseOpened(templateDatabase, templateSyncResults);
             }
 
             // ensure all tables have been loaded from the database
@@ -333,7 +333,7 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
         }
 
-        public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
+        public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // If the file doesn't exist, then no immediate action is needed
             if (!File.Exists(filePath))
@@ -342,11 +342,11 @@ namespace Timelapse.Database
             }
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, filetableDifferences); 
+            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, templateSyncResults); 
             return fileDatabase;
         }
 
-        protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
+        protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // perform TemplateTable initializations and migrations, then check for synchronization issues
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
@@ -357,12 +357,12 @@ namespace Timelapse.Database
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
             Dictionary<string, string> imageDataLabels = this.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
-            filetableDifferences.DataLabelsInTemplateButNotImageDatabase = Utilities.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
-            filetableDifferences.DataLabelsInImageButNotTemplateDatabase = Utilities.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
+            templateSyncResults.DataLabelsInTemplateButNotImageDatabase = Utilities.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
+            templateSyncResults.DataLabelsInImageButNotTemplateDatabase = Utilities.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
 
             // Check for differences between the TemplateTable in the .tdb and .ddb database.
-            bool areNewColumnsInTemplate = filetableDifferences.DataLabelsInTemplateButNotImageDatabase.Count > 0;
-            bool areDeletedColumnsInTemplate = filetableDifferences.DataLabelsInImageButNotTemplateDatabase.Count > 0;
+            bool areNewColumnsInTemplate = templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count > 0;
+            bool areDeletedColumnsInTemplate = templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count > 0;
 
             // Synchronization Issues 1: Mismatch control types. Unable to update as there is at least one control type mismatch 
             // We need to check that the dataLabels in the .ddb template are of the same type as those in the .ttd template
@@ -379,7 +379,7 @@ namespace Timelapse.Database
 
                 if (imageDatabaseControl.Type != templateControl.Type)
                 {
-                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format("- The field with DataLabel '{0}' is of type '{1}' in the image data file but of type '{2}' in the template.{3}", dataLabel, imageDatabaseControl.Type, templateControl.Type, Environment.NewLine));
+                    templateSyncResults.ControlSynchronizationErrors.Add(String.Format("- The field with DataLabel '{0}' is of type '{1}' in the image data file but of type '{2}' in the template.{3}", dataLabel, imageDatabaseControl.Type, templateControl.Type, Environment.NewLine));
                 }
 
                 // Check if  item(s) in the choice list has been removed. If so, a data field set with the removed value will not be displayable
@@ -389,28 +389,33 @@ namespace Timelapse.Database
                 if (choiceValuesRemovedInTemplate.Count > 0)
                 {
                     // Add warnings due to changes in the Choice control's menu
-                    foreach (string removedValue in choiceValuesRemovedInTemplate)
-                    {
-                        filetableDifferences.ControlSynchronizationWarnings.Add(String.Format("- The choice control '{0}', defined in the template, no longer includes the '{1}' menu item. ", dataLabel, removedValue));
-                        filetableDifferences.ControlSynchronizationWarnings.Add(String.Format("  Consequently, Timelapse cannot display previously entered data that has a value of '{1}'.", dataLabel, removedValue));
-                    }
+                    templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("- As the choice control '{0}' no longer includes the following menu items, it can't display data with corresponding values:", dataLabel));
+                    templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("   {0}", string.Join<string> (", ", choiceValuesRemovedInTemplate)));
                 }
             }
 
             // Synchronization Issues 2: Unresolved warnings. Due to existence of other new / deleted columns.
-            if (filetableDifferences.ControlSynchronizationErrors.Count > 0)
+            if (templateSyncResults.ControlSynchronizationErrors.Count > 0)
             {
-                if (areNewColumnsInTemplate || areDeletedColumnsInTemplate)
-                {
-                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format("{0}The following additional differences cannot be resolved until the above issues are handled.{1}", Environment.NewLine, Environment.NewLine));
-                }
                 if (areNewColumnsInTemplate)
                 {
-                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format(" - {0} data field(s) were found in the template data file but not in the image  file.{1}", filetableDifferences.DataLabelsInTemplateButNotImageDatabase.Count, Environment.NewLine));
+                    string warning = "- ";
+                    warning += templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count.ToString();
+                    warning += (templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count == 1)
+                        ? " new control was found in your .tdb template file: "
+                        : " new controls were found in your .tdb template file: ";
+                    warning += String.Format("'{0}'", string.Join(", ", templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Keys));
+                    templateSyncResults.ControlSynchronizationWarnings.Add(warning);
                 }
                 if (areDeletedColumnsInTemplate)
                 {
-                    filetableDifferences.ControlSynchronizationErrors.Add(String.Format(" - {0} data field(s) were found in the image data file but not in the template file.{1}", filetableDifferences.DataLabelsInImageButNotTemplateDatabase, Environment.NewLine));
+                   string warning = "- ";
+                    warning += templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count.ToString();
+                    warning += (templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count == 1)
+                        ? " data field in your.ddb data file has no corresponding control in your.tdb template file: "
+                        : " data fields in your.ddb data file have no corresponding controls in your.tdb template file: ";
+                    warning += String.Format("'{0}'", string.Join(", ", templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Keys));
+                    templateSyncResults.ControlSynchronizationWarnings.Add(warning);
                 }
             }
         }
@@ -546,82 +551,91 @@ namespace Timelapse.Database
         }
 
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
-        protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults filetableDifferences)
+        protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Perform TemplateTable initializations.
-
             base.OnExistingDatabaseOpened(templateDatabase, null);
-            List<string> templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
-            List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
 
             // If directed to use the template found in the template database, 
             // check and repair differences between the .tdb and .ddb template tables due to  missing or added controls 
-            if (filetableDifferences.UseTemplateDBTemplate)
+            if (templateSyncResults.UseTemplateDBTemplate)
             {
-                // Check for missing or added controls, and update them if needed.
-                List<string> dataLabelsInTemplateButNotImageDatabase = templateDataLabels.Except(dataLabels).ToList();
-                List<string> dataLabelsInImageButNotTemplateDatabase = dataLabels.Except(templateDataLabels).ToList();
-
                 // Check for differences between the TemplateTable in the .tdb and .ddb database.
-                bool areNewColumnsInTemplate = dataLabelsInTemplateButNotImageDatabase.Count > 0;
-                bool areDeletedColumnsInTemplate = dataLabelsInImageButNotTemplateDatabase.Count > 0;
-                if (areNewColumnsInTemplate || areDeletedColumnsInTemplate)
+                if (templateSyncResults.SyncRequiredAsDataLabelsDiffer || templateSyncResults.SyncRequiredAsChoiceMenusDiffer)
                 {
-                    // They differ. Update the .ddb Template table by dropping the .ddb template table and replacing it with the .tdb table. 
+                    // The TemplateTable in the .tdb and .ddb database differ. 
+                    // Update the .ddb Template table by dropping the .ddb template table and replacing it with the .tdb table. 
                     base.Database.DropTable(Constant.DatabaseTable.Controls);
                     base.OnDatabaseCreated(templateDatabase);
                 }
 
                 // Condition 1: the tdb template table contains one or more datalabels not found in the ddb template table
                 // That is, the .tdb defines additional controls
-                // Action: Add data columns as defined by the control to the ddb data table
-                if (areNewColumnsInTemplate)
+                // Action: For each new control in the template table, 
+                //           - add a corresponding data column in the ImageTable
+                //           - if it is a counter, add a corresponding data column in the MarkerTable
+
+                foreach (string dataLabel in templateSyncResults.DataLabelsToAdd)
                 {
-                    // For each new control in the tempalte table, add a corresponding data column in the ImageTable
-                    foreach (string dataLabel in dataLabelsInTemplateButNotImageDatabase)
+                    long id = this.GetControlIDFromTemplateTable(dataLabel);
+                    ControlRow control = this.Controls.Find(id);
+                    ColumnDefinition columnDefinition = this.CreateFileDataColumnDefinition(control);
+                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
+
+                    if (control.Type == Constant.Control.Counter)
                     {
-                        long id = this.GetControlIDFromTemplateTable(dataLabel);
-                        ControlRow control = this.Controls.Find(id);
-                        ColumnDefinition columnDefinition = this.CreateFileDataColumnDefinition(control);
-                        this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
+                        ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Constant.Sql.Text);
+                        this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.Markers, markerColumnDefinition);
                     }
                 }
 
                 // Condition 2: The image template table had contained one or more controls not found in the template table.
                 // That is, the .ddb DataTable contains data columns that now have no corresponding control 
                 // Action: Delete those data columns
-                if (areDeletedColumnsInTemplate)
+                foreach (string dataLabel in templateSyncResults.DataLabelsToDelete)
                 {
-                    foreach (string dataLabel in dataLabelsInImageButNotTemplateDatabase)
-                    {
-                        // Delete the column associated with that data label from the FileData table
-                        this.Database.DeleteColumn(Constant.DatabaseTable.FileData, dataLabel);
+                    this.Database.DeleteColumn(Constant.DatabaseTable.FileData, dataLabel);
 
-                        // Delete the markers column associated with this data label (if it exists) from the Markers table
-                        // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
-                        // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
+                    // Delete the markers column associated with this data label (if it exists) from the Markers table
+                    // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
+                    // This is because we can't get the type of the data label as it no longer exists in the Template.
+                    if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabel))
+                    {
                         this.Database.DeleteColumn(Constant.DatabaseTable.Markers, dataLabel);
                     }
                 }
 
-                // Refetch the data labels if needed, as they will have changed due to the repair
-                if (areNewColumnsInTemplate || areDeletedColumnsInTemplate)
+                // Condition 3: The user indicated that the following controls (add/delete) are actually renamed controls
+                // Action: Rename those data columns
+                foreach (KeyValuePair<string, string> dataLabelToRename in templateSyncResults.DataLabelsToRename)
                 {
-                    templateDataLabels = templateDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
-                    dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
-                }
+                    // Rename the column associated with that data label from the FileData table
+                    this.Database.RenameColumn(Constant.DatabaseTable.FileData, dataLabelToRename.Key, dataLabelToRename.Value);
 
-                // Since the two template tables may now differ, synchronize the image database's TemplateTable with the template database's TemplateTable          
-                foreach (string dataLabel in dataLabels)
-                {
-                    ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
-                    ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
-
-                    if (imageDatabaseControl.Synchronize(templateControl))
-                    {
-                        this.SyncControlToDatabase(imageDatabaseControl);
+                    // Rename the markers column associated with this data label (if it exists) from the Markers table
+                    // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
+                    // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
+                    if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
+                    { 
+                        this.Database.RenameColumn(Constant.DatabaseTable.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
                 }
+
+                // Refetch the data labels if needed, as they will have changed due to the repair
+                List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
+
+                // SAULXXX The Code below is likely not needed. Remove it after texting
+                // Since the two template tables may now differ, synchronize the image database's TemplateTable with the template database's TemplateTable          
+                ////foreach (string dataLabel in dataLabels)
+                ////{
+                ////    ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
+                ////    ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
+
+                ////    if (imageDatabaseControl.Synchronize(templateControl))
+                ////    {
+                ////        this.SyncControlToDatabase(imageDatabaseControl);
+                ////    }
+                ////}
             }
             this.SelectFiles(FileSelection.All);
         }

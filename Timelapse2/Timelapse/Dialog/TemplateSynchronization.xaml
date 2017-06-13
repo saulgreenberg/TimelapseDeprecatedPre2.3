@@ -4,35 +4,30 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         Title="This Template is Not Compatible with this Data" 
-		MinHeight="500" MinWidth="600"
-		Height="500" Width="702"
+		MinHeight="600" MinWidth="750"
+		Height="600" Width="750"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
-                            Icon="Information"
-                            Title="This Template is Not Compatible with this Data"
-                            Problem="The fields in the Timelapse Template file do not match those originally used to create this data. &#10;This is likely because Timelapse Template is different from the original one used for this image set."
-                            Solution="You can still open the data for this image set, which will use its own copy of the original template."
-                            Hint="When a template is edited, Timelapse tries to automatically update the data file's copy of the template.  
-                                      &#10;However, some types of changes aren't supported.  The specific problems are listed below."                                      
-                            Result="Depending on your choice, the image set will be opened with the original template, or the program will exit."
+                            Icon="Question"
+                            Title=""
+                            Problem=""
+                            Solution="After reading the warnings,take one of the following actions."
                             ShowExplanationVisibility="True"/>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
             <Rectangle Fill="#FF868686" Height="2"/>
-            <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" Height="150">
-                <TextBlock Name="TextBlockDetails" HorizontalAlignment="Left" Margin="10,10,10,0" VerticalAlignment="Top" TextWrapping="Wrap" FontSize="12" >
-				    <Run FontWeight="Bold" Text="Details: " />
-                    <LineBreak></LineBreak>
-                </TextBlock>
+            <ScrollViewer ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Height="250">
+                <TextBlock Name="TextBlockDetails" HorizontalAlignment="Left" Margin="10,10,10,0" VerticalAlignment="Top" TextWrapping="Wrap" FontSize="12" />
             </ScrollViewer>
         </StackPanel>
 
         <DockPanel Name="DockPanelImage">
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="useOldTemplateButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">Open images Using the Original Template</Button>
-                <Button Name="exitProgramButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="UseOriginalTemplateButton_Click" IsEnabled="True">Exit Timelapse</Button>
+                <Button Name="ButtonExitProgram"  IsCancel="True"  VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,50,10" Click="ExitTimelapse_Click" IsEnabled="True">Exit Timelapse</Button>
+                <Button Name="ButtonUseOldTemplate" IsDefault="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OpenUsingOldTemplate_Click">Open using Old Template</Button>
+                <Button Name="ButtonUseNewTemplate" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OpenUsingNewTemplate_Click">Open using New Template</Button>
             </StackPanel>
         </DockPanel>
     </DockPanel>

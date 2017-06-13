@@ -23,6 +23,16 @@ namespace Timelapse.Database
         // Singals whether or not to use the template found in the Image database instead of the Template database
         public bool UseTemplateDBTemplate { get; set; }
 
+        public bool SyncRequiredAsDataLabelsDiffer
+        {
+            get
+            {
+                return this.DataLabelsInTemplateButNotImageDatabase.Count > 0 || this.DataLabelsInImageButNotTemplateDatabase.Count > 0;
+            }
+        }
+
+        public bool SyncRequiredAsChoiceMenusDiffer { get; set; }
+
         public TemplateSyncResults()
         {
             this.DataLabelsInTemplateButNotImageDatabase = new Dictionary<string, string>();
@@ -36,6 +46,7 @@ namespace Timelapse.Database
             this.ControlSynchronizationWarnings = new List<string>();
 
             this.UseTemplateDBTemplate = true;
+            this.SyncRequiredAsChoiceMenusDiffer = false;
         }
     }
 }

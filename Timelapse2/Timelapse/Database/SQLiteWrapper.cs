@@ -554,6 +554,23 @@ namespace Timelapse.Database
             }
         }
 
+        public bool ColumnExists(string sourceTable, string currentColumnName)
+        {
+            try
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    List<string> currentColumnNames = this.GetColumnNamesAsList(connection, sourceTable);
+                    return currentColumnNames.Contains(currentColumnName);
+                }
+            }
+            catch (Exception exception)
+            {
+                Utilities.PrintFailure(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                return false;
+            }
+        }
         public void RenameColumn(string sourceTable, string currentColumnName, string newColumnName)
         {
             // Some basic error checking to make sure we can do the operation
