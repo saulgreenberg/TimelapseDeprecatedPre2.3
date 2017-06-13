@@ -69,7 +69,7 @@ namespace Timelapse.Database
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                templateDatabase.OnExistingDatabaseOpened(null);
+                templateDatabase.OnExistingDatabaseOpened(null, null);
             }
             return templateDatabase;
         }
@@ -179,6 +179,28 @@ namespace Timelapse.Database
             return dataLabels;
         }
 
+        public Dictionary<string, string> GetTypedDataLabelsExceptIDInSpreadsheetOrder()
+        {
+            Dictionary<string, string> typedDataLabels = new Dictionary<string, string>();
+            IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
+            foreach (ControlRow control in controlsInSpreadsheetOrder)
+            {
+                string dataLabel = control.DataLabel;
+                if (dataLabel == String.Empty)
+                {
+                    dataLabel = control.Label;
+                }
+                Debug.Assert(String.IsNullOrWhiteSpace(dataLabel) == false, String.Format("Encountered empty data label and label at ID {0} in template table.", control.ID));
+
+                // get a list of datalabels so we can add columns in the order that matches the current template table order
+                if (Constant.DatabaseColumn.ID != dataLabel)
+                {
+                    typedDataLabels.Add(dataLabel, control.Type);
+                }
+            }
+            return typedDataLabels;
+        }
+
         public bool IsControlCopyable(string dataLabel)
         {
             long id = this.GetControlIDFromTemplateTable(dataLabel);
@@ -198,7 +220,7 @@ namespace Timelapse.Database
                 controlType = Constant.ControlsDeprecated.MarkForDeletion;
             }
             else
-            { 
+            {
                 controlType = controlToRemove.Type;
             }
             if (Constant.Control.StandardTypes.Contains(controlType))
@@ -302,10 +324,10 @@ namespace Timelapse.Database
 
             // Commented out, as we now don't have some controls showing up due to optional Utc 
             // Saul TODO: Replace by a better test?
-//            if (newOrderByDataLabel.Count != this.Controls.RowCount)
-//            {
-//                throw new NotSupportedException(String.Format("Partial order updates are not supported.  New ordering for {0} controls was passed but {1} controls are present for '{2}'.", newOrderByDataLabel.Count, this.Controls.RowCount, orderColumnName));
-//            }
+            //            if (newOrderByDataLabel.Count != this.Controls.RowCount)
+            //            {
+            //                throw new NotSupportedException(String.Format("Partial order updates are not supported.  New ordering for {0} controls was passed but {1} controls are present for '{2}'.", newOrderByDataLabel.Count, this.Controls.RowCount, orderColumnName));
+            //            }
 
             List<long> uniqueOrderValues = newOrderByDataLabel.Values.Distinct().ToList();
             if (uniqueOrderValues.Count != newOrderByDataLabel.Count)
@@ -518,7 +540,14 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other)
+        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other, TemplateSyncResults templateSyncResults)
+        {
+            this.GetControlsSortedByControlOrder();
+            this.EnsureDataLabelsAndLabelsNotEmpty();
+            this.EnsureCurrentSchema();
+        }
+
+        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();

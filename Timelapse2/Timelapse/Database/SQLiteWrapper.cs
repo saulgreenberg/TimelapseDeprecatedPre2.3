@@ -554,6 +554,23 @@ namespace Timelapse.Database
             }
         }
 
+        public bool ColumnExists(string sourceTable, string currentColumnName)
+        {
+            try
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    List<string> currentColumnNames = this.GetColumnNamesAsList(connection, sourceTable);
+                    return currentColumnNames.Contains(currentColumnName);
+                }
+            }
+            catch (Exception exception)
+            {
+                Utilities.PrintFailure(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                return false;
+            }
+        }
         public void RenameColumn(string sourceTable, string currentColumnName, string newColumnName)
         {
             // Some basic error checking to make sure we can do the operation
@@ -694,11 +711,6 @@ namespace Timelapse.Database
             }
         }
 
-        /// <summary>
-        /// Drop the database table 'tableName' from the connected database.
-        /// </summary>
-        /// <param name="connection">the open and valid connection to the database</param>
-        /// <param name="tableName">the name of the table</param>
         public void DropTable(string tableName)
         {
             using (SQLiteConnection connection = new SQLiteConnection(this.connectionString))

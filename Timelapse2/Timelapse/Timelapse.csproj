@@ -180,6 +180,7 @@
     <Compile Include="Database\FileTableColumn.cs" />
     <Compile Include="Database\DataRowExtensions.cs" />
     <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="Database\TemplateSyncResults.cs" />
     <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
     <Compile Include="Database\FileTableDateTimeColumn.cs" />
     <Compile Include="Database\FileTableFlagColumn.cs" />
@@ -214,6 +215,9 @@
     </Compile>
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\TemplateChangedAndUpdate.xaml.cs">
+      <DependentUpon>TemplateChangedAndUpdate.xaml</DependentUpon>
     </Compile>
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
@@ -357,6 +361,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\FileCountsByQuality.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\TemplateChangedAndUpdate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

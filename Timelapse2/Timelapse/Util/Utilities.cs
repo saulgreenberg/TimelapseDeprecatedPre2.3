@@ -1,7 +1,9 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -20,8 +22,20 @@ namespace Timelapse.Util
     /// </summary>
     public class Utilities
     {
-        // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
-        public static string GetDotNetVersion()
+        // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
+        public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
+        {
+            Dictionary<string, string> dictionaryDifferences = new Dictionary<string, string>();
+            List<string> differencesByKeys = dictionary1.Keys.Except(dictionary2.Keys).ToList();
+            foreach (string key in differencesByKeys)
+            {
+                dictionaryDifferences.Add(key, dictionary1[key]);
+            }
+            return dictionaryDifferences;
+        }
+
+    // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
+    public static string GetDotNetVersion()
         {
             // adapted from https://msdn.microsoft.com/en-us/library/hh925568.aspx.
             int release = 0;
