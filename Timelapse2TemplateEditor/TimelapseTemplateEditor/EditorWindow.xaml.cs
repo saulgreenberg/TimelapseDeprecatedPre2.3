@@ -808,8 +808,7 @@ namespace Timelapse.Editor
                     string columnHeader = (string)this.TemplateDataGrid.Columns[column].Header;
                     if ((columnHeader == Constant.Control.Label) ||
                         (columnHeader == Constant.Control.Tooltip) ||
-                        (columnHeader == Constant.Control.Visible) ||
-                        (columnHeader == EditorConstant.ColumnHeader.Width))
+                        (columnHeader == Constant.Control.Visible) )
                     {
                         cell.SetValue(DataGridCell.IsTabStopProperty, true); // Allow tabbing in non-editable fields
                         continue;
@@ -837,6 +836,7 @@ namespace Timelapse.Editor
                         (controlType == Constant.DatabaseColumn.RelativePath) ||
                         (controlType == Constant.DatabaseColumn.Time) ||
                         (controlType == Constant.DatabaseColumn.UtcOffset) ||
+                        ((controlType == Constant.Control.Flag) && (columnHeader == EditorConstant.ColumnHeader.Width)) ||
                         ((controlType == Constant.Control.Counter) && (columnHeader == Constant.Control.List)) ||
                         ((controlType == Constant.Control.Flag) && (columnHeader == Constant.Control.List)) ||
                         ((controlType == Constant.Control.Note) && (columnHeader == Constant.Control.List)))
