@@ -282,12 +282,12 @@ namespace Timelapse
                 // A file database was available to open
                 if (fileDB != null)
                 {
-                    if (templateSyncResults.SyncRequiredAsDataLabelsDiffer == false || templateSyncResults.ControlSynchronizationErrors.Count > 0)
+                    if (templateSyncResults.ControlSynchronizationErrors.Count > 0 || (templateSyncResults.ControlSynchronizationWarnings.Count > 0 && templateSyncResults.SyncRequiredAsDataLabelsDiffer == false))
                     {
-                        Dialog.TemplateSynchronization templatesNotCompatibleDialog;
-                        // If there are any reported syncronization issues, report them now as we cannot use this template.
+                        // There are unresolvable syncronization issues. Report them now as we cannot use this template.
                         // Depending on the user response, we either abort Timelapse or use the template found in the ddb file
-
+                        Dialog.TemplateSynchronization templatesNotCompatibleDialog;
+                        
                         templatesNotCompatibleDialog = new Dialog.TemplateSynchronization(templateSyncResults.ControlSynchronizationErrors, templateSyncResults.ControlSynchronizationWarnings, this);
                         bool? result = templatesNotCompatibleDialog.ShowDialog();
                         if (result == false)
@@ -302,7 +302,7 @@ namespace Timelapse
                             templateSyncResults.SyncRequiredAsChoiceMenusDiffer = templateSyncResults.ControlSynchronizationWarnings.Count > 0 ? true : false;
                         }
                     }
-                    else if (templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count > 0 || templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count > 0)
+                    else if (templateSyncResults.SyncRequiredAsDataLabelsDiffer)
                     {
                         // if there are any new or missing columns, report them now
                         // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
