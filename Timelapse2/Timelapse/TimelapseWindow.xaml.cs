@@ -444,15 +444,24 @@ namespace Timelapse
                 // It also occassion produces an SQLite Database locked error. 
                 // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
                 // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
+                int filesProcessed = 0;
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
                     ImageRow file;
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out file))
                     {
                         // the database already has an entry for this file so skip it
-                        // if needed, a separate list of files to update could be generated
-                        return;
+                        // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
+                        folderLoadProgress.BitmapSource = Constant.Images.FileAlreadyLoaded.Value;
+                        folderLoadProgress.CurrentFile = filesProcessed;
+                        folderLoadProgress.CurrentFileName = file.FileName;
+
+                        int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
+                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+                        filesProcessed++;
+                        continue;
                     }
+                    filesProcessed++;
 
                     BitmapSource bitmapSource = null;
                     try

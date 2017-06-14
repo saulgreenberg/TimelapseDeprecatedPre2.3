@@ -289,6 +289,7 @@ namespace Timelapse
             public static readonly Lazy<BitmapImage> FileNoLongerAvailable = Images.Load("FileNoLongerAvailable.jpg");
             public static readonly Lazy<BitmapImage> NoFilesAvailable = Images.Load("NoFilesAvailable.jpg");
             public static readonly Lazy<BitmapImage> BlankVideo = Images.Load("BlankVideo.jpg");
+            public static readonly Lazy<BitmapImage> FileAlreadyLoaded = Images.Load("FileAlreadyLoaded.jpg");
 
             private static Lazy<BitmapImage> Load(string fileName)
             {
