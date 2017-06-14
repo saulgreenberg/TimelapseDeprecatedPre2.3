@@ -564,6 +564,12 @@ namespace Timelapse.Editor
             bool? result = choiceListDialog.ShowDialog();
             if (result == true)
             {
+                // Ensure that non-empty default values matches an entry on the edited choice menu
+                if (choiceControl.DefaultValue != String.Empty && choiceListDialog.Choices.Contains(choiceControl.DefaultValue) == false)
+                {
+                    this.ShowMessageBox_DefaultChoiceValuesMustMatchChoiceLists(choiceControl.DefaultValue);
+                    choiceControl.DefaultValue = String.Empty;
+                }
                 choiceControl.SetChoices(choiceListDialog.Choices);
                 this.SyncControlToDatabase(choiceControl);
             }
@@ -1040,6 +1046,17 @@ namespace Timelapse.Editor
                     }
                     break;
                 case Constant.Control.FixedChoice:
+                    if (String.IsNullOrWhiteSpace(textBox.Text) == false)
+                    {
+                        // Check to see if the value matches one of the items on the menu
+                        List<string> choices = control.GetChoices(true);
+                        if (choices.Contains (textBox.Text) == false)
+                        {
+                            this.ShowMessageBox_DefaultChoiceValuesMustMatchChoiceLists(textBox.Text);
+                            textBox.Text = String.Empty;
+                        }
+                    }
+                    break;
                 case Constant.Control.Counter:
                 case Constant.Control.Note:
                 default:
@@ -1173,6 +1190,16 @@ namespace Timelapse.Editor
             messageBox.Message.Problem = "Data labels must begin with a letter, followed only by letters, numbers, and '_'.";
             messageBox.Message.Result = "We will automatically ignore other characters, including spaces";
             messageBox.Message.Hint = "Start your label with a letter. Then use any combination of letters, numbers, and '_'.";
+            messageBox.ShowDialog();
+        }
+
+        private void ShowMessageBox_DefaultChoiceValuesMustMatchChoiceLists(string invalidDefaultValue)
+        {
+            MessageBox messageBox = new MessageBox("Choice default values must match an item in the Choice menu", this);
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.Message.Problem = String.Format("'{0}' is not allowed as a default value, as it is not one of your 'Define List' items.{1}Choice default values must be either empty or must match one of those items.", invalidDefaultValue, Environment.NewLine);
+            messageBox.Message.Result = "The default value will be cleared.";
+            messageBox.Message.Hint = "Copy an item from your 'Define List' and paste it into your default value field as needed.";
             messageBox.ShowDialog();
         }
         #endregion
