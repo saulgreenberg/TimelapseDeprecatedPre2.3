@@ -72,7 +72,10 @@ namespace Timelapse.Editor
         
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (DateTime.UtcNow - this.userSettings.MostRecentCheckForUpdates > Constant.CheckForUpdateInterval)
+            if(DateTime.Now.Year != this.userSettings.MostRecentCheckForUpdates.Year ||
+                DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
+                DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
+                if (DateTime.UtcNow - this.userSettings.MostRecentCheckForUpdates > Constant.CheckForUpdateInterval)
             {
                 VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFilenameXML);
                 updater.TryGetAndParseVersion(false);

@@ -21,9 +21,6 @@ namespace Timelapse
         public const string StandardColour = "Gold";
         public const string SelectionColour = "MediumBlue";
 
-        // The interval of time that must occur before we automatically check for updates 
-        public static readonly TimeSpan CheckForUpdateInterval = TimeSpan.FromDays(1.0);
-
         // Update Information, for checking for updates in the timelapse xml file stored on the web site
         public const string ApplicationName = "Timelapse";
         public static readonly Uri LatestVersionBaseAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/timelapse_version.xml");

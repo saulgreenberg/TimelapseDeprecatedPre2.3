@@ -114,8 +114,10 @@ namespace Timelapse
                 Application.Current.Shutdown();
             }
 
-            // Check for updates, but only if a sufficient interval has passed
-            if(DateTime.UtcNow - this.state.MostRecentCheckForUpdates > Constant.CheckForUpdateInterval)
+            // Check for updates at least once a day
+            if (DateTime.Now.Year != this.state.MostRecentCheckForUpdates.Year ||
+                DateTime.Now.Month != this.state.MostRecentCheckForUpdates.Month ||
+                DateTime.Now.Day != this.state.MostRecentCheckForUpdates.Day)
             { 
                 VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFilenameXML);
                 updater.TryGetAndParseVersion(false);
