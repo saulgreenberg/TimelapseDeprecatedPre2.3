@@ -390,7 +390,7 @@ namespace Timelapse.Database
                 {
                     // Add warnings due to changes in the Choice control's menu
                     templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("- As the choice control '{0}' no longer includes the following menu items, it can't display data with corresponding values:", dataLabel));
-                    templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("   {0}", string.Join<string> (", ", choiceValuesRemovedInTemplate)));
+                    templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("   {0}", string.Join<string>(", ", choiceValuesRemovedInTemplate)));
                 }
             }
 

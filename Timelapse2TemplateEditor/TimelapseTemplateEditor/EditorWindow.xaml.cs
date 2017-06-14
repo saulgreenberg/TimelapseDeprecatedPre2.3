@@ -729,23 +729,28 @@ namespace Timelapse.Editor
                 this.manualCommitEdit = false;
                 return;
             }
-            DataGridCell currentCell;
-            DataGridRow currentRow;
-            if (this.TryGetCurrentCell(out currentCell, out currentRow) == false)
+
+            DataGridRow editedRow = e.Row;
+            if (editedRow == null)
+            {
+                return;
+            }
+            DataGridColumn editedColumn = e.Column;
+            if (editedColumn == null)
             {
                 return;
             }
 
-            switch ((string)this.TemplateDataGrid.CurrentColumn.Header)
+            switch ((string)editedColumn.Header)
             {
                 case EditorConstant.ColumnHeader.DataLabel:
                     this.ValidateDataLabel(e);
                     break;
                 case EditorConstant.ColumnHeader.DefaultValue:
-                    this.ValidateDefaults(e, currentRow);
+                    this.ValidateDefaults(e, editedRow);
                     break;
                 case EditorConstant.ColumnHeader.Width:
-                    this.ValidateWidths(e, currentRow);
+                    this.ValidateWidths(e, editedRow);
                     break;
                 default:
                     // no restrictions on any of the other editable columns
