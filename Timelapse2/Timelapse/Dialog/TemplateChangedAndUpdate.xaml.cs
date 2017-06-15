@@ -19,6 +19,7 @@ namespace Timelapse.Dialog
     {
         private string actionAdd = "Add";
         private string actionDelete = "Delete";
+        private bool dontClose = false;
 
         private Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
         private Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
@@ -295,6 +296,50 @@ namespace Timelapse.Dialog
             }
         }
 
+        // For each row, if it contains an enabled rename combobox, check to see that it actually has a valid menu item selected.
+        // If not, display a warning message.
+        private bool AreRenamedEntriesValid()
+        {
+            List<string> problemDataLabels = new List<string>();
+
+            foreach (int row in this.actionRows)
+            {
+                // We are only interested in Renamed items, which would only occur if the combobox is enabeld
+                UIElement uiComboBox = this.GetUIElement(row, 4);
+                if (uiComboBox != null)
+                {
+                    ComboBox cb = uiComboBox as ComboBox;
+                    if (cb != null && cb.IsEnabled == true)
+                    {
+                        // The combobox is enabled, thus it's a renume
+                        ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
+                        if (cb.SelectedItem == null || cb.SelectedItem.ToString() == String.Empty)
+                        { 
+                            // Retrieve the data label and add it as an problem 
+                            string datalabel = String.Empty;
+                            TextBlock textblockDataLabel = this.GetUIElement(row, 1) as TextBlock;
+                            if (textblockDataLabel != null)
+                            {
+                                problemDataLabels.Add(textblockDataLabel.Text);
+                            }
+                        }
+                    }
+                }
+            }
+            if (problemDataLabels.Count > 0)
+            { 
+                // notify the user concerning the problem data labels
+                MessageBox messageBox = new MessageBox("Select the new name for your 'Renamed' fields ", this);
+                messageBox.Message.Problem = "You indicated that the following fields should be renamed, but did not provide the new name" + Environment.NewLine;
+                messageBox.Message.Problem += "\u2022 " + string.Join<string>(", ", problemDataLabels);
+                messageBox.Message.Solution = "For each Rename action, use the drop down menu to provide the new name.";
+                messageBox.Message.Icon = MessageBoxImage.Error;
+                messageBox.ShowDialog();
+                return false;
+            }
+            return true;
+        }
+
         private void CollectItems()
         {
             GridLength activeGridHeight = new GridLength(30);
@@ -379,8 +424,24 @@ namespace Timelapse.Dialog
 
         private void UseNewTemplateButton_Click(object sender, RoutedEventArgs e)
         {
+            if (this.AreRenamedEntriesValid() == false)
+            {
+                e.Handled = true;
+                this.dontClose = true;
+                return;
+            }
             this.CollectItems();
             this.DialogResult = true;
+        }
+
+        // Because the buttons automatically close the dialog, we need to cancel it if there is a warning instead.
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (this.dontClose == true)
+            {
+                e.Cancel = true;
+            }
+            this.dontClose = false;
         }
     }
 }

@@ -72,7 +72,7 @@ namespace Timelapse.Editor
         
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if(DateTime.Now.Year != this.userSettings.MostRecentCheckForUpdates.Year ||
+            if (DateTime.Now.Year != this.userSettings.MostRecentCheckForUpdates.Year ||
                 DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
             {
@@ -814,7 +814,7 @@ namespace Timelapse.Editor
                     string columnHeader = (string)this.TemplateDataGrid.Columns[column].Header;
                     if ((columnHeader == Constant.Control.Label) ||
                         (columnHeader == Constant.Control.Tooltip) ||
-                        (columnHeader == Constant.Control.Visible) )
+                        (columnHeader == Constant.Control.Visible))
                     {
                         cell.SetValue(DataGridCell.IsTabStopProperty, true); // Allow tabbing in non-editable fields
                         continue;
@@ -1050,7 +1050,7 @@ namespace Timelapse.Editor
                     {
                         // Check to see if the value matches one of the items on the menu
                         List<string> choices = control.GetChoices(true);
-                        if (choices.Contains (textBox.Text) == false)
+                        if (choices.Contains(textBox.Text) == false)
                         {
                             this.ShowMessageBox_DefaultChoiceValuesMustMatchChoiceLists(textBox.Text);
                             textBox.Text = String.Empty;

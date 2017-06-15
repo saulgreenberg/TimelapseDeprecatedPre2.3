@@ -311,22 +311,9 @@ namespace Timelapse
                             templateSyncResults, this);
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
                         templateSyncResults.UseTemplateDBTemplate = (result1 == true) ? true : false;
-                        foreach (string foo in templateSyncResults.DataLabelsToAdd)
-                        {
-                            System.Diagnostics.Debug.Print("Adding " + foo);
-                        }
-                        foreach (string foo in templateSyncResults.DataLabelsToDelete)
-                        {
-                            System.Diagnostics.Debug.Print("Delete " + foo);
-                        }
-                        foreach (KeyValuePair<string, string> foo in templateSyncResults.DataLabelsToRename)
-                        {
-                            System.Diagnostics.Debug.Print("Rename " + foo.Key + " " + foo.Value);
-                        }
                     }
                 }
             }
-
 
             // At this point:
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
