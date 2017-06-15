@@ -330,10 +330,12 @@ namespace Timelapse.Dialog
             { 
                 // notify the user concerning the problem data labels
                 MessageBox messageBox = new MessageBox("Select the new name for your 'Renamed' fields ", this);
+                messageBox.Message.Icon = MessageBoxImage.Error;
                 messageBox.Message.Problem = "You indicated that the following fields should be renamed, but did not provide the new name" + Environment.NewLine;
                 messageBox.Message.Problem += "\u2022 " + string.Join<string>(", ", problemDataLabels);
-                messageBox.Message.Solution = "For each Rename action, use the drop down menu to provide the new name.";
-                messageBox.Message.Icon = MessageBoxImage.Error;
+                messageBox.Message.Solution = "For each Rename action, either" + Environment.NewLine;
+                messageBox.Message.Solution += "\u2022 use the drop down menu to provide the new name, or" + Environment.NewLine;
+                messageBox.Message.Solution += "\u2022 set the Update Action back to Delete.";
                 messageBox.ShowDialog();
                 return false;
             }
