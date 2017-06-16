@@ -67,7 +67,7 @@ namespace Timelapse.Editor
             this.MenuViewShowUTCDateTimeSettingsMenuItem.IsChecked = this.userSettings.ShowUtcOffset;
 
             // populate the most recent databases list
-            this.MenuFileRecentTemplates_Refresh();
+            this.MenuFileRecentTemplates_Refresh(true);
         }
         
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -85,8 +85,8 @@ namespace Timelapse.Editor
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             // apply any pending edits
-            this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit();
+            this.ApplyPendingEdits();
+
             // persist state to registry
             this.userSettings.WriteToRegistry();
         }
@@ -104,8 +104,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileNewTemplate_Click(object sender, RoutedEventArgs e)
         {
-            this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); // to apply edits that the enter key was not pressed
+            this.ApplyPendingEdits();
 
             // Configure save file dialog box
             SaveFileDialog newTemplateFilePathDialog = new SaveFileDialog();
@@ -130,6 +129,7 @@ namespace Timelapse.Editor
                 // Open document 
                 this.InitializeDataGrid(newTemplateFilePathDialog.FileName);
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
+                this.MenuFileClose.IsEnabled = true;
             }
         }
 
@@ -138,8 +138,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileOpenTemplate_Click(object sender, RoutedEventArgs e)
         {
-            this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
+            this.ApplyPendingEdits();
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name without the extension
@@ -156,6 +155,7 @@ namespace Timelapse.Editor
                 // Open document 
                 this.InitializeDataGrid(openFileDialog.FileName);
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
+                this.MenuFileClose.IsEnabled = true;
             }
         }
 
@@ -163,6 +163,14 @@ namespace Timelapse.Editor
         private void MenuItemRecentTemplate_Click(object sender, RoutedEventArgs e)
         {
             string recentTemplatePath = (string)((MenuItem)sender).ToolTip;
+            if (File.Exists(recentTemplatePath) == false)
+            {
+                MessageBox messageBox = new MessageBox("That template file no longer exist", this);
+                messageBox.Message.Icon = MessageBoxImage.Warning;
+                messageBox.Message.Problem = String.Format("The template file '{0}' no longer exists.", Path.GetFileName(recentTemplatePath));
+                messageBox.ShowDialog();
+                return;
+            }
             this.InitializeDataGrid(recentTemplatePath);
             this.HelpMessageInitial.Visibility = Visibility.Collapsed;
         }
@@ -173,8 +181,8 @@ namespace Timelapse.Editor
         private void MenuFileConvertTemplate_Click(object sender, RoutedEventArgs e)
         {
             string codeTemplateFileName = String.Empty;  // The code template file name
-            this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
+
+            this.ApplyPendingEdits();
 
             // Get the name of the Code Template file to open
             OpenFileDialog codeTemplateFile = new OpenFileDialog();
@@ -256,12 +264,30 @@ namespace Timelapse.Editor
         }
 
         /// <summary>
+        /// Closes the template and clears various states to allow another template to be created or opened.
+        /// </summary>
+        private void MenuFileClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.ApplyPendingEdits();
+
+            // Close the DB file 
+            this.templateDatabase = null;
+            this.TemplateDataGrid.ItemsSource = null;
+
+            // Update the user interface specified by the contents of the table
+            this.ControlsPanel.Children.Clear();
+            this.SpreadsheetPreview.Columns.Clear();
+
+            // Enable/disable the various menus as needed.
+            this.ResetUIElements(false, String.Empty);
+        }
+
+        /// <summary>
         /// Exits the application.
         /// </summary>
         private void MenuFileExit_Click(object sender, RoutedEventArgs e)
         {
-            this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); // to save any edits that the enter key was not pressed
+            // Note that Window_Closing, which does some cleanup, will be invoked as a side effect
             Application.Current.Shutdown();
         }
         #endregion
@@ -414,26 +440,9 @@ namespace Timelapse.Editor
             this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
 
-            // Update UI to reflect that a .tdb is now loaded
-            // First, enable all the buttons that allow rows to be added
-            this.AddCounterButton.IsEnabled = true;
-            this.AddFixedChoiceButton.IsEnabled = true;
-            this.AddNoteButton.IsEnabled = true;
-            this.AddFlagButton.IsEnabled = true;
-
-            // Second, enable/disable the various menus as needed. This includes updating the recent templates list. 
-            this.MenuFileNewTemplate.IsEnabled = false;
-            this.MenuFileOpenTemplate.IsEnabled = false;
-            this.MenuFileConvertTemplate.IsEnabled = false;
-            this.MenuView.IsEnabled = true;
+            // Enable/disable the various UI elements as needed.
             this.userSettings.MostRecentTemplates.SetMostRecent(templateDatabaseFilePath);
-            this.MenuFileRecentTemplates.IsEnabled = false;
-
-            // Third, include the database file name in the window title
-            this.Title = EditorConstant.MainWindowBaseTitle + " (" + Path.GetFileName(this.templateDatabase.FilePath) + ")";
-
-            // Switch to the Template Pane tab
-            this.TemplatePane.IsActive = true;
+            this.ResetUIElements(true, this.templateDatabase.FilePath);
         }
         #endregion DataGrid and New Database Initialization
 
@@ -492,8 +501,7 @@ namespace Timelapse.Editor
             string controlType = button.Tag.ToString();
 
             // Commit any edits that are in progress
-            this.dataGridBeingUpdatedByCode = false;
-            TemplateDataGrid.CommitEdit();
+            this.ApplyPendingEdits();
 
             this.dataGridBeingUpdatedByCode = true;
 
@@ -516,8 +524,7 @@ namespace Timelapse.Editor
         {
             // Commit any edits that are in progress. 
             // Likely not needed as this row will be removed anyways, but just in case.
-            this.dataGridBeingUpdatedByCode = false;
-            TemplateDataGrid.CommitEdit();
+            this.ApplyPendingEdits();
 
             DataRowView selectedRowView = this.TemplateDataGrid.SelectedItem as DataRowView;
             if (selectedRowView == null || selectedRowView.Row == null)
@@ -539,6 +546,14 @@ namespace Timelapse.Editor
             this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
             this.dataGridBeingUpdatedByCode = false;
+        }
+
+        // Apply and commit any pending edits that may be pending 
+        // (e.g., invoked in cases where the enter key was not pressed)
+        private void ApplyPendingEdits()
+        {
+            this.dataGridBeingUpdatedByCode = false;
+            this.TemplateDataGrid.CommitEdit(); 
         }
         #endregion Datagrid Row Modifyiers listeners and methods
 
@@ -600,8 +615,7 @@ namespace Timelapse.Editor
                     // If its a tab, commit the edit before going to the next cell
                     if (e.Key == Key.Tab)
                     {
-                        this.dataGridBeingUpdatedByCode = false;
-                        TemplateDataGrid.CommitEdit();
+                        this.ApplyPendingEdits();
                     }
                     break;
                 case EditorConstant.ColumnHeader.Width:
@@ -886,6 +900,10 @@ namespace Timelapse.Editor
         // Update the visibility of various Date-related rows 
         private void UpdateRowVisibility(string controlType, DataGridRow row)
         {
+            if (this.templateDatabase == null)
+            {
+                return;
+            }
             // Find the UtcOffset Control and check its visibility
             bool utcIsVisibile = false;
             List<ControlRow> controlsInControlOrder = this.templateDatabase.Controls.OrderBy(control => control.ControlOrder).ToList();
@@ -1117,25 +1135,57 @@ namespace Timelapse.Editor
 
         #region Other menu related items
         /// <summary>
-        /// Update the list of recent databases displayed under File -> Recent Databases.
+        /// Update the list of recent databases (ensuring they still exist) displayed under File -> Recent Databases.
         /// </summary>
-        private void MenuFileRecentTemplates_Refresh()
+        private void MenuFileRecentTemplates_Refresh(bool enable)
         {
-            this.MenuFileRecentTemplates.IsEnabled = this.userSettings.MostRecentTemplates.Count > 0;
+            this.MenuFileRecentTemplates.IsEnabled = enable && this.userSettings.MostRecentTemplates.Count > 0;
             this.MenuFileRecentTemplates.Items.Clear();
 
             int index = 1;
             foreach (string recentTemplatePath in this.userSettings.MostRecentTemplates)
             {
-                MenuItem recentImageSetItem = new MenuItem();
-                recentImageSetItem.Click += this.MenuItemRecentTemplate_Click;
-                recentImageSetItem.Header = String.Format("_{0} {1}", index, recentTemplatePath);
-                recentImageSetItem.ToolTip = recentTemplatePath;
-                this.MenuFileRecentTemplates.Items.Add(recentImageSetItem);
-                ++index;
+                if (File.Exists(recentTemplatePath))
+                {
+                    MenuItem recentImageSetItem = new MenuItem();
+                    recentImageSetItem.Click += this.MenuItemRecentTemplate_Click;
+                    recentImageSetItem.Header = String.Format("_{0} {1}", index, recentTemplatePath);
+                    recentImageSetItem.ToolTip = recentTemplatePath;
+                    this.MenuFileRecentTemplates.Items.Add(recentImageSetItem);
+                    ++index;
+                }
             }
         }
+        #endregion
 
+        #region Reinitializing and Ending
+        private void ResetUIElements(bool templateIsLoaded, string filePath)
+        {
+            // Enable/disable the various menus as needed. This includes updating the recent templates list. 
+            this.MenuFileNewTemplate.IsEnabled = !templateIsLoaded;
+            this.MenuFileOpenTemplate.IsEnabled = !templateIsLoaded;
+
+            this.MenuFileConvertTemplate.IsEnabled = !templateIsLoaded;
+            this.MenuFileClose.IsEnabled = templateIsLoaded;
+            this.MenuView.IsEnabled = templateIsLoaded;
+
+            // repopulate the most recent databases list
+            this.MenuFileRecentTemplates_Refresh(!templateIsLoaded);
+
+            // Enable/disable  all the buttons that allow rows to be added
+            this.AddCounterButton.IsEnabled = templateIsLoaded;
+            this.AddFixedChoiceButton.IsEnabled = templateIsLoaded;
+            this.AddNoteButton.IsEnabled = templateIsLoaded;
+            this.AddFlagButton.IsEnabled = templateIsLoaded;
+
+            // Include the database file name in the window title if it is set
+            this.Title = EditorConstant.MainWindowBaseTitle;
+            this.Title += templateIsLoaded ? " (" + Path.GetFileName(filePath) + ")" : String.Empty;
+
+            // Switch to the appropriate tab
+            this.TemplatePane.IsActive = templateIsLoaded;
+            this.InstructionPane.IsActive = !templateIsLoaded;
+        }
         #endregion
 
         #region ShowMessageBox_DataLabel
@@ -1209,7 +1259,7 @@ namespace Timelapse.Editor
         private void GenerateSpreadsheet()
         {
             List<ControlRow> controlsInSpreadsheetOrder = this.templateDatabase.Controls.OrderBy(control => control.SpreadsheetOrder).ToList();
-            this.dgSpreadsheet.Columns.Clear();
+            this.SpreadsheetPreview.Columns.Clear();
 
             // Find the DateTime Control, and the UtcOffset Control 
             ControlRow utcOffsetControl = null;
@@ -1253,7 +1303,7 @@ namespace Timelapse.Editor
                 else
                 {
                     column.Header = dataLabel;
-                    this.dgSpreadsheet.Columns.Add(column);
+                    this.SpreadsheetPreview.Columns.Add(column);
                 }
             }
         }
