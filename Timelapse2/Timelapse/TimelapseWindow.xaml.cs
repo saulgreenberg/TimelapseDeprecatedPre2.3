@@ -2311,6 +2311,12 @@ namespace Timelapse
             }
         }
 
+        // Close the current image set and return to state allowing other image sets to be opened.
+        private void MenuFileClose_Click(object sender, RoutedEventArgs e)
+        {
+            Debug.Print("In Close");
+        }
+
         /// <summary>
         /// Exit Timelapse
         /// </summary>
@@ -3355,6 +3361,7 @@ namespace Timelapse
                 FilePlayer_Stop();
             }
         }
+
         #endregion
 
 

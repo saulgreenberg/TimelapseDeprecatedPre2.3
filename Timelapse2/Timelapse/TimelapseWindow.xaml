@@ -73,9 +73,22 @@
                         <Image Source="Icons/ImageExport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+                
                 <Separator />
+                
                 <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data file..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the image data file to a name of your choosing"/>
+
                 <Separator />
+
+                <!-- Close -->
+                <MenuItem Name="MenuFileClose" Header="C_lose image set" Click="MenuFileClose_Click" IsEnabled="False">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/CloseFile_40x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                
+                <Separator />
+                
                 <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Quits the program">
                     <MenuItem.Icon>
                         <Image Source="Icons/Exit_22x.png" />
