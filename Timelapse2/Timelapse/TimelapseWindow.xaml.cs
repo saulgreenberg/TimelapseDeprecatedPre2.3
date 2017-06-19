@@ -97,7 +97,12 @@ namespace Timelapse
             this.Left = this.state.TimelapseWindowPosition.X;
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
-            Utilities.TryFitWindowInWorkingArea(this);         
+            Utilities.TryFitWindowInWorkingArea(this);
+
+            #if DEBUG
+            // This mutes the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
+            System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
+            #endif
         }
         #endregion
 

@@ -401,11 +401,9 @@ namespace Timelapse.Database
                     imageDatabaseControl.Tooltip != templateControl.Tooltip ||
                     imageDatabaseControl.Width != templateControl.Width ||
                     imageDatabaseControl.Copyable != templateControl.Copyable ||
-                    imageDatabaseControl.Visible != templateControl.Visible
-                    )
+                    imageDatabaseControl.Visible != templateControl.Visible)
                 {
                     templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
-                    Debug.Print("SyncRequiredAsNonCriticalFieldsDiffer");
                 }
             }
 

@@ -271,8 +271,6 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-
-
         public void SyncControlToDatabase(ControlRow control)
         {
             this.CreateBackupIfNeeded();
@@ -281,34 +279,25 @@ namespace Timelapse.Database
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
         }
-
-        // Update all ControlOrder column entries in the template database to match the in-memory template
-        // Note that we could likely be more efficient by only updatedin those entries that differ from the current entries.
+       
+        // Update all ControlOrder and SpreadsheetOrder column entries in the template database to match their in-memory counterparts
         public void SyncTemplateTableControlAndSpreadsheetOrderToDatabase()
         {
             Utilities.PrintMethodName();
-            ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
+            List<ColumnTuplesWithWhere> columnsTuplesWithWhereList = new List<ColumnTuplesWithWhere>();    // holds columns which have changed for the current control
             foreach (ControlRow control in this.Controls)
             {
-                // Update all Control order values
-                columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.ControlOrder, control.ControlOrder));
-
-                // Now add the new values to the database
-                if (columnsToUpdate.Columns.Count > 0)
-                {
-                    columnsToUpdate.SetWhere(control.ID);
-                }
-
-                // Update all Control order values
-                columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, control.SpreadsheetOrder));
-
-                // Now add the new values to the database
-                if (columnsToUpdate.Columns.Count > 0)
-                {
-                    columnsToUpdate.SetWhere(control.ID);
-                }
+                // Update each row's Control and Spreadsheet order values
+                List<ColumnTuple> columnTupleList = new List<ColumnTuple>();
+                ColumnTuplesWithWhere columnTupleWithWhere = new ColumnTuplesWithWhere(columnTupleList, control.ID);
+                columnTupleList.Add(new ColumnTuple(Constant.Control.ControlOrder, control.ControlOrder));
+                columnTupleList.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, control.SpreadsheetOrder));
+                columnsTuplesWithWhereList.Add(columnTupleWithWhere);
             }
-            this.Database.Update(Constant.DatabaseTable.Controls, columnsToUpdate);
+            this.Database.Update(Constant.DatabaseTable.Controls, columnsTuplesWithWhereList);
+            // update the in memory table to reflect current database content
+            // could just use the new table but this is done in case a bug results in the insert lacking perfect fidelity
+            this.GetControlsSortedByControlOrder();
         }
 
         // Update the entire template database to match the in-memory template
@@ -382,11 +371,13 @@ namespace Timelapse.Database
 
             long lastItem = this.Controls.Count();
             // update in memory table with new order
+            // SAULXXX REALLY INEFFICIENT AS SETTING THE CONTROL's ORDER VALUE INVOKES AN UPDATE AFTER EVERY CHANGE
+            // IN PARTICULAR, IT INVOKES  TemplateDataTable_RowChanged, which in turn invokes this.SyncControlToDatabase(new ControlRow(e.Row)); on every row
+                // REVISIT THIS 
             foreach (ControlRow control in this.Controls)
             {
                 string dataLabel = control.DataLabel;
 
-                
                 // Because we don't show all controls, we skip the ones that are missing.
                 if (newOrderByDataLabel.ContainsKey(dataLabel) == false)
                 {
@@ -408,8 +399,7 @@ namespace Timelapse.Database
                 }
             }
             // sync new order to database
-            //this.SyncTemplateTableControlAndSpreadsheetOrderToDatabase();
-            this.SyncTemplateTableToDatabase();
+            this.SyncTemplateTableControlAndSpreadsheetOrderToDatabase();
         }
 
         protected virtual void Dispose(bool disposing)

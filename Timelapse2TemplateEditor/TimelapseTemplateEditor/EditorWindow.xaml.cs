@@ -466,7 +466,8 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataTable_RowChanged(object sender, DataRowChangeEventArgs e)
         {
-            if (!this.dataGridBeingUpdatedByCode)
+            // Utilities.PrintMethodName();
+            if (this.dataGridBeingUpdatedByCode == false)
             {
                 this.SyncControlToDatabase(new ControlRow(e.Row));
             }
@@ -825,10 +826,12 @@ namespace Timelapse.Editor
                     string controlType = control.Type;
 
                     // These columns should always be editable
+                    // Note that Width is normally editable unless it is a Flag (as the checkbox is set to the optimal width)
                     string columnHeader = (string)this.TemplateDataGrid.Columns[column].Header;
                     if ((columnHeader == Constant.Control.Label) ||
                         (columnHeader == Constant.Control.Tooltip) ||
-                        (columnHeader == Constant.Control.Visible))
+                        (columnHeader == Constant.Control.Visible) ||
+                        (columnHeader == EditorConstant.ColumnHeader.Width && (control.Type != Constant.DatabaseColumn.DeleteFlag && control.Type != Constant.Control.Flag)))
                     {
                         cell.SetValue(DataGridCell.IsTabStopProperty, true); // Allow tabbing in non-editable fields
                         continue;
@@ -1321,7 +1324,9 @@ namespace Timelapse.Editor
                 long newSpreadsheetOrder = dataGrid.Columns[control].DisplayIndex + 1;
                 spreadsheetOrderByDataLabel.Add(dataLabelFromColumnHeader, newSpreadsheetOrder);
             }
+            this.dataGridBeingUpdatedByCode = true;
             this.templateDatabase.UpdateDisplayOrder(Constant.Control.SpreadsheetOrder, spreadsheetOrderByDataLabel);
+            this.dataGridBeingUpdatedByCode = false;
         }
         #endregion
 
@@ -1458,9 +1463,10 @@ namespace Timelapse.Editor
                 newControlOrderByDataLabel.Add((string)stackPanel.Tag, controlOrder);
                 controlOrder++;
             }
-
+            this.dataGridBeingUpdatedByCode = true;
             this.templateDatabase.UpdateDisplayOrder(Constant.Control.ControlOrder, newControlOrderByDataLabel);
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls); // A contorted to make sure the controls panel updates itself
+            this.dataGridBeingUpdatedByCode = false;
+            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls); // Ensures that the controls panel updates itself
         }
         #endregion
 

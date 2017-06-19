@@ -293,12 +293,12 @@ namespace Timelapse.Util
         }
         [Conditional("TRACE")]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void PrintMethodName (string optionalstr = "")
+        public static void PrintMethodName(string optionalstr = "")
         {
             StackTrace st = new StackTrace();
             StackFrame sf = st.GetFrame(1);
             string message = sf.GetMethod().Name;
-            message += optionalstr == String.Empty ? "" : ": " + optionalstr;
+            message += optionalstr == String.Empty ? String.Empty : ": " + optionalstr;
             Debug.Print(message);
         }
     }
