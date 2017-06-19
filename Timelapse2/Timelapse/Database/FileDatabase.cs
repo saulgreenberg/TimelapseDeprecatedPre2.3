@@ -369,7 +369,7 @@ namespace Timelapse.Database
             // If they are not, then we need to flag that.
             foreach (string dataLabel in imageDataLabels.Keys)
             {
-                // if the .ddb dataLabel is not in the .tdb template, as this will be dealt with later 
+                // if the .ddb dataLabel is not in the .tdb template, this will be dealt with later 
                 if (!templateDataLabels.Keys.Contains(dataLabel))
                 {
                     continue;
@@ -391,6 +391,19 @@ namespace Timelapse.Database
                     // Add warnings due to changes in the Choice control's menu
                     templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("- As the choice control '{0}' no longer includes the following menu items, it can't display data with corresponding values:", dataLabel));
                     templateSyncResults.ControlSynchronizationWarnings.Add(String.Format("   {0}", string.Join<string>(", ", choiceValuesRemovedInTemplate)));
+                }
+
+                // Check if there are any other changed values in any of the columns that may affect the UI appearance. If there are, then we need to signal syncing of the template
+                if (imageDatabaseControl.ControlOrder != templateControl.ControlOrder ||
+                    imageDatabaseControl.SpreadsheetOrder != templateControl.SpreadsheetOrder ||
+                    imageDatabaseControl.DefaultValue != templateControl.DefaultValue ||
+                    imageDatabaseControl.Label != templateControl.Label ||
+                    imageDatabaseControl.Tooltip != templateControl.Tooltip ||
+                    imageDatabaseControl.Width != templateControl.Width ||
+                    imageDatabaseControl.Copyable != templateControl.Copyable ||
+                    imageDatabaseControl.Visible != templateControl.Visible)
+                {
+                    templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
                 }
             }
 
@@ -624,18 +637,21 @@ namespace Timelapse.Database
                 // Refetch the data labels if needed, as they will have changed due to the repair
                 List<string> dataLabels = this.GetDataLabelsExceptIDInSpreadsheetOrder();
 
-                // SAULXXX The Code below is likely not needed. Remove it after texting
-                // Since the two template tables may now differ, synchronize the image database's TemplateTable with the template database's TemplateTable          
-                ////foreach (string dataLabel in dataLabels)
-                ////{
-                ////    ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
-                ////    ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
+                // Condition 4: There are non-critical updates in the template's row (e.g., that only change the UI). 
+                // Synchronize the image database's TemplateTable with the template database's TemplateTable 
+                if (templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer)
+                {
+                    foreach (string dataLabel in dataLabels)
+                    {
+                        ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
+                        ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
 
-                ////    if (imageDatabaseControl.Synchronize(templateControl))
-                ////    {
-                ////        this.SyncControlToDatabase(imageDatabaseControl);
-                ////    }
-                ////}
+                        if (imageDatabaseControl.Synchronize(templateControl))
+                        {
+                            this.SyncControlToDatabase(imageDatabaseControl);
+                        }
+                    }
+                }
             }
             this.SelectFiles(FileSelection.All);
         }

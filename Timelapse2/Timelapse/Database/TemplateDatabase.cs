@@ -76,6 +76,7 @@ namespace Timelapse.Database
 
         public ControlRow AddUserDefinedControl(string controlType)
         {
+            Utilities.PrintMethodName();
             this.CreateBackupIfNeeded();
 
             // create the row for the new control in the data table
@@ -152,6 +153,7 @@ namespace Timelapse.Database
 
         private void GetControlsSortedByControlOrder()
         {
+            Utilities.PrintMethodName();
             DataTable templateTable = this.Database.GetDataTableFromSelect(Constant.Sql.SelectStarFrom + Constant.DatabaseTable.Controls + Constant.Sql.OrderBy + Constant.Control.ControlOrder);
             this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
@@ -159,6 +161,7 @@ namespace Timelapse.Database
 
         public List<string> GetDataLabelsExceptIDInSpreadsheetOrder()
         {
+            Utilities.PrintMethodName();
             List<string> dataLabels = new List<string>();
             IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
             foreach (ControlRow control in controlsInSpreadsheetOrder)
@@ -181,6 +184,7 @@ namespace Timelapse.Database
 
         public Dictionary<string, string> GetTypedDataLabelsExceptIDInSpreadsheetOrder()
         {
+            Utilities.PrintMethodName();
             Dictionary<string, string> typedDataLabels = new Dictionary<string, string>();
             IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
             foreach (ControlRow control in controlsInSpreadsheetOrder)
@@ -275,18 +279,43 @@ namespace Timelapse.Database
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
         }
+       
+        // Update all ControlOrder and SpreadsheetOrder column entries in the template database to match their in-memory counterparts
+        public void SyncTemplateTableControlAndSpreadsheetOrderToDatabase()
+        {
+            Utilities.PrintMethodName();
+            List<ColumnTuplesWithWhere> columnsTuplesWithWhereList = new List<ColumnTuplesWithWhere>();    // holds columns which have changed for the current control
+            foreach (ControlRow control in this.Controls)
+            {
+                // Update each row's Control and Spreadsheet order values
+                List<ColumnTuple> columnTupleList = new List<ColumnTuple>();
+                ColumnTuplesWithWhere columnTupleWithWhere = new ColumnTuplesWithWhere(columnTupleList, control.ID);
+                columnTupleList.Add(new ColumnTuple(Constant.Control.ControlOrder, control.ControlOrder));
+                columnTupleList.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, control.SpreadsheetOrder));
+                columnsTuplesWithWhereList.Add(columnTupleWithWhere);
+            }
+            this.Database.Update(Constant.DatabaseTable.Controls, columnsTuplesWithWhereList);
+            // update the in memory table to reflect current database content
+            // could just use the new table but this is done in case a bug results in the insert lacking perfect fidelity
+            this.GetControlsSortedByControlOrder();
+        }
 
+        // Update the entire template database to match the in-memory template
+        // Note that this version does this by recreating the entire table: 
+        // We could likely be far more efficient by only updateding those entries that differ from the current entries.
         private void SyncTemplateTableToDatabase()
         {
+            Utilities.PrintMethodName("Called without arguments");
             this.CreateBackupIfNeeded();
             this.SyncTemplateTableToDatabase(this.Controls);
         }
-
         private void SyncTemplateTableToDatabase(DataTableBackedList<ControlRow> newTable)
         {
-            // clear the existing table in the database and add the new values
+            Utilities.PrintMethodName("Called with arguments");
+            // clear the existing table in the database 
             this.Database.DeleteRows(Constant.DatabaseTable.Controls, null);
 
+            // Create new rows in the database to match the in-memory verson
             List<List<ColumnTuple>> newTableTuples = new List<List<ColumnTuple>>();
             foreach (ControlRow control in newTable)
             {
@@ -316,18 +345,13 @@ namespace Timelapse.Database
 
         public void UpdateDisplayOrder(string orderColumnName, Dictionary<string, long> newOrderByDataLabel)
         {
-            // argument validation
+            Utilities.PrintMethodName();
+
+            // argument validation. Only ControlOrder and SpreadsheetOrder are orderable columns
             if (orderColumnName != Constant.Control.ControlOrder && orderColumnName != Constant.Control.SpreadsheetOrder)
             {
                 throw new ArgumentOutOfRangeException("column", String.Format("'{0}' is not a control order column.  Only '{1}' and '{2}' are order columns.", orderColumnName, Constant.Control.ControlOrder, Constant.Control.SpreadsheetOrder));
             }
-
-            // Commented out, as we now don't have some controls showing up due to optional Utc 
-            // Saul TODO: Replace by a better test?
-            //            if (newOrderByDataLabel.Count != this.Controls.RowCount)
-            //            {
-            //                throw new NotSupportedException(String.Format("Partial order updates are not supported.  New ordering for {0} controls was passed but {1} controls are present for '{2}'.", newOrderByDataLabel.Count, this.Controls.RowCount, orderColumnName));
-            //            }
 
             List<long> uniqueOrderValues = newOrderByDataLabel.Values.Distinct().ToList();
             if (uniqueOrderValues.Count != newOrderByDataLabel.Count)
@@ -345,6 +369,8 @@ namespace Timelapse.Database
                 }
             }
 
+            long lastItem = this.Controls.Count();
+
             // update in memory table with new order
             foreach (ControlRow control in this.Controls)
             {
@@ -353,6 +379,7 @@ namespace Timelapse.Database
                 // Because we don't show all controls, we skip the ones that are missing.
                 if (newOrderByDataLabel.ContainsKey(dataLabel) == false)
                 {
+                    control.SpreadsheetOrder = lastItem--;
                     continue;
                 }
                 long newOrder = newOrderByDataLabel[dataLabel];
@@ -369,9 +396,8 @@ namespace Timelapse.Database
                         break;
                 }
             }
-
             // sync new order to database
-            this.SyncTemplateTableToDatabase();
+            this.SyncTemplateTableControlAndSpreadsheetOrderToDatabase();
         }
 
         protected virtual void Dispose(bool disposing)
@@ -680,6 +706,7 @@ namespace Timelapse.Database
         /// </summary>
         private void SetControlID(string dataLabel, int newID)
         {
+            Utilities.PrintMethodName();
             // nothing to do
             long currentID = this.GetControlIDFromTemplateTable(dataLabel);
             if (currentID == newID)

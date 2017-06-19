@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -283,11 +284,25 @@ namespace Timelapse.Util
             return "'" + value.Replace("'", "''") + "'";
         }
 
-        // We can alter in source how we want failure messages to print
+        [Conditional("TRACE")]
+        // Option to print various failure messagesfor debugging
         public static void PrintFailure(string message)
         {
-            // Debug.Print("PrintFailure: " + message);
-            // Debug.Fail(message);
+            Debug.Print("PrintFailure: " + message);
+            Debug.Fail(message);
+        }
+        [Conditional("TRACE")]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        // Insert this call into the beginning oa method name with the TRACE flag set in properties
+        // Helpful to see the order and number of calls on a method.
+        // The optional string can be anything you want included in the output.
+        public static void PrintMethodName(string optionalstr = "")
+        {
+            StackTrace st = new StackTrace();
+            StackFrame sf = st.GetFrame(1);
+            string message = sf.GetMethod().Name;
+            message += optionalstr == String.Empty ? String.Empty : ": " + optionalstr;
+            Debug.Print(message);
         }
     }
 }

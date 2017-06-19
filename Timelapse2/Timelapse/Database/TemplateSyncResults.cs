@@ -20,8 +20,11 @@ namespace Timelapse.Database
         public List<string> ControlSynchronizationErrors { get; private set; }
         public List<string> ControlSynchronizationWarnings { get; private set; }
 
-        // Singals whether or not to use the template found in the Image database instead of the Template database
+        // Signals whether or not to use the template found in the Image database instead of the Template database
         public bool UseTemplateDBTemplate { get; set; }
+
+        // Signals whether a silent update of the Image database template should be performed at the minimum
+        public bool SyncRequiredAsNonCriticalFieldsDiffer { get; set; }
 
         public bool SyncRequiredAsDataLabelsDiffer
         {
@@ -46,6 +49,7 @@ namespace Timelapse.Database
             this.ControlSynchronizationWarnings = new List<string>();
 
             this.UseTemplateDBTemplate = true;
+            this.SyncRequiredAsNonCriticalFieldsDiffer = false;
             this.SyncRequiredAsChoiceMenusDiffer = false;
         }
     }

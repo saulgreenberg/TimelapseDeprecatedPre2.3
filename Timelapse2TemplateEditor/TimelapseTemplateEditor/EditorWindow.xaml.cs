@@ -38,7 +38,7 @@ namespace Timelapse.Editor
         // database where the template is stored
         private TemplateDatabase templateDatabase;
 
-        #region Initialization, Window Loading and Closing
+        #region Initialization, Window Loading, Closing and Crashing
         /// <summary>
         /// Starts the UI.
         /// </summary>
@@ -60,18 +60,20 @@ namespace Timelapse.Editor
             this.dummyMouseDragSource = new UIElement();
             this.dataGridBeingUpdatedByCode = false;
 
+            // Have the grid hide the ID and Order columns
             this.MenuViewShowAllColumns_Click(this.MenuViewShowAllColumns, null);
 
             // Recall state from prior sessions
             this.userSettings = new EditorUserRegistrySettings();
             this.MenuViewShowUTCDateTimeSettingsMenuItem.IsChecked = this.userSettings.ShowUtcOffset;
 
-            // populate the most recent databases list
+            // Populate the most recent databases list
             this.MenuFileRecentTemplates_Refresh(true);
         }
         
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Check for updates only once on every calendar day
             if (DateTime.Now.Year != this.userSettings.MostRecentCheckForUpdates.Year ||
                 DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
@@ -98,6 +100,36 @@ namespace Timelapse.Editor
         }
         #endregion
 
+        #region Reinitializing and Ending
+        private void ResetUIElements(bool templateIsLoaded, string filePath)
+        {
+            // Enable/disable the various menus as needed. This includes updating the recent templates list. 
+            this.MenuFileNewTemplate.IsEnabled = !templateIsLoaded;
+            this.MenuFileOpenTemplate.IsEnabled = !templateIsLoaded;
+
+            this.MenuFileConvertTemplate.IsEnabled = !templateIsLoaded;
+            this.MenuFileClose.IsEnabled = templateIsLoaded;
+            this.MenuView.IsEnabled = templateIsLoaded;
+
+            // repopulate the most recent databases list
+            this.MenuFileRecentTemplates_Refresh(!templateIsLoaded);
+
+            // Enable/disable  all the buttons that allow rows to be added
+            this.AddCounterButton.IsEnabled = templateIsLoaded;
+            this.AddFixedChoiceButton.IsEnabled = templateIsLoaded;
+            this.AddNoteButton.IsEnabled = templateIsLoaded;
+            this.AddFlagButton.IsEnabled = templateIsLoaded;
+
+            // Include the database file name in the window title if it is set
+            this.Title = EditorConstant.MainWindowBaseTitle;
+            this.Title += templateIsLoaded ? " (" + Path.GetFileName(filePath) + ")" : String.Empty;
+
+            // Switch to the appropriate tab
+            this.TemplatePane.IsActive = templateIsLoaded;
+            this.InstructionPane.IsActive = !templateIsLoaded;
+        }
+        #endregion
+        
         #region File Menu Callbacks
         /// <summary>
         /// Creates a new database file of a user chosen name in a user chosen location.
@@ -293,7 +325,6 @@ namespace Timelapse.Editor
         #endregion
 
         #region View Menu Callbacks
-
         // Before opening the view menu, check to see if the Utc offset is visible. 
         // If so, disable the ShowUTCDateTimeSettingsMenuItem  as we don't want the user to hide the Utc offset.
         private void ViewMenu_SubmenuOpened(object sender, RoutedEventArgs e)
@@ -334,7 +365,8 @@ namespace Timelapse.Editor
         }
 
         /// <summary>
-        /// Show or hide the UTC offset-related items. Note that this presents a dialog box explaining what UTC offset does.
+        /// Show or hide the UTC offset-related items.
+        /// Also presents a dialog box explaining what UTC offset does.
         /// </summary>
         private void MenuItemUseUTCDateTimeSettings_Click(object sender, RoutedEventArgs e)
         {
@@ -421,6 +453,31 @@ namespace Timelapse.Editor
         }
         #endregion
 
+        #region Other menu related items
+        /// <summary>
+        /// Update the list of recent databases (ensuring they still exist) displayed under File -> Recent Databases.
+        /// </summary>
+        private void MenuFileRecentTemplates_Refresh(bool enable)
+        {
+            this.MenuFileRecentTemplates.IsEnabled = enable && this.userSettings.MostRecentTemplates.Count > 0;
+            this.MenuFileRecentTemplates.Items.Clear();
+
+            int index = 1;
+            foreach (string recentTemplatePath in this.userSettings.MostRecentTemplates)
+            {
+                if (File.Exists(recentTemplatePath))
+                {
+                    MenuItem recentImageSetItem = new MenuItem();
+                    recentImageSetItem.Click += this.MenuItemRecentTemplate_Click;
+                    recentImageSetItem.Header = String.Format("_{0} {1}", index, recentTemplatePath);
+                    recentImageSetItem.ToolTip = recentTemplatePath;
+                    this.MenuFileRecentTemplates.Items.Add(recentImageSetItem);
+                    ++index;
+                }
+            }
+        }
+        #endregion
+
         #region DataGrid and New Database Initialization
         /// <summary>
         /// Given a database file path,create a new DB file if one does not exist, or load a DB file if there is one.
@@ -462,11 +519,13 @@ namespace Timelapse.Editor
         }
 
         /// <summary>
-        /// Whenever a row changes, save that row to the database, which also updates the grid colors.
+        /// Listener: Whenever a row changes, save that row to the database, which also updates the grid colors.
+        /// Note that bulk changes due to code update defers this, so that updates can be done collectively and more efficiently later
         /// </summary>
         private void TemplateDataTable_RowChanged(object sender, DataRowChangeEventArgs e)
         {
-            if (!this.dataGridBeingUpdatedByCode)
+            // Utilities.PrintMethodName();
+            if (this.dataGridBeingUpdatedByCode == false)
             {
                 this.SyncControlToDatabase(new ControlRow(e.Row));
             }
@@ -505,11 +564,10 @@ namespace Timelapse.Editor
 
             this.dataGridBeingUpdatedByCode = true;
 
-            this.templateDatabase.AddUserDefinedControl(controlType);
+            this.templateDatabase.AddUserDefinedControl(controlType);  
             this.TemplateDataGrid.DataContext = this.templateDatabase.Controls;
             this.TemplateDataGrid.ScrollIntoView(this.TemplateDataGrid.Items[this.TemplateDataGrid.Items.Count - 1]);
 
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
             this.OnControlOrderChanged();
 
@@ -825,10 +883,12 @@ namespace Timelapse.Editor
                     string controlType = control.Type;
 
                     // These columns should always be editable
+                    // Note that Width is normally editable unless it is a Flag (as the checkbox is set to the optimal width)
                     string columnHeader = (string)this.TemplateDataGrid.Columns[column].Header;
                     if ((columnHeader == Constant.Control.Label) ||
                         (columnHeader == Constant.Control.Tooltip) ||
-                        (columnHeader == Constant.Control.Visible))
+                        (columnHeader == Constant.Control.Visible) ||
+                        (columnHeader == EditorConstant.ColumnHeader.Width && (control.Type != Constant.DatabaseColumn.DeleteFlag && control.Type != Constant.Control.Flag)))
                     {
                         cell.SetValue(DataGridCell.IsTabStopProperty, true); // Allow tabbing in non-editable fields
                         continue;
@@ -1133,62 +1193,7 @@ namespace Timelapse.Editor
         }
         #endregion
 
-        #region Other menu related items
-        /// <summary>
-        /// Update the list of recent databases (ensuring they still exist) displayed under File -> Recent Databases.
-        /// </summary>
-        private void MenuFileRecentTemplates_Refresh(bool enable)
-        {
-            this.MenuFileRecentTemplates.IsEnabled = enable && this.userSettings.MostRecentTemplates.Count > 0;
-            this.MenuFileRecentTemplates.Items.Clear();
-
-            int index = 1;
-            foreach (string recentTemplatePath in this.userSettings.MostRecentTemplates)
-            {
-                if (File.Exists(recentTemplatePath))
-                {
-                    MenuItem recentImageSetItem = new MenuItem();
-                    recentImageSetItem.Click += this.MenuItemRecentTemplate_Click;
-                    recentImageSetItem.Header = String.Format("_{0} {1}", index, recentTemplatePath);
-                    recentImageSetItem.ToolTip = recentTemplatePath;
-                    this.MenuFileRecentTemplates.Items.Add(recentImageSetItem);
-                    ++index;
-                }
-            }
-        }
-        #endregion
-
-        #region Reinitializing and Ending
-        private void ResetUIElements(bool templateIsLoaded, string filePath)
-        {
-            // Enable/disable the various menus as needed. This includes updating the recent templates list. 
-            this.MenuFileNewTemplate.IsEnabled = !templateIsLoaded;
-            this.MenuFileOpenTemplate.IsEnabled = !templateIsLoaded;
-
-            this.MenuFileConvertTemplate.IsEnabled = !templateIsLoaded;
-            this.MenuFileClose.IsEnabled = templateIsLoaded;
-            this.MenuView.IsEnabled = templateIsLoaded;
-
-            // repopulate the most recent databases list
-            this.MenuFileRecentTemplates_Refresh(!templateIsLoaded);
-
-            // Enable/disable  all the buttons that allow rows to be added
-            this.AddCounterButton.IsEnabled = templateIsLoaded;
-            this.AddFixedChoiceButton.IsEnabled = templateIsLoaded;
-            this.AddNoteButton.IsEnabled = templateIsLoaded;
-            this.AddFlagButton.IsEnabled = templateIsLoaded;
-
-            // Include the database file name in the window title if it is set
-            this.Title = EditorConstant.MainWindowBaseTitle;
-            this.Title += templateIsLoaded ? " (" + Path.GetFileName(filePath) + ")" : String.Empty;
-
-            // Switch to the appropriate tab
-            this.TemplatePane.IsActive = templateIsLoaded;
-            this.InstructionPane.IsActive = !templateIsLoaded;
-        }
-        #endregion
-
-        #region ShowMessageBox_DataLabel
+        #region ShowMessage dialogs
         private void ShowMessageBox_DataLabelIsAReservedWord(string data_label)
         {
             MessageBox messageBox = new MessageBox("'" + data_label + "' is not a valid data label.", this);
@@ -1254,10 +1259,11 @@ namespace Timelapse.Editor
         }
         #endregion
 
-        #region SpreadsheetAppearance
+        #region Spreadsheet Appearance
         // Generate the spreadsheet, adjusting the DateTime and UTCOffset visibility as needed
         private void GenerateSpreadsheet()
         {
+            Utilities.PrintMethodName();
             List<ControlRow> controlsInSpreadsheetOrder = this.templateDatabase.Controls.OrderBy(control => control.SpreadsheetOrder).ToList();
             this.SpreadsheetPreview.Columns.Clear();
 
@@ -1311,6 +1317,7 @@ namespace Timelapse.Editor
         // When the spreadsheet order is changd, update the database
         private void OnSpreadsheetOrderChanged(object sender, DataGridColumnEventArgs e)
         {
+            Utilities.PrintMethodName();
             DataGrid dataGrid = (DataGrid)sender;
             Dictionary<string, long> spreadsheetOrderByDataLabel = new Dictionary<string, long>();
             for (int control = 0; control < dataGrid.Columns.Count; control++)
@@ -1319,7 +1326,9 @@ namespace Timelapse.Editor
                 long newSpreadsheetOrder = dataGrid.Columns[control].DisplayIndex + 1;
                 spreadsheetOrderByDataLabel.Add(dataLabelFromColumnHeader, newSpreadsheetOrder);
             }
+            this.dataGridBeingUpdatedByCode = true;
             this.templateDatabase.UpdateDisplayOrder(Constant.Control.SpreadsheetOrder, spreadsheetOrderByDataLabel);
+            this.dataGridBeingUpdatedByCode = false;
         }
         #endregion
 
@@ -1443,6 +1452,7 @@ namespace Timelapse.Editor
 
         private void OnControlOrderChanged()
         {
+            Utilities.PrintMethodName();
             Dictionary<string, long> newControlOrderByDataLabel = new Dictionary<string, long>();
             long controlOrder = 1;
             foreach (UIElement element in this.ControlsPanel.Children)
@@ -1455,9 +1465,10 @@ namespace Timelapse.Editor
                 newControlOrderByDataLabel.Add((string)stackPanel.Tag, controlOrder);
                 controlOrder++;
             }
-
+            this.dataGridBeingUpdatedByCode = true;
             this.templateDatabase.UpdateDisplayOrder(Constant.Control.ControlOrder, newControlOrderByDataLabel);
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls); // A contorted to make sure the controls panel updates itself
+            this.dataGridBeingUpdatedByCode = false;
+            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls); // Ensures that the controls panel updates itself
         }
         #endregion
 
