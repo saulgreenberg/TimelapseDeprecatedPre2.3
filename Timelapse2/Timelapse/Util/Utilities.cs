@@ -285,7 +285,7 @@ namespace Timelapse.Util
         }
 
         [Conditional("TRACE")]
-        // We can alter in source how we want failure messages to print
+        // Option to print various failure messagesfor debugging
         public static void PrintFailure(string message)
         {
             Debug.Print("PrintFailure: " + message);
@@ -293,6 +293,9 @@ namespace Timelapse.Util
         }
         [Conditional("TRACE")]
         [MethodImpl(MethodImplOptions.NoInlining)]
+        // Insert this call into the beginning oa method name with the TRACE flag set in properties
+        // Helpful to see the order and number of calls on a method.
+        // The optional string can be anything you want included in the output.
         public static void PrintMethodName(string optionalstr = "")
         {
             StackTrace st = new StackTrace();

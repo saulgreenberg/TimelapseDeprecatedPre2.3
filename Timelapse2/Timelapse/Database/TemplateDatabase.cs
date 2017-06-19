@@ -302,16 +302,16 @@ namespace Timelapse.Database
 
         // Update the entire template database to match the in-memory template
         // Note that this version does this by recreating the entire table: 
-        // we could likely be far more efficient by only updatedin those entries that differ from the current entries.
+        // We could likely be far more efficient by only updateding those entries that differ from the current entries.
         private void SyncTemplateTableToDatabase()
         {
-            Utilities.PrintMethodName("no args version");
+            Utilities.PrintMethodName("Called without arguments");
             this.CreateBackupIfNeeded();
             this.SyncTemplateTableToDatabase(this.Controls);
         }
         private void SyncTemplateTableToDatabase(DataTableBackedList<ControlRow> newTable)
         {
-            Utilities.PrintMethodName("args version");
+            Utilities.PrintMethodName("Called with arguments");
             // clear the existing table in the database 
             this.Database.DeleteRows(Constant.DatabaseTable.Controls, null);
 
@@ -370,10 +370,8 @@ namespace Timelapse.Database
             }
 
             long lastItem = this.Controls.Count();
+
             // update in memory table with new order
-            // SAULXXX REALLY INEFFICIENT AS SETTING THE CONTROL's ORDER VALUE INVOKES AN UPDATE AFTER EVERY CHANGE
-            // IN PARTICULAR, IT INVOKES  TemplateDataTable_RowChanged, which in turn invokes this.SyncControlToDatabase(new ControlRow(e.Row)); on every row
-                // REVISIT THIS 
             foreach (ControlRow control in this.Controls)
             {
                 string dataLabel = control.DataLabel;
