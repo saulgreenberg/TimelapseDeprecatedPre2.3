@@ -505,11 +505,11 @@ namespace Timelapse.Editor
 
             this.dataGridBeingUpdatedByCode = true;
 
-            this.templateDatabase.AddUserDefinedControl(controlType);
+            this.templateDatabase.AddUserDefinedControl(controlType);  
             this.TemplateDataGrid.DataContext = this.templateDatabase.Controls;
             this.TemplateDataGrid.ScrollIntoView(this.TemplateDataGrid.Items[this.TemplateDataGrid.Items.Count - 1]);
 
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+            // SAULXXX NOT NEEDED AS OnControlOrderChanged CALLS THIS: this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
             this.OnControlOrderChanged();
 
@@ -1258,6 +1258,7 @@ namespace Timelapse.Editor
         // Generate the spreadsheet, adjusting the DateTime and UTCOffset visibility as needed
         private void GenerateSpreadsheet()
         {
+            Utilities.PrintMethodName();
             List<ControlRow> controlsInSpreadsheetOrder = this.templateDatabase.Controls.OrderBy(control => control.SpreadsheetOrder).ToList();
             this.SpreadsheetPreview.Columns.Clear();
 
@@ -1311,6 +1312,7 @@ namespace Timelapse.Editor
         // When the spreadsheet order is changd, update the database
         private void OnSpreadsheetOrderChanged(object sender, DataGridColumnEventArgs e)
         {
+            Utilities.PrintMethodName();
             DataGrid dataGrid = (DataGrid)sender;
             Dictionary<string, long> spreadsheetOrderByDataLabel = new Dictionary<string, long>();
             for (int control = 0; control < dataGrid.Columns.Count; control++)
@@ -1443,6 +1445,7 @@ namespace Timelapse.Editor
 
         private void OnControlOrderChanged()
         {
+            Utilities.PrintMethodName();
             Dictionary<string, long> newControlOrderByDataLabel = new Dictionary<string, long>();
             long controlOrder = 1;
             foreach (UIElement element in this.ControlsPanel.Children)

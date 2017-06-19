@@ -312,6 +312,11 @@ namespace Timelapse
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
                         templateSyncResults.UseTemplateDBTemplate = (result1 == true) ? true : false;
                     }
+                    else if (templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer)
+                    {
+                        // Non critical differences in template, so these don't need reporting
+                        templateSyncResults.UseTemplateDBTemplate = true;
+                    }
                 }
             }
 
