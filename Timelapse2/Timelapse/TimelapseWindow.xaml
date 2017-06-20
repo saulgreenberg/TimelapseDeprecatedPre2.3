@@ -40,13 +40,13 @@
 
             <!-- File Menu -->
             <MenuItem Header="_File" IsTabStop="false" SubmenuOpened="File_SubmenuOpening">
-                <MenuItem Name="MenuItemLoadImages" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing database, or creates a new database after asking for the image/video locations">
+                <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing database, or creates a new database after asking for the image/video locations">
                     <MenuItem.Icon>
                         <Image Source="Icons/OpenFile_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
-                <MenuItem Name="MenuItemAddImagesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
+                <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                     <MenuItem.Icon>
                         <Image Source="Icons/NewFile_40x.png" />
                     </MenuItem.Icon>
@@ -80,8 +80,8 @@
 
                 <Separator />
 
-                <!-- Close -->
-                <MenuItem Name="MenuFileClose" Header="C_lose image set" Click="MenuFileClose_Click" IsEnabled="False">
+                <!-- Close Image Set-->
+                <MenuItem Name="MenuFileCloseImageSet" Header="C_lose image set" Click="MenuFileCloseImageSet_Click" IsEnabled="False">
                     <MenuItem.Icon>
                         <Image Source="Icons/CloseFile_40x.png" />
                     </MenuItem.Icon>

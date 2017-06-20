@@ -758,19 +758,21 @@ namespace Timelapse
 
         private void EnableOrDisableMenusAndControls()
         {
-            bool filesSelected = this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0;
+            bool imageSetAvailable = this.IsFileDatabaseAvailable();
+            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
             // file menu
-            this.MenuItemAddImagesToImageSet.IsEnabled = true;
-            this.MenuItemLoadImages.IsEnabled = false;
-            this.MenuItemRecentImageSets.IsEnabled = false;
+            this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
+            this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
+            this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
             this.MenuItemExportThisImage.IsEnabled = filesSelected;
             this.MenuItemExportAsCsvAndPreview.IsEnabled = filesSelected;
             this.MenuItemExportAsCsv.IsEnabled = filesSelected;
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
+            this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
             // edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
@@ -780,12 +782,12 @@ namespace Timelapse
             this.MenuItemSelect.IsEnabled = filesSelected;
             // options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
-            this.MenuItemOptions.IsEnabled = true;
+            this.MenuItemOptions.IsEnabled = imageSetAvailable;
             this.MenuItemOrderFilesByDateTime.IsEnabled = filesSelected;
             this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected;
             this.MenuItemAudioFeedback.IsEnabled = filesSelected;
-            this.MenuItemMagnifyingGlass.IsEnabled = filesSelected;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemImageCounts.IsEnabled = filesSelected;
 
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
@@ -1459,8 +1461,8 @@ namespace Timelapse
         // Show the image in the specified row
         private void ShowFile(int fileIndex)
         {
-            // If there is no image to show, then show an image indicating the empty image set.
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
+            // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
+            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
             {
                 this.MarkableCanvas.SetNewImage(Constant.Images.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
@@ -1972,6 +1974,7 @@ namespace Timelapse
                 this.MenuItemSetTimeZone.IsEnabled = false;
             }
         }
+
         #endregion
 
         #region File Menu Callbacks and Support Functions
@@ -2284,7 +2287,7 @@ namespace Timelapse
             }
 
             // Enable the menu only when there are items in it and only if the load menu is also enabled (i.e., that we haven't loaded anything yet)
-            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadImages.IsEnabled;
+            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
             this.MenuItemRecentImageSets.Items.Clear();
 
             // add menu items most recently used image sets
@@ -2312,9 +2315,40 @@ namespace Timelapse
         }
 
         // Close the current image set and return to state allowing other image sets to be opened.
-        private void MenuFileClose_Click(object sender, RoutedEventArgs e)
+        private void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
         {
-            Debug.Print("In Close");
+            // if we are actually viewing any files
+            if (this.IsFileDatabaseAvailable())
+            {
+                // persist image set properties if an image set has been opened
+                if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+                {
+                    //this.MarkableCanvas.MagnifyingGlassEnabled = false;
+
+                    this.Window_Closing(null, null);
+                    // revert to custom selections to all 
+                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.Custom)
+                    {
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelection.All;
+                    }
+                    if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
+                    {
+                        this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                    }
+
+                    // write image set properties to the database
+                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+
+                    // ensure custom filter operator is synchronized in state for writing to user's registry
+                    this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                }
+                // discard the image set and reset UX for no open image set/no selected files
+                this.dataHandler.Dispose();
+                this.dataHandler = null;
+            }
+            this.state.Reset();
+            this.EnableOrDisableMenusAndControls();
+            this.InstructionPane.IsActive = true;
         }
 
         /// <summary>
@@ -3035,6 +3069,19 @@ namespace Timelapse
         #endregion
 
         #region Utilities
+
+        // Returns whether there is an open file database
+        private bool IsFileDatabaseAvailable()
+        {
+            if (this.dataHandler == null ||
+                this.dataHandler.FileDatabase == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
         public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
         {
             if (onFileLoading && this.state.SuppressFileCountOnImportDialog)

@@ -878,11 +878,19 @@ namespace Timelapse.Images
 
         private void RedrawMagnifyingGlassIfVisible()
         {
-            this.magnifyingGlass.RedrawIfVisible(NativeMethods.GetCursorPos(this),
+            try
+            {
+
+                this.magnifyingGlass.RedrawIfVisible(NativeMethods.GetCursorPos(this),
                                                  NativeMethods.GetCursorPos(this.ImageToDisplay),
                                                  this.ImageToDisplay.ActualWidth,
                                                  this.ImageToDisplay.ActualHeight,
                                                  this.canvasToMagnify);
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print("Ouch");
+            }
         }
         #endregion
     }

@@ -17,6 +17,11 @@ namespace Timelapse.Util
 
         public TimelapseState()
         {
+            this.Reset();
+        }
+
+        public void Reset()
+        {
             this.keyRepeatCount = 0;
             this.mostRecentKey = null;
 

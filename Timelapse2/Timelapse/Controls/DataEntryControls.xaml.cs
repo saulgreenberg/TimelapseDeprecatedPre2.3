@@ -28,6 +28,7 @@ namespace Timelapse.Controls
             // another image set loaded.  Any existing controls therefore need to be cleared.
             this.Controls.Clear();
             this.ControlsByDataLabel.Clear();
+            this.ControlGrid.Inlines.Clear();
 
             foreach (ControlRow control in database.Controls)
             {
