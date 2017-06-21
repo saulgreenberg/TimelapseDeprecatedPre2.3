@@ -81,13 +81,14 @@ namespace Timelapse
             // Populate the most recent image set list
             this.MenuItemRecentFileSets_Refresh();
 
-            // Callback to ensure AutoPlay stops when the user clicks on it
-            this.FileNavigatorSlider.PreviewMouseDown += this.ContentControl_MouseDown;
-
             // Timer to force the image to update to the current slider position when the user pauses while dragging the  slider 
             this.timerFileNavigator = new DispatcherTimer();
             this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders;
             this.timerFileNavigator.Tick += this.TimerFileNavigator_Tick;
+
+            // Callback to ensure AutoPlay stops when the user clicks on it
+            this.FileNavigatorSlider.PreviewMouseDown += this.ContentControl_MouseDown;
+            this.FileNavigatorSliderReset();
 
             // Timer activated / deactivated by Autoplay media control buttons
             FilePlayerTimer.Tick += FilePlayerTimer_Tick;
@@ -98,7 +99,6 @@ namespace Timelapse
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
             Utilities.TryFitWindowInWorkingArea(this);
-
             #if DEBUG
             // This mutes the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
@@ -751,9 +751,12 @@ namespace Timelapse
             this.EnableOrDisableMenusAndControls();
 
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
-            // SAULXXX CHANGED TO EXCLUDE ONLY IF UTC OFFSET ISN"T VISIBLE
-            //this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetInDatabase();
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
+
+            if (this.DataGridPane.IsVisible)
+            {
+                DataGridPane_IsActiveChanged(null, null);
+            }
         }
 
         private void EnableOrDisableMenusAndControls()
@@ -1408,6 +1411,17 @@ namespace Timelapse
             }
         }
 
+        // Reset are usually done to disable the FileNavigator when there is no image set to display.
+        private void FileNavigatorSliderReset()
+        {
+            bool filesSelected = (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
+
+            this.timerFileNavigator.Stop();
+            this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(filesSelected);
+            this.FileNavigatorSlider.IsEnabled = filesSelected;
+            this.FileNavigatorSlider.Maximum = filesSelected ? this.dataHandler.FileDatabase.CurrentlySelectedFileCount : 0;
+        }
+
         // Timer callback that forces image update to the current slider position. Invoked as the user pauses dragging the image slider 
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
@@ -1423,6 +1437,7 @@ namespace Timelapse
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
+                this.DataGrid.ItemsSource = null;
                 return;
             }
 
@@ -2323,8 +2338,6 @@ namespace Timelapse
                 // persist image set properties if an image set has been opened
                 if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
                 {
-                    //this.MarkableCanvas.MagnifyingGlassEnabled = false;
-
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
                     if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.Custom)
@@ -2342,12 +2355,30 @@ namespace Timelapse
                     // ensure custom filter operator is synchronized in state for writing to user's registry
                     this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
                 }
-                // discard the image set and reset UX for no open image set/no selected files
-                this.dataHandler.Dispose();
+                // discard the image set 
+                if (this.dataHandler.ImageCache != null)
+                {
+                    this.dataHandler.ImageCache.Dispose();
+                }
+                if (this.dataHandler != null)
+                { 
+                    this.dataHandler.Dispose();
+                }
                 this.dataHandler = null;
+                this.templateDatabase = null;
+
             }
+            // Clear the data grid
+            this.DataGrid.ItemsSource = null;
+
+            // Reset the UX 
             this.state.Reset();
+            this.MarkableCanvas.ZoomOutAllTheWay();
+            this.FileNavigatorSliderReset();
             this.EnableOrDisableMenusAndControls();
+            this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+            this.DataEntryControlPanel.IsVisible = false;
+            this.FilePlayer.Visibility = Visibility.Collapsed;
             this.InstructionPane.IsActive = true;
         }
 

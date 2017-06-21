@@ -14,6 +14,13 @@ namespace Timelapse.Util
         {
             Win32Point w32Mouse = new Win32Point();
             NativeMethods.GetCursorPos(ref w32Mouse);
+
+            // Check if the presentation source is actually there as otherwise relativeTo will return an error
+            // This happens when the relativeTo  is deleted when we are still trying to get the magnifying glass position.
+            if (PresentationSource.FromVisual(relativeTo) == null)
+            {
+                return new Point(0, 0); 
+            }
             return relativeTo.PointFromScreen(new Point(w32Mouse.X, w32Mouse.Y));
         }
 

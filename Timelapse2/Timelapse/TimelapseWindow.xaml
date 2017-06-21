@@ -304,11 +304,10 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <controls:AutoToolTipSlider x:Name="FileNavigatorSlider"  Grid.Column="0" Minimum ="1" LargeChange="1" ToolTip="Scroll through all files" Foreground="Gray" Margin="5,0,5,0"
+                                        <controls:AutoToolTipSlider x:Name="FileNavigatorSlider"  Grid.Column="0" Minimum ="1" Maximum="1" LargeChange="1" ToolTip="Scroll through all files" Foreground="Gray" Margin="5,0,5,0"
                                             AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="0" TickPlacement="BottomRight"
                                             Thumb.DragStarted="FileNavigatorSlider_DragStarted" 
-                                            Thumb.DragCompleted="FileNavigatorSlider_DragCompleted" 
-                                            ValueChanged="FileNavigatorSlider_ValueChanged" />
+                                            Thumb.DragCompleted="FileNavigatorSlider_DragCompleted" />
                                         <controls:FilePlayer x:Name="FilePlayer" Grid.Row="0" Grid.Column="1" FilePlayerChange="FilePlayer_FilePlayerChange" Visibility="Collapsed"/>
                                     </Grid>
                                     <images:MarkableCanvas x:Name="MarkableCanvas" Grid.Row="2" HorizontalAlignment="Stretch"/>
