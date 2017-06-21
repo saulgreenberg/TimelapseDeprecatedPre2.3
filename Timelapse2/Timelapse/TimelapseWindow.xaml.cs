@@ -81,13 +81,14 @@ namespace Timelapse
             // Populate the most recent image set list
             this.MenuItemRecentFileSets_Refresh();
 
-            // Callback to ensure AutoPlay stops when the user clicks on it
-            this.FileNavigatorSlider.PreviewMouseDown += this.ContentControl_MouseDown;
-
             // Timer to force the image to update to the current slider position when the user pauses while dragging the  slider 
             this.timerFileNavigator = new DispatcherTimer();
             this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders;
             this.timerFileNavigator.Tick += this.TimerFileNavigator_Tick;
+
+            // Callback to ensure AutoPlay stops when the user clicks on it
+            this.FileNavigatorSlider.PreviewMouseDown += this.ContentControl_MouseDown;
+            this.FileNavigatorSliderReset();
 
             // Timer activated / deactivated by Autoplay media control buttons
             FilePlayerTimer.Tick += FilePlayerTimer_Tick;
@@ -98,7 +99,6 @@ namespace Timelapse
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
             Utilities.TryFitWindowInWorkingArea(this);
-
             #if DEBUG
             // This mutes the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
@@ -751,26 +751,31 @@ namespace Timelapse
             this.EnableOrDisableMenusAndControls();
 
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
-            // SAULXXX CHANGED TO EXCLUDE ONLY IF UTC OFFSET ISN"T VISIBLE
-            //this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetInDatabase();
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
+
+            if (this.DataGridPane.IsVisible)
+            {
+                DataGridPane_IsActiveChanged(null, null);
+            }
         }
 
         private void EnableOrDisableMenusAndControls()
         {
-            bool filesSelected = this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0;
+            bool imageSetAvailable = this.IsFileDatabaseAvailable();
+            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
             // file menu
-            this.MenuItemAddImagesToImageSet.IsEnabled = true;
-            this.MenuItemLoadImages.IsEnabled = false;
-            this.MenuItemRecentImageSets.IsEnabled = false;
+            this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
+            this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
+            this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
             this.MenuItemExportThisImage.IsEnabled = filesSelected;
             this.MenuItemExportAsCsvAndPreview.IsEnabled = filesSelected;
             this.MenuItemExportAsCsv.IsEnabled = filesSelected;
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
+            this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
             // edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
@@ -780,12 +785,12 @@ namespace Timelapse
             this.MenuItemSelect.IsEnabled = filesSelected;
             // options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
-            this.MenuItemOptions.IsEnabled = true;
+            this.MenuItemOptions.IsEnabled = imageSetAvailable;
             this.MenuItemOrderFilesByDateTime.IsEnabled = filesSelected;
             this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected;
             this.MenuItemAudioFeedback.IsEnabled = filesSelected;
-            this.MenuItemMagnifyingGlass.IsEnabled = filesSelected;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemImageCounts.IsEnabled = filesSelected;
 
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
@@ -1406,6 +1411,17 @@ namespace Timelapse
             }
         }
 
+        // Reset are usually done to disable the FileNavigator when there is no image set to display.
+        private void FileNavigatorSliderReset()
+        {
+            bool filesSelected = (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
+
+            this.timerFileNavigator.Stop();
+            this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(filesSelected);
+            this.FileNavigatorSlider.IsEnabled = filesSelected;
+            this.FileNavigatorSlider.Maximum = filesSelected ? this.dataHandler.FileDatabase.CurrentlySelectedFileCount : 0;
+        }
+
         // Timer callback that forces image update to the current slider position. Invoked as the user pauses dragging the image slider 
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
@@ -1421,6 +1437,7 @@ namespace Timelapse
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
+                this.DataGrid.ItemsSource = null;
                 return;
             }
 
@@ -1459,8 +1476,8 @@ namespace Timelapse
         // Show the image in the specified row
         private void ShowFile(int fileIndex)
         {
-            // If there is no image to show, then show an image indicating the empty image set.
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
+            // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
+            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
             {
                 this.MarkableCanvas.SetNewImage(Constant.Images.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
@@ -1972,6 +1989,7 @@ namespace Timelapse
                 this.MenuItemSetTimeZone.IsEnabled = false;
             }
         }
+
         #endregion
 
         #region File Menu Callbacks and Support Functions
@@ -2284,7 +2302,7 @@ namespace Timelapse
             }
 
             // Enable the menu only when there are items in it and only if the load menu is also enabled (i.e., that we haven't loaded anything yet)
-            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadImages.IsEnabled;
+            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
             this.MenuItemRecentImageSets.Items.Clear();
 
             // add menu items most recently used image sets
@@ -2309,6 +2327,59 @@ namespace Timelapse
             {
                 this.dataHandler.FileDatabase.RenameFile(renameFileDatabase.NewFilename);
             }
+        }
+
+        // Close the current image set and return to state allowing other image sets to be opened.
+        private void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
+        {
+            // if we are actually viewing any files
+            if (this.IsFileDatabaseAvailable())
+            {
+                // persist image set properties if an image set has been opened
+                if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+                {
+                    this.Window_Closing(null, null);
+                    // revert to custom selections to all 
+                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.Custom)
+                    {
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelection.All;
+                    }
+                    if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
+                    {
+                        this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                    }
+
+                    // write image set properties to the database
+                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+
+                    // ensure custom filter operator is synchronized in state for writing to user's registry
+                    this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                }
+                // discard the image set 
+                if (this.dataHandler.ImageCache != null)
+                {
+                    this.dataHandler.ImageCache.Dispose();
+                }
+                if (this.dataHandler != null)
+                { 
+                    this.dataHandler.Dispose();
+                }
+                this.dataHandler = null;
+                this.templateDatabase = null;
+
+            }
+            // Clear the data grid
+            this.DataGrid.ItemsSource = null;
+
+            // Reset the UX 
+            this.state.Reset();
+            this.MarkableCanvas.ZoomOutAllTheWay();
+            this.FileNavigatorSliderReset();
+            this.EnableOrDisableMenusAndControls();
+            this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+            this.DataEntryControlPanel.IsVisible = false;
+            this.FilePlayer.Visibility = Visibility.Collapsed;
+            this.InstructionPane.IsActive = true;
         }
 
         /// <summary>
@@ -3029,6 +3100,19 @@ namespace Timelapse
         #endregion
 
         #region Utilities
+
+        // Returns whether there is an open file database
+        private bool IsFileDatabaseAvailable()
+        {
+            if (this.dataHandler == null ||
+                this.dataHandler.FileDatabase == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
         public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
         {
             if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
@@ -3355,6 +3439,7 @@ namespace Timelapse
                 FilePlayer_Stop();
             }
         }
+
         #endregion
 
 

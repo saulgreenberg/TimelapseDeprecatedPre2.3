@@ -25,6 +25,8 @@ namespace Timelapse.Controls
             this.autoPlayDelayTimer = new DispatcherTimer();
             this.autoPlayDelayTimer.Interval = TimeSpan.FromMilliseconds(300.0);
             this.autoPlayDelayTimer.Tick += this.AutoPlayDelayTimer_Tick;
+
+            this.IsEnabled = false;
         }
 
         private void AutoPlayDelayTimer_Tick(object sender, EventArgs e)
@@ -76,6 +78,7 @@ namespace Timelapse.Controls
             // Play() then have no effect.  This is a well known issue with various folks getting results.  The below combination of Play(), Pause() and Position
             // seems to work, though neither Pause() or Position is sufficent on its own and black frames still get rendered if Position is set to zero or
             // an especially small value.
+            this.IsEnabled = true;
             double originalVolume = this.Video.Volume;
             this.Video.Volume = 0.0;
             this.Video.Play();
@@ -142,6 +145,7 @@ namespace Timelapse.Controls
         private void Video_Unloaded(object sender, RoutedEventArgs e)
         {
             this.positionUpdateTimer.Stop();
+            this.IsEnabled = false;
         }
 
         // When the user starts moving the slider, we want to pause the video so the two actions don't interfere with each other
