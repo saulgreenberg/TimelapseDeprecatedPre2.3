@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -1099,7 +1100,7 @@ namespace Timelapse.Database
         {
             return (imageRowIndex >= 0) && (imageRowIndex < this.CurrentlySelectedFileCount) ? true : false;
         }
-
+       
         // Find the next displayable image after the provided row in the current image set
         // If there is no next displayable image, then find the first previous image before the provided row that is dispay
         public int FindFirstDisplayableImage(int firstRowInSearch)
@@ -1119,6 +1120,64 @@ namespace Timelapse.Database
                 }
             }
             return -1;
+        }
+
+        // Find by file name, forwards and backwards with wrapping
+        public int FindByFileName(int currentRow, bool isForward, string filename)
+        {
+            int rowIndex;
+
+            if (isForward)
+            {
+                // Find forwards with wrapping
+                rowIndex = this.FindByFileNameForwards(currentRow + 1, this.CurrentlySelectedFileCount, filename);
+                return rowIndex == -1 ? this.FindByFileNameForwards(0, currentRow - 1, filename) : rowIndex;
+            }
+            else
+            {
+                // Find backwards  with wrapping
+                rowIndex = this.FindByFileNameBackwards(currentRow - 1, 0, filename);
+                return rowIndex == -1 ? this.FindByFileNameBackwards(this.CurrentlySelectedFileCount, currentRow + 1, filename) : rowIndex;
+            }
+        }
+
+        // Helper for FindByFileName
+        private int FindByFileNameForwards(int from, int to, string filename)
+        {
+            CultureInfo culture = new CultureInfo("en");
+            for (int rowIndex = from; rowIndex <= to; rowIndex++)
+            {
+                if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
+                {
+                    return rowIndex;
+                }
+            }
+            return -1;
+        }
+
+        // Helper for FindByFileName
+        private int FindByFileNameBackwards(int from, int downto, string filename)
+        {
+            CultureInfo culture = new CultureInfo("en");
+            for (int rowIndex = from; rowIndex >= downto; rowIndex--)
+            {
+                if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
+                {
+                    return rowIndex;
+                }
+            }
+            return -1;
+        }
+
+        // Helper for FindByFileName
+        private int FileRowContainsFileName(int rowIndex, string filename)
+        {
+            CultureInfo culture = new CultureInfo("en");
+            if (this.IsFileRowInRange(rowIndex) == false)
+            {
+                return -1;
+            }
+            return culture.CompareInfo.IndexOf(this.Files[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
         }
 
         // Find the image whose ID is closest to the provided ID  in the current image set

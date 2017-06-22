@@ -11,23 +11,29 @@
     AutomationProperties.AutomationId="Timelapse"
     Loaded="Window_Loaded" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" 
     Height="800" Width="1200"
-    WindowState="Normal" Icon="Icons\Timelapse.ico">
+    WindowState="Normal" Icon="Icons\Timelapse.ico" LocationChanged="Window_LocationChanged">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
         <Style x:Key="RadioButtonAsToggleButtonStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
+        <Storyboard x:Key="flashAnimation">
+            <ColorAnimation From="PaleGoldenrod" To="Black" 
+                                    Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
+                                    AutoReverse="True"
+                                    Duration="0:0:0.1"
+                                    RepeatBehavior="1x"/>
+            <!--<DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" AutoReverse="True" Duration="0:0:0.2" RepeatBehavior="2x"/>-->
+        </Storyboard>
     </Window.Resources>
-
-    <!-- An example of how to do a command binding in a menu or keyboard, should we want to add any
-         if in a menu, we would add the attribut Command="Save" and InputGestureText="Ctrl+S" 
-    <Window.CommandBindings>  
-        <CommandBinding Command="Save" Executed="ExportCommandBinding_Executed"></CommandBinding> 
+    
+    <!-- Bindings to activate the Find box using CTL-F -->
+    <Window.CommandBindings>
+        <CommandBinding Command="Find" Executed="MenuItemFindByFileName_Click"></CommandBinding>
     </Window.CommandBindings>
-
     <Window.InputBindings>
-        <KeyBinding Key="S" Modifiers="Control" Command="Save"></KeyBinding>
+        <KeyBinding Key="F" Modifiers="Control" Command="Find"></KeyBinding>
     </Window.InputBindings>
-    -->
+
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -40,11 +46,14 @@
 
             <!-- File Menu -->
             <MenuItem Header="_File" IsTabStop="false" SubmenuOpened="File_SubmenuOpening">
+                <!-- Load template, images, and video files... -->
                 <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing database, or creates a new database after asking for the image/video locations">
                     <MenuItem.Icon>
                         <Image Source="Icons/OpenFile_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+
+                <!-- Load a recently used image set -->
                 <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
                 <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                     <MenuItem.Icon>
@@ -52,32 +61,39 @@
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator />
+                
+                <!-- Export data for this image set as a .csv file... -->
                 <MenuItem Name="MenuItemExportAsCsv" Header="Export data for this image set as a .csv file..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files into a .csv (comma separated value) file">
                     <MenuItem.Icon>
                         <Image Source="Icons/CSVExport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+                
+                <!-- Export data for this image set as a .csv file and preview in _Excel.. -->
                 <MenuItem Name="MenuItemExportAsCsvAndPreview" Header="Export data for this image set as a .csv file and preview in _Excel..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files in the image set into a .csv (comma separated value) file and previews it in Excel">
                     <MenuItem.Icon>
                         <Image Source="Icons/CSVExport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+                
+                <!-- Import data from a .csv file...-->
                 <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data for the selected files in the image set from a CSV (comma separated value) file">
                     <MenuItem.Icon>
                         <Image Source="Icons/CSVImport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator />
+
+                <!-- Export the current image or video _file...-->
                 <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
                     <MenuItem.Icon>
                         <Image Source="Icons/ImageExport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                
                 <Separator />
                 
+                <!-- Rename the _data file...-->
                 <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data file..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the image data file to a name of your choosing"/>
-
                 <Separator />
 
                 <!-- Close Image Set-->
@@ -88,7 +104,8 @@
                 </MenuItem>
                 
                 <Separator />
-                
+
+                <!-- Exit -->
                 <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Quits the program">
                     <MenuItem.Icon>
                         <Image Source="Icons/Exit_22x.png" />
@@ -98,8 +115,18 @@
 
             <!-- Edit Menu -->
             <MenuItem Name="MenuItemEdit" Header="_Edit" IsEnabled="false" IsTabStop="false" SubmenuOpened="Edit_SubmenuOpening" >
+
+                <!-- Find image -->
+                <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image by its name"/>
+                <Separator />
+                
+                <!-- Copy previous values -->
                 <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="CopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
+ 
+                <!-- Populate a field with _metadata... -->
                 <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
+
+                <!-- Delete submenu-->
                 <MenuItem Header="D_elete"  SubmenuOpened="Delete_SubmenuOpening"  >
                     <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
                     <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the file, as well as the data entered for that file"/>
@@ -108,6 +135,7 @@
                     <MenuItem Name="MenuItemDeleteFilesAndData" Header="All selected image or video files marked for deletion and their data..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes images and videos in the current selection that are marked for deletion, as well as the data entered for those files"/>
                 </MenuItem>
 
+                <!-- Date correction submenu-->
                 <MenuItem Header="_Date correction" SubmenuOpened="MenuItem_SubmenuOpened" >
                     <MenuItem Name="MenuItemRereadDatesfromImages" Header="_Re-read dates and times from files..." Click="MenuItemRereadDateTimesfromFiles_Click"  ToolTip="Re-read the dates and times from files" IsEnabled="True" />
                     <MenuItem Name="MenuItemDaylightSavingsTimeCorrection" Header="Correct for standard and _daylight savings time changes..." Click="MenuItemDaylightSavingsTimeCorrection_Click"  ToolTip="Correct daylight saving time issues" IsEnabled="True" />
@@ -116,9 +144,11 @@
                     <MenuItem Name="MenuItemModifyAmbiguousDates" Header="Check and correct _ambiguous dates..." Click="MenuItemCorrectAmbiguousDates_Click"  ToolTip="Check and optionally correct ambiguous dates, where day-month could have been read as month-day" IsEnabled="True" />
                     <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" />
                 </MenuItem>
-
+                
+                <!-- Identify or reclassify dark files...-->
                 <MenuItem Name="MenuItemOptionsDarkImages" Header="Identify or reclassify dar_k files..." IsEnabled="True" Click="MenuItemOptionsDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
-
+ 
+                <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
             </MenuItem>
 
@@ -239,8 +269,33 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-
-                                    <!-- Controls Tray panel (to hold controls) -->
+                                        
+                                        <!--Popup Find Box Control -->
+                                        <Popup Name="FindBox" 
+                                               StaysOpen="False"
+                                               Placement="Left" 
+                                               AllowsTransparency="True"  PopupAnimation="Fade"  
+                                               HorizontalOffset="278"
+                                               VerticalOffset="-22"
+                                               PlacementTarget="{Binding ElementName=ControlsPanel}" >
+                                            <StackPanel Orientation="Horizontal" MinHeight="20"  Background="PaleGoldenrod" >
+                                                <TextBlock Text="Find:" FontSize="14" FontWeight="Bold" Background="PaleGoldenrod" Foreground="Black" VerticalAlignment="Center" Padding="5,0,5,0"
+                                                           ToolTip="Find the next or previous image whose filename contains this case-insensitive text"/>
+                                                <TextBox Name="FindBoxTextBox" 
+                                                         FontSize="12"  Background="PaleGoldenrod"  Foreground="Black" Width="160" VerticalContentAlignment="Center" 
+                                                         ToolTip="Find the next image whose filename contains this case-insensitive text" 
+                                                         KeyDown="FindBoxTextBox_KeyDown"/>
+                                                <Button Name="FindBackwardsButton" FontSize="12"  FontWeight="Bold" Content=" &lt; " Background="PaleGoldenrod" Padding="5,0,5,0"
+                                                        ToolTip="Find the previous image whose filename contains this case-insensitive text"
+                                                         Click="FindBoxButton_Click"/>
+                                                <Button Name="FindForwardButton" FontSize="12"  FontWeight="Bold"  Content=" &gt;" Background="PaleGoldenrod" Padding="5,0,5,0"
+                                                        ToolTip="Find the next image whose filename contains this case-insensitive text" 
+                                                        Click="FindBoxButton_Click"/>
+                                                <Button Name="FindCloseButton" FontSize="12"  FontWeight="Bold" Content=" x " Padding="5,0,5,0" Background="PaleGoldenrod" Click="FindBoxClose_Click" />
+                                            </StackPanel>
+                                        </Popup>
+                                        
+                                        <!-- Controls Tray panel (to hold controls) -->
                                         <StackPanel Name="ControlsPanel">
                                             <controls:DataEntryControls x:Name="DataEntryControls" />
                                         </StackPanel>

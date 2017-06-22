@@ -24,6 +24,7 @@ using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using Xceed.Wpf.AvalonDock.Layout.Serialization;
+using System.Windows.Media.Animation;
 
 namespace Timelapse
 {
@@ -134,6 +135,11 @@ namespace Timelapse
             // Avalon Dock: Initially hide the Date Entry Control Panel
             // For some reason, it doesn't hide it if visibility is set to false in XAML
             this.DataEntryControlPanel.IsVisible = false;
+        }
+
+        private void Window_LocationChanged(object sender, EventArgs e)
+        {
+            this.FindBoxVisibility(false);
         }
 
         // On exiting, save various attributes so we can use recover them later
@@ -1637,9 +1643,6 @@ namespace Timelapse
             {
                 return;
             }
-            // An alternate way of doing this, but not as good -> 
-            // if ( this.ControlGrid.IsMouseOver) return;
-            // if (!this.markableCanvas.IsMouseOver) return; // if its outside the window, return as well.
 
             // Interpret key as a possible shortcut key. 
             // Depending on the key, take the appropriate action
@@ -2428,6 +2431,11 @@ namespace Timelapse
         private void Edit_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
+        }
+
+        private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
+        {
+            this.FindBoxVisibility(true);
         }
 
         // Populate a data field from metadata (example metadata displayed from the currently selected image)
@@ -3292,9 +3300,9 @@ namespace Timelapse
 
             if (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty)
             {
-                // System.Diagnostics.Debug.Print("PropertyChanging: " + e.PropertyName);
                 DockingManager_FloatingWindowLimitSize();
             }
+            this.FindBoxVisibility(false);
         }
 
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
@@ -3306,7 +3314,6 @@ namespace Timelapse
         // Also shows floating windows in the task bar if it can be hidden
         private void DockingManager_FloatingWindowTopmost(bool topMost)
         {
-            
             foreach (var floatingWindow in this.DockingManager.FloatingWindows)
             {
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
@@ -3378,7 +3385,6 @@ namespace Timelapse
         //    Debug.Print(streamReader.ReadToEnd());
         //    layoutSerializer.Deserialize(streamReader);
         //}
-
         #endregion
 
         #region FilePlayer and FilePlayerTimer
@@ -3440,8 +3446,71 @@ namespace Timelapse
             }
         }
 
+
+
         #endregion
 
+        #region Find Callbacks and Methods
 
+        // Find forward on enter 
+        private void FindBoxTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                FindBox_FindImage(true);
+            }
+        }
+
+        // Depending upon which buttion was pressed, invoked a forwards or backwards find operation 
+        private void FindBoxButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button findButton = sender as Button;
+            bool isForward = (findButton == this.FindForwardButton) ? true : false;
+            this.FindBox_FindImage(isForward);
+        }
+        
+        // Close the find box
+        private void FindBoxClose_Click(object sender, RoutedEventArgs e)
+        {
+            FindBoxVisibility(false);
+        }
+
+        // Search either forwards or backwards for the image file name specified in the text box
+        private void FindBox_FindImage(bool isForward)
+        {
+            string searchTerm = this.FindBoxTextBox.Text;
+            ImageRow row = this.dataHandler.ImageCache.Current;
+
+            int currentIndex = this.dataHandler.FileDatabase.Files.IndexOf(row);
+            int foundIndex = this.dataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
+            if (foundIndex != -1)
+            {
+                this.ShowFile(foundIndex);
+            }
+            else
+            {
+                // Flash the text field to indicate no result
+                Storyboard sb = this.FindResource("flashAnimation") as Storyboard;
+                if (sb != null)
+                { 
+                    Storyboard.SetTarget(sb, this.FindBoxTextBox);
+                    sb.Begin();
+                }
+            }
+        }
+
+        // Make the find box visible on the display
+        private void FindBoxVisibility (bool isVisible)
+        {
+            // Only make the find box visible if there are files to view
+            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+            {
+                this.FindBox.IsOpen = isVisible;
+                this.FindBoxTextBox.Focus();
+            }
+        }
+        #endregion
+
+ 
     }
 }

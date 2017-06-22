@@ -18,8 +18,13 @@ namespace Timelapse.Controls
 
         public override bool ContentReadOnly
         {
-            get { return !this.ContentControl.IsEnabled; }
-            set { this.ContentControl.IsEnabled = !value; }
+            get { return false; }
+            set { }
+            // SAULXXX: Not sure why the original code below isn't working. The issue is that when we close and re-open an image set, 
+            // the newly created content control for the flag seems to be set to IsEnabled is false, but I can't track down why that change happens.
+            // However, since flags and DeleteFlag is always writeable, we can just fake it
+            // get { return !this.ContentControl.IsEnabled; }
+            // set { this.ContentControl.IsEnabled = !value; }
         }
 
         public DataEntryFlag(ControlRow control, DataEntryControls styleProvider)
