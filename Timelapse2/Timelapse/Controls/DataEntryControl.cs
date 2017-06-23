@@ -82,6 +82,7 @@ namespace Timelapse.Controls
                 this.ContentControl.Style = (Style)styleProvider.FindResource(contentStyleName.Value.ToString());
             }
             this.ContentReadOnly = false;
+            this.ContentControl.IsEnabled = true;
             this.Width = control.Width;
 
             // use the content's tag to point back to this so event handlers can access the DataEntryControl as well as just ContentControl
