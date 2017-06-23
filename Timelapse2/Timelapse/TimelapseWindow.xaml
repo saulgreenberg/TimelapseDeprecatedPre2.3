@@ -117,7 +117,7 @@
             <MenuItem Name="MenuItemEdit" Header="_Edit" IsEnabled="false" IsTabStop="false" SubmenuOpened="Edit_SubmenuOpening" >
 
                 <!-- Find image -->
-                <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image by its name"/>
+                <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image whose filename contains your case-insensitive search term" InputGestureText="control-C"/>
                 <Separator />
                 
                 <!-- Copy previous values -->
