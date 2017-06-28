@@ -160,6 +160,12 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\AutocompleteTextBox.cs" />
+    <Compile Include="Controls\ClickableImage.xaml.cs">
+      <DependentUpon>ClickableImage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
+      <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
     <Compile Include="Controls\FilePlayer.xaml.cs">
@@ -268,6 +274,14 @@
     <Compile Include="Dialog\DeleteImages.xaml.cs">
       <DependentUpon>DeleteImages.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\ClickableImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ClickableImagesGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\FilePlayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -20,7 +20,6 @@ namespace Timelapse.Images
     /// - can save and restore a zoom+pan setting
     /// - can display a video 
     /// </summary>
-    // SAULXXX Todd has a somewhat different solution to Markable Canvases, but it includes a pan/zoom bug that also affects magnifying glass position.
     public class MarkableCanvas : Canvas
     {
         #region Private variables
@@ -71,6 +70,10 @@ namespace Timelapse.Images
         /// </summary>
         public VideoPlayer VideoToDisplay { get; private set; }
 
+        /// <summary>
+        /// Gets the grid containing a multitude of zoomed out images
+        /// </summary>
+        public ClickableImagesGrid ClickableImagesGrid { get; private set; }
         /// <summary>
         /// Gets or sets the markers on the image
         /// </summary>
@@ -204,6 +207,18 @@ namespace Timelapse.Images
             Canvas.SetLeft(this.VideoToDisplay, 0);
             Canvas.SetTop(this.VideoToDisplay, 0);
             this.Children.Add(this.VideoToDisplay);
+
+            // ZZZ set up zoomed out grid showing multitude of images
+            this.ClickableImagesGrid = new ClickableImagesGrid();
+            String path = @"E:\@Timelapse\ImageSets\TestSets\largeNumbers";
+            this.ClickableImagesGrid.ImageFilePaths = Directory.GetFiles(path, "*.jpg");
+            this.ClickableImagesGrid.ImagePathsStartIndex = 0;
+            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
+            Canvas.SetZIndex(this.ClickableImagesGrid, 1000);
+            Canvas.SetLeft(this.ClickableImagesGrid, 0);
+            Canvas.SetTop(this.ClickableImagesGrid, 0);
+            this.Children.Add(this.ClickableImagesGrid);
 
             // set up image to magnify
             this.ImageToMagnify = new Image();
@@ -373,6 +388,7 @@ namespace Timelapse.Images
         }
 
         // Use the  mouse wheel to scale the image
+        private bool showingClickaleImagesGrid = false;
         private void ImageOrCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             lock (this)
@@ -380,7 +396,26 @@ namespace Timelapse.Images
                 // We will scale around the current point
                 Point mousePosition = e.GetPosition(this.ImageToDisplay);
                 bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
-                this.ScaleImage(mousePosition, zoomIn);
+                System.Diagnostics.Debug.Print(zoomIn + " " + this.imageToDisplayScale.ScaleX);
+                if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                {    // ZZZ Need to hide the markers too
+                    this.showingClickaleImagesGrid = true;
+                    this.ClickableImagesGrid.Visibility = Visibility.Visible;
+                    this.VideoToDisplay.Visibility = Visibility.Collapsed;
+                    this.ImageToDisplay.Visibility = Visibility.Collapsed;
+                    this.RefreshClickableImagesGrid(2);
+                }
+                else if (this.showingClickaleImagesGrid == true)
+                {
+                    this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+                    this.VideoToDisplay.Visibility = Visibility.Collapsed;
+                    this.ImageToDisplay.Visibility = Visibility.Visible;
+                    this.showingClickaleImagesGrid = false;
+                }
+                else
+                {
+                    this.ScaleImage(mousePosition, zoomIn);
+                }
             }
         }
 
@@ -408,6 +443,13 @@ namespace Timelapse.Images
 
             this.VideoToDisplay.Width = this.ActualWidth;
             this.VideoToDisplay.Height = this.ActualHeight;
+
+            this.ClickableImagesGrid.Width = this.ActualWidth;
+            this.ClickableImagesGrid.Height = this.ActualHeight;
+            if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
+            {
+                this.RefreshClickableImagesGrid(2);
+            }
 
             this.imageToDisplayScale.CenterX = 0.5 * this.ActualWidth;
             this.imageToDisplayScale.CenterY = 0.5 * this.ActualHeight;
@@ -513,12 +555,6 @@ namespace Timelapse.Images
 
             // ensure display image is visible
             this.ImageToDisplay.Visibility = Visibility.Visible;
-            // SAULXXX DELETE COMMENTED CODE AFTER TESTING. IF ITS IN THERE, THEN THE MAG GLASS SHOWS UP WHEN WE ARE NAVIGATING
-            //  ensure magnifying glass is visible if it's enabled
-            //  if (this.MagnifyingGlassEnabled)
-            //  {
-            //      this.magnifyingGlass.Show();
-            //  }
 
             // ensure any previous video is stopped and hidden
             if (this.VideoToDisplay.Visibility == Visibility.Visible)
@@ -883,6 +919,18 @@ namespace Timelapse.Images
                                                  this.ImageToDisplay.ActualWidth,
                                                  this.ImageToDisplay.ActualHeight,
                                                  this.canvasToMagnify);
+        }
+        #endregion
+
+        #region ClickableImagesGrid
+        private void RefreshClickableImagesGrid(int step)
+        {
+            if (this.ClickableImagesGrid == null)
+            {
+                return;
+            }
+            int desiredWidth = Convert.ToInt32(step * 128);
+            this.ClickableImagesGrid.Refresh(desiredWidth, new Point(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
         }
         #endregion
     }

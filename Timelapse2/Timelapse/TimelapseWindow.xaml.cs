@@ -1491,6 +1491,10 @@ namespace Timelapse
                 return;
             }
 
+            // XXXX
+           // this.MarkableCanvas.ClickableImagesGrid.ImagePathsStartIndex = fileIndex;
+            //this.MarkableCanvas.ClickableImagesGrid.ImageFilePaths = this.dataHandler.FileDatabase;
+
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             bool newFileToDisplay;
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out newFileToDisplay) == false)
