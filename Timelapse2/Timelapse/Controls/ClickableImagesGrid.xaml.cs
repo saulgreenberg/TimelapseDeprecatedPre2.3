@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Database;
 
 namespace Timelapse.Controls
@@ -12,10 +14,12 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class ClickableImagesGrid : UserControl
     {
-        public string[] ImageFilePaths { get; set; }
-        public FileDatabase FileDatabase { get; set; }
+        public string[] FilePaths { get; set; }
+        public FileTable FileTable { get; set; }
+        public int FileStartIndex { get; set; }
 
-        public int ImagePathsStartIndex { get; set; }
+        // The root folder containing the template
+        public string FolderPath { get; set; } 
 
         private ObservableCollection<ClickableImage> imageList;
 
@@ -27,13 +31,14 @@ namespace Timelapse.Controls
         public ClickableImagesGrid()
         {
             this.InitializeComponent();
-            this.ImagePathsStartIndex = 0;
+            this.FileStartIndex = 0;
         }
 
         // Rebuild the grid, based on fitting the image of a desired width into as many cells of the same size that can fit 
         // the available size (width and height) of a grid
         public void Refresh(double desiredWidth, Point availableSize)
         {
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             // As we will rebuild the grid and its items, we need to clear it first
             this.Grid.RowDefinitions.Clear();
             this.Grid.ColumnDefinitions.Clear();
@@ -49,9 +54,12 @@ namespace Timelapse.Controls
             // We do this as we need to get the actual 'worst-case' aspect ratio 
             this.imageList = new ObservableCollection<ClickableImage>();
 
-            for (int index = this.ImagePathsStartIndex; index < this.ImageFilePaths.Length && index < numberOfCells; index++)
+            int counted = 0;
+            for (int index = this.FileStartIndex; index < this.FileTable.RowCount && counted <= numberOfCells; index++)
             {
                 ClickableImage ci;
+                counted++;
+                string path = Path.Combine(this.FileTable[index].RelativePath, this.FileTable[index].FileName);
 
                 // If we already have a copy of the image, reuse that instead of recreating it.
                 bool skip = false;
@@ -61,16 +69,15 @@ namespace Timelapse.Controls
                     // This also keeps the checkbox state. 
                     foreach (ClickableImage clickableImageTest in this.cachedImageList)
                     {
-                        if (clickableImageTest.Path == this.ImageFilePaths[index])
+                        if (clickableImageTest.Path == path)
                         {
                             ci = clickableImageTest;
-                            if (ci.DesiredRenderWidth < desiredWidth)
+                            if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
                                 ci.Rerender(desiredWidth);
                             }
                             skip = true;
                             this.imageList.Add(ci);
-                            // System.Diagnostics.Debug.Print(ImageFilePaths[index]);
                             break;
                         }
                     }
@@ -78,11 +85,11 @@ namespace Timelapse.Controls
                 if (skip == false)
                 {
                     ci = new ClickableImage(desiredWidth);
-                    ci.Source(this.ImageFilePaths[index]);
+                    ci.RootFolder = this.FolderPath;
+                    ci.ImageRow = this.FileTable[index];
                     ci.DesiredRenderWidth = desiredWidth;
-                    ci.Text = Path.GetFileName(this.ImageFilePaths[index]);
-                    ci.Path = this.ImageFilePaths[index];
                     this.imageList.Add(ci);
+                    ci.Rerender(desiredWidth);
                 }
             }
 
@@ -113,10 +120,11 @@ namespace Timelapse.Controls
             // Add an image to each available cell, as long as there are images to add.
             int row = 0;
             int col = 0;
+            int count = 0;
             ClickableImage clickableImage;
-            for (int index = this.ImagePathsStartIndex; index < this.imageList.Count; index++)
+            for (int index = this.FileStartIndex; index < this.FileTable.RowCount && count < this.imageList.Count; index++)
             {
-                clickableImage = this.imageList[index];
+                clickableImage = this.imageList[count++];
 
                 // When we have filled the row, start a new row
                 if (col >= rowCol.Item2)
@@ -137,11 +145,12 @@ namespace Timelapse.Controls
                 col++;
             }
 
-            if (this.cachedImageList == null || this.cachedImageList.Count < this.imageList.Count || this.cachedImagePathsStartIndex != this.ImagePathsStartIndex)
+            if (this.cachedImageList == null || this.cachedImageList.Count < this.imageList.Count || this.cachedImagePathsStartIndex != this.FileStartIndex)
             {
                 this.cachedImageList = this.imageList;
-                this.cachedImagePathsStartIndex = this.ImagePathsStartIndex;
+                this.cachedImagePathsStartIndex = this.FileStartIndex;
             }
+            Mouse.OverrideCursor = null;
         }
 
         private Tuple<int, int> CalculateRowsAndColumns(double imageWidth, double imageHeight, double availableWidth, double availableHeight)

@@ -1491,9 +1491,10 @@ namespace Timelapse
                 return;
             }
 
-            // XXXX
-           // this.MarkableCanvas.ClickableImagesGrid.ImagePathsStartIndex = fileIndex;
-            //this.MarkableCanvas.ClickableImagesGrid.ImageFilePaths = this.dataHandler.FileDatabase;
+            // ZZZ
+            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
+            this.MarkableCanvas.ClickableImagesGrid.FileStartIndex = fileIndex;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
 
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             bool newFileToDisplay;
@@ -1580,6 +1581,9 @@ namespace Timelapse
             {
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
+
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed();
+
         }
 
         private bool TryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)

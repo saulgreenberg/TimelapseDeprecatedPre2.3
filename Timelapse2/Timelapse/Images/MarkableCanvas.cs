@@ -52,6 +52,17 @@ namespace Timelapse.Images
         private DateTime mouseDoubleClickTime;
         private bool isDoubleClick = false;
         private bool isPanning = false;
+
+        // zoomed out state for ClickableImages
+        // 0 - not zoomed out; 1 - 512; 2 - 256 3 - 128
+        private int clickableImagesState = 0;
+        private Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
+        {
+            { 0, 0 },
+            { 1, 512 },
+            { 2, 256 },
+            { 3, 128 }
+        };
         #endregion
 
         #region Properties
@@ -74,6 +85,7 @@ namespace Timelapse.Images
         /// Gets the grid containing a multitude of zoomed out images
         /// </summary>
         public ClickableImagesGrid ClickableImagesGrid { get; private set; }
+
         /// <summary>
         /// Gets or sets the markers on the image
         /// </summary>
@@ -211,10 +223,11 @@ namespace Timelapse.Images
             // ZZZ set up zoomed out grid showing multitude of images
             this.ClickableImagesGrid = new ClickableImagesGrid();
             String path = @"E:\@Timelapse\ImageSets\TestSets\largeNumbers";
-            this.ClickableImagesGrid.ImageFilePaths = Directory.GetFiles(path, "*.jpg");
-            this.ClickableImagesGrid.ImagePathsStartIndex = 0;
+            this.ClickableImagesGrid.FilePaths = Directory.GetFiles(path, "*.jpg");
+            this.ClickableImagesGrid.FileStartIndex = 0;
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
+            this.clickableImagesState = 0;
             Canvas.SetZIndex(this.ClickableImagesGrid, 1000);
             Canvas.SetLeft(this.ClickableImagesGrid, 0);
             Canvas.SetTop(this.ClickableImagesGrid, 0);
@@ -396,25 +409,48 @@ namespace Timelapse.Images
                 // We will scale around the current point
                 Point mousePosition = e.GetPosition(this.ImageToDisplay);
                 bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
-                System.Diagnostics.Debug.Print(zoomIn + " " + this.imageToDisplayScale.ScaleX);
+
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {    // ZZZ Need to hide the markers too
+                {
+                    if (this.clickableImagesState >= 3)
+                    {
+                        // State: zoomed out maximum allowable steps on clickable grid
+                        // Don't zoom out any more
+                        return;
+                    }
+                    // State: zoomed out on clickable grid, but not at the maximum step
+                    // Zoom out another step
+                    this.clickableImagesState++;
                     this.showingClickaleImagesGrid = true;
                     this.ClickableImagesGrid.Visibility = Visibility.Visible;
                     this.VideoToDisplay.Visibility = Visibility.Collapsed;
                     this.ImageToDisplay.Visibility = Visibility.Collapsed;
-                    this.RefreshClickableImagesGrid(2);
+                    
+                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                }
+                else if (this.showingClickaleImagesGrid == true && this.clickableImagesState > 1)
+                {
+                    // State: zoomed in on clickable grid, but not at the minimum step
+                    // Zoom in another step
+                    this.clickableImagesState--;
+                    this.RefreshClickableImagesGrid(this.clickableImagesState);
                 }
                 else if (this.showingClickaleImagesGrid == true)
                 {
+                    // State: zoomed in on clickable grid, but at the minimum step
+                    // Switch to the image
                     this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
                     this.VideoToDisplay.Visibility = Visibility.Collapsed;
                     this.ImageToDisplay.Visibility = Visibility.Visible;
                     this.showingClickaleImagesGrid = false;
+                    this.clickableImagesState = 0;
                 }
                 else
                 {
+                    // State: We are on the image
+                    // Zoom in or out onto the image as needed
                     this.ScaleImage(mousePosition, zoomIn);
+                    this.clickableImagesState = 0;
                 }
             }
         }
@@ -448,7 +484,7 @@ namespace Timelapse.Images
             this.ClickableImagesGrid.Height = this.ActualHeight;
             if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
             {
-                this.RefreshClickableImagesGrid(2);
+                this.RefreshClickableImagesGrid(this.clickableImagesState);
             }
 
             this.imageToDisplayScale.CenterX = 0.5 * this.ActualWidth;
@@ -923,15 +959,26 @@ namespace Timelapse.Images
         #endregion
 
         #region ClickableImagesGrid
-        private void RefreshClickableImagesGrid(int step)
+        private void RefreshClickableImagesGrid(int state)
         {
             if (this.ClickableImagesGrid == null)
             {
                 return;
             }
-            int desiredWidth = Convert.ToInt32(step * 128);
+            int desiredWidth = 0;
+            this.clickableImagesZoomedOutStates.TryGetValue(state, out desiredWidth);
             this.ClickableImagesGrid.Refresh(desiredWidth, new Point(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
         }
+        public void RefreshIfMultipleImagesAreDisplayed()
+        {
+            if (this.showingClickaleImagesGrid == true)
+            {
+                // State: zoomed in on clickable grid.
+                // Updating it ensures that the correct image is shown as the first cell
+                this.RefreshClickableImagesGrid(this.clickableImagesState);
+            }
+        }
+
         #endregion
     }
 }

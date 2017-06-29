@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Timelapse.Database;
 
 namespace Timelapse.Controls
 {
@@ -39,7 +40,7 @@ namespace Timelapse.Controls
                 }
                 else
                 {
-                    this.point.X = this.Image.Width;
+                    this.point.X = this.Image.Source.Width;
                     if (this.Image.Source.Width != 0)
                     {
                         this.point.Y = this.Image.Width * this.Image.Source.Height / this.Image.Source.Width;
@@ -49,13 +50,17 @@ namespace Timelapse.Controls
             }
         }
 
-        public string Path { get; set; }
+        public ImageRow ImageRow { get; set; }
 
-        // Text associated with the image will be overlayed atop the image
-        public string Text
+        public string RootFolder { get; set; }
+
+        // Path is RelativePath/FileName
+        public string Path
         {
-            get { return this.TextBlock.Text; }
-            set { this.TextBlock.Text = value; }
+            get
+            {
+                return (this.ImageRow == null) ? String.Empty : System.IO.Path.Combine(this.ImageRow.RelativePath, this.ImageRow.FileName);
+            }
         }
 
         // Whether the checkbox is checked
@@ -78,28 +83,17 @@ namespace Timelapse.Controls
         {
             this.InitializeComponent();
             this.DesiredRenderWidth = width;
+            this.RootFolder = String.Empty;
         }
         public ClickableImage() : this(DESIREDWIDTH)
         {
         }
 
-        // Set the source image
-        public void Source(string uri)
-        {
-            BitmapImage b = new BitmapImage();
-            b.BeginInit();
-            b.DecodePixelWidth = Convert.ToInt32(this.DesiredRenderWidth);
-            b.CacheOption = BitmapCacheOption.OnLoad;
-            b.UriSource = new Uri(uri);
-            b.EndInit();
-
-            this.Image.Source = b;
-        }
-
         public void Rerender(double width)
         {
             this.DesiredRenderWidth = width;
-            this.Source(this.Path);
+            this.Image.Source = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
+            this.TextBlock.Text = this.ImageRow.FileName;
         }
         private void Grid_LeftMouseButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -112,6 +106,10 @@ namespace Timelapse.Controls
 
         private void Grid_LeftMouseButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (e.ClickCount == 2)
+            {
+                System.Diagnostics.Debug.Print("DoubleClick! " + this.ImageRow.FileName);
+            }
             this.mouseDownCoords = e.GetPosition(this);
         }
     }

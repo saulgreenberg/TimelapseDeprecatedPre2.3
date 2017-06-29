@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Timelapse.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid Background="Black" MouseLeftButtonUp="Grid_LeftMouseButtonUp" MouseDown="Grid_LeftMouseButtonDown">
+    <Grid Background="Black" MouseLeftButtonUp="Grid_LeftMouseButtonUp" MouseLeftButtonDown="Grid_LeftMouseButtonDown" >
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
