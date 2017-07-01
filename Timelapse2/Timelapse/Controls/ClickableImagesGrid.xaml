@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Timelapse.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid Name="Grid" ShowGridLines="True" Background="Black">
+    <Grid Name="Grid" ShowGridLines="True" Background="Black" MouseLeftButtonDown="Grid_MouseLeftButtonDown"  MouseLeftButtonUp="Grid_MouseLeftButtonUp" MouseMove="Grid_MouseMove">
         <Grid.ColumnDefinitions>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>

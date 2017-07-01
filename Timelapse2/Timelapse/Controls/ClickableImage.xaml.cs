@@ -97,6 +97,7 @@ namespace Timelapse.Controls
         }
         private void Grid_LeftMouseButtonUp(object sender, MouseButtonEventArgs e)
         {
+            return;
             int tolerance = 10;
             if (e.GetPosition(this).X > this.mouseDownCoords.X - tolerance && e.GetPosition(this).X < this.mouseDownCoords.X + tolerance && e.GetPosition(this).Y > this.mouseDownCoords.Y - tolerance && e.GetPosition(this).Y < this.mouseDownCoords.Y + tolerance)
             {
@@ -106,6 +107,7 @@ namespace Timelapse.Controls
 
         private void Grid_LeftMouseButtonDown(object sender, MouseButtonEventArgs e)
         {
+            return;
             if (e.ClickCount == 2)
             {
                 System.Diagnostics.Debug.Print("DoubleClick! " + this.ImageRow.FileName);
