@@ -1491,9 +1491,10 @@ namespace Timelapse
                 return;
             }
 
-            // ZZZ
+            // Reset the Clickable Images Grid to the current image
+            // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
             this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
-            this.MarkableCanvas.ClickableImagesGrid.FileStartIndex = fileIndex;
+            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
             this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
 
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator

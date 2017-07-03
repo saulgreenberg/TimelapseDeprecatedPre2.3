@@ -220,15 +220,12 @@ namespace Timelapse.Images
             Canvas.SetTop(this.VideoToDisplay, 0);
             this.Children.Add(this.VideoToDisplay);
 
-            // ZZZ set up zoomed out grid showing multitude of images
+            // Set up zoomed out grid showing multitude of images
             this.ClickableImagesGrid = new ClickableImagesGrid();
-            String path = @"E:\@Timelapse\ImageSets\TestSets\largeNumbers";
-            this.ClickableImagesGrid.FilePaths = Directory.GetFiles(path, "*.jpg");
-            this.ClickableImagesGrid.FileStartIndex = 0;
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
             this.clickableImagesState = 0;
-            Canvas.SetZIndex(this.ClickableImagesGrid, 1000);
+            Canvas.SetZIndex(this.ClickableImagesGrid, 1000); // High Z-index so that it appears above other objects and magnifier
             Canvas.SetLeft(this.ClickableImagesGrid, 0);
             Canvas.SetTop(this.ClickableImagesGrid, 0);
             this.Children.Add(this.ClickableImagesGrid);
@@ -978,7 +975,6 @@ namespace Timelapse.Images
                 this.RefreshClickableImagesGrid(this.clickableImagesState);
             }
         }
-
         #endregion
     }
 }

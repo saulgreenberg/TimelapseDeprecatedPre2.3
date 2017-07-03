@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
-using RowColumn = System.Drawing.Point;
 using Timelapse.Database;
+using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
 {
@@ -18,40 +16,46 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class ClickableImagesGrid : UserControl
     {
-        public string[] FilePaths { get; set; }
+        #region Public properties
         public FileTable FileTable { get; set; }
-        public int FileStartIndex { get; set; }
+        public int FileTableStartIndex { get; set; }
 
         // The root folder containing the template
-        public string FolderPath { get; set; } 
+        public string FolderPath { get; set; }
+        #endregion 
 
-        private ObservableCollection<ClickableImage> clickableImagesList;
+        #region Private variables
+        private List<ClickableImage> clickableImagesList;
 
-        // We cache copies of the images we display plus associated information
+        // Cache copies of the images we display plus associated information
+        // This is done both to save existing image state and so we don't repeatedly rebuild that information
         private int cachedImagePathsStartIndex = -1;
         private string[] CachedImageFilePaths { get; set; }
-        private ObservableCollection<ClickableImage> cachedImageList;
+        private List<ClickableImage> cachedImageList;
 
-        private List<ClickableImage> selectedClickableImages;
-        private RowColumn initiallySelectedCell;
+        // Track states between mouse down / move and up 
+        private RowColumn cellChosenOnMouseDown;
+        private bool modifierKeyPressedOnMouseDown = false;
+        private RowColumn cellWithLastMouseOver = new RowColumn(-1, -1);
+        #endregion
 
-        private Brush unselectedBrush = Brushes.Black;
-        private Brush selectedBrush = Brushes.LightBlue;
-
+        // Constructor
         public ClickableImagesGrid()
         {
             this.InitializeComponent();
-            this.FileStartIndex = 0;
-            this.selectedClickableImages = new List<ClickableImage>();
+            this.FileTableStartIndex = 0;
         }
 
         #region Public Refresh
-        // Rebuild the grid, based on fitting the image of a desired width into as many cells of the same size that can fit 
-        // the available size (width and height) of a grid
-        // Also retains information about images previously shown on this grid (e.g., selection status).
+        // Rebuild the grid, based on 
+        // - fitting the image of a desired width into as many cells of the same size that can fit within the grid
+        // - retaining information about images previously shown on this grid, which importantly includes its selection status.
+        //   this means users can do some selections, then change the zoom level.
+        //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
         public void Refresh(double desiredWidth, Point availableSize)
         {
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+
             // As we will rebuild the grid and its items, we need to clear it first
             this.Grid.RowDefinitions.Clear();
             this.Grid.ColumnDefinitions.Clear();
@@ -60,15 +64,15 @@ namespace Timelapse.Controls
             // Get an estimate about the number of cells, i.e., how many rows and columns we can fit into the available space.
             // We try a 16:9 aspect ratio, which will likely equal to or overestimate the number of cells. 
             // Using that, we will then read in those number of images and get the actual worst-case aspect ratio 
-            Tuple<int, int> rowCol = this.CalculateRowsAndColumns(desiredWidth, desiredWidth * 9.0 / 16.0, availableSize.X, availableSize.Y);
-            int numberOfCells = rowCol.Item1 * rowCol.Item2;
+            Tuple<int, int> availableRowsColumns = this.CalculateRowsAndColumns(desiredWidth, desiredWidth * 9.0 / 16.0, availableSize.X, availableSize.Y);
+            int numberOfCells = availableRowsColumns.Item1 * availableRowsColumns.Item2;
 
             // Create the image list based on the overestimate of the number of Cells.
             // We do this as we need to get the actual 'worst-case' aspect ratio 
-            this.clickableImagesList = new ObservableCollection<ClickableImage>();
+            this.clickableImagesList = new List<ClickableImage>();
 
             int counted = 0;
-            for (int index = this.FileStartIndex; index < this.FileTable.RowCount && counted <= numberOfCells; index++)
+            for (int index = this.FileTableStartIndex; index < this.FileTable.RowCount && counted <= numberOfCells; index++)
             {
                 ClickableImage ci;
                 counted++;
@@ -118,14 +122,14 @@ namespace Timelapse.Controls
             }
 
             // Using these real dimensions, calculate the number of rows and columns of a given height and width that we can fit into the available space
-            rowCol = this.CalculateRowsAndColumns(desiredWidth, maxImageHeight, availableSize.X, availableSize.Y);
+            availableRowsColumns = this.CalculateRowsAndColumns(desiredWidth, maxImageHeight, availableSize.X, availableSize.Y);
 
             // Add that number of rows and columns to the grid
-            for (int r = 0; r < rowCol.Item1; r++)
+            for (int r = 0; r < availableRowsColumns.Item1; r++)
             {
                 this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
             }
-            for (int c = 0; c < rowCol.Item2; c++)
+            for (int c = 0; c < availableRowsColumns.Item2; c++)
             {
                 this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
             }
@@ -135,19 +139,19 @@ namespace Timelapse.Controls
             int col = 0;
             int count = 0;
             ClickableImage clickableImage;
-            for (int index = this.FileStartIndex; index < this.FileTable.RowCount && count < this.clickableImagesList.Count; index++)
+            for (int index = this.FileTableStartIndex; index < this.FileTable.RowCount && count < this.clickableImagesList.Count; index++)
             {
                 clickableImage = this.clickableImagesList[count++];
 
                 // When we have filled the row, start a new row
-                if (col >= rowCol.Item2)
+                if (col >= availableRowsColumns.Item2)
                 {
                     col = 0;
                     row++;
                 }
 
                 // Stop when we have filled all the rows
-                if (row >= rowCol.Item1)
+                if (row >= availableRowsColumns.Item1)
                 {
                     break;
                 }
@@ -158,131 +162,311 @@ namespace Timelapse.Controls
                 col++;
             }
 
-            if (this.cachedImageList == null || this.cachedImageList.Count < this.clickableImagesList.Count || this.cachedImagePathsStartIndex != this.FileStartIndex)
+            if (this.cachedImageList == null || this.cachedImageList.Count < this.clickableImagesList.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
             {
                 this.cachedImageList = this.clickableImagesList;
-                this.cachedImagePathsStartIndex = this.FileStartIndex;
+                this.cachedImagePathsStartIndex = this.FileTableStartIndex;
             }
             Mouse.OverrideCursor = null;
         }
         #endregion
 
         #region Mouse callbacks
-        // Remember the cell that corresponds to the left mouse down even
         private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            this.initiallySelectedCell = this.GetCellRowColumnFromPoint(Mouse.GetPosition(Grid));
+            this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(Grid));
+
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                // CTL mouse down: change that cell (and only that cell's) state
+                this.modifierKeyPressedOnMouseDown = true;
+
+                RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+                if (Equals(this.cellChosenOnMouseDown, currentCell))
+                {
+                    ClickableImage ci = GetClickableImageFromCell(currentCell);
+                    if (ci != null)
+                    {
+                        ci.IsSelected = !ci.IsSelected;
+                    }
+                }
+            }
+            else if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                // SHIFT mouse down: extend the selection (if any) to this point.
+                this.modifierKeyPressedOnMouseDown = true;
+                RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+                this.GridExtendSelectionFrom(currentCell);
+            }
+
+            // SAULXX: Double click - ToDO: Raise event so that the calling app can navigate to that image.
+            if (e.ClickCount == 2)
+            {
+                System.Diagnostics.Debug.Print("DoubleClick! " + GetCellFromPoint(Mouse.GetPosition(Grid)).ToString());
+            }
         }
 
-        // As the mouse down moves with the left button pressed, select all cells contained by its bounding box i.e.,
-        // - between the initial cell selected on the mouse down and the current cell under this mouse move
+        // If conditions are met, select all cells contained by between the starting and current cell
         private void Grid_MouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
+            // Ignore unless the left mouse button is pressed without any modifier keys.
+            if (e.LeftButton != MouseButtonState.Pressed || this.modifierKeyPressedOnMouseDown)
             {
-                this.Grid_SelectWithinBoundingBox();
+                return;
             }
+
+            // Get the cell under the mouse pointer
+            RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+
+            // Ignore if the cell has already been handled in the last mouse down or move event,
+            if (Equals(currentCell, this.cellWithLastMouseOver))
+            {
+                return;
+            }
+
+            // Select from the initial cell to the current cell
+            this.GridSelectFromInitialCellTo(currentCell);
+            this.cellWithLastMouseOver = currentCell;
         }
 
         // On the mouse up, select all cells contained by its bounding box. Note that this is needed
         // as well as the mouse move version, as otherwise a down/up on the same spot won't select the cell.
         private void Grid_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            this.Grid_SelectWithinBoundingBox();
+            this.cellWithLastMouseOver.X = -1;
+            this.cellWithLastMouseOver.Y = -1;
+            if (this.modifierKeyPressedOnMouseDown)
+            {
+                this.modifierKeyPressedOnMouseDown = false;
+                return;
+            }
+            // If the selections is only a single cell, clear all cells and just change that cell's state
+            RowColumn currentlySelectedCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+
+            if (Equals(this.cellChosenOnMouseDown, currentlySelectedCell))
+            {
+                ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
+                if (ci != null)
+                {
+                    bool newState = !ci.IsSelected;
+                    this.GridUnselectAll(); // Clear the selections
+                    ci.IsSelected = newState;
+                }
+            }
+            else
+            { 
+                // More than one cell was selected
+                this.GridSelectFromInitialCellTo(currentlySelectedCell);
+            }
         }
         #endregion
 
-        #region Helper methods
+        #region Grid Selection 
+        // Unselect all elements in the grid
+        private void GridUnselectAll()
+        {
+            // Unselect all clickable images
+            foreach (ClickableImage ci in this.clickableImagesList)
+            {
+                ci.IsSelected = false;
+            }
+        }
+
+        // Select all cells between the initial and currently selected cell
+        private void GridSelectFromInitialCellTo(RowColumn currentCell)
+        {
+            // If the first selected cell doesn't exist, make it the same as the currently selected cell
+            if (this.cellChosenOnMouseDown == null)
+            {
+                this.cellChosenOnMouseDown = currentCell;
+            }
+
+            this.GridUnselectAll(); // Clear the selections
+
+            // Determine which cell is 
+            this.DetermineTopLeftBottomRightCells(cellChosenOnMouseDown, currentCell, out RowColumn startCell, out RowColumn endCell);
+
+            // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
+            RowColumn indexCell = startCell;
+
+            ClickableImage ci;
+            while (true)
+            {
+                ci = GetClickableImageFromCell(indexCell);
+                // If the cell doesn't contain a ClickableImage, then we are at the end.
+                if (ci == null)
+                {
+                    return;
+                }
+                ci.IsSelected = true;
+
+                // If there is no next cell, then we are at the end.
+                if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
+                {
+                    return;
+                }
+                indexCell = nextCell;
+            }
+        }
+
+        // Select all cells between the initial and currently selected cell
+        private void GridSelectFromTo(RowColumn cell1, RowColumn cell2)
+        {
+            this.DetermineTopLeftBottomRightCells(cell1, cell2, out RowColumn startCell, out RowColumn endCell);
+
+            // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
+            RowColumn indexCell = startCell;
+
+            ClickableImage ci;
+            while (true)
+            {
+                ci = GetClickableImageFromCell(indexCell);
+                // This shouldn't happen, but ensure that the cell contains a ClickableImage.
+                if (ci == null)
+                {
+                    return;
+                }
+                ci.IsSelected = true;
+
+                // If there is no next cell, then we are at the end.
+                if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
+                {
+                    return;
+                }
+                indexCell = nextCell;
+            }
+        }
+
+        private void GridExtendSelectionFrom(RowColumn currentCell)
+        {
+            // If there is no previous cell, then we are at the end.
+            if (GridGetPreviousSelectedCell(currentCell, out RowColumn previousCell) == true)
+            { 
+                GridSelectFromTo(previousCell, currentCell);
+            }
+            else if (GridGetNextSelectedCell(currentCell, out RowColumn nextCell) == true)
+            { 
+                GridSelectFromTo(currentCell, nextCell);
+            }
+        }
+        #endregion
+
+        #region Cell Navigation methods
+        private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
+        {
+            RowColumn lastCell = new RowColumn(this.Grid.RowDefinitions.Count - 1, this.Grid.ColumnDefinitions.Count - 1);
+            ClickableImage ci;
+
+            while (GridGetNextCell(cell, lastCell, out nextCell))
+            {
+                ci = GetClickableImageFromCell(nextCell);
+
+                // If there is no cell, we've reached the end, 
+                if (ci == null) 
+                {
+                    return false;
+                }
+                // We've found a selected cell
+                if (ci.IsSelected)
+                {
+                    return true;
+                }
+                cell = nextCell;
+            }
+            return false;
+        }
+
+        private bool GridGetPreviousSelectedCell(RowColumn cell, out RowColumn previousCell)
+        {
+            RowColumn lastCell = new RowColumn(0, 0);
+            ClickableImage ci;
+
+            while (GridGetPreviousCell(cell, lastCell, out previousCell))
+            {
+                ci = GetClickableImageFromCell(previousCell);
+
+                // If there is no cell, terminate as we've reached the beginning
+                if (ci == null)
+                {
+                    return false;
+                }
+                // We've found a selected cell
+                if (ci.IsSelected)
+                {
+                    return true;
+                }
+                cell = previousCell;
+            }
+            return false;
+        }
+        // Get the next cell and return true
+        // Return false if we hit the lastCell or the end of the grid.
+        private bool GridGetNextCell(RowColumn cell, RowColumn lastCell, out RowColumn nextCell)
+        {
+            nextCell = new RowColumn(cell.X, cell.Y);
+            // Try to go to the next column or wrap around to the next row if we are at the end of the row
+            nextCell.Y++;
+            if (nextCell.Y == this.Grid.ColumnDefinitions.Count())
+            {
+                // start a new row
+                nextCell.Y = 0;
+                nextCell.X++;
+            }
+
+            if (nextCell.X > lastCell.X || (nextCell.X == lastCell.X && nextCell.Y > lastCell.Y))
+            {
+                // We just went beyond the last cell, so we've reached the end.
+                return false;
+            }
+            return true;
+        }
+
+        // Get the previous cell. Return true if we can, otherwise false.
+        private bool GridGetPreviousCell(RowColumn cell, RowColumn firstCell, out RowColumn previousCell)
+        {
+            previousCell = new RowColumn(cell.X, cell.Y);
+            // Try to go to the previous column or wrap around to the previous row if we are at the beginning of the row
+            previousCell.Y--;
+            if (previousCell.Y < 0)
+            {
+                // go to the previous row
+                previousCell.Y = this.Grid.ColumnDefinitions.Count() - 1;
+                previousCell.X--;
+            }
+
+            if (previousCell.X < firstCell.X || (previousCell.X == firstCell.X && previousCell.Y < firstCell.Y))
+            {
+                // We just went beyond the last cell, so we've reached the end.
+                return false;
+            }
+            return true;
+        }
+        #endregion
+
+        #region Cell Calculation methods
 
         // Calculate the number of rows and columns of a given height and width that we can fit into the available space
         private Tuple<int, int> CalculateRowsAndColumns(double imageWidth, double imageHeight, double availableWidth, double availableHeight)
         {
-            
             int columns = Convert.ToInt32(Math.Floor(availableWidth / imageWidth));
             int rows = (imageHeight > 0) ? Convert.ToInt32(Math.Floor(availableHeight / imageHeight)) : 1;
             return new Tuple<int, int>(rows, columns);
         }
 
-        // Select all cells within the bounding box defined by the initial and currently selected cell
-        private void Grid_SelectWithinBoundingBox()
+        // Given two cells, determine which one is the start vs the end cell
+        private void DetermineTopLeftBottomRightCells(RowColumn cell1, RowColumn cell2, out RowColumn startCell, out RowColumn endCell)
         {
-            // clear the selections as we will rebuild the selections from scratch
-            this.selectedClickableImages.Clear();
-            this.Grid_UnselectAll(); // Clear the selections
+            startCell = new RowColumn();
+            endCell = new RowColumn();
 
-            // get the currently selected cell
-            RowColumn currentlySelectedCell = GetCellRowColumnFromPoint(Mouse.GetPosition(Grid));
-
-            // If the first selected cell doesn't exist, make it the same as the currently selected cell
-            if (this.initiallySelectedCell == null)
-            {
-                this.initiallySelectedCell = currentlySelectedCell;
-            }
-
-            RowColumn topLeftCell;
-            RowColumn bottomRightCell;
-            this.DetermineTopLeftBottomRightCells(initiallySelectedCell, currentlySelectedCell, out topLeftCell, out bottomRightCell);
-
-            // Select the cells defined within the topLeft/BottomRight bounding box
-            int row = topLeftCell.X;
-            int col = topLeftCell.Y;
-            while (true)
-            {
-                ClickableImage ci = Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == col && Grid.GetRow(exp) == row);
-                if (ci == null)
-                {
-                    break;
-                }
-                ci.IsSelected = true;
-                ci.Cell.Background = this.selectedBrush;
-
-                col = (col < bottomRightCell.Y) ? col + 1 : topLeftCell.Y;
-                if (col == topLeftCell.Y)
-                {
-                    row++;
-                }
-                if (row > bottomRightCell.X || (row > bottomRightCell.X && col > bottomRightCell.Y)) // WHy first condition?
-                {
-                    break;
-                }
-            }
-        }
-
-        // Given two RowColumn cell positions, return which is in the top left and which is the bottom right position 
-        private void DetermineTopLeftBottomRightCells(RowColumn startCell, RowColumn currentCell, out RowColumn topLeftCell, out RowColumn bottomRightCell)
-        {
-            // If its in the same row, then order is determined by column
-            if (startCell.X == currentCell.X )
-            {
-                if (startCell.Y <= currentCell.Y)
-                {
-                    topLeftCell = startCell;
-                    bottomRightCell = currentCell;
-                }
-                else
-                {
-                    topLeftCell = currentCell;
-                    bottomRightCell = startCell;
-                }
-                return;
-            }
-            // Rows are different, so order is determined by row number
-            if (startCell.X < currentCell.X)
-            {
-                topLeftCell = startCell;
-                bottomRightCell = currentCell;
-            }
-            else
-            {
-                topLeftCell = currentCell;
-                bottomRightCell = startCell;
-            }
+            startCell = (cell1.X < cell2.X || (cell1.X == cell2.X && cell1.Y <= cell2.Y)) ? cell1 : cell2;
+            endCell = Equals(startCell, cell1) ? cell2 : cell1;
         }
     
         // Given a mouse point, return a point that indicates the (row, column) of the grid that the mouse point is over
-        private RowColumn GetCellRowColumnFromPoint (Point mousePoint)
+        private RowColumn GetCellFromPoint(Point mousePoint)
         {
-            RowColumn cellPosition = new RowColumn(0,0);
+            RowColumn cell = new RowColumn(0, 0);
             double accumulatedHeight = 0.0;
             double accumulatedWidth = 0.0;
 
@@ -291,8 +475,10 @@ namespace Timelapse.Controls
             {
                 accumulatedHeight += rowDefinition.ActualHeight;
                 if (accumulatedHeight >= mousePoint.Y)
+                {
                     break;
-                cellPosition.X++;
+                }
+                cell.X++;
             }
 
             // Calculate which column the mouse was over
@@ -300,33 +486,19 @@ namespace Timelapse.Controls
             {
                 accumulatedWidth += columnDefinition.ActualWidth;
                 if (accumulatedWidth >= mousePoint.X)
+                { 
                     break;
-                cellPosition.Y++;
+                }
+                cell.Y++;
             }
-            return cellPosition;
+            return cell;
         }
 
-        // Unselect all elements in the grid
-        private void Grid_UnselectAll ()
+        // Get the clickable image held by the Grid's specified row,column coordinates 
+        private ClickableImage GetClickableImageFromCell(RowColumn cell)
         {
-            // Unselect all clickable images
-            foreach (ClickableImage ci in this.clickableImagesList)
-            {
-                ci.IsSelected = false;
-                ci.Cell.Background = this.unselectedBrush;
-            }
+            return Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
         }
-
-        // Select the grid elements in the provided list
-        private void Grid_Select(List<ClickableImage> selectedClickableImages)
-        {
-            foreach (ClickableImage ci in selectedClickableImages)
-            {
-                ci.IsSelected = true;
-                ci.Cell.Background = this.selectedBrush;
-            }
-        }
-        #endregion
-
+    #endregion
     }
 }

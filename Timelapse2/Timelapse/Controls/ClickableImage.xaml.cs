@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using Timelapse.Database;
 
 namespace Timelapse.Controls
@@ -14,6 +14,8 @@ namespace Timelapse.Controls
     {
         private const double DESIREDWIDTH = 256;
         private Point point = new Point(0, 0);
+        private Brush unselectedBrush = Brushes.Black;
+        private Brush selectedBrush = Brushes.LightBlue;
 
         public double DesiredRenderWidth
         {
@@ -73,6 +75,7 @@ namespace Timelapse.Controls
             set
             {
                 this.CheckBox.IsChecked = value;
+                this.Cell.Background = this.CheckBox.IsChecked == true ? this.selectedBrush : this.unselectedBrush;
             }
         }
 
@@ -95,24 +98,10 @@ namespace Timelapse.Controls
             this.Image.Source = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.TextBlock.Text = this.ImageRow.FileName;
         }
-        private void Grid_LeftMouseButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            return;
-            int tolerance = 10;
-            if (e.GetPosition(this).X > this.mouseDownCoords.X - tolerance && e.GetPosition(this).X < this.mouseDownCoords.X + tolerance && e.GetPosition(this).Y > this.mouseDownCoords.Y - tolerance && e.GetPosition(this).Y < this.mouseDownCoords.Y + tolerance)
-            {
-                this.CheckBox.IsChecked = !this.CheckBox.IsChecked;
-            }
-        }
 
-        private void Grid_LeftMouseButtonDown(object sender, MouseButtonEventArgs e)
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            return;
-            if (e.ClickCount == 2)
-            {
-                System.Diagnostics.Debug.Print("DoubleClick! " + this.ImageRow.FileName);
-            }
-            this.mouseDownCoords = e.GetPosition(this);
+            this.IsSelected = this.CheckBox.IsChecked == true;
         }
     }
 }
