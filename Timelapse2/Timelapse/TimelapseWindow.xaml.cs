@@ -65,6 +65,7 @@ namespace Timelapse
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
+            this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -1497,6 +1498,7 @@ namespace Timelapse
             this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
             this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
 
+
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             bool newFileToDisplay;
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out newFileToDisplay) == false)
@@ -1544,16 +1546,28 @@ namespace Timelapse
                 if (this.dataHandler.ImageCache.Current.IsVideo)
                 {
                     this.MarkableCanvas.SetNewVideo(this.dataHandler.ImageCache.Current.GetFileInfo(this.dataHandler.FileDatabase.FolderPath), displayMarkers);
-                    EnableImageManipulationMenus(false);
+                    this.EnableImageManipulationMenus(false);
+
                 }
                 else
                 {
                     this.MarkableCanvas.SetNewImage(this.dataHandler.ImageCache.GetCurrentImage(), displayMarkers);
-                    EnableImageManipulationMenus(true);
+                    this.EnableImageManipulationMenus(true);
                 }
 
                 // Draw markers for this file
                 this.MarkableCanvas_UpdateMarkers();
+            }
+            else if (!this.MarkableCanvas.IsClickableImagesGridVisible)
+            {
+                if (this.dataHandler.ImageCache.Current.IsVideo)
+                {
+                    this.MarkableCanvas.SwitchToVideoView();
+                }
+                else
+                {
+                    this.MarkableCanvas.SwitchToImageView();
+                }
             }
 
             // if the data grid has been bound, set the selected row to the current file and scroll so it's visible
@@ -3518,6 +3532,25 @@ namespace Timelapse
         }
         #endregion
 
- 
+        // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
+        private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
+        {
+           if (e.ImageRow != null )
+            {
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
+                this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+
+                // Switch to either the video or image view as needed
+                if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
+                {
+                    this.MarkableCanvas.SwitchToVideoView();
+                }
+                else
+                {
+                    this.MarkableCanvas.SwitchToImageView();
+                }
+            }
+        }
     }
 }

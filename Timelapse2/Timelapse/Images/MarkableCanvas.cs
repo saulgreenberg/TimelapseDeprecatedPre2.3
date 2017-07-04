@@ -36,10 +36,11 @@ namespace Timelapse.Images
         private TransformGroup transformGroup;
         private TranslateTransform imageToDisplayTranslation;
 
+        // magnifying glass, including increment for increasing or decreasing magnifying glass zoom
         private MagnifyingGlass magnifyingGlass;
-        // increment for increasing or decreasing magnifying glass zoom
         private double magnifyingGlassZoomStep;
 
+        // markers
         private List<Marker> markers;
 
         // mouse and position states used to discriminate clicks from drags
@@ -63,6 +64,8 @@ namespace Timelapse.Images
             { 2, 256 },
             { 3, 128 }
         };
+
+        private bool displayingImage = false;
         #endregion
 
         #region Properties
@@ -198,12 +201,15 @@ namespace Timelapse.Images
             this.transformGroup.Children.Add(this.imageToDisplayScale);
             this.transformGroup.Children.Add(this.imageToDisplayTranslation);
 
+            // set up the canvas
+            this.MouseWheel += this.ImageOrCanvas_MouseWheel;
+
             // set up display image
             this.ImageToDisplay = new Image();
             this.ImageToDisplay.HorizontalAlignment = HorizontalAlignment.Left;
             this.ImageToDisplay.MouseDown += this.ImageOrCanvas_MouseDown;
             this.ImageToDisplay.MouseUp += this.ImageOrCanvas_MouseUp;
-            this.ImageToDisplay.MouseWheel += this.ImageOrCanvas_MouseWheel;
+            //this.ImageToDisplay.MouseWheel += this.ImageOrCanvas_MouseWheel;
             this.ImageToDisplay.RenderTransform = this.transformGroup;
             this.ImageToDisplay.SizeChanged += this.ImageToDisplay_SizeChanged;
             this.ImageToDisplay.VerticalAlignment = VerticalAlignment.Top;
@@ -216,6 +222,7 @@ namespace Timelapse.Images
             this.VideoToDisplay.HorizontalAlignment = HorizontalAlignment.Left;
             this.VideoToDisplay.SizeChanged += this.VideoToDisplay_SizeChanged;
             this.VideoToDisplay.VerticalAlignment = VerticalAlignment.Top;
+            this.VideoToDisplay.MouseWheel += this.ImageOrCanvas_MouseWheel;
             Canvas.SetLeft(this.VideoToDisplay, 0);
             Canvas.SetTop(this.VideoToDisplay, 0);
             this.Children.Add(this.VideoToDisplay);
@@ -223,7 +230,7 @@ namespace Timelapse.Images
             // Set up zoomed out grid showing multitude of images
             this.ClickableImagesGrid = new ClickableImagesGrid();
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
+            //this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
             this.clickableImagesState = 0;
             Canvas.SetZIndex(this.ClickableImagesGrid, 1000); // High Z-index so that it appears above other objects and magnifier
             Canvas.SetLeft(this.ClickableImagesGrid, 0);
@@ -398,13 +405,21 @@ namespace Timelapse.Images
         }
 
         // Use the  mouse wheel to scale the image
-        private bool showingClickaleImagesGrid = false;
+        //public bool IsClickableImagesGridVisible { get; set; }
+        public bool IsClickableImagesGridVisible
+        {
+            get
+            {
+                return this.ClickableImagesGrid.Visibility == Visibility.Visible;
+            }
+        }
         private void ImageOrCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             lock (this)
             {
                 // We will scale around the current point
                 Point mousePosition = e.GetPosition(this.ImageToDisplay);
+                
                 bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
 
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
@@ -418,36 +433,48 @@ namespace Timelapse.Images
                     // State: zoomed out on clickable grid, but not at the maximum step
                     // Zoom out another step
                     this.clickableImagesState++;
-                    this.showingClickaleImagesGrid = true;
-                    this.ClickableImagesGrid.Visibility = Visibility.Visible;
-                    this.VideoToDisplay.Visibility = Visibility.Collapsed;
-                    this.ImageToDisplay.Visibility = Visibility.Collapsed;
-                    
+                    this.SwitchToClickableGridView();
                     this.RefreshClickableImagesGrid(this.clickableImagesState);
                 }
-                else if (this.showingClickaleImagesGrid == true && this.clickableImagesState > 1)
+                else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
                 {
-                    // State: zoomed in on clickable grid, but not at the minimum step
+                    // State: currently zoomed in on clickable grid, but not at the minimum step
                     // Zoom in another step
                     this.clickableImagesState--;
                     this.RefreshClickableImagesGrid(this.clickableImagesState);
                 }
-                else if (this.showingClickaleImagesGrid == true)
+                else if (this.IsClickableImagesGridVisible == true)
                 {
                     // State: zoomed in on clickable grid, but at the minimum step
-                    // Switch to the image
-                    this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-                    this.VideoToDisplay.Visibility = Visibility.Collapsed;
-                    this.ImageToDisplay.Visibility = Visibility.Visible;
-                    this.showingClickaleImagesGrid = false;
-                    this.clickableImagesState = 0;
+                    // Switch to the image or video, depending on what was last displayed
+                    if (this.displayingImage)
+                    {
+                        this.SwitchToImageView();
+                    }
+                    else
+                    {
+                        this.SwitchToVideoView();
+                    }
                 }
-                else
+                else if (mousePosition.X <= this.ImageToDisplay.ActualWidth && mousePosition.Y <= this.ImageToDisplay.ActualHeight) 
                 {
-                    // State: We are on the image
+                    // State: zooming atop the image
                     // Zoom in or out onto the image as needed
-                    this.ScaleImage(mousePosition, zoomIn);
-                    this.clickableImagesState = 0;
+                    if (this.displayingImage)
+                    { 
+                        this.ScaleImage(mousePosition, zoomIn);
+                        this.clickableImagesState = 0;
+                    }
+                }
+                else 
+                {
+                    // State: zooming atop the canvas
+                    // Only allow zoom out
+                    if (this.displayingImage & zoomIn == false)
+                    {
+                        this.ScaleImage(mousePosition, zoomIn);
+                        this.clickableImagesState = 0;
+                    }
                 }
             }
         }
@@ -585,15 +612,16 @@ namespace Timelapse.Images
             // due to the need to expose a marker property but is mitigated by accepting new markers through this API and performing the set above as 
             // this.markers rather than this.Markers.
             this.ImageToMagnify.Source = bitmapSource;
+            this.displayingImage = true;
 
             // ensure display image is visible
-            this.ImageToDisplay.Visibility = Visibility.Visible;
-
-            // ensure any previous video is stopped and hidden
-            if (this.VideoToDisplay.Visibility == Visibility.Visible)
+            if (this.clickableImagesState == 0)
             {
-                this.VideoToDisplay.Pause();
-                this.VideoToDisplay.Visibility = Visibility.Collapsed;
+                this.SwitchToImageView();
+            }
+            else
+            {
+                this.SwitchToClickableGridView();
             }
         }
 
@@ -602,16 +630,22 @@ namespace Timelapse.Images
             if (videoFile.Exists == false)
             {
                 this.SetNewImage(Constant.Images.FileNoLongerAvailable.Value, markers);
+                this.displayingImage = true;
                 return;
             }
 
             this.markers = markers;
             this.VideoToDisplay.SetSource(new Uri(videoFile.FullName));
+            this.displayingImage = false;
 
-            this.ImageToDisplay.Visibility = Visibility.Collapsed;
-            this.magnifyingGlass.Hide();
-            this.VideoToDisplay.Visibility = Visibility.Visible;
-            // leave the magnifying glass's enabled state unchanged so user doesn't have to constantly keep re-enabling it in hybrid image sets
+            if (this.clickableImagesState == 0)
+            {
+                this.SwitchToVideoView();
+            }
+            else
+            {
+                this.SwitchToClickableGridView();
+            }
         }
         #endregion
 
@@ -968,13 +1002,44 @@ namespace Timelapse.Images
         }
         public void RefreshIfMultipleImagesAreDisplayed()
         {
-            if (this.showingClickaleImagesGrid == true)
+            if (this.IsClickableImagesGridVisible == true)
             {
                 // State: zoomed in on clickable grid.
                 // Updating it ensures that the correct image is shown as the first cell
                 this.RefreshClickableImagesGrid(this.clickableImagesState);
             }
         }
+        #endregion
+
+        #region Window shuffling
+        public void SwitchToImageView()
+        {
+            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            //this.IsClickableImagesGridVisible = false;
+            this.clickableImagesState = 0;
+            this.ImageToDisplay.Visibility = Visibility.Visible;
+            this.magnifyingGlass.Show();
+            this.VideoToDisplay.Visibility = Visibility.Collapsed;
+            this.VideoToDisplay.Pause();
+        }
+        public void SwitchToVideoView()
+        {
+            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.clickableImagesState = 0;
+            this.ImageToDisplay.Visibility = Visibility.Collapsed;
+            this.magnifyingGlass.Hide();
+            this.VideoToDisplay.Visibility = Visibility.Visible;
+        }
+
+        public void SwitchToClickableGridView()
+        {
+            this.ClickableImagesGrid.Visibility = Visibility.Visible;
+            this.ImageToDisplay.Visibility = Visibility.Collapsed;
+            this.magnifyingGlass.Hide();
+            this.VideoToDisplay.Visibility = Visibility.Collapsed;
+            this.VideoToDisplay.Pause();
+        }
+
         #endregion
     }
 }

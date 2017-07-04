@@ -166,6 +166,7 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
     <Compile Include="Controls\FilePlayer.xaml.cs">

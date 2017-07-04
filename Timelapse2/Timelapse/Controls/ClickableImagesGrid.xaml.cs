@@ -11,15 +11,18 @@ using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
 {
+
     /// <summary>
     /// Interaction logic for ClickableImagesGrid.xaml
     /// </summary>
     public partial class ClickableImagesGrid : UserControl
     {
         #region Public properties
+
         public FileTable FileTable { get; set; }
         public int FileTableStartIndex { get; set; }
 
+      
         // The root folder containing the template
         public string FolderPath { get; set; }
         #endregion 
@@ -37,6 +40,7 @@ namespace Timelapse.Controls
         private RowColumn cellChosenOnMouseDown;
         private bool modifierKeyPressedOnMouseDown = false;
         private RowColumn cellWithLastMouseOver = new RowColumn(-1, -1);
+        private bool cellChosenOnMouseDownSelectionState = false;
         #endregion
 
         // Constructor
@@ -174,17 +178,17 @@ namespace Timelapse.Controls
         #region Mouse callbacks
         private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            ClickableImage ci;
             this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(Grid));
+            RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
                 // CTL mouse down: change that cell (and only that cell's) state
                 this.modifierKeyPressedOnMouseDown = true;
-
-                RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
                 if (Equals(this.cellChosenOnMouseDown, currentCell))
                 {
-                    ClickableImage ci = GetClickableImageFromCell(currentCell);
+                    ci = GetClickableImageFromCell(currentCell);
                     if (ci != null)
                     {
                         ci.IsSelected = !ci.IsSelected;
@@ -195,14 +199,24 @@ namespace Timelapse.Controls
             {
                 // SHIFT mouse down: extend the selection (if any) to this point.
                 this.modifierKeyPressedOnMouseDown = true;
-                RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
                 this.GridExtendSelectionFrom(currentCell);
             }
 
-            // SAULXX: Double click - ToDO: Raise event so that the calling app can navigate to that image.
+
+
+            ci = this.GetClickableImageFromCell(currentCell);
+            if (ci != null)
+            {
+                this.cellChosenOnMouseDownSelectionState = ci.IsSelected;
+                ci.IsSelected = true;
+            }
+
+            // If this is a double click, raise the Double click event, e.g., so that the calling app can navigate to that image.
             if (e.ClickCount == 2)
             {
-                System.Diagnostics.Debug.Print("DoubleClick! " + GetCellFromPoint(Mouse.GetPosition(Grid)).ToString());
+                ci = GetClickableImageFromCell(currentCell);
+                ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci == null ? null : ci.ImageRow);
+                this.OnDoubleClick(eventArgs);
             }
         }
 
@@ -248,9 +262,9 @@ namespace Timelapse.Controls
                 ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
                 if (ci != null)
                 {
-                    bool newState = !ci.IsSelected;
+                    //bool newState = !ci.IsSelected;
                     this.GridUnselectAll(); // Clear the selections
-                    ci.IsSelected = newState;
+                    ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
                 }
             }
             else
@@ -499,6 +513,19 @@ namespace Timelapse.Controls
         {
             return Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
         }
-    #endregion
+        #endregion
+
+        #region Events
+
+        public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
+
+        protected virtual void OnDoubleClick (ClickableImagesGridEventArgs e)
+        {
+            if (this.DoubleClick != null)
+            {
+                this.DoubleClick(this, e);
+            }
+        }
+        #endregion
     }
 }
