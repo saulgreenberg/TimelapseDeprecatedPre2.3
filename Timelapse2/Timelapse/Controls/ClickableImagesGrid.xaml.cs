@@ -132,10 +132,14 @@ namespace Timelapse.Controls
             for (int r = 0; r < availableRowsColumns.Item1; r++)
             {
                 this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
+                //SAULXX: While using Auto will best size the rows/columns, the issue is that we don't know how many rows/columns we actually need
+                //this.Grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             }
             for (int c = 0; c < availableRowsColumns.Item2; c++)
             {
                 this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
+                //SAULXX: While using Auto will best size the rows/columns, the issue is that we don't know how many rows/columns we actually need
+                //this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = GridLength.Auto });
             }
 
             // Add an image to each available cell, as long as there are images to add.
@@ -201,8 +205,6 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = true;
                 this.GridExtendSelectionFrom(currentCell);
             }
-
-
 
             ci = this.GetClickableImageFromCell(currentCell);
             if (ci != null)

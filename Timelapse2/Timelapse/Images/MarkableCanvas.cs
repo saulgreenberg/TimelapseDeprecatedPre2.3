@@ -209,7 +209,6 @@ namespace Timelapse.Images
             this.ImageToDisplay.HorizontalAlignment = HorizontalAlignment.Left;
             this.ImageToDisplay.MouseDown += this.ImageOrCanvas_MouseDown;
             this.ImageToDisplay.MouseUp += this.ImageOrCanvas_MouseUp;
-            //this.ImageToDisplay.MouseWheel += this.ImageOrCanvas_MouseWheel;
             this.ImageToDisplay.RenderTransform = this.transformGroup;
             this.ImageToDisplay.SizeChanged += this.ImageToDisplay_SizeChanged;
             this.ImageToDisplay.VerticalAlignment = VerticalAlignment.Top;
@@ -230,7 +229,6 @@ namespace Timelapse.Images
             // Set up zoomed out grid showing multitude of images
             this.ClickableImagesGrid = new ClickableImagesGrid();
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            //this.ClickableImagesGrid.MouseWheel += this.ImageOrCanvas_MouseWheel;
             this.clickableImagesState = 0;
             Canvas.SetZIndex(this.ClickableImagesGrid, 1000); // High Z-index so that it appears above other objects and magnifier
             Canvas.SetLeft(this.ClickableImagesGrid, 0);
@@ -253,7 +251,7 @@ namespace Timelapse.Images
             this.magnifyingGlass = new MagnifyingGlass(this);
             this.magnifyingGlassZoomStep = Constant.MarkableCanvas.MagnifyingGlassZoomIncrement;
 
-            Canvas.SetZIndex(this.magnifyingGlass, 1000); // Should always be in front
+            Canvas.SetZIndex(this.magnifyingGlass, 999); // Should always be in front
             this.Children.Add(this.magnifyingGlass);
 
             // Initialize double click timing
@@ -387,11 +385,7 @@ namespace Timelapse.Images
                 this.SendMarkerEvent(new MarkerEventArgs(marker, true));
             }
             // Show the magnifying glass if its enables, as it may have been hidden during other mouseDown operations
-            if (this.magnifyingGlass.IsEnabled)
-            {
-                this.magnifyingGlass.Show();
-                this.RedrawMagnifyingGlassIfVisible();
-            }
+            this.ShowMagnifierIfEnabledOtherwiseHide();
         }
 
         // Remove a marker on a right mouse button up event
@@ -405,7 +399,6 @@ namespace Timelapse.Images
         }
 
         // Use the  mouse wheel to scale the image
-        //public bool IsClickableImagesGridVisible { get; set; }
         public bool IsClickableImagesGridVisible
         {
             get
@@ -415,13 +408,15 @@ namespace Timelapse.Images
         }
         private void ImageOrCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            Point mousePosition = e.GetPosition(this.ImageToDisplay);
+            bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
+            this.TryZoomInOrOut(zoomIn, mousePosition);
+        }
+
+        private void TryZoomInOrOut(bool zoomIn, Point mousePosition)
+        {
             lock (this)
             {
-                // We will scale around the current point
-                Point mousePosition = e.GetPosition(this.ImageToDisplay);
-                
-                bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
-
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
                     if (this.clickableImagesState >= 3)
@@ -447,6 +442,8 @@ namespace Timelapse.Images
                 {
                     // State: zoomed in on clickable grid, but at the minimum step
                     // Switch to the image or video, depending on what was last displayed
+                    // update the magnifying glass
+
                     if (this.displayingImage)
                     {
                         this.SwitchToImageView();
@@ -456,22 +453,19 @@ namespace Timelapse.Images
                         this.SwitchToVideoView();
                     }
                 }
-                else if (mousePosition.X <= this.ImageToDisplay.ActualWidth && mousePosition.Y <= this.ImageToDisplay.ActualHeight) 
+                else
                 {
-                    // State: zooming atop the image
-                    // Zoom in or out onto the image as needed
                     if (this.displayingImage)
-                    { 
-                        this.ScaleImage(mousePosition, zoomIn);
-                        this.clickableImagesState = 0;
-                    }
-                }
-                else 
-                {
-                    // State: zooming atop the canvas
-                    // Only allow zoom out
-                    if (this.displayingImage & zoomIn == false)
                     {
+                        // If we are zooming in off the image, then correct the mouse position to the edge of the image
+                        if (mousePosition.X > this.ImageToDisplay.ActualWidth)
+                        {
+                            mousePosition.X = this.ImageToDisplay.ActualWidth;
+                        }
+                        if (mousePosition.Y > this.ImageToDisplay.ActualHeight)
+                        {
+                            mousePosition.Y = this.ImageToDisplay.ActualHeight;
+                        }
                         this.ScaleImage(mousePosition, zoomIn);
                         this.clickableImagesState = 0;
                     }
@@ -545,23 +539,16 @@ namespace Timelapse.Images
         // if it's < or > key zoom out or in around the mouse point
         private void MarkableCanvas_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            Point mousePosition;
             switch (e.Key)
             {
-                // zoom in
                 case Key.OemPeriod:
-                    Rect imageToDisplayBounds = new Rect(0.0, 0.0, this.ImageToDisplay.ActualWidth, this.ImageToDisplay.ActualHeight);
-                    mousePosition = Mouse.GetPosition(this.ImageToDisplay);
-                    if (imageToDisplayBounds.Contains(mousePosition) == false)
-                    {
-                        break; // ignore if mouse is not on the image
-                    }
-                    this.ScaleImage(mousePosition, true);
+                    // '>' : zoom in
+                    this.TryZoomInOrOut(true, Mouse.GetPosition(this.ImageToDisplay));
                     break;
                 // zoom out
                 case Key.OemComma:
-                    mousePosition = Mouse.GetPosition(this.ImageToDisplay);
-                    this.ScaleImage(mousePosition, false);
+                    // '<' : zoom out
+                    this.TryZoomInOrOut(false, Mouse.GetPosition(this.ImageToDisplay));
                     break;
                 // if the current file's a video allow the user to hit the space bar to start or stop playing the video
                 case Key.Space:
@@ -594,7 +581,7 @@ namespace Timelapse.Images
         /// </summary>
         public void SetNewImage(BitmapSource bitmapSource, List<Marker> markers)
         {
-            // change to new markres
+            // change to new markers
             this.markers = markers;
 
             this.ImageToDisplay.Source = bitmapSource;
@@ -987,6 +974,20 @@ namespace Timelapse.Images
                                                  this.ImageToDisplay.ActualHeight,
                                                  this.canvasToMagnify);
         }
+
+        // This should be called on images only
+        private void ShowMagnifierIfEnabledOtherwiseHide()
+        {
+            if (this.magnifyingGlass.IsEnabled)
+            {
+                this.magnifyingGlass.Show();
+                this.RedrawMagnifyingGlassIfVisible();
+            }
+            else
+            {
+                this.magnifyingGlass.Hide();
+            }
+        }
         #endregion
 
         #region ClickableImagesGrid
@@ -1018,9 +1019,10 @@ namespace Timelapse.Images
             //this.IsClickableImagesGridVisible = false;
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Visible;
-            this.magnifyingGlass.Show();
+            //this.magnifyingGlass.Show();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
+            this.ShowMagnifierIfEnabledOtherwiseHide();
         }
         public void SwitchToVideoView()
         {

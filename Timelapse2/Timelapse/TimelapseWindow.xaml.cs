@@ -1505,7 +1505,7 @@ namespace Timelapse
             {
                 throw new ArgumentOutOfRangeException("newImageRow", String.Format("{0} is not a valid row index in the image table.", fileIndex));
             }
-
+            
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
             // the call to TryMoveToImage() above refreshes the data stored under this.dataHandler.ImageCache.Current.
@@ -1541,6 +1541,7 @@ namespace Timelapse
             // this avoids unnecessary image reloads and refreshes in cases where ShowFile() is just being called to refresh controls
             this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers(false);
+
             if (newFileToDisplay)
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
@@ -1552,11 +1553,11 @@ namespace Timelapse
                 else
                 {
                     this.MarkableCanvas.SetNewImage(this.dataHandler.ImageCache.GetCurrentImage(), displayMarkers);
+                    // Draw markers for this file
+                    this.MarkableCanvas_UpdateMarkers();
                     this.EnableImageManipulationMenus(true);
                 }
 
-                // Draw markers for this file
-                this.MarkableCanvas_UpdateMarkers();
             }
             else if (!this.MarkableCanvas.IsClickableImagesGridVisible)
             {
@@ -1567,6 +1568,7 @@ namespace Timelapse
                 else
                 {
                     this.MarkableCanvas.SwitchToImageView();
+                    this.MarkableCanvas_UpdateMarkers();
                 }
             }
 
@@ -3537,9 +3539,7 @@ namespace Timelapse
         {
            if (e.ImageRow != null )
             {
-                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
-                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+ 
 
                 // Switch to either the video or image view as needed
                 if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
@@ -3550,6 +3550,9 @@ namespace Timelapse
                 {
                     this.MarkableCanvas.SwitchToImageView();
                 }
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
+                this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
         }
     }
