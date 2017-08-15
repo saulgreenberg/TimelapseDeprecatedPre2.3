@@ -283,9 +283,18 @@ namespace Timelapse
             public const int ThumbnailWidth = 128;
 
             public static readonly Lazy<BitmapImage> Corrupt = Images.Load("Corrupted.jpg");
+            public static readonly Lazy<BitmapImage> Corrupt512 = Images.Load("Corrupted512.jpg");
+            public static readonly Lazy<BitmapImage> Corrupt256 = Images.Load("Corrupted256.jpg");
+            public static readonly Lazy<BitmapImage> Corrupt128 = Images.Load("Corrupted128.jpg");
             public static readonly Lazy<BitmapImage> FileNoLongerAvailable = Images.Load("FileNoLongerAvailable.jpg");
+            public static readonly Lazy<BitmapImage> FileNoLongerAvailable512 = Images.Load("FileNoLongerAvailable512.jpg");
+            public static readonly Lazy<BitmapImage> FileNoLongerAvailable256 = Images.Load("FileNoLongerAvailable256.jpg");
+            public static readonly Lazy<BitmapImage> FileNoLongerAvailable128 = Images.Load("FileNoLongerAvailable128.jpg");
             public static readonly Lazy<BitmapImage> NoFilesAvailable = Images.Load("NoFilesAvailable.jpg");
             public static readonly Lazy<BitmapImage> BlankVideo = Images.Load("BlankVideo.jpg");
+            public static readonly Lazy<BitmapImage> BlankVideo512 = Images.Load("BlankVideo512.jpg");
+            public static readonly Lazy<BitmapImage> BlankVideo256 = Images.Load("BlankVideo256.jpg");
+            public static readonly Lazy<BitmapImage> BlankVideo128 = Images.Load("BlankVideo128.jpg");
             public static readonly Lazy<BitmapImage> FileAlreadyLoaded = Images.Load("FileAlreadyLoaded.jpg");
 
             private static Lazy<BitmapImage> Load(string fileName)
@@ -298,7 +307,7 @@ namespace Timelapse
                         return (BitmapImage)Application.Current.Resources[fileName];
                     }
 
-                // if it's not (editor, unit tests, resource not listed in App.xaml) fall back to loading from the resources assembly
+                // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
                 BitmapImage image = new BitmapImage();
                     image.BeginInit();
                     image.UriSource = new Uri("pack://application:,,/Resources/" + fileName);

@@ -28,7 +28,24 @@ namespace Timelapse.Database
             string path = this.GetFilePath(imageFolderPath);
             if (!File.Exists(path))
             {
-                return Constant.Images.FileNoLongerAvailable.Value;
+                if (desiredWidth == null)
+                {
+                    return Constant.Images.FileNoLongerAvailable.Value;
+                }
+                else
+                {
+                    switch (desiredWidth)
+                    {
+                        case 512:
+                            return Constant.Images.FileNoLongerAvailable512.Value;
+                        case 256:
+                            return Constant.Images.FileNoLongerAvailable256.Value;
+                        case 128:
+                            return Constant.Images.FileNoLongerAvailable128.Value;
+                        default:
+                            return Constant.Images.FileNoLongerAvailable.Value;
+                    }
+                }
             }
 
             MediaPlayer mediaPlayer = new MediaPlayer();
@@ -109,7 +126,24 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 Utilities.PrintFailure(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                return Constant.Images.BlankVideo.Value;
+                if (desiredWidth == null)
+                {
+                    return Constant.Images.BlankVideo.Value;
+                }
+                else
+                {
+                    switch (desiredWidth)
+                    {
+                        case 512:
+                            return Constant.Images.BlankVideo512.Value;
+                        case 256:
+                            return Constant.Images.BlankVideo256.Value;
+                        case 128:
+                            return Constant.Images.BlankVideo128.Value;
+                        default:
+                            return Constant.Images.BlankVideo.Value;
+                    }
+                }
             }
         }
     }

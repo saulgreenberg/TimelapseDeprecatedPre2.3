@@ -8,10 +8,14 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid Name="Cell" Background="Black">
         <Grid.RowDefinitions>
+            <RowDefinition Name="RowDef"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Name="ColDef" />
         </Grid.ColumnDefinitions>
-        <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
+        <Viewbox Name="Viewbox" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
+        </Viewbox>
         <Viewbox Height="20" Width="26"  HorizontalAlignment="Left" VerticalAlignment="Top">
             <CheckBox Name="CheckBox" Grid.Row="0" Grid.Column="0" IsChecked="False" Click="CheckBox_Click" />
         </Viewbox>

@@ -4,8 +4,10 @@ using MetadataExtractor.Formats.Exif.Makernotes;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -214,7 +216,24 @@ namespace Timelapse.Database
             string path = this.GetFilePath(baseFolderPath);
             if (!File.Exists(path))
             {
-                return Constant.Images.FileNoLongerAvailable.Value;
+                if (desiredWidth == null)
+                {
+                    return Constant.Images.FileNoLongerAvailable.Value;
+                }
+                else
+                { 
+                    switch (desiredWidth)
+                    {
+                        case 512:
+                            return Constant.Images.FileNoLongerAvailable512.Value;
+                        case 256:
+                            return Constant.Images.FileNoLongerAvailable256.Value;
+                        case 128:
+                            return Constant.Images.FileNoLongerAvailable128.Value;
+                        default:
+                            return Constant.Images.FileNoLongerAvailable.Value;
+                    }
+                }
             }
             try
             {
@@ -245,7 +264,24 @@ namespace Timelapse.Database
             {
                 // We don't show the exception (Exception exception)
                 Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: Loading of {0} failed in LoadBitmap - Images.Corrupt returned.", this.FileName));
-                return Constant.Images.Corrupt.Value;
+                if (desiredWidth == null)
+                {
+                    return Constant.Images.Corrupt.Value;
+                }
+                else
+                {
+                    switch (desiredWidth)
+                    {
+                        case 512:
+                            return Constant.Images.Corrupt512.Value;
+                        case 256:
+                            return Constant.Images.Corrupt256.Value;
+                        case 128:
+                            return Constant.Images.Corrupt128.Value;
+                        default:
+                            return Constant.Images.Corrupt.Value;
+                    }
+                }
             }
         }
 

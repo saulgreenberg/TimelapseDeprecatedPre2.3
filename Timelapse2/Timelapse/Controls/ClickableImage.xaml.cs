@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Timelapse.Database;
 
 namespace Timelapse.Controls
@@ -92,11 +93,14 @@ namespace Timelapse.Controls
         {
         }
 
-        public void Rerender(double width)
+        public Double Rerender(double width)
         {
             this.DesiredRenderWidth = width;
-            this.Image.Source = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
+            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
+            this.Image.Source = bf;
             this.TextBlock.Text = this.ImageRow.FileName;
+            this.Image.Height = bf.PixelHeight;
+            return bf.PixelHeight;
         }
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)

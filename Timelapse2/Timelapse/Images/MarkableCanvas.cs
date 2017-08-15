@@ -275,7 +275,6 @@ namespace Timelapse.Images
         // On Mouse down, record the location, and who sent it.
         // We will use this information on move and up events to discriminate between 
         // panning/zooming vs. marking. 
-        // SAULXXX: Modify Down/Move/Up code to make it cleaner. Likely lots of uneeded redundancy
         private void ImageOrCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             this.previousMousePosition = e.GetPosition(this);
@@ -411,66 +410,6 @@ namespace Timelapse.Images
             Point mousePosition = e.GetPosition(this.ImageToDisplay);
             bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
             this.TryZoomInOrOut(zoomIn, mousePosition);
-        }
-
-        private void TryZoomInOrOut(bool zoomIn, Point mousePosition)
-        {
-            lock (this)
-            {
-                if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {
-                    if (this.clickableImagesState >= 3)
-                    {
-                        // State: zoomed out maximum allowable steps on clickable grid
-                        // Don't zoom out any more
-                        return;
-                    }
-                    // State: zoomed out on clickable grid, but not at the maximum step
-                    // Zoom out another step
-                    this.clickableImagesState++;
-                    this.SwitchToClickableGridView();
-                    this.RefreshClickableImagesGrid(this.clickableImagesState);
-                }
-                else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
-                {
-                    // State: currently zoomed in on clickable grid, but not at the minimum step
-                    // Zoom in another step
-                    this.clickableImagesState--;
-                    this.RefreshClickableImagesGrid(this.clickableImagesState);
-                }
-                else if (this.IsClickableImagesGridVisible == true)
-                {
-                    // State: zoomed in on clickable grid, but at the minimum step
-                    // Switch to the image or video, depending on what was last displayed
-                    // update the magnifying glass
-
-                    if (this.displayingImage)
-                    {
-                        this.SwitchToImageView();
-                    }
-                    else
-                    {
-                        this.SwitchToVideoView();
-                    }
-                }
-                else
-                {
-                    if (this.displayingImage)
-                    {
-                        // If we are zooming in off the image, then correct the mouse position to the edge of the image
-                        if (mousePosition.X > this.ImageToDisplay.ActualWidth)
-                        {
-                            mousePosition.X = this.ImageToDisplay.ActualWidth;
-                        }
-                        if (mousePosition.Y > this.ImageToDisplay.ActualHeight)
-                        {
-                            mousePosition.Y = this.ImageToDisplay.ActualHeight;
-                        }
-                        this.ScaleImage(mousePosition, zoomIn);
-                        this.clickableImagesState = 0;
-                    }
-                }
-            }
         }
 
         // Hide the magnifying glass when the mouse cursor leaves the image
@@ -989,8 +928,67 @@ namespace Timelapse.Images
             }
         }
         #endregion
+        #region ClickableImages Grid
+        private void TryZoomInOrOut(bool zoomIn, Point mousePosition)
+        {
+            lock (this)
+            {
+                if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                {
+                    if (this.clickableImagesState >= 3)
+                    {
+                        // State: zoomed out maximum allowable steps on clickable grid
+                        // Don't zoom out any more
+                        return;
+                    }
+                    // State: zoomed out on clickable grid, but not at the maximum step
+                    // Zoom out another step
+                    this.clickableImagesState++;
+                    this.SwitchToClickableGridView();
+                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                }
+                else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
+                {
+                    // State: currently zoomed in on clickable grid, but not at the minimum step
+                    // Zoom in another step
+                    this.clickableImagesState--;
+                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                }
+                else if (this.IsClickableImagesGridVisible == true)
+                {
+                    // State: zoomed in on clickable grid, but at the minimum step
+                    // Switch to the image or video, depending on what was last displayed
+                    // update the magnifying glass
 
-        #region ClickableImagesGrid
+                    if (this.displayingImage)
+                    {
+                        this.SwitchToImageView();
+                    }
+                    else
+                    {
+                        this.SwitchToVideoView();
+                    }
+                }
+                else
+                {
+                    if (this.displayingImage)
+                    {
+                        // If we are zooming in off the image, then correct the mouse position to the edge of the image
+                        if (mousePosition.X > this.ImageToDisplay.ActualWidth)
+                        {
+                            mousePosition.X = this.ImageToDisplay.ActualWidth;
+                        }
+                        if (mousePosition.Y > this.ImageToDisplay.ActualHeight)
+                        {
+                            mousePosition.Y = this.ImageToDisplay.ActualHeight;
+                        }
+                        this.ScaleImage(mousePosition, zoomIn);
+                        this.clickableImagesState = 0;
+                    }
+                }
+            }
+        }
+
         private void RefreshClickableImagesGrid(int state)
         {
             if (this.ClickableImagesGrid == null)

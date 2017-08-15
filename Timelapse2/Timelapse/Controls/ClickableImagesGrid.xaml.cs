@@ -58,6 +58,11 @@ namespace Timelapse.Controls
         //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
         public void Refresh(double desiredWidth, Point availableSize)
         {
+            // If nothing is loaded, then there is nothing to refresh
+            if (FileTable == null)
+            {
+                return;
+            }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
             // As we will rebuild the grid and its items, we need to clear it first
@@ -65,110 +70,127 @@ namespace Timelapse.Controls
             this.Grid.ColumnDefinitions.Clear();
             this.Grid.Children.Clear();
 
-            // Get an estimate about the number of cells, i.e., how many rows and columns we can fit into the available space.
-            // We try a 16:9 aspect ratio, which will likely equal to or overestimate the number of cells. 
-            // Using that, we will then read in those number of images and get the actual worst-case aspect ratio 
-            Tuple<int, int> availableRowsColumns = this.CalculateRowsAndColumns(desiredWidth, desiredWidth * 9.0 / 16.0, availableSize.X, availableSize.Y);
-            int numberOfCells = availableRowsColumns.Item1 * availableRowsColumns.Item2;
+            // Create the number of columns that can fit into the available space
+            int columnCount = Convert.ToInt32(Math.Floor(availableSize.X / desiredWidth));
+            for (int thisColumn = 0; thisColumn < columnCount; thisColumn++)
+            { 
+                this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
+            }
 
-            // Create the image list based on the overestimate of the number of Cells.
-            // We do this as we need to get the actual 'worst-case' aspect ratio 
+            // Add images to successive columns in the row (creating a new row if needed after each iteration), checking to see:
+            // - if those images are in the image cache (note that these will be in the same order, so can check as we add images and move through the cache 
+            // until:
+            // - there are no more images left
+            // - that row does't fit the available space
+            int rowNumber = 0;
+            int fileTableIndex = this.FileTableStartIndex;
+            int cachedImageListIndex = 0;
+            ClickableImage ci;
+            Double maxImageHeight = 0;
+            Double combinedRowHeight = 0;
             this.clickableImagesList = new List<ClickableImage>();
-
-            int counted = 0;
-            for (int index = this.FileTableStartIndex; index < this.FileTable.RowCount && counted <= numberOfCells; index++)
+            List<ClickableImage> clickableImagesRow = new List<ClickableImage>();
+            Double imageHeight = 0;
+            while (true)
             {
-                ClickableImage ci;
-                counted++;
-                string path = Path.Combine(this.FileTable[index].RelativePath, this.FileTable[index].FileName);
-
-                // If we already have a copy of the image, reuse that instead of recreating it.
-                bool skip = false;
-                if (this.cachedImageList != null)
+                // Row: Collect potential images for each row, checking height as we go
+                for (int columnIndex = 0; columnIndex < columnCount && fileTableIndex < FileTable.Count(); columnIndex++)
                 {
-                    // Search the cached imageList for the image by its path. Note that if its a lower resolution image, we re-render it.
-                    // This also keeps the checkbox state. 
-                    foreach (ClickableImage clickableImageTest in this.cachedImageList)
+                    // Process each image
+                    // Also check the cache, and ensure that an image is available
+                    string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].FileName);
+                    bool notInCache = true;
+                    while (this.cachedImageList != null && cachedImageListIndex < this.cachedImageList.Count)
                     {
-                        if (clickableImageTest.Path == path)
+                        if (path == this.cachedImageList[cachedImageListIndex].Path)
                         {
-                            ci = clickableImageTest;
-                            if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
+                            // We have it in the cache. Reuse it. However, if its smaller than the width we want, rerender it.
+                            ci = this.cachedImageList[cachedImageListIndex];
+                            if (false | ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
-                                ci.Rerender(desiredWidth);
+                                imageHeight = ci.Rerender(desiredWidth);
+                                //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "Cached Rererendered imageHeight", imageHeight, ci.DesiredRenderWidth));
+                                System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "Cached - Rererendered due to height differences"));
                             }
-                            skip = true;
-                            this.clickableImagesList.Add(ci);
+                            else
+                            {
+                                ci.Image.Width = desiredWidth; // Adjust the image width to the new size
+                                imageHeight = ci.DesiredRenderSize.Y;
+                                //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "Cached Reused", imageHeight, ci.DesiredRenderWidth));
+                                System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName,  "Cached - Reused as is"));
+                            }
+                            clickableImagesRow.Add(ci);
+                            notInCache = false;
+                            cachedImageListIndex++;
+                            if (maxImageHeight < imageHeight)
+                            {
+                                maxImageHeight = imageHeight;
+                            }
                             break;
                         }
+                        cachedImageListIndex++;
+                        notInCache = true;
                     }
-                }
-                if (skip == false)
+                    if (notInCache)
+                    {
+                        // We need to create a new clickable image, as its not in the cache
+                        ci = new ClickableImage(desiredWidth);
+                        ci.RootFolder = this.FolderPath;
+                        ci.ImageRow = this.FileTable[fileTableIndex];
+                        ci.DesiredRenderWidth = desiredWidth;
+                        imageHeight = ci.Rerender(desiredWidth);
+                        // System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "No Cache: New imageHeight", imageHeight, ci.DesiredRenderWidth));
+                        System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "No Cache"));
+                        clickableImagesRow.Add(ci);
+                        if (maxImageHeight < imageHeight)
+                        {
+                            maxImageHeight = imageHeight;
+                        }
+                    }
+                    
+                    fileTableIndex++;
+                } // end Process and Retrieve potential images for each row, checking height as we go
+
+                // Check if there is actually enough space to add a new row
+                if (combinedRowHeight + maxImageHeight > availableSize.Y)
                 {
-                    ci = new ClickableImage(desiredWidth);
-                    ci.RootFolder = this.FolderPath;
-                    ci.ImageRow = this.FileTable[index];
-                    ci.DesiredRenderWidth = desiredWidth;
-                    this.clickableImagesList.Add(ci);
-                    ci.Rerender(desiredWidth);
+                    // don't bother adding a new row, as there is not enough room
+                    // Even so, we may as well add these images to the cache as they have been processed
+                    foreach (ClickableImage clickableImage in clickableImagesRow)
+                    {
+                        this.clickableImagesList.Add(clickableImage);
+                    }
+                   clickableImagesRow.Clear();
+                    break;
                 }
-            }
-
-            // Find the maximum image height. We will use this to determine the height of each row.
-            Double maxImageHeight = 0;
-            foreach (ClickableImage ci in this.clickableImagesList)
-            {
-                ci.DesiredRenderWidth = desiredWidth;
-                if (maxImageHeight < ci.DesiredRenderSize.Y)
+                else
                 {
-                    maxImageHeight = ci.DesiredRenderSize.Y;
+                    // Create a new row
+                    this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
+                    // System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "MaxHeight", maxImageHeight, ""));
+                    int columnNumber = 0;
+                    foreach (ClickableImage clickableImage in clickableImagesRow)
+                    {
+                        this.clickableImagesList.Add(clickableImage);
+                        Grid.SetRow(clickableImage, rowNumber);
+                        Grid.SetColumn(clickableImage, columnNumber);
+                        this.Grid.Children.Add(clickableImage);
+                        //  System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", rowNumber, columnNumber, clickableImage.Path));
+                        columnNumber++;
+                    }
+                    rowNumber++;
+                    combinedRowHeight += maxImageHeight;
+                    // Cleanup
+                    clickableImagesRow.Clear();
+                    maxImageHeight = 0;
                 }
-            }
-
-            // Using these real dimensions, calculate the number of rows and columns of a given height and width that we can fit into the available space
-            availableRowsColumns = this.CalculateRowsAndColumns(desiredWidth, maxImageHeight, availableSize.X, availableSize.Y);
-
-            // Add that number of rows and columns to the grid
-            for (int r = 0; r < availableRowsColumns.Item1; r++)
-            {
-                this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
-                //SAULXX: While using Auto will best size the rows/columns, the issue is that we don't know how many rows/columns we actually need
-                //this.Grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-            }
-            for (int c = 0; c < availableRowsColumns.Item2; c++)
-            {
-                this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
-                //SAULXX: While using Auto will best size the rows/columns, the issue is that we don't know how many rows/columns we actually need
-                //this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = GridLength.Auto });
-            }
-
-            // Add an image to each available cell, as long as there are images to add.
-            int row = 0;
-            int col = 0;
-            int count = 0;
-            ClickableImage clickableImage;
-            for (int index = this.FileTableStartIndex; index < this.FileTable.RowCount && count < this.clickableImagesList.Count; index++)
-            {
-                clickableImage = this.clickableImagesList[count++];
-
-                // When we have filled the row, start a new row
-                if (col >= availableRowsColumns.Item2)
-                {
-                    col = 0;
-                    row++;
-                }
-
-                // Stop when we have filled all the rows
-                if (row >= availableRowsColumns.Item1)
+                // If we've run out of images, then we are done.
+                if (fileTableIndex >= FileTable.Count())
                 {
                     break;
                 }
-
-                Grid.SetRow(clickableImage, row);
-                Grid.SetColumn(clickableImage, col);
-                this.Grid.Children.Add(clickableImage);
-                col++;
             }
+            
 
             if (this.cachedImageList == null || this.cachedImageList.Count < this.clickableImagesList.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
             {
