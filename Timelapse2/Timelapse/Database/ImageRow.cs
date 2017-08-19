@@ -216,34 +216,7 @@ namespace Timelapse.Database
             string path = this.GetFilePath(baseFolderPath);
             if (!File.Exists(path))
             {
-                if (desiredWidth == null)
-                {
-                    return Constant.Images.FileNoLongerAvailable.Value;
-                }
-                else
-                {
-                    return Constant.Images.FileNoLongerAvailable.Value;
-
-                    //BitmapImage bitmap = new BitmapImage();
-                    //bitmap.BeginInit();
-                    //bitmap.DecodePixelWidth = desiredWidth.Value;
-                    //bitmap.CacheOption = bitmapCacheOption;
-                    //bitmap.UriSource = new Uri("pack://application:,,/Resources/" + "FileNoLongerAvailable.jpg");
-                    //bitmap.EndInit();
-                    //bitmap.Freeze();
-                    //return bitmap;
-                    //switch (desiredWidth)
-                    //{
-                    //    case 512:
-                    //        return Constant.Images.FileNoLongerAvailable512.Value;
-                    //    case 256:
-                    //        return Constant.Images.FileNoLongerAvailable256.Value;
-                    //    case 128:
-                    //        return Constant.Images.FileNoLongerAvailable128.Value;
-                    //    default:
-                    //        return Constant.Images.FileNoLongerAvailable.Value;
-                    //}
-                }
+                 return Constant.Images.FileNoLongerAvailable.Value;
             }
             try
             {
@@ -274,24 +247,7 @@ namespace Timelapse.Database
             {
                 // We don't show the exception (Exception exception)
                 Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: Loading of {0} failed in LoadBitmap - Images.Corrupt returned.", this.FileName));
-                if (desiredWidth == null)
-                {
-                    return Constant.Images.Corrupt.Value;
-                }
-                else
-                {
-                    switch (desiredWidth)
-                    {
-                        case 512:
-                            return Constant.Images.Corrupt512.Value;
-                        case 256:
-                            return Constant.Images.Corrupt256.Value;
-                        case 128:
-                            return Constant.Images.Corrupt128.Value;
-                        default:
-                            return Constant.Images.Corrupt.Value;
-                    }
-                }
+                return Constant.Images.Corrupt.Value;
             }
         }
 

@@ -29,7 +29,7 @@ namespace Timelapse.Controls
                 this.Image.Width = value;
                 this.Image.MinWidth = value;
                 this.Image.MaxWidth = value;
-                this.TextBlock.FontSize = (value >= 256) ? 16 : 10;
+                // this.TextBlock.FontSize = (value >= 256) ? 16 : 10;
             }
         }
         public Point DesiredRenderSize
@@ -53,6 +53,13 @@ namespace Timelapse.Controls
             }
         }
 
+        public double TextFontSize 
+        {
+            set
+            {
+                this.TextBlock.FontSize = value;
+            }
+        }
         public ImageRow ImageRow { get; set; }
 
         public string RootFolder { get; set; }
@@ -99,6 +106,9 @@ namespace Timelapse.Controls
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.Image.Source = bf;
             this.TextBlock.Text = this.ImageRow.FileName;
+            //this.TextBlock.FontSize = (width >= 256) ? 16 : 10;
+            //this.TextBlock.FontSize = width / 30;
+
 
             // A bit of a hack. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,

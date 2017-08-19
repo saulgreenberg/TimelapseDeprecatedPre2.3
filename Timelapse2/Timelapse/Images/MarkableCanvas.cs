@@ -55,15 +55,17 @@ namespace Timelapse.Images
         private bool isDoubleClick = false;
         private bool isPanning = false;
 
-        // zoomed out state for ClickableImages
-        // 0 - not zoomed out; 1 - 512; 2 - 256 3 - 128
+        // zoomed out state for ClickableImages. 
+        // 0 - not zoomed out; 
+        // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
+        // These widths can be altered if needed
         private int clickableImagesState = 0;
         private Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
         {
             { 0, 0 },
-            { 1, 512 },
-            { 2, 256 },
-            { 3, 128 }
+            { 1, 640 },
+            { 2, 320 },
+            { 3, 256 }
         };
 
         private bool displayingImage = false;
@@ -471,6 +473,7 @@ namespace Timelapse.Images
             this.timerResize.Stop();
             if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
             {
+                // We couldn't show at least one image in the overview, so go back to the normal view
                 SwitchToImageView();
             }
         }
@@ -1042,10 +1045,7 @@ namespace Timelapse.Images
                                      out double unitX,
                                      out double unitY);
 
-            System.Diagnostics.Debug.Print(GetElementPixelSize(this.ClickableImagesGrid).ToString());
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
-            //return this.ClickableImagesGrid.Refresh(desiredWidth, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
-            //return this.ClickableImagesGrid.Refresh(desiredWidth, GetElementPixelSize(this.ClickableImagesGrid));
         }
         public void RefreshIfMultipleImagesAreDisplayed()
         {
