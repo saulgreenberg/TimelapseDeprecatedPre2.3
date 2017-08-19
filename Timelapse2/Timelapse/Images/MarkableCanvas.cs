@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Util;
 
@@ -66,6 +67,10 @@ namespace Timelapse.Images
         };
 
         private bool displayingImage = false;
+
+        // Timer for resizing the clickable images grid only after resizing is (likely) completed
+        private DispatcherTimer timerResize = new DispatcherTimer();
+ 
         #endregion
 
         #region Properties
@@ -268,6 +273,10 @@ namespace Timelapse.Images
         private void MarkableCanvas_Loaded(object sender, RoutedEventArgs e)
         {
             this.magnifyingGlass.Hide();
+
+            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
+            this.timerResize.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            this.timerResize.Tick += TimerResize_Tick;
         }
         #endregion
 
@@ -441,7 +450,11 @@ namespace Timelapse.Images
             this.ClickableImagesGrid.Height = this.ActualHeight;
             if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
             {
-                this.RefreshClickableImagesGrid(this.clickableImagesState);
+                // Refresh the clickable image grid only via the timer, where it will 
+                // try to refresh only if the SizeChanged event doesn't refire after the given interval i.e.,
+                // when the user pauses or completes the manual resizing action
+                this.timerResize.Stop();
+                this.timerResize.Start();
             }
 
             this.imageToDisplayScale.CenterX = 0.5 * this.ActualWidth;
@@ -450,6 +463,16 @@ namespace Timelapse.Images
             // clear the bookmark (if any) as it will no longer be correct
             // if needed, the bookmark could be rescaled instead
             this.bookmark.Reset();
+        }
+
+        // Refresh the clickable image grid when the timer fires 
+        private void TimerResize_Tick(object sender, EventArgs e)
+        {
+            this.timerResize.Stop();
+            if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
+            {
+                SwitchToImageView();
+            }
         }
 
         private void CanvasToMagnify_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -945,14 +968,26 @@ namespace Timelapse.Images
                     // Zoom out another step
                     this.clickableImagesState++;
                     this.SwitchToClickableGridView();
-                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                    if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
+                    {
+                        // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
+                        // So try again by zooming out another step
+                        TryZoomInOrOut(zoomIn, mousePosition);
+                        return;
+                    }
                 }
                 else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
                 {
                     // State: currently zoomed in on clickable grid, but not at the minimum step
                     // Zoom in another step
                     this.clickableImagesState--;
-                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                    if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
+                    {
+                        // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
+                        // So try again by zooming in another step
+                        TryZoomInOrOut(zoomIn, mousePosition);
+                        return;
+                    }
                 }
                 else if (this.IsClickableImagesGridVisible == true)
                 {
@@ -989,15 +1024,28 @@ namespace Timelapse.Images
             }
         }
 
-        private void RefreshClickableImagesGrid(int state)
+        private bool RefreshClickableImagesGrid(int state)
         {
             if (this.ClickableImagesGrid == null)
             {
-                return;
+                return false;
             }
             int desiredWidth = 0;
             this.clickableImagesZoomedOutStates.TryGetValue(state, out desiredWidth);
-            this.ClickableImagesGrid.Refresh(desiredWidth, new Point(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
+
+            Util.NativeMethods.TransformDeviceIndependentPixelsToPixels(this.ClickableImagesGrid.Width,
+                                      this.ClickableImagesGrid.Height,
+                                      out int pixelX,
+                                      out int pixelY);
+
+            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth,
+                                     out double unitX,
+                                     out double unitY);
+
+            System.Diagnostics.Debug.Print(GetElementPixelSize(this.ClickableImagesGrid).ToString());
+            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
+            //return this.ClickableImagesGrid.Refresh(desiredWidth, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
+            //return this.ClickableImagesGrid.Refresh(desiredWidth, GetElementPixelSize(this.ClickableImagesGrid));
         }
         public void RefreshIfMultipleImagesAreDisplayed()
         {
@@ -1009,7 +1057,21 @@ namespace Timelapse.Images
             }
         }
         #endregion
+        public Size GetElementPixelSize(UIElement element)
+        {
+            Matrix transformToDevice;
+            var source = PresentationSource.FromVisual(element);
+            if (source != null)
+                transformToDevice = source.CompositionTarget.TransformToDevice;
+            else
+                using (var newsource = new System.Windows.Interop.HwndSource(new System.Windows.Interop.HwndSourceParameters()))
+                    transformToDevice = newsource.CompositionTarget.TransformToDevice;
 
+            if (element.DesiredSize == new Size())
+                element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            return (Size)transformToDevice.Transform((Vector)element.DesiredSize);
+        }
         #region Window shuffling
         public void SwitchToImageView()
         {

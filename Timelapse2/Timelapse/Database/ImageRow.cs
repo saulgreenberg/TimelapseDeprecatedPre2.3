@@ -221,18 +221,28 @@ namespace Timelapse.Database
                     return Constant.Images.FileNoLongerAvailable.Value;
                 }
                 else
-                { 
-                    switch (desiredWidth)
-                    {
-                        case 512:
-                            return Constant.Images.FileNoLongerAvailable512.Value;
-                        case 256:
-                            return Constant.Images.FileNoLongerAvailable256.Value;
-                        case 128:
-                            return Constant.Images.FileNoLongerAvailable128.Value;
-                        default:
-                            return Constant.Images.FileNoLongerAvailable.Value;
-                    }
+                {
+                    return Constant.Images.FileNoLongerAvailable.Value;
+
+                    //BitmapImage bitmap = new BitmapImage();
+                    //bitmap.BeginInit();
+                    //bitmap.DecodePixelWidth = desiredWidth.Value;
+                    //bitmap.CacheOption = bitmapCacheOption;
+                    //bitmap.UriSource = new Uri("pack://application:,,/Resources/" + "FileNoLongerAvailable.jpg");
+                    //bitmap.EndInit();
+                    //bitmap.Freeze();
+                    //return bitmap;
+                    //switch (desiredWidth)
+                    //{
+                    //    case 512:
+                    //        return Constant.Images.FileNoLongerAvailable512.Value;
+                    //    case 256:
+                    //        return Constant.Images.FileNoLongerAvailable256.Value;
+                    //    case 128:
+                    //        return Constant.Images.FileNoLongerAvailable128.Value;
+                    //    default:
+                    //        return Constant.Images.FileNoLongerAvailable.Value;
+                    //}
                 }
             }
             try

@@ -56,12 +56,13 @@ namespace Timelapse.Controls
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
-        public void Refresh(double desiredWidth, Point availableSize)
+        public bool Refresh(double desiredWidth, Size availableSize)
         {
-            // If nothing is loaded, then there is nothing to refresh
-            if (FileTable == null)
+            
+            // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
+            if (FileTable == null || desiredWidth == 0)
             {
-                return;
+                return false;
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
@@ -71,20 +72,28 @@ namespace Timelapse.Controls
             this.Grid.Children.Clear();
 
             // Create the number of columns that can fit into the available space
-            int columnCount = Convert.ToInt32(Math.Floor(availableSize.X / desiredWidth));
+            int columnCount = Convert.ToInt32(Math.Floor(availableSize.Width / desiredWidth));
+            System.Diagnostics.Debug.Print(desiredWidth.ToString() + " " + availableSize.Width.ToString() + " " + columnCount.ToString());
+            // Abort if there is not enough width available to display even a single image
+            if (columnCount == 0)
+            {
+                Mouse.OverrideCursor = null;
+                return false;
+            }
+
+            // Add as many columns as can fit
             for (int thisColumn = 0; thisColumn < columnCount; thisColumn++)
             { 
                 this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
             }
 
             // Add images to successive columns in the row (creating a new row if needed after each iteration), checking to see:
-            // - if those images are in the image cache (note that these will be in the same order, so can check as we add images and move through the cache 
-            // until:
+            // - if those images are in the image cache (as these will be in the same order, we can check as we add images and move through the cache until:
             // - there are no more images left
             // - that row does't fit the available space
             int rowNumber = 0;
             int fileTableIndex = this.FileTableStartIndex;
-            int cachedImageListIndex = 0;
+            
             ClickableImage ci;
             Double maxImageHeight = 0;
             Double combinedRowHeight = 0;
@@ -99,28 +108,31 @@ namespace Timelapse.Controls
                     // Process each image
                     // Also check the cache, and ensure that an image is available
                     string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].FileName);
-                    bool notInCache = true;
+                    bool inCache = false;
+                    int cachedImageListIndex = 0;
                     while (this.cachedImageList != null && cachedImageListIndex < this.cachedImageList.Count)
                     {
+                        //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", cachedImageListIndex, path, this.cachedImageList[cachedImageListIndex].Path));
                         if (path == this.cachedImageList[cachedImageListIndex].Path)
                         {
-                            // We have it in the cache. Reuse it. However, if its smaller than the width we want, rerender it.
+                            // We have it in the cache. Reuse it if its at least the same or greater resolution width. However, if its smaller than the resolutionwidth we want, rerender it.
                             ci = this.cachedImageList[cachedImageListIndex];
-                            if (false | ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
+
+                            if ( ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
                                 imageHeight = ci.Rerender(desiredWidth);
                                 //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "Cached Rererendered imageHeight", imageHeight, ci.DesiredRenderWidth));
-                                System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "Cached - Rererendered due to height differences"));
+                                //System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "Cached - Rererendered due to height differences"));
                             }
                             else
                             {
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
                                 //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "Cached Reused", imageHeight, ci.DesiredRenderWidth));
-                                System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName,  "Cached - Reused as is"));
+                                //System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName,  "Cached - Reused as is"));
                             }
                             clickableImagesRow.Add(ci);
-                            notInCache = false;
+                            inCache = true;
                             cachedImageListIndex++;
                             if (maxImageHeight < imageHeight)
                             {
@@ -129,9 +141,9 @@ namespace Timelapse.Controls
                             break;
                         }
                         cachedImageListIndex++;
-                        notInCache = true;
+                        inCache = false;
                     }
-                    if (notInCache)
+                    if (inCache == false)
                     {
                         // We need to create a new clickable image, as its not in the cache
                         ci = new ClickableImage(desiredWidth);
@@ -140,7 +152,7 @@ namespace Timelapse.Controls
                         ci.DesiredRenderWidth = desiredWidth;
                         imageHeight = ci.Rerender(desiredWidth);
                         // System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}", "No Cache: New imageHeight", imageHeight, ci.DesiredRenderWidth));
-                        System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "No Cache"));
+                        //System.Diagnostics.Debug.Print(String.Format("{0}, {1}", this.FileTable[fileTableIndex].FileName, "No Cache"));
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)
                         {
@@ -152,7 +164,7 @@ namespace Timelapse.Controls
                 } // end Process and Retrieve potential images for each row, checking height as we go
 
                 // Check if there is actually enough space to add a new row
-                if (combinedRowHeight + maxImageHeight > availableSize.Y)
+                if (combinedRowHeight + maxImageHeight > availableSize.Height)
                 {
                     // don't bother adding a new row, as there is not enough room
                     // Even so, we may as well add these images to the cache as they have been processed
@@ -197,7 +209,19 @@ namespace Timelapse.Controls
                 this.cachedImageList = this.clickableImagesList;
                 this.cachedImagePathsStartIndex = this.FileTableStartIndex;
             }
+
             Mouse.OverrideCursor = null;
+            // System.Diagnostics.Debug.Print(String.Format("Row/Col: {0}, {1}", this.Grid.RowDefinitions.Count, this.Grid.ColumnDefinitions.Count));
+
+            // Abort if we can't even fit a single row in, then abort
+            if (Grid.RowDefinitions.Count < 1 ) //&& combinedRowHeight < maxImageHeight)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
         #endregion
 

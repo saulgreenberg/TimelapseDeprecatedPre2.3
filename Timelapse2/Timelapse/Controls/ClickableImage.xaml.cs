@@ -99,8 +99,19 @@ namespace Timelapse.Controls
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.Image.Source = bf;
             this.TextBlock.Text = this.ImageRow.FileName;
-            this.Image.Height = bf.PixelHeight;
-            return bf.PixelHeight;
+
+            // A bit of a hack. When the loaded image is one of the ones held in the resource,
+            // the size is in pixels rather than in device-independent pixels. To get the correct size,
+            // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.
+            if (bf == Constant.Images.FileNoLongerAvailable.Value || bf == Constant.Images.Corrupt.Value)
+            {
+                this.Image.Height = 0.75 * width; 
+            }
+            else
+            {
+                this.Image.Height = bf.PixelHeight;
+            }
+            return this.Image.Height; 
         }
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)
