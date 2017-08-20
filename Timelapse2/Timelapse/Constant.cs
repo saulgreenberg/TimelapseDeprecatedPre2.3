@@ -298,7 +298,7 @@ namespace Timelapse
                         return (BitmapImage)Application.Current.Resources[fileName];
                     }
 
-                // if it's not (editor, unit tests, resource not listed in App.xaml) fall back to loading from the resources assembly
+                // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
                 BitmapImage image = new BitmapImage();
                     image.BeginInit();
                     image.UriSource = new Uri("pack://application:,,/Resources/" + fileName);

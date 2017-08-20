@@ -28,7 +28,7 @@ namespace Timelapse.Database
             string path = this.GetFilePath(imageFolderPath);
             if (!File.Exists(path))
             {
-                return Constant.Images.FileNoLongerAvailable.Value;
+                    return Constant.Images.FileNoLongerAvailable.Value;
             }
 
             MediaPlayer mediaPlayer = new MediaPlayer();

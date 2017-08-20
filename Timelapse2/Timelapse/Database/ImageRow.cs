@@ -4,8 +4,10 @@ using MetadataExtractor.Formats.Exif.Makernotes;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -214,7 +216,7 @@ namespace Timelapse.Database
             string path = this.GetFilePath(baseFolderPath);
             if (!File.Exists(path))
             {
-                return Constant.Images.FileNoLongerAvailable.Value;
+                 return Constant.Images.FileNoLongerAvailable.Value;
             }
             try
             {

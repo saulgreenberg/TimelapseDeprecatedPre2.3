@@ -99,7 +99,6 @@ namespace Timelapse.Database
             get { return this.Files.RowCount; }
         }
 
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1126:PrefixCallsCorrectly", Justification = "StyleCop bug.")]
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
             // We need to get a list of which columns are counters vs notes or fixed coices, 

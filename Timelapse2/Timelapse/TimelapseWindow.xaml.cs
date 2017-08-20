@@ -65,6 +65,7 @@ namespace Timelapse
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
+            this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -1369,6 +1370,13 @@ namespace Timelapse
 
         #region Slider Event Handlers and related
 
+        private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
+        {
+            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
+            this.state.FileNavigatorSliderDragging = true;
+        }
+
         private void FileNavigatorSlider_DragCompleted(object sender, DragCompletedEventArgs args)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
@@ -1377,12 +1385,6 @@ namespace Timelapse
             this.timerFileNavigator.Stop(); 
         }
 
-        private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-            this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
-            this.state.FileNavigatorSliderDragging = true;
-        }
 
         private void FileNavigatorSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
         {
@@ -1400,7 +1402,7 @@ namespace Timelapse
             {
                 this.ShowFile(this.FileNavigatorSlider);
                 this.state.MostRecentDragEvent = utcNow;
-                FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+                this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
             }
         }
         private void FileNavigatorSlider_EnableOrDisableValueChangedCallback(bool enableCallback)
@@ -1429,8 +1431,10 @@ namespace Timelapse
         // Timer callback that forces image update to the current slider position. Invoked as the user pauses dragging the image slider 
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
+            this.timerFileNavigator.Stop();
             this.ShowFile(this.FileNavigatorSlider);
-            this.timerFileNavigator.Stop(); 
+            this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+
         }
         #endregion
 
@@ -1474,11 +1478,17 @@ namespace Timelapse
         // ShowFile is invoked here from a 1-based slider, so we need to correct it to the 0-base index
         private void ShowFile(Slider fileNavigatorSlider)
         {
-            this.ShowFile((int)fileNavigatorSlider.Value - 1);
+            this.ShowFile((int)fileNavigatorSlider.Value - 1, true);
+        }
+
+        // ShowFile is invoked from elsewhere than from the slider
+        private void ShowFile(int fileIndex)
+        {
+            this.ShowFile(fileIndex, false);
         }
 
         // Show the image in the specified row
-        private void ShowFile(int fileIndex)
+        private void ShowFile(int fileIndex, bool isInSliderNavigation)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
             if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
@@ -1491,13 +1501,20 @@ namespace Timelapse
                 return;
             }
 
+            // Reset the Clickable Images Grid to the current image
+            // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
+            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
+            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
+
+
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             bool newFileToDisplay;
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out newFileToDisplay) == false)
             {
                 throw new ArgumentOutOfRangeException("newImageRow", String.Format("{0} is not a valid row index in the image table.", fileIndex));
             }
-
+            
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
             // the call to TryMoveToImage() above refreshes the data stored under this.dataHandler.ImageCache.Current.
@@ -1533,21 +1550,35 @@ namespace Timelapse
             // this avoids unnecessary image reloads and refreshes in cases where ShowFile() is just being called to refresh controls
             this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers(false);
+
             if (newFileToDisplay)
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
                 {
                     this.MarkableCanvas.SetNewVideo(this.dataHandler.ImageCache.Current.GetFileInfo(this.dataHandler.FileDatabase.FolderPath), displayMarkers);
-                    EnableImageManipulationMenus(false);
+                    this.EnableImageManipulationMenus(false);
+
                 }
                 else
                 {
                     this.MarkableCanvas.SetNewImage(this.dataHandler.ImageCache.GetCurrentImage(), displayMarkers);
-                    EnableImageManipulationMenus(true);
+                    // Draw markers for this file
+                    this.MarkableCanvas_UpdateMarkers();
+                    this.EnableImageManipulationMenus(true);
                 }
 
-                // Draw markers for this file
-                this.MarkableCanvas_UpdateMarkers();
+            }
+            else if (!this.MarkableCanvas.IsClickableImagesGridVisible)
+            {
+                if (this.dataHandler.ImageCache.Current.IsVideo)
+                {
+                    this.MarkableCanvas.SwitchToVideoView();
+                }
+                else
+                {
+                    this.MarkableCanvas.SwitchToImageView();
+                    this.MarkableCanvas_UpdateMarkers();
+                }
             }
 
             // if the data grid has been bound, set the selected row to the current file and scroll so it's visible
@@ -1576,6 +1607,7 @@ namespace Timelapse
             {
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
         }
 
         private bool TryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)
@@ -3509,6 +3541,26 @@ namespace Timelapse
         }
         #endregion
 
+        // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
+        private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
+        {
+           if (e.ImageRow != null )
+            {
  
+
+                // Switch to either the video or image view as needed
+                if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
+                {
+                    this.MarkableCanvas.SwitchToVideoView();
+                }
+                else
+                {
+                    this.MarkableCanvas.SwitchToImageView();
+                }
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
+                this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
+                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+            }
+        }
     }
 }
