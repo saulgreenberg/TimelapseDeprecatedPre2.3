@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         Title="Correct for standard and daylight savings time changes" 
 		Name="DaylightSavingsTimeCorrection"
-		MinHeight="826" MinWidth="768"
+		MinHeight="728" MinWidth="768"
 		Height="856" Width="768"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"

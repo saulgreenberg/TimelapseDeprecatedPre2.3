@@ -192,6 +192,18 @@ namespace Timelapse.Util
                 window.Top = 0;
             }
 
+            // If needed, adjust the window's height to be somewhat smaller than the screen 
+            // We allow some space for the task bar, assuming its visible at the screen's bottom
+            // and place the window at the very top. Note that this won't cater for the situation when
+            // the task bar is at the top of the screen, but so it goes.
+            int typicalTaskBarHeight = 40; 
+            double availableScreenHeight = System.Windows.SystemParameters.PrimaryScreenHeight - typicalTaskBarHeight;
+            if (window.Height > availableScreenHeight)
+            {
+                window.Height = availableScreenHeight;
+                window.Top = 0;
+            }
+
             Rectangle windowPosition = new Rectangle((int)window.Left, (int)window.Top, (int)window.Width, (int)window.Height);
             Rectangle workingArea = Screen.GetWorkingArea(windowPosition);
             bool windowFitsInWorkingArea = true;
@@ -205,6 +217,7 @@ namespace Timelapse.Util
                     // window is too tall and has to shorten to fit screen
                     window.Top = 0;
                     window.Height = workingArea.Bottom;
+                    System.Diagnostics.Debug.Print("Height " + window.Height.ToString());
                     windowFitsInWorkingArea = false;
                 }
                 else if (pixelsToMoveUp > 0)

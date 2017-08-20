@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:Timelapse"
         Title="Delete ..." 
         Height="780" Width="1079"
-        MinHeight="780" MinWidth="1079"
+        MinHeight="728" MinWidth="1079"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">

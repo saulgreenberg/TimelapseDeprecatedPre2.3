@@ -47,7 +47,7 @@ namespace Timelapse.Controls
 
         private void FormatAutoToolTipContent()
         {
-            if (this.AutoToolTipContent != null)
+            if (this.AutoToolTipContent != null && this.AutoToolTip != null)
             { 
                 this.AutoToolTip.Content = this.AutoToolTipContent;
             }
