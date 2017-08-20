@@ -11,7 +11,6 @@ using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
 {
-
     /// <summary>
     /// Interaction logic for ClickableImagesGrid.xaml
     /// </summary>
@@ -21,7 +20,6 @@ namespace Timelapse.Controls
 
         public FileTable FileTable { get; set; }
         public int FileTableStartIndex { get; set; }
-
       
         // The root folder containing the template
         public string FolderPath { get; set; }
@@ -58,7 +56,6 @@ namespace Timelapse.Controls
         //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
         public bool Refresh(double desiredWidth, Size availableSize)
         {
-            
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
             if (FileTable == null || desiredWidth == 0)
             {
@@ -116,16 +113,16 @@ namespace Timelapse.Controls
                         {
                             // We have it in the cache. Reuse it if its at least the same or greater resolution width. However, if its smaller than the resolutionwidth we want, rerender it.
                             ci = this.cachedImageList[cachedImageListIndex];
-                            if ( ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
+                            if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
                                 imageHeight = ci.Rerender(desiredWidth);
-                                System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Rererendered"));
+                                // System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Rererendered"));
                             }
                             else
                             {
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
-                                System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Reused"));
+                                // System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Reused"));
                             }
                             ci.TextFontSize = desiredWidth / 20;
                             clickableImagesRow.Add(ci);
@@ -149,7 +146,7 @@ namespace Timelapse.Controls
                         ci.DesiredRenderWidth = desiredWidth;
                         imageHeight = ci.Rerender(desiredWidth);
                         ci.TextFontSize = desiredWidth / 20;
-                        System.Diagnostics.Debug.Print(String.Format("{0}", "No Cache"));
+                        // System.Diagnostics.Debug.Print(String.Format("{0}", "No Cache"));
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)
                         {
@@ -295,7 +292,6 @@ namespace Timelapse.Controls
                 ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
                 if (ci != null)
                 {
-                    //bool newState = !ci.IsSelected;
                     this.GridUnselectAll(); // Clear the selections
                     ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
                 }
@@ -552,7 +548,7 @@ namespace Timelapse.Controls
 
         public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
 
-        protected virtual void OnDoubleClick (ClickableImagesGridEventArgs e)
+        protected virtual void OnDoubleClick(ClickableImagesGridEventArgs e)
         {
             if (this.DoubleClick != null)
             {

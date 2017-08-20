@@ -12,7 +12,19 @@ namespace Timelapse.Controls
     public class AutoToolTipSlider : Slider
     {
         // Gets/sets the string displayed in the auto tooltip's content.
-        public string AutoToolTipContent { get; set; }
+        private string autoToolTipContent = string.Empty;
+        public string AutoToolTipContent
+        {
+            get
+            {
+                return autoToolTipContent;
+            }
+            set
+            {
+                autoToolTipContent = value;
+                FormatAutoToolTipContent();
+            }
+        }
 
         private ToolTip autoToolTip;
         protected override void OnThumbDragStarted(DragStartedEventArgs e)
@@ -27,9 +39,18 @@ namespace Timelapse.Controls
             this.FormatAutoToolTipContent();
         }
 
+        protected override void OnThumbDragCompleted(DragCompletedEventArgs e)
+        {
+            base.OnThumbDragCompleted(e);
+            this.FormatAutoToolTipContent();
+        }
+
         private void FormatAutoToolTipContent()
         {
+            if (this.AutoToolTipContent != null)
+            { 
                 this.AutoToolTip.Content = this.AutoToolTipContent;
+            }
         }
 
         private ToolTip AutoToolTip

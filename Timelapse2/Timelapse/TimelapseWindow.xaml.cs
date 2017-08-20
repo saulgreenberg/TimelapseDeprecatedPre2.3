@@ -1370,6 +1370,13 @@ namespace Timelapse
 
         #region Slider Event Handlers and related
 
+        private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
+        {
+            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
+            this.state.FileNavigatorSliderDragging = true;
+        }
+
         private void FileNavigatorSlider_DragCompleted(object sender, DragCompletedEventArgs args)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
@@ -1378,12 +1385,6 @@ namespace Timelapse
             this.timerFileNavigator.Stop(); 
         }
 
-        private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-            this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
-            this.state.FileNavigatorSliderDragging = true;
-        }
 
         private void FileNavigatorSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
         {
@@ -1401,7 +1402,7 @@ namespace Timelapse
             {
                 this.ShowFile(this.FileNavigatorSlider);
                 this.state.MostRecentDragEvent = utcNow;
-                FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+                this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
             }
         }
         private void FileNavigatorSlider_EnableOrDisableValueChangedCallback(bool enableCallback)
@@ -1430,8 +1431,10 @@ namespace Timelapse
         // Timer callback that forces image update to the current slider position. Invoked as the user pauses dragging the image slider 
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
+            this.timerFileNavigator.Stop();
             this.ShowFile(this.FileNavigatorSlider);
-            this.timerFileNavigator.Stop(); 
+            this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+
         }
         #endregion
 
@@ -1475,11 +1478,17 @@ namespace Timelapse
         // ShowFile is invoked here from a 1-based slider, so we need to correct it to the 0-base index
         private void ShowFile(Slider fileNavigatorSlider)
         {
-            this.ShowFile((int)fileNavigatorSlider.Value - 1);
+            this.ShowFile((int)fileNavigatorSlider.Value - 1, true);
+        }
+
+        // ShowFile is invoked from elsewhere than from the slider
+        private void ShowFile(int fileIndex)
+        {
+            this.ShowFile(fileIndex, false);
         }
 
         // Show the image in the specified row
-        private void ShowFile(int fileIndex)
+        private void ShowFile(int fileIndex, bool isInSliderNavigation)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
             if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
@@ -1598,9 +1607,7 @@ namespace Timelapse
             {
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
-
-            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed();
-
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
         }
 
         private bool TryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)

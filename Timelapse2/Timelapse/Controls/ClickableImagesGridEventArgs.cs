@@ -10,7 +10,7 @@ namespace Timelapse.Controls
         public ClickableImagesGridEventArgs(ClickableImagesGrid grid, ImageRow imageRow)
         {
             this.Grid = grid;
-            this.ImageRow= imageRow;
+            this.ImageRow = imageRow;
         }
     }
 }

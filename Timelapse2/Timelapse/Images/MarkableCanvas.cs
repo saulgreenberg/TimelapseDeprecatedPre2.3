@@ -72,7 +72,10 @@ namespace Timelapse.Images
 
         // Timer for resizing the clickable images grid only after resizing is (likely) completed
         private DispatcherTimer timerResize = new DispatcherTimer();
- 
+
+        // Timer for delaying updates in the midst of rapid navigation with the slider
+        private DispatcherTimer timerSlider = new DispatcherTimer();
+
         #endregion
 
         #region Properties
@@ -269,17 +272,22 @@ namespace Timelapse.Images
             this.MouseMove += this.MarkableCanvas_MouseMove;
             this.PreviewKeyDown += this.MarkableCanvas_PreviewKeyDown;
             this.Loaded += this.MarkableCanvas_Loaded;
+
+            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
+            this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
+            this.timerResize.Tick += TimerResize_Tick;
+
+            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
+            this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
+            this.timerSlider.Tick += TimerSlider_Tick;
         }
 
         // Hide the magnifying glass initially, as the mouse pointer may not be atop the canvas
         private void MarkableCanvas_Loaded(object sender, RoutedEventArgs e)
         {
             this.magnifyingGlass.Hide();
-
-            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
-            this.timerResize.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            this.timerResize.Tick += TimerResize_Tick;
         }
+
         #endregion
 
         #region Mouse Event Handlers
@@ -1036,50 +1044,65 @@ namespace Timelapse.Images
             int desiredWidth = 0;
             this.clickableImagesZoomedOutStates.TryGetValue(state, out desiredWidth);
 
-            Util.NativeMethods.TransformDeviceIndependentPixelsToPixels(this.ClickableImagesGrid.Width,
-                                      this.ClickableImagesGrid.Height,
-                                      out int pixelX,
-                                      out int pixelY);
-
-            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth,
-                                     out double unitX,
-                                     out double unitY);
-
+            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
         }
-        public void RefreshIfMultipleImagesAreDisplayed()
+
+        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation)
         {
             if (this.IsClickableImagesGridVisible == true)
             {
                 // State: zoomed in on clickable grid.
                 // Updating it ensures that the correct image is shown as the first cell
-                this.RefreshClickableImagesGrid(this.clickableImagesState);
+                // However, if we are navigating with the slider, delay update as otherwise it can't keep up
+                if (isInSliderNavigation)
+                {
+                    // Refresh the clickable image grid only via the timer, where it will 
+                    // try to refresh only when the user pauses (or ends) navigation via the slider
+                    this.timerSlider.Stop();
+                    this.timerSlider.Start();
+                }
+                else
+                {
+                    this.RefreshClickableImagesGrid(this.clickableImagesState);
+                }
             }
         }
+
+        private void TimerSlider_Tick(object sender, EventArgs e)
+        {
+            this.timerSlider.Stop();
+            this.RefreshClickableImagesGrid(this.clickableImagesState);
+        }
+
         #endregion
         public Size GetElementPixelSize(UIElement element)
         {
             Matrix transformToDevice;
             var source = PresentationSource.FromVisual(element);
             if (source != null)
+            { 
                 transformToDevice = source.CompositionTarget.TransformToDevice;
+            }
             else
+            {
                 using (var newsource = new System.Windows.Interop.HwndSource(new System.Windows.Interop.HwndSourceParameters()))
+                { 
                     transformToDevice = newsource.CompositionTarget.TransformToDevice;
-
+                }
+            }
             if (element.DesiredSize == new Size())
+            { 
                 element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-
+            }
             return (Size)transformToDevice.Transform((Vector)element.DesiredSize);
         }
         #region Window shuffling
         public void SwitchToImageView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            //this.IsClickableImagesGridVisible = false;
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Visible;
-            //this.magnifyingGlass.Show();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();

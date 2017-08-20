@@ -121,10 +121,10 @@ namespace Timelapse.Util
             }
             else
             {
-                // This is very unlikely. 
-                // As a workaround, we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
+                // This failure is unlikely. 
+                // But just in case... we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
                 // it will not crash the program and at least maintains the correct aspect ration
-                widthInPixels = Convert.ToInt32 (widthInDeviceIndependentPixels);
+                widthInPixels = Convert.ToInt32(widthInDeviceIndependentPixels);
                 heightInPixels = Convert.ToInt32(heightInDeviceIndependentPixels);
                 Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
             }
