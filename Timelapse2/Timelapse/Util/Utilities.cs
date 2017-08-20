@@ -217,7 +217,6 @@ namespace Timelapse.Util
                     // window is too tall and has to shorten to fit screen
                     window.Top = 0;
                     window.Height = workingArea.Bottom;
-                    System.Diagnostics.Debug.Print("Height " + window.Height.ToString());
                     windowFitsInWorkingArea = false;
                 }
                 else if (pixelsToMoveUp > 0)
