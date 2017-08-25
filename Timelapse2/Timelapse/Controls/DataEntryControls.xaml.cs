@@ -15,6 +15,51 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
+        // Enable or disable the following stock controls: 
+        //     File, Folder, RelativePath,  DateTime, UtcOffset
+        // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
+        // when the markable canvas is zoomed out to display multiple images
+        private bool stockControlsIsEnabled = true;
+        public bool StockControlsIsEnabled
+        {
+            get
+            {
+                return stockControlsIsEnabled;
+            }
+
+            set
+            {
+                stockControlsIsEnabled = value;
+                foreach (DataEntryControl control in this.Controls)
+                {
+                    if (control is DataEntryNote &&
+                        (control.DataLabel == Constant.DatabaseColumn.File ||
+                         control.DataLabel == Constant.DatabaseColumn.Folder ||
+                         control.DataLabel == Constant.DatabaseColumn.RelativePath))
+                    {
+                        DataEntryNote note = (DataEntryNote)control;
+                        note.IsEnabled = value;
+                    }
+                    else if (control is DataEntryDateTime)
+                    {
+                        DataEntryDateTime datetime = (DataEntryDateTime)control;
+                        datetime.IsEnabled = value;
+                    }
+                    else if (control is DataEntryUtcOffset)
+                    {
+                        DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
+                        utcOffset.IsEnabled = value;
+                    }
+                    else if (control is DataEntryChoice &&
+                        (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
+                    {
+                        DataEntryChoice imageQuality = (DataEntryChoice)control;
+                        imageQuality.IsEnabled = value;
+                    }
+                }
+            }
+        }
+
         public DataEntryControls()
         {
             this.InitializeComponent();

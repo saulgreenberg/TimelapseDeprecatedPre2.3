@@ -872,6 +872,8 @@ namespace Timelapse.Database
             this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
         }
 
+        // Given a range of selected files, update the field identifed by dataLabel with the value in valueSource
+        // Updates are applied to both the datatable (so the user sees the updates immediately) and the database
         public void UpdateFiles(ImageRow valueSource, string dataLabel, int fromIndex, int toIndex)
         {
             if (fromIndex < 0)
@@ -886,6 +888,33 @@ namespace Timelapse.Database
             string value = valueSource.GetValueDatabaseString(dataLabel);
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             for (int index = fromIndex; index <= toIndex; index++)
+            {
+                // update data table
+                ImageRow image = this.Files[index];
+                image.SetValueFromDatabaseString(dataLabel, value);
+
+                // update database
+                List<ColumnTuple> columnToUpdate = new List<ColumnTuple>() { new ColumnTuple(dataLabel, value) };
+                ColumnTuplesWithWhere imageUpdate = new ColumnTuplesWithWhere(columnToUpdate, image.ID);
+                imagesToUpdate.Add(imageUpdate);
+            }
+            this.CreateBackupIfNeeded();
+            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+        }
+
+        // Similar to above
+        // Given a list of selected files, update the field identifed by dataLabel with the value in valueSource
+        // Updates are applied to both the datatable (so the user sees the updates immediately) and the database
+        public void UpdateFiles(string value, string dataLabel, List<int> indexes)
+        {
+            if (indexes.Count == 0)
+            {
+                return;
+            }
+
+            // string value = valueSource.GetValueDatabaseString(dataLabel);
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            foreach (int index in indexes)
             {
                 // update data table
                 ImageRow image = this.Files[index];

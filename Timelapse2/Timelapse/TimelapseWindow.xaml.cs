@@ -341,6 +341,9 @@ namespace Timelapse
             this.dataHandler = new DataEntryHandler(fileDatabase);
             this.DataEntryControls.CreateControls(fileDatabase, this.dataHandler);
             this.SetUserInterfaceCallbacks();
+            this.MarkableCanvas.DataEntryControls = this.DataEntryControls; // so the markable canvas can access the controls
+            this.MarkableCanvas.DataEntryHandler = this.dataHandler; // so the markable canvas can access the controls
+            this.dataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
 
             this.Title =  Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) +  ")";
             this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);

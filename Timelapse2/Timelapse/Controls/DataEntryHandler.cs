@@ -28,6 +28,9 @@ namespace Timelapse.Controls
         public ImageCache ImageCache { get; private set; }
         public bool IsProgrammaticControlUpdate { get; set; }
 
+        // We need to get selected files from the clickableimages grid, so we need this reference
+        public ClickableImagesGrid ClickableImagesGrid { get; set; }
+
         public DataEntryHandler(FileDatabase fileDatabase)
         {
             this.disposed = false;
@@ -140,6 +143,25 @@ namespace Timelapse.Controls
             }
             this.FileDatabase.UpdateFiles(this.ImageCache.Current, control.DataLabel);
         }
+
+        //SAULXXXWORKING
+        //public void CopyToSelectedFiles (DataEntryControl control, List<int> fileIds, string content)
+        //{
+        //    ColumnTuplesWithWhere imageUpdate;
+        //    int filesAffected = fileIds.Count;
+        //    //string displayValueToCopy = this.ImageCache.Current.GetValueDisplayString(control.DataLabel);
+        //    //if (this.ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, false) != true)
+        //    //{
+        //    //    return;
+        //    //}
+        //    List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+        //    foreach (int id in fileIds)
+        //    { 
+        //        imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(control.DataLabel, content) }, id);
+        //        imagesToUpdate.Add(imageUpdate);
+        //    }
+        //    this.FileDatabase.UpdateFiles(imagesToUpdate);
+        //}
 
         public void Dispose()
         {
@@ -524,12 +546,24 @@ namespace Timelapse.Controls
                 return;
             }
 
-            // update control state write current value to the database
             DataEntryNote control = (DataEntryNote)((TextBox)sender).Tag;
             control.ContentChanged = true;
 
-            // any trailing whitespace is  removed, but only from the database as further edits may use it.
-            this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, control.Content.Trim());
+            // any trailing whitespace is removed, but only from the database as further edits may use it.
+            string trimmedContent = control.Content.Trim();
+
+            if (this.ClickableImagesGrid.IsVisible == false)
+            {
+                // We are only displaying a single image 
+                // Update control state and write current value to the database
+                this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, trimmedContent); 
+            }
+            else
+            {
+                // We displaying multiple images
+                // Update the control's state, and write the current value to all items
+                this.FileDatabase.UpdateFiles(control.Content.Trim(), control.DataLabel, this.ClickableImagesGrid.GetSelected());
+            }
             this.IsProgrammaticControlUpdate = false;
         }
 

@@ -70,6 +70,22 @@ namespace Timelapse.Controls
             set { this.ContentControl.Width = value; }
         }
 
+        // SAULXXXWORKING 
+        /// <summary>Sets or gets whether this control is enabled or disabled</summary>
+        public bool IsEnabled
+        {
+            get
+            {
+                return this.Container.IsEnabled;
+            }
+            set
+            {
+                this.ContentControl.IsEnabled = value;
+                this.LabelControl.IsEnabled = value;
+                this.Container.IsEnabled = value;
+            }
+        }
+
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyle> contentStyleName, ControlLabelStyle labelStyleName) : 
             base(control, styleProvider)
         {

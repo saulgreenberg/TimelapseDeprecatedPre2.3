@@ -75,7 +75,6 @@ namespace Timelapse.Images
 
         // Timer for delaying updates in the midst of rapid navigation with the slider
         private DispatcherTimer timerSlider = new DispatcherTimer();
-
         #endregion
 
         #region Properties
@@ -172,6 +171,20 @@ namespace Timelapse.Images
                 {
                     this.magnifyingGlass.Hide();
                 }
+            }
+        }
+
+        // We need a reference to the DataEntry Controls so we can enable and disable some of them
+        public DataEntryControls DataEntryControls
+        {
+            set; get;
+        }
+
+        public DataEntryHandler DataEntryHandler
+        {
+            set
+            {
+                this.ClickableImagesGrid.DataEntryHandler = value;
             }
         }
         #endregion
@@ -1106,6 +1119,7 @@ namespace Timelapse.Images
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();
+            this.DataEntryControls.StockControlsIsEnabled = true;
         }
         public void SwitchToVideoView()
         {
@@ -1114,6 +1128,7 @@ namespace Timelapse.Images
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
+            this.DataEntryControls.StockControlsIsEnabled = true;
         }
 
         public void SwitchToClickableGridView()
@@ -1123,8 +1138,8 @@ namespace Timelapse.Images
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
+            this.DataEntryControls.StockControlsIsEnabled = false;
         }
-
         #endregion
     }
 }

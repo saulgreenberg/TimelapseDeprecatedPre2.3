@@ -19,12 +19,15 @@ namespace Timelapse.Controls
 
         public FileTable FileTable { get; set; }
         public int FileTableStartIndex { get; set; }
-      
+
         // The root folder containing the template
         public string FolderPath { get; set; }
-        #endregion 
+
+        public DataEntryHandler DataEntryHandler;
+        #endregion
 
         #region Private variables
+
         private List<ClickableImage> clickableImagesList;
 
         // Cache copies of the images we display plus associated information
@@ -300,6 +303,7 @@ namespace Timelapse.Controls
                 // More than one cell was selected
                 this.GridSelectFromInitialCellTo(currentlySelectedCell);
             }
+            GetSelected();
         }
         #endregion
 
@@ -392,6 +396,20 @@ namespace Timelapse.Controls
             }
         }
         #endregion
+
+        public List<int> GetSelected()
+        {
+            List<int> selected = new List<int> ();
+            foreach (ClickableImage ci in this.clickableImagesList)
+            {
+                if (ci.IsSelected)
+                {
+                    int index = this.DataEntryHandler.FileDatabase.Files.IndexOf(ci.ImageRow);
+                    selected.Add(index);
+                }
+            }
+            return selected;
+        }
 
         #region Cell Navigation methods
         private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
