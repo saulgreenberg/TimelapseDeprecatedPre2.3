@@ -20,10 +20,10 @@ namespace Timelapse.Controls
         public FileTable FileTable { get; set; }
         public int FileTableStartIndex { get; set; }
 
+        public DataEntryControls DataEntryControls { get; set; }
+
         // The root folder containing the template
         public string FolderPath { get; set; }
-
-        public DataEntryHandler DataEntryHandler;
         #endregion
 
         #region Private variables
@@ -115,6 +115,7 @@ namespace Timelapse.Controls
                         {
                             // We have it in the cache. Reuse it if its at least the same or greater resolution width. However, if its smaller than the resolutionwidth we want, rerender it.
                             ci = this.cachedImageList[cachedImageListIndex];
+
                             if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
                                 imageHeight = ci.Rerender(desiredWidth);
@@ -126,6 +127,7 @@ namespace Timelapse.Controls
                                 imageHeight = ci.DesiredRenderSize.Y;
                                 // System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Reused"));
                             }
+                            ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             ci.TextFontSize = desiredWidth / 20;
                             clickableImagesRow.Add(ci);
                             inCache = true;
@@ -147,6 +149,7 @@ namespace Timelapse.Controls
                         ci.ImageRow = this.FileTable[fileTableIndex];
                         ci.DesiredRenderWidth = desiredWidth;
                         imageHeight = ci.Rerender(desiredWidth);
+                        ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it latera
                         ci.TextFontSize = desiredWidth / 20;
                         // System.Diagnostics.Debug.Print(String.Format("{0}", "No Cache"));
                         clickableImagesRow.Add(ci);
@@ -250,6 +253,7 @@ namespace Timelapse.Controls
                 ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci == null ? null : ci.ImageRow);
                 this.OnDoubleClick(eventArgs);
             }
+            this.EnableOrDisableControlsAsNeeded();
         }
 
         // If conditions are met, select all cells contained by between the starting and current cell
@@ -273,6 +277,7 @@ namespace Timelapse.Controls
             // Select from the initial cell to the current cell
             this.GridSelectFromInitialCellTo(currentCell);
             this.cellWithLastMouseOver = currentCell;
+            this.EnableOrDisableControlsAsNeeded();
         }
 
         // On the mouse up, select all cells contained by its bounding box. Note that this is needed
@@ -303,7 +308,8 @@ namespace Timelapse.Controls
                 // More than one cell was selected
                 this.GridSelectFromInitialCellTo(currentlySelectedCell);
             }
-            GetSelected();
+            //this.GetSelected();
+            this.EnableOrDisableControlsAsNeeded();
         }
         #endregion
 
@@ -397,18 +403,47 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        public void EnableOrDisableControlsAsNeeded ()
+        {
+            if (this.Visibility == Visibility.Collapsed)
+            { 
+                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.All);
+            }
+            else if (this.SelectedCount() == 1)
+            {
+                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.All);
+            }
+            else if (this.SelectedCount() == 0)
+            {
+                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.None);
+            }
+            else
+            { 
+                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.AllButStockControls);
+            }
+        }
+
         public List<int> GetSelected()
         {
             List<int> selected = new List<int> ();
+            if (this.clickableImagesList == null)
+            {
+                return selected;
+            }
             foreach (ClickableImage ci in this.clickableImagesList)
             {
                 if (ci.IsSelected)
                 {
-                    int index = this.DataEntryHandler.FileDatabase.Files.IndexOf(ci.ImageRow);
+                    int index = ci.FileTableIndex;
                     selected.Add(index);
                 }
             }
             return selected;
+        }
+
+        public int SelectedCount()
+        {
+            return GetSelected().Count;
         }
 
         #region Cell Navigation methods

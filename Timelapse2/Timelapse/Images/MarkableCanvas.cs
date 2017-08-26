@@ -177,14 +177,9 @@ namespace Timelapse.Images
         // We need a reference to the DataEntry Controls so we can enable and disable some of them
         public DataEntryControls DataEntryControls
         {
-            set; get;
-        }
-
-        public DataEntryHandler DataEntryHandler
-        {
             set
             {
-                this.ClickableImagesGrid.DataEntryHandler = value;
+                this.ClickableImagesGrid.DataEntryControls = value;
             }
         }
         #endregion
@@ -1114,31 +1109,32 @@ namespace Timelapse.Images
         public void SwitchToImageView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Visible;
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();
-            this.DataEntryControls.StockControlsIsEnabled = true;
+           
         }
         public void SwitchToVideoView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
-            this.DataEntryControls.StockControlsIsEnabled = true;
         }
 
         public void SwitchToClickableGridView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
+            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
-            this.DataEntryControls.StockControlsIsEnabled = false;
         }
         #endregion
     }

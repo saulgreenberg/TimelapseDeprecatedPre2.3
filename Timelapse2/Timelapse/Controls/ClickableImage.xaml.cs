@@ -64,6 +64,8 @@ namespace Timelapse.Controls
 
         public string RootFolder { get; set; }
 
+        public int FileTableIndex { get; set; }
+
         // Path is RelativePath/FileName
         public string Path
         {

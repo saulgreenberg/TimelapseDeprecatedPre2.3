@@ -17,7 +17,7 @@
             <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
         </Viewbox>
         <Viewbox Height="20" Width="26"  HorizontalAlignment="Left" VerticalAlignment="Top">
-            <CheckBox Name="CheckBox" Grid.Row="0" Grid.Column="0" IsChecked="False" Click="CheckBox_Click" />
+          <CheckBox Name="CheckBox" Grid.Row="0" Grid.Column="0" IsChecked="False" Click="CheckBox_Click" /> 
         </Viewbox>
         <TextBlock Name="TextBlock" Grid.Row="0" Grid.Column="0" Margin="10,0,0,10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="Black" FontSize="16" >
             <TextBlock.Background>

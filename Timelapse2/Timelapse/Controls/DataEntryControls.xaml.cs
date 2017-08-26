@@ -7,6 +7,12 @@ using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
+    public enum ControlsToEnable
+    {
+        All,
+        AllButStockControls,
+        None
+    }
     /// <summary>
     /// This class generates controls based upon the information passed into it from the data grid templateTable
     /// </summary>
@@ -14,51 +20,6 @@ namespace Timelapse.Controls
     {
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
-
-        // Enable or disable the following stock controls: 
-        //     File, Folder, RelativePath,  DateTime, UtcOffset
-        // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
-        // when the markable canvas is zoomed out to display multiple images
-        private bool stockControlsIsEnabled = true;
-        public bool StockControlsIsEnabled
-        {
-            get
-            {
-                return stockControlsIsEnabled;
-            }
-
-            set
-            {
-                stockControlsIsEnabled = value;
-                foreach (DataEntryControl control in this.Controls)
-                {
-                    if (control is DataEntryNote &&
-                        (control.DataLabel == Constant.DatabaseColumn.File ||
-                         control.DataLabel == Constant.DatabaseColumn.Folder ||
-                         control.DataLabel == Constant.DatabaseColumn.RelativePath))
-                    {
-                        DataEntryNote note = (DataEntryNote)control;
-                        note.IsEnabled = value;
-                    }
-                    else if (control is DataEntryDateTime)
-                    {
-                        DataEntryDateTime datetime = (DataEntryDateTime)control;
-                        datetime.IsEnabled = value;
-                    }
-                    else if (control is DataEntryUtcOffset)
-                    {
-                        DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
-                        utcOffset.IsEnabled = value;
-                    }
-                    else if (control is DataEntryChoice &&
-                        (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
-                    {
-                        DataEntryChoice imageQuality = (DataEntryChoice)control;
-                        imageQuality.IsEnabled = value;
-                    }
-                }
-            }
-        }
 
         public DataEntryControls()
         {
@@ -138,6 +99,56 @@ namespace Timelapse.Controls
                 this.ControlsByDataLabel.Add(control.DataLabel, controlToAdd);
             }
             dataEntryPropagator.SetDataEntryCallbacks(this.ControlsByDataLabel);
+        }
+
+        // Enable or disable the following stock controls: 
+        //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality
+        // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
+        // when the markable canvas is zoomed out to display multiple images
+        public void SetEnableState(ControlsToEnable controlsToEnable)
+        {
+            foreach (DataEntryControl control in this.Controls)
+            {
+                if (control is DataEntryNote &&
+                    (control.DataLabel == Constant.DatabaseColumn.File ||
+                     control.DataLabel == Constant.DatabaseColumn.Folder ||
+                     control.DataLabel == Constant.DatabaseColumn.RelativePath))
+                {
+                    DataEntryNote note = (DataEntryNote)control;
+                    note.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                }
+                else if (control is DataEntryDateTime)
+                {
+                    DataEntryDateTime datetime = (DataEntryDateTime)control;
+                    datetime.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                }
+                else if (control is DataEntryUtcOffset)
+                {
+                    DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
+                    utcOffset.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                }
+                else if (control is DataEntryChoice &&
+                    (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
+                {
+                    DataEntryChoice imageQuality = (DataEntryChoice)control;
+                    imageQuality.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                }
+                else if (control is DataEntryNote)
+                {
+                    DataEntryNote note = (DataEntryNote)control;
+                    note.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                }
+                else if (control is DataEntryChoice)
+                {
+                    DataEntryChoice choice = (DataEntryChoice)control;
+                    choice.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                }
+                else if (control is DataEntryCounter)
+                {
+                    DataEntryCounter counter = (DataEntryCounter)control;
+                    counter.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                }
+            }
         }
 
         public void AddButton(Control button)
