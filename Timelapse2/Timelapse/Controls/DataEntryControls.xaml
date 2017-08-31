@@ -80,7 +80,6 @@
                             <BulletDecorator.Bullet >
                                 <Grid Height="25" Width="18" >
 
-
                                     <!-- Border surrounding the checkmark-->
                                     <Border Name="TickMarkBorder" CornerRadius="3,0,0,3" BorderBrush="Silver" BorderThickness="1" Height="25" Background="White"/>
                                     <Canvas Name="TickMark" Opacity=".1">
@@ -105,7 +104,7 @@
                                         <GradientStop Color="#FFE2E2E2" Offset="1" />
                                     </LinearGradientBrush>
                                 </Border.Background>
-                                <TextBlock Margin="5,0,5,0" Foreground="Black" VerticalAlignment="Center" FontWeight="Bold">
+                                <TextBlock Name="text"  Margin="5,0,5,0" Foreground="Black" VerticalAlignment="Center" FontWeight="Bold">
                                     <ContentPresenter />
                                 </TextBlock>
                             </Border>
@@ -128,6 +127,9 @@
                                 <Setter TargetName="Glow" Property="Fill" Value="Gold"/>
                                 <Setter TargetName="TickMark" Property="Opacity" Value=".5"/>
                             </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" TargetName="text" Value="{StaticResource DisabledForegroundBrush}" />
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -229,6 +231,7 @@
                             <Trigger Property="IsEnabled" Value="false">
                                 <Setter TargetName="Border" Property="Background" Value="{StaticResource DisabledBackgroundBrush}" />
                                 <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource DisabledBorderBrush}" />
+                                <Setter TargetName="CheckMark" Property="Stroke" Value="{StaticResource DisabledBorderBrush}" />
                                 <Setter Property="Foreground" Value="{StaticResource DisabledForegroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>

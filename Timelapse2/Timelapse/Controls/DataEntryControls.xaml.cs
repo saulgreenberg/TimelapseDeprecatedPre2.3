@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
-    public enum ControlsToEnable
+    public enum ControlsEnableState
     {
-        All,
-        AllButStockControls,
-        None
+        NotInOverview_EnableAllAndSetToCurrentImage,
+        OverviewNoneSelected_DisableAndBlankAll,
+        OverviewOneSelected_EnableAllAndSetToSelectedImageButCopyPreviousDisabled,
+        OverviewMultiplSelected_DisableAndBlankStockControlsEnableOthers,
     }
     /// <summary>
     /// This class generates controls based upon the information passed into it from the data grid templateTable
@@ -21,6 +23,7 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
+        public Button CopyPreviousValuesButton = null;
         public DataEntryControls()
         {
             this.InitializeComponent();
@@ -105,8 +108,21 @@ namespace Timelapse.Controls
         //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality
         // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
         // when the markable canvas is zoomed out to display multiple images
-        public void SetEnableState(ControlsToEnable controlsToEnable)
+        public void SetEnableState(ControlsEnableState controlsToEnable)
         {
+            // Enable this button only if all controls are visible
+            if (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage)
+            {
+                this.CopyPreviousValuesButton.IsEnabled = true;
+               // this.CopyPreviousValuesButton.Foreground = Brushes.Black;
+            }
+            else
+            {
+                this.CopyPreviousValuesButton.IsEnabled = false;
+                //this.CopyPreviousValuesButton.Foreground = Brushes.DimGray;
+            }
+            this.CopyPreviousValuesButton.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage) ? true : false;
+
             foreach (DataEntryControl control in this.Controls)
             {
                 if (control is DataEntryNote &&
@@ -115,38 +131,48 @@ namespace Timelapse.Controls
                      control.DataLabel == Constant.DatabaseColumn.RelativePath))
                 {
                     DataEntryNote note = (DataEntryNote)control;
-                    note.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                    note.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
+                    note.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : note.ContentControl.Background;
                 }
                 else if (control is DataEntryDateTime)
                 {
                     DataEntryDateTime datetime = (DataEntryDateTime)control;
-                    datetime.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                    datetime.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
+                    datetime.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : datetime.ContentControl.Background;
                 }
                 else if (control is DataEntryUtcOffset)
                 {
                     DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
-                    utcOffset.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                    utcOffset.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
+                    utcOffset.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : utcOffset.ContentControl.Background;
+
                 }
                 else if (control is DataEntryChoice &&
                     (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
                 {
                     DataEntryChoice imageQuality = (DataEntryChoice)control;
-                    imageQuality.IsEnabled = (controlsToEnable == ControlsToEnable.All);
+                    imageQuality.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
+                    imageQuality.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : imageQuality.ContentControl.Background;
                 }
                 else if (control is DataEntryNote)
                 {
                     DataEntryNote note = (DataEntryNote)control;
-                    note.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                    note.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
                 }
                 else if (control is DataEntryChoice)
                 {
                     DataEntryChoice choice = (DataEntryChoice)control;
-                    choice.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                    choice.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
                 }
                 else if (control is DataEntryCounter)
                 {
                     DataEntryCounter counter = (DataEntryCounter)control;
-                    counter.IsEnabled = (controlsToEnable != ControlsToEnable.None);
+                    counter.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
+                }
+                else if (control is DataEntryFlag)
+                {
+                    DataEntryFlag flag = (DataEntryFlag)control;
+                    flag.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
                 }
             }
         }

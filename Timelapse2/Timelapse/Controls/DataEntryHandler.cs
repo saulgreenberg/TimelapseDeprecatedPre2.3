@@ -31,6 +31,7 @@ namespace Timelapse.Controls
         // We need to get selected files from the clickableimages grid, so we need this reference
         public ClickableImagesGrid ClickableImagesGrid { get; set; }
 
+        #region Loading and Disposing
         public DataEntryHandler(FileDatabase fileDatabase)
         {
             this.disposed = false;
@@ -38,6 +39,31 @@ namespace Timelapse.Controls
             this.FileDatabase = fileDatabase;  // We need a reference to the database if we are going to update it.
             this.IsProgrammaticControlUpdate = false;
         }
+
+
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                if (this.FileDatabase != null)
+                {
+                    this.FileDatabase.Dispose();
+                }
+            }
+            this.disposed = true;
+        }
+        #endregion
 
         public static void Configure(DateTimePicker dateTimePicker, Nullable<DateTime> defaultValue)
         {
@@ -49,6 +75,7 @@ namespace Timelapse.Controls
             dateTimePicker.Value = defaultValue;
         }
 
+        #region Copy Forward/Backwards etc.
         /// <summary>Propagate the current value of this control forward from this point across the current set of selected images.</summary>
         public void CopyForward(string dataLabel, bool checkForZero)
         {
@@ -101,8 +128,8 @@ namespace Timelapse.Controls
                     if ((checkForZero && !valueToCopy.Equals("0")) ||             // Skip over non-zero values for counters
                         (isFlag && !valueToCopy.Equals(Constant.Boolean.False, StringComparison.OrdinalIgnoreCase)) || // Skip over false values for flags
                         (!checkForZero && !isFlag))
-                        {
-                            indexToCopyFrom = previousIndex;    // We found a non-empty value
+                    {
+                        indexToCopyFrom = previousIndex;    // We found a non-empty value
                         valueSource = file;
                         break;
                     }
@@ -135,56 +162,13 @@ namespace Timelapse.Controls
         {
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
-    
+
             string displayValueToCopy = this.ImageCache.Current.GetValueDisplayString(control.DataLabel);
             if (this.ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
             {
                 return;
             }
             this.FileDatabase.UpdateFiles(this.ImageCache.Current, control.DataLabel);
-        }
-
-        //SAULXXXWORKING
-        //public void CopyToSelectedFiles (DataEntryControl control, List<int> fileIds, string content)
-        //{
-        //    ColumnTuplesWithWhere imageUpdate;
-        //    int filesAffected = fileIds.Count;
-        //    //string displayValueToCopy = this.ImageCache.Current.GetValueDisplayString(control.DataLabel);
-        //    //if (this.ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, false) != true)
-        //    //{
-        //    //    return;
-        //    //}
-        //    List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-        //    foreach (int id in fileIds)
-        //    { 
-        //        imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(control.DataLabel, content) }, id);
-        //        imagesToUpdate.Add(imageUpdate);
-        //    }
-        //    this.FileDatabase.UpdateFiles(imagesToUpdate);
-        //}
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (this.disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                if (this.FileDatabase != null)
-                {
-                    this.FileDatabase.Dispose();
-                }
-            }
-
-            this.disposed = true;
         }
 
         public bool IsCopyForwardPossible(DataEntryControl control)
@@ -218,6 +202,7 @@ namespace Timelapse.Controls
             }
             return (nearestRowWithCopyableValue >= 0) ? true : false;
         }
+        #endregion
 
         /// <summary>
         /// Add data event handler callbacks for (possibly invisible) controls

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Database;
 
 namespace Timelapse.Controls
@@ -83,6 +84,7 @@ namespace Timelapse.Controls
                 this.ContentControl.IsEnabled = value;
                 this.LabelControl.IsEnabled = value;
                 this.Container.IsEnabled = value;
+                this.ContentControl.Foreground = value ? Brushes.Black : Brushes.DimGray;
             }
         }
 

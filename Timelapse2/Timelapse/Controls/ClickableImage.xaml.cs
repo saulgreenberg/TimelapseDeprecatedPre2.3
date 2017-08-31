@@ -29,7 +29,6 @@ namespace Timelapse.Controls
                 this.Image.Width = value;
                 this.Image.MinWidth = value;
                 this.Image.MaxWidth = value;
-                // this.TextBlock.FontSize = (value >= 256) ? 16 : 10;
             }
         }
         public Point DesiredRenderSize
@@ -76,16 +75,29 @@ namespace Timelapse.Controls
         }
 
         // Whether the checkbox is checked
+        bool isSelected = false;
         public bool IsSelected
         {
             get
             {
-                return this.CheckBox.IsChecked == true ? true : false;
+                return isSelected;
             }
             set
             {
-                this.CheckBox.IsChecked = value;
-                this.Cell.Background = this.CheckBox.IsChecked == true ? this.selectedBrush : this.unselectedBrush;
+                isSelected = value;
+                // Show or hide the checkmark 
+                if (isSelected)
+                {
+                    this.Cell.Background = this.selectedBrush;
+                    this.Checkmark.Text = "\U0001F5F9"; // Checkmark in unicode
+                    this.Checkmark.Background.Opacity = 0.7;
+                }
+                else
+                {
+                    this.Cell.Background = this.unselectedBrush;
+                    this.Checkmark.Text = "   ";
+                    this.Checkmark.Background.Opacity = 0.35;
+                }
             }
         }
 
@@ -121,11 +133,6 @@ namespace Timelapse.Controls
                 this.Image.Height = bf.PixelHeight;
             }
             return this.Image.Height; 
-        }
-
-        private void CheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            this.IsSelected = this.CheckBox.IsChecked == true;
         }
     }
 }

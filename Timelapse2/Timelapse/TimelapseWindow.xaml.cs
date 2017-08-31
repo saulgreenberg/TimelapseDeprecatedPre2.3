@@ -737,6 +737,7 @@ namespace Timelapse
             // Adjust the visibility and enable CopyPreviousValuesButton callbacks, where copyable controls will highlight as one enters the CopyPreviousValuesButton
             this.CopyPreviousValuesButton.Visibility = Visibility.Visible;
             this.DataEntryControlPanel.IsVisible = true;
+            this.DataEntryControls.CopyPreviousValuesButton = this.CopyPreviousValuesButton; // so we can disable / enable it as needed
 
             // Show the File Player
             FilePlayer.Visibility = Visibility.Visible;

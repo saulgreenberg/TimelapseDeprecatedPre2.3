@@ -407,22 +407,23 @@ namespace Timelapse.Controls
         {
             if (this.Visibility == Visibility.Collapsed)
             { 
-                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.All);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
             }
             else if (this.SelectedCount() == 1)
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.All);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewOneSelected_EnableAllAndSetToSelectedImageButCopyPreviousDisabled);
             }
             else if (this.SelectedCount() == 0)
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.None);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
             }
             else
             { 
-                this.DataEntryControls.SetEnableState(Controls.ControlsToEnable.AllButStockControls);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewMultiplSelected_DisableAndBlankStockControlsEnableOthers);
             }
         }
 
+        // Get the Selected times as a list of file table indexes to the current displayed selection of files (note these are not the IDs)
         public List<int> GetSelected()
         {
             List<int> selected = new List<int> ();
