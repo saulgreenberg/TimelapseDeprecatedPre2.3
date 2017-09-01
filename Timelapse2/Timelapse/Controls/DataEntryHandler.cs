@@ -21,7 +21,6 @@ namespace Timelapse.Controls
     {
         private const int CopyForwardIndex = 1;
         private const int PropagateFromLastValueIndex = 0;
-
         private bool disposed;
 
         public FileDatabase FileDatabase { get; private set; }
@@ -31,7 +30,7 @@ namespace Timelapse.Controls
         // We need to get selected files from the clickableimages grid, so we need this reference
         public ClickableImagesGrid ClickableImagesGrid { get; set; }
 
-        #region Loading and Disposing
+        #region Loading, Disposing
         public DataEntryHandler(FileDatabase fileDatabase)
         {
             this.disposed = false;
@@ -65,6 +64,7 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        #region Configuration, including Callback Configuration
         public static void Configure(DateTimePicker dateTimePicker, Nullable<DateTime> defaultValue)
         {
             dateTimePicker.AutoCloseCalendar = true;
@@ -74,6 +74,132 @@ namespace Timelapse.Controls
             dateTimePicker.TimeFormatString = Constant.Time.TimeFormat;
             dateTimePicker.Value = defaultValue;
         }
+        
+        /// <summary>
+        /// Add data event handler callbacks for (possibly invisible) controls
+        /// </summary>
+        public void SetDataEntryCallbacks(Dictionary<string, DataEntryControl> controlsByDataLabel)
+        {
+            // Add data entry callbacks to all editable controls. When the user changes a file's attribute using a particular control,
+            // the callback updates the matching field for that file in the database.
+            foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
+            {
+                if (pair.Value.ContentReadOnly)
+                {
+                    continue;
+                }
+
+                string controlType = this.FileDatabase.FileTableColumnsByDataLabel[pair.Key].ControlType;
+                switch (controlType)
+                {
+                    case Constant.Control.Note:
+                    case Constant.DatabaseColumn.Date:
+                    case Constant.DatabaseColumn.File:
+                    case Constant.DatabaseColumn.Folder:
+                    case Constant.DatabaseColumn.RelativePath:
+                    case Constant.DatabaseColumn.Time:
+                        DataEntryNote note = (DataEntryNote)pair.Value;
+                        note.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
+                        if (controlType == Constant.Control.Note)
+                        {
+                            this.SetContextMenuCallbacks(note);
+                        }
+                        break;
+                    case Constant.DatabaseColumn.DateTime:
+                        DataEntryDateTime dateTime = (DataEntryDateTime)pair.Value;
+                        dateTime.ContentControl.ValueChanged += this.DateTimeControl_ValueChanged;
+                        break;
+                    case Constant.DatabaseColumn.UtcOffset:
+                        DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
+                        utcOffset.ContentControl.ValueChanged += this.UtcOffsetControl_ValueChanged;
+                        break;
+                    case Constant.DatabaseColumn.DeleteFlag:
+                    case Constant.Control.Flag:
+                        DataEntryFlag flag = (DataEntryFlag)pair.Value;
+                        flag.ContentControl.Checked += this.FlagControl_CheckedChanged;
+                        flag.ContentControl.Unchecked += this.FlagControl_CheckedChanged;
+                        this.SetContextMenuCallbacks(flag);
+                        break;
+                    case Constant.DatabaseColumn.ImageQuality:
+                    case Constant.Control.FixedChoice:
+                        DataEntryChoice choice = (DataEntryChoice)pair.Value;
+                        choice.ContentControl.SelectionChanged += this.ChoiceControl_SelectionChanged;
+                        if (controlType == Constant.Control.FixedChoice)
+                        {
+                            this.SetContextMenuCallbacks(choice);
+                        }
+                        break;
+                    case Constant.Control.Counter:
+                        DataEntryCounter counter = (DataEntryCounter)pair.Value;
+                        counter.ContentControl.TextChanged += this.CounterControl_TextChanged;
+                        this.SetContextMenuCallbacks(counter);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void SetContextMenuCallbacks(DataEntryControl control)
+        {
+            MenuItem menuItemPropagateFromLastValue = new MenuItem();
+            menuItemPropagateFromLastValue.IsCheckable = false;
+            menuItemPropagateFromLastValue.Header = "Propagate from the last non-empty value to here";
+            if (control is DataEntryCounter)
+            {
+                menuItemPropagateFromLastValue.Header = "Propagate from the last non-zero value to here";
+            }
+            menuItemPropagateFromLastValue.Click += this.MenuItemPropagateFromLastValue_Click;
+            menuItemPropagateFromLastValue.Tag = control;
+
+            MenuItem menuItemCopyForward = new MenuItem();
+            menuItemCopyForward.IsCheckable = false;
+            menuItemCopyForward.Header = "Copy forward to end";
+            menuItemCopyForward.ToolTip = "The value of this field will be copied forward from this file to the last file in this set";
+            menuItemCopyForward.Click += this.MenuItemPropagateForward_Click;
+            menuItemCopyForward.Tag = control;
+
+            MenuItem menuItemCopyCurrentValue = new MenuItem();
+            menuItemCopyCurrentValue.IsCheckable = false;
+            menuItemCopyCurrentValue.Header = "Copy to all";
+            menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValue_Click;
+            menuItemCopyCurrentValue.Tag = control;
+
+            // DataEntrHandler.PropagateFromLastValueIndex and CopyForwardIndex must be kept in sync with the add order here
+            ContextMenu menu = new ContextMenu();
+            menu.Items.Add(menuItemPropagateFromLastValue);
+            menu.Items.Add(menuItemCopyForward);
+            menu.Items.Add(menuItemCopyCurrentValue);
+
+            control.Container.ContextMenu = menu;
+            control.Container.PreviewMouseRightButtonDown += this.Container_PreviewMouseRightButtonDown;
+
+            if (control is DataEntryCounter)
+            {
+                DataEntryCounter counter = (DataEntryCounter)control;
+                counter.ContentControl.ContextMenu = menu;
+            }
+            else if (control is DataEntryNote)
+            {
+                DataEntryNote note = (DataEntryNote)control;
+                note.ContentControl.ContextMenu = menu;
+            }
+            else if (control is DataEntryChoice)
+            {
+                DataEntryChoice choice = (DataEntryChoice)control;
+                choice.ContentControl.ContextMenu = menu;
+            }
+            else if (control is DataEntryFlag)
+            {
+                DataEntryFlag flag = (DataEntryFlag)control;
+                flag.ContentControl.ContextMenu = menu;
+            }
+            else
+            {
+                throw new NotSupportedException(String.Format("Unhandled control type {0}.", control.GetType().Name));
+            }
+        }
+        #endregion
 
         #region Copy Forward/Backwards etc.
         /// <summary>Propagate the current value of this control forward from this point across the current set of selected images.</summary>
@@ -203,105 +329,8 @@ namespace Timelapse.Controls
             return (nearestRowWithCopyableValue >= 0) ? true : false;
         }
         #endregion
-
-        /// <summary>
-        /// Add data event handler callbacks for (possibly invisible) controls
-        /// </summary>
-        public void SetDataEntryCallbacks(Dictionary<string, DataEntryControl> controlsByDataLabel)
-        {
-            // Add data entry callbacks to all editable controls. When the user changes a file's attribute using a particular control,
-            // the callback updates the matching field for that file in the database.
-            foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
-            {
-                if (pair.Value.ContentReadOnly)
-                {
-                    continue;
-                }
-
-                string controlType = this.FileDatabase.FileTableColumnsByDataLabel[pair.Key].ControlType;
-                switch (controlType)
-                {
-                    case Constant.Control.Note:
-                    case Constant.DatabaseColumn.Date:
-                    case Constant.DatabaseColumn.File:
-                    case Constant.DatabaseColumn.Folder:
-                    case Constant.DatabaseColumn.RelativePath:
-                    case Constant.DatabaseColumn.Time:
-                        DataEntryNote note = (DataEntryNote)pair.Value;
-                        note.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
-                        if (controlType == Constant.Control.Note)
-                        {
-                            this.SetContextMenuCallbacks(note);
-                        }
-                        break;
-                    case Constant.DatabaseColumn.DateTime:
-                        DataEntryDateTime dateTime = (DataEntryDateTime)pair.Value;
-                        dateTime.ContentControl.ValueChanged += this.DateTimeControl_ValueChanged;
-                        break;
-                    case Constant.DatabaseColumn.UtcOffset:
-                        DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
-                        utcOffset.ContentControl.ValueChanged += this.UtcOffsetControl_ValueChanged;
-                        break;
-                    case Constant.DatabaseColumn.DeleteFlag:
-                    case Constant.Control.Flag:
-                        DataEntryFlag flag = (DataEntryFlag)pair.Value;
-                        flag.ContentControl.Checked += this.FlagControl_CheckedChanged;
-                        flag.ContentControl.Unchecked += this.FlagControl_CheckedChanged;
-                        this.SetContextMenuCallbacks(flag);
-                        break;
-                    case Constant.DatabaseColumn.ImageQuality:
-                    case Constant.Control.FixedChoice:
-                        DataEntryChoice choice = (DataEntryChoice)pair.Value;
-                        choice.ContentControl.SelectionChanged += this.ChoiceControl_SelectionChanged;
-                        if (controlType == Constant.Control.FixedChoice)
-                        {
-                            this.SetContextMenuCallbacks(choice);
-                        }
-                        break;
-                    case Constant.Control.Counter:
-                        DataEntryCounter counter = (DataEntryCounter)pair.Value;
-                        counter.ContentControl.TextChanged += this.CounterControl_TextChanged;
-                        this.SetContextMenuCallbacks(counter);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        public static bool TryFindFocusedControl(IInputElement focusedElement, out DataEntryControl focusedControl)
-        {
-            if (focusedElement is FrameworkElement)
-            {
-                FrameworkElement focusedFrameworkElement = (FrameworkElement)focusedElement;
-                focusedControl = (DataEntryControl)focusedFrameworkElement.Tag;
-                if (focusedControl != null)
-                {
-                    return true;
-                }
-
-                // for complex controls which dynamic generate child controls, such as date time pickers, the tag of the focused element can't be set
-                // so try to locate a parent of the focused element with a tag indicating the control
-                FrameworkElement parent = null;
-                if (focusedFrameworkElement.Parent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement)
-                {
-                    parent = (FrameworkElement)focusedFrameworkElement.Parent;
-                }
-                else if (focusedFrameworkElement.TemplatedParent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement)
-                {
-                    parent = (FrameworkElement)focusedFrameworkElement.TemplatedParent;
-                }
-
-                if (parent != null)
-                {
-                    return DataEntryHandler.TryFindFocusedControl(parent, out focusedControl);
-                }
-            }
-
-            focusedControl = null;
-            return false;
-        }
-
+      
+        #region Confirmation Dialogs for Copy Forward/Backwards, etc
         // Ask the user to confirm value propagation from the last value
         private bool? ConfirmCopyForward(string text, int imagesAffected, bool checkForZero)
         {
@@ -358,20 +387,39 @@ namespace Timelapse.Controls
             messageBox.Message.Result = "\u2022 " + imagesAffected.ToString() + " files will be affected.";
             return messageBox.ShowDialog();
         }
+        #endregion
 
-        // Enable or disable particular context menu items
-        protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        #region Event handlers - Content Selections and Changes
+        // When the number in a particular counter box changes, update the  counter's field in the database
+        // Whenever the text in a particular note box changes, update the particular note field in the database 
+        private void NoteControl_TextAutocompleted(object sender, TextChangedEventArgs e)
         {
-            StackPanel stackPanel = (StackPanel)sender;
-            DataEntryControl control = (DataEntryControl)stackPanel.Tag;
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
 
-            MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
-            menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible(control);
-            MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
-            menuItemPropagateFromLastValue.IsEnabled = this.IsCopyFromLastNonEmptyValuePossible(control);
+            DataEntryNote control = (DataEntryNote)((TextBox)sender).Tag;
+            control.ContentChanged = true;
+
+            // any trailing whitespace is removed, but only from the database as further edits may use it.
+            string trimmedContent = control.Content.Trim();
+
+            if (this.ClickableImagesGrid.IsVisible == false)
+            {
+                // We are only displaying a single image 
+                // Update control state and write current value to the database
+                this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, trimmedContent);
+            }
+            else
+            {
+                // We displaying multiple images
+                // Update the control's state, and write the current value to all items
+                this.FileDatabase.UpdateFiles(control.Content.Trim(), control.DataLabel, this.ClickableImagesGrid.GetSelected());
+            }
+            this.IsProgrammaticControlUpdate = false;
         }
 
-        // When the number in a particular counter box changes, update the  counter's field in the database
         private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (this.IsProgrammaticControlUpdate)
@@ -485,8 +533,30 @@ namespace Timelapse.Controls
             }
         }
 
-        // When a flag  value changes, update the flag's field in the database
-        private void FlagControl_CheckedChanged(object sender, RoutedEventArgs e)
+        private void UtcOffsetControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
+
+            UtcOffsetUpDown utcOffsetPicker = (UtcOffsetUpDown)sender;
+            if (utcOffsetPicker.Value.HasValue == false)
+            {
+                return;
+            }
+            DataEntryControl control = (DataEntryControl)utcOffsetPicker.Tag;
+
+            DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
+            DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);
+            this.ImageCache.Current.SetDateTimeOffset(newImageDateTime);
+            List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
+            this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
+        }
+
+
+    // When a flag  value changes, update the flag's field in the database
+    private void FlagControl_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (this.IsProgrammaticControlUpdate)
             {
@@ -502,6 +572,10 @@ namespace Timelapse.Controls
             return;
         }
 
+ 
+        #endregion
+
+        #region Menu event handlers
         // Menu selections for propagating or copying the current value of this control to all images
         protected virtual void MenuItemPropagateFromLastValue_Click(object sender, RoutedEventArgs e)
         {
@@ -523,114 +597,53 @@ namespace Timelapse.Controls
             this.CopyForward(control.DataLabel, control is DataEntryCounter);
         }
 
-        // Whenever the text in a particular note box changes, update the particular note field in the database 
-        private void NoteControl_TextAutocompleted(object sender, TextChangedEventArgs e)
+        // Enable or disable particular context menu items
+        protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (this.IsProgrammaticControlUpdate)
-            {
-                return;
-            }
+            StackPanel stackPanel = (StackPanel)sender;
+            DataEntryControl control = (DataEntryControl)stackPanel.Tag;
 
-            DataEntryNote control = (DataEntryNote)((TextBox)sender).Tag;
-            control.ContentChanged = true;
-
-            // any trailing whitespace is removed, but only from the database as further edits may use it.
-            string trimmedContent = control.Content.Trim();
-
-            if (this.ClickableImagesGrid.IsVisible == false)
-            {
-                // We are only displaying a single image 
-                // Update control state and write current value to the database
-                this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, trimmedContent); 
-            }
-            else
-            {
-                // We displaying multiple images
-                // Update the control's state, and write the current value to all items
-                this.FileDatabase.UpdateFiles(control.Content.Trim(), control.DataLabel, this.ClickableImagesGrid.GetSelected());
-            }
-            this.IsProgrammaticControlUpdate = false;
+            MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
+            menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible(control);
+            MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
+            menuItemPropagateFromLastValue.IsEnabled = this.IsCopyFromLastNonEmptyValuePossible(control);
         }
+        #endregion
 
-        private void SetContextMenuCallbacks(DataEntryControl control)
+        #region Utilities
+        public static bool TryFindFocusedControl(IInputElement focusedElement, out DataEntryControl focusedControl)
         {
-            MenuItem menuItemPropagateFromLastValue = new MenuItem();
-            menuItemPropagateFromLastValue.IsCheckable = false;
-            menuItemPropagateFromLastValue.Header = "Propagate from the last non-empty value to here";
-            if (control is DataEntryCounter)
+            if (focusedElement is FrameworkElement)
             {
-                menuItemPropagateFromLastValue.Header = "Propagate from the last non-zero value to here";
-            }
-            menuItemPropagateFromLastValue.Click += this.MenuItemPropagateFromLastValue_Click;
-            menuItemPropagateFromLastValue.Tag = control;
+                FrameworkElement focusedFrameworkElement = (FrameworkElement)focusedElement;
+                focusedControl = (DataEntryControl)focusedFrameworkElement.Tag;
+                if (focusedControl != null)
+                {
+                    return true;
+                }
 
-            MenuItem menuItemCopyForward = new MenuItem();
-            menuItemCopyForward.IsCheckable = false;
-            menuItemCopyForward.Header = "Copy forward to end";
-            menuItemCopyForward.ToolTip = "The value of this field will be copied forward from this file to the last file in this set";
-            menuItemCopyForward.Click += this.MenuItemPropagateForward_Click;
-            menuItemCopyForward.Tag = control;
+                // for complex controls which dynamic generate child controls, such as date time pickers, the tag of the focused element can't be set
+                // so try to locate a parent of the focused element with a tag indicating the control
+                FrameworkElement parent = null;
+                if (focusedFrameworkElement.Parent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement)
+                {
+                    parent = (FrameworkElement)focusedFrameworkElement.Parent;
+                }
+                else if (focusedFrameworkElement.TemplatedParent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement)
+                {
+                    parent = (FrameworkElement)focusedFrameworkElement.TemplatedParent;
+                }
 
-            MenuItem menuItemCopyCurrentValue = new MenuItem();
-            menuItemCopyCurrentValue.IsCheckable = false;
-            menuItemCopyCurrentValue.Header = "Copy to all";
-            menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValue_Click;
-            menuItemCopyCurrentValue.Tag = control;
+                if (parent != null)
+                {
+                    return DataEntryHandler.TryFindFocusedControl(parent, out focusedControl);
+                }
+            }
 
-            // DataEntrHandler.PropagateFromLastValueIndex and CopyForwardIndex must be kept in sync with the add order here
-            ContextMenu menu = new ContextMenu();
-            menu.Items.Add(menuItemPropagateFromLastValue);
-            menu.Items.Add(menuItemCopyForward);
-            menu.Items.Add(menuItemCopyCurrentValue);
-
-            control.Container.ContextMenu = menu;
-            control.Container.PreviewMouseRightButtonDown += this.Container_PreviewMouseRightButtonDown;
-
-            if (control is DataEntryCounter)
-            {
-                DataEntryCounter counter = (DataEntryCounter)control;
-                counter.ContentControl.ContextMenu = menu;
-            }
-            else if (control is DataEntryNote)
-            {
-                DataEntryNote note = (DataEntryNote)control;
-                note.ContentControl.ContextMenu = menu;
-            }
-            else if (control is DataEntryChoice)
-            {
-                DataEntryChoice choice = (DataEntryChoice)control;
-                choice.ContentControl.ContextMenu = menu;
-            }
-            else if (control is DataEntryFlag)
-            {
-                DataEntryFlag flag = (DataEntryFlag)control;
-                flag.ContentControl.ContextMenu = menu;
-            }
-            else
-            {
-                throw new NotSupportedException(String.Format("Unhandled control type {0}.", control.GetType().Name));
-            }
+            focusedControl = null;
+            return false;
         }
+        #endregion
 
-        private void UtcOffsetControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            if (this.IsProgrammaticControlUpdate)
-            {
-                return;
-            }
-
-            UtcOffsetUpDown utcOffsetPicker = (UtcOffsetUpDown)sender;
-            if (utcOffsetPicker.Value.HasValue == false)
-            {
-                return;
-            }
-            DataEntryControl control = (DataEntryControl)utcOffsetPicker.Tag;
-
-            DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
-            DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);
-            this.ImageCache.Current.SetDateTimeOffset(newImageDateTime);
-            List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
-            this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
-        }
     }
 }
