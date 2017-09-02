@@ -18,6 +18,7 @@ namespace Timelapse.Controls
         #region Public properties
 
         public FileTable FileTable { get; set; }
+
         public int FileTableStartIndex { get; set; }
 
         public DataEntryControls DataEntryControls { get; set; }
@@ -403,23 +404,15 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        public void EnableOrDisableControlsAsNeeded ()
+        public void EnableOrDisableControlsAsNeeded()
         {
             if (this.Visibility == Visibility.Collapsed)
-            { 
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
-            }
-            else if (this.SelectedCount() == 1)
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewOneSelected_EnableAllAndSetToSelectedImageButCopyPreviousDisabled);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
             }
-            else if (this.SelectedCount() == 0)
+            else 
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
-            }
-            else
-            { 
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.OverviewMultiplSelected_DisableAndBlankStockControlsEnableOthers);
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultiplImageView, this.SelectedCount());
             }
         }
 

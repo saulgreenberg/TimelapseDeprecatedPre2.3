@@ -405,6 +405,7 @@ namespace Timelapse.Controls
             // any trailing whitespace is removed, but only from the database as further edits may use it.
             string trimmedContent = control.Content.Trim();
 
+            // Are we in the single image or overview state?
             if (this.ClickableImagesGrid.IsVisible == false)
             {
                 // We are only displaying a single image 
@@ -571,8 +572,6 @@ namespace Timelapse.Controls
             this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, control.Content);
             return;
         }
-
- 
         #endregion
 
         #region Menu event handlers
@@ -642,6 +641,36 @@ namespace Timelapse.Controls
 
             focusedControl = null;
             return false;
+        }
+
+        public string GetValueDisplayStringCommonToFileIds (string dataLabel)
+        {
+            List<int> fileIds = this.ClickableImagesGrid.GetSelected();
+            // If there are no file ids, there is nothing to show
+            if (fileIds.Count() == 0)
+            { 
+                return String.Empty;
+            }
+
+            // Get the value of the first fileID's imagerow 
+            ImageRow imageRow = this.FileDatabase.Files[fileIds[0]];
+            string contents = imageRow.GetValueDisplayString(dataLabel);
+
+            // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
+            // then return that as they all have a common value. Otherwise return an empty string.
+            for (int i = 1; i < fileIds.Count(); i++)
+            //foreach (int fileId in fileIds)
+            {
+                imageRow = this.FileDatabase.Files[fileIds[i]];
+                string new_contents = imageRow.GetValueDisplayString(dataLabel);
+                if (new_contents != contents)
+                {
+                    // We have a mismatch
+                    return String.Empty;
+                }
+            }
+            // All values match
+            return contents;
         }
         #endregion
 
