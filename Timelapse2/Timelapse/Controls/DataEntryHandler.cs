@@ -390,118 +390,6 @@ namespace Timelapse.Controls
         #endregion
 
         #region Event handlers - Content Selections and Changes
-        // When the number in a particular counter box changes, update the  counter's field in the database
-        // Whenever the text in a particular note box changes, update the particular note field in the database 
-        private void NoteControl_TextAutocompleted(object sender, TextChangedEventArgs e)
-        {
-            if (this.IsProgrammaticControlUpdate)
-            {
-                return;
-            }
-
-            DataEntryNote control = (DataEntryNote)((TextBox)sender).Tag;
-            control.ContentChanged = true;
-
-            // any trailing whitespace is removed, but only from the database as further edits may use it.
-            string trimmedContent = control.Content.Trim();
-
-            // Are we in the single image or overview state?
-            if (this.ClickableImagesGrid.IsVisible == false)
-            {
-                // We are only displaying a single image 
-                // Update control state and write current value to the database
-                this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, trimmedContent);
-            }
-            else
-            {
-                // We displaying multiple images
-                // Update the control's state, and write the current value to all items
-                this.FileDatabase.UpdateFiles(control.Content.Trim(), control.DataLabel, this.ClickableImagesGrid.GetSelected());
-            }
-            this.IsProgrammaticControlUpdate = false;
-        }
-
-        private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (this.IsProgrammaticControlUpdate)
-            {
-                return;
-            }
-
-            TextBox textBox = (TextBox)sender;
-            // Get the caret position, as we will have to restore it if we change the text
-            int pos = textBox.CaretIndex;
-
-            // If the character under the caret isn't a digit, we will be deleting it.
-            // That means we have to adjust the caret position so that it appears in the chorect place 
-            string old_text = textBox.Text;
-
-            // The caret is already at the beginning, so don't change it.
-            if (old_text.Length == 0 || pos == 0) 
-            {
-                pos = 0;
-            }
-            else
-            { 
-                // Adjust the caret backwards if the character won't be entered
-                char ch = old_text[pos - 1];
-                if (Char.IsDigit(ch) == false)
-                {
-                    pos--;
-                }
-            }   
-            // Remove any characters that are not numbers
-            Regex rgx = new Regex("[^0-9]");
-            string new_text = rgx.Replace(textBox.Text, String.Empty);
-            if (String.Equals(new_text, textBox.Text) == false)
-            {
-                this.IsProgrammaticControlUpdate = true;
-                textBox.Text = rgx.Replace(textBox.Text, String.Empty);
-                this.IsProgrammaticControlUpdate = false;
-            }
-            textBox.CaretIndex = pos;
-            
-            // In this version of Timelapse, we allow the field to be either a number or empty. We do allow the field to be empty (i.e., blank).
-            // If we change our minds about this, uncomment the code below and replace the regexp expression above with the Trim. 
-            // However, users have asked for empty counters, as they treat it differently from a 0.
-            // If the field is now empty, make the text a 0.  But, as this can make editing awkward, we select the 0 so that further editing will overwrite it.
-            // textBox.Text = textBox.Text.Trim();  // Don't allow leading or trailing spaces in the counter
-            // if (textBox.Text == String.Empty)
-            // {
-            // textBox.Text = "0";
-            // textBox.Text = String.Empty;
-            // textBox.SelectAll();
-            // }
-
-            // Get the key identifying the control, and then add its value to the database
-            DataEntryControl control = (DataEntryControl)textBox.Tag;
-            control.SetContentAndTooltip(textBox.Text);
-            this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, control.Content);
-            return;
-        }
-
-        // When a choice changes, update the particular choice's field in the database
-        private void ChoiceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (this.IsProgrammaticControlUpdate)
-            {
-                return;
-            }
-
-            ComboBox comboBox = (ComboBox)sender;
-           
-            if (comboBox.SelectedItem == null)
-            {
-                // no item selected (probably the user cancelled)
-                return;
-            }
-
-            // Get the key identifying the control, and then add its value to the database
-            DataEntryControl control = (DataEntryControl)comboBox.Tag;
-            control.SetContentAndTooltip(comboBox.SelectedItem.ToString());
-            this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, control.Content);
-        }
-
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (this.IsProgrammaticControlUpdate)
@@ -534,6 +422,7 @@ namespace Timelapse.Controls
             }
         }
 
+        // When the UTC in the UTC box changes, update the UTC field(s) in the database 
         private void UtcOffsetControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (this.IsProgrammaticControlUpdate)
@@ -554,25 +443,121 @@ namespace Timelapse.Controls
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
         }
+        
 
-
-    // When a flag  value changes, update the flag's field in the database
-    private void FlagControl_CheckedChanged(object sender, RoutedEventArgs e)
+        // When the text in a particular note box changes, update the particular note field(s) in the database 
+        private void NoteControl_TextAutocompleted(object sender, TextChangedEventArgs e)
         {
             if (this.IsProgrammaticControlUpdate)
             {
                 return;
             }
 
-            CheckBox checkBox = (CheckBox)sender;
+            DataEntryNote control = (DataEntryNote)((TextBox)sender).Tag;
+            control.ContentChanged = true;
+
+            // Note that  trailing whitespace is removed only from the database as further edits may use it.
+            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
+         }
+
+        // When the number in a particular counter box changes, update the particular counter field(s) in the database
+        private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
+
+            TextBox textBox = (TextBox)sender;
+            // Get the caret position, as we will have to restore it if we change the text
+            // If the character under the caret isn't a digit, we will be deleting it.
+            // That means we have to adjust the caret position so that it appears in the correct place 
+            int pos = textBox.CaretIndex;
+            string old_text = textBox.Text;
+
+            // The caret is already at the beginning, so don't change it.
+            if (old_text.Length == 0 || pos == 0) 
+            {
+                pos = 0;
+            }
+            else
+            { 
+                // Adjust the caret backwards if the character won't be entered
+                char ch = old_text[pos - 1];
+                if (Char.IsDigit(ch) == false)
+                {
+                    pos--;
+                }
+            }
+            // Remove any characters that are not numbers
+            // Note that we allow the field to be either a number or empty (i.e., blank).
+            Regex rgx = new Regex("[^0-9]");
+            string new_text = rgx.Replace(textBox.Text, String.Empty);
+            if (String.Equals(new_text, textBox.Text) == false)
+            {
+                this.IsProgrammaticControlUpdate = true;
+                textBox.Text = rgx.Replace(textBox.Text, String.Empty);
+                this.IsProgrammaticControlUpdate = false;
+            }
+            textBox.CaretIndex = pos;
+
             // Get the key identifying the control, and then add its value to the database
-            string value = ((bool)checkBox.IsChecked) ? Constant.Boolean.True : Constant.Boolean.False;
+            DataEntryControl control = (DataEntryControl)textBox.Tag;
+            control.SetContentAndTooltip(textBox.Text);
+            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+        }
+
+        // When a choice changes, update the particular choice field(s) in the database
+        private void ChoiceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
+            ComboBox comboBox = (ComboBox)sender;
+            if (comboBox.SelectedItem == null)
+            {
+                // no item selected (probably the user cancelled)
+                return;
+            }
+
+            // Get the key identifying the control, and then add its value to the database
+            DataEntryControl control = (DataEntryControl)comboBox.Tag;
+            control.SetContentAndTooltip(comboBox.SelectedItem.ToString());
+            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+        }
+
+        // When a flag changes, update the particular flag field(s) in the database
+        private void FlagControl_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
+            CheckBox checkBox = (CheckBox)sender;
             DataEntryControl control = (DataEntryControl)checkBox.Tag;
+            string value = ((bool)checkBox.IsChecked) ? Constant.Boolean.True : Constant.Boolean.False;
+
             control.SetContentAndTooltip(value);
-            this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, control.DataLabel, control.Content);
-            return;
+            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
         #endregion
+
+        // Update either the current row or the selected rows in the database, 
+        // depending upon whether we are in the single image or  the ClickableImagesGrid view respectively.
+        private void UpdateRowsDependingOnClickableImageGridState (string datalabel, string content)
+        {
+            if (this.ClickableImagesGrid.IsVisible == false)
+            {
+                // Only a single image is displayed: update the database for the current row with the control's value
+                this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, datalabel, content);
+            }
+            else
+            {
+                // Multiple images are displayed: update the database for all selected rows with the control's value
+                this.FileDatabase.UpdateFiles(this.ClickableImagesGrid.GetSelected(), datalabel, content.Trim());
+            }
+        }
 
         #region Menu event handlers
         // Menu selections for propagating or copying the current value of this control to all images

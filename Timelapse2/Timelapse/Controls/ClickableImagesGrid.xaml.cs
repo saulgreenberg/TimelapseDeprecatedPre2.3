@@ -239,14 +239,16 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = true;
                 this.GridExtendSelectionFrom(currentCell);
             }
-
-            ci = this.GetClickableImageFromCell(currentCell);
-            if (ci != null)
+            else
             {
-                this.cellChosenOnMouseDownSelectionState = ci.IsSelected;
-                ci.IsSelected = true;
+                // Left mouse down. Select or unselect the current cell.
+                ci = this.GetClickableImageFromCell(currentCell);
+                if (ci != null)
+                {
+                    this.cellChosenOnMouseDownSelectionState = ci.IsSelected;
+                    ci.IsSelected = true;
+                }
             }
-
             // If this is a double click, raise the Double click event, e.g., so that the calling app can navigate to that image.
             if (e.ClickCount == 2)
             {
@@ -322,6 +324,16 @@ namespace Timelapse.Controls
             foreach (ClickableImage ci in this.clickableImagesList)
             {
                 ci.IsSelected = false;
+            }
+        }
+
+        public void GridSelectInitialCellOnly()
+        {
+            this.GridUnselectAll(); // Clear the selections
+            if (this.clickableImagesList.Count() > 0)
+            {
+                ClickableImage ci = this.clickableImagesList[0];
+                ci.IsSelected = true;
             }
         }
 
@@ -428,8 +440,8 @@ namespace Timelapse.Controls
             {
                 if (ci.IsSelected)
                 {
-                    int index = ci.FileTableIndex;
-                    selected.Add(index);
+                    int fileIndex = ci.FileTableIndex;
+                    selected.Add(fileIndex);
                 }
             }
             return selected;

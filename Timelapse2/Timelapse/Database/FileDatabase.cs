@@ -905,19 +905,19 @@ namespace Timelapse.Database
         // Similar to above
         // Given a list of selected files, update the field identifed by dataLabel with the value in valueSource
         // Updates are applied to both the datatable (so the user sees the updates immediately) and the database
-        public void UpdateFiles(string value, string dataLabel, List<int> indexes)
+        public void UpdateFiles(List<int> fileIndexes, string dataLabel, string value)
         {
-            if (indexes.Count == 0)
+            if (fileIndexes.Count == 0)
             {
                 return;
             }
 
             // string value = valueSource.GetValueDatabaseString(dataLabel);
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            foreach (int index in indexes)
+            foreach (int fileIndex in fileIndexes)
             {
                 // update data table
-                ImageRow image = this.Files[index];
+                ImageRow image = this.Files[fileIndex];
                 image.SetValueFromDatabaseString(dataLabel, value);
 
                 // update database

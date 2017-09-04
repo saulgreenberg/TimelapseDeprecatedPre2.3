@@ -977,6 +977,7 @@ namespace Timelapse.Images
             {
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
+                    
                     if (this.clickableImagesState >= 3)
                     {
                         // State: zoomed out maximum allowable steps on clickable grid
@@ -985,6 +986,7 @@ namespace Timelapse.Images
                     }
                     // State: zoomed out on clickable grid, but not at the maximum step
                     // Zoom out another step
+                    bool initialSwitchToClickableImagesGrid = (this.clickableImagesState == 0) ? true : false;
                     this.clickableImagesState++;
                     this.SwitchToClickableGridView();
                     if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
@@ -992,7 +994,12 @@ namespace Timelapse.Images
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming out another step
                         TryZoomInOrOut(zoomIn, mousePosition);
-                        return;
+                    }
+                    if (initialSwitchToClickableImagesGrid)
+                    {
+                        // We've gone from the single image to the multi-image view.
+                        // By default, select the first item (as we want the data for the first item to remain displayed)
+                        this.ClickableImagesGrid.GridSelectInitialCellOnly();
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
@@ -1005,7 +1012,6 @@ namespace Timelapse.Images
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming in another step
                         TryZoomInOrOut(zoomIn, mousePosition);
-                        return;
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true)
