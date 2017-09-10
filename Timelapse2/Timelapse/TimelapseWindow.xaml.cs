@@ -1442,8 +1442,9 @@ namespace Timelapse
         #endregion
 
         #region DataGridPane activation
-        // Defer binding of data grid until the first time the data grid tab is visible
-        // This reduces startup and scrolling lag, as filling and updating the grid is fairly expensive.
+        // Update the datagrid whenever it is made visible. 
+        // SAULXXX: Note that it currently shows the selected item on the single view, but not the selected item(s) on the multiple grid view. This should be fixed.
+        // SAULXXX: However, to do this properly we need to somehow know that we were in the clickable grid view before the datagrid was activated. Alternately, we need to save the selected row index(es) somewhere
         private void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)

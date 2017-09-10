@@ -71,8 +71,7 @@ namespace Timelapse.Controls
             set { this.ContentControl.Width = value; }
         }
 
-        // SAULXXXWORKING 
-        /// <summary>Sets or gets whether this control is enabled or disabled</summary>
+        // Sets or gets whether this control is enabled or disabled</summary>
         public bool IsEnabled
         {
             get

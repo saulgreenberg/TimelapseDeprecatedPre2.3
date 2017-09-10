@@ -175,11 +175,17 @@ namespace Timelapse.Images
         }
 
         // We need a reference to the DataEntry Controls so we can enable and disable some of them
+        private DataEntryControls dataEntryControls;
         public DataEntryControls DataEntryControls
         {
+            get
+            {
+                return this.dataEntryControls;
+            }
             set
             {
                 this.ClickableImagesGrid.DataEntryControls = value;
+                this.dataEntryControls = value;
             }
         }
         #endregion
@@ -970,14 +976,16 @@ namespace Timelapse.Images
             }
         }
         #endregion
+ 
         #region ClickableImages Grid
+
+        // Zoom in (or out) of single image and/or overview 
         private void TryZoomInOrOut(bool zoomIn, Point mousePosition)
         {
             lock (this)
             {
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {
-                    
+                {    
                     if (this.clickableImagesState >= 3)
                     {
                         // State: zoomed out maximum allowable steps on clickable grid
@@ -986,8 +994,9 @@ namespace Timelapse.Images
                     }
                     // State: zoomed out on clickable grid, but not at the maximum step
                     // Zoom out another step
-                    bool initialSwitchToClickableImagesGrid = (this.clickableImagesState == 0) ? true : false;
+                    bool isInitialSwitchToClickableImagesGrid = (this.clickableImagesState == 0) ? true : false;
                     this.clickableImagesState++;
+
                     this.SwitchToClickableGridView();
                     if (this.RefreshClickableImagesGrid(this.clickableImagesState) == false)
                     {
@@ -995,11 +1004,12 @@ namespace Timelapse.Images
                         // So try again by zooming out another step
                         TryZoomInOrOut(zoomIn, mousePosition);
                     }
-                    if (initialSwitchToClickableImagesGrid)
+                    if (isInitialSwitchToClickableImagesGrid)
                     {
                         // We've gone from the single image to the multi-image view.
                         // By default, select the first item (as we want the data for the first item to remain displayed)
-                        this.ClickableImagesGrid.GridSelectInitialCellOnly();
+                        this.ClickableImagesGrid.SelectInitialCellOnly();
+                        this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true && this.clickableImagesState > 1)
@@ -1049,6 +1059,7 @@ namespace Timelapse.Images
             }
         }
 
+        // Refressh the Clickable Images Grid
         private bool RefreshClickableImagesGrid(int state)
         {
             if (this.ClickableImagesGrid == null)
@@ -1062,6 +1073,7 @@ namespace Timelapse.Images
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
         }
 
+        // If the clickable images grid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
         public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation)
         {
             if (this.IsClickableImagesGridVisible == true)
@@ -1090,43 +1102,22 @@ namespace Timelapse.Images
         }
 
         #endregion
-        public Size GetElementPixelSize(UIElement element)
-        {
-            Matrix transformToDevice;
-            var source = PresentationSource.FromVisual(element);
-            if (source != null)
-            { 
-                transformToDevice = source.CompositionTarget.TransformToDevice;
-            }
-            else
-            {
-                using (var newsource = new System.Windows.Interop.HwndSource(new System.Windows.Interop.HwndSourceParameters()))
-                { 
-                    transformToDevice = newsource.CompositionTarget.TransformToDevice;
-                }
-            }
-            if (element.DesiredSize == new Size())
-            { 
-                element.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            }
-            return (Size)transformToDevice.Transform((Vector)element.DesiredSize);
-        }
+
         #region Window shuffling
         public void SwitchToImageView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
+            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Visible;
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
-            this.ShowMagnifierIfEnabledOtherwiseHide();
-           
+            this.ShowMagnifierIfEnabledOtherwiseHide();  
         }
         public void SwitchToVideoView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
+            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
@@ -1136,7 +1127,7 @@ namespace Timelapse.Images
         public void SwitchToClickableGridView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
-            this.ClickableImagesGrid.EnableOrDisableControlsAsNeeded();
+            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;

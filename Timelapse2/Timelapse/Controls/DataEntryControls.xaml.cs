@@ -10,16 +10,9 @@ namespace Timelapse.Controls
 {
     public enum ControlsEnableState
     {
-        MultiplImageView,
+        MultipleImageView,
         SingleImageView,
     }
-    //public enum ControlsEnableState
-    //{
-    //    NotInOverview_EnableAllAndSetToCurrentImage,
-    //    OverviewNoneSelected_DisableAndBlankAll,
-    //    OverviewOneSelected_EnableAllAndSetToSelectedImageButCopyPreviousDisabled,
-    //    OverviewMultiplSelected_DisableAndBlankStockControlsEnableOthers,
-    //}
 
     /// <summary>
     /// This class generates controls based upon the information passed into it from the data grid templateTable
@@ -29,8 +22,7 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
-        public Button CopyPreviousValuesButton = null;
-
+        public Button CopyPreviousValuesButton { get; set; }
         private DataEntryHandler dataEntryHandler = null;
         public DataEntryControls()
         {
@@ -135,6 +127,7 @@ namespace Timelapse.Controls
                 {
                     DataEntryNote note = (DataEntryNote)control;
                     this.dataEntryHandler.IsProgrammaticControlUpdate = true;
+                    
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -149,7 +142,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the field
                             note.IsEnabled = false;
-                            note.SetContentAndTooltip("");
+                            note.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -160,10 +153,9 @@ namespace Timelapse.Controls
                     }
                     this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                 }
-
-                // DateTime
                 else if (control is DataEntryDateTime)
                 {
+                    // DateTime
                     DataEntryDateTime datetime = (DataEntryDateTime)control;
                     this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
@@ -180,7 +172,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the field
                             datetime.IsEnabled = false;
-                            datetime.SetContentAndTooltip("");
+                            datetime.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -191,10 +183,9 @@ namespace Timelapse.Controls
                     }
                     this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                 }
-
-                // UTC Offset
                 else if (control is DataEntryUtcOffset)
                 {
+                    // UTC Offset
                     DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
                     this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
@@ -222,14 +213,12 @@ namespace Timelapse.Controls
                             utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
                         }
                     }
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = false;//utcOffset.IsEnabled = (controlsToEnable == ControlsEnableState.SingleImageView);
-
+                    this.dataEntryHandler.IsProgrammaticControlUpdate = false; 
                 }
-
-                // ImageQuality
                 else if (control is DataEntryChoice &&
                     (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
                 {
+                    // ImageQuality
                     DataEntryChoice imageQuality = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -245,7 +234,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the note
                             imageQuality.IsEnabled = false;
-                            imageQuality.SetContentAndTooltip("");
+                            imageQuality.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -256,10 +245,9 @@ namespace Timelapse.Controls
                         this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-
-                // Notes
                 else if (control is DataEntryNote)
                 {
+                    // Notes
                     DataEntryNote note = (DataEntryNote)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -275,7 +263,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the note
                             note.IsEnabled = false;
-                            note.SetContentAndTooltip("");
+                            note.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -286,9 +274,9 @@ namespace Timelapse.Controls
                         this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-                // Choices
                 else if (control is DataEntryChoice)
                 {
+                    // Choices
                     DataEntryChoice choice = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -304,7 +292,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the note
                             choice.IsEnabled = false;
-                            choice.SetContentAndTooltip("");
+                            choice.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -315,10 +303,9 @@ namespace Timelapse.Controls
                         this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-
-                // Counters
                 else if (control is DataEntryCounter)
                 {
+                    // Counters
                     DataEntryCounter counter = (DataEntryCounter)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -334,7 +321,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the note
                             counter.IsEnabled = false;
-                            counter.SetContentAndTooltip("");
+                            counter.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -345,10 +332,9 @@ namespace Timelapse.Controls
                         this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-
-                // Flags
                 else if (control is DataEntryFlag)
                 {
+                    // Flags
                     DataEntryFlag flag = (DataEntryFlag)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -364,7 +350,7 @@ namespace Timelapse.Controls
                         {
                             // No images selected, so disable and clear the note
                             flag.IsEnabled = false;
-                            flag.SetContentAndTooltip("");
+                            flag.SetContentAndTooltip(String.Empty);
                         }
                         else
                         {
@@ -376,121 +362,6 @@ namespace Timelapse.Controls
                     }
                 }
             }
-        }
-
-        //public void SetEnableState(ControlsEnableState controlsToEnable, int imagesSelected)
-        //{
-        //    // Enable the Copy Previous button only when in the single image view, otherwise disable
-        //    if (this.CopyPreviousValuesButton != null)
-        //    {
-        //        this.CopyPreviousValuesButton.IsEnabled = (controlsToEnable == ControlsEnableState.SingleImageView) ? true : false;
-        //    }
-
-        //    foreach (DataEntryControl control in this.Controls)
-        //    {
-        //        // File, Folder and Relative Path
-        //        if (control is DataEntryNote &&
-        //            (control.DataLabel == Constant.DatabaseColumn.File ||
-        //             control.DataLabel == Constant.DatabaseColumn.Folder ||
-        //             control.DataLabel == Constant.DatabaseColumn.RelativePath))
-        //        {
-        //            DataEntryNote note = (DataEntryNote)control;
-        //            this.dataEntryHandler.IsProgrammaticControlUpdate = true;
-        //            if (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage)
-        //            {
-        //                // Enable and show its contents
-        //                note.IsEnabled = true;
-        //                note.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(note.DataLabel));
-        //            }
-        //            else
-        //            {
-        //                // Disable and hide its contents
-        //                note.IsEnabled = false;
-        //                note.SetContentAndTooltip("");
-        //            }
-        //            this.dataEntryHandler.IsProgrammaticControlUpdate = false;
-
-        //            //note.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : note.ContentControl.Background;
-        //        }
-
-        //        // DateTime
-        //        else if (control is DataEntryDateTime)
-        //        {
-        //            DataEntryDateTime datetime = (DataEntryDateTime)control;
-        //            datetime.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
-        //            datetime.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : datetime.ContentControl.Background;
-        //        }
-
-        //        // UTC Offset
-        //        else if (control is DataEntryUtcOffset)
-        //        {
-        //            DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
-        //            utcOffset.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
-        //            utcOffset.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : utcOffset.ContentControl.Background;
-
-        //        }
-
-        //        // ImageQuality
-        //        else if (control is DataEntryChoice &&
-        //            (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
-        //        {
-        //            DataEntryChoice imageQuality = (DataEntryChoice)control;
-        //            imageQuality.IsEnabled = (controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage);
-        //            imageQuality.ContentControl.Foreground = controlsToEnable == ControlsEnableState.NotInOverview_EnableAllAndSetToCurrentImage ? Brushes.Black : imageQuality.ContentControl.Background;
-        //        }
-
-        //        // Notes
-        //        else if (control is DataEntryNote)
-        //        {
-        //            DataEntryNote note = (DataEntryNote)control;
-        //            //note.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
-        //            this.dataEntryHandler.IsProgrammaticControlUpdate = true;
-        //            //if (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll)
-        //            if (controlsToEnable == ControlsEnableState.OverviewOneSelected_EnableAllAndSetToSelectedImageButCopyPreviousDisabled)
-        //            {
-        //                // Enable and show its contents
-        //                note.IsEnabled = true;
-        //                note.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(note.DataLabel));
-        //            }
-        //            else
-        //            {
-        //                // Disable and hide its contents
-        //                note.IsEnabled = false;
-        //                string value = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
-        //                System.Diagnostics.Debug.Print(note.DataLabel + " " + value);
-        //                note.SetContentAndTooltip(value);
-        //                // note.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel));
-        //                ;
-        //                //note.SetContentAndTooltip(""); // Set it to whatever is selected if they have a common value, or none.
-        //            }
-        //            this.dataEntryHandler.IsProgrammaticControlUpdate = false;
-        //        }
-
-        //        // Choices
-        //        else if (control is DataEntryChoice)
-        //        {
-        //            DataEntryChoice choice = (DataEntryChoice)control;
-        //            choice.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
-        //        }
-
-        //        // Counters
-        //        else if (control is DataEntryCounter)
-        //        {
-        //            DataEntryCounter counter = (DataEntryCounter)control;
-        //            counter.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
-        //        }
-
-        //        // Flags
-        //        else if (control is DataEntryFlag)
-        //        {
-        //            DataEntryFlag flag = (DataEntryFlag)control;
-        //            flag.IsEnabled = (controlsToEnable != ControlsEnableState.OverviewNoneSelected_DisableAndBlankAll);
-        //        }
-        //    }
-        //}
-        public void AddButton(Control button)
-        {
-            this.ButtonLocation.Child = button;
         }
     }
 }

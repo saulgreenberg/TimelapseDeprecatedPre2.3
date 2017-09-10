@@ -75,7 +75,7 @@ namespace Timelapse.Controls
         }
 
         // Whether the checkbox is checked
-        bool isSelected = false;
+        private bool isSelected = false;
         public bool IsSelected
         {
             get

@@ -19,8 +19,11 @@ namespace Timelapse.Controls
     /// </summary>
     public class DataEntryHandler : IDisposable
     {
-        private const int CopyForwardIndex = 1;
+        // Index location of these menu items in the context menu
         private const int PropagateFromLastValueIndex = 0;
+        private const int CopyForwardIndex = 1;
+        private const int CopyToAllIndex = 2;
+
         private bool disposed;
 
         public FileDatabase FileDatabase { get; private set; }
@@ -38,7 +41,6 @@ namespace Timelapse.Controls
             this.FileDatabase = fileDatabase;  // We need a reference to the database if we are going to update it.
             this.IsProgrammaticControlUpdate = false;
         }
-
 
         public void Dispose()
         {
@@ -202,10 +204,11 @@ namespace Timelapse.Controls
         #endregion
 
         #region Copy Forward/Backwards etc.
-        /// <summary>Propagate the current value of this control forward from this point across the current set of selected images.</summary>
+        /// <summary>Propagate the current value of the current control forward from this point across the current set of selected images.</summary>
         public void CopyForward(string dataLabel, bool checkForZero)
         {
-            int imagesAffected = this.FileDatabase.CurrentlySelectedFileCount - this.ImageCache.CurrentRow - 1;
+            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
+            int imagesAffected = this.FileDatabase.CurrentlySelectedFileCount - currentRowIndex - 1;
             if (imagesAffected == 0)
             {
                 // Nothing to propagate. Note that we shouldn't really see this, as the menu shouldn't be highlit if we are on the last image
@@ -217,14 +220,16 @@ namespace Timelapse.Controls
                 return;
             }
 
-            string valueToCopy = this.ImageCache.Current.GetValueDisplayString(dataLabel);
+            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.Files[this.ClickableImagesGrid.GetSelected()[0]];
+            int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
+            string valueToCopy = imageRow.GetValueDisplayString(dataLabel);
             if (this.ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
             {
                 return;
             }
 
-            // Update. Note that we start on the next row, as we are copying from the current row.
-            this.FileDatabase.UpdateFiles(this.ImageCache.Current, dataLabel, this.ImageCache.CurrentRow + 1, this.FileDatabase.CurrentlySelectedFileCount - 1);
+            // Update the files from the next row (as we are copying from the current row) to the end.
+            this.FileDatabase.UpdateFiles(imageRow, dataLabel, nextRowIndex, this.FileDatabase.CurrentlySelectedFileCount - 1);
         }
 
         /// <summary>
@@ -238,7 +243,8 @@ namespace Timelapse.Controls
             int indexToCopyFrom = -1;
             ImageRow valueSource = null;
             string valueToCopy = checkForZero ? "0" : String.Empty;
-            for (int previousIndex = this.ImageCache.CurrentRow - 1; previousIndex >= 0; previousIndex--)
+            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
+            for (int previousIndex = currentRowIndex - 1; previousIndex >= 0; previousIndex--)
             {
                 // Search for the row with some value in it, starting from the previous row
                 ImageRow file = this.FileDatabase.Files[previousIndex];
@@ -264,7 +270,7 @@ namespace Timelapse.Controls
 
             if (indexToCopyFrom < 0)
             {
-                // Nothing to propagate.  If the menu item is deactivated as expected, this shouldn't be reachable.
+                // Nothing to propagate.  If the menu item is deactivated as expected, this should never be triggered.
                 MessageBox messageBox = new MessageBox("Nothing to Propagate to Here.", Application.Current.MainWindow);
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.Message.Reason = "All the earlier files have nothing in this field, so there are no values to propagate.";
@@ -272,14 +278,14 @@ namespace Timelapse.Controls
                 return this.FileDatabase.Files[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
-            int filesAffected = this.ImageCache.CurrentRow - indexToCopyFrom;
+            int filesAffected = currentRowIndex - indexToCopyFrom;
             if (this.ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
             {
-                return this.FileDatabase.Files[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                return this.FileDatabase.Files[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
             // Update. Note that we start on the next row, as we are copying from the current row.
-            this.FileDatabase.UpdateFiles(valueSource, control.DataLabel, indexToCopyFrom + 1, this.ImageCache.CurrentRow);
+            this.FileDatabase.UpdateFiles(valueSource, control.DataLabel, indexToCopyFrom + 1, currentRowIndex);
             return valueToCopy;
         }
 
@@ -288,13 +294,20 @@ namespace Timelapse.Controls
         {
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
+            
+            string displayValueToCopy = control.Content;
 
-            string displayValueToCopy = this.ImageCache.Current.GetValueDisplayString(control.DataLabel);
             if (this.ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
             {
                 return;
             }
-            this.FileDatabase.UpdateFiles(this.ImageCache.Current, control.DataLabel);
+
+            // WE  SHOULD ALLOW THE COPY TO ALL IF ALL THE SELECTED VALUES ARE THE SAME - CHANGE RESTRICTIVE CODE TO TEST FOR THIS?
+            // BUT WE NEED TO DIFFERENTIATE BETWEEN BLANKS AND DISABLED.
+
+            // Get the currently selected image row
+            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.Files[this.ClickableImagesGrid.GetSelected()[0]];
+            this.FileDatabase.UpdateFiles(imageRow, control.DataLabel);
         }
 
         public bool IsCopyForwardPossible(DataEntryControl control)
@@ -443,7 +456,6 @@ namespace Timelapse.Controls
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
         }
-        
 
         // When the text in a particular note box changes, update the particular note field(s) in the database 
         private void NoteControl_TextAutocompleted(object sender, TextChangedEventArgs e)
@@ -457,7 +469,7 @@ namespace Timelapse.Controls
             control.ContentChanged = true;
 
             // Note that  trailing whitespace is removed only from the database as further edits may use it.
-            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
+            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
          }
 
         // When the number in a particular counter box changes, update the particular counter field(s) in the database
@@ -504,7 +516,7 @@ namespace Timelapse.Controls
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)textBox.Tag;
             control.SetContentAndTooltip(textBox.Text);
-            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
 
         // When a choice changes, update the particular choice field(s) in the database
@@ -524,7 +536,7 @@ namespace Timelapse.Controls
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)comboBox.Tag;
             control.SetContentAndTooltip(comboBox.SelectedItem.ToString());
-            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
 
         // When a flag changes, update the particular flag field(s) in the database
@@ -539,13 +551,13 @@ namespace Timelapse.Controls
             string value = ((bool)checkBox.IsChecked) ? Constant.Boolean.True : Constant.Boolean.False;
 
             control.SetContentAndTooltip(value);
-            UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
         #endregion
 
         // Update either the current row or the selected rows in the database, 
         // depending upon whether we are in the single image or  the ClickableImagesGrid view respectively.
-        private void UpdateRowsDependingOnClickableImageGridState (string datalabel, string content)
+        private void UpdateRowsDependingOnClickableImageGridState(string datalabel, string content)
         {
             if (this.ClickableImagesGrid.IsVisible == false)
             {
@@ -587,10 +599,17 @@ namespace Timelapse.Controls
             StackPanel stackPanel = (StackPanel)sender;
             DataEntryControl control = (DataEntryControl)stackPanel.Tag;
 
+            MenuItem menuItemCopyToAll = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyToAllIndex];
             MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
-            menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible(control);
             MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
-            menuItemPropagateFromLastValue.IsEnabled = this.IsCopyFromLastNonEmptyValuePossible(control);
+
+            // Behaviour: 
+            // - if the clickable image is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
+            // - otherwise enable the menut item only if the resulting action is coherent
+            bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
+            menuItemCopyToAll.IsEnabled = enabledIsPossible;
+            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible(control) : false;
+            menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
         }
         #endregion
 
@@ -628,7 +647,7 @@ namespace Timelapse.Controls
             return false;
         }
 
-        public string GetValueDisplayStringCommonToFileIds (string dataLabel)
+        public string GetValueDisplayStringCommonToFileIds(string dataLabel)
         {
             List<int> fileIds = this.ClickableImagesGrid.GetSelected();
             // If there are no file ids, there is nothing to show
@@ -644,7 +663,6 @@ namespace Timelapse.Controls
             // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
             // then return that as they all have a common value. Otherwise return an empty string.
             for (int i = 1; i < fileIds.Count(); i++)
-            //foreach (int fileId in fileIds)
             {
                 imageRow = this.FileDatabase.Files[fileIds[i]];
                 string new_contents = imageRow.GetValueDisplayString(dataLabel);
@@ -658,6 +676,5 @@ namespace Timelapse.Controls
             return contents;
         }
         #endregion
-
     }
 }
