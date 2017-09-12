@@ -859,6 +859,19 @@ namespace Timelapse
         }
         private void SelectFilesAndShowFile(long imageID, FileSelection selection)
         {
+            //SAULXXX WORKAROUND: WE SWITCH OUT OF OVERVIEW AFTER ANY SELECTION
+            //if (this.MarkableCanvas.IsClickableImagesGridVisible)
+            //{
+            //    if (this.dataHandler.ImageCache.Current.IsVideo)
+            //    {
+            //        this.MarkableCanvas.SwitchToVideoView();
+            //    }
+            //    else
+            //    {
+            //        this.MarkableCanvas.SwitchToImageView();
+            //        //this.MarkableCanvas_UpdateMarkers();
+            //    }
+            //}
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
@@ -871,6 +884,8 @@ namespace Timelapse
                 Utilities.PrintFailure("SelectFilesAndShowFile() should not be reachable with a null database.  Is a menu item wrongly enabled?");
                 return;
             }
+
+
 
             // Select the files according to the given selection
             this.dataHandler.FileDatabase.SelectFiles(selection);
@@ -976,6 +991,11 @@ namespace Timelapse
             {
                 this.FileNavigatorSlider.IsSnapToTickEnabled = false;
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
+            }
+            // SAULXXX Reset the clickable grid selection after every change in the selectin
+            if (this.MarkableCanvas.IsClickableImagesGridVisible)
+            {
+                this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
             this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID));
 

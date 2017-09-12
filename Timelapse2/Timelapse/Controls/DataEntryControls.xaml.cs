@@ -116,7 +116,11 @@ namespace Timelapse.Controls
             {
                 this.CopyPreviousValuesButton.IsEnabled = (controlsToEnable == ControlsEnableState.SingleImageView) ? true : false;
             }
-            
+
+            if (this.dataEntryHandler.ImageCache.Current == null)
+            {
+                return;
+            }
             foreach (DataEntryControl control in this.Controls)
             {
                 // File, Folder and Relative Path
