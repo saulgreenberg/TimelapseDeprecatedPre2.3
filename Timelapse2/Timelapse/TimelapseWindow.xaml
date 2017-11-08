@@ -119,11 +119,11 @@
             <MenuItem Name="MenuItemEdit" Header="_Edit" IsEnabled="false" IsTabStop="false" SubmenuOpened="Edit_SubmenuOpening" >
 
                 <!-- Find image -->
-                <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image whose filename contains your case-insensitive search term" InputGestureText="control-C"/>
+                <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image whose filename contains your case-insensitive search term" InputGestureText="control-F"/>
                 <Separator />
                 
                 <!-- Copy previous values -->
-                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="CopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
+                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="TryCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
  
                 <!-- Populate a field with _metadata... -->
                 <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
@@ -307,7 +307,7 @@
                                             HorizontalAlignment="Right" VerticalAlignment="Stretch"
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                              ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
-                                            Click="CopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave">
+                                            Click="TryCopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave">
                                             <TextBlock TextWrapping="Wrap" FontWeight="Bold">
                                             Copy<LineBreak/>Previous<LineBreak/>Values
                                         </TextBlock>

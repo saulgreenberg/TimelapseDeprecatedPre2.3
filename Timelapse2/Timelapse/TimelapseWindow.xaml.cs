@@ -860,7 +860,7 @@ namespace Timelapse
         private void SelectFilesAndShowFile(long imageID, FileSelection selection)
         {
             //SAULXXX WORKAROUND: WE SWITCH OUT OF OVERVIEW AFTER ANY SELECTION
-            //if (this.MarkableCanvas.IsClickableImagesGridVisible)
+            //if (InSingleImageView())
             //{
             //    if (this.dataHandler.ImageCache.Current.IsVideo)
             //    {
@@ -993,7 +993,7 @@ namespace Timelapse
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
             }
             // SAULXXX Reset the clickable grid selection after every change in the selectin
-            if (this.MarkableCanvas.IsClickableImagesGridVisible)
+            if (this.IsDisplayingMultipleImagesInOverview())
             {
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
@@ -1235,8 +1235,10 @@ namespace Timelapse
                 control.Container.ClearValue(Control.BackgroundProperty);
             }
         }
-        private void CopyPreviousValues_Click(object sender, RoutedEventArgs e)
+        private void TryCopyPreviousValues_Click(object sender, RoutedEventArgs e)
         {
+            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int previousRow = this.dataHandler.ImageCache.CurrentRow - 1;
             if (previousRow < 0)
@@ -1592,7 +1594,7 @@ namespace Timelapse
                 }
 
             }
-            else if (!this.MarkableCanvas.IsClickableImagesGridVisible)
+            else if (this.IsDisplayingSingleImage())
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
                 {
@@ -1750,7 +1752,7 @@ namespace Timelapse
                     this.TryViewCombinedDifference();
                     break;
                 case Key.C:
-                    this.CopyPreviousValues_Click(null, null);
+                    this.TryCopyPreviousValues_Click(null, null);
                     break;
                 case Key.Tab:
                     FilePlayer_Stop(); // In case the FilePlayer is going
@@ -2054,6 +2056,9 @@ namespace Timelapse
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
             this.MenuItemRecentFileSets_Refresh();
+
+            // Enable / disable various menu items depending on whether we are looking at the single image view or overview
+            MenuItemExportThisImage.IsEnabled = this.IsDisplayingSingleImage(); 
         }
 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
@@ -2485,6 +2490,9 @@ namespace Timelapse
         private void Edit_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
+
+            // Enable / disable various menu items depending on whether we are looking at the single image view or overview
+            MenuItemCopyPreviousValues.IsEnabled = this.IsDisplayingSingleImage();
         }
 
         private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
@@ -2513,7 +2521,7 @@ namespace Timelapse
             }
 
             if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt, 
-                                                               "'Populate a data field with image metadata of your choosing...'", 
+                                                               "'Populate a data field with image metadata...'", 
                                                                (bool optOut) =>
                                                                {
                                                                    this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
@@ -3564,6 +3572,22 @@ namespace Timelapse
             }
         }
         #endregion
+
+        // Check to see if we are displaying at least one image in the image set pane (not in the overview)
+        private bool IsDisplayingSingleImage()
+        {
+            // Always false If we are in the overiew
+            if (this.MarkableCanvas.IsClickableImagesGridVisible == true) return false;
+
+            // True only if we are displaying at least one file in an image set
+            return this.IsFileDatabaseAvailable() && 
+                   this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0;
+        }
+
+        private bool IsDisplayingMultipleImagesInOverview()
+        {       
+                return this.MarkableCanvas.IsClickableImagesGridVisible ? true : false;
+        }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
         private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
