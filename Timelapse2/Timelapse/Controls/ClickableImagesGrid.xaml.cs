@@ -470,6 +470,11 @@ namespace Timelapse.Controls
             return GetSelected().Count;
         }
 
+        public bool IsSingleImageSelected()
+        {
+            return SelectedCount() == 1 ? true : false;
+        }
+
         #region Cell Navigation methods
         private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
         {

@@ -631,7 +631,7 @@ namespace Timelapse.Images
 
         // Scale the image around the given image location point, where we are zooming in if
         // zoomIn is true, and zooming out if zoomIn is false
-        public void ScaleImage(Point location, bool zoomIn)
+        private void ScaleImage(Point location, bool zoomIn)
         {
             // Get out of here if we are already at our maximum or minimum scaling values 
             // while zooming in or out respectively 
@@ -980,7 +980,7 @@ namespace Timelapse.Images
         #region ClickableImages Grid
 
         // Zoom in (or out) of single image and/or overview 
-        private void TryZoomInOrOut(bool zoomIn, Point mousePosition)
+        public void TryZoomInOrOut(bool zoomIn, Point mousePosition)
         {
             lock (this)
             {

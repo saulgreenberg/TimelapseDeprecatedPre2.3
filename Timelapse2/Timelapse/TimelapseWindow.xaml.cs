@@ -1285,6 +1285,12 @@ namespace Timelapse
         // Create and cache the differenced images.
         private void TryViewPreviousOrNextDifference()
         {
+            // Only allow differencing in single image mode.
+            if (!this.IsDisplayingSingleImage())
+            {
+                return;
+            }
+            
             // Note:  No matter what image we are viewing, the source image should have  been cached before entering this function\
             // If it isn't (or if its a video), abort
             if (this.dataHandler == null ||
@@ -1295,6 +1301,8 @@ namespace Timelapse
                 this.StatusBar.SetMessage(String.Format("Differences can't be shown for videos, missing, or corrupt files"));
                 return;
             }
+
+
 
             // Go to the next image in the cycle we want to show.
             this.dataHandler.ImageCache.MoveToNextStateInPreviousNextDifferenceCycle();
@@ -1347,6 +1355,12 @@ namespace Timelapse
 
         private void TryViewCombinedDifference()
         {
+            // Only allow differencing in single image mode.
+            if (!this.IsDisplayingSingleImage())
+            {
+                return;
+            }
+
             if (this.dataHandler == null ||
                 this.dataHandler.ImageCache == null ||
                 this.dataHandler.ImageCache.Current == null ||
@@ -2492,7 +2506,10 @@ namespace Timelapse
             FilePlayer_Stop(); // In case the FilePlayer is going
 
             // Enable / disable various menu items depending on whether we are looking at the single image view or overview
-            MenuItemCopyPreviousValues.IsEnabled = this.IsDisplayingSingleImage();
+            bool state = this.IsDisplayingSingleImage();
+            this.MenuItemCopyPreviousValues.IsEnabled = state;
+            this.MenuItemDeleteCurrentFile.IsEnabled = state;
+            this.MenuItemDeleteCurrentFileAndData.IsEnabled = state;
         }
 
         private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
@@ -2972,18 +2989,22 @@ namespace Timelapse
         private void View_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
+
+            bool state = this.IsDisplayingSingleImage();
+            this.MenuItemViewDifferencesCycleThrough.IsEnabled = state;
+            this.MenuItemViewDifferencesCombined.IsEnabled = state;
         }
 
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
         {
             Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.ScaleImage(mousePosition, true);
+            this.MarkableCanvas.TryZoomInOrOut(true, mousePosition);
         }
 
         private void MenuItemZoomOut_Click(object sender, RoutedEventArgs e)
         {
             Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.ScaleImage(mousePosition, false);
+            this.MarkableCanvas.TryZoomInOrOut(false, mousePosition);
         }
 
         /// <summary>Navigate to the next file in this image set</summary>
