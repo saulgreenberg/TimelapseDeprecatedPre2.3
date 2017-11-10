@@ -992,6 +992,7 @@ namespace Timelapse
                 this.FileNavigatorSlider.IsSnapToTickEnabled = false;
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
             }
+ 
             // SAULXXX Reset the clickable grid selection after every change in the selectin
             if (this.IsDisplayingMultipleImagesInOverview())
             {

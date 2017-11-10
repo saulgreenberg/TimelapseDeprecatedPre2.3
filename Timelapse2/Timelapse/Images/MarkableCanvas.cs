@@ -1126,6 +1126,10 @@ namespace Timelapse.Images
 
         public void SwitchToClickableGridView()
         {
+            if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
+            {
+                return;
+            }
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;

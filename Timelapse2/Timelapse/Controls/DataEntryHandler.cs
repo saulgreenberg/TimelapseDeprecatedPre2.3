@@ -650,30 +650,58 @@ namespace Timelapse.Controls
         public string GetValueDisplayStringCommonToFileIds(string dataLabel)
         {
             List<int> fileIds = this.ClickableImagesGrid.GetSelected();
-            // If there are no file ids, there is nothing to show
-            if (fileIds.Count() == 0)
-            { 
-                return String.Empty;
-            }
-
-            // Get the value of the first fileID's imagerow 
-            ImageRow imageRow = this.FileDatabase.Files[fileIds[0]];
-            string contents = imageRow.GetValueDisplayString(dataLabel);
-
-            // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
-            // then return that as they all have a common value. Otherwise return an empty string.
-            for (int i = 1; i < fileIds.Count(); i++)
-            {
-                imageRow = this.FileDatabase.Files[fileIds[i]];
-                string new_contents = imageRow.GetValueDisplayString(dataLabel);
-                if (new_contents != contents)
+            // There used to be a bug in this code, which resulted from this being invoked in SwitchToClickableGridView() when the grid was already being displayed.
+            //  I have kept the try/catch in just in case it rears its ugly head elsewhere. Commented out Debug statements are here just in case we need to reexamine it.
+            try
+            {              
+                // If there are no file ids, there is nothing to show
+                if (fileIds.Count() == 0)
                 {
-                    // We have a mismatch
                     return String.Empty;
                 }
+                // The Find function isn't useful to use instead of the catch, as it fails at times when it should have succeeded.
+                //if (this.FileDatabase.Files.Find (fileIds[0]) == null)
+                //{
+                //    System.Diagnostics.Debug.Print("Find Failed: " + fileIds[0].ToString());
+                //}
+                //else
+                //{
+                //    System.Diagnostics.Debug.Print("Find Succeeded: " + fileIds[0].ToString());
+                //}
+
+                // This can cause the crash, when the id in fileIds[0] doesn't exist
+                ImageRow imageRow = this.FileDatabase.Files[fileIds[0]];
+
+                // The above line is what causes the crash, when the id in fileIds[0] doesn't exist
+                // System.Diagnostics.Debug.Print("Success: " + dataLabel + ": " + fileIds[0]);
+
+                string contents = imageRow.GetValueDisplayString(dataLabel);
+
+                // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
+                // then return that as they all have a common value. Otherwise return an empty string.
+                for (int i = 1; i < fileIds.Count(); i++)
+                {
+
+                    imageRow = this.FileDatabase.Files[fileIds[i]];
+                    string new_contents = imageRow.GetValueDisplayString(dataLabel);
+                    if (new_contents != contents)
+                    {
+                        // We have a mismatch
+                        return String.Empty;
+                    }
+                }
+                // All values match
+                return contents;
             }
-            // All values match
-            return contents;
+            catch
+            {
+                //  This catch occurs when the id in fileIds[0] doesn't exist
+                System.Diagnostics.Debug.Write("Catch in GetValueDisplayStringCommonToFileIds: " + dataLabel);
+                //foreach (int i in fileIds)
+                //    System.Diagnostics.Debug.Write(" " + i.ToString());
+                //System.Diagnostics.Debug.WriteLine(" ");
+                return String.Empty;
+            }
         }
         #endregion
     }
