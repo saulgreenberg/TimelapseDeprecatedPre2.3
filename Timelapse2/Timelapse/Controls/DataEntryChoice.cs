@@ -30,12 +30,12 @@ namespace Timelapse.Controls
             : base(control, styleProvider, ControlContentStyle.ChoiceComboBox, ControlLabelStyle.DefaultLabel)
         {
             // The look of the combobox
-            this.ContentControl.Height = 25;
-            this.ContentControl.HorizontalAlignment = HorizontalAlignment.Left;
-            this.ContentControl.VerticalAlignment = VerticalAlignment.Center;
-            this.ContentControl.VerticalContentAlignment = VerticalAlignment.Center;
-            this.ContentControl.BorderThickness = new Thickness(1);
-            this.ContentControl.BorderBrush = Brushes.LightBlue;
+            //this.ContentControl.Height = 25;
+            //this.ContentControl.HorizontalAlignment = HorizontalAlignment.Left;
+            //this.ContentControl.VerticalAlignment = VerticalAlignment.Center;
+            //this.ContentControl.VerticalContentAlignment = VerticalAlignment.Center;
+            //this.ContentControl.BorderThickness = new Thickness(1);
+            //this.ContentControl.BorderBrush = Brushes.LightBlue;
 
             // The behaviour of the combobox
             this.ContentControl.Focusable = true;
