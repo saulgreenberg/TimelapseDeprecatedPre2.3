@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Control.Resources>
-        
+
         <!-- DefaultLabel Style: Properties -->
         <Style x:Key="DefaultLabel" TargetType="Label">
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -16,7 +16,7 @@
             <Setter Property="Height" Value="25" />
         </Style>
 
-        <!-- NoteTextBox Style: Properties -->
+        <!--NoteTextBox Style: Properties--> 
         <Style x:Key="NoteTextBox" TargetType="TextBox">
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -45,7 +45,7 @@
             <Setter Property="Margin" Value="-5,0,0,0" />
         </Style>
         
-        <!-- Flat ChoiceComboBox Style-->
+        <!-- ChoiceComboBox Style - implements a Flat Choice style -->
         <SolidColorBrush x:Key="ComboBoxNormalBorderBrush" Color="LightBlue" />
         <SolidColorBrush x:Key="ComboBoxNormalBackgroundBrush" Color="#fff" />
         <SolidColorBrush x:Key="ComboBoxDisabledForegroundBrush" Color="#888" />
