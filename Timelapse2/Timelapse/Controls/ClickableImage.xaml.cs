@@ -117,7 +117,7 @@ namespace Timelapse.Controls
         public Double Rerender(double width)
         {
             this.DesiredRenderWidth = width;
-            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.TransientLoading);
+            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.Image.Source = bf;
             this.TextBlock.Text = this.ImageRow.FileName;
 

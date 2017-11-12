@@ -316,12 +316,14 @@ namespace Timelapse.Database
                 try
                 {
                     // Because move doesn't allow overwriting, delete the destination file if it already exists.
+                    System.Diagnostics.Debug.Print("Deleting " + sourceFilePath);
                     File.Delete(sourceFilePath);
                     return true;
                 }
-                catch (IOException exception)
+
+                catch (UnauthorizedAccessException exception)
                 {
-                    Utilities.PrintFailure(exception.Message + ": " + exception.ToString());
+                    Utilities.PrintFailure("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                     return false;
                 }
             }
@@ -330,9 +332,9 @@ namespace Timelapse.Database
                 File.Move(sourceFilePath, destinationFilePath);
                 return true;
             }
-            catch (IOException exception)
+            catch (UnauthorizedAccessException exception)
             {
-                Utilities.PrintFailure(exception.Message + ": " + exception.ToString());
+                Utilities.PrintFailure("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                 return false;
             }
         }
