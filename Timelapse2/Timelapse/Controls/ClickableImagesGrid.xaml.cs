@@ -25,6 +25,23 @@ namespace Timelapse.Controls
 
         // The root folder containing the template
         public string FolderPath { get; set; }
+
+        // The number of images that currently fit in a row
+        public int ImagesInRow
+        {
+            get
+            {
+                return this.Grid.ColumnDefinitions.Count;
+            }
+        }
+
+        public int RowCount
+        {
+            get
+            {
+                return this.Grid.RowDefinitions.Count;
+            }
+        }
         #endregion
 
         #region Private variables

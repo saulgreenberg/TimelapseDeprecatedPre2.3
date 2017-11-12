@@ -28,6 +28,8 @@ namespace Timelapse.Controls
         Last,
         PlaySlow,
         PlayFast,
+        Page,
+        Row,
         Stop
     }
 
@@ -71,7 +73,9 @@ namespace Timelapse.Controls
             this.FirstFile.IsEnabled = isEnabled;
             this.PlayBackwardsFast.IsEnabled = isEnabled;
             this.PlayBackwardsSlow.IsEnabled = isEnabled;
-            this.StepBackwards.IsEnabled = isEnabled;    
+            this.StepBackwards.IsEnabled = isEnabled;
+            this.RowUp.IsEnabled = isEnabled;
+            this.PageUp.IsEnabled = isEnabled;
         }
 
         // Enable or Disable the forward controls
@@ -81,8 +85,22 @@ namespace Timelapse.Controls
             this.PlayForwardFast.IsEnabled = isEnabled;
             this.PlayForwardSlow.IsEnabled = isEnabled;
             this.LastFile.IsEnabled = isEnabled;
+            this.RowDown.IsEnabled = isEnabled;
+            this.PageDown.IsEnabled = isEnabled;
         }
 
+        public void SwitchFileMode (bool isSingleMode)
+        {
+            this.RowDown.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;
+            this.RowUp.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;
+            this.PageDown.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;
+            this.PageUp.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;
+
+            this.PlayForwardSlow.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
+            this.PlayForwardFast.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
+            this.PlayBackwardsSlow.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
+            this.PlayBackwardsFast.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
+        }
         private void FilePlayer_Click(object sender, RoutedEventArgs e)
         {
             RadioButton button = sender as RadioButton;
@@ -91,6 +109,14 @@ namespace Timelapse.Controls
                 case "First":
                     this.Direction = FilePlayerDirection.Backward;
                     this.Selection = FilePlayerSelection.First;
+                    break;
+                case "PageUp":
+                    this.Direction = FilePlayerDirection.Backward;
+                    this.Selection = FilePlayerSelection.Page;
+                    break;
+                case "RowUp":
+                    this.Direction = FilePlayerDirection.Backward;
+                    this.Selection = FilePlayerSelection.Row;
                     break;
                 case "PlayBackwardsFast":
                     this.Direction = FilePlayerDirection.Backward;
@@ -118,6 +144,14 @@ namespace Timelapse.Controls
                 case "PlayForwardFast":
                     this.Direction = FilePlayerDirection.Forward;
                     this.Selection = FilePlayerSelection.PlayFast;
+                    break;
+                case "PageDown":
+                    this.Direction = FilePlayerDirection.Forward;
+                    this.Selection = FilePlayerSelection.Page;
+                    break;
+                case "RowDown":
+                    this.Direction = FilePlayerDirection.Forward;
+                    this.Selection = FilePlayerSelection.Row;
                     break;
                 case "Last":
                     this.Direction = FilePlayerDirection.Forward;

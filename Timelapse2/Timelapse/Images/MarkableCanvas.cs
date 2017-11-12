@@ -79,6 +79,11 @@ namespace Timelapse.Images
 
         #region Properties
         /// <summary>
+        /// The FilePlayer should be set from TimelapseWindow.cs, as we need a handle to it in order to manipulate it.
+        /// </summary>       
+        public FilePlayer FilePlayer { private get; set; }
+
+        /// <summary>
         /// Gets the image displayed across the MarkableCanvas for image files
         /// </summary>
         public Image ImageToDisplay { get; private set; }
@@ -91,6 +96,7 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets the video displayed across the MarkableCanvas for video files
         /// </summary>
+
         public VideoPlayer VideoToDisplay { get; private set; }
 
         /// <summary>
@@ -192,6 +198,8 @@ namespace Timelapse.Images
 
         #region Events
         public event EventHandler<MarkerEventArgs> MarkerEvent;
+        public event Action SwitchedToClickableImagesGridEventAction;
+        public event Action SwitchedToSingleImageViewEventAction;
 
         private void SendMarkerEvent(MarkerEventArgs e)
         {
@@ -1107,6 +1115,7 @@ namespace Timelapse.Images
         public void SwitchToImageView()
         {
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
             this.clickableImagesState = 0;
             this.ImageToDisplay.Visibility = Visibility.Visible;
@@ -1116,6 +1125,7 @@ namespace Timelapse.Images
         }
         public void SwitchToVideoView()
         {
+            this.SwitchedToSingleImageViewEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
             this.clickableImagesState = 0;
@@ -1130,6 +1140,7 @@ namespace Timelapse.Images
             {
                 return;
             }
+            this.SwitchedToClickableImagesGridEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;

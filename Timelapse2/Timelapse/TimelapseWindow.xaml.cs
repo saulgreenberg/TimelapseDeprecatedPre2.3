@@ -66,7 +66,8 @@ namespace Timelapse
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
             this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
-
+            this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
+            this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
 
@@ -859,19 +860,6 @@ namespace Timelapse
         }
         private void SelectFilesAndShowFile(long imageID, FileSelection selection)
         {
-            //SAULXXX WORKAROUND: WE SWITCH OUT OF OVERVIEW AFTER ANY SELECTION
-            //if (InSingleImageView())
-            //{
-            //    if (this.dataHandler.ImageCache.Current.IsVideo)
-            //    {
-            //        this.MarkableCanvas.SwitchToVideoView();
-            //    }
-            //    else
-            //    {
-            //        this.MarkableCanvas.SwitchToImageView();
-            //        //this.MarkableCanvas_UpdateMarkers();
-            //    }
-            //}
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
@@ -1668,8 +1656,19 @@ namespace Timelapse
             {
                 increment *= 10;
             }
+            return TryShowImageWithoutSliderCallback(forward, increment);
+        }
+        private bool TryShowImageWithoutSliderCallback(bool forward, int increment)
+        {
+            // Check to see if there are any images to show, 
+            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
+            {
+                return false;
+            }
 
-            int desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
+            int desiredRow = forward
+                ? this.dataHandler.ImageCache.CurrentRow + increment
+                : this.dataHandler.ImageCache.CurrentRow - increment;
 
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
             if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
@@ -1691,6 +1690,47 @@ namespace Timelapse
             }
             return true;
         }
+
+        //private bool xxxxTryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)
+        //{
+        //    // Check to see if there are any images to show, 
+        //    if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
+        //    {
+        //        return false;
+        //    }
+        //    // determine how far to move and in which direction
+        //    int increment = forward ? 1 : -1;
+        //    if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        //    {
+        //        increment *= 5;
+        //    }
+        //    if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        //    {
+        //        increment *= 10;
+        //    }
+
+        //    int desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
+
+        //    // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
+        //    if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
+        //    {
+        //        desiredRow = this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1;
+        //    }
+        //    else if (desiredRow < 0)
+        //    {
+        //        desiredRow = 0;
+        //    }
+
+        //    // If the desired row is the same as the current row, the image us already being displayed
+        //    if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
+        //    {
+        //        // Move to the desired row
+        //        this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
+        //        this.ShowFile(desiredRow);
+        //        this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+        //    }
+        //    return true;
+        //}
 
         #endregion
 
@@ -3484,6 +3524,12 @@ namespace Timelapse
                     FilePlayer_Stop();
                     FileNavigatorSlider.Value = 1;
                     break;
+                case FilePlayerSelection.Page:
+                    this.FilePlayer_ScrollPage();
+                    break;
+                case FilePlayerSelection.Row:
+                    this.FilePlayer_ScrollRow();
+                    break;
                 case FilePlayerSelection.Last:
                     FilePlayer_Stop();
                     FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
@@ -3520,11 +3566,25 @@ namespace Timelapse
             this.FilePlayer.Stop();
         }
 
+        // Scroll a row of images the ClickableImaesGrid
+        private void FilePlayer_ScrollRow()
+        {
+            bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
+            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow);
+        }
+
+        // Scroll a page of images the ClickableImaegsGrid
+        private void FilePlayer_ScrollPage()
+        {
+            bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
+            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowCount);
+        }
+
         // On every tick, try to show the next/previous file as indicated by the direction
         private void FilePlayerTimer_Tick(object sender, EventArgs e)
         {
             bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, 0);
+            this.TryShowImageWithoutSliderCallback(direction, ModifierKeys.None);
 
             // Stop the timer if the image reaches the beginning or end of the image set
             if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))
@@ -3532,9 +3592,6 @@ namespace Timelapse
                 FilePlayer_Stop();
             }
         }
-
-
-
         #endregion
 
         #region Find Callbacks and Methods
@@ -3614,13 +3671,22 @@ namespace Timelapse
                 return this.MarkableCanvas.IsClickableImagesGridVisible ? true : false;
         }
 
+        private void SwitchedToClickableImagesGrid()
+        {
+            this.FilePlayer_Stop();
+            this.FilePlayer.SwitchFileMode(false);
+        }
+
+        private void SwitchedToSingleImagesView()
+        {
+            this.FilePlayer.SwitchFileMode(true);
+        }
+
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
         private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
         {
            if (e.ImageRow != null )
             {
- 
-
                 // Switch to either the video or image view as needed
                 if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
                 {
