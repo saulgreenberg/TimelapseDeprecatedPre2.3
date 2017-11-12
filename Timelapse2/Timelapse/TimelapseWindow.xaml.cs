@@ -2663,6 +2663,9 @@ namespace Timelapse
                     }
                 }
 
+                // Invalidate the overview cache as well, so Missing placeholder will be displayed.
+                this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
+
                 if (deleteFilesAndData)
                 {
                     // drop images
@@ -2684,7 +2687,7 @@ namespace Timelapse
                 {
                     // update image properties
                     this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                    // SAULXXX: Todd's verson didn'thave this next line, which updates the data table. It meant the display wasn't updating to show the missing image quality / unchecked delete flag.
+                    // SAULXXX: Todd's verson didn't have this next line, which updates the data table. It meant the display wasn't updating to show the missing image quality / unchecked delete flag.
                     // SAULXXX: There is likely a more efficient way to do this - need to check.
                     // SAULXXX: I notice in later versions he has a new way of doing this, so this fix will likely happen then
                     this.SelectFilesAndShowFile(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);

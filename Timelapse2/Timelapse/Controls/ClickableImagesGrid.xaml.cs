@@ -224,6 +224,13 @@ namespace Timelapse.Controls
             // Return false if we can't even fit in a single row
             return (Grid.RowDefinitions.Count < 1) ? false : true;
         }
+
+        // Invalidate the clickable images cache.
+        // THis is useful to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
+        public void InvalidateCache ()
+        {
+            this.cachedImageList = null;
+        }
         #endregion
 
         #region Mouse callbacks
