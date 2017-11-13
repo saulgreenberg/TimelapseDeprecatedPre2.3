@@ -17,16 +17,20 @@ namespace Timelapse.Controls
     {
         #region Public properties
 
-        public FileTable FileTable { get; set; }
+        // DataEntryControls needs to be set externally
+        public DataEntryControls DataEntryControls { private get; set; }
+        
+        // FileTable needs to be set externally
+        public FileTable FileTable { private get; set; }
 
-        public int FileTableStartIndex { get; set; }
+        // FileTableStartIndex needs to be set externally
+        public int FileTableStartIndex { private get; set; }
 
-        public DataEntryControls DataEntryControls { get; set; }
-
+        // FoldePath needs to be set externally
         // The root folder containing the template
-        public string FolderPath { get; set; }
+        public string FolderPath { private get; set; }
 
-        // The number of images that currently fit in a row
+        // The number of images that currently exist in a row
         public int ImagesInRow
         {
             get
@@ -35,7 +39,8 @@ namespace Timelapse.Controls
             }
         }
 
-        public int RowCount
+        // The number of rows that currently exist in the ClickableImagesGrid
+        public int RowsInGrid
         {
             get
             {
@@ -167,12 +172,14 @@ namespace Timelapse.Controls
                     if (inCache == false)
                     {
                         // The image is not in the cache. Create a new clickable image
-                        ci = new ClickableImage(desiredWidth);
-                        ci.RootFolder = this.FolderPath;
-                        ci.ImageRow = this.FileTable[fileTableIndex];
-                        ci.DesiredRenderWidth = desiredWidth;
+                        ci = new ClickableImage(desiredWidth)
+                        {
+                            RootFolder = this.FolderPath,
+                            ImageRow = this.FileTable[fileTableIndex],
+                            DesiredRenderWidth = desiredWidth
+                        };
                         imageHeight = ci.Rerender(desiredWidth);
-                        ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it latera
+                        ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
                         ci.TextFontSize = desiredWidth / 20;
                         // System.Diagnostics.Debug.Print(String.Format("{0}", "No Cache"));
                         clickableImagesRow.Add(ci);
@@ -294,7 +301,7 @@ namespace Timelapse.Controls
             if (e.ClickCount == 2)
             {
                 ci = GetClickableImageFromCell(currentCell);
-                ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci == null ? null : ci.ImageRow);
+                ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci?.ImageRow);
                 this.OnDoubleClick(eventArgs);
             }
             this.EnableOrDisableControlsAsNeeded();
@@ -655,10 +662,7 @@ namespace Timelapse.Controls
 
         protected virtual void OnDoubleClick(ClickableImagesGridEventArgs e)
         {
-            if (this.DoubleClick != null)
-            {
-                this.DoubleClick(this, e);
-            }
+            this.DoubleClick?.Invoke(this, e);
         }
         #endregion
     }

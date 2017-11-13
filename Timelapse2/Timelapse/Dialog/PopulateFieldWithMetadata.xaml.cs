@@ -216,8 +216,7 @@ namespace Timelapse.Dialog
                     ColumnTuplesWithWhere imageUpdate;
                     if (dataLabelToUpdate == Constant.DatabaseColumn.DateTime)
                     {
-                        DateTimeOffset metadataDateTime;
-                        if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out metadataDateTime))
+                        if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
                         {
                             image.SetDateTimeOffset(metadataDateTime);
                             imageUpdate = image.GetDateTimeColumnTuples();

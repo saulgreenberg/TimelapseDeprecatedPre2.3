@@ -203,10 +203,7 @@ namespace Timelapse.Images
 
         private void SendMarkerEvent(MarkerEventArgs e)
         {
-            if (this.MarkerEvent != null)
-            {
-                this.MarkerEvent(this, e);
-            }
+            this.MarkerEvent?.Invoke(this, e);
         }
         #endregion
 
@@ -1074,8 +1071,7 @@ namespace Timelapse.Images
             {
                 return false;
             }
-            int desiredWidth = 0;
-            this.clickableImagesZoomedOutStates.TryGetValue(state, out desiredWidth);
+            this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
 
             Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
