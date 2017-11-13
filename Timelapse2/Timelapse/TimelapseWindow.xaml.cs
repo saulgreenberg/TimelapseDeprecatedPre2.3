@@ -1523,6 +1523,7 @@ namespace Timelapse
                 this.MarkableCanvas.SetNewImage(Constant.Images.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
                 this.MarkableCanvas_UpdateMarkers();
+                this.MarkableCanvas.SwitchToImageView();
 
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
                 return;
