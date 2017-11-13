@@ -51,10 +51,7 @@ namespace Timelapse.Controls
         public void OnFilePlayerChange(object sender, FilePlayerEventArgs e)
         {
             // If there exist any subscribers call the event
-            if (this.FilePlayerChange != null)
-            {
-                this.FilePlayerChange(this, e);
-            }
+            this.FilePlayerChange?.Invoke(this, e);
         }
 
         public FilePlayer()

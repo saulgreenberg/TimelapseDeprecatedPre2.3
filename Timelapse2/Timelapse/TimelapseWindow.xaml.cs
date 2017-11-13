@@ -85,8 +85,10 @@ namespace Timelapse
             this.MenuItemRecentFileSets_Refresh();
 
             // Timer to force the image to update to the current slider position when the user pauses while dragging the  slider 
-            this.timerFileNavigator = new DispatcherTimer();
-            this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders;
+            this.timerFileNavigator = new DispatcherTimer()
+            {
+                Interval = this.state.Throttles.DesiredIntervalBetweenRenders
+            };
             this.timerFileNavigator.Tick += this.TimerFileNavigator_Tick;
 
             // Callback to ensure AutoPlay stops when the user clicks on it
@@ -226,8 +228,7 @@ namespace Timelapse
         {
             // prompt user to select a template
             // default the template selection dialog to the most recently opened database
-            string defaultTemplateDatabasePath;
-            this.state.MostRecentImageSets.TryGetMostRecent(out defaultTemplateDatabasePath);
+            this.state.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
             if (Utilities.TryGetFileFromUser("Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
                                              String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension),
@@ -275,9 +276,7 @@ namespace Timelapse
 
             // Try to get the image database file path 
             // importImages will be true if its a new image database file, (meaning we should later ask the user to try to import some images)
-            string fileDatabaseFilePath;
-            bool importImages;
-            if (this.TrySelectDatabaseFile(templateDatabasePath, out fileDatabaseFilePath, out importImages) == false)
+            if (this.TrySelectDatabaseFile(templateDatabasePath, out string fileDatabaseFilePath, out bool importImages) == false)
             {
                 // No image database file was selected
                 return false;
@@ -396,8 +395,7 @@ namespace Timelapse
                     return false;
                 }
 
-                IEnumerable<string> folderPaths;
-                if (this.ShowFolderSelectionDialog(out folderPaths))
+                if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
                 {
                     return this.TryBeginImageFolderLoadAsync(folderPaths, out externallyVisibleWorker);
                 }
@@ -453,8 +451,7 @@ namespace Timelapse
                 int filesProcessed = 0;
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
-                    ImageRow file;
-                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out file))
+                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out ImageRow file))
                     {
                         // the database already has an entry for this file so skip it
                         // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
@@ -634,8 +631,10 @@ namespace Timelapse
                 // if we want to load the data from that...
                 if (File.Exists(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName)))
                 {
-                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile();
-                    importLegacyXmlDialog.Owner = this;
+                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile()
+                    {
+                        Owner = this
+                    };
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
@@ -1151,8 +1150,7 @@ namespace Timelapse
                 Type type = focusedElement.GetType();
                 if (Constant.Control.KeyboardInputTypes.Contains(type))
                 {
-                    DataEntryControl focusedControl;
-                    if (DataEntryHandler.TryFindFocusedControl(focusedElement, out focusedControl))
+                    if (DataEntryHandler.TryFindFocusedControl(focusedElement, out DataEntryControl focusedControl))
                     {
                         int index = 0;
                         foreach (DataEntryControl control in this.DataEntryControls.Controls)
@@ -1525,6 +1523,7 @@ namespace Timelapse
                 this.MarkableCanvas.SetNewImage(Constant.Images.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
                 this.MarkableCanvas_UpdateMarkers();
+                this.MarkableCanvas.SwitchToImageView();
 
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
                 return;
@@ -1538,8 +1537,7 @@ namespace Timelapse
 
 
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
-            bool newFileToDisplay;
-            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out newFileToDisplay) == false)
+            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out bool newFileToDisplay) == false)
             {
                 throw new ArgumentOutOfRangeException("newImageRow", String.Format("{0} is not a valid row index in the image table.", fileIndex));
             }
@@ -1990,10 +1988,9 @@ namespace Timelapse
             // Then update the control's content as well as the database
             // If we can't convert it to an int, assume that someone set the default value to either a non-integer in the template, or that it's a space. In either case, revert it to zero.
             // If we can't convert it to an int, assume that someone set the default value to either a non-integer in the template, or that it's a space. In either case, revert it to zero.
-            int count;
-            if (Int32.TryParse(counter.Content, out count) == false)
+            if (Int32.TryParse(counter.Content, out int count) == false)
             {
-                count = 0; 
+                count = 0;
             }
             ++count;
 
@@ -2051,8 +2048,7 @@ namespace Timelapse
             for (int counter = 0; counter < this.markersOnCurrentFile.Count; counter++)
             {
                 MarkersForCounter markersForCounter = this.markersOnCurrentFile[counter];
-                DataEntryControl control;
-                if (this.DataEntryControls.ControlsByDataLabel.TryGetValue(markersForCounter.DataLabel, out control) == false)
+                if (this.DataEntryControls.ControlsByDataLabel.TryGetValue(markersForCounter.DataLabel, out DataEntryControl control) == false)
                 {
                     // If we can't find the counter, its likely because the control was made invisible in the template,
                     // which means that there is no control associated with the marker. So just don't create the 
@@ -2118,23 +2114,19 @@ namespace Timelapse
 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
         {
-            IEnumerable<string> folderPaths;
-            if (this.ShowFolderSelectionDialog(out folderPaths))
+            if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
             {
-                BackgroundWorker backgroundWorker;
-                this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
             }
         }
 
         /// <summary>Load the images from a folder.</summary>
         private void MenuItemLoadImages_Click(object sender, RoutedEventArgs e)
         {
-            string templateDatabasePath;
-            if (this.TryGetTemplatePath(out templateDatabasePath))
+            if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
-                BackgroundWorker backgroundWorker;
-                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath, out backgroundWorker);
-            }     
+                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath, out BackgroundWorker backgroundWorker);
+            }
         }
 
         /// <summary>Write the .csv file and preview it in excel.</summary>
@@ -2254,11 +2246,13 @@ namespace Timelapse
             string sourceFile = this.dataHandler.ImageCache.Current.FileName;
 
             // Set up a Folder Browser with some instructions
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Title = "Export a copy of the currently displayed file";
-            dialog.Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.FileName));
-            dialog.FileName = sourceFile;
-            dialog.OverwritePrompt = true;
+            SaveFileDialog dialog = new SaveFileDialog()
+            {
+                Title = "Export a copy of the currently displayed file",
+                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.FileName)),
+                FileName = sourceFile,
+                OverwritePrompt = true
+            };
 
             // Display the Folder Browser dialog
             DialogResult result = dialog.ShowDialog();
@@ -2322,11 +2316,10 @@ namespace Timelapse
             }
 
             string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
-            string csvFilePath;
             if (Utilities.TryGetFileFromUser("Select a .csv file to merge into the current image set",
-                                             Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
-                                             String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
-                                             out csvFilePath) == false)
+                                 Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
+                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
+                                 out string csvFilePath) == false)
             {
                 return;
             }
@@ -2344,8 +2337,7 @@ namespace Timelapse
             CsvReaderWriter csvReader = new CsvReaderWriter();
             try
             {
-                List<string> importErrors;
-                if (csvReader.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out importErrors) == false)
+                if (csvReader.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
                 {
                     MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                     messageBox.Message.Icon = MessageBoxImage.Error;
@@ -2353,7 +2345,7 @@ namespace Timelapse
                     messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
                     messageBox.Message.Solution = "Check that:" + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine; 
+                    messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 Choice values use the correct case." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 Counter values are numbers." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 Flag values are either 'true' or 'false'.";
@@ -2385,8 +2377,7 @@ namespace Timelapse
         private void MenuItemRecentImageSet_Click(object sender, RoutedEventArgs e)
         {
             string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
-            BackgroundWorker backgroundWorker;
-            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath, out backgroundWorker) == false)
+            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath, out BackgroundWorker backgroundWorker) == false)
             {
                 this.state.MostRecentImageSets.TryRemove(recentDatabasePath);
                 this.MenuItemRecentFileSets_Refresh();
@@ -2437,8 +2428,10 @@ namespace Timelapse
 
         private void MenuItemRenameFileDatabaseFile_Click(object sender, RoutedEventArgs e)
         {
-            RenameFileDatabaseFile renameFileDatabase = new RenameFileDatabaseFile(this.dataHandler.FileDatabase.FileName, this);
-            renameFileDatabase.Owner = this;
+            RenameFileDatabaseFile renameFileDatabase = new RenameFileDatabaseFile(this.dataHandler.FileDatabase.FileName, this)
+            {
+                Owner = this
+            };
             bool? result = renameFileDatabase.ShowDialog();
             if (result == true)
             {
@@ -2510,12 +2503,14 @@ namespace Timelapse
 
         private bool ShowFolderSelectionDialog(out IEnumerable<string> folderPaths)
         {
-            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog();
-            folderSelectionDialog.Title = "Select one or more folders ...";
-            folderSelectionDialog.DefaultDirectory = this.mostRecentFileAddFolderPath == null ? this.FolderPath : this.mostRecentFileAddFolderPath;
+            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            {
+                Title = "Select one or more folders ...",
+                DefaultDirectory = this.mostRecentFileAddFolderPath ?? this.FolderPath,
+                IsFolderPicker = true,
+                Multiselect = true
+            };
             folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
-            folderSelectionDialog.IsFolderPicker = true;
-            folderSelectionDialog.Multiselect = true;
             folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
             if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
@@ -2743,8 +2738,10 @@ namespace Timelapse
         /// <summary>Add some text to the image set log</summary>
         private void MenuItemLog_Click(object sender, RoutedEventArgs e)
         {
-            EditLog editImageSetLog = new EditLog(this.dataHandler.FileDatabase.ImageSet.Log, this);
-            editImageSetLog.Owner = this;
+            EditLog editImageSetLog = new EditLog(this.dataHandler.FileDatabase.ImageSet.Log, this)
+            {
+                Owner = this
+            };
             bool? result = editImageSetLog.ShowDialog();
             if (result == true)
             {
@@ -3165,8 +3162,10 @@ namespace Timelapse
             }
 
             // show the dialog and process the resuls
-            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.dataHandler.FileDatabase, this, this.IsUTCOffsetControlHidden());
-            customSelection.Owner = this;
+            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.dataHandler.FileDatabase, this, this.IsUTCOffsetControlHidden())
+            {
+                Owner = this
+            };
             bool? changeToCustomSelection = customSelection.ShowDialog();
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
@@ -3274,9 +3273,8 @@ namespace Timelapse
         {
             foreach (DataEntryControl control in this.DataEntryControls.Controls)
             {
-                if (control is DataEntryCounter)
+                if (control is DataEntryCounter counter)
                 {
-                    DataEntryCounter counter = (DataEntryCounter)control;
                     if (counter.IsSelected)
                     {
                         return counter;
@@ -3407,11 +3405,9 @@ namespace Timelapse
 
         private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
-            string templateDatabaseFilePath;
-            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out templateDatabaseFilePath))
+            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
-                BackgroundWorker backgroundWorker;
-                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out backgroundWorker) == false)
+                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out BackgroundWorker backgroundWorker) == false)
                 {
                     this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
                     this.MenuItemRecentFileSets_Refresh();
@@ -3577,7 +3573,7 @@ namespace Timelapse
         private void FilePlayer_ScrollPage()
         {
             bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowCount);
+            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowsInGrid);
         }
 
         // On every tick, try to show the next/previous file as indicated by the direction
@@ -3634,9 +3630,8 @@ namespace Timelapse
             else
             {
                 // Flash the text field to indicate no result
-                Storyboard sb = this.FindResource("flashAnimation") as Storyboard;
-                if (sb != null)
-                { 
+                if (this.FindResource("flashAnimation") is Storyboard sb)
+                {
                     Storyboard.SetTarget(sb, this.FindBoxTextBox);
                     sb.Begin();
                 }
