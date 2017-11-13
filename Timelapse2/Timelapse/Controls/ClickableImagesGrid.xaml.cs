@@ -65,12 +65,13 @@ namespace Timelapse.Controls
         private bool cellChosenOnMouseDownSelectionState = false;
         #endregion
 
-        // Constructor
+        #region Constructor
         public ClickableImagesGrid()
         {
             this.InitializeComponent();
             this.FileTableStartIndex = 0;
         }
+        #endregion
 
         #region Public Refresh
         // Rebuild the grid, based on 
@@ -250,7 +251,7 @@ namespace Timelapse.Controls
         }
 
         // Invalidate the clickable images cache.
-        // THis is useful to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
+        // Used to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
         public void InvalidateCache ()
         {
             this.cachedImageList = null;
@@ -462,21 +463,7 @@ namespace Timelapse.Controls
                 SelectFromTo(currentCell, nextCell);
             }
         }
-        #endregion
-
-        // Update the data entry controls to match the current selection(s)
-        public void EnableOrDisableControlsAsNeeded()
-        {
-            if (this.Visibility == Visibility.Collapsed)
-            {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
-            }
-            else 
-            {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.SelectedCount());
-            }
-        }
-
+      
         // Get the Selected times as a list of file table indexes to the current displayed selection of files (note these are not the IDs)
         public List<int> GetSelected()
         {
@@ -500,11 +487,7 @@ namespace Timelapse.Controls
         {
             return GetSelected().Count;
         }
-
-        public bool IsSingleImageSelected()
-        {
-            return SelectedCount() == 1 ? true : false;
-        }
+        #endregion
 
         #region Cell Navigation methods
         private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
@@ -597,7 +580,7 @@ namespace Timelapse.Controls
             return true;
         }
         #endregion
-
+  
         #region Cell Calculation methods
 
         // Calculate the number of rows and columns of a given height and width that we can fit into the available space
@@ -656,8 +639,22 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        #region Enabling controls
+        // Update the data entry controls to match the current selection(s)
+        private void EnableOrDisableControlsAsNeeded()
+        {
+            if (this.Visibility == Visibility.Collapsed)
+            {
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            }
+            else
+            {
+                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.SelectedCount());
+            }
+        }
+        #endregion
+        
         #region Events
-
         public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
 
         protected virtual void OnDoubleClick(ClickableImagesGridEventArgs e)
