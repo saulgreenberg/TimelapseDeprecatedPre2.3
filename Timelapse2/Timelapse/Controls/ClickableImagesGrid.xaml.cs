@@ -252,7 +252,7 @@ namespace Timelapse.Controls
 
         // Invalidate the clickable images cache.
         // Used to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
-        public void InvalidateCache ()
+        public void InvalidateCache()
         {
             this.cachedImageList = null;
         }

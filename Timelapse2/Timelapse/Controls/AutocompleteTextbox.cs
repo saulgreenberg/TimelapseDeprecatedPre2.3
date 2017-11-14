@@ -83,10 +83,7 @@ namespace Timelapse.Controls
             this.ToolTip = this.Text;
 
             // fire follow on event
-            if (this.TextAutocompleted != null)
-            {
-                this.TextAutocompleted(this, eventArgs);
-            }
+            this.TextAutocompleted?.Invoke(this, eventArgs);
         }
 
         private bool UseCompletion(string completion)

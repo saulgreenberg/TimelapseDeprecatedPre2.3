@@ -320,7 +320,6 @@ namespace Timelapse.Database
                     File.Delete(sourceFilePath);
                     return true;
                 }
-
                 catch (UnauthorizedAccessException exception)
                 {
                     Utilities.PrintFailure("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());

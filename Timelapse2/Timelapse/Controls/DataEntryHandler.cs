@@ -144,28 +144,33 @@ namespace Timelapse.Controls
 
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
-            MenuItem menuItemPropagateFromLastValue = new MenuItem();
-            menuItemPropagateFromLastValue.IsCheckable = false;
-            menuItemPropagateFromLastValue.Header = "Propagate from the last non-empty value to here";
+            MenuItem menuItemPropagateFromLastValue = new MenuItem()
+            {
+                IsCheckable = false,
+                Tag = control,
+                Header = "Propagate from the last non-empty value to here"
+            };
             if (control is DataEntryCounter)
             {
                 menuItemPropagateFromLastValue.Header = "Propagate from the last non-zero value to here";
             }
             menuItemPropagateFromLastValue.Click += this.MenuItemPropagateFromLastValue_Click;
-            menuItemPropagateFromLastValue.Tag = control;
 
-            MenuItem menuItemCopyForward = new MenuItem();
-            menuItemCopyForward.IsCheckable = false;
-            menuItemCopyForward.Header = "Copy forward to end";
-            menuItemCopyForward.ToolTip = "The value of this field will be copied forward from this file to the last file in this set";
+            MenuItem menuItemCopyForward = new MenuItem()
+            {
+                IsCheckable = false,
+                Header = "Copy forward to end",
+                ToolTip = "The value of this field will be copied forward from this file to the last file in this set",
+                Tag = control
+            };
             menuItemCopyForward.Click += this.MenuItemPropagateForward_Click;
-            menuItemCopyForward.Tag = control;
-
-            MenuItem menuItemCopyCurrentValue = new MenuItem();
-            menuItemCopyCurrentValue.IsCheckable = false;
-            menuItemCopyCurrentValue.Header = "Copy to all";
+            MenuItem menuItemCopyCurrentValue = new MenuItem()
+            {
+                IsCheckable = false,
+                Header = "Copy to all",
+                Tag = control
+        };
             menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValue_Click;
-            menuItemCopyCurrentValue.Tag = control;
 
             // DataEntrHandler.PropagateFromLastValueIndex and CopyForwardIndex must be kept in sync with the add order here
             ContextMenu menu = new ContextMenu();
@@ -176,24 +181,20 @@ namespace Timelapse.Controls
             control.Container.ContextMenu = menu;
             control.Container.PreviewMouseRightButtonDown += this.Container_PreviewMouseRightButtonDown;
 
-            if (control is DataEntryCounter)
+            if (control is DataEntryCounter counter)
             {
-                DataEntryCounter counter = (DataEntryCounter)control;
                 counter.ContentControl.ContextMenu = menu;
             }
-            else if (control is DataEntryNote)
+            else if (control is DataEntryNote note)
             {
-                DataEntryNote note = (DataEntryNote)control;
                 note.ContentControl.ContextMenu = menu;
             }
-            else if (control is DataEntryChoice)
+            else if (control is DataEntryChoice choice)
             {
-                DataEntryChoice choice = (DataEntryChoice)control;
                 choice.ContentControl.ContextMenu = menu;
             }
-            else if (control is DataEntryFlag)
+            else if (control is DataEntryFlag flag)
             {
-                DataEntryFlag flag = (DataEntryFlag)control;
                 flag.ContentControl.ContextMenu = menu;
             }
             else
@@ -616,9 +617,8 @@ namespace Timelapse.Controls
         #region Utilities
         public static bool TryFindFocusedControl(IInputElement focusedElement, out DataEntryControl focusedControl)
         {
-            if (focusedElement is FrameworkElement)
+            if (focusedElement is FrameworkElement focusedFrameworkElement)
             {
-                FrameworkElement focusedFrameworkElement = (FrameworkElement)focusedElement;
                 focusedControl = (DataEntryControl)focusedFrameworkElement.Tag;
                 if (focusedControl != null)
                 {
@@ -659,15 +659,6 @@ namespace Timelapse.Controls
                 {
                     return String.Empty;
                 }
-                // The Find function isn't useful to use instead of the catch, as it fails at times when it should have succeeded.
-                //if (this.FileDatabase.Files.Find (fileIds[0]) == null)
-                //{
-                //    System.Diagnostics.Debug.Print("Find Failed: " + fileIds[0].ToString());
-                //}
-                //else
-                //{
-                //    System.Diagnostics.Debug.Print("Find Succeeded: " + fileIds[0].ToString());
-                //}
 
                 // This can cause the crash, when the id in fileIds[0] doesn't exist
                 ImageRow imageRow = this.FileDatabase.Files[fileIds[0]];
@@ -681,7 +672,6 @@ namespace Timelapse.Controls
                 // then return that as they all have a common value. Otherwise return an empty string.
                 for (int i = 1; i < fileIds.Count(); i++)
                 {
-
                     imageRow = this.FileDatabase.Files[fileIds[i]];
                     string new_contents = imageRow.GetValueDisplayString(dataLabel);
                     if (new_contents != contents)
@@ -695,11 +685,8 @@ namespace Timelapse.Controls
             }
             catch
             {
-                //  This catch occurs when the id in fileIds[0] doesn't exist
+                // This catch occurs when the id in fileIds[0] doesn't exist
                 System.Diagnostics.Debug.Write("Catch in GetValueDisplayStringCommonToFileIds: " + dataLabel);
-                //foreach (int i in fileIds)
-                //    System.Diagnostics.Debug.Write(" " + i.ToString());
-                //System.Diagnostics.Debug.WriteLine(" ");
                 return String.Empty;
             }
         }

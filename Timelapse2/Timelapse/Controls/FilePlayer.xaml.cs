@@ -86,7 +86,7 @@ namespace Timelapse.Controls
             this.PageDown.IsEnabled = isEnabled;
         }
 
-        public void SwitchFileMode (bool isSingleMode)
+        public void SwitchFileMode(bool isSingleMode)
         {
             this.RowDown.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;
             this.RowUp.Visibility = isSingleMode ? Visibility.Collapsed : Visibility.Visible;

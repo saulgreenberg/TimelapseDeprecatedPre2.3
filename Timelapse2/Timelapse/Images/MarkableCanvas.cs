@@ -78,14 +78,10 @@ namespace Timelapse.Images
         #endregion
 
         #region Properties
-        /// <summary>
-        /// The FilePlayer should be set from TimelapseWindow.cs, as we need a handle to it in order to manipulate it.
-        /// </summary>       
+        // The FilePlayer should be set from TimelapseWindow.cs, as we need a handle to it in order to manipulate it.
         public FilePlayer FilePlayer { private get; set; }
 
-        /// <summary>
-        /// Gets the image displayed across the MarkableCanvas for image files
-        /// </summary>
+        // Gets the image displayed across the MarkableCanvas for image files
         public Image ImageToDisplay { get; private set; }
 
         /// <summary>
@@ -96,7 +92,6 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets the video displayed across the MarkableCanvas for video files
         /// </summary>
-
         public VideoPlayer VideoToDisplay { get; private set; }
 
         /// <summary>
