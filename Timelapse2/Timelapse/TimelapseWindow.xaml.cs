@@ -1273,7 +1273,7 @@ namespace Timelapse
         private void TryViewPreviousOrNextDifference()
         {
             // Only allow differencing in single image mode.
-            if (!this.IsDisplayingSingleImage())
+            if (!this.IsDisplayingActiveSingleImage())
             {
                 return;
             }
@@ -1343,7 +1343,7 @@ namespace Timelapse
         private void TryViewCombinedDifference()
         {
             // Only allow differencing in single image mode.
-            if (!this.IsDisplayingSingleImage())
+            if (!this.IsDisplayingActiveSingleImage())
             {
                 return;
             }
@@ -1645,7 +1645,7 @@ namespace Timelapse
                 return false;
             }
             // determine how far to move and in which direction
-            int increment = forward ? 1 : -1;
+            int increment = 1;
             if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
             {
                 increment *= 5;
@@ -1797,12 +1797,28 @@ namespace Timelapse
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
-                    FilePlayer_Stop(); // In case the FilePlayer is going
-                    this.TryViewPreviousOrNextDifference();
+                    if (IsDisplayingMultipleImagesInOverview())
+                    {
+                        this.FilePlayer.Direction = FilePlayerDirection.Backward;
+                        this.FilePlayer_ScrollRow();
+                    }
+                    else
+                    {
+                        FilePlayer_Stop(); // In case the FilePlayer is going
+                        this.TryViewPreviousOrNextDifference();
+                    }
                     break;
                 case Key.Down:              // show visual difference to previous image
-                    FilePlayer_Stop(); // In case the FilePlayer is going
-                    this.TryViewCombinedDifference();
+                    if (IsDisplayingMultipleImagesInOverview())
+                    {
+                        this.FilePlayer.Direction = FilePlayerDirection.Forward;
+                        this.FilePlayer_ScrollRow();
+                    }
+                    else
+                    {
+                        FilePlayer_Stop(); // In case the FilePlayer is going
+                        this.TryViewCombinedDifference();
+                    }
                     break;
                 case Key.C:
                     this.TryCopyPreviousValues_Click(null, null);
@@ -1811,6 +1827,32 @@ namespace Timelapse
                     FilePlayer_Stop(); // In case the FilePlayer is going
                     this.MoveFocusToNextOrPreviousControlOrImageSlider(Keyboard.Modifiers == ModifierKeys.Shift);
                     break;
+                case Key.PageDown:
+                    if (IsDisplayingMultipleImagesInOverview())
+                    {
+                        this.FilePlayer.Direction = FilePlayerDirection.Forward;
+                        this.FilePlayer_ScrollPage();
+                    }
+                    break;
+                case Key.PageUp:
+                    if (IsDisplayingMultipleImagesInOverview())
+                    {
+                        this.FilePlayer.Direction = FilePlayerDirection.Backward;
+                        this.FilePlayer_ScrollPage();
+                    }
+                    break;
+                case Key.Home:
+                    {
+                        FilePlayer_Stop();
+                        FileNavigatorSlider.Value = 1;
+                        break;
+                    }
+                case Key.End:
+                    {
+                        FilePlayer_Stop();
+                        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
+                        break;
+                    }
                 default:
                     return;
             }
@@ -3031,9 +3073,15 @@ namespace Timelapse
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
 
-            bool state = this.IsDisplayingSingleImage();
+            bool state = this.IsDisplayingActiveSingleImage();
             this.MenuItemViewDifferencesCycleThrough.IsEnabled = state;
             this.MenuItemViewDifferencesCombined.IsEnabled = state;
+            this.MenuItemZoomIn.IsEnabled = state;
+            this.MenuItemZoomOut.IsEnabled = state;
+            this.MenuItemBookmarkDefaultPanZoom.IsEnabled = state;
+            this.MenuItemBookmarkSavePanZoom.IsEnabled = state;
+            this.MenuItemBookmarkSetPanZoom.IsEnabled = state;
+
         }
 
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
@@ -3650,20 +3698,26 @@ namespace Timelapse
         }
         #endregion
 
-        // Check to see if we are displaying at least one image in the image set pane (not in the overview)
+        // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
+        private bool IsDisplayingActiveSingleImage()
+        {
+            return IsDisplayingSingleImage() && this.ImageSetPane.IsActive; 
+        }
+
+        // Check to see if we are displaying at least one image (not in the overview), regardless of whether the ImageSetPane is active
         private bool IsDisplayingSingleImage()
         {
             // Always false If we are in the overiew
             if (this.MarkableCanvas.IsClickableImagesGridVisible == true) return false;
 
             // True only if we are displaying at least one file in an image set
-            return this.IsFileDatabaseAvailable() && 
+            return this.IsFileDatabaseAvailable() &&
                    this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0;
         }
 
         private bool IsDisplayingMultipleImagesInOverview()
         {       
-                return this.MarkableCanvas.IsClickableImagesGridVisible ? true : false;
+            return this.MarkableCanvas.IsClickableImagesGridVisible && this.ImageSetPane.IsActive ? true : false;
         }
 
         private void SwitchedToClickableImagesGrid()
