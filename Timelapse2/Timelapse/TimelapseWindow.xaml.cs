@@ -68,6 +68,7 @@ namespace Timelapse
             this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
             this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
             this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
+
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
 
@@ -91,19 +92,20 @@ namespace Timelapse
             };
             this.timerFileNavigator.Tick += this.TimerFileNavigator_Tick;
 
-            // Callback to ensure AutoPlay stops when the user clicks on it
+            // Callback to ensure Video AutoPlay stops when the user clicks on it
             this.FileNavigatorSlider.PreviewMouseDown += this.ContentControl_MouseDown;
             this.FileNavigatorSliderReset();
 
-            // Timer activated / deactivated by Autoplay media control buttons
+            // Timer activated / deactivated by Video Autoplay media control buttons
             FilePlayerTimer.Tick += FilePlayerTimer_Tick;
 
-            // restore the window and its size to its previous location
+            // Restore the window and its size to its previous location
             this.Top = this.state.TimelapseWindowPosition.Y;
             this.Left = this.state.TimelapseWindowPosition.X;
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
             Utilities.TryFitWindowInWorkingArea(this);
+
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
@@ -126,7 +128,7 @@ namespace Timelapse
                 DateTime.Now.Month != this.state.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.state.MostRecentCheckForUpdates.Day)
             { 
-                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFilenameXML);
+                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
@@ -223,11 +225,13 @@ namespace Timelapse
         }
         #endregion
 
-        #region Image Loading
+        #region Image Set Loading
+        
+        // Prompt user to select a template.
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
-            // prompt user to select a template
-            // default the template selection dialog to the most recently opened database
+            
+            // Default the template selection dialog to the most recently opened database
             this.state.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
             if (Utilities.TryGetFileFromUser("Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
@@ -242,20 +246,16 @@ namespace Timelapse
             {
                 return false;
             }
-
             return true;
         }
 
-        /// <summary>
-        /// Load the specified database template and then the associated images.
-        /// </summary>
-        /// <param name="templateDatabasePath">Fully qualified path to the template database file.</param>
-        /// <returns>true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise</returns>
-        /// <remarks>This method doesn't particularly need to be public. But making it private imposes substantial complexity in invoking it via PrivateObject
-        /// in unit tests.</remarks>
-        public bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath, out BackgroundWorker backgroundWorker)
+        // Load the specified database template and then the associated images.
+        // templateDatabasePath is the Fully qualified path to the template database file.
+        // Returns true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise
+        private bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath, out BackgroundWorker backgroundWorker)
         {
             backgroundWorker = null;
+
             // Try to create or open the template database
             if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
             {
@@ -313,7 +313,7 @@ namespace Timelapse
                     }
                     else if (templateSyncResults.SyncRequiredAsDataLabelsDiffer)
                     {
-                        // if there are any new or missing columns, report them now
+                        // If there are any new or missing columns, report them now
                         // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
                         // - update the template and image data columns in the image database 
                         // - use the old template
@@ -334,7 +334,7 @@ namespace Timelapse
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
-            // So lets load the database for real. The useTemplateDBTemplate signals whether to use the DDB template or the TDB template.
+            // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
@@ -644,7 +644,7 @@ namespace Timelapse
                 }
             };
 
-            // update UI for import
+            // Update UI for import
             this.FeedbackControl.Visibility = Visibility.Visible;
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Folder loading beginning...");
@@ -714,16 +714,6 @@ namespace Timelapse
             return true;
         }
 
-        private void Feedback(BitmapSource bitmap, int percent, string message)
-        {
-            if (bitmap != null)
-            {
-                this.MarkableCanvas.SetNewImage(bitmap, null);
-            }
-            this.FeedbackControl.Message.Content = message;
-            this.FeedbackControl.ProgressBar.Value = percent;
-        }
-
         /// <summary>
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
@@ -766,7 +756,9 @@ namespace Timelapse
                 DataGridPane_IsActiveChanged(null, null);
             }
         }
+        #endregion
 
+        #region Enabling or Disabling Menus and Controls
         private void EnableOrDisableMenusAndControls()
         {
             bool imageSetAvailable = this.IsFileDatabaseAvailable();
@@ -1493,15 +1485,6 @@ namespace Timelapse
         #endregion
 
         #region Showing images
-        private void ShowFirstDisplayableImage(int firstRowInSearch)
-        {
-            int firstImageDisplayable = this.dataHandler.FileDatabase.FindFirstDisplayableImage(firstRowInSearch);
-            if (firstImageDisplayable != -1)
-            {
-                this.ShowFile(firstImageDisplayable);
-            }
-        }
-
         // ShowFile is invoked here from a 1-based slider, so we need to correct it to the 0-base index
         private void ShowFile(Slider fileNavigatorSlider)
         {
@@ -1688,48 +1671,6 @@ namespace Timelapse
             }
             return true;
         }
-
-        //private bool xxxxTryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)
-        //{
-        //    // Check to see if there are any images to show, 
-        //    if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
-        //    {
-        //        return false;
-        //    }
-        //    // determine how far to move and in which direction
-        //    int increment = forward ? 1 : -1;
-        //    if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
-        //    {
-        //        increment *= 5;
-        //    }
-        //    if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-        //    {
-        //        increment *= 10;
-        //    }
-
-        //    int desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
-
-        //    // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
-        //    if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
-        //    {
-        //        desiredRow = this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1;
-        //    }
-        //    else if (desiredRow < 0)
-        //    {
-        //        desiredRow = 0;
-        //    }
-
-        //    // If the desired row is the same as the current row, the image us already being displayed
-        //    if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
-        //    {
-        //        // Move to the desired row
-        //        this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-        //        this.ShowFile(desiredRow);
-        //        this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
-        //    }
-        //    return true;
-        //}
-
         #endregion
 
         #region Keyboard shortcuts
@@ -2733,7 +2674,7 @@ namespace Timelapse
                         image.ImageQuality = FileSelection.Missing;
                         List<ColumnTuple> columnTuples = new List<ColumnTuple>()
                         {
-                            new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.Boolean.False),
+                            new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
                             new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelection.Missing.ToString())
                         };
                         imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
@@ -3124,7 +3065,7 @@ namespace Timelapse
 
         #endregion
 
-        #region Selection Menu
+        #region Selection Menu Callbacks
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
@@ -3173,18 +3114,6 @@ namespace Timelapse
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
-        }
-
-        // helper function to put a checkbox on the currently selected menu item i.e., to make it behave like a radiobutton menu
-        private void MenuItemSelectSetSelection(MenuItem checked_item)
-        {
-            this.MenuItemSelectAllFiles.IsChecked = (this.MenuItemSelectAllFiles == checked_item);
-            this.MenuItemSelectCorruptedFiles.IsChecked = (this.MenuItemSelectCorruptedFiles == checked_item);
-            this.MenuItemSelectDarkFiles.IsChecked = (this.MenuItemSelectDarkFiles == checked_item);
-            this.MenuItemSelectLightFiles.IsChecked = (this.MenuItemSelectLightFiles == checked_item);
-            this.MenuItemSelectFilesNoLongerAvailable.IsChecked = (MenuItemSelectFilesNoLongerAvailable == checked_item);
-            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = (this.MenuItemSelectFilesMarkedForDeletion == checked_item);
-            this.MenuItemView.IsChecked = false;
         }
 
         // helper function to put a checkbox on the currently selected menu item i.e., to make it behave like a radiobutton menu
@@ -3281,106 +3210,7 @@ namespace Timelapse
         }
         #endregion
 
-        #region Utilities
-
-        // Returns whether there is an open file database
-        private bool IsFileDatabaseAvailable()
-        {
-            if (this.dataHandler == null ||
-                this.dataHandler.FileDatabase == null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-
-        public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
-        {
-            if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
-            {
-                return;
-            }
-
-            Dictionary<FileSelection, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
-            FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
-            if (onFileLoading)
-            {
-                imageStats.Message.Hint = "\u2022 " + imageStats.Message.Hint + Environment.NewLine + "\u2022 If you check don't show this message again this dialog can be turned back on via the Options menu.";
-                imageStats.DontShowAgain.Visibility = Visibility.Visible;
-            }
-            Nullable<bool> result = imageStats.ShowDialog();
-            if (onFileLoading && result.HasValue && result.Value && imageStats.DontShowAgain.IsChecked.HasValue)
-            {
-                this.state.SuppressFileCountOnImportDialog = imageStats.DontShowAgain.IsChecked.Value;
-            }
-        }
-        
-        // Returns the currently active counter control, otherwise null
-        private DataEntryCounter FindSelectedCounter()
-        {
-            foreach (DataEntryControl control in this.DataEntryControls.Controls)
-            {
-                if (control is DataEntryCounter counter)
-                {
-                    if (counter.IsSelected)
-                    {
-                        return counter;
-                    }
-                }
-            }
-            return null;
-        }
-
-        // Say the given text
-        public void Speak(string text)
-        {
-            if (this.state.AudioFeedback)
-            {
-                this.speechSynthesizer.SpeakAsyncCancelAll();
-                this.speechSynthesizer.SpeakAsync(text);
-            }
-        }
-
-        // If we are not showing all images, then warn the user and make sure they want to continue.
-        private bool MaybePromptToApplyOperationIfPartialSelection(bool userOptedOutOfMessage, string operationDescription, Action<bool> persistOptOut)
-        {
-            // if showing all images then no need for showing the warning message
-            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.All)
-            {
-                return true;
-            }
-
-            string title = "Apply " + operationDescription + " to this selection?";
-            MessageBox messageBox = new MessageBox(title, this, MessageBoxButton.OKCancel);
-
-            messageBox.Message.What = operationDescription + " will be applied only to the subset of images shown by the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection." + Environment.NewLine;
-            messageBox.Message.What += "Is this what you want?";
-
-            messageBox.Message.Reason = "You have the following selection on: " + this.dataHandler.FileDatabase.ImageSet.FileSelection + "." + Environment.NewLine;
-            messageBox.Message.Reason += "Only data for those images available in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be affected" + Environment.NewLine;
-            messageBox.Message.Reason += "Data for images not shown in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be unaffected." + Environment.NewLine;
-
-            messageBox.Message.Solution = "Select " + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 'Ok' for Timelapse to continue to " + operationDescription + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 'Cancel' to abort";
-
-            messageBox.Message.Hint = "This is not an error." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 We are asking just in case you forgot you had the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " on. " + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 You can use the 'Select' menu to change to other views." + Environment.NewLine;
-            messageBox.Message.Hint += "If you check don't show this message this dialog can be turned back on via the Options menu.";
-
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-            bool proceedWithOperation = (bool)messageBox.ShowDialog();
-            if (proceedWithOperation && messageBox.DontShowAgain.IsChecked.HasValue)
-            {
-                persistOptOut(messageBox.DontShowAgain.IsChecked.Value);
-            }
-            return proceedWithOperation;
-        }
-
+        #region UTC control
         private bool IsUTCOffsetControlHidden()
         {
             // Find the Utcoffset control visibility
@@ -3423,7 +3253,7 @@ namespace Timelapse
             return false;
         }
         #endregion
-
+    
         #region Bookmarking pan/zoom levels
         // Bookmark (Save) the current pan / zoom level of the image
         private void MenuItem_BookmarkSavePanZoom(object sender, RoutedEventArgs e)
@@ -3441,27 +3271,6 @@ namespace Timelapse
         private void MenuItem_BookmarkDefaultPanZoom(object sender, RoutedEventArgs e)
         {
             this.MarkableCanvas.ZoomOutAllTheWay();
-        }
-        #endregion
-
-        #region HelpDocumentDragDrop
-        private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
-        {
-            Utilities.OnHelpDocumentPreviewDrag(dragEvent);
-        }
-
-
-        private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
-        {
-            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
-            {
-                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out BackgroundWorker backgroundWorker) == false)
-                {
-                    this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
-                    this.MenuItemRecentFileSets_Refresh();
-                }
-                dropEvent.Handled = true;
-            }
         }
         #endregion
 
@@ -3531,31 +3340,6 @@ namespace Timelapse
                 //System.Diagnostics.Debug.Print("-----");
             }
         }
-
-        // SAULXX Not yet used, as some bugs remain in it.
-        //private string DockingManager_SaveLayout()
-        //{
-        //    //string configFile = Utilities.CreateConfigurationFolderIfNeededAndGetFileName(filepath);
-
-        //    XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
-        //    //layoutSerializer.Serialize(configFile);
-        //    System.Text.StringBuilder str = new System.Text.StringBuilder();
-        //    StringWriter writer = new StringWriter(str);
-        //    layoutSerializer.Serialize(writer);
-        //    //  Debug.Print(str.ToString());
-        //    return str.ToString();
-
-        //}
-        //// SAULXX PlaceholderNot yet used, as some bugs remain in it.
-        //private void DockingManager_RestoreLayout(string layout)
-        //{
-        //    return;
-        //    if (layout == "") return;
-        //    StreamReader streamReader = new StreamReader(new MemoryStream(System.Text.Encoding.ASCII.GetBytes(layout)));
-        //    XmlLayoutSerializer layoutSerializer = new XmlLayoutSerializer(this.DockingManager);
-        //    Debug.Print(streamReader.ReadToEnd());
-        //    layoutSerializer.Deserialize(streamReader);
-        //}
         #endregion
 
         #region FilePlayer and FilePlayerTimer
@@ -3698,6 +3482,7 @@ namespace Timelapse
         }
         #endregion
 
+        #region Single vs Multiple Image View
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()
         {
@@ -3750,5 +3535,128 @@ namespace Timelapse
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
         }
+        #endregion
+
+        #region HelpDocumentDragDrop
+        private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
+        {
+            Utilities.OnHelpDocumentPreviewDrag(dragEvent);
+        }
+
+
+        private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
+        {
+            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
+            {
+                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out BackgroundWorker backgroundWorker) == false)
+                {
+                    this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
+                    this.MenuItemRecentFileSets_Refresh();
+                }
+                dropEvent.Handled = true;
+            }
+        }
+        #endregion
+
+        #region Utilities
+        // Returns whether there is an open file database
+        private bool IsFileDatabaseAvailable()
+        {
+            if (this.dataHandler == null ||
+                this.dataHandler.FileDatabase == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
+        {
+            if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
+            {
+                return;
+            }
+
+            Dictionary<FileSelection, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
+            if (onFileLoading)
+            {
+                imageStats.Message.Hint = "\u2022 " + imageStats.Message.Hint + Environment.NewLine + "\u2022 If you check don't show this message again this dialog can be turned back on via the Options menu.";
+                imageStats.DontShowAgain.Visibility = Visibility.Visible;
+            }
+            Nullable<bool> result = imageStats.ShowDialog();
+            if (onFileLoading && result.HasValue && result.Value && imageStats.DontShowAgain.IsChecked.HasValue)
+            {
+                this.state.SuppressFileCountOnImportDialog = imageStats.DontShowAgain.IsChecked.Value;
+            }
+        }
+
+        // Returns the currently active counter control, otherwise null
+        private DataEntryCounter FindSelectedCounter()
+        {
+            foreach (DataEntryControl control in this.DataEntryControls.Controls)
+            {
+                if (control is DataEntryCounter counter)
+                {
+                    if (counter.IsSelected)
+                    {
+                        return counter;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Say the given text
+        public void Speak(string text)
+        {
+            if (this.state.AudioFeedback)
+            {
+                this.speechSynthesizer.SpeakAsyncCancelAll();
+                this.speechSynthesizer.SpeakAsync(text);
+            }
+        }
+
+        // If we are not showing all images, then warn the user and make sure they want to continue.
+        private bool MaybePromptToApplyOperationIfPartialSelection(bool userOptedOutOfMessage, string operationDescription, Action<bool> persistOptOut)
+        {
+            // if showing all images then no need for showing the warning message
+            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.All)
+            {
+                return true;
+            }
+
+            string title = "Apply " + operationDescription + " to this selection?";
+            MessageBox messageBox = new MessageBox(title, this, MessageBoxButton.OKCancel);
+
+            messageBox.Message.What = operationDescription + " will be applied only to the subset of images shown by the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection." + Environment.NewLine;
+            messageBox.Message.What += "Is this what you want?";
+
+            messageBox.Message.Reason = "You have the following selection on: " + this.dataHandler.FileDatabase.ImageSet.FileSelection + "." + Environment.NewLine;
+            messageBox.Message.Reason += "Only data for those images available in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be affected" + Environment.NewLine;
+            messageBox.Message.Reason += "Data for images not shown in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be unaffected." + Environment.NewLine;
+
+            messageBox.Message.Solution = "Select " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Ok' for Timelapse to continue to " + operationDescription + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Cancel' to abort";
+
+            messageBox.Message.Hint = "This is not an error." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 We are asking just in case you forgot you had the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " on. " + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 You can use the 'Select' menu to change to other views." + Environment.NewLine;
+            messageBox.Message.Hint += "If you check don't show this message this dialog can be turned back on via the Options menu.";
+
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool proceedWithOperation = (bool)messageBox.ShowDialog();
+            if (proceedWithOperation && messageBox.DontShowAgain.IsChecked.HasValue)
+            {
+                persistOptOut(messageBox.DontShowAgain.IsChecked.Value);
+            }
+            return proceedWithOperation;
+        }
+
+
+        #endregion
     }
 }

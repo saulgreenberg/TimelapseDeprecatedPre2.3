@@ -5,19 +5,17 @@ using System.Windows;
 
 namespace Timelapse.Util
 {
+    // Save the state of various things in the Registry.
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
         public bool AudioFeedback { get; set; }
-        public bool ControlsInSeparateWindow { get; set; }
-        public Point ControlWindowSize { get; set; }
+
         public CustomSelectionOperator CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
         public MostRecentlyUsedList<string> MostRecentImageSets { get; private set; }
         public bool OrderFilesByDateTime { get; set; }
-        public string AvalonDockSavedLayout { get; set; }
-
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
         public bool SuppressCsvImportPrompt { get; set; }
@@ -33,7 +31,6 @@ namespace Timelapse.Util
         public bool SuppressSelectedSetTimeZonePrompt { get; set; }
         public Throttles Throttles { get; private set; }
         public bool SuppressThrottleWhenLoading { get; set; }
-        public Point TimelapseWindowLocation { get; set; }
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
         public bool ClassifyDarkImagesWhenLoading { get; set; }
@@ -63,9 +60,6 @@ namespace Timelapse.Util
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.ReadMostRecentlyUsedList(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets);
                 this.OrderFilesByDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.OrderFilesByDateTime, false);
-                // SAULXXX Work in progress
-                // this.AvalonDockSavedLayout = registryKey.ReadString(Constant.Registry.TimelapseKey.AvalonDockSavedLayout, "");
-
                 this.SuppressAmbiguousDatesDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, false);
                 this.SuppressCsvImportPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, false);
@@ -91,7 +85,6 @@ namespace Timelapse.Util
             {
                 registryKey.Write(Constant.Registry.TimelapseKey.AudioFeedback, this.AudioFeedback);
                 registryKey.Write(Constant.Registry.TimelapseKey.TimelapseWindowPosition, this.TimelapseWindowPosition);
-
                 registryKey.Write(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelRatio, this.DarkPixelRatioThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelThreshold, this.DarkPixelThreshold);
@@ -99,9 +92,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets, this.MostRecentImageSets);
                 registryKey.Write(Constant.Registry.TimelapseKey.OrderFilesByDateTime, this.OrderFilesByDateTime);
-                // SAULXXX Work in progress
-                // registryKey.Write(Constant.Registry.TimelapseKey.AvalonDockSavedLayout, this.AvalonDockSavedLayout);
-
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, this.SuppressAmbiguousDatesDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, this.SuppressCsvExportDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, this.SuppressCsvImportPrompt);

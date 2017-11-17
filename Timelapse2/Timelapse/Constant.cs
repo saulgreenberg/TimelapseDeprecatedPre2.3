@@ -24,9 +24,9 @@ namespace Timelapse
         // Update Information, for checking for updates in the timelapse xml file stored on the web site
         public const string ApplicationName = "Timelapse";
         public static readonly Uri LatestVersionBaseAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/timelapse_version.xml");
-        public static readonly string LatestVersionFilenamePrefix = "timelapse_version_";
-        public static readonly string LatestVersionFilenameSuffix = ".rtf";
-        public static readonly Uri LatestVersionFilenameXML = new Uri(LatestVersionBaseAddress, "timelapse_version.xml");
+        public static readonly string LatestVersionFileNamePrefix = "timelapse_version_";
+        public static readonly string LatestVersionFileNameSuffix = ".rtf";
+        public static readonly Uri LatestVersionFileNameXML = new Uri(LatestVersionBaseAddress, "timelapse_version.xml");
 
         public static readonly Uri VersionChangesAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.TimelapseVersions");
         public static readonly Uri UserManualAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
@@ -44,7 +44,7 @@ namespace Timelapse
         }
 
         // Boolean - preferred string representations 
-        public static class Boolean
+        public static class BooleanValue
         {
             public const string True = "true";
             public const string False = "false";
@@ -122,7 +122,7 @@ namespace Timelapse
             public const int FixedChoiceWidth = 100;
 
             public const string FlagTooltip = "Toggle between true and false";
-            public const string FlagValue = Constant.Boolean.False;             // Default for: flags
+            public const string FlagValue = Constant.BooleanValue.False;             // Default for: flags
             public const int FlagWidth = 20;
             public const string NoteTooltip = "Write a textual note";
             public const int NoteWidth = 100;

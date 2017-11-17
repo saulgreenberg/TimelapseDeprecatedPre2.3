@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace Timelapse.Util
 {
+    // Utilities to support parallelism
+    // Note that we currently  use only some of the methods below, as we have turned off parallelism when loading files.
+    // However, as we may enable that at a future time, we have kept all methods.
     internal class SequentialPartitioner<TSource> : OrderablePartitioner<TSource>
     {
         private IList<TSource> source;

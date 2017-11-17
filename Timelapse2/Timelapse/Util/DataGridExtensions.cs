@@ -7,12 +7,7 @@ namespace Timelapse.Util
     // Methods to manipulate a datagrid. 
     public static class DataGridExtensions
     {
-        // Sort the given data grid by the first column in ascending order
-        public static void SortByFirstColumnAscending(this DataGrid dataGrid)
-        {
-            SortByColumnAscending(dataGrid, 0);
-        }
-
+               // Select the row provded by rowIndex and scroll that row into view
         public static void SelectAndScrollIntoView(this DataGrid dataGrid, int rowIndex)
         {
             bool indexIncreasing = rowIndex > dataGrid.SelectedIndex;

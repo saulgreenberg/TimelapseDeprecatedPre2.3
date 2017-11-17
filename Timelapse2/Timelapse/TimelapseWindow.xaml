@@ -22,7 +22,6 @@
                                     AutoReverse="True"
                                     Duration="0:0:0.1"
                                     RepeatBehavior="1x"/>
-            <!--<DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0" AutoReverse="True" Duration="0:0:0.2" RepeatBehavior="2x"/>-->
         </Storyboard>
         <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#888" />
         <SolidColorBrush x:Key="HighlitCopyPreviousBrush" Color="#C8FBC8" />
@@ -241,7 +240,7 @@
                 </MenuItem>
             </MenuItem>
         </Menu>
-        
+       
         <xcad:DockingManager Name="DockingManager" AllowMixedOrientation="True" BorderBrush="Black" BorderThickness="1" Grid.Row="1" LayoutUpdated="DockingManager_LayoutUpdated">
             <xcad:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>

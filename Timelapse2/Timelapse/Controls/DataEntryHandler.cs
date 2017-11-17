@@ -259,7 +259,7 @@ namespace Timelapse.Controls
                 if (valueToCopy.Length > 0)
                 {
                     if ((checkForZero && !valueToCopy.Equals("0")) ||             // Skip over non-zero values for counters
-                        (isFlag && !valueToCopy.Equals(Constant.Boolean.False, StringComparison.OrdinalIgnoreCase)) || // Skip over false values for flags
+                        (isFlag && !valueToCopy.Equals(Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase)) || // Skip over false values for flags
                         (!checkForZero && !isFlag))
                     {
                         indexToCopyFrom = previousIndex;    // We found a non-empty value
@@ -549,7 +549,7 @@ namespace Timelapse.Controls
             }
             CheckBox checkBox = (CheckBox)sender;
             DataEntryControl control = (DataEntryControl)checkBox.Tag;
-            string value = ((bool)checkBox.IsChecked) ? Constant.Boolean.True : Constant.Boolean.False;
+            string value = ((bool)checkBox.IsChecked) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
 
             control.SetContentAndTooltip(value);
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);

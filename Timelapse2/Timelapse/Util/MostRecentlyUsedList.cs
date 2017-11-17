@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace Timelapse.Util
 {
+    // Maintain a list of the most recently opened/used files
     public class MostRecentlyUsedList<TElement> : IEnumerable<TElement>
     {
         private LinkedList<TElement> list;

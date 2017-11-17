@@ -303,12 +303,6 @@ namespace Timelapse.Database
         // Update the entire template database to match the in-memory template
         // Note that this version does this by recreating the entire table: 
         // We could likely be far more efficient by only updateding those entries that differ from the current entries.
-        private void SyncTemplateTableToDatabase()
-        {
-            Utilities.PrintMethodName("Called without arguments");
-            this.CreateBackupIfNeeded();
-            this.SyncTemplateTableToDatabase(this.Controls);
-        }
         private void SyncTemplateTableToDatabase(DataTableBackedList<ControlRow> newTable)
         {
             Utilities.PrintMethodName("Called with arguments");

@@ -9,15 +9,11 @@ using Timelapse.Database;
 namespace Timelapse.Controls
 {
     /// <summary>
-    /// Interaction logic for ClickableImage.xaml
+    /// Clickable Image User Control, which is used to fill each cell in the Clickable ImagesGrid
     /// </summary>
     public partial class ClickableImage : UserControl
     {
-        private const double DESIREDWIDTH = 256;
-        private Point point = new Point(0, 0);
-        private Brush unselectedBrush = Brushes.Black;
-        private Brush selectedBrush = Brushes.LightBlue;
-
+        #region Public Properties
         public double DesiredRenderWidth
         {
             get
@@ -52,7 +48,7 @@ namespace Timelapse.Controls
             }
         }
 
-        public double TextFontSize 
+        public double TextFontSize
         {
             set
             {
@@ -65,7 +61,7 @@ namespace Timelapse.Controls
 
         public int FileTableIndex { get; set; }
 
-        // Path is RelativePath/FileName
+        // Path is the RelativePath/FileName of the image file
         public string Path
         {
             get
@@ -74,7 +70,7 @@ namespace Timelapse.Controls
             }
         }
 
-        // Whether the checkbox is checked
+        // Whether the Checkbox is checked
         private bool isSelected = false;
         public bool IsSelected
         {
@@ -100,20 +96,24 @@ namespace Timelapse.Controls
                 }
             }
         }
+        #endregion
 
+        #region Private Variables
+        private Point point = new Point(0, 0);
+        private Brush unselectedBrush = Brushes.Black;
+        private Brush selectedBrush = Brushes.LightBlue;
         private Point mouseDownCoords = new Point(0, 0);
+        #endregion
 
-        // Constructors: If width isn't specified, it uses the internal constant DESIREDWIDTH
+        // Constructors: Width is the desired width of the image
         public ClickableImage(double width)
         {
             this.InitializeComponent();
             this.DesiredRenderWidth = width;
             this.RootFolder = String.Empty;
         }
-        public ClickableImage() : this(DESIREDWIDTH)
-        {
-        }
 
+        // Rerender the image to the given width
         public Double Rerender(double width)
         {
             this.DesiredRenderWidth = width;

@@ -70,7 +70,7 @@ namespace Timelapse.Database
                 }
                 else if (controlType == Constant.Control.Flag)
                 {
-                    searchTerm.DatabaseValue = Constant.Boolean.False;
+                    searchTerm.DatabaseValue = Constant.BooleanValue.False;
                 }
                 else if (controlType == Constant.DatabaseColumn.UtcOffset)
                 {

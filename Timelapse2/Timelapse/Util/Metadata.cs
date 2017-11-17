@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Timelapse.Util
 {
+    // Captures a single metadata record entry as extracted by MetaDataExtractor. 
     public class Metadata
     {
         public string Directory { get; set; }

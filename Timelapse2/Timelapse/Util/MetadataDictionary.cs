@@ -8,7 +8,7 @@ namespace Timelapse.Util
 {
     public class MetadataDictionary
     {
-        // Returns a dictionary describing the metadata found in the file
+        // Returns a dictionary listing the metadata found in the given file
         // If the file cannot be read for metadata, it returns null
         // Keys are in the form  Directory.Name, e.g., "Reconyx Maker Notes.Ambient Temperature"
         // Values are instances of the class Metadata, i.e., Key, Directory, Name, Value

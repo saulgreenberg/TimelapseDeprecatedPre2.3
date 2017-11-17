@@ -158,14 +158,12 @@ namespace Timelapse.Images
                 return ImageDifferenceResult.CurrentImageNotAvailable;
             }
 
-            WriteableBitmap previousBitmap;
-            if (this.TryGetPreviousBitmapAsWriteable(out previousBitmap) == false)
+            if (this.TryGetPreviousBitmapAsWriteable(out WriteableBitmap previousBitmap) == false)
             {
                 return ImageDifferenceResult.PreviousImageNotAvailable;
             }
 
-            WriteableBitmap nextBitmap;
-            if (this.TryGetNextBitmapAsWriteable(out nextBitmap) == false)
+            if (this.TryGetNextBitmapAsWriteable(out WriteableBitmap nextBitmap) == false)
             {
                 return ImageDifferenceResult.NextImageNotAvailable;
             }
@@ -191,8 +189,7 @@ namespace Timelapse.Images
                 this.Reset();
             }
 
-            BitmapSource bitmapForID;
-            this.unalteredBitmapsByID.TryRemove(id, out bitmapForID);
+            this.unalteredBitmapsByID.TryRemove(id, out BitmapSource bitmapForID);
             lock (this.mostRecentlyUsedIDs)
             {
                 return this.mostRecentlyUsedIDs.TryRemove(id);
@@ -201,8 +198,7 @@ namespace Timelapse.Images
 
         public override bool TryMoveToFile(int fileIndex)
         {
-            bool ignored;
-            return this.TryMoveToFile(fileIndex, out ignored);
+            return this.TryMoveToFile(fileIndex, out bool ignored);
         }
 
         public bool TryMoveToFile(int fileIndex, out bool newFileToDisplay)
@@ -246,11 +242,9 @@ namespace Timelapse.Images
                         // if the bitmap cache is full make room for the incoming bitmap
                         if (this.mostRecentlyUsedIDs.IsFull())
                         {
-                            long fileIDToRemove;
-                            if (this.mostRecentlyUsedIDs.TryGetLeastRecent(out fileIDToRemove))
+                            if (this.mostRecentlyUsedIDs.TryGetLeastRecent(out long fileIDToRemove))
                             {
-                                BitmapSource ignored;
-                                this.unalteredBitmapsByID.TryRemove(fileIDToRemove, out ignored);
+                                this.unalteredBitmapsByID.TryRemove(fileIDToRemove, out BitmapSource ignored);
                             }
                         }
 
@@ -280,8 +274,7 @@ namespace Timelapse.Images
             // locate the requested bitmap
             if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == false)
             {
-                Task prefetch;
-                if (this.prefetechesByID.TryGetValue(fileRow.ID, out prefetch))
+                if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
                 {
                     // bitmap retrieval's already in progress, so wait for it to complete
                     prefetch.Wait();
@@ -303,8 +296,7 @@ namespace Timelapse.Images
         private bool TryGetBitmap(int fileRow, out BitmapSource bitmap)
         {
             // get properties for the image to retrieve
-            ImageRow file;
-            if (this.TryGetImage(fileRow, out file) == false)
+            if (this.TryGetImage(fileRow, out ImageRow file) == false)
             {
                 bitmap = null;
                 return false;
@@ -316,15 +308,13 @@ namespace Timelapse.Images
 
         private bool TryGetBitmapAsWriteable(int fileRow, out WriteableBitmap bitmap)
         {
-            ImageRow file;
-            if (this.TryGetImage(fileRow, out file) == false)
+            if (this.TryGetImage(fileRow, out ImageRow file) == false)
             {
                 bitmap = null;
                 return false;
             }
 
-            BitmapSource bitmapSource;
-            if (this.TryGetBitmap(file, out bitmapSource) == false)
+            if (this.TryGetBitmap(file, out BitmapSource bitmapSource) == false)
             {
                 bitmap = null;
                 return false;
@@ -380,8 +370,7 @@ namespace Timelapse.Images
             {
                 BitmapSource nextBitmap = nextFile.LoadBitmap(this.Database.FolderPath);
                 this.CacheBitmap(nextFile.ID, nextBitmap);
-                Task ignored;
-                this.prefetechesByID.TryRemove(nextFile.ID, out ignored);
+                this.prefetechesByID.TryRemove(nextFile.ID, out Task ignored);
             });
             this.prefetechesByID.AddOrUpdate(nextFile.ID, prefetch, (long id, Task newPrefetch) => { return newPrefetch; });
             return true;

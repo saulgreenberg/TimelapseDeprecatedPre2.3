@@ -8,6 +8,7 @@ using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Util
 {
+    // Check if the version currently being run is the latest version
     public class VersionClient
     {
         private Uri latestVersionAddress; // The url of the timelapse_template_version timelapse_version xml file containing the versioo information

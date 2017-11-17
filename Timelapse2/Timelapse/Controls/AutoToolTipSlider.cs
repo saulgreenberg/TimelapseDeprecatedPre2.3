@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 
 namespace Timelapse.Controls
 {
@@ -27,23 +26,6 @@ namespace Timelapse.Controls
         }
 
         private ToolTip autoToolTip;
-        protected override void OnThumbDragStarted(DragStartedEventArgs e)
-        {
-            base.OnThumbDragStarted(e);
-            this.FormatAutoToolTipContent();
-        }
-
-        protected override void OnThumbDragDelta(DragDeltaEventArgs e)
-        {
-            base.OnThumbDragDelta(e);
-            this.FormatAutoToolTipContent();
-        }
-
-        protected override void OnThumbDragCompleted(DragCompletedEventArgs e)
-        {
-            base.OnThumbDragCompleted(e);
-            this.FormatAutoToolTipContent();
-        }
 
         private void FormatAutoToolTipContent()
         {

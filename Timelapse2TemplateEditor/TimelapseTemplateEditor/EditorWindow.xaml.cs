@@ -78,7 +78,7 @@ namespace Timelapse.Editor
                 DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
             {
-                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFilenameXML);
+                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.userSettings.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
@@ -729,12 +729,12 @@ namespace Timelapse.Editor
                             // Only allow t/f and translate to true/false
                             if (e.Text == "t" || e.Text == "T")
                             {
-                                control.DefaultValue = Constant.Boolean.True;
+                                control.DefaultValue = Constant.BooleanValue.True;
                                 this.SyncControlToDatabase(control);
                             }
                             else if (e.Text == "f" || e.Text == "F")
                             {
-                                control.DefaultValue = Constant.Boolean.False;
+                                control.DefaultValue = Constant.BooleanValue.False;
                                 this.SyncControlToDatabase(control);
                             }
                             e.Handled = true;

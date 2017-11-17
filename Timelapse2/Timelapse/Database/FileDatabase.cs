@@ -292,7 +292,7 @@ namespace Timelapse.Database
             columnDefinitions.Clear();
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sql.Text, Constant.Database.ImageSetDefaultLog));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sql.Text, Constant.Boolean.True));       
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sql.Text, Constant.BooleanValue.True));       
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sql.Text));
             int allImages = (int)FileSelection.All;
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sql.Text, allImages));
@@ -303,10 +303,10 @@ namespace Timelapse.Database
             // Populate the data for the image set with defaults
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>(); 
             columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Log, Constant.Database.ImageSetDefaultLog));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.Boolean.True));
+            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True));
             columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.Database.InvalidID));
             columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Boolean.True));
+            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True));
             columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id));
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>();
             insertionStatements.Add(columnsToUpdate);
@@ -511,7 +511,7 @@ namespace Timelapse.Database
             if (!whiteSpaceColumnExists)
             {
                 // create the whitespace column
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sql.Text, Constant.Boolean.False));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sql.Text, Constant.BooleanValue.False));
 
                 // trim whitespace from the data table
                 this.Database.TrimWhitespace(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
@@ -725,7 +725,7 @@ namespace Timelapse.Database
 
         public FileTable GetFilesMarkedForDeletion()
         {
-            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.Boolean.True); // = value
+            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
             string query = Constant.Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
@@ -832,7 +832,7 @@ namespace Timelapse.Database
                 case FileSelection.Ok:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelection.MarkedForDeletion:
-                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.Boolean.True); 
+                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); 
                 case FileSelection.Custom:
                     return this.CustomSelection.GetFilesWhere();
                 default:

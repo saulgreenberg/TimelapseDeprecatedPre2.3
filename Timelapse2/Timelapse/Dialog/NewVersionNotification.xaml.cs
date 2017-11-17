@@ -59,7 +59,7 @@ namespace Timelapse.Dialog
                 TextRange textRange = new TextRange(content.ContentStart, content.ContentEnd);
 
                 // Try to load the rtf file pointed at by the URI as a string
-                string filename = Constant.LatestVersionFilenamePrefix + latest_version_number.ToString() + Constant.LatestVersionFilenameSuffix;
+                string filename = Constant.LatestVersionFileNamePrefix + latest_version_number.ToString() + Constant.LatestVersionFileNameSuffix;
                 Uri uri = new Uri(Constant.LatestVersionBaseAddress, filename);
                 WebResponse response = WebRequest.Create(uri).GetResponse();
                 Stream streamfromuri = response.GetResponseStream();

@@ -28,9 +28,11 @@ namespace Timelapse.Database
             {
                 SQLiteConnection.CreateFile(inputFile);
             }
-            SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder();
-            connectionStringBuilder.DataSource = inputFile;
-            connectionStringBuilder.DateTimeKind = DateTimeKind.Utc;
+            SQLiteConnectionStringBuilder connectionStringBuilder = new SQLiteConnectionStringBuilder()
+            {
+                DataSource = inputFile,
+                DateTimeKind = DateTimeKind.Utc
+            };
             this.connectionString = connectionStringBuilder.ConnectionString;
         }
 

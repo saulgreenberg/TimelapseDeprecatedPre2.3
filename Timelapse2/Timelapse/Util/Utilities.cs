@@ -82,8 +82,10 @@ namespace Timelapse.Util
 
         public static ParallelOptions GetParallelOptions(int maximumDegreeOfParallelism)
         {
-            ParallelOptions parallelOptions = new ParallelOptions();
-            parallelOptions.MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, maximumDegreeOfParallelism);
+            ParallelOptions parallelOptions = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, maximumDegreeOfParallelism)
+            };
             return parallelOptions;
         }
 
@@ -138,8 +140,7 @@ namespace Timelapse.Util
 
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
         {
-            string templateDatabaseFilePath;
-            if (Utilities.IsSingleTemplateFileDrag(dragEvent, out templateDatabaseFilePath))
+            if (Utilities.IsSingleTemplateFileDrag(dragEvent, out string templateDatabaseFilePath))
             {
                 dragEvent.Effects = DragDropEffects.All;
             }
@@ -251,11 +252,18 @@ namespace Timelapse.Util
         public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, out string selectedFilePath)
         {
             // Get the template file, which should be located where the images reside
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = title;
-            openFileDialog.CheckFileExists = true;
-            openFileDialog.CheckPathExists = true;
-            openFileDialog.Multiselect = false;
+            OpenFileDialog openFileDialog = new OpenFileDialog()
+            {
+                Title = title,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = false,
+                AutoUpgradeEnabled = true,
+
+                // Set filter for file extension and default file extension 
+                DefaultExt = Constant.File.TemplateDatabaseFileExtension,
+                Filter = filter
+            };
             if (String.IsNullOrWhiteSpace(defaultFilePath))
             {
                 openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -265,11 +273,6 @@ namespace Timelapse.Util
                 openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
                 openFileDialog.FileName = Path.GetFileName(defaultFilePath);
             }
-            openFileDialog.AutoUpgradeEnabled = true;
-
-            // Set filter for file extension and default file extension 
-            openFileDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension;
-            openFileDialog.Filter = filter;
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {

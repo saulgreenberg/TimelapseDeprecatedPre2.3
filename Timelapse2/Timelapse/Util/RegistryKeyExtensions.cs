@@ -5,6 +5,7 @@ using System.Windows;
 
 namespace Timelapse.Util
 {
+    // Read and Write particular data types into the registry. 
     public static class RegistryKeyExtensions
     {
         public static bool ReadBoolean(this RegistryKey registryKey, string subKeyPath, bool defaultValue)

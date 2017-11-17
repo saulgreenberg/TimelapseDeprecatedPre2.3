@@ -225,12 +225,12 @@ namespace Timelapse.Dialog
                     flagCheckBox.Margin = thickness;
                     flagCheckBox.VerticalAlignment = VerticalAlignment.Center;
                     flagCheckBox.HorizontalAlignment = HorizontalAlignment.Left;
-                    flagCheckBox.IsChecked = String.Equals(searchTerm.DatabaseValue, Constant.Boolean.False, StringComparison.OrdinalIgnoreCase) ? false : true;
+                    flagCheckBox.IsChecked = String.Equals(searchTerm.DatabaseValue, Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase) ? false : true;
                     flagCheckBox.IsEnabled = searchTerm.UseForSearching;
                     flagCheckBox.Checked += this.Flag_CheckedOrUnchecked;
                     flagCheckBox.Unchecked += this.Flag_CheckedOrUnchecked;
 
-                    searchTerm.DatabaseValue = flagCheckBox.IsChecked.Value ? Constant.Boolean.True : Constant.Boolean.False;
+                    searchTerm.DatabaseValue = flagCheckBox.IsChecked.Value ? Constant.BooleanValue.True : Constant.BooleanValue.False;
 
                     Grid.SetRow(flagCheckBox, gridRowIndex);
                     Grid.SetColumn(flagCheckBox, CustomSelection.ValueColumn);

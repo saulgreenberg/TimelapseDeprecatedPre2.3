@@ -13,7 +13,7 @@ namespace Timelapse.Controls
         /// <summary>Gets or sets the Content of the Note</summary>
         public override string Content
         {
-            get { return ((bool)this.ContentControl.IsChecked) ? Constant.Boolean.True : Constant.Boolean.False; }
+            get { return ((bool)this.ContentControl.IsChecked) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
         }
 
         public override bool ContentReadOnly
@@ -35,7 +35,7 @@ namespace Timelapse.Controls
         public override void SetContentAndTooltip(string value)
         {
             value = value.ToLower();
-            this.ContentControl.IsChecked = (value == Constant.Boolean.True) ? true : false;
+            this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
             this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
         }
     }

@@ -9,6 +9,7 @@ namespace Timelapse.Util
 {
     internal class NativeMethods
     {
+        // Get the cursor position
         // This purportedly corrects a WPF problem... not sure if its really needed.
         public static Point GetCursorPos(Visual relativeTo)
         {
@@ -95,6 +96,7 @@ namespace Timelapse.Util
         public const int LOGPIXELSX = 88;
         public const int LOGPIXELSY = 90;
 
+        // UNUSED - BUT LETS KEEP IT FOR NOW.
         /// <summary>
         /// Transforms device independent units (1/96 of an inch)
         /// to pixels
@@ -103,32 +105,32 @@ namespace Timelapse.Util
         /// <param name="heightInDeviceIndependentPixels">a device independent unit value Y</param>
         /// <param name="widthInPixels">returns the X value in pixels</param>
         /// <param name="heightInPixels">returns the Y value in pixels</param>
-        public static void TransformDeviceIndependentPixelsToPixels(double widthInDeviceIndependentPixels,
-                                      double heightInDeviceIndependentPixels,
-                                      out int widthInPixels,
-                                      out int heightInPixels)
-        {
-            IntPtr hDc = GetDC(IntPtr.Zero);
-            if (hDc != IntPtr.Zero)
-            {
-                int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
-                int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
+        //public static void TransformDeviceIndependentPixelsToPixels(double widthInDeviceIndependentPixels,
+        //                              double heightInDeviceIndependentPixels,
+        //                              out int widthInPixels,
+        //                              out int heightInPixels)
+        //{
+        //    IntPtr hDc = GetDC(IntPtr.Zero);
+        //    if (hDc != IntPtr.Zero)
+        //    {
+        //        int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
+        //        int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
 
-                ReleaseDC(IntPtr.Zero, hDc);
+        //        ReleaseDC(IntPtr.Zero, hDc);
 
-                widthInPixels = (int)(((double)dpiX / 96) * widthInDeviceIndependentPixels);
-                heightInPixels = (int)(((double)dpiY / 96) * heightInDeviceIndependentPixels);
-            }
-            else
-            {
-                // This failure is unlikely. 
-                // But just in case... we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
-                // it will not crash the program and at least maintains the correct aspect ration
-                widthInPixels = Convert.ToInt32(widthInDeviceIndependentPixels);
-                heightInPixels = Convert.ToInt32(heightInDeviceIndependentPixels);
-                Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
-            }
-        }
+        //        widthInPixels = (int)(((double)dpiX / 96) * widthInDeviceIndependentPixels);
+        //        heightInPixels = (int)(((double)dpiY / 96) * heightInDeviceIndependentPixels);
+        //    }
+        //    else
+        //    {
+        //        // This failure is unlikely. 
+        //        // But just in case... we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
+        //        // it will not crash the program and at least maintains the correct aspect ration
+        //        widthInPixels = Convert.ToInt32(widthInDeviceIndependentPixels);
+        //        heightInPixels = Convert.ToInt32(heightInDeviceIndependentPixels);
+        //        Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
+        //    }
+        //}
         
         // Given size units in normal pixels, translate them into device independent pixels
         public static void TransformPixelsToDeviceIndependentPixels(int widthInPixels,

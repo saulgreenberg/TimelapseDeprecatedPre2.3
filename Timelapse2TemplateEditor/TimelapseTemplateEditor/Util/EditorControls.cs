@@ -48,7 +48,7 @@ namespace Timelapse.Editor.Util
                     case Constant.DatabaseColumn.DeleteFlag:
                         Label flagLabel = this.CreateLabel(styleProvider, control);
                         CheckBox flagContent = this.CreateFlag(styleProvider, control);
-                        flagContent.IsChecked = String.Equals(control.DefaultValue, Constant.Boolean.True, StringComparison.OrdinalIgnoreCase) ? true : false;
+                        flagContent.IsChecked = String.Equals(control.DefaultValue, Constant.BooleanValue.True, StringComparison.OrdinalIgnoreCase) ? true : false;
                         stackPanel = this.CreateStackPanel(styleProvider, flagLabel, flagContent);
                         break;
                     case Constant.Control.FixedChoice:

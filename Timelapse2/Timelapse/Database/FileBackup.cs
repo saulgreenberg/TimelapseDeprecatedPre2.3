@@ -10,7 +10,7 @@ namespace Timelapse.Database
     /// Make a time-stamped backup of the given file in the backup folder.
     /// At the same time, limit the number of backup files, where we prune older files with the same extension as needed. 
     /// </summary>
-    public class FileBackup
+    public static class FileBackup
     {
         private static IEnumerable<FileInfo> GetBackupFiles(DirectoryInfo backupFolder, string sourceFilePath)
         {

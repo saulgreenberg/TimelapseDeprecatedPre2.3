@@ -3,6 +3,7 @@ using Timelapse.Database;
 
 namespace Timelapse.Controls
 {
+    // Event indicates which image was double clicked on in the ClickableImagesGrid 
     public class ClickableImagesGridEventArgs : EventArgs
     {
         public ClickableImagesGrid Grid { get; set; }

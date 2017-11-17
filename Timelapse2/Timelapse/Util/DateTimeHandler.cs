@@ -146,7 +146,7 @@ namespace Timelapse.Util
             return DateTimeHandler.TryParseDateTaken(date + " " + time, imageSetTimeZone, out dateTimeOffset);
         }
 
-        public static bool TryParseDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
+        private static bool TryParseDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
             // use current culture as BitmapMetadata.DateTaken is not invariant
             DateTime dateTime;

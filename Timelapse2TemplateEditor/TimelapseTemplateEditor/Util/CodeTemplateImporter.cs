@@ -226,11 +226,11 @@ namespace Timelapse.Editor.Util
         private static bool ConvertToBool(string value, bool defaultValue)
         {
             string s = value.ToLowerInvariant();
-            if (s == Constant.Boolean.True)
+            if (s == Constant.BooleanValue.True)
             {
                 return true;
             }
-            if (s == Constant.Boolean.False)
+            if (s == Constant.BooleanValue.False)
             {
                 return false;
             }

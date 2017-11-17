@@ -38,8 +38,7 @@ namespace Timelapse.Controls
             this.ContentControl.PreviewKeyDown += this.ContentCtl_PreviewKeyDown;
 
             // Add items to the combo box. If we have an  EmptyChoiceItem, then  add an 'empty string' to the end 
-            bool includesEmptyChoice = false;
-            List<string> choiceList = control.GetChoices(out includesEmptyChoice);
+            List<string> choiceList = control.GetChoices(out bool includesEmptyChoice);
             foreach (string choice in choiceList)
             {
                  this.ContentControl.Items.Add(choice);
@@ -73,6 +72,7 @@ namespace Timelapse.Controls
             }
         }
 
+        // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {
             this.ContentControl.Text = value;

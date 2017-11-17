@@ -583,14 +583,6 @@ namespace Timelapse.Controls
   
         #region Cell Calculation methods
 
-        // Calculate the number of rows and columns of a given height and width that we can fit into the available space
-        private Tuple<int, int> CalculateRowsAndColumns(double imageWidth, double imageHeight, double availableWidth, double availableHeight)
-        {
-            int columns = Convert.ToInt32(Math.Floor(availableWidth / imageWidth));
-            int rows = (imageHeight > 0) ? Convert.ToInt32(Math.Floor(availableHeight / imageHeight)) : 1;
-            return new Tuple<int, int>(rows, columns);
-        }
-
         // Given two cells, determine which one is the start vs the end cell
         private void DetermineTopLeftBottomRightCells(RowColumn cell1, RowColumn cell2, out RowColumn startCell, out RowColumn endCell)
         {
