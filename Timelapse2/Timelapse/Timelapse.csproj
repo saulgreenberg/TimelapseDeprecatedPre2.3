@@ -428,7 +428,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Images\Marker.cs" />
-    <Compile Include="Images\WriteableBitmapExtensions.cs" />
+    <Compile Include="Images\WritableBitmapExtensions.cs" />
     <Compile Include="Dialog\ImportImageSetXmlFile.xaml.cs">
       <DependentUpon>ImportImageSetXmlFile.xaml</DependentUpon>
     </Compile>

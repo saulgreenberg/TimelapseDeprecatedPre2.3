@@ -276,8 +276,10 @@ namespace Timelapse.Database
 
             // Create the DataTable from the template
             // First, define the creation string based on the contents of the template. 
-            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
+            {
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+            };
             foreach (ControlRow control in this.Controls)
             {
                 columnDefinitions.Add(this.CreateFileDataColumnDefinition(control));
@@ -301,15 +303,19 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
 
             // Populate the data for the image set with defaults
-            List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>(); 
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Log, Constant.Database.ImageSetDefaultLog));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.Database.InvalidID));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True));
-            columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id));
-            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>();
-            insertionStatements.Add(columnsToUpdate);
+            List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.DatabaseColumn.Log, Constant.Database.ImageSetDefaultLog),
+                new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True),
+                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.Database.InvalidID),
+                new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
+                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id)
+            };
+            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
+            {
+                columnsToUpdate
+            };
             this.Database.Insert(Constant.DatabaseTable.ImageSet, insertionStatements);
 
             this.GetImageSet();
@@ -549,8 +555,7 @@ namespace Timelapse.Database
                 foreach (ImageRow image in this.Files)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
-                    DateTimeOffset imageDateTime;
-                    bool result = DateTimeHandler.TryParseLegacyDateTime(image.Date, image.Time, imageSetTimeZone, out imageDateTime);
+                    bool result = DateTimeHandler.TryParseLegacyDateTime(image.Date, image.Time, imageSetTimeZone, out DateTimeOffset imageDateTime);
                     if (!result)
                     {
                         // If we can't get the legacy date time, try getting the date time this way
@@ -785,11 +790,13 @@ namespace Timelapse.Database
 
         public Dictionary<FileSelection, int> GetFileCountsBySelection()
         {
-            Dictionary<FileSelection, int> counts = new Dictionary<FileSelection, int>();
-            counts[FileSelection.Dark] = this.GetFileCount(FileSelection.Dark);
-            counts[FileSelection.Corrupted] = this.GetFileCount(FileSelection.Corrupted);
-            counts[FileSelection.Missing] = this.GetFileCount(FileSelection.Missing);
-            counts[FileSelection.Ok] = this.GetFileCount(FileSelection.Ok);
+            Dictionary<FileSelection, int> counts = new Dictionary<FileSelection, int>
+            {
+                [FileSelection.Dark] = this.GetFileCount(FileSelection.Dark),
+                [FileSelection.Corrupted] = this.GetFileCount(FileSelection.Corrupted),
+                [FileSelection.Missing] = this.GetFileCount(FileSelection.Missing),
+                [FileSelection.Ok] = this.GetFileCount(FileSelection.Ok)
+            };
             return counts;
         }
 
@@ -1044,9 +1051,8 @@ namespace Timelapse.Database
             {
                 ImageRow image = this.Files[row];
                 DateTimeOffset originalDateTime = image.GetDateTime();
-                DateTimeOffset reversedDateTime;
 
-                if (DateTimeHandler.TrySwapDayMonth(originalDateTime, out reversedDateTime) == false)
+                if (DateTimeHandler.TrySwapDayMonth(originalDateTime, out DateTimeOffset reversedDateTime) == false)
                 {
                     continue;
                 }

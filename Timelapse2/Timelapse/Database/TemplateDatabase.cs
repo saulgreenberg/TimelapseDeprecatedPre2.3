@@ -250,16 +250,20 @@ namespace Timelapse.Database
 
                 if (controlOrder > removedControlOrder)
                 {
-                    List<ColumnTuple> controlUpdate = new List<ColumnTuple>();
-                    controlUpdate.Add(new ColumnTuple(Constant.Control.ControlOrder, controlOrder - 1));
+                    List<ColumnTuple> controlUpdate = new List<ColumnTuple>
+                    {
+                        new ColumnTuple(Constant.Control.ControlOrder, controlOrder - 1)
+                    };
                     control.ControlOrder = controlOrder - 1;
                     controlUpdates.Add(new ColumnTuplesWithWhere(controlUpdate, control.ID));
                 }
 
                 if (spreadsheetOrder > removedSpreadsheetOrder)
                 {
-                    List<ColumnTuple> controlUpdate = new List<ColumnTuple>();
-                    controlUpdate.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder - 1));
+                    List<ColumnTuple> controlUpdate = new List<ColumnTuple>
+                    {
+                        new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder - 1)
+                    };
                     control.SpreadsheetOrder = spreadsheetOrder - 1;
                     controlUpdates.Add(new ColumnTuplesWithWhere(controlUpdate, control.ID));
                 }
@@ -439,19 +443,21 @@ namespace Timelapse.Database
         protected virtual void OnDatabaseCreated(TemplateDatabase other)
         {
             // create the template table
-            List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>();
-            templateTableColumns.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.ControlOrder, Constant.Sql.Integer));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.SpreadsheetOrder, Constant.Sql.Integer));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.Type, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.DefaultValue, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.Label, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.DataLabel, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.Tooltip, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.TextBoxWidth, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.Copyable, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.Visible, Constant.Sql.Text));
-            templateTableColumns.Add(new ColumnDefinition(Constant.Control.List, Constant.Sql.Text));
+            List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
+            {
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey),
+                new ColumnDefinition(Constant.Control.ControlOrder, Constant.Sql.Integer),
+                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Constant.Sql.Integer),
+                new ColumnDefinition(Constant.Control.Type, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.DefaultValue, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.Label, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.DataLabel, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.Tooltip, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.TextBoxWidth, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.Copyable, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.Visible, Constant.Sql.Text),
+                new ColumnDefinition(Constant.Control.List, Constant.Sql.Text)
+            };
             this.Database.CreateTable(Constant.DatabaseTable.Controls, templateTableColumns);
 
             // if an existing table was passed, clone its contents into this database
@@ -467,36 +473,40 @@ namespace Timelapse.Database
             long spreadsheetOrder = 0; // The spreadsheet order, a one based count incremented for every new entry
 
             // file
-            List<ColumnTuple> file = new List<ColumnTuple>();
-            file.Add(new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder));
-            file.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder));
-            file.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.File));
-            file.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value));
-            file.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.File));
-            file.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.File));
-            file.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FileTooltip));
-            file.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FileWidth));
-            file.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            file.Add(new ColumnTuple(Constant.Control.Visible, true));
-            file.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> file = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FileTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FileWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             standardControls.Add(file);
 
             // relative path
             standardControls.Add(this.GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
 
             // folder
-            List<ColumnTuple> folder = new List<ColumnTuple>();
-            folder.Add(new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder));
-            folder.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder));
-            folder.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Folder));
-            folder.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value));
-            folder.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Folder));
-            folder.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Folder));
-            folder.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FolderTooltip));
-            folder.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FolderWidth));
-            folder.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            folder.Add(new ColumnTuple(Constant.Control.Visible, true));
-            folder.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> folder = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FolderTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FolderWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             standardControls.Add(folder);
 
             // datetime
@@ -506,48 +516,54 @@ namespace Timelapse.Database
             standardControls.Add(this.GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
 
             // date
-            List<ColumnTuple> date = new List<ColumnTuple>();
-            date.Add(new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder));
-            date.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder));
-            date.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Date));
-            date.Add(new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayDateString(Constant.ControlDefault.DateTimeValue)));
-            date.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Date));
-            date.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Date));
-            date.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTooltip));
-            date.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateWidth));
-            date.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            date.Add(new ColumnTuple(Constant.Control.Visible, false));
-            date.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> date = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayDateString(Constant.ControlDefault.DateTimeValue)),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, false),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             standardControls.Add(date);
 
             // time
-            List<ColumnTuple> time = new List<ColumnTuple>();
-            time.Add(new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder));
-            time.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder));
-            time.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Time));
-            time.Add(new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayTimeString(Constant.ControlDefault.DateTimeValue)));
-            time.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Time));
-            time.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Time));
-            time.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.TimeTooltip));
-            time.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.TimeWidth));
-            time.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            time.Add(new ColumnTuple(Constant.Control.Visible, false));
-            time.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> time = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayTimeString(Constant.ControlDefault.DateTimeValue)),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.TimeTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.TimeWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, false),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             standardControls.Add(time);
 
             // image quality
-            List<ColumnTuple> imageQuality = new List<ColumnTuple>();
-            imageQuality.Add(new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder));
-            imageQuality.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder));
-            imageQuality.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.ImageQuality));
-            imageQuality.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value));
-            imageQuality.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.ImageQuality));
-            imageQuality.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.ImageQuality));
-            imageQuality.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.ImageQualityTooltip));
-            imageQuality.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.ImageQualityWidth));
-            imageQuality.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            imageQuality.Add(new ColumnTuple(Constant.Control.Visible, true));
-            imageQuality.Add(new ColumnTuple(Constant.Control.List, Constant.ImageQuality.ListOfValues));
+            List<ColumnTuple> imageQuality = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.ImageQualityTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.ImageQualityWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ImageQuality.ListOfValues)
+            };
             standardControls.Add(imageQuality);
 
             // delete flag
@@ -819,71 +835,79 @@ namespace Timelapse.Database
 
         private List<ColumnTuple> GetDateTimeTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
-            List<ColumnTuple> dateTime = new List<ColumnTuple>();
-            dateTime.Add(new ColumnTuple(Constant.Control.ControlOrder, controlOrder));
-            dateTime.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder));
-            dateTime.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.DateTime));
-            dateTime.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.DateTimeValue.UtcDateTime));
-            dateTime.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.DateTime));
-            dateTime.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.DateTime));
-            dateTime.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTimeTooltip));
-            dateTime.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateTimeWidth));
-            dateTime.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            dateTime.Add(new ColumnTuple(Constant.Control.Visible, visible));
-            dateTime.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> dateTime = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.DateTime),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.DateTimeValue.UtcDateTime),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.DateTime),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.DateTime),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTimeTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateTimeWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, visible),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             return dateTime;
         }
 
         // Defines a RelativePath control. The definition is used by its caller to insert a RelativePath control into the template for backwards compatability. 
         private List<ColumnTuple> GetRelativePathTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
-            List<ColumnTuple> relativePath = new List<ColumnTuple>();
-            relativePath.Add(new ColumnTuple(Constant.Control.ControlOrder, controlOrder));
-            relativePath.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder));
-            relativePath.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.RelativePath));
-            relativePath.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value));
-            relativePath.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.RelativePath));
-            relativePath.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.RelativePath));
-            relativePath.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.RelativePathTooltip));
-            relativePath.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.RelativePathWidth));
-            relativePath.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            relativePath.Add(new ColumnTuple(Constant.Control.Visible, visible));
-            relativePath.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> relativePath = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.RelativePath),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.RelativePath),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.RelativePath),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.RelativePathTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.RelativePathWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, visible),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             return relativePath;
         }
 
         // Defines a DeleteFlag control. The definition is used by its caller to insert a DeleteFlag control into the template for backwards compatability. 
         private List<ColumnTuple> GetDeleteFlagTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
-            List<ColumnTuple> deleteFlag = new List<ColumnTuple>();
-            deleteFlag.Add(new ColumnTuple(Constant.Control.ControlOrder, controlOrder));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.DeleteFlag));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.FlagValue));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.Label, Constant.ControlDefault.DeleteFlagLabel));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.DeleteFlag));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DeleteFlagTooltip));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FlagWidth));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.Visible, visible));
-            deleteFlag.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> deleteFlag = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.DeleteFlag),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.FlagValue),
+                new ColumnTuple(Constant.Control.Label, Constant.ControlDefault.DeleteFlagLabel),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.DeleteFlag),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DeleteFlagTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FlagWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, visible),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             return deleteFlag;
         }
 
         private List<ColumnTuple> GetUtcOffsetTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
-            List<ColumnTuple> utcOffset = new List<ColumnTuple>();
-            utcOffset.Add(new ColumnTuple(Constant.Control.ControlOrder, controlOrder));
-            utcOffset.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder));
-            utcOffset.Add(new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.UtcOffset));
-            utcOffset.Add(new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.DateTimeValue.Offset));
-            utcOffset.Add(new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.UtcOffset));
-            utcOffset.Add(new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.UtcOffset));
-            utcOffset.Add(new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.UtcOffsetTooltip));
-            utcOffset.Add(new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.UtcOffsetWidth));
-            utcOffset.Add(new ColumnTuple(Constant.Control.Copyable, false));
-            utcOffset.Add(new ColumnTuple(Constant.Control.Visible, visible));
-            utcOffset.Add(new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value));
+            List<ColumnTuple> utcOffset = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.UtcOffset),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.DateTimeValue.Offset),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.UtcOffset),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.UtcOffset),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.UtcOffsetTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.UtcOffsetWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, visible),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
             return utcOffset;
         }
     }

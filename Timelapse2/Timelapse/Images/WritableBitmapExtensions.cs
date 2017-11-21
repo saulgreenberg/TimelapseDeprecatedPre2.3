@@ -12,22 +12,19 @@ namespace Timelapse.Images
     /// <remarks>This class consumes WriteableBitmap.BackBuffer in unsafe operations for speed.  Other Windows Presentation Foundation bitmap classes do not
     /// expose in memory content of bitmaps, requiring somewhat expensive double buffering for image calculations, and using Marshal to obtain pixels from
     /// the backing buffer is substantially slower than direct access.</remarks>
-    public static class WriteableBitmapExtensions
+    public static class WritableBitmapExtensions
     {
         // Given three images, return an image that highlights the differences in common betwen the main image and the first image
         // and the main image and a second image.
         public static unsafe WriteableBitmap CombinedDifference(this WriteableBitmap unaltered, WriteableBitmap previous, WriteableBitmap next, byte threshold)
         {
-            if (WriteableBitmapExtensions.BitmapsMismatched(unaltered, previous) ||
-                WriteableBitmapExtensions.BitmapsMismatched(unaltered, next))
+            if (WritableBitmapExtensions.BitmapsMismatched(unaltered, previous) ||
+                WritableBitmapExtensions.BitmapsMismatched(unaltered, next))
             {
                 return null;
             }
 
-            int blueOffset;
-            int greenOffset;
-            int redOffset;
-            WriteableBitmapExtensions.GetColorOffsets(unaltered, out blueOffset, out greenOffset, out redOffset);
+            WritableBitmapExtensions.GetColorOffsets(unaltered, out int blueOffset, out int greenOffset, out int redOffset);
 
             int totalPixels = unaltered.PixelWidth * unaltered.PixelHeight;
             int pixelSizeInBytes = unaltered.Format.BitsPerPixel / 8;
@@ -46,9 +43,9 @@ namespace Timelapse.Images
                 byte g2 = (byte)Math.Abs(*(unalteredIndex + greenOffset) - *(nextIndex + greenOffset));
                 byte r2 = (byte)Math.Abs(*(unalteredIndex + redOffset) - *(nextIndex + redOffset));
 
-                byte b = WriteableBitmapExtensions.DifferenceIfAboveThreshold(threshold, b1, b2);
-                byte g = WriteableBitmapExtensions.DifferenceIfAboveThreshold(threshold, g1, g2);
-                byte r = WriteableBitmapExtensions.DifferenceIfAboveThreshold(threshold, r1, r2);
+                byte b = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, b1, b2);
+                byte g = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, g1, g2);
+                byte r = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, r1, r2);
 
                 byte averageDifference = (byte)((b + g + r) / 3);
                 differencePixels[differenceIndex + blueOffset] = averageDifference;
@@ -72,9 +69,7 @@ namespace Timelapse.Images
         // (where r=g=b, with a bit of slop added) and then check that against a threshold.
         public static FileSelection GetImageQuality(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio)
         {
-            double ignored1;
-            bool ignored2;
-            return image.IsDark(darkPixelThreshold, darkPixelRatio, out ignored1, out ignored2);
+            return image.IsDark(darkPixelThreshold, darkPixelRatio, out double ignored1, out bool ignored2);
         }
 
         // Return whether the image is mostly dark. This is done by counting the number of pixels that are
@@ -88,10 +83,7 @@ namespace Timelapse.Images
         public static unsafe FileSelection IsDark(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio, out double darkPixelFraction, out bool isColor)
         {
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
-            int blueOffset;
-            int greenOffset;
-            int redOffset;
-            WriteableBitmapExtensions.GetColorOffsets(image, out blueOffset, out greenOffset, out redOffset);
+            WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
             // various counters that we will use in calculation of image darkness
             int darkPixels = 0;
@@ -178,10 +170,7 @@ namespace Timelapse.Images
         public static unsafe bool IsBlack(this WriteableBitmap image)
         {
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
-            int blueOffset;
-            int greenOffset;
-            int redOffset;
-            WriteableBitmapExtensions.GetColorOffsets(image, out blueOffset, out greenOffset, out redOffset);
+            WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
             // examine only a subset of pixels as otherwise this is an expensive operation
             // check pixels from last to first as most cameras put a non-black status bar or at least non-black text at the bottom of the frame,
@@ -209,15 +198,11 @@ namespace Timelapse.Images
         // Given two images, return an image containing the visual difference between them
         public static unsafe WriteableBitmap Subtract(this WriteableBitmap image1, WriteableBitmap image2)
         {
-            if (WriteableBitmapExtensions.BitmapsMismatched(image1, image2))
+            if (WritableBitmapExtensions.BitmapsMismatched(image1, image2))
             {
                 return null;
             }
-
-            int blueOffset;
-            int greenOffset;
-            int redOffset;
-            WriteableBitmapExtensions.GetColorOffsets(image1, out blueOffset, out greenOffset, out redOffset);
+            WritableBitmapExtensions.GetColorOffsets(image1, out int blueOffset, out int greenOffset, out int redOffset);
 
             int totalPixels = image1.PixelWidth * image1.PixelHeight;
             int pixelSizeInBytes = image1.Format.BitsPerPixel / 8;

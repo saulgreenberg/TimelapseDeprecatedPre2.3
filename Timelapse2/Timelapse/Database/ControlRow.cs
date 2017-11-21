@@ -84,8 +84,7 @@ namespace Timelapse.Database
         // Overload: the caller is uninterested in knowing if there are any empty items in the list, and wants the empty item removed
         public List<string> GetChoices(bool removeEmptyChoiceItem)
         {
-            bool includesEmptyChoice;
-            return this.GetChoices(out includesEmptyChoice, removeEmptyChoiceItem);
+            return this.GetChoices(out bool includesEmptyChoice, removeEmptyChoiceItem);
         }
         // Overload: the caller is interested in knowing if there are any empty items in the list, 
         // and wants the empty item removed (usually because they will add it themselves to a menue
@@ -119,18 +118,20 @@ namespace Timelapse.Database
 
         public override ColumnTuplesWithWhere GetColumnTuples()
         {
-            List<ColumnTuple> columnTuples = new List<ColumnTuple>();
-            columnTuples.Add(new ColumnTuple(Constant.Control.ControlOrder, this.ControlOrder));
-            columnTuples.Add(new ColumnTuple(Constant.Control.Copyable, this.Copyable));
-            columnTuples.Add(new ColumnTuple(Constant.Control.DataLabel, this.DataLabel));
-            columnTuples.Add(new ColumnTuple(Constant.Control.DefaultValue, this.DefaultValue));
-            columnTuples.Add(new ColumnTuple(Constant.Control.Label, this.Label));
-            columnTuples.Add(new ColumnTuple(Constant.Control.List, this.List));
-            columnTuples.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, this.SpreadsheetOrder));
-            columnTuples.Add(new ColumnTuple(Constant.Control.TextBoxWidth, this.Width));
-            columnTuples.Add(new ColumnTuple(Constant.Control.Tooltip, this.Tooltip));
-            columnTuples.Add(new ColumnTuple(Constant.Control.Type, this.Type));
-            columnTuples.Add(new ColumnTuple(Constant.Control.Visible, this.Visible));
+            List<ColumnTuple> columnTuples = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, this.ControlOrder),
+                new ColumnTuple(Constant.Control.Copyable, this.Copyable),
+                new ColumnTuple(Constant.Control.DataLabel, this.DataLabel),
+                new ColumnTuple(Constant.Control.DefaultValue, this.DefaultValue),
+                new ColumnTuple(Constant.Control.Label, this.Label),
+                new ColumnTuple(Constant.Control.List, this.List),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, this.SpreadsheetOrder),
+                new ColumnTuple(Constant.Control.TextBoxWidth, this.Width),
+                new ColumnTuple(Constant.Control.Tooltip, this.Tooltip),
+                new ColumnTuple(Constant.Control.Type, this.Type),
+                new ColumnTuple(Constant.Control.Visible, this.Visible)
+            };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
 
