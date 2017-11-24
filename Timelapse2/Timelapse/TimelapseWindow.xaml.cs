@@ -3287,7 +3287,10 @@ namespace Timelapse
 
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
         {
-            this.DockingManager_FloatingWindowTopmost(false);
+            if (this.DockingManager.FloatingWindows.Count() > 0)
+            { 
+                this.DockingManager_FloatingWindowTopmost(false);
+            }
         }
 
         // Enable or disable floating windows normally always being on top. 
