@@ -227,6 +227,7 @@ namespace Timelapse.Database
                 // However, using BitmapCacheOption.None locks the file as it is being accessed (rather than a memory copy being created when using a cache)
                 // This means we cannot do any file operations on it as it will produce an access violation.
                 // For now, we use the (slower) form of BitmapCacheOption.OnLoad.
+                // SAULXXX ADDS: To CHECK OUT AND MAYBE TRY https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
                 if (desiredWidth.HasValue == false)
                 {
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
