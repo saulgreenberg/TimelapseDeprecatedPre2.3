@@ -319,7 +319,6 @@ namespace Timelapse.Database
                 try
                 {
                     // Because move doesn't allow overwriting, delete the destination file if it already exists.
-                    System.Diagnostics.Debug.Print("Deleting " + sourceFilePath);
                     File.Delete(sourceFilePath);
                     return true;
                 }
