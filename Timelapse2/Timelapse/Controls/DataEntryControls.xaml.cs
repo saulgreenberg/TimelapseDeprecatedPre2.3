@@ -67,9 +67,10 @@ namespace Timelapse.Controls
                     {
                         autocompletions = new List<string>(database.GetDistinctValuesInFileDataColumn(control.DataLabel));
                     }
-                    DataEntryNote noteControl = new DataEntryNote(control, autocompletions, this);
-                    noteControl.ContentReadOnly = readOnly;
-
+                    DataEntryNote noteControl = new DataEntryNote(control, autocompletions, this)
+                    {
+                        ContentReadOnly = readOnly
+                    };
                     controlToAdd = noteControl;
                 }
                 else if (control.Type == Constant.Control.Flag || control.Type == Constant.DatabaseColumn.DeleteFlag)
@@ -121,6 +122,7 @@ namespace Timelapse.Controls
             {
                 return;
             }
+            this.dataEntryHandler.IsProgrammaticControlUpdate = true;
             foreach (DataEntryControl control in this.Controls)
             {
                 // File, Folder and Relative Path
@@ -130,8 +132,6 @@ namespace Timelapse.Controls
                      control.DataLabel == Constant.DatabaseColumn.RelativePath))
                 {
                     DataEntryNote note = (DataEntryNote)control;
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = true;
-                    
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -141,7 +141,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the field
@@ -155,13 +154,11 @@ namespace Timelapse.Controls
                             note.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel));
                         }
                     }
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                 }
-                else if (control is DataEntryDateTime)
+
+                // DateTime
+                else if (control is DataEntryDateTime datetime)
                 {
-                    // DateTime
-                    DataEntryDateTime datetime = (DataEntryDateTime)control;
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -171,7 +168,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the field
@@ -185,13 +181,11 @@ namespace Timelapse.Controls
                             datetime.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel));
                         }
                     }
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                 }
-                else if (control is DataEntryUtcOffset)
+
+                // UTC Offset
+                else if (control is DataEntryUtcOffset utcOffset)
                 {
-                    // UTC Offset
-                    DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)control;
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -201,7 +195,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and hide the field
@@ -217,12 +210,12 @@ namespace Timelapse.Controls
                             utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
                         }
                     }
-                    this.dataEntryHandler.IsProgrammaticControlUpdate = false; 
                 }
+
+                // ImageQuality
                 else if (control is DataEntryChoice &&
                     (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
                 {
-                    // ImageQuality
                     DataEntryChoice imageQuality = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -233,7 +226,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the note
@@ -246,13 +238,12 @@ namespace Timelapse.Controls
                             imageQuality.IsEnabled = true;
                             imageQuality.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(imageQuality.DataLabel));
                         }
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-                else if (control is DataEntryNote)
+
+                // Notes
+                else if (control is DataEntryNote note)
                 {
-                    // Notes
-                    DataEntryNote note = (DataEntryNote)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -262,7 +253,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the note
@@ -275,13 +265,12 @@ namespace Timelapse.Controls
                             note.IsEnabled = true;
                             note.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel));
                         }
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-                else if (control is DataEntryChoice)
+
+                // Choices
+                else if (control is DataEntryChoice choice)
                 {
-                    // Choices
-                    DataEntryChoice choice = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -291,7 +280,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the note
@@ -304,13 +292,12 @@ namespace Timelapse.Controls
                             choice.IsEnabled = true;
                             choice.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(choice.DataLabel));
                         }
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-                else if (control is DataEntryCounter)
+
+                // Counters
+                else if (control is DataEntryCounter counter)
                 {
-                    // Counters
-                    DataEntryCounter counter = (DataEntryCounter)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -320,7 +307,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the note
@@ -333,13 +319,12 @@ namespace Timelapse.Controls
                             counter.IsEnabled = true;
                             counter.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel));
                         }
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
-                else if (control is DataEntryFlag)
+
+                // Flag
+                else if (control is DataEntryFlag flag)
                 {
-                    // Flags
-                    DataEntryFlag flag = (DataEntryFlag)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -349,7 +334,6 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = true;
                         if (imagesSelected <= 0)
                         {
                             // No images selected, so disable and clear the note
@@ -362,10 +346,10 @@ namespace Timelapse.Controls
                             flag.IsEnabled = true;
                             flag.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel));
                         }
-                        this.dataEntryHandler.IsProgrammaticControlUpdate = false;
                     }
                 }
             }
+            this.dataEntryHandler.IsProgrammaticControlUpdate = false;
         }
     }
 }

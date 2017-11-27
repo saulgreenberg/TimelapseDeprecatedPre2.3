@@ -114,11 +114,13 @@ namespace Timelapse.Database
 
         public ColumnTuplesWithWhere GetDateTimeColumnTuples()
         {
-            List<ColumnTuple> columnTuples = new List<ColumnTuple>(3);
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.Date, this.Date));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.DateTime, this.DateTime));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.Time, this.Time));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.UtcOffset, this.UtcOffset));
+            List<ColumnTuple> columnTuples = new List<ColumnTuple>(3)
+            {
+                new ColumnTuple(Constant.DatabaseColumn.Date, this.Date),
+                new ColumnTuple(Constant.DatabaseColumn.DateTime, this.DateTime),
+                new ColumnTuple(Constant.DatabaseColumn.Time, this.Time),
+                new ColumnTuple(Constant.DatabaseColumn.UtcOffset, this.UtcOffset)
+            };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
 
@@ -350,8 +352,7 @@ namespace Timelapse.Database
                 {
                     return DateTimeAdjustment.MetadataNotUsed;
                 }
-                DateTime dateTimeOriginal;
-                if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false)
+                if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out DateTime dateTimeOriginal) == false)
                 {
                     ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
                     if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false))

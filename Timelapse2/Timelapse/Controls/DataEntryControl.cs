@@ -90,10 +90,10 @@ namespace Timelapse.Controls
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyle> contentStyleName, ControlLabelStyle labelStyleName) : 
             base(control, styleProvider)
         {
-            this.ContentControl = new TContent();
-
-            // configure the content
-            this.ContentControl.IsTabStop = true;
+            this.ContentControl = new TContent()
+            {
+                IsTabStop = true
+            };
             if (contentStyleName.HasValue)
             {
                 this.ContentControl.Style = (Style)styleProvider.FindResource(contentStyleName.Value.ToString());
@@ -107,10 +107,12 @@ namespace Timelapse.Controls
             this.ContentControl.Tag = this;
 
             // Create the label (which is an actual label)
-            this.LabelControl = new TLabel();
-            this.LabelControl.Content = control.Label;
-            this.LabelControl.Style = (Style)styleProvider.FindResource(labelStyleName.ToString());
-            this.LabelControl.ToolTip = control.Tooltip;
+            this.LabelControl = new TLabel()
+            {
+                Content = control.Label,
+                Style = (Style)styleProvider.FindResource(labelStyleName.ToString()),
+                ToolTip = control.Tooltip
+            };
 
             // add the label and content to the stack panel
             this.Container.Children.Add(this.LabelControl);

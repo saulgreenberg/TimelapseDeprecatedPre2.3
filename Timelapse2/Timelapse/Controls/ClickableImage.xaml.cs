@@ -85,7 +85,8 @@ namespace Timelapse.Controls
                 if (isSelected)
                 {
                     this.Cell.Background = this.selectedBrush;
-                    this.Checkmark.Text = "\U0001F5F9"; // Checkmark in unicode
+                    //this.Checkmark.Text = "\U0001F5F9"; // Checkmark in unicode
+                    this.Checkmark.Text = "\u2713"; // Checkmark in unicode
                     this.Checkmark.Background.Opacity = 0.7;
                 }
                 else
