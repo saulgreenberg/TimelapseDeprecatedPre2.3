@@ -41,8 +41,8 @@ namespace Timelapse.Editor.Util
                         break;
                     case Constant.Control.Counter:
                         RadioButton counterLabel = this.CreateCounterLabelButton(styleProvider, control);
-                        TextBox coutnerContent = this.CreateTextBox(styleProvider, control);
-                        stackPanel = this.CreateStackPanel(styleProvider, counterLabel, coutnerContent);
+                        IntegerUpDown counterContent = this.CreateIntegerUpDown(styleProvider, control);
+                        stackPanel = this.CreateStackPanel(styleProvider, counterLabel, counterContent);
                         break;
                     case Constant.Control.Flag:
                     case Constant.DatabaseColumn.DeleteFlag:
@@ -140,6 +140,20 @@ namespace Timelapse.Editor.Util
             Style style = styleProvider.FindResource(ControlContentStyle.NoteTextBox.ToString()) as Style;
             textBox.Style = style;
             return textBox;
+        }
+        private IntegerUpDown CreateIntegerUpDown(DataEntryControls styleProvider, ControlRow control)
+        {
+            IntegerUpDown integerUpDown = new IntegerUpDown();
+            integerUpDown.Text = control.DefaultValue;
+            integerUpDown.ToolTip = control.Tooltip;
+            integerUpDown.Minimum = 0;
+            integerUpDown.Width = control.Width + 18; // accounts for the width of the spinner
+            integerUpDown.DisplayDefaultValueOnEmptyText = true;
+            integerUpDown.DefaultValue = null;
+            integerUpDown.UpdateValueOnEnterKey = true;
+            Style style = styleProvider.FindResource(ControlContentStyle.CounterTextBox.ToString()) as Style;
+            integerUpDown.Style = style;
+            return integerUpDown;
         }
 
         private RadioButton CreateCounterLabelButton(DataEntryControls styleProvider, ControlRow control)
