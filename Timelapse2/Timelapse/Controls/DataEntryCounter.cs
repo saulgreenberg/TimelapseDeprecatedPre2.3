@@ -2,13 +2,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
+using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
     // A counter comprises a stack panel containing
     // - a radio button containing the descriptive label
     // - an editable textbox (containing the content) at the given width
-    public class DataEntryCounter : DataEntryControl<TextBox, RadioButton>
+    public class DataEntryCounter : DataEntryControl<IntegerUpDown, RadioButton>
     {
         // Holds the DataLabel of the previously clicked counter control across all counters
         private static string previousControlDataLabel = String.Empty;
@@ -37,6 +38,19 @@ namespace Timelapse.Controls
             // Assign all counters to a single group so that selecting a new counter deselects any currently selected counter
             this.LabelControl.GroupName = "DataEntryCounter";
             this.LabelControl.Click += this.LabelControl_Click;
+            this.ContentControl.Width += 18; // to account for the width of the spinner
+            this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
+        }
+ 
+        // Hack - I am not sure why the textbox int the IntegerUpDown becomes disenabled, but this seems to fix it. 
+        // SAULXX To explore further.
+        private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            TextBox textBox = this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) as Xceed.Wpf.Toolkit.WatermarkTextBox;
+            if (textBox != null)
+            {
+                textBox.IsReadOnly = false;
+            }
         }
 
         // Behaviour: If the currently clicked counter is deselected, it will be selected and all other counters will be deselected,

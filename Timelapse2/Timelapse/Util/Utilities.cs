@@ -311,17 +311,14 @@ namespace Timelapse.Util
         // Insert this call into the beginning oa method name with the TRACE flag set in properties
         // Helpful to see the order and number of calls on a method.
         // The optional string can be anything you want included in the output.
-        public static void PrintMethodName()
-        {
-            PrintMethodName(String.Empty);
-        }
   
-        public static void PrintMethodName(string description)
+        public static void PrintMethodName(string description="")
         {
-            StackTrace st = new StackTrace();
+            StackTrace st = new StackTrace(true);
             StackFrame sf = st.GetFrame(1);
-            string message = sf.GetMethod().Name;
-            message += description;
+            string message = Path.GetFileName (sf.GetFileName()) + ": ";
+            message += sf.GetMethod().Name;
+            message += ": " + description;
             Debug.Print(message);
         }
     }

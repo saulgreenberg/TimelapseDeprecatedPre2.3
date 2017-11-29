@@ -85,8 +85,8 @@ namespace Timelapse
                 typeof(CheckBox),          // flag controls
                 typeof(ComboBox),          // choice controls
                 typeof(ComboBoxItem),      // choice controls
-                typeof(TextBox),           // note and counter controls
-                typeof(WatermarkTextBox)   // date time control
+                typeof(TextBox),           // note controls
+                typeof(WatermarkTextBox)   // date time or counter control
             }.AsReadOnly();
 
             public static readonly ReadOnlyCollection<string> StandardTypes = new List<string>()
