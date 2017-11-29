@@ -46,8 +46,7 @@ namespace Timelapse.Controls
         // SAULXX To explore further.
         private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            TextBox textBox = this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) as Xceed.Wpf.Toolkit.WatermarkTextBox;
-            if (textBox != null)
+            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
             {
                 textBox.IsReadOnly = false;
             }
