@@ -312,11 +312,11 @@ namespace Timelapse.Util
         // Helpful to see the order and number of calls on a method.
         // The optional string can be anything you want included in the output.
   
-        public static void PrintMethodName(string description="")
+        public static void PrintMethodName(string description = "")
         {
             StackTrace st = new StackTrace(true);
             StackFrame sf = st.GetFrame(1);
-            string message = Path.GetFileName (sf.GetFileName()) + ": ";
+            string message = Path.GetFileName(sf.GetFileName()) + ": ";
             message += sf.GetMethod().Name;
             message += ": " + description;
             Debug.Print(message);

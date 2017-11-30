@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Controls;
@@ -89,9 +90,11 @@ namespace Timelapse.Editor.Util
 
         private DateTimePicker CreateDateTimePicker(ControlRow control)
         {
-            DateTimePicker dateTimePicker = new DateTimePicker();
-            dateTimePicker.ToolTip = control.Tooltip;
-            dateTimePicker.Width = control.Width;
+            DateTimePicker dateTimePicker = new DateTimePicker()
+            {
+                ToolTip = control.Tooltip,
+                Width = control.Width
+            };
             DataEntryHandler.Configure(dateTimePicker, Constant.ControlDefault.DateTimeValue.DateTime);
             return dateTimePicker;
         }
@@ -112,86 +115,93 @@ namespace Timelapse.Editor.Util
 
         private UtcOffsetUpDown CreateUtcOffsetPicker(ControlRow control)
         {
-            UtcOffsetUpDown utcOffsetPicker = new UtcOffsetUpDown();
-            utcOffsetPicker.ToolTip = control.Tooltip;
-            utcOffsetPicker.Value = Constant.ControlDefault.DateTimeValue.Offset;
-            utcOffsetPicker.Width = control.Width;
+            UtcOffsetUpDown utcOffsetPicker = new UtcOffsetUpDown()
+            {
+                ToolTip = control.Tooltip,
+                Value = Constant.ControlDefault.DateTimeValue.Offset,
+                Width = control.Width
+            };
             return utcOffsetPicker;
         }
 
         private Label CreateLabel(DataEntryControls styleProvider, ControlRow control)
         {
-            Label label = new Label();
-            label.Content = control.Label;
-            label.ToolTip = control.Tooltip;
-
-            Style style = styleProvider.FindResource(ControlLabelStyle.DefaultLabel.ToString()) as Style;
-            label.Style = style;
+            Label label = new Label()
+            {
+                Content = control.Label,
+                ToolTip = control.Tooltip,
+                Style = styleProvider.FindResource(ControlLabelStyle.DefaultLabel.ToString()) as Style
+            };
+            ;
             return label;
         }
 
         private TextBox CreateTextBox(DataEntryControls styleProvider, ControlRow control)
         {
-            TextBox textBox = new TextBox();
-            textBox.Text = control.DefaultValue;
-            textBox.ToolTip = control.Tooltip;
-            textBox.Width = control.Width;
-
-            Style style = styleProvider.FindResource(ControlContentStyle.NoteTextBox.ToString()) as Style;
-            textBox.Style = style;
+            TextBox textBox = new TextBox()
+            {
+                Text = control.DefaultValue,
+                ToolTip = control.Tooltip,
+                Width = control.Width,
+                Style = styleProvider.FindResource(ControlContentStyle.NoteTextBox.ToString()) as Style
+            };
             return textBox;
         }
+
         private IntegerUpDown CreateIntegerUpDown(DataEntryControls styleProvider, ControlRow control)
         {
-            IntegerUpDown integerUpDown = new IntegerUpDown();
-            integerUpDown.Text = control.DefaultValue;
-            integerUpDown.ToolTip = control.Tooltip;
-            integerUpDown.Minimum = 0;
-            integerUpDown.Width = control.Width + 18; // accounts for the width of the spinner
-            integerUpDown.DisplayDefaultValueOnEmptyText = true;
-            integerUpDown.DefaultValue = null;
-            integerUpDown.UpdateValueOnEnterKey = true;
-            Style style = styleProvider.FindResource(ControlContentStyle.CounterTextBox.ToString()) as Style;
-            integerUpDown.Style = style;
+            IntegerUpDown integerUpDown = new IntegerUpDown()
+            {
+                Text = control.DefaultValue,
+                ToolTip = control.Tooltip,
+                Minimum = 0,
+                Width = control.Width + 18, // accounts for the width of the spinner
+                DisplayDefaultValueOnEmptyText = true,
+                DefaultValue = null,
+                UpdateValueOnEnterKey = true,
+                Style = styleProvider.FindResource(ControlContentStyle.CounterTextBox.ToString()) as Style
+            }; 
             return integerUpDown;
         }
 
         private RadioButton CreateCounterLabelButton(DataEntryControls styleProvider, ControlRow control)
         {
-            RadioButton radioButton = new RadioButton();
-            radioButton.GroupName = "DataEntryCounter";
-            radioButton.Content = control.Label;
-            radioButton.ToolTip = control.Tooltip;
-
-            Style style = styleProvider.FindResource(ControlLabelStyle.CounterButton.ToString()) as Style;
-            radioButton.Style = style;
+            RadioButton radioButton = new RadioButton()
+            {
+                GroupName = "DataEntryCounter",
+                Content = control.Label,
+                ToolTip = control.Tooltip,
+                Style = styleProvider.FindResource(ControlLabelStyle.CounterButton.ToString()) as Style
+            };
             return radioButton;
         }
 
         private CheckBox CreateFlag(DataEntryControls styleProvider, ControlRow control)
         {
-            CheckBox checkBox = new CheckBox();
-            checkBox.Visibility = Visibility.Visible;
-            checkBox.ToolTip = control.Tooltip;
-
-            Style style = styleProvider.FindResource(ControlContentStyle.FlagCheckBox.ToString()) as Style;
-            checkBox.Style = style;
+            CheckBox checkBox = new CheckBox()
+            {
+                Visibility = Visibility.Visible,
+                ToolTip = control.Tooltip,
+                Style = styleProvider.FindResource(ControlContentStyle.FlagCheckBox.ToString()) as Style
+            };
             return checkBox;
         }
 
         private ComboBox CreateComboBox(DataEntryControls styleProvider, ControlRow control)
         {
-            ComboBox comboBox = new ComboBox();
-            comboBox.ToolTip = control.Tooltip;
-            comboBox.Width = control.Width;
+            ComboBox comboBox = new ComboBox()
+            {
+                ToolTip = control.Tooltip,
+                Width = control.Width,
+                Style = styleProvider.FindResource(ControlContentStyle.ChoiceComboBox.ToString()) as Style
+            };
 
             // Add items to the combo box
-            bool includesEmptyChoice;
-            foreach (string choice in control.GetChoices(out includesEmptyChoice))
+            List<string> choices = control.GetChoices(out bool includesEmptyChoice);
+            foreach (string choice in choices)
             {
                     comboBox.Items.Add(choice);
             }
-
             if (includesEmptyChoice)
             {
                 // put empty choices at the end below a separator for visual clarity
@@ -199,9 +209,6 @@ namespace Timelapse.Editor.Util
                 comboBox.Items.Add(String.Empty);
             }
             comboBox.SelectedIndex = 0;
-
-            Style style = styleProvider.FindResource(ControlContentStyle.ChoiceComboBox.ToString()) as Style;
-            comboBox.Style = style;
             return comboBox;
         }
     }

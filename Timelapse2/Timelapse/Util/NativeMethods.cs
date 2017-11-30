@@ -97,27 +97,22 @@ namespace Timelapse.Util
         public const int LOGPIXELSY = 90;
 
         // UNUSED - BUT LETS KEEP IT FOR NOW.
-        /// <summary>
-        /// Transforms device independent units (1/96 of an inch)
-        /// to pixels
-        /// </summary>
-        /// <param name="widthInDeviceIndependentPixels">a device independent unit value X</param>
-        /// <param name="heightInDeviceIndependentPixels">a device independent unit value Y</param>
-        /// <param name="widthInPixels">returns the X value in pixels</param>
-        /// <param name="heightInPixels">returns the Y value in pixels</param>
-        //public static void TransformDeviceIndependentPixelsToPixels(double widthInDeviceIndependentPixels,
+        // Transforms device independent units(1/96 of an inch) to pixels
+        // <param name = "widthInDeviceIndependentPixels" > a device independent unit value X</param>
+        // <param name = "heightInDeviceIndependentPixels" > a device independent unit value Y</param>
+        // <param name = "widthInPixels" > returns the X value in pixels</param>
+        // <param name = "heightInPixels" > returns the Y value in pixels</param>
+        // public static void TransformDeviceIndependentPixelsToPixels(double widthInDeviceIndependentPixels,
         //                              double heightInDeviceIndependentPixels,
         //                              out int widthInPixels,
         //                              out int heightInPixels)
-        //{
+        // {
         //    IntPtr hDc = GetDC(IntPtr.Zero);
         //    if (hDc != IntPtr.Zero)
         //    {
         //        int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
         //        int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
-
         //        ReleaseDC(IntPtr.Zero, hDc);
-
         //        widthInPixels = (int)(((double)dpiX / 96) * widthInDeviceIndependentPixels);
         //        heightInPixels = (int)(((double)dpiY / 96) * heightInDeviceIndependentPixels);
         //    }
@@ -130,8 +125,8 @@ namespace Timelapse.Util
         //        heightInPixels = Convert.ToInt32(heightInDeviceIndependentPixels);
         //        Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
         //    }
-        //}
-        
+        // }
+
         // Given size units in normal pixels, translate them into device independent pixels
         public static void TransformPixelsToDeviceIndependentPixels(int widthInPixels,
                                       int heightInPixels,

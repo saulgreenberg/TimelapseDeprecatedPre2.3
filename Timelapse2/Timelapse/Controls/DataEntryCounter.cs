@@ -40,15 +40,28 @@ namespace Timelapse.Controls
             this.LabelControl.Click += this.LabelControl_Click;
             this.ContentControl.Width += 18; // to account for the width of the spinner
             this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
+            this.ContentControl.PreviewTextInput += ContentControl_PreviewTextInput;
         }
- 
-        // Hack - I am not sure why the textbox int the IntegerUpDown becomes disenabled, but this seems to fix it. 
-        // SAULXX To explore further.
+
+        #region Event Handlers
+        // Behaviour: enable the counter textbox for editing
+        // SAULXX The textbox in the IntegerUpDown is, for some unknown reason, disabled and thus disallows text input.
+        // This hack seems to fix it. 
+        //  A better solution is to find out where it is being disabled and fix it there.
         private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
             {
                 textBox.IsReadOnly = false;
+            }
+        }
+
+        // Behaviour: Ignore any non-numeric input (but backspace delete etc work just fine)
+        private void ContentControl_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            if (int.TryParse(e.Text, out int number) == false)
+            {
+                e.Handled = true;
             }
         }
 
@@ -75,6 +88,7 @@ namespace Timelapse.Controls
                 previousControlDataLabel = this.DataLabel;
             }
         }
+        #endregion
 
         public override void SetContentAndTooltip(string value)
         {

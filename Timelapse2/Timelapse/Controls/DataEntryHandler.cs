@@ -133,7 +133,7 @@ namespace Timelapse.Controls
                         break;
                     case Constant.Control.Counter:
                         DataEntryCounter counter = (DataEntryCounter)pair.Value;
-                        counter.ContentControl.ValueChanged += CounterControl_ValueChanged;
+                        counter.ContentControl.ValueChanged += this.CounterControl_ValueChanged;
                         this.SetContextMenuCallbacks(counter);
                         break;
                     default:
@@ -473,7 +473,6 @@ namespace Timelapse.Controls
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
          }
 
-
         // When the number in a particular counter box changes, update the particular counter field(s) in the database
         private void CounterControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
@@ -491,21 +490,21 @@ namespace Timelapse.Controls
         
         // When the number in a particular counter box changes, update the particular counter field(s) in the database
         // SAULXXX NOTE THAT WE DONT REFERENCE THIS ANYMORE AS ITS BEEN REPLACED BY CounterCOntrol_ValueChanged  BUT KEEP IT FOR NOW JUST IN CASE
-        //private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    if (this.IsProgrammaticControlUpdate)
-        //    {
-        //        return;
-        //    }
+        // private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
+        // {
+        // if (this.IsProgrammaticControlUpdate)
+        //  {
+        //    return;
+        // }
 
-        //    TextBox textBox = (TextBox)sender;
-        //    // Get the caret position, as we will have to restore it if we change the text
-        //    // If the character under the caret isn't a digit, we will be deleting it.
+        // TextBox textBox = (TextBox)sender;
+        //  // Get the caret position, as we will have to restore it if we change the text
+        //  // If the character under the caret isn't a digit, we will be deleting it.
         //    // That means we have to adjust the caret position so that it appears in the correct place 
         //    int pos = textBox.CaretIndex;
         //    string old_text = textBox.Text;
 
-        //    // The caret is already at the beginning, so don't change it.
+        // // The caret is already at the beginning, so don't change it.
         //    if (old_text.Length == 0 || pos == 0) 
         //    {
         //        pos = 0;
@@ -531,11 +530,11 @@ namespace Timelapse.Controls
         //    }
         //    textBox.CaretIndex = pos;
 
-        //    // Get the key identifying the control, and then add its value to the database
+        // // Get the key identifying the control, and then add its value to the database
         //    DataEntryControl control = (DataEntryControl)textBox.Tag;
         //    control.SetContentAndTooltip(textBox.Text);
         //    this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
-        //}
+        // }
 
         // When a choice changes, update the particular choice field(s) in the database
         private void ChoiceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)

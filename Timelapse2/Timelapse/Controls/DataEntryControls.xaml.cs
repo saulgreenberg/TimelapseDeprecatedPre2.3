@@ -155,10 +155,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // DateTime
                 else if (control is DataEntryDateTime datetime)
                 {
+                    // DateTime
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -182,10 +181,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // UTC Offset
                 else if (control is DataEntryUtcOffset utcOffset)
                 {
+                    // UTC Offset
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Enable and show its contents
@@ -211,11 +209,10 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // ImageQuality
                 else if (control is DataEntryChoice &&
                     (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
                 {
+                    // ImageQuality
                     DataEntryChoice imageQuality = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
@@ -240,10 +237,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // Notes
                 else if (control is DataEntryNote note)
                 {
+                    // Notes
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -267,10 +263,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // Choices
                 else if (control is DataEntryChoice choice)
                 {
+                    // Choices
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -294,10 +289,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // Counters
                 else if (control is DataEntryCounter counter)
                 {
+                    // Counters
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
@@ -321,10 +315,9 @@ namespace Timelapse.Controls
                         }
                     }
                 }
-
-                // Flag
                 else if (control is DataEntryFlag flag)
                 {
+                    // Flag
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single image view, so enable and show its contents
