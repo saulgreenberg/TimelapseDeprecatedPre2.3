@@ -232,7 +232,7 @@ namespace Timelapse.Images
             this.ImageToDisplay = new Image();
             this.ImageToDisplay.HorizontalAlignment = HorizontalAlignment.Left;
             this.ImageToDisplay.MouseDown += this.ImageOrCanvas_MouseDown;
-            this.ImageToDisplay.MouseUp += this.ImageOrCanvas_MouseUp;
+            this.ImageToDisplay.MouseLeftButtonUp += this.ImageOrCanvas_MouseUp;
             this.ImageToDisplay.RenderTransform = this.transformGroup;
             this.ImageToDisplay.SizeChanged += this.ImageToDisplay_SizeChanged;
             this.ImageToDisplay.VerticalAlignment = VerticalAlignment.Top;
@@ -893,7 +893,7 @@ namespace Timelapse.Images
             Canvas.SetZIndex(markerCanvas, 0);
             markerCanvas.MouseDown += this.ImageOrCanvas_MouseDown;
             markerCanvas.MouseMove += this.MarkableCanvas_MouseMove;
-            markerCanvas.MouseUp += this.ImageOrCanvas_MouseUp;
+            markerCanvas.MouseLeftButtonUp += this.ImageOrCanvas_MouseUp;
             return markerCanvas;
         }
 
