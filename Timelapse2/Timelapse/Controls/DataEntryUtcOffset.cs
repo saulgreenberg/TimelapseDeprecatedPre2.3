@@ -19,7 +19,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryUtcOffset(ControlRow control, DataEntryControls styleProvider) :
-            base(control, styleProvider, null, ControlLabelStyle.DefaultLabel)
+            base(control, styleProvider, ControlContentStyle.UTCOffsetBox, ControlLabelStyle.DefaultLabel)
         {
             // configure the various elements
         }

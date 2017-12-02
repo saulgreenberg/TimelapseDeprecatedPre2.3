@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Control.Resources>
@@ -31,7 +32,7 @@
         </Style>
 
         <!-- CounterTextBox Style: Properties -->
-        <Style x:Key="CounterTextBox" TargetType="TextBox">
+        <Style x:Key="CounterTextBox" TargetType="xctk:IntegerUpDown">
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Padding" Value="5,0,5,0"/>
@@ -43,6 +44,36 @@
             <Setter Property="Focusable" Value="True" />
             <Setter Property="IsReadOnly" Value="False" />
             <Setter Property="Margin" Value="-5,0,0,0" />
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="DisplayDefaultValueOnEmptyText" Value="true" />
+            <Setter Property="DefaultValue" Value="{x:Null}" />
+            <Setter Property="AllowTextInput" Value="true" />
+        </Style>
+
+        <!-- DateTimeBox Style: Properties -->
+        <Style x:Key="DateTimeBox" TargetType="xctk:DateTimePicker">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="LightBlue"/>
+            <Setter Property="Height" Value="25" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Focusable" Value="True" />
+            <Setter Property="IsReadOnly" Value="False" />
+        </Style>
+
+        <!-- UTCOffsetBox Style: Properties -->
+        <Style x:Key="UTCOffsetBox" TargetType="xctk:TimeSpanUpDown">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="LightBlue"/>
+            <Setter Property="Height" Value="25" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Focusable" Value="True" />
+            <Setter Property="IsReadOnly" Value="False" />
         </Style>
         
         <!-- ChoiceComboBox Style - implements a Flat Choice style -->
@@ -171,7 +202,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Counter Button Style -->
         <SolidColorBrush x:Key="CounterBrushDisabledForeground" Color="#888" />
         <Style x:Key="CounterButton" TargetType="RadioButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
@@ -367,7 +398,6 @@
             <Setter Property="Margin" Value="0,0,10,0" />
             <Setter Property="Height" Value="35"/>
         </Style>
-        
     </Control.Resources>
     <RichTextBox IsEnabled="True" IsDocumentEnabled="True" IsReadOnly="True">
 

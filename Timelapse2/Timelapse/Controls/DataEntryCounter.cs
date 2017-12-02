@@ -2,13 +2,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
+using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
     // A counter comprises a stack panel containing
     // - a radio button containing the descriptive label
     // - an editable textbox (containing the content) at the given width
-    public class DataEntryCounter : DataEntryControl<TextBox, RadioButton>
+    public class DataEntryCounter : DataEntryControl<IntegerUpDown, RadioButton>
     {
         // Holds the DataLabel of the previously clicked counter control across all counters
         private static string previousControlDataLabel = String.Empty;
@@ -37,6 +38,31 @@ namespace Timelapse.Controls
             // Assign all counters to a single group so that selecting a new counter deselects any currently selected counter
             this.LabelControl.GroupName = "DataEntryCounter";
             this.LabelControl.Click += this.LabelControl_Click;
+            this.ContentControl.Width += 18; // to account for the width of the spinner
+            this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
+            this.ContentControl.PreviewTextInput += ContentControl_PreviewTextInput;
+        }
+
+        #region Event Handlers
+        // Behaviour: enable the counter textbox for editing
+        // SAULXX The textbox in the IntegerUpDown is, for some unknown reason, disabled and thus disallows text input.
+        // This hack seems to fix it. 
+        //  A better solution is to find out where it is being disabled and fix it there.
+        private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            {
+                textBox.IsReadOnly = false;
+            }
+        }
+
+        // Behaviour: Ignore any non-numeric input (but backspace delete etc work just fine)
+        private void ContentControl_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            if (int.TryParse(e.Text, out int number) == false)
+            {
+                e.Handled = true;
+            }
         }
 
         // Behaviour: If the currently clicked counter is deselected, it will be selected and all other counters will be deselected,
@@ -62,6 +88,7 @@ namespace Timelapse.Controls
                 previousControlDataLabel = this.DataLabel;
             }
         }
+        #endregion
 
         public override void SetContentAndTooltip(string value)
         {

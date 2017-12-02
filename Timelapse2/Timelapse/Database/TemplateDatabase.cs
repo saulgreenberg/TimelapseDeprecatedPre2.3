@@ -76,7 +76,6 @@ namespace Timelapse.Database
 
         public ControlRow AddUserDefinedControl(string controlType)
         {
-            Utilities.PrintMethodName();
             this.CreateBackupIfNeeded();
 
             // create the row for the new control in the data table
@@ -153,7 +152,7 @@ namespace Timelapse.Database
 
         private void GetControlsSortedByControlOrder()
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
             DataTable templateTable = this.Database.GetDataTableFromSelect(Constant.Sql.SelectStarFrom + Constant.DatabaseTable.Controls + Constant.Sql.OrderBy + Constant.Control.ControlOrder);
             this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
@@ -161,7 +160,7 @@ namespace Timelapse.Database
 
         public List<string> GetDataLabelsExceptIDInSpreadsheetOrder()
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
             List<string> dataLabels = new List<string>();
             IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
             foreach (ControlRow control in controlsInSpreadsheetOrder)
@@ -184,7 +183,7 @@ namespace Timelapse.Database
 
         public Dictionary<string, string> GetTypedDataLabelsExceptIDInSpreadsheetOrder()
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
             Dictionary<string, string> typedDataLabels = new Dictionary<string, string>();
             IEnumerable<ControlRow> controlsInSpreadsheetOrder = this.Controls.OrderBy(control => control.SpreadsheetOrder);
             foreach (ControlRow control in controlsInSpreadsheetOrder)
@@ -287,7 +286,7 @@ namespace Timelapse.Database
         // Update all ControlOrder and SpreadsheetOrder column entries in the template database to match their in-memory counterparts
         public void SyncTemplateTableControlAndSpreadsheetOrderToDatabase()
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
             List<ColumnTuplesWithWhere> columnsTuplesWithWhereList = new List<ColumnTuplesWithWhere>();    // holds columns which have changed for the current control
             foreach (ControlRow control in this.Controls)
             {
@@ -309,7 +308,7 @@ namespace Timelapse.Database
         // We could likely be far more efficient by only updateding those entries that differ from the current entries.
         private void SyncTemplateTableToDatabase(DataTableBackedList<ControlRow> newTable)
         {
-            Utilities.PrintMethodName("Called with arguments");
+            // Utilities.PrintMethodName("Called with arguments");
             // clear the existing table in the database 
             this.Database.DeleteRows(Constant.DatabaseTable.Controls, null);
 
@@ -343,7 +342,7 @@ namespace Timelapse.Database
 
         public void UpdateDisplayOrder(string orderColumnName, Dictionary<string, long> newOrderByDataLabel)
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
 
             // argument validation. Only ControlOrder and SpreadsheetOrder are orderable columns
             if (orderColumnName != Constant.Control.ControlOrder && orderColumnName != Constant.Control.SpreadsheetOrder)
@@ -716,7 +715,7 @@ namespace Timelapse.Database
         /// </summary>
         private void SetControlID(string dataLabel, int newID)
         {
-            Utilities.PrintMethodName();
+            // Utilities.PrintMethodName();
             // nothing to do
             long currentID = this.GetControlIDFromTemplateTable(dataLabel);
             if (currentID == newID)

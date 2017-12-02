@@ -134,218 +134,180 @@ namespace Timelapse.Controls
                     DataEntryNote note = (DataEntryNote)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Enable and show its contents
+                        // Single images view - Enable and show its contents
                         note.IsEnabled = true;
                         note.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(note.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and clear the field
-                            note.IsEnabled = false;
-                            note.SetContentAndTooltip(String.Empty);
-                        }
-                        else
-                        {
-                            // At least one image is selected, so enable it and show its value
-                            note.IsEnabled = true;
-                            note.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel));
-                        }
+                        // When one image is selected, display it as enabled (but not editable) and show its value
+                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
+                        note.IsEnabled = (imagesSelected == 1) ? true : false;
+                        note.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
-
-                // DateTime
                 else if (control is DataEntryDateTime datetime)
                 {
+                    // DateTime
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Enable and show its contents
+                        // Single images view - Enable and show its contents
                         datetime.IsEnabled = true;
                         datetime.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(datetime.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and clear the field
-                            datetime.IsEnabled = false;
-                            datetime.SetContentAndTooltip(String.Empty);
-                        }
-                        else
-                        {
-                            // At least one image is selected, so enable it and show its value
-                            datetime.IsEnabled = true;
-                            datetime.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel));
-                        }
+                        // When one image is selected, display it as enabled (but not editable) and show its value
+                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel);
+                        datetime.IsEnabled = (imagesSelected == 1) ? true : false;
+                        datetime.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
-
-                // UTC Offset
                 else if (control is DataEntryUtcOffset utcOffset)
                 {
+                    // UTC Offset
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Enable and show its contents
+                        // Single images view - Enable and show its contents
                         utcOffset.IsEnabled = true;
                         utcOffset.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(utcOffset.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and hide the field
-                            // SAULXXX: UTC CONTROLS DONT ALLOW BLANKS. NOTE THAT WE NEED TO DO THIS BETTER, PERHAPS BY PUTTING A ZERO IN THERE? AS OTHERWISE 
-                            utcOffset.IsEnabled = false;
-                            utcOffset.ContentControl.Foreground = utcOffset.ContentControl.Background;
-                        }
-                        else
-                        {
-                            // At least one image is selected, so enable it and show its value
-                            utcOffset.IsEnabled = true;
-                            utcOffset.ContentControl.Foreground = Brushes.Black;
-                            utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
-                        }
+                        // When one image is selected, display it as enabled (but not editable) and show its value
+                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
+                        utcOffset.IsEnabled = (imagesSelected == 1) ? true : false;
+                        utcOffset.SetContentAndTooltip(contentAndTooltip);
+
+                        //// Multiple images view
+                        //if (imagesSelected == 1)
+                        //{
+                        //    // When one image is selected, enable it and show its value
+                        //    utcOffset.IsEnabled = true;
+                        //    utcOffset.ContentControl.Foreground = Brushes.Black;
+                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
+                        //}
+                        //else
+                        //{
+                        //    // When no images or multiple images are selected, disable and clear the field
+                        //    // SAULXXX: UTC CONTROLS DONT ALLOW BLANKS. NOTE THAT WE NEED TO DO THIS BETTER, PERHAPS BY PUTTING A ZERO IN THERE? AS OTHERWISE 
+                        //    utcOffset.IsEnabled = false;
+                        //    utcOffset.ContentControl.Foreground = utcOffset.ContentControl.Background;
+                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
+                        //}
                     }
                 }
-
-                // ImageQuality
                 else if (control is DataEntryChoice &&
                     (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
                 {
+                    // ImageQuality
                     DataEntryChoice imageQuality = (DataEntryChoice)control;
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Single image view, so enable and show its contents
+                        // Single images view - Enable and show its contents
                         imageQuality.IsEnabled = true;
                         imageQuality.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(imageQuality.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and clear the note
-                            imageQuality.IsEnabled = false;
-                            imageQuality.SetContentAndTooltip(String.Empty);
-                        }
-                        else
-                        {
-                            // At least one image is selected, so show enable it and show its value
-                            imageQuality.IsEnabled = true;
-                            imageQuality.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(imageQuality.DataLabel));
-                        }
-                    }
+                        // When one or more images are selected, display it as enabled and editable, and show its value
+                        // When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(imageQuality.DataLabel);
+                        imageQuality.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        imageQuality.SetContentAndTooltip(contentAndTooltip);
+                     }
                 }
-
-                // Notes
                 else if (control is DataEntryNote note)
                 {
+                    // Notes
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Single image view, so enable and show its contents
+                        // Single images view - Enable and show its contents
                         note.IsEnabled = true;
                         note.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(note.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
+                        // When one or more images are selected, display it as enabled and editable, and show its value
+                        // When no images are selected, clear the fields
+                        //string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
+                        if (contentAndTooltip == null || imagesSelected == 0)
                         {
-                            // No images selected, so disable and clear the note
-                            note.IsEnabled = false;
-                            note.SetContentAndTooltip(String.Empty);
+                            //contentAndTooltip = "\u2026"; // 
+                            contentAndTooltip = "..."; // Ellipsis
                         }
-                        else
-                        {
-                            // At least one image is selected, so show enable it and show its value
-                            note.IsEnabled = true;
-                            note.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel));
-                        }
+                        note.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        note.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
-
-                // Choices
                 else if (control is DataEntryChoice choice)
                 {
+                    // Choices
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Single image view, so enable and show its contents
+                        // Single images view - Enable and show its contents
                         choice.IsEnabled = true;
                         choice.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(choice.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
+                        // When one or more images are selected, display it as enabled and editable, and show its value
+                        // When no images are selected, clear the fields
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(choice.DataLabel);
+                        if (contentAndTooltip == null || imagesSelected == 0)
                         {
-                            // No images selected, so disable and clear the note
-                            choice.IsEnabled = false;
-                            choice.SetContentAndTooltip(String.Empty);
+                            contentAndTooltip = "..."; // Ellipsis
                         }
-                        else
-                        {
-                            // At least one image is selected, so show enable it and show its value
-                            choice.IsEnabled = true;
-                            choice.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(choice.DataLabel));
-                        }
+                        choice.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        choice.SetContentAndTooltip(contentAndTooltip);    
                     }
                 }
-
-                // Counters
                 else if (control is DataEntryCounter counter)
                 {
+                    // Counters
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Single image view, so enable and show its contents
+                        // Single images view - Enable and show its contents
                         counter.IsEnabled = true;
                         counter.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(counter.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and clear the note
-                            counter.IsEnabled = false;
-                            counter.SetContentAndTooltip(String.Empty);
-                        }
-                        else
-                        {
-                            // At least one image is selected, so show enable it and show its value
-                            counter.IsEnabled = true;
-                            counter.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel));
-                        }
+                        // When one or more images are selected, display it as enabled and editable, and show its value
+                        // When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel);
+                        counter.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        counter.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
-
-                // Flag
                 else if (control is DataEntryFlag flag)
                 {
+                    // Flag
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
-                        // Single image view, so enable and show its contents
+                        // Single images view - Enable and show its contents
                         flag.IsEnabled = true;
                         flag.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(flag.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        if (imagesSelected <= 0)
-                        {
-                            // No images selected, so disable and clear the note
-                            flag.IsEnabled = false;
-                            flag.SetContentAndTooltip(String.Empty);
-                        }
-                        else
-                        {
-                            // At least one image is selected, so show enable it and show its value
-                            flag.IsEnabled = true;
-                            flag.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel));
-                        }
+                        // When one or more images are selected, display it as enabled and editable, and show its value
+                        // When no images are selected, clear the fields
+                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel);
+                        flag.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        flag.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
             }

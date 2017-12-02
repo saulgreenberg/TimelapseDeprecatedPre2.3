@@ -1007,7 +1007,6 @@ namespace Timelapse
                         DataEntryCounter counter = (DataEntryCounter)pair.Value;
                         counter.ContentControl.PreviewMouseDown += this.ContentControl_MouseDown;
                         counter.ContentControl.PreviewKeyDown += this.ContentCtl_PreviewKeyDown;
-                        counter.ContentControl.PreviewTextInput += this.CounterCtl_PreviewTextInput;
                         counter.Container.MouseEnter += this.CounterControl_MouseEnter;
                         counter.Container.MouseLeave += this.CounterControl_MouseLeave;
                         counter.LabelControl.Click += this.CounterControl_Click;
@@ -1102,8 +1101,6 @@ namespace Timelapse
             this.OnPreviewTextInput(e);
             FilePlayer_Stop(); // In case the FilePlayer is going
         }
-
-
 
         /// <summary>Click callback: When the user selects a counter, refresh the markers, which will also readjust the colors and emphasis</summary>
         /// <param name="sender">the event source</param>
@@ -1714,7 +1711,6 @@ namespace Timelapse
                 case Key.M:                 // Toggle the magnifying glass on and off
                     this.MenuItemDisplayMagnifyingGlass_Click(this, null);
                     break;
-
                 case Key.U:                 // Increase the magnifing glass zoom level
                     FilePlayer_Stop();      // In case the FilePlayer is going
                     this.MarkableCanvas.MagnifierZoomIn();
