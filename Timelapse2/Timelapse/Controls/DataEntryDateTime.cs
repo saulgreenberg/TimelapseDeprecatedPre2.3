@@ -22,7 +22,7 @@ namespace Timelapse.Controls
         public DataEntryNote TimeControl { get; set; }
 
         public DataEntryDateTime(ControlRow control, DataEntryControls styleProvider) :
-            base(control, styleProvider, null, ControlLabelStyle.DefaultLabel)
+            base(control, styleProvider, ControlContentStyle.DateTimeBox, ControlLabelStyle.DefaultLabel)
         {
             // configure the various elements
             DataEntryHandler.Configure(this.ContentControl, null);

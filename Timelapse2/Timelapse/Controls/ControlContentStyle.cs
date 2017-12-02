@@ -5,6 +5,8 @@
         ChoiceComboBox,
         FlagCheckBox,
         NoteTextBox,
-        CounterTextBox     
+        CounterTextBox,
+        DateTimeBox,
+        UTCOffsetBox
     }
 }

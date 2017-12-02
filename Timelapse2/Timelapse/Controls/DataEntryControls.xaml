@@ -49,6 +49,32 @@
             <Setter Property="DefaultValue" Value="{x:Null}" />
             <Setter Property="AllowTextInput" Value="true" />
         </Style>
+
+        <!-- DateTimeBox Style: Properties -->
+        <Style x:Key="DateTimeBox" TargetType="xctk:DateTimePicker">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="LightBlue"/>
+            <Setter Property="Height" Value="25" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Focusable" Value="True" />
+            <Setter Property="IsReadOnly" Value="False" />
+        </Style>
+
+        <!-- UTCOffsetBox Style: Properties -->
+        <Style x:Key="UTCOffsetBox" TargetType="xctk:TimeSpanUpDown">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="LightBlue"/>
+            <Setter Property="Height" Value="25" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Focusable" Value="True" />
+            <Setter Property="IsReadOnly" Value="False" />
+        </Style>
         
         <!-- ChoiceComboBox Style - implements a Flat Choice style -->
         <SolidColorBrush x:Key="ComboBoxNormalBorderBrush" Color="LightBlue" />
@@ -176,7 +202,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Counter Button Style -->
         <SolidColorBrush x:Key="CounterBrushDisabledForeground" Color="#888" />
         <Style x:Key="CounterButton" TargetType="RadioButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
@@ -372,7 +398,6 @@
             <Setter Property="Margin" Value="0,0,10,0" />
             <Setter Property="Height" Value="35"/>
         </Style>
-        
     </Control.Resources>
     <RichTextBox IsEnabled="True" IsDocumentEnabled="True" IsReadOnly="True">
 

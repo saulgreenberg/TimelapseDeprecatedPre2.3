@@ -672,7 +672,8 @@ namespace Timelapse.Controls
                 // If there are no file ids, there is nothing to show
                 if (fileIds.Count() == 0)
                 {
-                    return String.Empty;
+                    return null;
+                    //return String.Empty;
                 }
 
                 // This can cause the crash, when the id in fileIds[0] doesn't exist
@@ -692,7 +693,8 @@ namespace Timelapse.Controls
                     if (new_contents != contents)
                     {
                         // We have a mismatch
-                        return String.Empty;
+                        //return String.Empty;
+                        return null;
                     }
                 }
                 // All values match
@@ -702,7 +704,8 @@ namespace Timelapse.Controls
             {
                 // This catch occurs when the id in fileIds[0] doesn't exist
                 System.Diagnostics.Debug.Write("Catch in GetValueDisplayStringCommonToFileIds: " + dataLabel);
-                return String.Empty;
+                //return String.Empty;
+                return null;
             }
         }
         #endregion
