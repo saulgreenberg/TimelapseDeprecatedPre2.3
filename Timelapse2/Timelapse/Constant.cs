@@ -545,6 +545,10 @@ namespace Timelapse
             };
         }
 
+        public static class Unicode
+        {
+            public const string Ellipsis = "\u2026";
+        }
         public static class VersionXml
         {
             public const string Changes = "changes";

@@ -365,7 +365,8 @@
                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Collapsed"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="{x:Null}">
-                                <Setter TargetName="CheckMark" Property="Data" Value="M 0 7 L 7 0" />
+                                <!--When null, draw an ellipsis -->
+                                <Setter TargetName="CheckMark" Property="Data" Value="M 2 8 L 3 8 M 5 8 L 6 8  M 8 8 L 9 8" /> 
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter TargetName="Border" Property="Background" Value="{StaticResource FlagBrushDark}" />

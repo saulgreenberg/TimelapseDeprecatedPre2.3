@@ -552,7 +552,7 @@ namespace Timelapse.Controls
 
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)comboBox.Tag;
-            control.SetContentAndTooltip(comboBox.SelectedItem.ToString());
+            control.SetContentAndTooltip(((ComboBoxItem)comboBox.SelectedItem).Content.ToString());
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
 
