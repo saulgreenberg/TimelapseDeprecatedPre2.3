@@ -30,8 +30,15 @@ namespace Timelapse.Controls
 
         public override void SetContentAndTooltip(string value)
         {
-            this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
+            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            {
+                textBox.Text = value ?? Constant.Unicode.Ellipsis;
+            }
+            else
+            {
+                this.ContentControl.Text = value;
+            }
+            this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for the selected image";
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Timelapse.Controls
                 Content = Constant.Unicode.Ellipsis
             };
             this.ContentControl.Items.Insert(0, cbi);
-            ((ComboBoxItem)(this.ContentControl.Items[0])).Visibility = System.Windows.Visibility.Collapsed;     
+            ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;     
             this.ContentControl.SelectedIndex = 0;
         }
 

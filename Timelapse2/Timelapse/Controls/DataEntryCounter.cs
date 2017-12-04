@@ -95,7 +95,7 @@ namespace Timelapse.Controls
             // This if clause should always be true, but just in case...
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
             {
-                textBox.Text = value ??  Constant.Unicode.Ellipsis;
+                textBox.Text = value ?? Constant.Unicode.Ellipsis;
             }
             else
             {

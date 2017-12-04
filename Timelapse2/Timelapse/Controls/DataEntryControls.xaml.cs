@@ -125,7 +125,6 @@ namespace Timelapse.Controls
             this.dataEntryHandler.IsProgrammaticControlUpdate = true;
             foreach (DataEntryControl control in this.Controls)
             {
-                
                 if (control is DataEntryDateTime datetime)
                 {
                     // DateTime
@@ -138,10 +137,10 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one image is selected, display it as enabled (but not editable) and show its value
-                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel);
-                        datetime.IsEnabled = (imagesSelected == 1) ? true : false;
+                        // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel);
+                        datetime.IsEnabled = false;   // We currently don't allow editing of utcOffset in the overview. To fix, start here: datetime.IsEnabled = (imagesSelected == 1) ? true : false;
                         datetime.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
@@ -157,28 +156,12 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one image is selected, display it as enabled (but not editable) and show its value
-                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
-                        utcOffset.IsEnabled = (imagesSelected == 1) ? true : false;
+                        // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
+                        
+                        utcOffset.IsEnabled = false; // We currently don't allow editing of utcOffset in the overview. To fix, start here: utcOffset.IsEnabled = (imagesSelected == -1) ? true : false; 
                         utcOffset.SetContentAndTooltip(contentAndTooltip);
-
-                        //// Multiple images view
-                        //if (imagesSelected == 1)
-                        //{
-                        //    // When one image is selected, enable it and show its value
-                        //    utcOffset.IsEnabled = true;
-                        //    utcOffset.ContentControl.Foreground = Brushes.Black;
-                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
-                        //}
-                        //else
-                        //{
-                        //    // When no images or multiple images are selected, disable and clear the field
-                        //    // SAULXXX: UTC CONTROLS DONT ALLOW BLANKS. NOTE THAT WE NEED TO DO THIS BETTER, PERHAPS BY PUTTING A ZERO IN THERE? AS OTHERWISE 
-                        //    utcOffset.IsEnabled = false;
-                        //    utcOffset.ContentControl.Foreground = utcOffset.ContentControl.Background;
-                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
-                        //}
                     }
                 }
                 else if (control is DataEntryNote note)
@@ -194,7 +177,7 @@ namespace Timelapse.Controls
                     {
                         // Multiple images view
                         // File, Folder Relative Path: When one image is selected, display it as enabled and editable.
-                        // Notes: When one or more images are selected, display it as enabledand editable.
+                        // Notes: When one or more images are selected, display it as enabled and editable.
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
                         if (control is DataEntryNote &&
