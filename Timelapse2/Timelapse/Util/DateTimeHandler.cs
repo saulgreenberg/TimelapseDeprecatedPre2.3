@@ -27,14 +27,6 @@ namespace Timelapse.Util
 
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
-            // SAULXXX: THIS IS FOR THE CASE WHEN MULTIPLE SELECTIONS IN CLICKABLE GRID RETURNS AN EMPTY OR NOT STRING AS THEY ARE NOT IN COMMON
-            // DELETE IF WORKAROUND FOUND
-            if (String.IsNullOrEmpty(utcOffsetAsString))
-            {
-                return TimeSpan.FromHours(0);
-            }
-            // SAULXXX END
-
             TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString));
             if ((utcOffset < Constant.Time.MinimumUtcOffset) ||
                 (utcOffset > Constant.Time.MaximumUtcOffset))

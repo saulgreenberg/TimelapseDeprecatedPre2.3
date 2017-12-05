@@ -150,7 +150,8 @@ namespace Timelapse.Controls
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
-                        utcOffset.IsEnabled = true;
+                        utcOffset.IsEnabled = false; // Keep it always disabled, until we fix the bug within it.
+                        utcOffset.ContentControl.AllowSpin = false;
                         utcOffset.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(utcOffset.DataLabel));
                     }
                     else
@@ -158,8 +159,7 @@ namespace Timelapse.Controls
                         // Multiple images view
                         // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
-                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
-                        
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);   
                         utcOffset.IsEnabled = false; // We currently don't allow editing of utcOffset in the overview. To fix, start here: utcOffset.IsEnabled = (imagesSelected == -1) ? true : false; 
                         utcOffset.SetContentAndTooltip(contentAndTooltip);
                     }
