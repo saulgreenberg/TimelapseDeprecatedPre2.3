@@ -39,16 +39,33 @@ namespace Timelapse.Controls
 
             // Add items to the combo box. If we have an  EmptyChoiceItem, then  add an 'empty string' to the end 
             List<string> choiceList = control.GetChoices(out bool includesEmptyChoice);
+            ComboBoxItem cbi;
             foreach (string choice in choiceList)
             {
-                 this.ContentControl.Items.Add(choice);
+                cbi = new ComboBoxItem()
+                {
+                    Content = choice
+                };
+                this.ContentControl.Items.Add(cbi);
             }
             if (includesEmptyChoice)
             {
                 // put empty choice at the end of the control below a separator for visual clarity
-                this.ContentControl.Items.Add(new Separator());
-                this.ContentControl.Items.Add(String.Empty);
+                // this.ContentControl.Items.Add(new Separator());
+                cbi = new ComboBoxItem()
+                {
+                    Content = String.Empty
+                };
+                this.ContentControl.Items.Add(cbi);
             }
+            // We include an invisible ellipsis menu item. This allows us to display an ellipsis in the combo box text field
+            // when multiple images with different values are selected
+            cbi = new ComboBoxItem()
+            {
+                Content = Constant.Unicode.Ellipsis
+            };
+            this.ContentControl.Items.Insert(0, cbi);
+            ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;     
             this.ContentControl.SelectedIndex = 0;
         }
 
@@ -75,6 +92,14 @@ namespace Timelapse.Controls
         // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {
+            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
+            // Used to signify the indeterminate state in no or multiple selections in the overview.
+            if (value == null)
+            {
+                this.ContentControl.Text = Constant.Unicode.Ellipsis;
+                this.ContentControl.ToolTip = "Select an item to change the " + this.Label + " for all selected images";
+                return;
+            }
             this.ContentControl.Text = value;
             this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
         }

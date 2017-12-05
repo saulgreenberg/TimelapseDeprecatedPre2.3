@@ -110,6 +110,7 @@ namespace Timelapse.Controls
                     case Constant.DatabaseColumn.DateTime:
                         DataEntryDateTime dateTime = (DataEntryDateTime)pair.Value;
                         dateTime.ContentControl.ValueChanged += this.DateTimeControl_ValueChanged;
+                        dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave;
                         break;
                     case Constant.DatabaseColumn.UtcOffset:
                         DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
@@ -404,6 +405,24 @@ namespace Timelapse.Controls
         #endregion
 
         #region Event handlers - Content Selections and Changes
+
+        // The DateTimePicker has a 'bug' where it does not trigger the value update event unless a return has been pressed (or similar)
+        // As this does not always happen, this means some text changes don't actually get remembered. 
+        // This workaround checks to see if the mouse has left the DateTimePicker. If so, it checks for changes to the date/time and updates
+        // the values correctly. 
+        private void DateTime_MouseLeave(object sender, MouseEventArgs e)
+        {
+            DateTimePicker dateTimePicker = sender as DateTimePicker;
+            DateTime oldDateTime = dateTimePicker.Value.Value;
+            DateTime newDateTime = Util.DateTimeHandler.ParseDisplayDateTimeString(dateTimePicker.Text);
+            if (oldDateTime == newDateTime)
+            {
+                // No changes have been made to the date or time, so no need to do anything
+                return;
+            }
+            this.DateTimeUpdate(dateTimePicker, newDateTime);
+        }
+
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (this.IsProgrammaticControlUpdate)
@@ -416,10 +435,16 @@ namespace Timelapse.Controls
             {
                 return;
             }
+            // Update file data table and write the new DateTime, Date, and Time to the database
+            this.DateTimeUpdate(dateTimePicker, dateTimePicker.Value.Value);
+        }
 
+        // Helper method for above two.
+        private void DateTimeUpdate(DateTimePicker dateTimePicker, DateTime dateTime)
+        {
             // update file data table and write the new DateTime, Date, and Time to the database
-            this.ImageCache.Current.SetDateTimeOffset(dateTimePicker.Value.Value);
-            dateTimePicker.ToolTip = DateTimeHandler.ToDisplayDateTimeString(dateTimePicker.Value.Value);
+            this.ImageCache.Current.SetDateTimeOffset(dateTime);
+            dateTimePicker.ToolTip = DateTimeHandler.ToDisplayDateTimeString(dateTime);
 
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);
@@ -443,7 +468,6 @@ namespace Timelapse.Controls
             {
                 return;
             }
-
             UtcOffsetUpDown utcOffsetPicker = (UtcOffsetUpDown)sender;
             if (utcOffsetPicker.Value.HasValue == false)
             {
@@ -454,6 +478,7 @@ namespace Timelapse.Controls
             DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
             DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);
             this.ImageCache.Current.SetDateTimeOffset(newImageDateTime);
+            System.Diagnostics.Debug.Print(newImageDateTime.ToString());
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
         }
@@ -488,54 +513,6 @@ namespace Timelapse.Controls
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
         
-        // When the number in a particular counter box changes, update the particular counter field(s) in the database
-        // SAULXXX NOTE THAT WE DONT REFERENCE THIS ANYMORE AS ITS BEEN REPLACED BY CounterCOntrol_ValueChanged  BUT KEEP IT FOR NOW JUST IN CASE
-        // private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
-        // {
-        // if (this.IsProgrammaticControlUpdate)
-        //  {
-        //    return;
-        // }
-
-        // TextBox textBox = (TextBox)sender;
-        //  // Get the caret position, as we will have to restore it if we change the text
-        //  // If the character under the caret isn't a digit, we will be deleting it.
-        //    // That means we have to adjust the caret position so that it appears in the correct place 
-        //    int pos = textBox.CaretIndex;
-        //    string old_text = textBox.Text;
-
-        // // The caret is already at the beginning, so don't change it.
-        //    if (old_text.Length == 0 || pos == 0) 
-        //    {
-        //        pos = 0;
-        //    }
-        //    else
-        //    { 
-        //        // Adjust the caret backwards if the character won't be entered
-        //        char ch = old_text[pos - 1];
-        //        if (Char.IsDigit(ch) == false)
-        //        {
-        //            pos--;
-        //        }
-        //    }
-        //    // Remove any characters that are not numbers
-        //    // Note that we allow the field to be either a number or empty (i.e., blank).
-        //    Regex rgx = new Regex("[^0-9]");
-        //    string new_text = rgx.Replace(textBox.Text, String.Empty);
-        //    if (String.Equals(new_text, textBox.Text) == false)
-        //    {
-        //        this.IsProgrammaticControlUpdate = true;
-        //        textBox.Text = rgx.Replace(textBox.Text, String.Empty);
-        //        this.IsProgrammaticControlUpdate = false;
-        //    }
-        //    textBox.CaretIndex = pos;
-
-        // // Get the key identifying the control, and then add its value to the database
-        //    DataEntryControl control = (DataEntryControl)textBox.Tag;
-        //    control.SetContentAndTooltip(textBox.Text);
-        //    this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
-        // }
-
         // When a choice changes, update the particular choice field(s) in the database
         private void ChoiceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -552,7 +529,7 @@ namespace Timelapse.Controls
 
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)comboBox.Tag;
-            control.SetContentAndTooltip(comboBox.SelectedItem.ToString());
+            control.SetContentAndTooltip(((ComboBoxItem)comboBox.SelectedItem).Content.ToString());
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
 
@@ -673,7 +650,6 @@ namespace Timelapse.Controls
                 if (fileIds.Count() == 0)
                 {
                     return null;
-                    //return String.Empty;
                 }
 
                 // This can cause the crash, when the id in fileIds[0] doesn't exist
@@ -693,7 +669,6 @@ namespace Timelapse.Controls
                     if (new_contents != contents)
                     {
                         // We have a mismatch
-                        //return String.Empty;
                         return null;
                     }
                 }
@@ -704,10 +679,58 @@ namespace Timelapse.Controls
             {
                 // This catch occurs when the id in fileIds[0] doesn't exist
                 System.Diagnostics.Debug.Write("Catch in GetValueDisplayStringCommonToFileIds: " + dataLabel);
-                //return String.Empty;
                 return null;
             }
         }
         #endregion
+        #region Defunct Code
+        // When the number in a particular counter box changes, update the particular counter field(s) in the database
+        // SAULXXX NOTE THAT WE DONT REFERENCE THIS ANYMORE AS ITS BEEN REPLACED BY CounterCOntrol_ValueChanged  BUT KEEP IT FOR NOW JUST IN CASE
+        // private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
+        // {
+        // if (this.IsProgrammaticControlUpdate)
+        //  {
+        //    return;
+        // }
+
+        // TextBox textBox = (TextBox)sender;
+        //  // Get the caret position, as we will have to restore it if we change the text
+        //  // If the character under the caret isn't a digit, we will be deleting it.
+        //    // That means we have to adjust the caret position so that it appears in the correct place 
+        //    int pos = textBox.CaretIndex;
+        //    string old_text = textBox.Text;
+
+        // // The caret is already at the beginning, so don't change it.
+        //    if (old_text.Length == 0 || pos == 0) 
+        //    {
+        //        pos = 0;
+        //    }
+        //    else
+        //    { 
+        //        // Adjust the caret backwards if the character won't be entered
+        //        char ch = old_text[pos - 1];
+        //        if (Char.IsDigit(ch) == false)
+        //        {
+        //            pos--;
+        //        }
+        //    }
+        //    // Remove any characters that are not numbers
+        //    // Note that we allow the field to be either a number or empty (i.e., blank).
+        //    Regex rgx = new Regex("[^0-9]");
+        //    string new_text = rgx.Replace(textBox.Text, String.Empty);
+        //    if (String.Equals(new_text, textBox.Text) == false)
+        //    {
+        //        this.IsProgrammaticControlUpdate = true;
+        //        textBox.Text = rgx.Replace(textBox.Text, String.Empty);
+        //        this.IsProgrammaticControlUpdate = false;
+        //    }
+        //    textBox.CaretIndex = pos;
+
+        // // Get the key identifying the control, and then add its value to the database
+        //    DataEntryControl control = (DataEntryControl)textBox.Tag;
+        //    control.SetContentAndTooltip(textBox.Text);
+        //    this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+        // }
+        #endregion
+        }
     }
-}

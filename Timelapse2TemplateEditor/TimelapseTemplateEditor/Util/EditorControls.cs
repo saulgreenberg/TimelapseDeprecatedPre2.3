@@ -132,7 +132,6 @@ namespace Timelapse.Editor.Util
                 ToolTip = control.Tooltip,
                 Style = styleProvider.FindResource(ControlLabelStyle.DefaultLabel.ToString()) as Style
             };
-            ;
             return label;
         }
 

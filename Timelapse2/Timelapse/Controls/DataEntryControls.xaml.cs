@@ -125,30 +125,7 @@ namespace Timelapse.Controls
             this.dataEntryHandler.IsProgrammaticControlUpdate = true;
             foreach (DataEntryControl control in this.Controls)
             {
-                // File, Folder and Relative Path
-                if (control is DataEntryNote &&
-                    (control.DataLabel == Constant.DatabaseColumn.File ||
-                     control.DataLabel == Constant.DatabaseColumn.Folder ||
-                     control.DataLabel == Constant.DatabaseColumn.RelativePath))
-                {
-                    DataEntryNote note = (DataEntryNote)control;
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
-                    {
-                        // Single images view - Enable and show its contents
-                        note.IsEnabled = true;
-                        note.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(note.DataLabel));
-                    }
-                    else
-                    {
-                        // Multiple images view
-                        // When one image is selected, display it as enabled (but not editable) and show its value
-                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
-                        note.IsEnabled = (imagesSelected == 1) ? true : false;
-                        note.SetContentAndTooltip(contentAndTooltip);
-                    }
-                }
-                else if (control is DataEntryDateTime datetime)
+                if (control is DataEntryDateTime datetime)
                 {
                     // DateTime
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
@@ -160,10 +137,10 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one image is selected, display it as enabled (but not editable) and show its value
-                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel);
-                        datetime.IsEnabled = (imagesSelected == 1) ? true : false;
+                        // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(datetime.DataLabel);
+                        datetime.IsEnabled = false;   // We currently don't allow editing of utcOffset in the overview. To fix, start here: datetime.IsEnabled = (imagesSelected == 1) ? true : false;
                         datetime.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
@@ -173,60 +150,23 @@ namespace Timelapse.Controls
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
-                        utcOffset.IsEnabled = true;
+                        utcOffset.IsEnabled = false; // Keep it always disabled, until we fix the bug within it.
+                        utcOffset.ContentControl.AllowSpin = false;
                         utcOffset.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(utcOffset.DataLabel));
                     }
                     else
                     {
                         // Multiple images view
-                        // When one image is selected, display it as enabled (but not editable) and show its value
-                        // Otherwise disable these field as they should not be editable anyways. When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
-                        utcOffset.IsEnabled = (imagesSelected == 1) ? true : false;
+                        // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);   
+                        utcOffset.IsEnabled = false; // We currently don't allow editing of utcOffset in the overview. To fix, start here: utcOffset.IsEnabled = (imagesSelected == -1) ? true : false; 
                         utcOffset.SetContentAndTooltip(contentAndTooltip);
-
-                        //// Multiple images view
-                        //if (imagesSelected == 1)
-                        //{
-                        //    // When one image is selected, enable it and show its value
-                        //    utcOffset.IsEnabled = true;
-                        //    utcOffset.ContentControl.Foreground = Brushes.Black;
-                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
-                        //}
-                        //else
-                        //{
-                        //    // When no images or multiple images are selected, disable and clear the field
-                        //    // SAULXXX: UTC CONTROLS DONT ALLOW BLANKS. NOTE THAT WE NEED TO DO THIS BETTER, PERHAPS BY PUTTING A ZERO IN THERE? AS OTHERWISE 
-                        //    utcOffset.IsEnabled = false;
-                        //    utcOffset.ContentControl.Foreground = utcOffset.ContentControl.Background;
-                        //    utcOffset.SetContentAndTooltip(this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel));
-                        //}
                     }
-                }
-                else if (control is DataEntryChoice &&
-                    (control.DataLabel == Constant.DatabaseColumn.ImageQuality))
-                {
-                    // ImageQuality
-                    DataEntryChoice imageQuality = (DataEntryChoice)control;
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
-                    {
-                        // Single images view - Enable and show its contents
-                        imageQuality.IsEnabled = true;
-                        imageQuality.SetContentAndTooltip(this.dataEntryHandler.ImageCache.Current.GetValueDisplayString(imageQuality.DataLabel));
-                    }
-                    else
-                    {
-                        // Multiple images view
-                        // When one or more images are selected, display it as enabled and editable, and show its value
-                        // When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(imageQuality.DataLabel);
-                        imageQuality.IsEnabled = (imagesSelected >= 1) ? true : false;
-                        imageQuality.SetContentAndTooltip(contentAndTooltip);
-                     }
                 }
                 else if (control is DataEntryNote note)
                 {
-                    // Notes
+                    // Notes, File, Folder and Relative Path
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
@@ -236,22 +176,27 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one or more images are selected, display it as enabled and editable, and show its value
-                        // When no images are selected, clear the fields
-                        //string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
+                        // File, Folder Relative Path: When one image is selected, display it as enabled and editable.
+                        // Notes: When one or more images are selected, display it as enabled and editable.
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(note.DataLabel);
-                        if (contentAndTooltip == null || imagesSelected == 0)
+                        if (control is DataEntryNote &&
+                            (control.DataLabel == Constant.DatabaseColumn.File ||
+                             control.DataLabel == Constant.DatabaseColumn.Folder ||
+                             control.DataLabel == Constant.DatabaseColumn.RelativePath))
                         {
-                            //contentAndTooltip = "\u2026"; // 
-                            contentAndTooltip = "..."; // Ellipsis
+                            note.IsEnabled = (imagesSelected == 1) ? true : false;
                         }
-                        note.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        else
+                        {
+                            note.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        }
                         note.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
                 else if (control is DataEntryChoice choice)
                 {
-                    // Choices
+                    // Choices, Image Quality
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
@@ -261,15 +206,11 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one or more images are selected, display it as enabled and editable, and show its value
-                        // When no images are selected, clear the fields
+                        // When one or more images are selected, display it as enabled and editable.
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(choice.DataLabel);
-                        if (contentAndTooltip == null || imagesSelected == 0)
-                        {
-                            contentAndTooltip = "..."; // Ellipsis
-                        }
                         choice.IsEnabled = (imagesSelected >= 1) ? true : false;
-                        choice.SetContentAndTooltip(contentAndTooltip);    
+                        choice.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
                 else if (control is DataEntryCounter counter)
@@ -284,16 +225,16 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one or more images are selected, display it as enabled and editable, and show its value
-                        // When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel);
+                        // When one or more images are selected, display it as enabled and editable.
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel);
                         counter.IsEnabled = (imagesSelected >= 1) ? true : false;
                         counter.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
                 else if (control is DataEntryFlag flag)
                 {
-                    // Flag
+                    // Flag, Delete Flag
                     if (controlsToEnable == ControlsEnableState.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
@@ -303,9 +244,9 @@ namespace Timelapse.Controls
                     else
                     {
                         // Multiple images view
-                        // When one or more images are selected, display it as enabled and editable, and show its value
-                        // When no images are selected, clear the fields
-                        string contentAndTooltip = (imagesSelected == 0) ? String.Empty : this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel);
+                        // When one or more images are selected, display it as enabled and editable.
+                        // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel);
                         flag.IsEnabled = (imagesSelected >= 1) ? true : false;
                         flag.SetContentAndTooltip(contentAndTooltip);
                     }

@@ -34,9 +34,20 @@ namespace Timelapse.Controls
 
         public override void SetContentAndTooltip(string value)
         {
+            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
+            // Used to signify the indeterminate state in no or multiple selections in the overview.
+            if (value == null)
+            {
+                this.ContentControl.IsChecked = null;
+                this.ContentControl.ToolTip = "Click to change the " + this.Label + " for all selected images";
+                return;
+            }
+
+            // Otherwise, the checkbox will be checked depending on whether the value is true or false,
+            // and the tooltip will be set to true or false. 
             value = value.ToLower();
             this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
-            this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
+            this.ContentControl.ToolTip = this.LabelControl.ToolTip;
         }
     }
 }

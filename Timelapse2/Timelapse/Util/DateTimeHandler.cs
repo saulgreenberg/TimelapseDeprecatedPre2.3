@@ -27,14 +27,6 @@ namespace Timelapse.Util
 
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
-            // SAULXXX: THIS IS FOR THE CASE WHEN MULTIPLE SELECTIONS IN CLICKABLE GRID RETURNS AN EMPTY STRING AS THEY ARE NOT IN COMMON
-            // DELETE IF WORKAROUND FOUND
-            if (utcOffsetAsString == String.Empty)
-            {
-                return TimeSpan.FromHours(0);
-            }
-            // SAULXXX END
-
             TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString));
             if ((utcOffset < Constant.Time.MinimumUtcOffset) ||
                 (utcOffset > Constant.Time.MaximumUtcOffset))
@@ -157,8 +149,7 @@ namespace Timelapse.Util
         private static bool TryParseDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
             // use current culture as BitmapMetadata.DateTaken is not invariant
-            DateTime dateTime;
-            if (DateTime.TryParse(dateTimeAsString, CultureInfo.CurrentCulture, DateTimeStyles.None, out dateTime) == false)
+            if (DateTime.TryParse(dateTimeAsString, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dateTime) == false)
             {
                 dateTimeOffset = DateTimeOffset.MinValue;
                 return false;
@@ -170,8 +161,7 @@ namespace Timelapse.Util
 
         public static bool TryParseMetadataDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
-            DateTime dateTime;
-            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == false)
+            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime) == false)
             {
                 dateTimeOffset = DateTimeOffset.MinValue;
                 return false;
