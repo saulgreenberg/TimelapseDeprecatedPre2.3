@@ -389,9 +389,9 @@ namespace Timelapse.Database
                 }
 
                 // Check if  item(s) in the choice list has been removed. If so, a data field set with the removed value will not be displayable
-                List<string> imageDatabaseChoices = imageDatabaseControl.GetChoices(true);
-                List<string> templateChoices = templateControl.GetChoices(true);
-                List<string> choiceValuesRemovedInTemplate = imageDatabaseChoices.Except(templateChoices).ToList();
+                List<string> imageDatabaseChoices = imageDatabaseControl.GetChoices(false);
+                List<string> templateChoices = templateControl.GetChoices(false);
+                List<string> choiceValuesRemovedInTemplate = imageDatabaseChoices.Except(templateChoices).ToList<string>();
                 if (choiceValuesRemovedInTemplate.Count > 0)
                 {
                     // Add warnings due to changes in the Choice control's menu
@@ -407,7 +407,9 @@ namespace Timelapse.Database
                     imageDatabaseControl.Tooltip != templateControl.Tooltip ||
                     imageDatabaseControl.Width != templateControl.Width ||
                     imageDatabaseControl.Copyable != templateControl.Copyable ||
-                    imageDatabaseControl.Visible != templateControl.Visible)
+                    imageDatabaseControl.Visible != templateControl.Visible ||
+                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0
+                    ) 
                 {
                     templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
                 }
