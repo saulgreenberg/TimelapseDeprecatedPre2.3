@@ -25,6 +25,7 @@ using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using Xceed.Wpf.AvalonDock.Layout.Serialization;
 using System.Windows.Media.Animation;
+using System.Data;
 
 namespace Timelapse
 {
@@ -1474,7 +1475,8 @@ namespace Timelapse
                     // This seems related to initial population as the selection highlight updates without calling UpdateLayout() on subsequent calls
                     // to SelectAndScrollIntoView().
                     this.DataGrid.UpdateLayout();
-                    this.DataGrid.SelectAndScrollIntoView(this.dataHandler.ImageCache.CurrentRow);
+                    long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
+                    this.DataGrid.SelectAndScrollIntoView(id, this.dataHandler.ImageCache.CurrentRow);
                     this.DataGrid.UpdateLayout();
                 }
             }
@@ -1589,11 +1591,9 @@ namespace Timelapse
             }
 
             // if the data grid has been bound, set the selected row to the current file and scroll so it's visible
-            if (this.DataGrid.Items != null &&
-                this.DataGrid.Items.Count > fileIndex &&
-                this.DataGrid.SelectedIndex != fileIndex)
+            if (this.DataGrid.Items != null && this.DataGrid.Items.Count > fileIndex )
             {
-                this.DataGrid.SelectAndScrollIntoView(fileIndex);
+                this.DataGrid.SelectAndScrollIntoView(this.dataHandler.FileDatabase.Files[fileIndex].ID, fileIndex);
             }
 
             // Set the file player status
@@ -3532,6 +3532,40 @@ namespace Timelapse
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
                 this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+            }
+        }
+        #endregion
+
+        #region DataGrid events
+        private void DataGrid_RowDoubleClick (object sender, MouseButtonEventArgs e)
+        {
+            if (sender != null)
+            {
+                DataGridRow dgr = sender as DataGridRow;
+                if (dgr != null )
+                {
+                    this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
+                    DataRowView drv = dgr.Item as DataRowView;
+                    long fileID = (long)drv.Row.ItemArray[0];
+                    this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
+                    this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
+
+                    // The datagrid isn't floating: Switch from the dataGridPane view to the ImagesetPane view
+                    if ( !this.DataGridPane.IsFloating)
+                    {
+                        this.ImageSetPane.IsActive = true;
+                    }
+
+                    // Switch the Markable Canvas to either the video or image view as needed
+                    if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
+                    {
+                        this.MarkableCanvas.SwitchToVideoView();
+                    }
+                    else
+                    {
+                        this.MarkableCanvas.SwitchToImageView();
+                    }
+                }
             }
         }
         #endregion

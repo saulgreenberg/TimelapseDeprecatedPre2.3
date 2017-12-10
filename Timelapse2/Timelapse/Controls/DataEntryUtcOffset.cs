@@ -31,7 +31,6 @@ namespace Timelapse.Controls
                 if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
                 {
                    textBox.Text = (value != null) ? value : Constant.Unicode.Ellipsis;
-                   System.Diagnostics.Debug.Print("Ellipses");
                 }
             }
             else
