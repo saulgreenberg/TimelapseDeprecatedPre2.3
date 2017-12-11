@@ -9,13 +9,13 @@ namespace Timelapse.Util
     public static class DataGridExtensions
     {
         // Select the row with the given ID, discover its rowIndex, and then scroll that row into view
-        public static void SelectAndScrollIntoView(this DataGrid dataGrid, long ID, int possibleRowIndex)
+        public static void SelectAndScrollIntoView(this DataGrid dataGrid, long id, int possibleRowIndex)
         {
             // Check to see if the ID is at the spot indicated by fileIndex, as there is a reasonable chance that this is the case
             // unless the user has resorted the data grid. If so, it minimizes going through every row.
             int rowIndex = 0;
             DataRowView drv = dataGrid.Items[possibleRowIndex] as DataRowView;
-            if ((long)drv.Row.ItemArray[0] == ID)
+            if ((long)drv.Row.ItemArray[0] == id)
             {
                 rowIndex = possibleRowIndex;
             }
@@ -25,7 +25,7 @@ namespace Timelapse.Util
                 for (int i = 0; i < dataGrid.Items.Count; i++)
                 {
                     drv = dataGrid.Items[i] as DataRowView;
-                    if ((long)drv.Row.ItemArray[0] == ID)
+                    if ((long)drv.Row.ItemArray[0] == id)
                     {
                         rowIndex = i;
                         break;

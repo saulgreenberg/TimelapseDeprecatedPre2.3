@@ -408,8 +408,7 @@ namespace Timelapse.Database
                     imageDatabaseControl.Width != templateControl.Width ||
                     imageDatabaseControl.Copyable != templateControl.Copyable ||
                     imageDatabaseControl.Visible != templateControl.Visible ||
-                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0
-                    ) 
+                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0) 
                 {
                     templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
                 }
