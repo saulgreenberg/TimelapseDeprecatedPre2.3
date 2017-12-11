@@ -1476,7 +1476,9 @@ namespace Timelapse
                     // to SelectAndScrollIntoView().
                     this.DataGrid.UpdateLayout();
                     long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
-                    this.DataGrid.SelectAndScrollIntoView(id, this.dataHandler.ImageCache.CurrentRow);
+                    List<long> ids = new List<long>();
+                    ids.Add(id);
+                    this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
                     this.DataGrid.UpdateLayout();
                 }
             }
@@ -1593,7 +1595,9 @@ namespace Timelapse
             // if the data grid has been bound, set the selected row to the current file and scroll so it's visible
             if (this.DataGrid.Items != null && this.DataGrid.Items.Count > fileIndex )
             {
-                this.DataGrid.SelectAndScrollIntoView(this.dataHandler.FileDatabase.Files[fileIndex].ID, fileIndex);
+                List<long> ids = new List<long>();
+                ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
+                this.DataGrid.SelectAndScrollIntoView(ids, fileIndex);
             }
 
             // Set the file player status
@@ -3537,7 +3541,9 @@ namespace Timelapse
         #endregion
 
         #region DataGrid events
-        private void DataGrid_RowDoubleClick (object sender, MouseButtonEventArgs e)
+        // When a user selects an item in the datagrid, show its corresponding image.
+        // Note that because multiple selections are enabled, we show the image of the row that received the mouse-up
+        private void DataGrid_RowMouseUp (object sender, MouseButtonEventArgs e)
         {
             if (sender != null)
             {

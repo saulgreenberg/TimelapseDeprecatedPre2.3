@@ -384,7 +384,8 @@
                             </xcad:LayoutDocument>
 
                             <!-- Data Pane -->
-                            <xcad:LayoutDocument x:Name="DataGridPane" Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" ToolTip="Data Table shows all your data. Pull it out as a separate window by dragging its title bar">
+                            <xcad:LayoutDocument x:Name="DataGridPane" Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
+                                                 ToolTip="Data Table shows all your data. Pull it out as a separate window by dragging its title bar">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -395,10 +396,10 @@
                                         <LineBreak/>
                                         <Run>The highlit row indicates the currently viewed file</Run>
                                     </TextBlock>
-                                    <DataGrid Name="DataGrid" Grid.Row="1" MinHeight="100" MinWidth="100"  DockPanel.Dock="Top" HorizontalAlignment="Stretch" FontSize="12" VerticalScrollBarVisibility="Auto" IsReadOnly="True" SelectionMode="Single">
+                                    <DataGrid Name="DataGrid" Grid.Row="1" MinHeight="100" MinWidth="100"  DockPanel.Dock="Top" HorizontalAlignment="Stretch" FontSize="12" VerticalScrollBarVisibility="Auto" IsReadOnly="True" SelectionMode="Extended" SelectionUnit="FullRow">
                                         <DataGrid.ItemContainerStyle>
                                             <Style TargetType="DataGridRow">
-                                                <EventSetter Event="MouseLeftButtonUp" Handler="DataGrid_RowDoubleClick"/>
+                                                <EventSetter Event="MouseLeftButtonUp" Handler="DataGrid_RowMouseUp"/>
                                             </Style>
                                         </DataGrid.ItemContainerStyle>
                                     </DataGrid>
