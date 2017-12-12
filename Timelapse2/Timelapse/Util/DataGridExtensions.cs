@@ -92,6 +92,11 @@ namespace Timelapse.Util
                 }
                 //}
             }
+            if (rowIndexes.Count != ids.Count)
+            {
+                System.Diagnostics.Debug.Print("RowIndexes and ID counts don't match");
+                return;
+            }
             int firstRowIndex = rowIndexes[0];
             bool indexIncreasing = firstRowIndex > dataGrid.SelectedIndex;
             //dataGrid.SelectedIndex = rowIndex;  // This used to be for single selection. Replaced by below for multiple selections.

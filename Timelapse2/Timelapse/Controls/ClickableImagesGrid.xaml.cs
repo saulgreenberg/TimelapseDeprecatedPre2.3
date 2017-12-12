@@ -306,6 +306,8 @@ namespace Timelapse.Controls
                 this.OnDoubleClick(eventArgs);
             }
             this.EnableOrDisableControlsAsNeeded();
+            ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
+            this.OnSelectionChanged(selectionEventArgs);
         }
 
         // If a mouse-left drag movement, select all cells between the starting and current cell
@@ -353,6 +355,8 @@ namespace Timelapse.Controls
                 {
                     this.SelectNone(); // Clear the selections
                     ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
+                    ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
+                    this.OnSelectionChanged(selectionEventArgs);
                 }
             }
             else
@@ -375,6 +379,8 @@ namespace Timelapse.Controls
                 ClickableImage ci = this.clickableImagesList[0];
                 ci.IsSelected = true;
             }
+            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            this.OnSelectionChanged(eventArgs);
         }
 
         private void SelectNone()
@@ -410,17 +416,20 @@ namespace Timelapse.Controls
                 // If the cell doesn't contain a ClickableImage, then we are at the end.
                 if (ci == null)
                 {
-                    return;
+                    break;
                 }
                 ci.IsSelected = true;
 
                 // If there is no next cell, then we are at the end.
                 if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
                 {
-                    return;
+                  
+                   break;
                 }
                 indexCell = nextCell;
             }
+            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            this.OnSelectionChanged(eventArgs);
         }
 
         // Select all cells between the initial and currently selected cell
@@ -438,17 +447,19 @@ namespace Timelapse.Controls
                 // This shouldn't happen, but ensure that the cell contains a ClickableImage.
                 if (ci == null)
                 {
-                    return;
+                    break;
                 }
                 ci.IsSelected = true;
 
                 // If there is no next cell, then we are at the end.
                 if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
                 {
-                    return;
+                    break;
                 }
                 indexCell = nextCell;
             }
+            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            this.OnSelectionChanged(eventArgs);
         }
 
         private void SelectExtendSelectionFrom(RowColumn currentCell)
@@ -648,10 +659,16 @@ namespace Timelapse.Controls
         
         #region Events
         public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
+        public event EventHandler<ClickableImagesGridEventArgs> SelectionChanged;
 
         protected virtual void OnDoubleClick(ClickableImagesGridEventArgs e)
         {
             this.DoubleClick?.Invoke(this, e);
+        }
+
+        protected virtual void OnSelectionChanged(ClickableImagesGridEventArgs e)
+        {
+            this.SelectionChanged?.Invoke(this, e);
         }
         #endregion
     }

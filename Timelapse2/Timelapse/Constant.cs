@@ -497,6 +497,8 @@ namespace Timelapse
             public static readonly TimeSpan VideoRenderingBackoffTime = TimeSpan.FromMilliseconds(10.0);
             public static readonly TimeSpan PlaySlowly = TimeSpan.FromMilliseconds(300.0);
             public static readonly TimeSpan PlayQuickly = TimeSpan.FromMilliseconds(25.0);
+
+            public static readonly TimeSpan DataGridTimerInterval = TimeSpan.FromMilliseconds(250);
         }
 
         public static class Time

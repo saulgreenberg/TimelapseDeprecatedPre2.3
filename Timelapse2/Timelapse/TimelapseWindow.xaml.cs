@@ -50,6 +50,8 @@ namespace Timelapse
         // Timer used to AutoPlay images via MediaControl buttons
        DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
 
+        DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
+
         private string FolderPath
         {
             get { return this.dataHandler.FileDatabase.FolderPath; }
@@ -67,6 +69,7 @@ namespace Timelapse
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
             this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
+            this.MarkableCanvas.ClickableImagesGrid.SelectionChanged += ClickableImagesGrid_SelectionChanged;
             this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
             this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
 
@@ -100,6 +103,9 @@ namespace Timelapse
             // Timer activated / deactivated by Video Autoplay media control buttons
             FilePlayerTimer.Tick += FilePlayerTimer_Tick;
 
+            this.DataGridSelectionsTimer.Tick += DataGridSelectionsTimer_Tick;
+            this.DataGridSelectionsTimer.Interval = Constant.ThrottleValues.DataGridTimerInterval;
+
             // Restore the window and its size to its previous location
             this.Top = this.state.TimelapseWindowPosition.Y;
             this.Left = this.state.TimelapseWindowPosition.X;
@@ -110,6 +116,8 @@ namespace Timelapse
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
+
+
         #endregion
 
         #region Window Loading, Closing, and Disposing
@@ -1469,18 +1477,39 @@ namespace Timelapse
             if (this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
             {
                 this.dataHandler.FileDatabase.BindToDataGrid(this.DataGrid, null);
-                if ((this.dataHandler.ImageCache != null) && (this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow))
+                DataGridSelectionsTimer.Stop();
+                if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
                 {
-                    // both UpdateLayout() calls are needed to get the data grid to highlight the selected row
-                    // This seems related to initial population as the selection highlight updates without calling UpdateLayout() on subsequent calls
-                    // to SelectAndScrollIntoView().
-                    this.DataGrid.UpdateLayout();
-                    long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
-                    List<long> ids = new List<long>();
-                    ids.Add(id);
-                    this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
-                    this.DataGrid.UpdateLayout();
+                    DataGridSelectionsTimer.Start();
                 }
+                //if ((this.dataHandler.ImageCache != null) && (this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow))
+                //{
+                //    // both UpdateLayout() calls are needed to get the data grid to highlight the selected row
+                //    // This seems related to initial population as the selection highlight updates without calling UpdateLayout() on subsequent calls
+                //    // to SelectAndScrollIntoView().
+                //    this.DataGrid.UpdateLayout();
+                //    long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
+                //    List<long> ids = new List<long>();
+                //    int fileIndex = this.dataHandler.ImageCache.CurrentRow;
+                //    if (this.IsDisplayingSingleImage())
+                //    {
+                //        ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
+                //        System.Diagnostics.Debug.Print("bar single");
+                //    }
+                //    else
+                //    {
+                //        foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
+                //        {
+                //            ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
+                //            System.Diagnostics.Debug.Print("bar multiple");
+                //        }
+                //        //this.DataGrid.SelectAndScrollIntoView(ids, fileIndex));
+                //    }
+                //    //ids.Add(id);
+
+                //    this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
+                //    this.DataGrid.UpdateLayout();
+            //}
             }
         }
         #endregion
@@ -1592,13 +1621,31 @@ namespace Timelapse
                 }
             }
 
-            // if the data grid has been bound, set the selected row to the current file and scroll so it's visible
-            if (this.DataGrid.Items != null && this.DataGrid.Items.Count > fileIndex )
+            DataGridSelectionsTimer.Stop();
+            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
             {
-                List<long> ids = new List<long>();
-                ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
-                this.DataGrid.SelectAndScrollIntoView(ids, fileIndex);
+                DataGridSelectionsTimer.Start();
             }
+            //// if the data grid is visible and has been bound, set the selected row to the current file and scroll so it's visible
+            //if (this.DataGrid.Items != null && this.DataGrid.Items.Count > fileIndex  && (this.DataGridPane.IsActive || this.DataGridPane.IsFloating))
+            //{
+            //    List<long> ids = new List<long>();
+            //    if (this.IsDisplayingSingleImage())
+            //    { 
+            //        ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
+            //        System.Diagnostics.Debug.Print("foo single");
+            //    }
+            //    else
+            //    {
+            //        foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
+            //        {
+            //            ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
+            //            System.Diagnostics.Debug.Print("foo multiple");
+            //        }
+            //    }
+
+            //    this.DataGrid.SelectAndScrollIntoView(ids, fileIndex);
+            //}
 
             // Set the file player status
             if (this.dataHandler.ImageCache.CurrentRow == 0)
@@ -3517,6 +3564,14 @@ namespace Timelapse
         private void SwitchedToSingleImagesView()
         {
             this.FilePlayer.SwitchFileMode(true);
+            if (this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
+            {
+                DataGridSelectionsTimer.Stop();
+                if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
+                {
+                    DataGridSelectionsTimer.Start();
+                }
+            }
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
@@ -3538,6 +3593,7 @@ namespace Timelapse
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
         }
+
         #endregion
 
         #region DataGrid events
@@ -3573,6 +3629,46 @@ namespace Timelapse
                     }
                 }
             }
+        }
+
+        // This event handler is invoked whenever the user does a selection in the overview.
+        // It is used to refresh (and match) what rows are selected in the DataGrid. 
+        // However, because user selections can change rapidly (e.g., by dragging within the overview), we throttle the refresh using a timer 
+        private void ClickableImagesGrid_SelectionChanged(object sender, ClickableImagesGridEventArgs e)
+        {
+            DataGridSelectionsTimer.Stop();
+            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
+            {
+                DataGridSelectionsTimer.Start();
+            }
+        }
+
+        // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
+        private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
+        {
+            this.DataGrid.UpdateLayout();
+            List<long> ids = new List<long>();
+            int fileIndex = this.dataHandler.ImageCache.CurrentRow;
+            if (this.IsDisplayingSingleImage())
+            {
+                // Only the current row is  selected in the single images view, so just use that.
+                ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
+                System.Diagnostics.Debug.Print("Tick: Single");
+            }
+            else
+            {
+                // multiple selections are possible in the 
+                System.Diagnostics.Debug.Write ("Tick: Multiple");
+                foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
+                {
+                    System.Diagnostics.Debug.Write(rowindex + "[" + this.dataHandler.FileDatabase.Files[rowindex].ID + "], ");
+                    ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
+                }
+                System.Diagnostics.Debug.WriteLine("");
+            }
+            this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
+            this.DataGrid.UpdateLayout();
+            this.DataGridSelectionsTimer.Stop();
         }
         #endregion
 
