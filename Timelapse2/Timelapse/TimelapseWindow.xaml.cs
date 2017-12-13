@@ -3597,9 +3597,9 @@ namespace Timelapse
         #endregion
 
         #region DataGrid events
-        // When a user selects an item in the datagrid, show its corresponding image.
+        // When a user selects a row in the datagrid, show its corresponding image.
         // Note that because multiple selections are enabled, we show the image of the row that received the mouse-up
-        private void DataGrid_RowMouseUp (object sender, MouseButtonEventArgs e)
+        private void DataGrid_RowSelected (object sender, MouseButtonEventArgs e)
         {
             if (sender != null)
             {
@@ -3646,28 +3646,24 @@ namespace Timelapse
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
-            this.DataGrid.UpdateLayout();
+            //this.DataGrid.UpdateLayout(); // Doesn't seem needed, but just in case...
             List<long> ids = new List<long>();
             int fileIndex = this.dataHandler.ImageCache.CurrentRow;
             if (this.IsDisplayingSingleImage())
             {
                 // Only the current row is  selected in the single images view, so just use that.
                 ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
-                System.Diagnostics.Debug.Print("Tick: Single");
             }
             else
             {
                 // multiple selections are possible in the 
-                System.Diagnostics.Debug.Write ("Tick: Multiple");
                 foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
                 {
-                    System.Diagnostics.Debug.Write(rowindex + "[" + this.dataHandler.FileDatabase.Files[rowindex].ID + "], ");
                     ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
                 }
-                System.Diagnostics.Debug.WriteLine("");
             }
             this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
-            this.DataGrid.UpdateLayout();
+            //this.DataGrid.UpdateLayout(); // Doesn't seem needed, but just in case...
             this.DataGridSelectionsTimer.Stop();
         }
         #endregion

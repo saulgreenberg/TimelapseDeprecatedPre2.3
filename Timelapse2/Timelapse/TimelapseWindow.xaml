@@ -399,7 +399,7 @@
                                     <DataGrid Name="DataGrid" Grid.Row="1" MinHeight="100" MinWidth="100"  DockPanel.Dock="Top" HorizontalAlignment="Stretch" FontSize="12" VerticalScrollBarVisibility="Auto" IsReadOnly="True" SelectionMode="Extended" SelectionUnit="FullRow">
                                         <DataGrid.ItemContainerStyle>
                                             <Style TargetType="DataGridRow">
-                                                <EventSetter Event="MouseLeftButtonUp" Handler="DataGrid_RowMouseUp"/>
+                                                <EventSetter Event="MouseLeftButtonUp" Handler="DataGrid_RowSelected"/>
                                             </Style>
                                         </DataGrid.ItemContainerStyle>
                                     </DataGrid>

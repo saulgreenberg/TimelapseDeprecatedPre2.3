@@ -12,6 +12,29 @@ namespace Timelapse.Util
     // Methods to manipulate a datagrid. 
     public static class DataGridExtensions
     {
+        // Sort the given data grid by the given column number in ascending order
+        public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
+        {
+            // Clear current sort descriptions
+            dataGrid.Items.SortDescriptions.Clear();
+
+            // Add the new sort description
+            DataGridColumn firstColumn = dataGrid.Columns[columnNumber];
+            ListSortDirection sortDirection = ListSortDirection.Ascending;
+            dataGrid.Items.SortDescriptions.Add(new SortDescription(firstColumn.SortMemberPath, sortDirection));
+
+            // Apply sort
+            foreach (DataGridColumn column in dataGrid.Columns)
+            {
+                column.SortDirection = null;
+            }
+            firstColumn.SortDirection = sortDirection;
+
+            // Refresh items to display sort
+            dataGrid.Items.Refresh();
+        }
+
+
         // Select the row with the given ID, discover its rowIndex, and then scroll that row into view
         //public static void SelectAndScrollIntoView(this DataGrid dataGrid, long id, int possibleRowIndex)
         //{
@@ -60,6 +83,7 @@ namespace Timelapse.Util
         // Select the rows with the given IDs, discover its rowIndexes, and then scroll the first row into view
         public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<long> ids, int possibleRowIndex)
         {
+            // If there are no selections, just unselect everything
             if (ids.Count.Equals(0))
             {
                 dataGrid.UnselectAll();
@@ -117,28 +141,6 @@ namespace Timelapse.Util
                 scrollIndex = Math.Max(firstRowIndex - 5, 0);
             }
             dataGrid.ScrollIntoView(dataGrid.Items[scrollIndex]);
-        }
-
-        // Sort the given data grid by the given column number in ascending order
-        public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
-        {
-            // Clear current sort descriptions
-            dataGrid.Items.SortDescriptions.Clear();
-
-            // Add the new sort description
-            DataGridColumn firstColumn = dataGrid.Columns[columnNumber];
-            ListSortDirection sortDirection = ListSortDirection.Ascending;
-            dataGrid.Items.SortDescriptions.Add(new SortDescription(firstColumn.SortMemberPath, sortDirection));
-
-            // Apply sort
-            foreach (DataGridColumn column in dataGrid.Columns)
-            {
-                column.SortDirection = null;
-            }
-            firstColumn.SortDirection = sortDirection;
-
-            // Refresh items to display sort
-            dataGrid.Items.Refresh();
         }
 
         #region Code to enable multiple selections. Modified from https://blog.magnusmontin.net/2013/11/08/how-to-programmatically-select-and-focus-a-row-or-cell-in-a-datagrid-in-wpf/
