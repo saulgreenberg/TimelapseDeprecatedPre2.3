@@ -423,7 +423,6 @@ namespace Timelapse.Controls
                 // If there is no next cell, then we are at the end.
                 if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
                 {
-                  
                    break;
                 }
                 indexCell = nextCell;

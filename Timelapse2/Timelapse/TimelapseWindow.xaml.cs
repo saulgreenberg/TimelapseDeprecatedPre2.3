@@ -3603,17 +3603,16 @@ namespace Timelapse
         {
             if (sender != null)
             {
-                DataGridRow dgr = sender as DataGridRow;
-                if (dgr != null )
+                if (sender is DataGridRow row)
                 {
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                    DataRowView drv = dgr.Item as DataRowView;
-                    long fileID = (long)drv.Row.ItemArray[0];
+                    DataRowView rowView = row.Item as DataRowView;
+                    long fileID = (long)rowView.Row.ItemArray[0];
                     this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
 
                     // The datagrid isn't floating: Switch from the dataGridPane view to the ImagesetPane view
-                    if ( !this.DataGridPane.IsFloating)
+                    if (!this.DataGridPane.IsFloating)
                     {
                         this.ImageSetPane.IsActive = true;
                     }
@@ -3636,34 +3635,34 @@ namespace Timelapse
         // However, because user selections can change rapidly (e.g., by dragging within the overview), we throttle the refresh using a timer 
         private void ClickableImagesGrid_SelectionChanged(object sender, ClickableImagesGridEventArgs e)
         {
-            DataGridSelectionsTimer.Stop();
+            this.DataGridSelectionsTimer.Stop();
             if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
             {
-                DataGridSelectionsTimer.Start();
+                this.DataGridSelectionsTimer.Start();
             }
         }
 
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
-            //this.DataGrid.UpdateLayout(); // Doesn't seem needed, but just in case...
-            List<long> ids = new List<long>();
-            int fileIndex = this.dataHandler.ImageCache.CurrentRow;
+            //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
+            List<Tuple<long,int>> IdRowIndex = new List<Tuple<long, int>>(); 
             if (this.IsDisplayingSingleImage())
             {
                 // Only the current row is  selected in the single images view, so just use that.
-                ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
+                int currentRowIndex = this.dataHandler.ImageCache.CurrentRow;
+                IdRowIndex.Add(new Tuple<long,int>(this.dataHandler.FileDatabase.Files[currentRowIndex].ID, currentRowIndex));
             }
             else
             {
                 // multiple selections are possible in the 
-                foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
+                foreach (int rowIndex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
                 {
-                    ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
+                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[rowIndex].ID, rowIndex));
                 }
             }
-            this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
-            //this.DataGrid.UpdateLayout(); // Doesn't seem needed, but just in case...
+            this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+            //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             this.DataGridSelectionsTimer.Stop();
         }
         #endregion

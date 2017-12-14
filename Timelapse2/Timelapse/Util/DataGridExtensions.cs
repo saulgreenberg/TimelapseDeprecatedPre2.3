@@ -34,118 +34,98 @@ namespace Timelapse.Util
             dataGrid.Items.Refresh();
         }
 
-
-        // Select the row with the given ID, discover its rowIndex, and then scroll that row into view
-        //public static void SelectAndScrollIntoView(this DataGrid dataGrid, long id, int possibleRowIndex)
-        //{
-        //    // Check to see if the ID is at the spot indicated by fileIndex, as there is a reasonable chance that this is the case
-        //    // unless the user has resorted the data grid. If so, it minimizes going through every row.
-        //    int rowIndex = 0;
-        //    DataRowView drv = dataGrid.Items[possibleRowIndex] as DataRowView;
-        //    if ((long)drv.Row.ItemArray[0] == id)
-        //    {
-        //        rowIndex = possibleRowIndex;
-        //    }
-        //    else
-        //    {
-        //        // Nope. So we have to find the file index of the row containing the ID
-        //        for (int i = 0; i < dataGrid.Items.Count; i++)
-        //        {
-        //            drv = dataGrid.Items[i] as DataRowView;
-        //            if ((long)drv.Row.ItemArray[0] == id)
-        //            {
-        //                rowIndex = i;
-        //                break;
-        //            }
-        //        }
-        //    }
-        //    bool indexIncreasing = rowIndex > dataGrid.SelectedIndex;
-        //    //dataGrid.SelectedIndex = rowIndex;  // This used to be for single selection. Replaced by below for multiple selections.
-        //    List<int> selectedIndexes = new List<int>();
-        //    selectedIndexes.Add(rowIndex);
-        //    //selectedIndexes.Add(rowIndex+1);
-
-        //    SelectRowByIndexes(dataGrid, selectedIndexes);
-
-        //    // try to scroll so at least 5 rows are visible beyond the selected row
-        //    int scrollIndex;
-        //    if (indexIncreasing)
-        //    {
-        //        scrollIndex = Math.Min(rowIndex + 5, dataGrid.Items.Count - 1);
-        //    }
-        //    else
-        //    {
-        //        scrollIndex = Math.Max(rowIndex - 5, 0);
-        //    }
-        //    dataGrid.ScrollIntoView(dataGrid.Items[scrollIndex]);
-        //}
-
-        // Select the rows with the given IDs, discover its rowIndexes, and then scroll the first row into view
-        public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<long> ids, int possibleRowIndex)
+        #region Code to enable multiple selections. 
+        // Select the rows with the given IDs, discover its rowIndexes, and then scroll the topmost row into view
+        // This method is provided with a list of tuples, each containing
+        // - a File ID, 
+        // - a possible row index into the data table containing that File ID
+        // We want to select (highlight) each row in the data table matching those IDs. 
+        // Typically, the file record identified by the ID will be found in the datagrid row specified by RowIndex,
+        // which will occur *unless* the the user has resorted the datagrid by clicking a column header 
+        // For efficiency, we check each tuple to see if the ID provided matches the ID in the row specified by rowIndex. If so, 
+        // we can quickly highlight those rows.  Otherwise we need to search the datagrid for each ID
+        public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes, int possibleRowIndex)
         {
             // If there are no selections, just unselect everything
-            if (ids.Count.Equals(0))
+            if (idRowIndexes.Count.Equals(0))
             {
                 dataGrid.UnselectAll();
                 return;
             }
+           
+            int topmostRowIndex = int.MaxValue; // Keeps track of the topmost row index, as this is the one we will want to scroll too
+            DataRowView currentRow;                   // The current row being examined
+            List<int> rowIndexesToSelect = new List<int>(); 
+            long currentID = 0;        
+            int currentRowIndexThatMayContainID = 0;
 
-            // Check to see if the ID is at the spot indicated by fileIndex, as there is a reasonable chance that this is the case
-            // unless the user has resorted the data grid. If so, it minimizes going through every row.
-            DataRowView drv;
-            List<int> rowIndexes = new List<int>();
-
-            foreach (long id in ids)
+            foreach (Tuple<long, int> idRowIndex in idRowIndexes)
             {
-                //drv = dataGrid.Items[possibleRowIndex] as DataRowView;
-                //if ((long)drv.Row.ItemArray[0] == ids[0])
-                //{
-                //    rowIndex = possibleRowIndex;
-                //}
-                //else
-                //{
-                // Nope. So we have to find the file index of the row containing the ID
-                for (int i = 0; i < dataGrid.Items.Count; i++)
+                currentID = (int)idRowIndex.Item1;
+                currentRowIndexThatMayContainID = (int)idRowIndex.Item2;
+
+                // Get the row indicated by rowIndex (after first checking that such a row exists)
+                if (dataGrid.Items.Count < currentRowIndexThatMayContainID)
                 {
-                    drv = dataGrid.Items[i] as DataRowView;
-                    if ((long)drv.Row.ItemArray[0] == id)
+                    System.Diagnostics.Debug.Print("row index " + currentRowIndexThatMayContainID + " is not in array sized " + dataGrid.Items.Count);
+                    return;
+                }
+                currentRow = dataGrid.Items[currentRowIndexThatMayContainID] as DataRowView;
+
+                if ((long)currentRow.Row.ItemArray[0] == currentID)
+                {
+                    // The ID is in the row indicated by rowIndex. Add that rowIndex as one of the rows we should select
+                    rowIndexesToSelect.Add(currentRowIndexThatMayContainID);
+                    if (topmostRowIndex > currentRowIndexThatMayContainID)
                     {
-                        rowIndexes.Add(i);
-                        break;
+                        topmostRowIndex = currentRowIndexThatMayContainID;
                     }
                 }
-                //}
+                else
+                {
+                    // The ID is not in the row indicated by rowIndex. Search the datagrid for that ID, and then add it as one of the rows we should select
+                    bool idFound = false;
+                    for (int index = 0; index < dataGrid.Items.Count; index++)
+                    {
+                        currentRow = dataGrid.Items[index] as DataRowView;
+                        if ((long)currentRow.Row.ItemArray[0] == currentID)
+                        {
+                            idFound = true;
+                            rowIndexesToSelect.Add(index);
+                            if (topmostRowIndex > index)
+                            {
+                                topmostRowIndex = index;
+                            }
+                            break;
+                        }
+                    }
+                    if (idFound == false)
+                    {
+                        // The id should always be found. But just in case  we ignore IDS that aren't found
+                        System.Diagnostics.Debug.Print("could not find ID: " + currentID + " in array sized " + dataGrid.Items.Count);
+                    }
+                }
             }
-            if (rowIndexes.Count != ids.Count)
-            {
-                System.Diagnostics.Debug.Print("RowIndexes and ID counts don't match");
-                return;
-            }
-            int firstRowIndex = rowIndexes[0];
-            bool indexIncreasing = firstRowIndex > dataGrid.SelectedIndex;
-            //dataGrid.SelectedIndex = rowIndex;  // This used to be for single selection. Replaced by below for multiple selections.
-            //List<int> selectedIndexes = new List<int>();
-            //selectedIndexes.Add(rowIndex);
-            //selectedIndexes.Add(rowIndex+1);
 
-            SelectRowByIndexes(dataGrid, rowIndexes);
+            #if DeBUG
+            // We don't expect these to fail, but just in case
+            if (rowIndexesToSelect.Count != IdRowIndexes.Count || topmostRowIndex == int.MaxValue)
+            {
+                System.Diagnostics.Debug.Print("RowIndexes and ID counts don't match: " + rowIndexesToSelect.Count + ", " + IdRowIndexes.Count);
+            }
+            #endif
 
-            // try to scroll so at least 5 rows are visible beyond the selected row
-            int scrollIndex;
-            if (indexIncreasing)
-            {
-                scrollIndex = Math.Min(firstRowIndex + 5, dataGrid.Items.Count - 1);
-            }
-            else
-            {
-                scrollIndex = Math.Max(firstRowIndex - 5, 0);
-            }
+            // Select the items (which highlights those rows)
+            bool indexIncreasing = topmostRowIndex > dataGrid.SelectedIndex;
+            SelectRowByIndexes(dataGrid, rowIndexesToSelect);
+
+            // Depending on our selection direction, we scroll to expose the last or first 5 rows are visible beyond the selected row
+            int scrollIndex = indexIncreasing ? Math.Min(topmostRowIndex + 5, dataGrid.Items.Count - 1) : Math.Max(topmostRowIndex - 5, 0);
             dataGrid.ScrollIntoView(dataGrid.Items[scrollIndex]);
         }
 
-        #region Code to enable multiple selections. Modified from https://blog.magnusmontin.net/2013/11/08/how-to-programmatically-select-and-focus-a-row-or-cell-in-a-datagrid-in-wpf/
-
         // Select the rows indicated by the (perhaps multple) row indexes
+        // Modified from https://blog.magnusmontin.net/2013/11/08/how-to-programmatically-select-and-focus-a-row-or-cell-in-a-datagrid-in-wpf/
         private static void SelectRowByIndexes(DataGrid dataGrid, List<int> rowIndexes)
         {
             if (!dataGrid.SelectionUnit.Equals(DataGridSelectionUnit.FullRow) || !dataGrid.SelectionMode.Equals(DataGridSelectionMode.Extended))
@@ -180,12 +160,12 @@ namespace Timelapse.Util
             foreach (int rowIndex in rowIndexes)
             {
                 if (rowIndex < 0 || rowIndex > (dataGrid.Items.Count - 1))
-                { 
+                {
                     // This shouldn't happen, but...
                     throw new ArgumentException(string.Format("{0} is an invalid row index.", rowIndex));
                 }
 
-                object item = dataGrid.Items[rowIndex]; 
+                object item = dataGrid.Items[rowIndex];
                 dataGrid.SelectedItems.Add(item);
 
                 DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
@@ -198,7 +178,9 @@ namespace Timelapse.Util
                 {
                     DataGridCell cell = GetCell(dataGrid, row, 0);
                     if (cell != null)
+                    { 
                         cell.Focus();
+                    }
                 }
             }
         }
@@ -240,12 +222,16 @@ namespace Timelapse.Util
             {
                 DependencyObject child = VisualTreeHelper.GetChild(obj, i);
                 if (child != null && child is T)
+                { 
                     return (T)child;
+                }
                 else
                 {
                     T childOfChild = FindVisualChild<T>(child);
                     if (childOfChild != null)
+                    { 
                         return childOfChild;
+                    }
                 }
             }
             return null;
