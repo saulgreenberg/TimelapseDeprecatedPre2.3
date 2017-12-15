@@ -460,6 +460,8 @@ namespace Timelapse
                 int filesProcessed = 0;
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
+                    // Note that calling GetOrCreateFile inserts the the creation date as the Date/Time. 
+                    // We should ensure that a later call examines the bitmap metadata, and - if that metadata date exists - over-writes the creation date  
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out ImageRow file))
                     {
                         // the database already has an entry for this file so skip it
@@ -531,10 +533,10 @@ namespace Timelapse
                                     }
                                 }
                             }
-                            // see if the datetime can be updated from the metadata
-                            // SAULXXX Note: This fails on video reading when we try to read the dark threshold. Check into it....
-                            file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                         }
+                        // Try to update the datetime (which is currently the creation date) with the metadata date time tthe image was taken instead
+                        // SAULXXX Note: This fails on video reading when we try to read the dark threshold. Check into it....
+                        file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                     }
                     catch (Exception exception)
                     {
