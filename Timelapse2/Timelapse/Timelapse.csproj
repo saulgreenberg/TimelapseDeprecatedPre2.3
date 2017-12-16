@@ -226,6 +226,9 @@
     <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
       <DependentUpon>DialogsHideOrShow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\FindMissingImageFolder.xaml.cs">
+      <DependentUpon>FindMissingImageFolder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
     </Compile>
@@ -354,6 +357,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\EditLog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\FindMissingImageFolder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -624,6 +631,9 @@
   <ItemGroup>
     <Resource Include="Icons\MediaControl-RowDown.png" />
     <Resource Include="Icons\MediaControl-RowUp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ImageFolder_50.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets')" />

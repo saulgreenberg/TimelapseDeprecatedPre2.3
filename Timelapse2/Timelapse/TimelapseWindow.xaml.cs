@@ -344,7 +344,7 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(this, fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.dataHandler = new DataEntryHandler(fileDatabase);
@@ -729,7 +729,7 @@ namespace Timelapse
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
         private void OnFolderLoadingComplete(bool filesJustAdded)
-        {        
+        {   
             // Show the image, hide the load button, and make the feedback panels visible
             this.ImageSetPane.IsActive = true;
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
