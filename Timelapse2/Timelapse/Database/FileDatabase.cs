@@ -87,41 +87,18 @@ namespace Timelapse.Database
             {
                 fileDatabase.GetMarkers();
             }
-
-
             fileDatabase.CustomSelection = new CustomSelection(fileDatabase.Controls, customSelectionTermCombiningOperator);
             fileDatabase.OrderFilesByDateTime = orderFilesByDate;
             fileDatabase.PopulateDataLabelMaps();
-            CheckAndCorrectForMissingFolders(window, fileDatabase);
             return fileDatabase;
         }
 
-        // SAULXXX TESTTEST TO TRY TO FIND FOLDERS THAT DONT EXIST ANYMORE
-        public static void CheckAndCorrectForMissingFolders(Window window, FileDatabase fileDatabase)
+        public List<object> GetDistinctValuesInColumn(string table, string columnName)
         {
-            List<object> relativePaths = fileDatabase.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
-            foreach (string relativePath in relativePaths)
-            {
-                string path = Path.Combine(fileDatabase.FolderPath, relativePath);
-                if (!Directory.Exists(path))
-                {
-                    Dialog.FindMissingImageFolder findMissingImageFolderDialog;
-
-                    findMissingImageFolderDialog = new Dialog.FindMissingImageFolder(window, fileDatabase.FolderPath, relativePath);
-                    bool? result = findMissingImageFolderDialog.ShowDialog();
-                    if (result == true)
-                    {
-                        ColumnTuplesWithWhere relativePathToUpdate = new ColumnTuplesWithWhere();
-                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, findMissingImageFolderDialog.NewFolderName);
-                        ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
-                        fileDatabase.Database.Update(Constant.DatabaseTable.FileData, columnToUpdateWithWhere);
-                    }
-                }
-            }
+            return this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
         }
-        // END
 
-        /// <summary>Gets the number of files currently in the image table.</summary>
+        /// <summary>Gets the number of files currently in the file table.</summary>
         public int CurrentlySelectedFileCount
         {
             get { return this.Files.RowCount; }
@@ -902,10 +879,19 @@ namespace Timelapse.Database
         }
 
         // Given a list of column/value pairs (the string,object) and the FILE name indicating a row, update it
-        public void UpdateFiles(List<ColumnTuplesWithWhere> imagesToUpdate)
+        public void UpdateFiles(List<ColumnTuplesWithWhere> filesToUpdate)
         {
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+            this.Database.Update(Constant.DatabaseTable.FileData, filesToUpdate);
+        }
+
+        public void UpdateFiles(ColumnTuplesWithWhere filesToUpdate)
+        {
+            List<ColumnTuplesWithWhere> imagesToUpdateList = new List<ColumnTuplesWithWhere>
+            {
+                filesToUpdate
+            };
+            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdateList);
         }
 
         // Given a range of selected files, update the field identifed by dataLabel with the value in valueSource

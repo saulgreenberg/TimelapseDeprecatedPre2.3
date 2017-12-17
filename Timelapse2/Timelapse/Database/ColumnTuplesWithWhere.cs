@@ -28,7 +28,7 @@ namespace Timelapse.Database
 
         public ColumnTuplesWithWhere(ColumnTuple column, string field)
         {
-            this.SetWhere (column, field);
+            this.SetWhere(column, field);
             this.Columns = new List<ColumnTuple>
             {
                 column

@@ -16,10 +16,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"
                            
-                            Title="Locate the Missing Image Folder."
+                            Title="An Image Folder is Missing"
                             Problem="Timelapse could not locate an image folder."
                             Reason="You may have renamed the folder, or moved its images to another folder."
                             Solution="Locate the renamed folder that contains your images."
@@ -30,7 +31,13 @@
         <Rectangle Fill="#FF868686" Height="1" Grid.Row="1"></Rectangle>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10,5,0,0">
             <TextBlock HorizontalAlignment="Left" Margin="0,5,10,0"  VerticalAlignment="Top" TextWrapping="Wrap" FontSize="12" >
-				<Run FontWeight="Bold" Text="Locate Folder: " /> 
+				<Run FontWeight="Bold" Text="Original Folder Name:       " />
+                <Run Name="MissingFolderNameRun" FontWeight="Normal" Text="---" />
+            </TextBlock>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="10,5,0,0">
+            <TextBlock HorizontalAlignment="Left" Margin="0,5,10,0"  VerticalAlignment="Top" TextWrapping="Wrap" FontSize="12" >
+				<Run FontWeight="Bold" Text="Locate Renamed Folder: " /> 
             </TextBlock>
             <TextBox Name="TextBoxNewFolderName" Width="400" VerticalAlignment="Center"/>
             <Button Name="LocateFolderButton" Background="White" Margin="5,0,0,0" Click="LocateFolderButton_Click">
@@ -40,9 +47,9 @@
             </Button>
         </StackPanel>
 
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-            <Button Name="OkButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
+            <Button Name="OkButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
         </StackPanel>
     </Grid>
 </Window>
