@@ -344,7 +344,10 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(this, fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+
+            // Check to see if there are any missing folders as specified by the relative paths. For thos missing, as the user to try to locate those folders.
+            this.CheckAndCorrectForMissingFolders(fileDatabase);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.dataHandler = new DataEntryHandler(fileDatabase);
@@ -366,9 +369,59 @@ namespace Timelapse
             { 
                 this.OnFolderLoadingComplete(false);
             }
-
             return true;
         }
+
+        // Get all the distinct relative folder paths and check to see if the folder exists.
+        // If not, ask the user to try to locate each missing folder.
+        public void CheckAndCorrectForMissingFolders(FileDatabase fileDatabase)
+        {
+            List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
+            List<string> missingRelativePaths = new List<string>(); 
+            foreach (string relativePath in allRelativePaths)
+            {
+                string path = Path.Combine(fileDatabase.FolderPath, relativePath);
+                if (!Directory.Exists(path))
+                {
+                    missingRelativePaths.Add(relativePath);
+                }
+            }
+
+            // If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
+            if (missingRelativePaths?.Count > 1)
+            {
+                MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", this, MessageBoxButton.OKCancel);
+                messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
+                foreach(string relativePath in missingRelativePaths)
+                {
+                    messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
+                }
+                messageBox.Message.Solution = "Selecting OK will raise additional dialog boxes, each asking you to locate a particular missing folder" + Environment.NewLine;
+                messageBox.Message.Solution += "Selecting Cancel will still display the image's data, along with a 'missing' image placeholder";
+                messageBox.Message.Icon = MessageBoxImage.Question;
+                if (messageBox.ShowDialog() == false)
+                {
+                    return;
+                }
+            }
+
+            // Raise a dialog box for each image asking the user to locate the missing folder
+            foreach (string relativePath in missingRelativePaths)
+            {
+                Dialog.FindMissingImageFolder findMissingImageFolderDialog;
+                findMissingImageFolderDialog = new Dialog.FindMissingImageFolder(this, fileDatabase.FolderPath, relativePath);
+                bool? result = findMissingImageFolderDialog.ShowDialog();
+                if (result == true)
+                {
+                    ColumnTuplesWithWhere relativePathToUpdate = new ColumnTuplesWithWhere();
+                    ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, findMissingImageFolderDialog.NewFolderName);
+                    ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
+                    fileDatabase.UpdateFiles(columnToUpdateWithWhere);
+                }
+            }
+        }
+        // END
+
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoadAsync(IEnumerable<string> imageFolderPaths, out BackgroundWorker externallyVisibleWorker)
@@ -729,7 +782,7 @@ namespace Timelapse
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
         private void OnFolderLoadingComplete(bool filesJustAdded)
-        {        
+        {   
             // Show the image, hide the load button, and make the feedback panels visible
             this.ImageSetPane.IsActive = true;
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);

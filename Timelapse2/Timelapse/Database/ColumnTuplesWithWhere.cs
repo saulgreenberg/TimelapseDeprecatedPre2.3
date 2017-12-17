@@ -26,9 +26,23 @@ namespace Timelapse.Database
             this.SetWhere(id);
         }
 
+        public ColumnTuplesWithWhere(ColumnTuple column, string field)
+        {
+            this.SetWhere(column, field);
+            this.Columns = new List<ColumnTuple>
+            {
+                column
+            };
+        }
+
         public void SetWhere(long id)
         {
             this.Where = Constant.DatabaseColumn.ID + " = " + id.ToString();
+        }
+
+        public void SetWhere(ColumnTuple columnTuple, string field)
+        {
+            this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(field));
         }
 
         public void SetWhere(string folder, string relativePath, string file)

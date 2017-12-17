@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Dialog;
 using Timelapse.Images;
@@ -59,7 +60,7 @@ namespace Timelapse.Database
             this.OrderFilesByDateTime = false;
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static FileDatabase CreateOrOpen(Window window, string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -86,14 +87,18 @@ namespace Timelapse.Database
             {
                 fileDatabase.GetMarkers();
             }
-
             fileDatabase.CustomSelection = new CustomSelection(fileDatabase.Controls, customSelectionTermCombiningOperator);
             fileDatabase.OrderFilesByDateTime = orderFilesByDate;
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
         }
 
-        /// <summary>Gets the number of files currently in the image table.</summary>
+        public List<object> GetDistinctValuesInColumn(string table, string columnName)
+        {
+            return this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
+        }
+
+        /// <summary>Gets the number of files currently in the file table.</summary>
         public int CurrentlySelectedFileCount
         {
             get { return this.Files.RowCount; }
@@ -874,10 +879,19 @@ namespace Timelapse.Database
         }
 
         // Given a list of column/value pairs (the string,object) and the FILE name indicating a row, update it
-        public void UpdateFiles(List<ColumnTuplesWithWhere> imagesToUpdate)
+        public void UpdateFiles(List<ColumnTuplesWithWhere> filesToUpdate)
         {
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+            this.Database.Update(Constant.DatabaseTable.FileData, filesToUpdate);
+        }
+
+        public void UpdateFiles(ColumnTuplesWithWhere filesToUpdate)
+        {
+            List<ColumnTuplesWithWhere> imagesToUpdateList = new List<ColumnTuplesWithWhere>
+            {
+                filesToUpdate
+            };
+            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdateList);
         }
 
         // Given a range of selected files, update the field identifed by dataLabel with the value in valueSource
