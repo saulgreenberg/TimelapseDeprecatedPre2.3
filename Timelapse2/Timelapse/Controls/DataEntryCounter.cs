@@ -92,10 +92,10 @@ namespace Timelapse.Controls
 
         public override void SetContentAndTooltip(string value)
         {
-            // This if clause should always be true, but just in case...
-            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            // If its null we show the ellipses, otherwise the number...
+            if (value == null && this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
             {
-                textBox.Text = value ?? Constant.Unicode.Ellipsis;
+                textBox.Text = Constant.Unicode.Ellipsis;
             }
             else
             {
