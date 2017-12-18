@@ -92,14 +92,24 @@ namespace Timelapse.Controls
 
         public override void SetContentAndTooltip(string value)
         {
+            WatermarkTextBox textBox = (WatermarkTextBox) this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
             // If its null we show the ellipses, otherwise the number...
-            if (value == null && this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            if (value == null)
             {
-                textBox.Text = Constant.Unicode.Ellipsis;
+                if (textBox != null)
+                {
+                    textBox.Text = Constant.Unicode.Ellipsis;
+                    System.Diagnostics.Debug.Print(this.Label + " ...");
+                }
             }
             else
             {
+                if (textBox != null)
+                {
+                    textBox.Text = value;
+                }
                 this.ContentControl.Text = value;
+                System.Diagnostics.Debug.Print(this.Label + " " + value.ToString());
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for all selected images";
         }
