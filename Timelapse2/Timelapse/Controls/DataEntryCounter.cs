@@ -92,24 +92,59 @@ namespace Timelapse.Controls
 
         public override void SetContentAndTooltip(string value)
         {
-            WatermarkTextBox textBox = (WatermarkTextBox) this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
-            // If its null we show the ellipses, otherwise the number...
+            // The IntegerUpDown control only allows numbers. As we want to show both ellipsis and blanks, we have to coerce it to show those.
+            // SAULXX: Should really modify the intupdown to allow ellipsis and blanks instead of these hacks.
+            // Note that null values are provided as an indicator that an ellipsis should be shown
+
+            // Access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
+            WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
+
+            // A null value indicates we should show the ellipsis symbol in the textbox. 
+            // Note that this will not work if we have a null value and a null textbox, but I don't think that case will arise as
+            // null textboxes would ever only happen on startup, which is never in an overview mode.
             if (value == null)
             {
                 if (textBox != null)
                 {
                     textBox.Text = Constant.Unicode.Ellipsis;
-                    System.Diagnostics.Debug.Print(this.Label + " ...");
+                    // System.Diagnostics.Debug.Print("1 Value null, Textbox1 not null: Ellipsis, ");
                 }
+                // We really need an else statement to somehow coerce it to put in an ellipsis later, 
+                // but I can't do it without changing the IntegerUpDown class
+                // else
+                // {
+                //   System.Diagnostics.Debug.Print("1 Value null, Textbox1 null ");
+                // }
             }
             else
             {
-                if (textBox != null)
+                value = value.Trim();
+                // The value is non-null, so its either a number or blank.
+                // If its a number, just set it to that number
+                if (int.TryParse(value, out int intvalue))
                 {
-                    textBox.Text = value;
+                    if (textBox != null)
+                    {
+                        textBox.Text = intvalue.ToString();
+                        // System.Diagnostics.Debug.Print("Intvalue, textbox not null, value is '" + value + "'");
+                    }
+                    this.ContentControl.Value = intvalue;
+                    // System.Diagnostics.Debug.Print("Intvalue: " + value);
                 }
-                this.ContentControl.Text = value;
-                System.Diagnostics.Debug.Print(this.Label + " " + value.ToString());
+                else
+                {
+                    // If its not a number, blank out the text
+                    this.ContentControl.Text = String.Empty;
+                    if (textBox != null)
+                    {
+                        textBox.Text = value;
+                        // System.Diagnostics.Debug.Print("2 Value not null and not int, textbox not null, value is '" + value + "'");
+                    }
+                    // else
+                    // {
+                    //    System.Diagnostics.Debug.Print("2 Value not null and not int, textbox is null, value is '" + value + "'");
+                    // }
+                }
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for all selected images";
         }
