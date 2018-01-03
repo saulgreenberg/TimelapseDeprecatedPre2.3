@@ -509,6 +509,7 @@ namespace Timelapse.Controls
 
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)integerUpDown.Tag;
+
             control.SetContentAndTooltip(integerUpDown.Value.ToString());
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
@@ -639,6 +640,7 @@ namespace Timelapse.Controls
             return false;
         }
 
+        // If the is a common (trimmed) data value for the provided data label in the given fileIDs, return that value, otherwise null.
         public string GetValueDisplayStringCommonToFileIds(string dataLabel)
         {
             List<int> fileIds = this.ClickableImagesGrid.GetSelected();
@@ -659,6 +661,7 @@ namespace Timelapse.Controls
                 // System.Diagnostics.Debug.Print("Success: " + dataLabel + ": " + fileIds[0]);
 
                 string contents = imageRow.GetValueDisplayString(dataLabel);
+                contents = contents.Trim(); 
 
                 // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
                 // then return that as they all have a common value. Otherwise return an empty string.
@@ -666,6 +669,7 @@ namespace Timelapse.Controls
                 {
                     imageRow = this.FileDatabase.Files[fileIds[i]];
                     string new_contents = imageRow.GetValueDisplayString(dataLabel);
+                    new_contents = new_contents.Trim();
                     if (new_contents != contents)
                     {
                         // We have a mismatch
