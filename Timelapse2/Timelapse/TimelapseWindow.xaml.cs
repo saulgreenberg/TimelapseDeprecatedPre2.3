@@ -1473,9 +1473,14 @@ namespace Timelapse
                 return;
             }
 
-            this.timerFileNavigator.Stop(); // Restart the timer 
-            this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders; // Throttle values may have changed, so we reset it just in case.
-            this.timerFileNavigator.Start();
+            // Stop the timer, but restart it if we are dragging
+            this.timerFileNavigator.Stop(); 
+            if (this.state.FileNavigatorSliderDragging == true)
+            {
+                this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders; // Throttle values may have changed, so we reset it just in case.
+                this.timerFileNavigator.Start();
+            }
+
             DateTime utcNow = DateTime.UtcNow;
             if ((this.state.FileNavigatorSliderDragging == false) || (utcNow - this.state.MostRecentDragEvent > this.timerFileNavigator.Interval))
             {
@@ -1519,8 +1524,6 @@ namespace Timelapse
 
         #region DataGridPane activation
         // Update the datagrid whenever it is made visible. 
-        // SAULXXX: Note that it currently shows the selected item on the single view, but not the selected item(s) on the multiple grid view. This should be fixed.
-        // SAULXXX: However, to do this properly we need to somehow know that we were in the clickable grid view before the datagrid was activated. Alternately, we need to save the selected row index(es) somewhere
         private void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
@@ -1582,7 +1585,7 @@ namespace Timelapse
             this.ShowFile(fileIndex, false);
         }
 
-        // Show the image in the specified row
+        // Show the image in the specified row, but only if its a different image.
         private void ShowFile(int fileIndex, bool isInSliderNavigation)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
@@ -1596,6 +1599,13 @@ namespace Timelapse
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
                 return;
             }
+
+            // If we are already showing the desired file, then abort as there is no need to redisplay it.
+            if (this.dataHandler.ImageCache.CurrentRow == fileIndex)
+            {
+                return;
+            }
+
 
             // Reset the Clickable Images Grid to the current image
             // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE

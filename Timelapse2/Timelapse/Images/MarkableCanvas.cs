@@ -1105,6 +1105,11 @@ namespace Timelapse.Images
         #region Window shuffling
         public void SwitchToImageView()
         {
+            // No need to switch as we are already in it
+            if (this.IsClickableImagesGridVisible == false)
+            {
+                return;
+             }
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
@@ -1116,6 +1121,11 @@ namespace Timelapse.Images
         }
         public void SwitchToVideoView()
         {
+            // No need to switch as we are already in it
+            if (this.IsClickableImagesGridVisible == false)
+            {
+                return;
+            }
             this.SwitchedToSingleImageViewEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
@@ -1127,13 +1137,15 @@ namespace Timelapse.Images
 
         public void SwitchToClickableGridView()
         {
-            if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
+            // No need to switch as we are already in it
+            if (this.IsClickableImagesGridVisible == true)
             {
                 return;
             }
             this.SwitchedToClickableImagesGridEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
+            // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
+            // this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;

@@ -243,7 +243,9 @@ namespace Timelapse.Controls
                 this.cachedImageList = this.clickableImagesList;
                 this.cachedImagePathsStartIndex = this.FileTableStartIndex;
             }
-            this.EnableOrDisableControlsAsNeeded();
+            // It doesn't appear that this is needed here, as its invoked elsewhere. 
+            // Currently commented out to avoid redundant updating of the controls
+            // this.EnableOrDisableControlsAsNeeded();
             Mouse.OverrideCursor = null;
 
             // Return false if we can't even fit in a single row
@@ -266,6 +268,7 @@ namespace Timelapse.Controls
             ClickableImage ci;
             this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(Grid));
             RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+            this.cellWithLastMouseOver = currentCell;
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
             {
@@ -295,9 +298,10 @@ namespace Timelapse.Controls
                 {
                     this.SelectNone();
                     this.cellChosenOnMouseDownSelectionState = ci.IsSelected;
-                    ci.IsSelected = true;
+                    ci.IsSelected = true; 
                 }
             }
+
             // If this is a double click, raise the Double click event, e.g., so that the calling app can navigate to that image.
             if (e.ClickCount == 2)
             {
@@ -345,26 +349,28 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = false;
                 return;
             }
+            // I don't think this if clause is needed anymore, as a similar selection is now handled (I think) on the mouse down and mouse move
+            // However, I kept it around just in case. while it doesn't hurt to enable it, it will update all the data fields unecessarily.
 
             // If the selection is only a single cell, clear all cells and just change the elected cell's state
-            RowColumn currentlySelectedCell = GetCellFromPoint(Mouse.GetPosition(Grid));
-            if (Equals(this.cellChosenOnMouseDown, currentlySelectedCell))
-            {
-                ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
-                if (ci != null)
-                {
-                    this.SelectNone(); // Clear the selections
-                    ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
-                    ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
-                    this.OnSelectionChanged(selectionEventArgs);
-                }
-            }
-            else
-            { 
-                // More than one cell was selected
-                this.SelectFromInitialCellTo(currentlySelectedCell);
-            }
-            this.EnableOrDisableControlsAsNeeded();
+            // RowColumn currentlySelectedCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+            // if (Equals(this.cellChosenOnMouseDown, currentlySelectedCell))
+            // {
+            //    ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
+            //    if (ci != null)
+            //    {
+            //        this.SelectNone(); // Clear the selections
+            //        ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
+            //        ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
+            //        this.OnSelectionChanged(selectionEventArgs);
+            //    }
+            // }
+            // else
+            // {
+            //    // More than one cell was selected
+            //    this.SelectFromInitialCellTo(currentlySelectedCell);
+            // }
+            // this.EnableOrDisableControlsAsNeeded();
         }
         #endregion
 

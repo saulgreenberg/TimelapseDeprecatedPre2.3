@@ -72,7 +72,6 @@ namespace Timelapse.Database
 
         public void Insert(string tableName, List<List<ColumnTuple>> insertionStatements)
         {
-            Utilities.PrintMethodName();
             // Construct each individual query in the form 
             // INSERT INTO table_name
             //      colname1, colname12, ... colnameN VALUES
@@ -317,7 +316,6 @@ namespace Timelapse.Database
         /// <param name="columnsToUpdate">The column names and their new values.</param>
         public void Update(string tableName, ColumnTuplesWithWhere columnsToUpdate)
         {
-            Utilities.PrintMethodName();
             // UPDATE table_name SET 
             // colname1 = value1, 
             // colname2 = value2,

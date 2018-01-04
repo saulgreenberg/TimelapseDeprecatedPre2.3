@@ -90,13 +90,15 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {
-            // The IntegerUpDown control only allows numbers. As we want to show both ellipsis and blanks, we have to coerce it to show those.
-            // SAULXX: Should really modify the intupdown to allow ellipsis and blanks instead of these hacks.
-            // Note that null values are provided as an indicator that an ellipsis should be shown
+            // This is a hacky approach, but it works.
+            // To explain, the IntegerUpDown control supplied with the WPFToolkit only allows numbers. 
+            // As we want it to also show both ellipsis and blanks, we have to coerce it to show those.
+            // Ideally, we should modify the IntegerUpDown control to allow ellipsis and blanks instead of these hacks.
 
-            // Access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
+            // Hack: Access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
             WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
 
             // A null value indicates we should show the ellipsis symbol in the textbox. 
@@ -109,7 +111,7 @@ namespace Timelapse.Controls
                     textBox.Text = Constant.Unicode.Ellipsis;
                     // System.Diagnostics.Debug.Print("1 Value null, Textbox1 not null: Ellipsis, ");
                 }
-                // We really need an else statement to somehow coerce it to put in an ellipsis later, 
+                // We really need an else statement to somehow coerce it to put in an ellipsis later (if its null), 
                 // but I can't do it without changing the IntegerUpDown class
                 // else
                 // {

@@ -304,20 +304,42 @@ namespace Timelapse.Util
         public static void PrintFailure(string message)
         {
             Debug.Print("PrintFailure: " + message);
-            Debug.Fail(message);
         }
+
+        [Conditional("TRACE")]
+        // Option to print various failure messagesfor debugging
+        public static void PrintMethodName(int level)
+        {
+            PrintMethodName(String.Empty, level);
+        }
+        [Conditional("TRACE")]
+        public static void PrintMethodName(string message)
+        {
+            PrintMethodName(message, 1);
+        }
+
         [Conditional("TRACE")]
         [MethodImpl(MethodImplOptions.NoInlining)]
         // Insert this call into the beginning oa method name with the TRACE flag set in properties
         // Helpful to see the order and number of calls on a method.
-        // The optional string can be anything you want included in the output.
-  
-        public static void PrintMethodName(string description = "")
+        // The optional message string can be anything you want included in the output.
+        // The optional level is the depth of the stack that should be printed 
+        // (1 just prints the current method name; 2 adds the caller name of that method, etc.)
+        public static void PrintMethodName(string description = "", int level = 1)
         {
             StackTrace st = new StackTrace(true);
-            StackFrame sf = st.GetFrame(1);
-            string message = Path.GetFileName(sf.GetFileName()) + ": ";
-            message += sf.GetMethod().Name;
+            StackFrame sf;
+            string message = String.Empty;
+            for (int i = 1; i <= level; i++)
+            { 
+                sf = st.GetFrame(i);
+                message += Path.GetFileName(sf.GetFileName()) + ": ";
+                message += sf.GetMethod().Name;
+                if (i < level)
+                {
+                    message += " <- ";
+                }
+            }
             message += ": " + description;
             Debug.Print(message);
         }

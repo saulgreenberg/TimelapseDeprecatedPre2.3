@@ -509,7 +509,6 @@ namespace Timelapse.Controls
 
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)integerUpDown.Tag;
-
             control.SetContentAndTooltip(integerUpDown.Value.ToString());
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
