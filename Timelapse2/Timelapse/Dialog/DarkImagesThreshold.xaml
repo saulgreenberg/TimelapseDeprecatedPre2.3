@@ -8,8 +8,8 @@
         mc:Ignorable="d"
         Title="Classify dark images and videos"
         Loaded="Window_Loaded"
-        MinHeight="856" MinWidth="768"
-		Height="856" Width="768"
+        MinHeight="700" MinWidth="768"
+		Height="768" Width="768"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" PreviewKeyDown="Window_PreviewKeyDown">
