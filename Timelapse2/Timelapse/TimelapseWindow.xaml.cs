@@ -26,6 +26,7 @@ using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 using Xceed.Wpf.AvalonDock.Layout.Serialization;
 using System.Windows.Media.Animation;
 using System.Data;
+using Xceed.Wpf.AvalonDock.Layout;
 
 namespace Timelapse
 {
@@ -146,12 +147,10 @@ namespace Timelapse
             //this.DockingManager_RestoreLayout(this.state.AvalonDockSavedLayout);
             // Avalon Dock: Initially hide the Date Entry Control Panel
             // For some reason, it doesn't hide it if visibility is set to false in XAML
-            if (File.Exists(this.GetConfigFilePath("LastUsed")))
-            {
-                AvalonDock_LoadLayout("LastUsed");
-            }
-
-
+            //if (File.Exists(this.GetConfigFilePath("LastUsed")))
+            //{
+            //    AvalonDock_LoadLayout("LastUsed");
+            //}
             this.DataEntryControlPanel.IsVisible = false;
         }
 
@@ -1532,48 +1531,21 @@ namespace Timelapse
         // Update the datagrid whenever it is made visible. 
         private void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
+            this.DataGridPane_IsActiveChanged(false);
+        }
+        private void DataGridPane_IsActiveChanged(bool forceUpdate)
+        {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 this.DataGrid.ItemsSource = null;
                 return;
             }
-
-            if (this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
+            
+            if (forceUpdate || this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
             {
                 this.dataHandler.FileDatabase.BindToDataGrid(this.DataGrid, null);
                 DataGridSelectionsTimer.Stop();
-                if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
-                {
-                    DataGridSelectionsTimer.Start();
-                }
-                //if ((this.dataHandler.ImageCache != null) && (this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow))
-                //{
-                //    // both UpdateLayout() calls are needed to get the data grid to highlight the selected row
-                //    // This seems related to initial population as the selection highlight updates without calling UpdateLayout() on subsequent calls
-                //    // to SelectAndScrollIntoView().
-                //    this.DataGrid.UpdateLayout();
-                //    long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
-                //    List<long> ids = new List<long>();
-                //    int fileIndex = this.dataHandler.ImageCache.CurrentRow;
-                //    if (this.IsDisplayingSingleImage())
-                //    {
-                //        ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
-                //        System.Diagnostics.Debug.Print("bar single");
-                //    }
-                //    else
-                //    {
-                //        foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
-                //        {
-                //            ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
-                //            System.Diagnostics.Debug.Print("bar multiple");
-                //        }
-                //        //this.DataGrid.SelectAndScrollIntoView(ids, fileIndex));
-                //    }
-                //    //ids.Add(id);
-
-                //    this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
-                //    this.DataGrid.UpdateLayout();
-            //}
+                DataGridSelectionsTimer.Start();
             }
         }
         #endregion
@@ -3276,6 +3248,14 @@ namespace Timelapse
         }
         #endregion
 
+        public void MenuItemLayoutLastUsed_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(this.GetConfigFilePath("LastUsed")))
+            {
+                AvalonDock_LoadLayout("LastUsed");
+            }
+        }
+
         #region Help Menu Callbacks
         private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
@@ -3395,7 +3375,6 @@ namespace Timelapse
         #region AvalonDock callbacks
         private void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
         {
-
             if (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty)
             {
                 DockingManager_FloatingWindowLimitSize();
@@ -3481,6 +3460,19 @@ namespace Timelapse
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(this.DockingManager);
             using (StreamReader stream = new StreamReader(this.GetConfigFilePath(fileName)))
                 serializer.Deserialize(stream);
+
+            // After deserializing, a completely new LayoutRoot boject is created.
+            // This means we have to reset various things so the documents in the new object behave correctly.
+            // This includes resetting the callbacks to the DataGrid.IsActiveChanged
+            this.DataGridPane.IsActiveChanged -= this.DataGridPane_IsActiveChanged;
+            this.AvalonDock_ResetAfterDeserialize();
+            this.DataGridPane.IsActiveChanged += this.DataGridPane_IsActiveChanged;
+
+            // Force an update to the DataGridPane if its visible, as the above doesn't trigger it
+            if (this.DataGridPane.IsVisible)
+            {
+                this.DataGridPane_IsActiveChanged(true);
+            }
         }
 
         // Given a string, create a path to the config file
@@ -3488,7 +3480,32 @@ namespace Timelapse
         {
             return string.Format(@".\AvalonDock_{0}.config", fileName);
         }
+
+        // After deserializing, a completely new LayoutRoot object is created. 
+        // Thus the current pointers to the LayoutAnchorables and LayoutDocuments are no longer valid,as they point to the original vs. new Layout objects. 
+        // To get around this, we iterate through the LayoutAnchorables and LayoutDocuments and reassign them back to the pointers
+        private void AvalonDock_ResetAfterDeserialize()
+        {
+            IEnumerable<LayoutDocument> layoutDocuments = this.DockingManager.Layout.Descendents().OfType<LayoutDocument>();
+            foreach (LayoutDocument layoutDocument in layoutDocuments)
+            {
+                if (layoutDocument.ContentId == this.InstructionPane.ContentId)
+                {
+                    this.InstructionPane = layoutDocument;
+                }
+                else if (layoutDocument.ContentId == this.ImageSetPane.ContentId)
+                {
+                    this.ImageSetPane = layoutDocument;
+                }
+                else if (layoutDocument.ContentId == this.DataGridPane.ContentId)
+                {
+                    this.DataGridPane = layoutDocument;
+                }
+                System.Diagnostics.Debug.Print("Resetting: " + layoutDocument.ContentId);
+            }
+        }
         #endregion
+
         #region FilePlayer and FilePlayerTimer
         // The user has clicked on the file player. Take action onwhat was requested
         private void FilePlayer_FilePlayerChange(object sender, FilePlayerEventArgs args)
