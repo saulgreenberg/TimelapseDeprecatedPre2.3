@@ -267,7 +267,7 @@
                     <!--It looks like we don't need to set the LayoutAnchorablePaneGroup, But I kept the code for now just in case.-->
                     <!--<xcad:LayoutAnchorablePaneGroup DockHeight="Auto">-->
                     <xcad:LayoutAnchorablePane DockHeight="Auto">
-                            <xcad:LayoutAnchorable x:Name="DataEntryControlPanel"  
+                        <xcad:LayoutAnchorable x:Name="DataEntryControlPanel" ContentId="DataEntryControlPanel"
                                                Title="Data Entry" CanClose="False" CanAutoHide="False" CanHide="False" IsVisible="False" 
                                                PropertyChanging="LayoutAnchorable_PropertyChanging">
                                 <ScrollViewer  Name="DataEntryScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment ="Top" HorizontalAlignment="Left" VerticalContentAlignment="Stretch" MaxHeight="{Binding ElementName=ControlGrid, Path=ActualHeight}">
@@ -354,12 +354,14 @@
                         <xcad:LayoutDocumentPane>
 
                             <!-- Instructions Pane -->
-                            <xcad:LayoutDocument x:Name="InstructionPane" Title="Instructions  " CanClose="False" CanFloat="True" ToolTip="Instructions. Pull it out as a separate window by dragging its title bar">
+                            <xcad:LayoutDocument x:Name="InstructionPane" ContentId="InstructionPane"
+                                                 Title="Instructions  " CanClose="False" CanFloat="True" ToolTip="Instructions. Pull it out as a separate window by dragging its title bar">
                                 <controls:HelpUserControl x:Name="HelpDocument" HelpFile="pack://application:,,/Resources/TimelapseHelp.rtf" AllowDrop="True" Drop="HelpDocument_Drop" PreviewDragEnter="HelpDocument_PreviewDrag" PreviewDragOver="HelpDocument_PreviewDrag" Visibility="Visible" Height="Auto" />
                             </xcad:LayoutDocument>
 
                             <!-- Image Set Pane -->
-                            <xcad:LayoutDocument x:Name="ImageSetPane" Title="Image set  " CanClose="False" CanFloat="False" ToolTip="Image Set displays your image and video files" >
+                            <xcad:LayoutDocument x:Name="ImageSetPane" ContentId="ImageSetPane"
+                                                 Title="Image set  " CanClose="False" CanFloat="False" ToolTip="Image Set displays your image and video files" >
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -384,7 +386,8 @@
                             </xcad:LayoutDocument>
 
                             <!-- Data Pane -->
-                            <xcad:LayoutDocument x:Name="DataGridPane" Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
+                            <xcad:LayoutDocument x:Name="DataGridPane" ContentId="DataGridPane"
+                                                 Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
                                                  ToolTip="Data Table shows all your data. Pull it out as a separate window by dragging its title bar">
                                 <Grid>
                                     <Grid.RowDefinitions>

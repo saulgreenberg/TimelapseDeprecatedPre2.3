@@ -144,9 +144,14 @@ namespace Timelapse
 
             //SAULXX This is where we should restore the layout, but there is a bug in how it is restored.
             //this.DockingManager_RestoreLayout(this.state.AvalonDockSavedLayout);
-
             // Avalon Dock: Initially hide the Date Entry Control Panel
             // For some reason, it doesn't hide it if visibility is set to false in XAML
+            if (File.Exists(this.GetConfigFilePath("LastUsed")))
+            {
+                AvalonDock_LoadLayout("LastUsed");
+            }
+
+
             this.DataEntryControlPanel.IsVisible = false;
         }
 
@@ -198,6 +203,7 @@ namespace Timelapse
             this.state.TimelapseWindowSize = new Size(this.Width, this.Height);
 
             //SAULXX This is where we should save the layout
+            AvalonDock_SaveLayout("LastUsed");
             //this.state.AvalonDockSavedLayout = this.DockingManager_SaveLayout();
 
             // persist user specific state to the registry
@@ -819,7 +825,7 @@ namespace Timelapse
             {
                 DataGridPane_IsActiveChanged(null, null);
             }
-        }
+       }
         #endregion
 
         #region Enabling or Disabling Menus and Controls
@@ -3457,6 +3463,32 @@ namespace Timelapse
         }
         #endregion
 
+        #region AvalonDock Load / Save Layout
+        // Save the current AvalonDock layout
+        private void AvalonDock_SaveLayout(string fileName)
+        {
+            XmlLayoutSerializer serializer = new XmlLayoutSerializer(this.DockingManager);
+            using (StreamWriter stream = new StreamWriter(this.GetConfigFilePath(fileName)))
+                serializer.Serialize(stream);
+        }
+
+        // Load a previously saved AvalonDock layout
+        // Note. If there is a bug in the config file, this won't deserialize properly. Unfortunately, no
+        // warning is produced. This should not happen unless for some reason we have changed the names of the ContentID and / or windows
+        // included in the system.
+        private void AvalonDock_LoadLayout(string fileName)
+        {
+            XmlLayoutSerializer serializer = new XmlLayoutSerializer(this.DockingManager);
+            using (StreamReader stream = new StreamReader(this.GetConfigFilePath(fileName)))
+                serializer.Deserialize(stream);
+        }
+
+        // Given a string, create a path to the config file
+        private string GetConfigFilePath(string fileName)
+        {
+            return string.Format(@".\AvalonDock_{0}.config", fileName);
+        }
+        #endregion
         #region FilePlayer and FilePlayerTimer
         // The user has clicked on the file player. Take action onwhat was requested
         private void FilePlayer_FilePlayerChange(object sender, FilePlayerEventArgs args)
