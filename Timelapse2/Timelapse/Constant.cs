@@ -558,5 +558,16 @@ namespace Timelapse
             public const string Url = "url";
             public const string Version = "version";
         }
+
+        public static class WindowLayouts
+        {
+            public const string LastUsed = "LayoutLastUsed";
+            public const string DataEntryOnTop = "LayoutDataEntryOnTop";
+            public const string DataEntryOnSide = "LayoutDataEntryOnSide";
+            public const string DataEntryFloating = "LayoutDataEntryFloating";
+            public const string Custom1 = "LayoutCustom1";
+            public const string Custom2 = "LayoutCustom2";
+            public const string Custom3 = "LayoutCustom3";
+        }
     }
 }

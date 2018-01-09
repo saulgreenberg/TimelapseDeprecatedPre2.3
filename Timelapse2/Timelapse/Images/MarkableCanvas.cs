@@ -1105,34 +1105,35 @@ namespace Timelapse.Images
         #region Window shuffling
         public void SwitchToImageView()
         {
-            // No need to switch as we are already in it
-            if (this.IsClickableImagesGridVisible == false)
-            {
-                return;
-             }
-            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
-            this.clickableImagesState = 0;
+            // Just to make sure we are displaying the correct things
             this.ImageToDisplay.Visibility = Visibility.Visible;
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
-            this.ShowMagnifierIfEnabledOtherwiseHide();  
-        }
-        public void SwitchToVideoView()
-        {
-            // No need to switch as we are already in it
+            this.ShowMagnifierIfEnabledOtherwiseHide();
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
             }
-            this.SwitchedToSingleImageViewEventAction();
-            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            // These operations are only needed if we weren't in the single image view
             this.clickableImagesState = 0;
+            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.SwitchedToSingleImageViewEventAction();
+            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+        }
+        public void SwitchToVideoView()
+        {
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
+            if (this.IsClickableImagesGridVisible == false)
+            {
+                return;
+            }
+            // These operations are only needed if we weren't in the single image view
+            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.clickableImagesState = 0;
+            this.SwitchedToSingleImageViewEventAction();
+            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
         }
 
         public void SwitchToClickableGridView()

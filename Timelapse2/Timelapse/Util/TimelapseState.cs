@@ -15,8 +15,11 @@ namespace Timelapse.Util
 
         public DateTime MostRecentDragEvent { get; set; }
 
+        public bool FirstTimeFileLoading { get; set; }
+
         public TimelapseState()
         {
+            this.FirstTimeFileLoading = true;
             this.Reset();
         }
 

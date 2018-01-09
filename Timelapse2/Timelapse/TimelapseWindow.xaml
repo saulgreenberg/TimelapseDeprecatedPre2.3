@@ -205,9 +205,28 @@
                 <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" IsEnabled="False" ToolTip="Display statistics of the total number of files and their types"/>
             </MenuItem>
 
-            <!-- Layout Menu -->
-            <MenuItem Name="MenuItemLayout" Header="_LayOut" IsEnabled="true" IsTabStop="false" ToolTip="Change the layout of the various panes ">
-                <MenuItem Name="MenuItemLayoutLastUsed" Header="_Last Used" Click="MenuItemLayoutLastUsed_Click" ToolTip="Restore the layout from the last Timelapse session"/>
+            <!-- Window Menu -->
+            <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="False">
+                <MenuItem Name="MenuItemWindowReset" Header="_Default Layout" Click="MenuItemWindow_Click" ToolTip="Use the default layout" Tag="DataEntryOnTop"/>
+                <MenuItem Name="MenuItemWindowLastUsed" Header="_Starting Layout" Click="MenuItemWindow_Click" ToolTip="Restore the layout from the last Timelapse session" Tag="LastUsed"/>
+                <MenuItem Name="MenuItemWindowPositionDataEntryPanel" Header="_Data Entry Panel" ToolTip="Default layouts, which vary in how they position the data entry panel">
+                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_On Top" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="DataEntryOnTop"/>
+                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_On Side" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's side" Tag="DataEntryOnSide"/>
+                    <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_as Floating Window" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears as a floating window" Tag="DataEntryFloating"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Name="MenuItemWindowCustom1" Header="_Custom Layout 1" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom1Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom1"/>
+                    <MenuItem Name="MenuItemWindowCustom1Apply" Header="_Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom1"/>
+                </MenuItem>
+                <MenuItem Name="MenuItemWindowCustom2" Header="_Custom Layout 2" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom2Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom2"/>
+                    <MenuItem Name="MenuItemWindowCustom2Apply" Header="_Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom2"/>
+                </MenuItem>
+                <MenuItem Name="MenuItemWindowCustom3" Header="_Custom Layout 3" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom3Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom3"/>
+                    <MenuItem Name="MenuItemWindowCustom3Apply" Header="__Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom3"/>
+                </MenuItem>
             </MenuItem>
 
             <!-- Help Menu -->
