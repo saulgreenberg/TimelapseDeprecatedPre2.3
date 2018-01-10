@@ -93,14 +93,14 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return (registryKey.ReadString(key, String.Empty));
+                return registryKey.ReadString(key, String.Empty);
             }
         }
         public Rect ReadFromRegistryRect(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return (registryKey.ReadRect(key, new Rect(0.0, 0.0, 1350.0, 900.0))); 
+                return registryKey.ReadRect(key, new Rect(0.0, 0.0, 1350.0, 900.0)); 
             }
         }
         #endregion

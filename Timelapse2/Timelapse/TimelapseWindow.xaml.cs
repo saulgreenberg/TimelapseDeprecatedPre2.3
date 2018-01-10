@@ -29,7 +29,7 @@ using System.Data;
 
 using Xceed.Wpf.AvalonDock.Layout;
 using Xceed.Wpf.AvalonDock.Layout.Serialization;
-
+using Xceed.Wpf.AvalonDock.Controls;
 
 namespace Timelapse
 {
@@ -1855,18 +1855,19 @@ namespace Timelapse
                         this.FilePlayer_ScrollPage();
                     }
                     break;
-                case Key.Home:
-                    {
-                        FilePlayer_Stop();
-                        FileNavigatorSlider.Value = 1;
-                        break;
-                    }
-                case Key.End:
-                    {
-                        FilePlayer_Stop();
-                        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
-                        break;
-                    }
+                // These shortcut keys were deleted on request by a user, as they are too easy to hit and not that necessary
+                //case Key.Home:
+                //    {
+                //        FilePlayer_Stop();
+                //        FileNavigatorSlider.Value = 1;
+                //        break;
+                //    }
+                //case Key.End:
+                //    {
+                //        FilePlayer_Stop();
+                //        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
+                //        break;
+                //    }
                 default:
                     return;
             }
@@ -1899,7 +1900,7 @@ namespace Timelapse
         private void TrySetKeyboardFocusToMarkableCanvas(bool checkForControlFocus, InputEventArgs eventArgs)
         {
             //Ensures that a floating window does not go behind the main window 
-            this.DockingManager_FloatingWindowTopmost(true);
+            this.DockingManager_FloatingDataEntryWindowWindowTopmost(true);
 
             // If the text box or combobox has the focus, we usually don't want to reset the focus. 
             // However, there are a few instances (e.g., after enter has been pressed) where we no longer want it 
@@ -3378,7 +3379,7 @@ namespace Timelapse
             LayoutAnchorable la = sender as LayoutAnchorable;
             if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
             {
-                DockingManager_FloatingWindowLimitSize();
+                DockingManager_FloatingDataEntryWindowLimitSize();
             }
             this.FindBoxVisibility(false);
         }
@@ -3387,20 +3388,29 @@ namespace Timelapse
         {
             if (this.DockingManager.FloatingWindows.Count() > 0)
             { 
-                this.DockingManager_FloatingWindowTopmost(false);
+                this.DockingManager_FloatingDataEntryWindowWindowTopmost(false);
             }
         }
 
         // Enable or disable floating windows normally always being on top. 
         // Also shows floating windows in the task bar if it can be hidden
-        private void DockingManager_FloatingWindowTopmost(bool topMost)
+        private void DockingManager_FloatingDataEntryWindowWindowTopmost(bool topMost)
         {
-            foreach (var floatingWindow in this.DockingManager.FloatingWindows)
+            foreach (LayoutFloatingWindowControl floatingWindow in this.DockingManager.FloatingWindows)
             {
+                // This checks to see if its the data entry window, which is the only layoutanchorable present.
+                // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
+                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
+                if (model == null)
+                {
+                    // SAULXXX: Note that the Floating DocumentPane (i.e., the DataGrid) behaviour is not what we want
+                    // That is, it always appears topmost. yet if we set it to null, then it disappears behind the main 
+                    // window when the mouse is moved over the main window (vs. clicking in it).
+                    continue;
+                }
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
                 floatingWindow.MinWidth = Constant.AvalonDock.FloatingWindowMinimumWidth;
 
-                // SAULXXX: Need a way to discern DataGridPane from other panes, so we can make only that floating window topmost.
                 if (topMost)
                 {
                     if (floatingWindow.Owner == null)
@@ -3419,11 +3429,17 @@ namespace Timelapse
 
         // When a floating window is resized, limit it to the size of the scrollviewer.
         // SAULXX: Limitatinons, I think it also applies to the instructions and data pane floating windows!
-        private void DockingManager_FloatingWindowLimitSize()
+        private void DockingManager_FloatingDataEntryWindowLimitSize()
         {
-            // System.Diagnostics.Debug.Print("DockingManager_FloatingWindowLimitSize");
             foreach (var floatingWindow in this.DockingManager.FloatingWindows)
             {
+                // This checks to see if its the data entry window, which is the only layoutanchorable present.
+                // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
+                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
+                if (model == null)
+                {
+                    continue;
+                }
                 if (floatingWindow.HasContent)
                 {
                     if (floatingWindow.Height > this.DataEntryScrollViewer.ActualHeight)

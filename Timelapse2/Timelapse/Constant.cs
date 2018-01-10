@@ -576,6 +576,5 @@ namespace Timelapse
             public const string Url = "url";
             public const string Version = "version";
         }
-
     }
 }

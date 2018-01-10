@@ -13,7 +13,9 @@ namespace Timelapse.Util
     public static class TimelapseAvalonExtensions
     {
         #region Loading layouts
-        public static bool AvalonLayout_TryLoad (this TimelapseWindow timelapse, string layoutKey)
+        // Try to load the layout identified by the layoutKey, which, depending on the key, is stored in the resource file or the registry
+        // This includes various adjustments, as detailed in the comments below.
+        public static bool AvalonLayout_TryLoad(this TimelapseWindow timelapse, string layoutKey)
         {
             bool isResourceFile = false;
             string layoutName = String.Empty;
@@ -52,7 +54,7 @@ namespace Timelapse.Util
                 result = timelapse.AvalonLayout_TryLoadFromRegistry(layoutName);
                 if (result)
                 {
-                    timelapse.AvalonLayout_LoadWindowPositionAndSizFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
+                    timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
                 }
             }
             if (result == false)
@@ -112,12 +114,14 @@ namespace Timelapse.Util
             // Deserializa and load the layout
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             using (StreamReader streamReader = new StreamReader(layoutAsStream))
-                    serializer.Deserialize(streamReader);
+            { 
+                serializer.Deserialize(streamReader);
+            }
             return true;
         }
 
-
-        private static void AvalonLayout_LoadWindowPositionAndSizFromRegistry(this TimelapseWindow timelapse, string registryKey)
+        // Load the window position and size from the registry
+        private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             Rect windowPositionAndSize = timelapse.state.ReadFromRegistryRect(registryKey);
             timelapse.Top = windowPositionAndSize.Top;
@@ -127,14 +131,16 @@ namespace Timelapse.Util
         }
 
         // Try to load a layout from the given resourceFilePath
-        public static bool AvalonLayout_TryLoadFromResource(this TimelapseWindow timelapse, string resourceFilePath)
+        private static bool AvalonLayout_TryLoadFromResource(this TimelapseWindow timelapse, string resourceFilePath)
         {
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             Uri uri = new Uri(resourceFilePath);
             try
-            { 
+            {
                 using (Stream stream = Application.GetResourceStream(uri).Stream)
+                { 
                     serializer.Deserialize(stream);
+                }
             }
             catch
             {
@@ -188,8 +194,9 @@ namespace Timelapse.Util
             // Serialize the layout into a string
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             using (StringWriter stream = new StringWriter())
+            { 
                 serializer.Serialize(xmlWriter);
-
+            }
             if (xmlText.ToString().Trim() != string.Empty)
             {
                 // Write the string to the registry under the given key name

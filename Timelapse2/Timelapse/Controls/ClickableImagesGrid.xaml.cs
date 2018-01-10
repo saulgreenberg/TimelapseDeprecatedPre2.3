@@ -309,7 +309,6 @@ namespace Timelapse.Controls
                 ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci?.ImageRow);
                 this.OnDoubleClick(eventArgs);
                 e.Handled = true; // Stops the double click from generating a marker on the MarkableImageCanvas
-
             }
             this.EnableOrDisableControlsAsNeeded();
             ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
