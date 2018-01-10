@@ -263,6 +263,7 @@
     </Compile>
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
+    <Compile Include="Util\TimelapseAvalonExtensions.cs" />
     <Compile Include="Util\VersionClient.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Database\CustomSelection.cs" />
@@ -541,6 +542,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\AvalonLayout_DataEntryFloating.config" />
+    <Resource Include="Resources\AvalonLayout_DataEntryOnSide.config" />
+    <Resource Include="Resources\AvalonLayout_DataEntryOnTop.config" />
     <Resource Include="Resources\TimelapseHelp.rtf" />
   </ItemGroup>
   <ItemGroup>

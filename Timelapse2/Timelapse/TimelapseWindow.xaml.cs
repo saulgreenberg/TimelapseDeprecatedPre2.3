@@ -45,7 +45,7 @@ namespace Timelapse
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
         private string mostRecentFileAddFolderPath;
         private SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
-        private TimelapseState state;                                   // Status information concerning the state of the UI
+        public TimelapseState state;                                    // Status information concerning the state of the UI
         private TemplateDatabase templateDatabase;                      // The database that holds the template
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
@@ -85,7 +85,7 @@ namespace Timelapse
 
             // Recall user's state from prior sessions
             this.state = new TimelapseState();
-            this.state.ReadFromRegistry();
+            this.state.ReadSettingsFromRegistry();
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
             this.MenuItemOrderFilesByDateTime.IsChecked = this.state.OrderFilesByDateTime;
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
@@ -198,13 +198,12 @@ namespace Timelapse
             // Save the layout only if we are really closing Timelapse and the DataEntryControlPanel is visible, as otherwise it would be hidden
             // the next time Timelapse is started
             if (sender != null && this.DataEntryControlPanel.IsVisible == true)
-            { 
-                AvalonDock_SaveLayout(Constant.WindowLayouts.LastUsed);
-               // AvalonDock_SaveLayoutSize(Constant.WindowLayouts.LastUsed);
+            {
+                this.AvalonLayout_TrySave(Constant.AvalonLayoutTags.LastUsed);
             }
 
             // persist user specific state to the registry
-            this.state.WriteToRegistry();
+            this.state.WriteSettingsToRegistry();
         }
 
         public void Dispose()
@@ -818,10 +817,10 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
-            // Load the previously saved layout, if this is it exists a
-            if (this.state.FirstTimeFileLoading && File.Exists(this.GetConfigFilePath(Constant.WindowLayouts.LastUsed)))
+            // Load the previously saved layout, if it exists
+            if (this.state.FirstTimeFileLoading)
             {
-                AvalonDock_LoadLayout(Constant.WindowLayouts.LastUsed);
+                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
                 this.state.FirstTimeFileLoading = false;
             }
             // Trigger updates to the datagrid pane, if its visible to the user.
@@ -1538,11 +1537,11 @@ namespace Timelapse
 
         #region DataGridPane activation
         // Update the datagrid (including its binding) to show the currently selected images whenever it is made visible. 
-        private void DataGridPane_IsActiveChanged(object sender, EventArgs e)
+        public void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
             this.DataGridPane_IsActiveChanged(false);
         }
-        private void DataGridPane_IsActiveChanged(bool forceUpdate)
+        public void DataGridPane_IsActiveChanged(bool forceUpdate)
         {
             // Don't update anything if we don't have any files to display
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
@@ -3235,84 +3234,25 @@ namespace Timelapse
         #endregion
 
         #region Window Menu Callbacks
-        public void MenuItemWindow_Click(object sender, RoutedEventArgs e)
+        private void MenuItemWindowLoadCustom_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            MenuItem mi = sender as MenuItem;
-            string layout = mi.Tag.ToString();
-            string layoutname = String.Empty;
-            switch (layout)
-            {
-                case "LastUsed":
-                    layoutname = Constant.WindowLayouts.LastUsed;
-                    break;
-                case "DataEntryOnTop":
-                    layoutname = Constant.WindowLayouts.DataEntryOnTop;
-                    break;
-                case "DataEntryOnSide":
-                    layoutname = Constant.WindowLayouts.DataEntryOnSide;
-                    break;
-                case "DataEntryFloating":
-                    layoutname = Constant.WindowLayouts.DataEntryFloating;
-                    break;
-                case "Custom1":
-                    layoutname = Constant.WindowLayouts.Custom1;
-                    break;
-                case "Custom2":
-                    layoutname = Constant.WindowLayouts.Custom2;
-                    break;
-                case "Custom3":
-                    layoutname = Constant.WindowLayouts.Custom3;
-                    break;
-                default:
-                    break;
-            }
-            string path = this.GetConfigFilePath(layoutname);
-
-            //if (File.Exists(this.GetConfigFilePath(layoutname)))
-            if (File.Exists(path))
-            {
-                AvalonDock_LoadLayout(layoutname);
-            }
-            if (layout == "DataEntryFloating")
-            {
-                if (this.DockingManager.FloatingWindows.Count() > 0)
-                {
-                    foreach (var floatingWindow in this.DockingManager.FloatingWindows)
-                    {
-                        // Position the floating window in the middle of the main window, but just below the top
-                        floatingWindow.Left = this.Left + ((this.Width - floatingWindow.Width) / 2.0);
-                        floatingWindow.Top = this.Top + 100;
-                    }
-                }
-            }
-            if (layout == "Custom1" || layout == "Custom2" || layout == "Custom3")
-            {
-                AvalonDock_LoadLayoutSize(layoutname);
-            }
+            this.MenuItemWindowCustom1Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
+            this.MenuItemWindowCustom2Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
+            this.MenuItemWindowCustom3Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
         }
 
-        public void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
+        private void MenuItemWindow_Click(object sender, RoutedEventArgs e)
         {
             MenuItem mi = sender as MenuItem;
             string layout = mi.Tag.ToString();
-            string layoutname = String.Empty;
-            switch (layout)
-            {
-                case "Custom1":
-                    layoutname = Constant.WindowLayouts.Custom1;
-                    break;
-                case "Custom2":
-                    layoutname = Constant.WindowLayouts.Custom2;
-                    break;
-                case "Custom3":
-                    layoutname = Constant.WindowLayouts.Custom3;
-                    break;
-                default:
-                    break;
-            }
-            string path = this.GetConfigFilePath(layoutname);
-            AvalonDock_SaveLayout(layoutname);
-            AvalonDock_SaveLayoutSize(layoutname);
+            this.AvalonLayout_TryLoad(layout);
+        }
+
+        private void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
+        {
+            // Save the window layout to the registry, where the registry key name is found in the menu tag
+            MenuItem mi = sender as MenuItem;
+            this.AvalonLayout_TrySave(mi.Tag.ToString());
         }
         #endregion
 
@@ -3433,9 +3373,10 @@ namespace Timelapse
         #endregion
 
         #region AvalonDock callbacks
-        private void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
+        public void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
         {
-            if (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty)
+            LayoutAnchorable la = sender as LayoutAnchorable;
+            if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
             {
                 DockingManager_FloatingWindowLimitSize();
             }
@@ -3495,134 +3436,6 @@ namespace Timelapse
                         // System.Diagnostics.Debug.Print(String.Format("Width {0} {1}", floatingWindow.ActualWidth, this.DataEntryScrollViewer.ActualWidth));
                         floatingWindow.Width = this.DataEntryScrollViewer.ActualWidth + Constant.AvalonDock.FloatingWindowLimitSizeWidthCorrection;
                     }
-                }
-                //System.Diagnostics.Debug.Print(String.Format("{0} {1}", floatingWindow.ActualHeight, floatingWindow.ActualWidth));
-                //System.Diagnostics.Debug.Print("-----");
-            }
-        }
-        #endregion
-
-        #region AvalonDock Load / Save Layout
-        // Save the current AvalonDock layout
-        private void AvalonDock_SaveLayout(string fileName)
-        {
-            XmlLayoutSerializer serializer = new XmlLayoutSerializer(this.DockingManager);
-            using (StreamWriter stream = new StreamWriter(this.GetConfigFilePath(fileName)))
-                serializer.Serialize(stream);
-        }
-        private void AvalonDock_SaveLayoutSize(string fileName)
-        {
-            string[] windowsize = { this.Left.ToString(), this.Top.ToString(), this.Width.ToString(), this.Height.ToString() };
-            File.WriteAllLines(this.GetConfigFilePath(fileName+"Window"), windowsize);
-        }
-
-        // Load a previously saved AvalonDock layout
-        // Note. If there is a bug in the config file, this won't deserialize properly. Unfortunately, no
-        // warning is produced. This should not happen unless for some reason we have changed the names of the ContentID and / or windows
-        // included in the system.
-        private void AvalonDock_LoadLayout(string fileName)
-        {
-            XmlLayoutSerializer serializer = new XmlLayoutSerializer(this.DockingManager);
-            using (StreamReader stream = new StreamReader(this.GetConfigFilePath(fileName)))
-                serializer.Deserialize(stream);
-
-            // After deserializing, a completely new LayoutRoot boject is created.
-            // This means we have to reset various things so the documents in the new object behave correctly.
-            // This includes resetting the callbacks to the DataGrid.IsActiveChanged
-            this.DataEntryControlPanel.PropertyChanging -= LayoutAnchorable_PropertyChanging;
-            this.DataGridPane.IsActiveChanged -= this.DataGridPane_IsActiveChanged;
-            this.AvalonDock_ResetAfterDeserialize();
-            this.DataGridPane.IsActiveChanged += this.DataGridPane_IsActiveChanged;
-            this.DataEntryControlPanel.PropertyChanging += LayoutAnchorable_PropertyChanging;
-
-            // Force an update to the DataGridPane if its visible, as the above doesn't trigger it
-            if (this.DataGridPane.IsVisible)
-            {
-                this.DataGridPane_IsActiveChanged(true);
-            }
-        }
-
-        private void AvalonDock_LoadLayoutSize(string fileName)
-        {
-            if (!File.Exists(this.GetConfigFilePath(fileName + "Window")))
-            {
-                return;
-            }
-            string[] windowsize = File.ReadAllLines(this.GetConfigFilePath(fileName + "Window"));
-            if (Double.TryParse(windowsize[0], out double left) == false)
-            {
-                return;
-            }
-            if (Double.TryParse(windowsize[1], out double top) == false)
-            {
-                return;
-            }
-            if (Double.TryParse(windowsize[2], out double width) == false)
-            {
-                return;
-            }
-            if (Double.TryParse(windowsize[3], out double height) == false)
-            {
-                return;
-            }
-            this.Left = left;
-            this.Top = top;
-            this.Width = width;
-            this.Height = height;
-        }
-
-        // Given a string, create a path to the config file
-        private string GetConfigFilePath(string fileName)
-        {
-            return string.Format(@".\AvalonDock_{0}.config", fileName);
-        }
-
-        // After deserializing, a completely new LayoutRoot object is created. 
-        // Thus the current pointers to the LayoutAnchorables and LayoutDocuments are no longer valid,as they point to the original vs. new Layout objects. 
-        // To get around this, we iterate through the LayoutAnchorables and LayoutDocuments and reassign them back to their original pointers
-        // Note that we will have to modify this method to include new LayoutAnchorables and LayoutDocuments if we create them in some future version
-        private void AvalonDock_ResetAfterDeserialize()
-        {
-            // DELETE. Test code to see if I could find the data entry floating window
-            //IEnumerable<LayoutAnchorablePane> layoutAnchorablePanes = this.DockingManager.Layout.Descendents().OfType<LayoutAnchorablePane>();
-            //foreach (LayoutAnchorablePane layoutAnchorablePane in layoutAnchorablePanes)
-            //{
-            //    if (layoutAnchorablePane.IsDirectlyHostedInFloatingWindow == true)
-            //    { 
-            //        this.LayoutAnchorablePaneForDataEntryControlPanel = layoutAnchorablePane;
-            //        LayoutAnchorablePaneGroup panegroup = layoutAnchorablePane.Parent as LayoutAnchorablePaneGroup;
-            //        LayoutAnchorableFloatingWindow floatingWindow = panegroup.Parent as LayoutAnchorableFloatingWindow;
-            //        layoutAnchorablePane.FloatingLeft = 0;
-            //        layoutAnchorablePane.FloatingTop = 0;
-            //        panegroup.FloatingLeft = 0;
-            //        panegroup.FloatingTop = 0;
-
-            //    }
-            //}
-
-            IEnumerable<LayoutAnchorable> layoutAnchorables = this.DockingManager.Layout.Descendents().OfType<LayoutAnchorable>();
-            foreach (LayoutAnchorable layoutAnchorable in layoutAnchorables)
-            {
-                if (layoutAnchorable.ContentId == this.DataEntryControlPanel.ContentId)
-                {
-                    this.DataEntryControlPanel = layoutAnchorable;
-                }
-            }
-
-            IEnumerable<LayoutDocument> layoutDocuments = this.DockingManager.Layout.Descendents().OfType<LayoutDocument>();
-            foreach (LayoutDocument layoutDocument in layoutDocuments)
-            {
-                if (layoutDocument.ContentId == this.InstructionPane.ContentId)
-                {
-                    this.InstructionPane = layoutDocument;
-                }
-                else if (layoutDocument.ContentId == this.ImageSetPane.ContentId)
-                {
-                    this.ImageSetPane = layoutDocument;
-                }
-                else if (layoutDocument.ContentId == this.DataGridPane.ContentId)
-                {
-                    this.DataGridPane = layoutDocument;
                 }
             }
         }
@@ -4023,5 +3836,7 @@ namespace Timelapse
 
 
         #endregion
+
+
     }
 }

@@ -8,8 +8,8 @@ namespace Timelapse.Util
     // Save the state of various things in the Registry.
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
+        #region Settings
         public bool AudioFeedback { get; set; }
-
         public CustomSelectionOperator CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
@@ -34,6 +34,7 @@ namespace Timelapse.Util
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
         public bool ClassifyDarkImagesWhenLoading { get; set; }
+        #endregion
 
         public TimelapseUserRegistrySettings() :
             this(Constant.Registry.RootKey)
@@ -44,11 +45,12 @@ namespace Timelapse.Util
             : base(registryKey)
         {
             this.Throttles = new Throttles();
-
-            this.ReadFromRegistry();
+            this.ReadSettingsFromRegistry();
         }
-        
-        public void ReadFromRegistry()
+
+        #region Read from registry
+        // Read standard settings from registry
+        public void ReadSettingsFromRegistry()
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
@@ -79,7 +81,33 @@ namespace Timelapse.Util
             }
         }
 
-        public void WriteToRegistry()
+        public bool IsRegistryKeyExists(string key)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                return registryKey.ReadString(key, String.Empty) != String.Empty;
+            }
+        }
+        // Read a single registry entry
+        public string ReadFromRegistryString(string key)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                return (registryKey.ReadString(key, String.Empty));
+            }
+        }
+        public Rect ReadFromRegistryRect(string key)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                return (registryKey.ReadRect(key, new Rect(0.0, 0.0, 1350.0, 900.0))); 
+            }
+        }
+        #endregion
+
+        #region Write to registry
+        // Write standard settings to registry
+        public void WriteSettingsToRegistry()
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
@@ -109,5 +137,23 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, this.ClassifyDarkImagesWhenLoading);
             }
         }
+
+        // Write a single registry entry 
+        public void WriteToRegistry(string key, string value)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                registryKey.Write(key, value);
+            }
+        }
+
+        public void WriteToRegistry(string key, Rect value)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                registryKey.Write(key, value);
+            }
+        }
+        #endregion
     }
 }
