@@ -1,13 +1,9 @@
 ﻿<Window x:Class="Timelapse.TimelapseWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="clr-namespace:Timelapse.Controls"
     xmlns:images="clr-namespace:Timelapse.Images"
-    xmlns:local="clr-namespace:Timelapse"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     AutomationProperties.AutomationId="Timelapse"
     Loaded="Window_Loaded" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" 
     Height="800" Width="1200"
@@ -205,6 +201,52 @@
                 <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" IsEnabled="False" ToolTip="Display statistics of the total number of files and their types"/>
             </MenuItem>
 
+            <!-- Window Menu -->
+            <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="False">
+
+                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/LayoutDataEntryOnTop_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_Data Entry on Side" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's side" Tag="AvalonLayout_DataEntryOnSide">
+                        <MenuItem.Icon>
+                        <Image Source="Icons/LayoutDataEntryOnSide_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_Data Entry Floating" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears as a floating window" Tag="AvalonLayout_DataEntryFloating">
+                        <MenuItem.Icon>
+                        <Image Source="Icons/LayoutDataEntryFloating_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                <!--</MenuItem>-->
+                <Separator/>
+                <MenuItem Name="MenuItemWindowLoadCustom" Header="Load a Custom Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/LayoutCustomLoad_32x.png" />
+                    </MenuItem.Icon>
+                    <MenuItem Name="MenuItemWindowCustom1Load" Header="Layout _1" Click="MenuItemWindow_Click" ToolTip="Load a previously saved layout" Tag="AvalonLayout_Custom1"/>
+                    <MenuItem Name="MenuItemWindowCustom2Load" Header="Layout _2" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="AvalonLayout_Custom2"/>
+                    <MenuItem Name="MenuItemWindowCustom3Load" Header="Layout _3" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="AvalonLayout_Custom3"/>
+                </MenuItem>
+                <MenuItem Name="MenuItemWindowSaveCustom" Header="Save a Custom Layout">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/LayoutCustomSave_32x.png" />
+                    </MenuItem.Icon>
+                    <MenuItem Name="MenuItemWindowCustom1Save" Header="Layout _1" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom1"/>
+                    <MenuItem Name="MenuItemWindowCustom2Save" Header="Layout _2" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom2"/>
+                    <MenuItem Name="MenuItemWindowCustom3Save" Header="Layout _3" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom3"/>
+                </MenuItem>
+
+                <Separator/>
+                <MenuItem Name="MenuItemWindowReset" Header="_Reset to default" Click="MenuItemWindow_Click" ToolTip="Reset the layout to the default " Tag="AvalonLayout_DataEntryOnTop">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/LayoutDefault_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Name="MenuItemWindowLastUsed" Header="_Reset to Initial Layout" Click="MenuItemWindow_Click" ToolTip="Reset to the initial layout" Tag="AvalonLayout_LastUsed"/>
+            </MenuItem>
+            
             <!-- Help Menu -->
             <MenuItem Name="MenuItemHelp" Header="_Help" IsEnabled="true" IsTabStop="false" SubmenuOpened="Help_SubmenuOpening" >
 
@@ -266,8 +308,8 @@
                     <!-- Data Entry Controls Pane -->
                     <!--It looks like we don't need to set the LayoutAnchorablePaneGroup, But I kept the code for now just in case.-->
                     <!--<xcad:LayoutAnchorablePaneGroup DockHeight="Auto">-->
-                    <xcad:LayoutAnchorablePane DockHeight="Auto">
-                            <xcad:LayoutAnchorable x:Name="DataEntryControlPanel"  
+                    <xcad:LayoutAnchorablePane x:Name="LayoutAnchorablePaneForDataEntryControlPanel" DockHeight="Auto">
+                        <xcad:LayoutAnchorable x:Name="DataEntryControlPanel" ContentId="ContentIDDataEntryControlPanel"
                                                Title="Data Entry" CanClose="False" CanAutoHide="False" CanHide="False" IsVisible="False" 
                                                PropertyChanging="LayoutAnchorable_PropertyChanging">
                                 <ScrollViewer  Name="DataEntryScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment ="Top" HorizontalAlignment="Left" VerticalContentAlignment="Stretch" MaxHeight="{Binding ElementName=ControlGrid, Path=ActualHeight}">
@@ -354,12 +396,14 @@
                         <xcad:LayoutDocumentPane>
 
                             <!-- Instructions Pane -->
-                            <xcad:LayoutDocument x:Name="InstructionPane" Title="Instructions  " CanClose="False" CanFloat="True" ToolTip="Instructions. Pull it out as a separate window by dragging its title bar">
+                            <xcad:LayoutDocument x:Name="InstructionPane" ContentId="ContentIDInstructionPane"
+                                                 Title="Instructions  " CanClose="False" CanFloat="True" ToolTip="Instructions. Pull it out as a separate window by dragging its title bar">
                                 <controls:HelpUserControl x:Name="HelpDocument" HelpFile="pack://application:,,/Resources/TimelapseHelp.rtf" AllowDrop="True" Drop="HelpDocument_Drop" PreviewDragEnter="HelpDocument_PreviewDrag" PreviewDragOver="HelpDocument_PreviewDrag" Visibility="Visible" Height="Auto" />
                             </xcad:LayoutDocument>
 
                             <!-- Image Set Pane -->
-                            <xcad:LayoutDocument x:Name="ImageSetPane" Title="Image set  " CanClose="False" CanFloat="False" ToolTip="Image Set displays your image and video files" >
+                            <xcad:LayoutDocument x:Name="ImageSetPane" ContentId="ContentIDImageSetPane"
+                                                 Title="Image set  " CanClose="False" CanFloat="False" ToolTip="Image Set displays your image and video files" >
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -384,7 +428,8 @@
                             </xcad:LayoutDocument>
 
                             <!-- Data Pane -->
-                            <xcad:LayoutDocument x:Name="DataGridPane" Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
+                            <xcad:LayoutDocument x:Name="DataGridPane" ContentId="ContentIDDataGridPane"
+                                                 Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
                                                  ToolTip="Data Table shows all your data. Pull it out as a separate window by dragging its title bar">
                                 <Grid>
                                     <Grid.RowDefinitions>

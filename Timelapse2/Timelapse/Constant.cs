@@ -41,6 +41,24 @@ namespace Timelapse
             public const double FloatingWindowLimitSizeWidthCorrection = 18.0;
             public const string FloatingWindowFloatingWidthProperty = "FloatingWidth";
             public const string FloatingWindowFloatingHeightProperty = "FloatingHeight";
+            public const string WindowRegistryKeySuffix = "_window";
+        }
+
+        public static class AvalonLayoutResourcePaths
+        {
+            public const string DataEntryOnTop = "pack://application:,,/Resources/AvalonLayout_DataEntryOnTop.config";
+            public const string DataEntryOnSide = "pack://application:,,/Resources/AvalonLayout_DataEntryOnSide.config";
+            public const string DataEntryFloating = "pack://application:,,/Resources/AvalonLayout_DataEntryFloating.config";
+        }
+        public static class AvalonLayoutTags
+        {
+            public const string LastUsed = "AvalonLayout_LastUsed";
+            public const string DataEntryOnTop = "AvalonLayout_DataEntryOnTop";
+            public const string DataEntryOnSide = "AvalonLayout_DataEntryOnSide";
+            public const string DataEntryFloating = "AvalonLayout_DataEntryFloating";
+            public const string Custom1 = "AvalonLayout_Custom1";
+            public const string Custom2 = "AvalonLayout_Custom2";
+            public const string Custom3 = "AvalonLayout_Custom3";
         }
 
         // Boolean - preferred string representations 

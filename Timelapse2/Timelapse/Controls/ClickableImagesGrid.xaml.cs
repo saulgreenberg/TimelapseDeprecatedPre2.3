@@ -308,6 +308,7 @@ namespace Timelapse.Controls
                 ci = GetClickableImageFromCell(currentCell);
                 ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci?.ImageRow);
                 this.OnDoubleClick(eventArgs);
+                e.Handled = true; // Stops the double click from generating a marker on the MarkableImageCanvas
             }
             this.EnableOrDisableControlsAsNeeded();
             ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
@@ -349,28 +350,6 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = false;
                 return;
             }
-            // I don't think this if clause is needed anymore, as a similar selection is now handled (I think) on the mouse down and mouse move
-            // However, I kept it around just in case. while it doesn't hurt to enable it, it will update all the data fields unecessarily.
-
-            // If the selection is only a single cell, clear all cells and just change the elected cell's state
-            // RowColumn currentlySelectedCell = GetCellFromPoint(Mouse.GetPosition(Grid));
-            // if (Equals(this.cellChosenOnMouseDown, currentlySelectedCell))
-            // {
-            //    ClickableImage ci = GetClickableImageFromCell(currentlySelectedCell);
-            //    if (ci != null)
-            //    {
-            //        this.SelectNone(); // Clear the selections
-            //        ci.IsSelected = !this.cellChosenOnMouseDownSelectionState;
-            //        ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
-            //        this.OnSelectionChanged(selectionEventArgs);
-            //    }
-            // }
-            // else
-            // {
-            //    // More than one cell was selected
-            //    this.SelectFromInitialCellTo(currentlySelectedCell);
-            // }
-            // this.EnableOrDisableControlsAsNeeded();
         }
         #endregion
 

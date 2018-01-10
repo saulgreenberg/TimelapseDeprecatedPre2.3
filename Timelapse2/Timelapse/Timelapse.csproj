@@ -57,7 +57,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -136,7 +136,8 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="Xceed.Wpf.AvalonDock, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\CustomAvalonDll\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.2.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.2.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
@@ -262,6 +263,7 @@
     </Compile>
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
+    <Compile Include="Util\TimelapseAvalonExtensions.cs" />
     <Compile Include="Util\VersionClient.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Database\CustomSelection.cs" />
@@ -540,6 +542,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\AvalonLayout_DataEntryFloating.config" />
+    <Resource Include="Resources\AvalonLayout_DataEntryOnSide.config" />
+    <Resource Include="Resources\AvalonLayout_DataEntryOnTop.config" />
     <Resource Include="Resources\TimelapseHelp.rtf" />
   </ItemGroup>
   <ItemGroup>
@@ -634,6 +639,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\ImageFolder_50.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\LayoutCustomLoad_32x.png" />
+    <Resource Include="Icons\LayoutCustomSave_32x.png" />
+    <Resource Include="Icons\LayoutDataEntryFloating_32x.png" />
+    <Resource Include="Icons\LayoutDataEntryOnSide_32x.png" />
+    <Resource Include="Icons\LayoutDataEntryOnTop_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\LayoutDefault_32x.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets')" />

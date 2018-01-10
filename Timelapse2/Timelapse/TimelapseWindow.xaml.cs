@@ -23,9 +23,13 @@ using Timelapse.Util;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-using Xceed.Wpf.AvalonDock.Layout.Serialization;
+
 using System.Windows.Media.Animation;
 using System.Data;
+
+using Xceed.Wpf.AvalonDock.Layout;
+using Xceed.Wpf.AvalonDock.Layout.Serialization;
+using Xceed.Wpf.AvalonDock.Controls;
 
 namespace Timelapse
 {
@@ -41,7 +45,7 @@ namespace Timelapse
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
         private string mostRecentFileAddFolderPath;
         private SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
-        private TimelapseState state;                                   // Status information concerning the state of the UI
+        public TimelapseState state;                                    // Status information concerning the state of the UI
         private TemplateDatabase templateDatabase;                      // The database that holds the template
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
@@ -81,7 +85,7 @@ namespace Timelapse
 
             // Recall user's state from prior sessions
             this.state = new TimelapseState();
-            this.state.ReadFromRegistry();
+            this.state.ReadSettingsFromRegistry();
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
             this.MenuItemOrderFilesByDateTime.IsChecked = this.state.OrderFilesByDateTime;
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
@@ -141,12 +145,6 @@ namespace Timelapse
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
-
-            //SAULXX This is where we should restore the layout, but there is a bug in how it is restored.
-            //this.DockingManager_RestoreLayout(this.state.AvalonDockSavedLayout);
-
-            // Avalon Dock: Initially hide the Date Entry Control Panel
-            // For some reason, it doesn't hide it if visibility is set to false in XAML
             this.DataEntryControlPanel.IsVisible = false;
         }
 
@@ -197,11 +195,15 @@ namespace Timelapse
             }
             this.state.TimelapseWindowSize = new Size(this.Width, this.Height);
 
-            //SAULXX This is where we should save the layout
-            //this.state.AvalonDockSavedLayout = this.DockingManager_SaveLayout();
+            // Save the layout only if we are really closing Timelapse and the DataEntryControlPanel is visible, as otherwise it would be hidden
+            // the next time Timelapse is started
+            if (sender != null && this.DataEntryControlPanel.IsVisible == true)
+            {
+                this.AvalonLayout_TrySave(Constant.AvalonLayoutTags.LastUsed);
+            }
 
             // persist user specific state to the registry
-            this.state.WriteToRegistry();
+            this.state.WriteSettingsToRegistry();
         }
 
         public void Dispose()
@@ -815,11 +817,18 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
+            // Load the previously saved layout, if it exists
+            if (this.state.FirstTimeFileLoading)
+            {
+                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
+                this.state.FirstTimeFileLoading = false;
+            }
+            // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
                 DataGridPane_IsActiveChanged(null, null);
             }
-        }
+       }
         #endregion
 
         #region Enabling or Disabling Menus and Controls
@@ -831,6 +840,7 @@ namespace Timelapse
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
             // file menu
+
             this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
             this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
@@ -859,6 +869,9 @@ namespace Timelapse
 
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = filesSelected;
+
+            // Windows menu
+            this.MenuItemWindow.IsEnabled = imageSetAvailable;
 
             // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
 
@@ -1523,52 +1536,25 @@ namespace Timelapse
         #endregion
 
         #region DataGridPane activation
-        // Update the datagrid whenever it is made visible. 
-        private void DataGridPane_IsActiveChanged(object sender, EventArgs e)
+        // Update the datagrid (including its binding) to show the currently selected images whenever it is made visible. 
+        public void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
+            this.DataGridPane_IsActiveChanged(false);
+        }
+        public void DataGridPane_IsActiveChanged(bool forceUpdate)
+        {
+            // Don't update anything if we don't have any files to display
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 this.DataGrid.ItemsSource = null;
                 return;
             }
 
-            if (this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
+            if (forceUpdate || this.DataGridPane.IsActive || this.DataGridPane.IsFloating || this.DataGridPane.IsVisible)
             {
                 this.dataHandler.FileDatabase.BindToDataGrid(this.DataGrid, null);
-                DataGridSelectionsTimer.Stop();
-                if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
-                {
-                    DataGridSelectionsTimer.Start();
-                }
-                //if ((this.dataHandler.ImageCache != null) && (this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow))
-                //{
-                //    // both UpdateLayout() calls are needed to get the data grid to highlight the selected row
-                //    // This seems related to initial population as the selection highlight updates without calling UpdateLayout() on subsequent calls
-                //    // to SelectAndScrollIntoView().
-                //    this.DataGrid.UpdateLayout();
-                //    long id = this.dataHandler.FileDatabase.Files[this.dataHandler.ImageCache.CurrentRow].ID;
-                //    List<long> ids = new List<long>();
-                //    int fileIndex = this.dataHandler.ImageCache.CurrentRow;
-                //    if (this.IsDisplayingSingleImage())
-                //    {
-                //        ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
-                //        System.Diagnostics.Debug.Print("bar single");
-                //    }
-                //    else
-                //    {
-                //        foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
-                //        {
-                //            ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
-                //            System.Diagnostics.Debug.Print("bar multiple");
-                //        }
-                //        //this.DataGrid.SelectAndScrollIntoView(ids, fileIndex));
-                //    }
-                //    //ids.Add(id);
-
-                //    this.DataGrid.SelectAndScrollIntoView(ids, this.dataHandler.ImageCache.CurrentRow);
-                //    this.DataGrid.UpdateLayout();
-            //}
             }
+            this.DataGridSelectionsTimer_Reset();
         }
         #endregion
 
@@ -1685,32 +1671,7 @@ namespace Timelapse
                     this.MarkableCanvas_UpdateMarkers();
                 }
             }
-
-            DataGridSelectionsTimer.Stop();
-            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
-            {
-                DataGridSelectionsTimer.Start();
-            }
-            //// if the data grid is visible and has been bound, set the selected row to the current file and scroll so it's visible
-            //if (this.DataGrid.Items != null && this.DataGrid.Items.Count > fileIndex  && (this.DataGridPane.IsActive || this.DataGridPane.IsFloating))
-            //{
-            //    List<long> ids = new List<long>();
-            //    if (this.IsDisplayingSingleImage())
-            //    { 
-            //        ids.Add(this.dataHandler.FileDatabase.Files[fileIndex].ID);
-            //        System.Diagnostics.Debug.Print("foo single");
-            //    }
-            //    else
-            //    {
-            //        foreach (int rowindex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
-            //        {
-            //            ids.Add(this.dataHandler.FileDatabase.Files[rowindex].ID);
-            //            System.Diagnostics.Debug.Print("foo multiple");
-            //        }
-            //    }
-
-            //    this.DataGrid.SelectAndScrollIntoView(ids, fileIndex);
-            //}
+            this.DataGridSelectionsTimer_Reset();
 
             // Set the file player status
             if (this.dataHandler.ImageCache.CurrentRow == 0)
@@ -1894,18 +1855,19 @@ namespace Timelapse
                         this.FilePlayer_ScrollPage();
                     }
                     break;
-                case Key.Home:
-                    {
-                        FilePlayer_Stop();
-                        FileNavigatorSlider.Value = 1;
-                        break;
-                    }
-                case Key.End:
-                    {
-                        FilePlayer_Stop();
-                        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
-                        break;
-                    }
+                // These shortcut keys were deleted on request by a user, as they are too easy to hit and not that necessary
+                //case Key.Home:
+                //    {
+                //        FilePlayer_Stop();
+                //        FileNavigatorSlider.Value = 1;
+                //        break;
+                //    }
+                //case Key.End:
+                //    {
+                //        FilePlayer_Stop();
+                //        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
+                //        break;
+                //    }
                 default:
                     return;
             }
@@ -1938,7 +1900,7 @@ namespace Timelapse
         private void TrySetKeyboardFocusToMarkableCanvas(bool checkForControlFocus, InputEventArgs eventArgs)
         {
             //Ensures that a floating window does not go behind the main window 
-            this.DockingManager_FloatingWindowTopmost(true);
+            this.DockingManager_FloatingDataEntryWindowWindowTopmost(true);
 
             // If the text box or combobox has the focus, we usually don't want to reset the focus. 
             // However, there are a few instances (e.g., after enter has been pressed) where we no longer want it 
@@ -2571,6 +2533,7 @@ namespace Timelapse
                 }
                 this.dataHandler = null;
                 this.templateDatabase = null;
+                this.DataEntryControlPanel.IsVisible = false;
 
             }
             // Clear the data grid
@@ -2585,6 +2548,7 @@ namespace Timelapse
             this.DataEntryControlPanel.IsVisible = false;
             this.FilePlayer.Visibility = Visibility.Collapsed;
             this.InstructionPane.IsActive = true;
+            this.DataGridSelectionsTimer.Stop();
         }
 
         /// <summary>
@@ -3270,8 +3234,31 @@ namespace Timelapse
         }
         #endregion
 
+        #region Window Menu Callbacks
+        private void MenuItemWindowLoadCustom_SubmenuOpening(object sender, RoutedEventArgs e)
+        {
+            this.MenuItemWindowCustom1Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
+            this.MenuItemWindowCustom2Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
+            this.MenuItemWindowCustom3Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
+        }
+
+        private void MenuItemWindow_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem mi = sender as MenuItem;
+            string layout = mi.Tag.ToString();
+            this.AvalonLayout_TryLoad(layout);
+        }
+
+        private void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
+        {
+            // Save the window layout to the registry, where the registry key name is found in the menu tag
+            MenuItem mi = sender as MenuItem;
+            this.AvalonLayout_TrySave(mi.Tag.ToString());
+        }
+        #endregion
+
         #region Help Menu Callbacks
-        private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
+            private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
         }
@@ -3387,12 +3374,12 @@ namespace Timelapse
         #endregion
 
         #region AvalonDock callbacks
-        private void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
+        public void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
         {
-
-            if (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty)
+            LayoutAnchorable la = sender as LayoutAnchorable;
+            if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
             {
-                DockingManager_FloatingWindowLimitSize();
+                DockingManager_FloatingDataEntryWindowLimitSize();
             }
             this.FindBoxVisibility(false);
         }
@@ -3401,20 +3388,29 @@ namespace Timelapse
         {
             if (this.DockingManager.FloatingWindows.Count() > 0)
             { 
-                this.DockingManager_FloatingWindowTopmost(false);
+                this.DockingManager_FloatingDataEntryWindowWindowTopmost(false);
             }
         }
 
         // Enable or disable floating windows normally always being on top. 
         // Also shows floating windows in the task bar if it can be hidden
-        private void DockingManager_FloatingWindowTopmost(bool topMost)
+        private void DockingManager_FloatingDataEntryWindowWindowTopmost(bool topMost)
         {
-            foreach (var floatingWindow in this.DockingManager.FloatingWindows)
+            foreach (LayoutFloatingWindowControl floatingWindow in this.DockingManager.FloatingWindows)
             {
+                // This checks to see if its the data entry window, which is the only layoutanchorable present.
+                // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
+                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
+                if (model == null)
+                {
+                    // SAULXXX: Note that the Floating DocumentPane (i.e., the DataGrid) behaviour is not what we want
+                    // That is, it always appears topmost. yet if we set it to null, then it disappears behind the main 
+                    // window when the mouse is moved over the main window (vs. clicking in it).
+                    continue;
+                }
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
                 floatingWindow.MinWidth = Constant.AvalonDock.FloatingWindowMinimumWidth;
 
-                // SAULXXX: Need a way to discern DataGridPane from other panes, so we can make only that floating window topmost.
                 if (topMost)
                 {
                     if (floatingWindow.Owner == null)
@@ -3433,11 +3429,17 @@ namespace Timelapse
 
         // When a floating window is resized, limit it to the size of the scrollviewer.
         // SAULXX: Limitatinons, I think it also applies to the instructions and data pane floating windows!
-        private void DockingManager_FloatingWindowLimitSize()
+        private void DockingManager_FloatingDataEntryWindowLimitSize()
         {
-            // System.Diagnostics.Debug.Print("DockingManager_FloatingWindowLimitSize");
             foreach (var floatingWindow in this.DockingManager.FloatingWindows)
             {
+                // This checks to see if its the data entry window, which is the only layoutanchorable present.
+                // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
+                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
+                if (model == null)
+                {
+                    continue;
+                }
                 if (floatingWindow.HasContent)
                 {
                     if (floatingWindow.Height > this.DataEntryScrollViewer.ActualHeight)
@@ -3451,8 +3453,6 @@ namespace Timelapse
                         floatingWindow.Width = this.DataEntryScrollViewer.ActualWidth + Constant.AvalonDock.FloatingWindowLimitSizeWidthCorrection;
                     }
                 }
-                //System.Diagnostics.Debug.Print(String.Format("{0} {1}", floatingWindow.ActualHeight, floatingWindow.ActualWidth));
-                //System.Diagnostics.Debug.Print("-----");
             }
         }
         #endregion
@@ -3629,14 +3629,7 @@ namespace Timelapse
         private void SwitchedToSingleImagesView()
         {
             this.FilePlayer.SwitchFileMode(true);
-            if (this.DataGridPane.IsActive || this.DataGridPane.IsFloating)
-            {
-                DataGridSelectionsTimer.Stop();
-                if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
-                {
-                    DataGridSelectionsTimer.Start();
-                }
-            }
+            this.DataGridSelectionsTimer_Reset();
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
@@ -3700,11 +3693,7 @@ namespace Timelapse
         // However, because user selections can change rapidly (e.g., by dragging within the overview), we throttle the refresh using a timer 
         private void ClickableImagesGrid_SelectionChanged(object sender, ClickableImagesGridEventArgs e)
         {
-            this.DataGridSelectionsTimer.Stop();
-            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
-            {
-                this.DataGridSelectionsTimer.Start();
-            }
+            this.DataGridSelectionsTimer_Reset();
         }
 
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
@@ -3728,12 +3717,22 @@ namespace Timelapse
             }
             this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
+            this.DataGridSelectionsTimer_Reset();
+        }
+
+        // Reset the timer, where we start it up again if the datagrid pane is active, floating or visible
+        private void DataGridSelectionsTimer_Reset()
+        {
             this.DataGridSelectionsTimer.Stop();
+            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true || this.DataGridPane.IsVisible == true)
+            {
+                this.DataGridSelectionsTimer.Start();
+            }
         }
         #endregion
 
-        #region HelpDocumentDragDrop
-        private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
+        #region Help Document - Drag Drop
+            private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
         {
             Utilities.OnHelpDocumentPreviewDrag(dragEvent);
         }
@@ -3853,5 +3852,7 @@ namespace Timelapse
 
 
         #endregion
+
+
     }
 }
