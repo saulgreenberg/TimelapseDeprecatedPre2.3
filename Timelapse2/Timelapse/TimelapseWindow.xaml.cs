@@ -200,6 +200,7 @@ namespace Timelapse
             if (sender != null && this.DataEntryControlPanel.IsVisible == true)
             { 
                 AvalonDock_SaveLayout(Constant.WindowLayouts.LastUsed);
+               // AvalonDock_SaveLayoutSize(Constant.WindowLayouts.LastUsed);
             }
 
             // persist user specific state to the registry
@@ -3272,6 +3273,22 @@ namespace Timelapse
             {
                 AvalonDock_LoadLayout(layoutname);
             }
+            if (layout == "DataEntryFloating")
+            {
+                if (this.DockingManager.FloatingWindows.Count() > 0)
+                {
+                    foreach (var floatingWindow in this.DockingManager.FloatingWindows)
+                    {
+                        // Position the floating window in the middle of the main window, but just below the top
+                        floatingWindow.Left = this.Left + ((this.Width - floatingWindow.Width) / 2.0);
+                        floatingWindow.Top = this.Top + 100;
+                    }
+                }
+            }
+            if (layout == "Custom1" || layout == "Custom2" || layout == "Custom3")
+            {
+                AvalonDock_LoadLayoutSize(layoutname);
+            }
         }
 
         public void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
@@ -3295,6 +3312,7 @@ namespace Timelapse
             }
             string path = this.GetConfigFilePath(layoutname);
             AvalonDock_SaveLayout(layoutname);
+            AvalonDock_SaveLayoutSize(layoutname);
         }
         #endregion
 
@@ -3492,6 +3510,11 @@ namespace Timelapse
             using (StreamWriter stream = new StreamWriter(this.GetConfigFilePath(fileName)))
                 serializer.Serialize(stream);
         }
+        private void AvalonDock_SaveLayoutSize(string fileName)
+        {
+            string[] windowsize = { this.Left.ToString(), this.Top.ToString(), this.Width.ToString(), this.Height.ToString() };
+            File.WriteAllLines(this.GetConfigFilePath(fileName+"Window"), windowsize);
+        }
 
         // Load a previously saved AvalonDock layout
         // Note. If there is a bug in the config file, this won't deserialize properly. Unfortunately, no
@@ -3519,6 +3542,35 @@ namespace Timelapse
             }
         }
 
+        private void AvalonDock_LoadLayoutSize(string fileName)
+        {
+            if (!File.Exists(this.GetConfigFilePath(fileName + "Window")))
+            {
+                return;
+            }
+            string[] windowsize = File.ReadAllLines(this.GetConfigFilePath(fileName + "Window"));
+            if (Double.TryParse(windowsize[0], out double left) == false)
+            {
+                return;
+            }
+            if (Double.TryParse(windowsize[1], out double top) == false)
+            {
+                return;
+            }
+            if (Double.TryParse(windowsize[2], out double width) == false)
+            {
+                return;
+            }
+            if (Double.TryParse(windowsize[3], out double height) == false)
+            {
+                return;
+            }
+            this.Left = left;
+            this.Top = top;
+            this.Width = width;
+            this.Height = height;
+        }
+
         // Given a string, create a path to the config file
         private string GetConfigFilePath(string fileName)
         {
@@ -3531,6 +3583,23 @@ namespace Timelapse
         // Note that we will have to modify this method to include new LayoutAnchorables and LayoutDocuments if we create them in some future version
         private void AvalonDock_ResetAfterDeserialize()
         {
+            // DELETE. Test code to see if I could find the data entry floating window
+            //IEnumerable<LayoutAnchorablePane> layoutAnchorablePanes = this.DockingManager.Layout.Descendents().OfType<LayoutAnchorablePane>();
+            //foreach (LayoutAnchorablePane layoutAnchorablePane in layoutAnchorablePanes)
+            //{
+            //    if (layoutAnchorablePane.IsDirectlyHostedInFloatingWindow == true)
+            //    { 
+            //        this.LayoutAnchorablePaneForDataEntryControlPanel = layoutAnchorablePane;
+            //        LayoutAnchorablePaneGroup panegroup = layoutAnchorablePane.Parent as LayoutAnchorablePaneGroup;
+            //        LayoutAnchorableFloatingWindow floatingWindow = panegroup.Parent as LayoutAnchorableFloatingWindow;
+            //        layoutAnchorablePane.FloatingLeft = 0;
+            //        layoutAnchorablePane.FloatingTop = 0;
+            //        panegroup.FloatingLeft = 0;
+            //        panegroup.FloatingTop = 0;
+
+            //    }
+            //}
+
             IEnumerable<LayoutAnchorable> layoutAnchorables = this.DockingManager.Layout.Descendents().OfType<LayoutAnchorable>();
             foreach (LayoutAnchorable layoutAnchorable in layoutAnchorables)
             {

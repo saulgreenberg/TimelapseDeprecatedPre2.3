@@ -636,6 +636,21 @@
   <ItemGroup>
     <Resource Include="Icons\ImageFolder_50.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\DataEntryOnTop_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\DataEntryFloating_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\DataEntryOnSide_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\DataEntryCustomApply_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\DataEntryCustomSave_32x.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.106.0\build\net40\System.Data.SQLite.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

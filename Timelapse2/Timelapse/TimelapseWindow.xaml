@@ -207,25 +207,65 @@
 
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="False">
-                <MenuItem Name="MenuItemWindowReset" Header="_Default Layout" Click="MenuItemWindow_Click" ToolTip="Use the default layout" Tag="DataEntryOnTop"/>
+                <MenuItem Name="MenuItemWindowReset" Header="_Default Layout" Click="MenuItemWindow_Click" ToolTip="Use the default layout" Tag="DataEntryOnTop">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/DataEntryOnTop_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Name="MenuItemWindowLastUsed" Header="_Starting Layout" Click="MenuItemWindow_Click" ToolTip="Restore the layout from the last Timelapse session" Tag="LastUsed"/>
                 <MenuItem Name="MenuItemWindowPositionDataEntryPanel" Header="_Data Entry Panel" ToolTip="Default layouts, which vary in how they position the data entry panel">
-                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_On Top" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="DataEntryOnTop"/>
-                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_On Side" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's side" Tag="DataEntryOnSide"/>
-                    <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_as Floating Window" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears as a floating window" Tag="DataEntryFloating"/>
+                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_On Top" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="DataEntryOnTop">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryOnTop_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_On Side" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's side" Tag="DataEntryOnSide">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryOnSide_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_as Floating Window" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears as a floating window" Tag="DataEntryFloating">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryFloating_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Name="MenuItemWindowCustom1" Header="_Custom Layout 1" ToolTip="Save or load custom layouts">
-                    <MenuItem Name="MenuItemWindowCustom1Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom1"/>
-                    <MenuItem Name="MenuItemWindowCustom1Apply" Header="_Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom1"/>
+                <MenuItem Name="MenuItemWindowCustom1" Header="Custom Layout _1" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom1Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom1">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomSave_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowCustom1Apply" Header="_Restore Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom1">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomApply_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Name="MenuItemWindowCustom2" Header="_Custom Layout 2" ToolTip="Save or load custom layouts">
-                    <MenuItem Name="MenuItemWindowCustom2Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom2"/>
-                    <MenuItem Name="MenuItemWindowCustom2Apply" Header="_Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom2"/>
+                <MenuItem Name="MenuItemWindowCustom2" Header="Custom Layout _2" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom2Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom2">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomSave_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowCustom2Apply" Header="_Restore Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom2">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomApply_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Name="MenuItemWindowCustom3" Header="_Custom Layout 3" ToolTip="Save or load custom layouts">
-                    <MenuItem Name="MenuItemWindowCustom3Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom3"/>
-                    <MenuItem Name="MenuItemWindowCustom3Apply" Header="__Apply Saved Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom3"/>
+                <MenuItem Name="MenuItemWindowCustom3" Header="Custom Layout _3" ToolTip="Save or load custom layouts">
+                    <MenuItem Name="MenuItemWindowCustom3Save" Header="_Save Current Layout" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="Custom3">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomSave_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemWindowCustom3Apply" Header="_Restore Layout" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="Custom3">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/DataEntryCustomApply_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
             </MenuItem>
 
@@ -290,7 +330,7 @@
                     <!-- Data Entry Controls Pane -->
                     <!--It looks like we don't need to set the LayoutAnchorablePaneGroup, But I kept the code for now just in case.-->
                     <!--<xcad:LayoutAnchorablePaneGroup DockHeight="Auto">-->
-                    <xcad:LayoutAnchorablePane DockHeight="Auto">
+                    <xcad:LayoutAnchorablePane x:Name="LayoutAnchorablePaneForDataEntryControlPanel" DockHeight="Auto">
                         <xcad:LayoutAnchorable x:Name="DataEntryControlPanel" ContentId="ContentIDDataEntryControlPanel"
                                                Title="Data Entry" CanClose="False" CanAutoHide="False" CanHide="False" IsVisible="False" 
                                                PropertyChanging="LayoutAnchorable_PropertyChanging">
