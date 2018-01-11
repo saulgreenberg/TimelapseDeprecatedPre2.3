@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -32,7 +31,7 @@ namespace Timelapse.Controls
 
         // We need to get selected files from the clickableimages grid, so we need this reference
         public ClickableImagesGrid ClickableImagesGrid { get; set; }
-
+        public MarkableCanvas MarkableCanvas { get; set; }
         #region Loading, Disposing
         public DataEntryHandler(FileDatabase fileDatabase)
         {
@@ -553,7 +552,7 @@ namespace Timelapse.Controls
         // depending upon whether we are in the single image or  the ClickableImagesGrid view respectively.
         private void UpdateRowsDependingOnClickableImageGridState(string datalabel, string content)
         {
-            if (this.ClickableImagesGrid.IsVisible == false)
+            if (this.ClickableImagesGrid.IsVisible == false && this.MarkableCanvas.ClickableImagesState == 0)
             {
                 // Only a single image is displayed: update the database for the current row with the control's value
                 this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, datalabel, content);

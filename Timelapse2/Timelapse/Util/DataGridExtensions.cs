@@ -162,14 +162,13 @@ namespace Timelapse.Util
                     // This shouldn't happen, but...
                     throw new ArgumentException(string.Format("{0} is an invalid row index.", rowIndex));
                 }
-
-                object item = dataGrid.Items[rowIndex];
-                dataGrid.SelectedItems.Add(item);
+                dataGrid.SelectedItems.Add(dataGrid.Items[rowIndex]);
 
                 // SAULXXX DELETE THIS CODE?
                 // I can't recall why I had this code in here, as I can't see why I need to focus on a particular cell.
                 // The bad side effect of it is that, if the datagrid is visible (e.g., as a separate pane), it grabs the focus
                 // away from other windows.
+                // //object item = dataGrid.Items[rowIndex];
                 //DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
                 //if (row == null)
                 //{
