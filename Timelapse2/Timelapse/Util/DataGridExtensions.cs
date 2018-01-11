@@ -106,7 +106,6 @@ namespace Timelapse.Util
                     }
                 }
             }
-
             #if DeBUG
             // We don't expect these to fail, but just in case
             if (rowIndexesToSelect.Count != IdRowIndexes.Count || topmostRowIndex == int.MaxValue)
@@ -155,7 +154,6 @@ namespace Timelapse.Util
                 dataGrid.SelectedIndex = rowIndex;  // This used to be for single selection. 
                 return;
             }
-
             // Multiple indexes are selected
             foreach (int rowIndex in rowIndexes)
             {
@@ -168,20 +166,24 @@ namespace Timelapse.Util
                 object item = dataGrid.Items[rowIndex];
                 dataGrid.SelectedItems.Add(item);
 
-                DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                if (row == null)
-                {
-                    // dataGrid.ScrollIntoView(item);  CHANGE ABOVE TO SCROLL THE FIRST ITEM
-                    row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                }
-                if (row != null)
-                {
-                    DataGridCell cell = GetCell(dataGrid, row, 0);
-                    if (cell != null)
-                    { 
-                        cell.Focus();
-                    }
-                }
+                // SAULXXX DELETE THIS CODE?
+                // I can't recall why I had this code in here, as I can't see why I need to focus on a particular cell.
+                // The bad side effect of it is that, if the datagrid is visible (e.g., as a separate pane), it grabs the focus
+                // away from other windows.
+                //DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
+                //if (row == null)
+                //{
+                //    // dataGrid.ScrollIntoView(item);  CHANGE ABOVE TO SCROLL THE FIRST ITEM
+                //    row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
+                //}
+                //if (row != null)
+                //{
+                //    DataGridCell cell = GetCell(dataGrid, row, 0);
+                //    if (cell != null)
+                //    { 
+                //       cell.Focus();
+                //    }
+                //}
             }
         }
 
