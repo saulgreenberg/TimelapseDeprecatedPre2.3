@@ -23,12 +23,10 @@ using Timelapse.Util;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-
 using System.Windows.Media.Animation;
 using System.Data;
 
 using Xceed.Wpf.AvalonDock.Layout;
-using Xceed.Wpf.AvalonDock.Layout.Serialization;
 using Xceed.Wpf.AvalonDock.Controls;
 
 namespace Timelapse
@@ -128,7 +126,6 @@ namespace Timelapse
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
@@ -145,7 +142,14 @@ namespace Timelapse
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
-            this.DataEntryControlPanel.IsVisible = false;
+            this.DataEntryControlPanel.IsVisible = true;
+            if (this.state.FirstTimeFileLoading)
+            {
+                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
+                this.state.FirstTimeFileLoading = false;
+            }
+            this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
+            this.InstructionPane.IsActive = true;
         }
 
         private void Window_LocationChanged(object sender, EventArgs e)
@@ -818,12 +822,12 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
-            // Load the previously saved layout, if it exists
-            if (this.state.FirstTimeFileLoading)
-            {
-                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
-                this.state.FirstTimeFileLoading = false;
-            }
+            //// Load the previously saved layout, if it exists
+            //if (this.state.FirstTimeFileLoading)
+            //{
+            //    this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
+            //    this.state.FirstTimeFileLoading = false;
+            //}
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
@@ -1855,20 +1859,17 @@ namespace Timelapse
                         this.FilePlayer.Direction = FilePlayerDirection.Backward;
                         this.FilePlayer_ScrollPage();
                     }
-                    break;
-                // These shortcut keys were deleted on request by a user, as they are too easy to hit and not that necessary
-                //case Key.Home:
-                //    {
-                //        FilePlayer_Stop();
-                //        FileNavigatorSlider.Value = 1;
-                //        break;
-                //    }
-                //case Key.End:
-                //    {
-                //        FilePlayer_Stop();
-                //        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
-                //        break;
-                //    }
+                    break;          
+                case Key.Home:
+                    {
+                        this.ImageSetPane.IsActive = true;
+                        break;
+                    }
+                case Key.End:
+                    {
+                        this.DataGridPane.IsActive = true; 
+                        break;
+                    }
                 default:
                     return;
             }
@@ -1893,7 +1894,7 @@ namespace Timelapse
             IInputElement focusedElement = FocusManager.GetFocusedElement(this);
             if ((focusedElement == null) || (focusedElement is TextBox == false))
             {
-                this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
+                //this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
             }
         }
 
@@ -3407,6 +3408,8 @@ namespace Timelapse
                     // SAULXXX: Note that the Floating DocumentPane (i.e., the DataGrid) behaviour is not what we want
                     // That is, it always appears topmost. yet if we set it to null, then it disappears behind the main 
                     // window when the mouse is moved over the main window (vs. clicking in it).
+                    floatingWindow.Owner = null;
+                    floatingWindow.ShowInTaskbar = true;
                     continue;
                 }
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
@@ -3730,10 +3733,17 @@ namespace Timelapse
                 this.DataGridSelectionsTimer.Start();
             }
         }
+
+        // When we scroll the datagrid, we want to stop the timer updating the selection, 
+        // as otherwise it would jump to the selection position
+        private void DataGridScrollBar_Scroll(object sender, ScrollChangedEventArgs e)
+        {
+            this.DataGridSelectionsTimer.Stop(); ;
+        }
         #endregion
 
         #region Help Document - Drag Drop
-            private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
+        private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
         {
             Utilities.OnHelpDocumentPreviewDrag(dragEvent);
         }
@@ -3852,8 +3862,8 @@ namespace Timelapse
         }
 
 
-        #endregion
 
+        #endregion
 
     }
 }

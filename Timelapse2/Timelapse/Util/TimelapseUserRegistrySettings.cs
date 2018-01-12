@@ -103,6 +103,14 @@ namespace Timelapse.Util
                 return registryKey.ReadRect(key, new Rect(0.0, 0.0, 1350.0, 900.0)); 
             }
         }
+
+        public bool ReadFromRegistryBool(string key)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                return registryKey.ReadBoolean(key, false);
+            }
+        }
         #endregion
 
         #region Write to registry
@@ -148,6 +156,14 @@ namespace Timelapse.Util
         }
 
         public void WriteToRegistry(string key, Rect value)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                registryKey.Write(key, value);
+            }
+        }
+
+        public void WriteToRegistry(string key, bool value)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
