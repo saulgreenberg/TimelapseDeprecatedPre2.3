@@ -443,12 +443,11 @@
                                     </TextBlock>
                                     <DataGrid Name="DataGrid" Grid.Row="1" MinHeight="100" MinWidth="100"  DockPanel.Dock="Top" HorizontalAlignment="Stretch" FontSize="12" 
                                               VerticalScrollBarVisibility="Auto" IsReadOnly="True" SelectionMode="Extended" SelectionUnit="FullRow" 
-                                              ScrollViewer.ScrollChanged="DataGridScrollBar_Scroll" >
+                                              ScrollViewer.ScrollChanged="DataGridScrollBar_Scroll">
                                         <DataGrid.ItemContainerStyle >
                                             <Style TargetType="DataGridRow">
                                                 <EventSetter Event="MouseLeftButtonUp" Handler="DataGrid_RowSelected"/>
                                             </Style>
-                                            
                                         </DataGrid.ItemContainerStyle>
                                     </DataGrid>
                                 </Grid>

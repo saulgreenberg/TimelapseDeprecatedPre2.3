@@ -50,7 +50,7 @@ namespace Timelapse
         private DispatcherTimer timerFileNavigator;
 
         // Timer used to AutoPlay images via MediaControl buttons
-       DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
+        DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
 
         DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
 
@@ -119,6 +119,7 @@ namespace Timelapse
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
+
         #endregion
 
         #region Window Loading, Closing, and Disposing
@@ -824,12 +825,6 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
-            //// Load the previously saved layout, if it exists
-            //if (this.state.FirstTimeFileLoading)
-            //{
-            //    this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
-            //    this.state.FirstTimeFileLoading = false;
-            //}
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
@@ -1546,6 +1541,8 @@ namespace Timelapse
         // Update the datagrid (including its binding) to show the currently selected images whenever it is made visible. 
         public void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
+            // Because switching to the data grid generates a scroll event, we need to ignore it as it will 
+            // otherwise turn off the data grid timer
             this.DataGridPane_IsActiveChanged(false);
         }
         public void DataGridPane_IsActiveChanged(bool forceUpdate)
@@ -3742,7 +3739,10 @@ namespace Timelapse
                     IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[rowIndex].ID, rowIndex));
                 }
             }
-            this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+            if (this.DataGrid.Items.Count > 0)
+            { 
+                this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+            }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             this.DataGridSelectionsTimer_Reset();
         }
@@ -3751,7 +3751,7 @@ namespace Timelapse
         private void DataGridSelectionsTimer_Reset()
         {
             this.DataGridSelectionsTimer.Stop();
-            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true || this.DataGridPane.IsVisible == true)
+            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
             {
                 this.DataGridSelectionsTimer.Start();
             }
@@ -3761,7 +3761,11 @@ namespace Timelapse
         // as otherwise it would jump to the selection position
         private void DataGridScrollBar_Scroll(object sender, ScrollChangedEventArgs e)
         {
-            this.DataGridSelectionsTimer.Stop(); ;
+            // Stop the timer only if we are actually scrolling, i.e., if the scrolbar thumb has changed positions
+            if (e.VerticalChange != 0)
+            { 
+                this.DataGridSelectionsTimer.Stop();
+            }
         }
         #endregion
 
