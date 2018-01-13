@@ -108,18 +108,17 @@ namespace Timelapse
             this.DataGridSelectionsTimer.Tick += DataGridSelectionsTimer_Tick;
             this.DataGridSelectionsTimer.Interval = Constant.ThrottleValues.DataGridTimerInterval;
 
-            // Restore the window and its size to its previous location
+            // Get the window and its size from its previous location
+            // SAULXX: Note that this is actually redundant, as if AvalonLayout_TryLoad succeeds it will do it again.
+            // Maybe integrate this call with that?
             this.Top = this.state.TimelapseWindowPosition.Y;
             this.Left = this.state.TimelapseWindowPosition.X;
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
-            Utilities.TryFitWindowInWorkingArea(this);
 
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
-
-
         #endregion
 
         #region Window Loading, Closing, and Disposing
@@ -142,10 +141,13 @@ namespace Timelapse
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
-            this.DataEntryControlPanel.IsVisible = true;
             if (this.state.FirstTimeFileLoading)
             {
-                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
+                if (this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed) == false)
+                {
+                    // SAULXX NOTE THAT THIS IS REDUNDANT - WE SHOULD INTEGRATE IT WITH AVALON LAYOUT
+                    Utilities.TryFitWindowInWorkingArea(this);
+                }
                 this.state.FirstTimeFileLoading = false;
             }
             this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
@@ -1761,6 +1763,27 @@ namespace Timelapse
                 this.dataHandler.FileDatabase == null ||
                 this.dataHandler.FileDatabase.CurrentlySelectedFileCount == 0)
             {
+                // SAULXXX: BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
+                // Perhaps we need to change the enable state?
+                switch (currentKey.Key)
+                {
+                    case Key.Home:
+                        this.ImageSetPane.IsEnabled = true;
+                        this.ImageSetPane.IsSelected = true;
+                        break;
+                    case Key.End:
+                        this.DataGridPane.IsEnabled = true;
+                        this.DataGridPane.IsSelected = true;
+                        // SAULXXX: If its floating, we should really be making it topmost
+                        // To do that, we would have to iterate through the floating windows and set it.
+                        //if (this.DataGridPane.IsFloating)
+                        //{
+                            
+                        //}
+                        break;
+                    default:
+                        break;
+                }
                 return; // No images are loaded, so don't try to interpret any keys
             }
 
@@ -1894,7 +1917,7 @@ namespace Timelapse
             IInputElement focusedElement = FocusManager.GetFocusedElement(this);
             if ((focusedElement == null) || (focusedElement is TextBox == false))
             {
-                //this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
+                this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
             }
         }
 

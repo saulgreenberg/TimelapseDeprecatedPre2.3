@@ -409,9 +409,15 @@ namespace Timelapse.Controls
         // As this does not always happen, this means some text changes don't actually get remembered. 
         // This workaround checks to see if the mouse has left the DateTimePicker. If so, it checks for changes to the date/time and updates
         // the values correctly. 
+        // SAULXXX: I think this is repaired in later versions of Xceed: see https://github.com/xceedsoftware/wpftoolkit/issues/1206 for patch
+
         private void DateTime_MouseLeave(object sender, MouseEventArgs e)
         {
             DateTimePicker dateTimePicker = sender as DateTimePicker;
+            if (dateTimePicker.Value == null)
+            {
+                return;
+            }
             DateTime oldDateTime = dateTimePicker.Value.Value;
             DateTime newDateTime = Util.DateTimeHandler.ParseDisplayDateTimeString(dateTimePicker.Text);
             if (oldDateTime == newDateTime)

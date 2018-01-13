@@ -89,9 +89,14 @@ namespace Timelapse.Util
                 {
                     foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
                     {
-                        floatingWindow.Left = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
-                        floatingWindow.Top = timelapse.Top + 100;
+                        // We set the DataEntry Control Panel top / left as it remembers the values (i.e. so the layout will be saved correctly later)
+                        // If we set the floating window top/left directly, it won't remember those values as its just the view.
+                        timelapse.DataEntryControlPanel.FloatingTop = timelapse.Top + 100; 
+                        timelapse.DataEntryControlPanel.FloatingLeft = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
+                        // floatingWindow.Left = 500;//  timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
                     }
+                    // This cause the above values to 'stick'
+                    timelapse.DataEntryControlPanel.Float();
                 }
             }
             return true;
@@ -130,7 +135,9 @@ namespace Timelapse.Util
             Rect windowRect = timelapse.state.ReadFromRegistryRect(registryKey);
 
             // Adjust the window position and size, if needed, to fit into the current screen dimensions
+            // System.Diagnostics.Debug.Print("Oldwin: " + windowRect.ToString());
             windowRect = timelapse.FitIntoScreen(windowRect);
+            // System.Diagnostics.Debug.Print("Newwin: " + windowRect.ToString());
             timelapse.Left = windowRect.Left;
             timelapse.Top = windowRect.Top;
             timelapse.Width = windowRect.Width;
@@ -138,11 +145,10 @@ namespace Timelapse.Util
 
             foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
             {
-
                 windowRect = new Rect(floatingWindow.Left, floatingWindow.Top, floatingWindow.Width, floatingWindow.Height);
-                System.Diagnostics.Debug.Print("OldWindow: " + windowRect.ToString());
+                // System.Diagnostics.Debug.Print("Oldfloat: " + windowRect.ToString());
                 windowRect = timelapse.FitIntoScreen(windowRect);
-                System.Diagnostics.Debug.Print("NewWindow: " + windowRect.ToString());
+                // System.Diagnostics.Debug.Print("Newfloat: " + windowRect.ToString());
                 floatingWindow.Left = windowRect.Left;
                 floatingWindow.Top = windowRect.Top;
                 floatingWindow.Width = windowRect.Width;
@@ -156,8 +162,8 @@ namespace Timelapse.Util
             // We allow some space for the task bar, assuming its visible at the screen's bottom
             // and place the window at the very top. Note that this won't cater for the situation when
             // the task bar is at the top of the screen, but so it goes.
-            System.Windows.Point screen_corner1 = new System.Windows.Point(0,0);
-            System.Windows.Point screen_corner2 = new System.Windows.Point(0, 0); ;
+            System.Windows.Point screen_corner1 = new System.Windows.Point(0, 0);
+            System.Windows.Point screen_corner2 = new System.Windows.Point(0, 0);
             int typicalTaskBarHeight = 40;
             foreach (Screen screen in Screen.AllScreens)
             {
@@ -175,10 +181,10 @@ namespace Timelapse.Util
 
             // Ensure that we have valid coordinates
             double wleft = Double.IsNaN(windowRect.Left) ? 0 : windowRect.Left;
-            double wtop =  Double.IsNaN(windowRect.Top)  ? 0 : windowRect.Top; ;
+            double wtop = Double.IsNaN(windowRect.Top)  ? 0 : windowRect.Top;
             double wheight = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Height;
             double wwidth = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Width;
-            //System.Diagnostics.Debug.Print("OldWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
+            // System.Diagnostics.Debug.Print("OldWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
 
             // If the window's height is larger than the screen's available height, 
             // reposition it to the screen's top and and adjust its height to fill the available height 
@@ -257,10 +263,9 @@ namespace Timelapse.Util
                     // window is too wide and has to narrow to fit screen
                     wwidth = screen_corner2.Y - wright;
                 }
-
             }
-            //System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
-            //System.Diagnostics.Debug.Print("Screen: " + screen_corner1 + "," + screen_corner2);
+            // System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
+            // System.Diagnostics.Debug.Print("Screen: " + screen_corner1 + "," + screen_corner2);
             return new Rect(wleft, wtop, wwidth, wheight);
         }
 
@@ -268,7 +273,7 @@ namespace Timelapse.Util
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             bool windowMaximizeState = timelapse.state.ReadFromRegistryBool(registryKey);
-            timelapse.WindowState = (windowMaximizeState) ? WindowState.Maximized : WindowState.Normal;
+            timelapse.WindowState = windowMaximizeState ? WindowState.Maximized : WindowState.Normal;
         }
 
         // Try to load a layout from the given resourceFilePath
@@ -352,7 +357,7 @@ namespace Timelapse.Util
             }
         }
 
-       //  Save the current timelapse window position and size to the registry
+       // Save the current timelapse window position and size to the registry
         private static void AvalonLayout_SaveWindowPositionAndSizeToRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             Rect windowPositionAndSize = new Rect(timelapse.Left, timelapse.Top, timelapse.Width, timelapse.Height);
