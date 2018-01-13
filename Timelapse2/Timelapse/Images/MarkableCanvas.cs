@@ -296,6 +296,10 @@ namespace Timelapse.Images
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
             this.timerSlider.Tick += TimerSlider_Tick;
+
+            // Default to the image view, as it will be all black
+            this.ImageToDisplay.Visibility = Visibility.Visible;
+            this.VideoToDisplay.Visibility = Visibility.Collapsed;
         }
 
         // Hide the magnifying glass initially, as the mouse pointer may not be atop the canvas

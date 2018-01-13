@@ -42,6 +42,7 @@ namespace Timelapse
             public const string FloatingWindowFloatingWidthProperty = "FloatingWidth";
             public const string FloatingWindowFloatingHeightProperty = "FloatingHeight";
             public const string WindowRegistryKeySuffix = "_window";
+            public const string WindowMaximizeStateRegistryKeySuffix = "_windowmaximized";
         }
 
         public static class AvalonLayoutResourcePaths

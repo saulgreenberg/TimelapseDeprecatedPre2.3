@@ -169,20 +169,20 @@ namespace Timelapse.Util
                 // The bad side effect of it is that, if the datagrid is visible (e.g., as a separate pane), it grabs the focus
                 // away from other windows.
                 // //object item = dataGrid.Items[rowIndex];
-                //DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                //if (row == null)
-                //{
+                // DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
+                // if (row == null)
+                // {
                 //    // dataGrid.ScrollIntoView(item);  CHANGE ABOVE TO SCROLL THE FIRST ITEM
                 //    row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                //}
-                //if (row != null)
-                //{
+                // }
+                // if (row != null)
+                // {
                 //    DataGridCell cell = GetCell(dataGrid, row, 0);
                 //    if (cell != null)
                 //    { 
                 //       cell.Focus();
                 //    }
-                //}
+                // }
             }
         }
 

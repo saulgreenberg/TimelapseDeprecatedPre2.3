@@ -23,12 +23,10 @@ using Timelapse.Util;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-
 using System.Windows.Media.Animation;
 using System.Data;
 
 using Xceed.Wpf.AvalonDock.Layout;
-using Xceed.Wpf.AvalonDock.Layout.Serialization;
 using Xceed.Wpf.AvalonDock.Controls;
 
 namespace Timelapse
@@ -110,25 +108,23 @@ namespace Timelapse
             this.DataGridSelectionsTimer.Tick += DataGridSelectionsTimer_Tick;
             this.DataGridSelectionsTimer.Interval = Constant.ThrottleValues.DataGridTimerInterval;
 
-            // Restore the window and its size to its previous location
+            // Get the window and its size from its previous location
+            // SAULXX: Note that this is actually redundant, as if AvalonLayout_TryLoad succeeds it will do it again.
+            // Maybe integrate this call with that?
             this.Top = this.state.TimelapseWindowPosition.Y;
             this.Left = this.state.TimelapseWindowPosition.X;
             this.Height = this.state.TimelapseWindowPosition.Height;
             this.Width = this.state.TimelapseWindowPosition.Width;
-            Utilities.TryFitWindowInWorkingArea(this);
 
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
-
-
         #endregion
 
         #region Window Loading, Closing, and Disposing
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
@@ -145,7 +141,17 @@ namespace Timelapse
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
-            this.DataEntryControlPanel.IsVisible = false;
+            if (this.state.FirstTimeFileLoading)
+            {
+                if (this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed) == false)
+                {
+                    // SAULXX NOTE THAT THIS IS REDUNDANT - WE SHOULD INTEGRATE IT WITH AVALON LAYOUT
+                    Utilities.TryFitWindowInWorkingArea(this);
+                }
+                this.state.FirstTimeFileLoading = false;
+            }
+            this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
+            this.InstructionPane.IsActive = true;
         }
 
         private void Window_LocationChanged(object sender, EventArgs e)
@@ -818,12 +824,12 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
-            // Load the previously saved layout, if it exists
-            if (this.state.FirstTimeFileLoading)
-            {
-                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
-                this.state.FirstTimeFileLoading = false;
-            }
+            //// Load the previously saved layout, if it exists
+            //if (this.state.FirstTimeFileLoading)
+            //{
+            //    this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
+            //    this.state.FirstTimeFileLoading = false;
+            //}
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
@@ -1757,6 +1763,27 @@ namespace Timelapse
                 this.dataHandler.FileDatabase == null ||
                 this.dataHandler.FileDatabase.CurrentlySelectedFileCount == 0)
             {
+                // SAULXXX: BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
+                // Perhaps we need to change the enable state?
+                switch (currentKey.Key)
+                {
+                    case Key.Home:
+                        this.ImageSetPane.IsEnabled = true;
+                        this.ImageSetPane.IsSelected = true;
+                        break;
+                    case Key.End:
+                        this.DataGridPane.IsEnabled = true;
+                        this.DataGridPane.IsSelected = true;
+                        // SAULXXX: If its floating, we should really be making it topmost
+                        // To do that, we would have to iterate through the floating windows and set it.
+                        //if (this.DataGridPane.IsFloating)
+                        //{
+                            
+                        //}
+                        break;
+                    default:
+                        break;
+                }
                 return; // No images are loaded, so don't try to interpret any keys
             }
 
@@ -1855,20 +1882,17 @@ namespace Timelapse
                         this.FilePlayer.Direction = FilePlayerDirection.Backward;
                         this.FilePlayer_ScrollPage();
                     }
-                    break;
-                // These shortcut keys were deleted on request by a user, as they are too easy to hit and not that necessary
-                //case Key.Home:
-                //    {
-                //        FilePlayer_Stop();
-                //        FileNavigatorSlider.Value = 1;
-                //        break;
-                //    }
-                //case Key.End:
-                //    {
-                //        FilePlayer_Stop();
-                //        FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
-                //        break;
-                //    }
+                    break;          
+                case Key.Home:
+                    {
+                        this.ImageSetPane.IsActive = true;
+                        break;
+                    }
+                case Key.End:
+                    {
+                        this.DataGridPane.IsActive = true; 
+                        break;
+                    }
                 default:
                     return;
             }
@@ -3407,6 +3431,8 @@ namespace Timelapse
                     // SAULXXX: Note that the Floating DocumentPane (i.e., the DataGrid) behaviour is not what we want
                     // That is, it always appears topmost. yet if we set it to null, then it disappears behind the main 
                     // window when the mouse is moved over the main window (vs. clicking in it).
+                    floatingWindow.Owner = null;
+                    floatingWindow.ShowInTaskbar = true;
                     continue;
                 }
                 floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
@@ -3730,10 +3756,17 @@ namespace Timelapse
                 this.DataGridSelectionsTimer.Start();
             }
         }
+
+        // When we scroll the datagrid, we want to stop the timer updating the selection, 
+        // as otherwise it would jump to the selection position
+        private void DataGridScrollBar_Scroll(object sender, ScrollChangedEventArgs e)
+        {
+            this.DataGridSelectionsTimer.Stop(); ;
+        }
         #endregion
 
         #region Help Document - Drag Drop
-            private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
+        private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
         {
             Utilities.OnHelpDocumentPreviewDrag(dragEvent);
         }
@@ -3852,8 +3885,8 @@ namespace Timelapse
         }
 
 
-        #endregion
 
+        #endregion
 
     }
 }
