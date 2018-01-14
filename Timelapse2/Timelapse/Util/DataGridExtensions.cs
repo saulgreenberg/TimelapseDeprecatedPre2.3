@@ -119,7 +119,7 @@ namespace Timelapse.Util
             SelectRowByIndexes(dataGrid, rowIndexesToSelect);
 
             // Depending on our selection direction, we scroll to expose the previous or next 2 rows to ensure they are visible beyond the selected row);
-            int scrollIndex = indexIncreasing ? Math.Min(topmostRowIndex + 2, dataGrid.Items.Count - 1) : Math.Max(topmostRowIndex - 2, 0);
+            int scrollIndex = indexIncreasing ? Math.Min(topmostRowIndex + 3, dataGrid.Items.Count - 1) : Math.Max(topmostRowIndex - 3, 0);
             dataGrid.ScrollIntoView(dataGrid.Items[scrollIndex]);
         }
 
