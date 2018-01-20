@@ -144,11 +144,8 @@ namespace Timelapse
             }
             if (this.state.FirstTimeFileLoading)
             {
-                if (this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed) == false)
-                {
-                    // SAULXX NOTE THAT THIS IS REDUNDANT - WE SHOULD INTEGRATE IT WITH AVALON LAYOUT
-                    Utilities.TryFitWindowInWorkingArea(this);
-                }
+                // Load the previously saved layout. If there is none, TryLoad will default to a reasonable layout and window size/position.
+                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
                 this.state.FirstTimeFileLoading = false;
             }
             this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
@@ -207,6 +204,20 @@ namespace Timelapse
             if (sender != null && this.DataEntryControlPanel.IsVisible == true)
             {
                 this.AvalonLayout_TrySave(Constant.AvalonLayoutTags.LastUsed);
+            }
+            else if (sender != null)
+            {
+                // If the data entry control panel is not visible, we should do a reduced layut save i.e.,
+                // where we save ony the position and size of the main window and whether its maximized
+                // This is useful for the situation where:
+                // - the user has opened timelapse but not loaded an image set
+                // - they moved/resized/ maximized the window
+                // - they exited without loading an image set.
+                // On reload, it will show the timelapse window at the former place/size/maximize state
+                // The catch is that if there is a flaoting data entry window, that window will appear at its original place, i.e., where it was when
+                // last used to analyze an image set. That is, it may be in an awkward position as it is not moved relative to the timelapse window. 
+                // There is no real easy solution for that, except to make the (floating) data entry window always visible on loading (which I don't really want to do). But I don't expect it to be a big problem.
+                this.AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(Constant.AvalonLayoutTags.LastUsed);
             }
 
             // persist user specific state to the registry
@@ -705,10 +716,7 @@ namespace Timelapse
                 // if we want to load the data from that...
                 if (File.Exists(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName)))
                 {
-                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile()
-                    {
-                        Owner = this
-                    };
+                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile(this);
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {

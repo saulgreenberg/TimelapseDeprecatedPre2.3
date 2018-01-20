@@ -101,7 +101,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
         }
 
         #region Activate Hyperlinks in the flow document

@@ -13,15 +13,16 @@ namespace Timelapse.Dialog
         /// Ask the user to indicate the path to a code template file (called if there is no code template file in the image folder). 
         /// If a code template file is found, it is copied to the image folder. 
         /// </summary>
-        public ImportImageSetXmlFile()
+        public ImportImageSetXmlFile(Window owner)
         {
             this.InitializeComponent();
+            this.Owner = owner;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
         }
         // Browse for a code template file
         private void UseOldDataButton_Click(object sender, RoutedEventArgs e)

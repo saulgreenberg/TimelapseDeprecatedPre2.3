@@ -39,7 +39,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
             // marking the OK button IsDefault to associate it with dialog completion also gives it initial focus
             // It's more helpful to put focus on the database list as this saves having to tab to the list as a first step.
             this.FileDatabases.Focus();

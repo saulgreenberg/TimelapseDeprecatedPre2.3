@@ -13,12 +13,17 @@ namespace Timelapse.Dialog
         public AboutTimelapse(Window owner)
         {
             this.InitializeComponent();
-            Utilities.TryFitWindowInWorkingArea(this);
+            this.Owner = owner;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Utilities.SetDefaultDialogPosition(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
             this.NavigateVersionUrl.NavigateUri = Constant.VersionChangesAddress;
             this.NavigateCreativeCommonLicense.NavigateUri = Constant.CreativeCommonsLicense;
             this.NavigateAdditionalLicenseDetails.NavigateUri = Constant.AdditionalLicenseDetails;
 
-            this.Owner = owner;
             Version curVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             this.Version.Text = curVersion.ToString();
 

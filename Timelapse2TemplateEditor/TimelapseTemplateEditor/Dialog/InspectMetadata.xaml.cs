@@ -31,7 +31,7 @@ namespace Timelapse.Editor.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
         }
 
         #region Datagrid callbacks
