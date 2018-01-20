@@ -12,6 +12,9 @@ using Xceed.Wpf.AvalonDock.Layout.Serialization;
 
 namespace Timelapse.Util
 {
+    // These extensions save and restore the Avalon layouts (including main window and floating windows positions and sizes).
+    // Default layouts are stored as resources so they are always accessible, while user-created layouts (including the last saved layout) is stored in 
+    // the user's computer registry. If there is no last-saved layout found in the registry, a standard data entry on top default layout is used. 
     public static class TimelapseAvalonExtensions
     {
         #region Loading layouts
@@ -62,6 +65,11 @@ namespace Timelapse.Util
             }
             if (result == false)
             {
+                // We are trying to load the last-used layout, but there isn't one. As a fallback, 
+                // we use the default configuration as specified in the XAML: - all tiled with the data entry on top. 
+                // Eve so, we check to see if the window position and size were saved; if they aren't there, it defaults to a reasonable size and position.
+                timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
+                timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
                 return result;
             }
 
@@ -132,7 +140,7 @@ namespace Timelapse.Util
         private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             // Retrieve the window position and size
-            Rect windowRect = timelapse.state.ReadFromRegistryRect(registryKey);
+            Rect windowRect = timelapse.state.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
 
             // Adjust the window position and size, if needed, to fit into the current screen dimensions
             // System.Diagnostics.Debug.Print("Oldwin: " + windowRect.ToString());
@@ -272,7 +280,7 @@ namespace Timelapse.Util
         // Retrieve the maximize state from the registry and set the timelapse window to that state
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
-            bool windowMaximizeState = timelapse.state.ReadFromRegistryBool(registryKey);
+            bool windowMaximizeState = timelapse.state.ReadTimelapseWindowMaximizeStateFromRegistryBool(registryKey);
             timelapse.WindowState = windowMaximizeState ? WindowState.Maximized : WindowState.Normal;
         }
 
@@ -347,8 +355,7 @@ namespace Timelapse.Util
             {
                 // Write the string to the registry under the given key name
                 timelapse.state.WriteToRegistry(registryKey, xmlText.ToString());
-                timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDock.WindowRegistryKeySuffix);
-                timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+                AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
                 return true;
             }
             else
@@ -357,7 +364,13 @@ namespace Timelapse.Util
             }
         }
 
-       // Save the current timelapse window position and size to the registry
+        public static void AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(this TimelapseWindow timelapse, string registryKey)
+        {
+            timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDock.WindowRegistryKeySuffix);
+            timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+        }
+
+        // Save the current timelapse window position and size to the registry
         private static void AvalonLayout_SaveWindowPositionAndSizeToRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             Rect windowPositionAndSize = new Rect(timelapse.Left, timelapse.Top, timelapse.Width, timelapse.Height);

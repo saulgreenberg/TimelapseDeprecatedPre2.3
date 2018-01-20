@@ -96,15 +96,15 @@ namespace Timelapse.Util
                 return registryKey.ReadString(key, String.Empty);
             }
         }
-        public Rect ReadFromRegistryRect(string key)
+        public Rect ReadTimelapseWindowPositionAndSizeFromRegistryRect(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return registryKey.ReadRect(key, new Rect(0.0, 0.0, 1350.0, 900.0)); 
+                return registryKey.ReadRect(key, new Rect(0.0, 0.0, Constant.AvalonDock.DefaultTimelapseWindowWidth, Constant.AvalonDock.DefaultTimelapseWindowHeight)); 
             }
         }
 
-        public bool ReadFromRegistryBool(string key)
+        public bool ReadTimelapseWindowMaximizeStateFromRegistryBool(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {

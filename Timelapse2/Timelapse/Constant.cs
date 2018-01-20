@@ -35,6 +35,8 @@ namespace Timelapse
 
         public static class AvalonDock
         {
+            public const double DefaultTimelapseWindowHeight = 900.0;
+            public const double DefaultTimelapseWindowWidth = 1350.0;
             public const double FloatingWindowMinimumHeight = 119;
             public const double FloatingWindowMinimumWidth = 275;
             public const double FloatingWindowLimitSizeHeightCorrection = 40.0;

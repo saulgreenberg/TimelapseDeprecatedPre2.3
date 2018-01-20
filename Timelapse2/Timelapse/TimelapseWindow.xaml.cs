@@ -50,7 +50,7 @@ namespace Timelapse
         private DispatcherTimer timerFileNavigator;
 
         // Timer used to AutoPlay images via MediaControl buttons
-       DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
+        DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
 
         DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
 
@@ -119,6 +119,7 @@ namespace Timelapse
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
+
         #endregion
 
         #region Window Loading, Closing, and Disposing
@@ -143,11 +144,8 @@ namespace Timelapse
             }
             if (this.state.FirstTimeFileLoading)
             {
-                if (this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed) == false)
-                {
-                    // SAULXX NOTE THAT THIS IS REDUNDANT - WE SHOULD INTEGRATE IT WITH AVALON LAYOUT
-                    Utilities.TryFitWindowInWorkingArea(this);
-                }
+                // Load the previously saved layout. If there is none, TryLoad will default to a reasonable layout and window size/position.
+                this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
                 this.state.FirstTimeFileLoading = false;
             }
             this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
@@ -206,6 +204,20 @@ namespace Timelapse
             if (sender != null && this.DataEntryControlPanel.IsVisible == true)
             {
                 this.AvalonLayout_TrySave(Constant.AvalonLayoutTags.LastUsed);
+            }
+            else if (sender != null)
+            {
+                // If the data entry control panel is not visible, we should do a reduced layut save i.e.,
+                // where we save ony the position and size of the main window and whether its maximized
+                // This is useful for the situation where:
+                // - the user has opened timelapse but not loaded an image set
+                // - they moved/resized/ maximized the window
+                // - they exited without loading an image set.
+                // On reload, it will show the timelapse window at the former place/size/maximize state
+                // The catch is that if there is a flaoting data entry window, that window will appear at its original place, i.e., where it was when
+                // last used to analyze an image set. That is, it may be in an awkward position as it is not moved relative to the timelapse window. 
+                // There is no real easy solution for that, except to make the (floating) data entry window always visible on loading (which I don't really want to do). But I don't expect it to be a big problem.
+                this.AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(Constant.AvalonLayoutTags.LastUsed);
             }
 
             // persist user specific state to the registry
@@ -704,10 +716,7 @@ namespace Timelapse
                 // if we want to load the data from that...
                 if (File.Exists(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName)))
                 {
-                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile()
-                    {
-                        Owner = this
-                    };
+                    ImportImageSetXmlFile importLegacyXmlDialog = new ImportImageSetXmlFile(this);
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
@@ -824,12 +833,6 @@ namespace Timelapse
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
 
-            //// Load the previously saved layout, if it exists
-            //if (this.state.FirstTimeFileLoading)
-            //{
-            //    this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
-            //    this.state.FirstTimeFileLoading = false;
-            //}
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
@@ -1546,6 +1549,8 @@ namespace Timelapse
         // Update the datagrid (including its binding) to show the currently selected images whenever it is made visible. 
         public void DataGridPane_IsActiveChanged(object sender, EventArgs e)
         {
+            // Because switching to the data grid generates a scroll event, we need to ignore it as it will 
+            // otherwise turn off the data grid timer
             this.DataGridPane_IsActiveChanged(false);
         }
         public void DataGridPane_IsActiveChanged(bool forceUpdate)
@@ -3742,7 +3747,10 @@ namespace Timelapse
                     IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[rowIndex].ID, rowIndex));
                 }
             }
-            this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+            if (this.DataGrid.Items.Count > 0)
+            { 
+                this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+            }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             this.DataGridSelectionsTimer_Reset();
         }
@@ -3751,7 +3759,7 @@ namespace Timelapse
         private void DataGridSelectionsTimer_Reset()
         {
             this.DataGridSelectionsTimer.Stop();
-            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true || this.DataGridPane.IsVisible == true)
+            if (this.DataGridPane.IsActive == true || this.DataGridPane.IsFloating == true)
             {
                 this.DataGridSelectionsTimer.Start();
             }
@@ -3761,7 +3769,11 @@ namespace Timelapse
         // as otherwise it would jump to the selection position
         private void DataGridScrollBar_Scroll(object sender, ScrollChangedEventArgs e)
         {
-            this.DataGridSelectionsTimer.Stop(); ;
+            // Stop the timer only if we are actually scrolling, i.e., if the scrolbar thumb has changed positions
+            if (e.VerticalChange != 0)
+            { 
+                this.DataGridSelectionsTimer.Stop();
+            }
         }
         #endregion
 

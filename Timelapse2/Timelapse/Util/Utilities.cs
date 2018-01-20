@@ -178,7 +178,11 @@ namespace Timelapse.Util
             exitNotification.ShowDialog();
         }
 
-        public static bool TryFitWindowInWorkingArea(Window window)
+        // Used to ensure that the window is positioned within the screen
+        // Note that all uses of this method is by dialog box windows (which should be initialy positioned relative to the main timelapse window) by a call to SetDefaultDialogPosition), 
+        // rather than the main timelapse window (whose position, size and layout  is managed by the TimelapseAvalonExtension methods). 
+        // We could likely collapse the two, but its not worth the bother. 
+        public static bool TryFitDialogWindowInWorkingArea(Window window)
         {
             if (window == null)
             {

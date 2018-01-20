@@ -46,7 +46,7 @@ namespace Timelapse.Dialog
         {
             // Adjust this dialog window position 
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
 
             // And vs Or conditional
             if (this.database.CustomSelection.TermCombiningOperator == CustomSelectionOperator.And)

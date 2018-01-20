@@ -53,7 +53,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
             // If the caller invokes Show with Abort = true (i.e., count = 0), this will at least show an empty dialog.
             this.UpdateDisplay(this.ambiguousDatesList.Count > 0);
         }

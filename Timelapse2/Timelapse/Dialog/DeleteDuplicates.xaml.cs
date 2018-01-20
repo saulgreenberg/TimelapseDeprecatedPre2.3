@@ -20,7 +20,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
             if (this.fileNames.Count == 0)
             {
                 this.DeletedFiles.Items.Add("No duplicate files found.");

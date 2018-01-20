@@ -55,7 +55,7 @@ namespace Timelapse.Dialog
         {
             // Make sure the title bar of the dialog box is on the screen. For small screens it may default to being off the screen
             Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitWindowInWorkingArea(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
 
             this.DarkThreshold.Value = this.userSettings.DarkPixelThreshold;
             this.DarkThreshold.ValueChanged += this.DarkThresholdSlider_ValueChanged;
