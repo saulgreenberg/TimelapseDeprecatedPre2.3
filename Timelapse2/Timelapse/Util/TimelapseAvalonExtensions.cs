@@ -141,6 +141,10 @@ namespace Timelapse.Util
         {
             // Retrieve the window position and size
             Rect windowRect = timelapse.state.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
+            // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
+            //windowRect.Height = Math.Abs(windowRect.Height);
+            //
+            windowRect.Width = Math.Abs(windowRect.Width);
 
             // Adjust the window position and size, if needed, to fit into the current screen dimensions
             // System.Diagnostics.Debug.Print("Oldwin: " + windowRect.ToString());
@@ -166,115 +170,129 @@ namespace Timelapse.Util
 
         public static Rect FitIntoScreen(this TimelapseWindow timelapse, Rect windowRect)
         {
-            // Retrieve the bounds of the multi-screen coordinates, as top left and bottom right corners
-            // We allow some space for the task bar, assuming its visible at the screen's bottom
-            // and place the window at the very top. Note that this won't cater for the situation when
-            // the task bar is at the top of the screen, but so it goes.
-            System.Windows.Point screen_corner1 = new System.Windows.Point(0, 0);
-            System.Windows.Point screen_corner2 = new System.Windows.Point(0, 0);
-            int typicalTaskBarHeight = 40;
-            foreach (Screen screen in Screen.AllScreens)
+            System.Diagnostics.Debug.Print("windowRect: " + windowRect.ToString());
+            // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
+            if (windowRect.Height <= 0 || windowRect.Width < -0)
             {
-                screen_corner1.X = Math.Min(screen_corner1.X, screen.Bounds.Left);
-                screen_corner1.Y = Math.Min(screen_corner1.Y, screen.Bounds.Top);
-                screen_corner2.X = Math.Max(screen_corner2.X, screen.Bounds.Left + screen.Bounds.Width);
-                screen_corner2.Y = Math.Max(screen_corner2.Y, screen.Bounds.Top + screen.Bounds.Height - typicalTaskBarHeight);
+                System.Diagnostics.Debug.Print("Height width is " + windowRect.Height + " " + windowRect.Width);
             }
-            // Convert the screen coordinates to wpf coordinates
-            PresentationSource source = PresentationSource.FromVisual(timelapse);
-            screen_corner1 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner1);
-            screen_corner2 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner2);
-            double screen_width = Math.Abs(screen_corner2.X - screen_corner1.X);
-            double screen_height = Math.Abs(screen_corner2.Y - screen_corner1.Y);
-
-            // Ensure that we have valid coordinates
-            double wleft = Double.IsNaN(windowRect.Left) ? 0 : windowRect.Left;
-            double wtop = Double.IsNaN(windowRect.Top)  ? 0 : windowRect.Top;
-            double wheight = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Height;
-            double wwidth = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Width;
-            // System.Diagnostics.Debug.Print("OldWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
-
-            // If the window's height is larger than the screen's available height, 
-            // reposition it to the screen's top and and adjust its height to fill the available height 
-            if (wheight > screen_height)
+            try
             {
-                wheight = screen_height;
-                wtop = screen_corner1.Y;
-            }
-            // If the window's width is larger than the screen's available width, 
-            // reposition it to the left and and adjust its width to fill the available width 
-            if (wwidth > screen_width)
-            {
-                wwidth = screen_width;
-                wleft = screen_corner1.X;
-            }
-            double wbottom = wtop + wheight;
-            double wright = wleft + wwidth;
-
-            // move window up if it extends below the working area
-            if (wbottom > screen_corner2.Y)
-            {
-                double pixelsToMoveUp = wbottom - screen_corner2.Y;
-                if (pixelsToMoveUp > wtop)
+                // Retrieve the bounds of the multi-screen coordinates, as top left and bottom right corners
+                // We allow some space for the task bar, assuming its visible at the screen's bottom
+                // and place the window at the very top. Note that this won't cater for the situation when
+                // the task bar is at the top of the screen, but so it goes.
+                System.Windows.Point screen_corner1 = new System.Windows.Point(0, 0);
+                System.Windows.Point screen_corner2 = new System.Windows.Point(0, 0);
+                int typicalTaskBarHeight = 40;
+                foreach (Screen screen in Screen.AllScreens)
                 {
-                    // window is too tall and has to shorten to fit screen
-                    wtop = 0;
+                    screen_corner1.X = Math.Min(screen_corner1.X, screen.Bounds.Left);
+                    screen_corner1.Y = Math.Min(screen_corner1.Y, screen.Bounds.Top);
+                    screen_corner2.X = Math.Max(screen_corner2.X, screen.Bounds.Left + screen.Bounds.Width);
+                    screen_corner2.Y = Math.Max(screen_corner2.Y, screen.Bounds.Top + screen.Bounds.Height - typicalTaskBarHeight);
+                }
+                // Convert the screen coordinates to wpf coordinates
+                PresentationSource source = PresentationSource.FromVisual(timelapse);
+                screen_corner1 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner1);
+                screen_corner2 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner2);
+                double screen_width = Math.Abs(screen_corner2.X - screen_corner1.X);
+                double screen_height = Math.Abs(screen_corner2.Y - screen_corner1.Y);
+
+                // Ensure that we have valid coordinates
+                double wleft = Double.IsNaN(windowRect.Left) ? 0 : windowRect.Left;
+                double wtop = Double.IsNaN(windowRect.Top) ? 0 : windowRect.Top;
+                double wheight = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Height;
+                double wwidth = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Width;
+                // System.Diagnostics.Debug.Print("OldWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
+
+                // If the window's height is larger than the screen's available height, 
+                // reposition it to the screen's top and and adjust its height to fill the available height 
+                if (wheight > screen_height)
+                {
                     wheight = screen_height;
+                    wtop = screen_corner1.Y;
                 }
-                else if (pixelsToMoveUp > 0)
+                // If the window's width is larger than the screen's available width, 
+                // reposition it to the left and and adjust its width to fill the available width 
+                if (wwidth > screen_width)
                 {
-                    // move window up
-                    wtop -= pixelsToMoveUp;
-                }
-            }
-
-            // move window down if it extends above the working area
-            if (wtop < screen_corner1.Y)
-            {
-                double pixelsToMoveDown = Math.Abs(screen_corner1.Y - wtop);
-                // move window down
-                wtop += pixelsToMoveDown;
-                if (wtop + wheight > screen_corner2.Y - wtop)
-                {
-                    wheight = screen_corner2.Y - wtop;
-                }
-            }
-
-            // move window left if it extends right of the working area
-            if (wright > screen_corner2.X)
-            {
-                double pixelsToMoveLeft = wright - screen_corner2.X;
-                if (pixelsToMoveLeft > wleft)
-                {
-                    // window is too wide and has to narrow to fit screen
-                    wleft = screen_corner1.X;
                     wwidth = screen_width;
+                    wleft = screen_corner1.X;
                 }
-                else if (pixelsToMoveLeft > 0)
-                {
-                    // move window left
-                    wleft -= pixelsToMoveLeft;
-                }
-            }
+                double wbottom = wtop + wheight;
+                double wright = wleft + wwidth;
 
-            // move window right if it extends left of the working area
-            if (wleft < screen_corner1.X)
-            {
-                double pixelsToMoveRight = screen_corner1.X - wleft;
-                if (pixelsToMoveRight > 0)
+                // move window up if it extends below the working area
+                if (wbottom > screen_corner2.Y)
                 {
-                    // move window left
-                    wleft += pixelsToMoveRight;
+                    double pixelsToMoveUp = wbottom - screen_corner2.Y;
+                    if (pixelsToMoveUp > wtop)
+                    {
+                        // window is too tall and has to shorten to fit screen
+                        wtop = 0;
+                        wheight = screen_height;
+                    }
+                    else if (pixelsToMoveUp > 0)
+                    {
+                        // move window up
+                        wtop -= pixelsToMoveUp;
+                    }
                 }
-                if (wleft + wwidth > screen_corner2.Y)
+
+                // move window down if it extends above the working area
+                if (wtop < screen_corner1.Y)
                 {
-                    // window is too wide and has to narrow to fit screen
-                    wwidth = screen_corner2.Y - wright;
+                    double pixelsToMoveDown = Math.Abs(screen_corner1.Y - wtop);
+                    // move window down
+                    wtop += pixelsToMoveDown;
+                    if (wtop + wheight > screen_corner2.Y - wtop)
+                    {
+                        wheight = screen_corner2.Y - wtop;
+                    }
                 }
+
+                // move window left if it extends right of the working area
+                if (wright > screen_corner2.X)
+                {
+                    double pixelsToMoveLeft = wright - screen_corner2.X;
+                    if (pixelsToMoveLeft > wleft)
+                    {
+                        // window is too wide and has to narrow to fit screen
+                        wleft = screen_corner1.X;
+                        wwidth = screen_width;
+                    }
+                    else if (pixelsToMoveLeft > 0)
+                    {
+                        // move window left
+                        wleft -= pixelsToMoveLeft;
+                    }
+                }
+
+                // move window right if it extends left of the working area
+                if (wleft < screen_corner1.X)
+                {
+                    double pixelsToMoveRight = screen_corner1.X - wleft;
+                    if (pixelsToMoveRight > 0)
+                    {
+                        // move window left
+                        wleft += pixelsToMoveRight;
+                    }
+                    if (wleft + wwidth > screen_corner2.Y)
+                    {
+                        // window is too wide and has to narrow to fit screen
+                        wwidth = screen_corner2.Y - wright;
+                    }
+                }
+                // System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
+                // System.Diagnostics.Debug.Print("Screen: " + screen_corner1 + "," + screen_corner2);
+                return new Rect(wleft, wtop, wwidth, wheight);
             }
-            // System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
-            // System.Diagnostics.Debug.Print("Screen: " + screen_corner1 + "," + screen_corner2);
-            return new Rect(wleft, wtop, wwidth, wheight);
+            catch
+            {
+                System.Diagnostics.Debug.Print("Catch: Problem in TimelapseAvalonExtensions - FitIntoScreen");
+                return new Rect(5, 5, 740, 740);     
+            }
         }
 
         // Retrieve the maximize state from the registry and set the timelapse window to that state
