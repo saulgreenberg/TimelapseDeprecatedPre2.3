@@ -10,6 +10,8 @@ namespace Timelapse.Util
     {
         #region Settings
         public bool AudioFeedback { get; set; }
+        public Point BookmarkScale { get; set; }
+        public Point BookmarkTranslation { get; set; }
         public CustomSelectionOperator CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
@@ -55,6 +57,8 @@ namespace Timelapse.Util
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
                 this.AudioFeedback = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.AudioFeedback, false);
+                this.BookmarkScale = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleY, 1.0));
+                this.BookmarkTranslation = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationY, 1.0));
                 this.ClassifyDarkImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperator>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperator.And);
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.Images.DarkPixelRatioThresholdDefault);
@@ -120,6 +124,10 @@ namespace Timelapse.Util
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
                 registryKey.Write(Constant.Registry.TimelapseKey.AudioFeedback, this.AudioFeedback);
+                registryKey.Write(Constant.Registry.TimelapseKey.BookmarkScaleX, this.BookmarkScale.X);
+                registryKey.Write(Constant.Registry.TimelapseKey.BookmarkScaleY, this.BookmarkScale.Y);
+                registryKey.Write(Constant.Registry.TimelapseKey.BookmarkTranslationX, this.BookmarkTranslation.X);
+                registryKey.Write(Constant.Registry.TimelapseKey.BookmarkTranslationY, this.BookmarkTranslation.Y);
                 registryKey.Write(Constant.Registry.TimelapseKey.TimelapseWindowPosition, this.TimelapseWindowPosition);
                 registryKey.Write(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelRatio, this.DarkPixelRatioThreshold);
@@ -148,6 +156,14 @@ namespace Timelapse.Util
 
         // Write a single registry entry 
         public void WriteToRegistry(string key, string value)
+        {
+            using (RegistryKey registryKey = this.OpenRegistryKey())
+            {
+                registryKey.Write(key, value);
+            }
+        }
+
+        public void WriteToRegistry(string key, double value)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {

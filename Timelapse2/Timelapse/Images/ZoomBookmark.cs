@@ -36,6 +36,24 @@ namespace Timelapse.Images
             this.Translation = new Point(translation.X, translation.Y);
         }
 
+        public void Set(Point scale, Point translation)
+        {
+            // bookmarks use absolute positions and are therefore specific to a particular display size
+            // A corollary of this is the scale transform's center need not be persisted as the bookmark's reset when the display size changes.
+            this.Scale = scale;
+            this.Translation = translation;
+        }
+
+        public Point GetScale ()
+        {
+            return this.Scale;
+        }
+
+        public Point GetTranslation()
+        {
+            return this.Translation;
+        }
+
         public override string ToString()
         {
             return String.Format("{0},{1},{2},{3}", this.Scale.X, this.Scale.Y, this.Translation.X, this.Translation.Y);

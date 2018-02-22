@@ -73,7 +73,7 @@ namespace Timelapse.Util
                 return result;
             }
 
-            // After deserializing, a completely new LayoutRoot boject is created.
+            // After deserializing, a completely new LayoutRoot object is created.
             // This means we have to reset various things so the documents in the new object behave correctly.
             // This includes resetting the callbacks to the DataGrid.IsActiveChanged
             timelapse.DataEntryControlPanel.PropertyChanging -= timelapse.LayoutAnchorable_PropertyChanging;
@@ -88,6 +88,10 @@ namespace Timelapse.Util
                 timelapse.DataGridPane_IsActiveChanged(true);
             }
 
+            // Force an update to the DataEntryControlPanel if its visible, as the above doesn't trigger it
+            timelapse.DataEntryControlPanel.IsVisible = true;
+            //timelapse.DataEntryControls.Visibility= Visibility.Visible;
+
             // Special case for DataEntryFloating:
             // Reposition the floating window in the middle of the main window, but just below the top
             // Note that this assumes there is just a single floating window (which should be the case for this configuration)
@@ -101,7 +105,6 @@ namespace Timelapse.Util
                         // If we set the floating window top/left directly, it won't remember those values as its just the view.
                         timelapse.DataEntryControlPanel.FloatingTop = timelapse.Top + 100; 
                         timelapse.DataEntryControlPanel.FloatingLeft = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
-                        // floatingWindow.Left = 500;//  timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
                     }
                     // This cause the above values to 'stick'
                     timelapse.DataEntryControlPanel.Float();
@@ -142,14 +145,13 @@ namespace Timelapse.Util
             // Retrieve the window position and size
             Rect windowRect = timelapse.state.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
             // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
-            //windowRect.Height = Math.Abs(windowRect.Height);
-            //
+            windowRect.Height = Math.Abs(windowRect.Height);
             windowRect.Width = Math.Abs(windowRect.Width);
 
             // Adjust the window position and size, if needed, to fit into the current screen dimensions
-            // System.Diagnostics.Debug.Print("Oldwin: " + windowRect.ToString());
-            windowRect = timelapse.FitIntoScreen(windowRect);
-            // System.Diagnostics.Debug.Print("Newwin: " + windowRect.ToString());
+            //System.Diagnostics.Debug.Print("Old timelapse win: " + windowRect.ToString());
+            windowRect = timelapse.FitIntoASingleScreen(windowRect);
+            //System.Diagnostics.Debug.Print("New timelapse win: " + windowRect.ToString());
             timelapse.Left = windowRect.Left;
             timelapse.Top = windowRect.Top;
             timelapse.Width = windowRect.Width;
@@ -158,9 +160,9 @@ namespace Timelapse.Util
             foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
             {
                 windowRect = new Rect(floatingWindow.Left, floatingWindow.Top, floatingWindow.Width, floatingWindow.Height);
-                // System.Diagnostics.Debug.Print("Oldfloat: " + windowRect.ToString());
-                windowRect = timelapse.FitIntoScreen(windowRect);
-                // System.Diagnostics.Debug.Print("Newfloat: " + windowRect.ToString());
+                //System.Diagnostics.Debug.Print("Old float win: " + windowRect.ToString());
+                windowRect = timelapse.FitIntoASingleScreen(windowRect);
+                //System.Diagnostics.Debug.Print("New float win: " + windowRect.ToString());
                 floatingWindow.Left = windowRect.Left;
                 floatingWindow.Top = windowRect.Top;
                 floatingWindow.Width = windowRect.Width;
@@ -168,66 +170,111 @@ namespace Timelapse.Util
             }
         }
 
-        public static Rect FitIntoScreen(this TimelapseWindow timelapse, Rect windowRect)
+        public static Rect FitIntoASingleScreen(this TimelapseWindow timelapse, Rect windowRect)
         {
-            System.Diagnostics.Debug.Print("windowRect: " + windowRect.ToString());
-            // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
-            if (windowRect.Height <= 0 || windowRect.Width < -0)
-            {
-                System.Diagnostics.Debug.Print("Height width is " + windowRect.Height + " " + windowRect.Width);
-            }
+            //System.Diagnostics.Debug.Print("windowRect: " + windowRect.ToString());
             try
             {
-                // Retrieve the bounds of the multi-screen coordinates, as top left and bottom right corners
+                // Find the screen (if any) that contains the window
+                PresentationSource source = PresentationSource.FromVisual(timelapse);
+
+                // The screem contiaing the window
+                Screen screenContainingWindow = null;
+
+                // WPF Coordinates of the screen that contains the window
+                System.Windows.Point screenTopLeft = new System.Windows.Point(0, 0);
+                System.Windows.Point screenBottomRight = new System.Windows.Point(0, 0);
+
+                // The primary screen (which we will use in case we can't find a containing window)
+                Screen primaryScreen = null;
+
+                int typicalTaskBarHeight = 55;
+
+                // Search the screens for the ones containing the top left of the window, if any
+                foreach (Screen screen in Screen.AllScreens)
+                {
+                    // Record if its the primary screen, 
+                    if (screen.Primary)
+                    {
+                        primaryScreen = screen;
+                    }
+
+                    if (screenContainingWindow != null)
+                    {
+                        //System.Diagnostics.Debug.Print("Primary Screen: " + screen.Bounds.ToString());
+                        continue;
+                    }
+
+                    // Get the  coordinates of the currentscreen and transform it into wpf coordinates. 
+                    // Note that we subtract the task bar height as well.
+                    screenTopLeft.X = screen.Bounds.Left;
+                    screenTopLeft.Y = screen.Bounds.Top;
+                    screenBottomRight.X = screen.Bounds.Left + screen.Bounds.Width;
+                    screenBottomRight.Y = screen.Bounds.Top + screen.Bounds.Height - typicalTaskBarHeight;
+
+                    screenTopLeft = source.CompositionTarget.TransformFromDevice.Transform(screenTopLeft);
+                    screenBottomRight = source.CompositionTarget.TransformFromDevice.Transform(screenBottomRight);
+
+
+                    // If the upper left corner of the window is in this screen, then we have found the screen containing the window
+                    if (windowRect.Left >= screenTopLeft.X && windowRect.Left < screenBottomRight.X &&
+                        windowRect.Top >= screenTopLeft.Y && windowRect.Top < screenBottomRight.Y)
+                    {
+                        screenContainingWindow = screen;
+                        //System.Diagnostics.Debug.Print("In Screen: " + screenTopLeft.ToString() + screenBottomRight.ToString());
+                    }
+                }
+
+                // If none of the screens contains the window, then we will fit it into the primary screen at the window's width and height at the origin
+                if (screenContainingWindow == null)
+                {
+                    // Get the  coordinates of the currentscreen and transform it into wpf coordinates. 
+                    // Note that we subtract the task bar height as well.
+                    screenTopLeft.X = primaryScreen.Bounds.Left;
+                    screenTopLeft.Y = primaryScreen.Bounds.Top;
+                    screenBottomRight.X = primaryScreen.Bounds.Left + primaryScreen.Bounds.Width;
+                    screenBottomRight.Y = primaryScreen.Bounds.Top + primaryScreen.Bounds.Height - typicalTaskBarHeight;
+
+                    screenTopLeft = source.CompositionTarget.TransformFromDevice.Transform(screenTopLeft);
+                    screenBottomRight = source.CompositionTarget.TransformFromDevice.Transform(screenBottomRight);
+
+                    screenContainingWindow = primaryScreen;
+                }
+
                 // We allow some space for the task bar, assuming its visible at the screen's bottom
                 // and place the window at the very top. Note that this won't cater for the situation when
                 // the task bar is at the top of the screen, but so it goes.
-                System.Windows.Point screen_corner1 = new System.Windows.Point(0, 0);
-                System.Windows.Point screen_corner2 = new System.Windows.Point(0, 0);
-                int typicalTaskBarHeight = 40;
-                foreach (Screen screen in Screen.AllScreens)
-                {
-                    screen_corner1.X = Math.Min(screen_corner1.X, screen.Bounds.Left);
-                    screen_corner1.Y = Math.Min(screen_corner1.Y, screen.Bounds.Top);
-                    screen_corner2.X = Math.Max(screen_corner2.X, screen.Bounds.Left + screen.Bounds.Width);
-                    screen_corner2.Y = Math.Max(screen_corner2.Y, screen.Bounds.Top + screen.Bounds.Height - typicalTaskBarHeight);
-                }
-                // Convert the screen coordinates to wpf coordinates
-                PresentationSource source = PresentationSource.FromVisual(timelapse);
-                screen_corner1 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner1);
-                screen_corner2 = source.CompositionTarget.TransformFromDevice.Transform(screen_corner2);
-                double screen_width = Math.Abs(screen_corner2.X - screen_corner1.X);
-                double screen_height = Math.Abs(screen_corner2.Y - screen_corner1.Y);
+                double screen_width = Math.Abs(screenBottomRight.X - screenTopLeft.X);
+                double screen_height = Math.Abs(screenBottomRight.Y - screenTopLeft.Y);
 
                 // Ensure that we have valid coordinates
                 double wleft = Double.IsNaN(windowRect.Left) ? 0 : windowRect.Left;
                 double wtop = Double.IsNaN(windowRect.Top) ? 0 : windowRect.Top;
                 double wheight = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Height;
-                double wwidth = Double.IsNaN(windowRect.Height) ? 740 : windowRect.Width;
-                // System.Diagnostics.Debug.Print("OldWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
+                double wwidth = Double.IsNaN(windowRect.Height) ? 1024 : windowRect.Width;
 
                 // If the window's height is larger than the screen's available height, 
                 // reposition it to the screen's top and and adjust its height to fill the available height 
                 if (wheight > screen_height)
                 {
                     wheight = screen_height;
-                    wtop = screen_corner1.Y;
+                    wtop = screenTopLeft.Y;
                 }
                 // If the window's width is larger than the screen's available width, 
                 // reposition it to the left and and adjust its width to fill the available width 
                 if (wwidth > screen_width)
                 {
                     wwidth = screen_width;
-                    wleft = screen_corner1.X;
+                    wleft = screenTopLeft.X;
                 }
                 double wbottom = wtop + wheight;
                 double wright = wleft + wwidth;
 
                 // move window up if it extends below the working area
-                if (wbottom > screen_corner2.Y)
+                if (wbottom > screenBottomRight.Y)
                 {
-                    double pixelsToMoveUp = wbottom - screen_corner2.Y;
-                    if (pixelsToMoveUp > wtop)
+                    double pixelsToMoveUp = wbottom - screenBottomRight.Y;
+                    if (pixelsToMoveUp > screen_height)
                     {
                         // window is too tall and has to shorten to fit screen
                         wtop = 0;
@@ -241,25 +288,30 @@ namespace Timelapse.Util
                 }
 
                 // move window down if it extends above the working area
-                if (wtop < screen_corner1.Y)
+                if (wtop < screenTopLeft.Y)
                 {
-                    double pixelsToMoveDown = Math.Abs(screen_corner1.Y - wtop);
-                    // move window down
-                    wtop += pixelsToMoveDown;
-                    if (wtop + wheight > screen_corner2.Y - wtop)
+                    double pixelsToMoveDown = Math.Abs(screenTopLeft.Y - wtop);
+                    if (pixelsToMoveDown > screen_height)
                     {
-                        wheight = screen_corner2.Y - wtop;
+                        // window is too tall and has to shorten to fit screen
+                        wtop = 0;
+                        wheight = screen_height;
+                    }
+                    else if (pixelsToMoveDown > 0)
+                    {
+                        // move window up
+                        wtop += pixelsToMoveDown;
                     }
                 }
 
                 // move window left if it extends right of the working area
-                if (wright > screen_corner2.X)
+                if (wright > screenBottomRight.X)
                 {
-                    double pixelsToMoveLeft = wright - screen_corner2.X;
-                    if (pixelsToMoveLeft > wleft)
+                    double pixelsToMoveLeft = wright - screenBottomRight.X;
+                    if (pixelsToMoveLeft > screen_width)
                     {
                         // window is too wide and has to narrow to fit screen
-                        wleft = screen_corner1.X;
+                        wleft = screenTopLeft.X;
                         wwidth = screen_width;
                     }
                     else if (pixelsToMoveLeft > 0)
@@ -270,18 +322,18 @@ namespace Timelapse.Util
                 }
 
                 // move window right if it extends left of the working area
-                if (wleft < screen_corner1.X)
+                if (wleft < screenTopLeft.X)
                 {
-                    double pixelsToMoveRight = screen_corner1.X - wleft;
+                    double pixelsToMoveRight = screenTopLeft.X - wleft;
                     if (pixelsToMoveRight > 0)
                     {
                         // move window left
                         wleft += pixelsToMoveRight;
                     }
-                    if (wleft + wwidth > screen_corner2.Y)
+                    if (wleft + wwidth > screen_width)
                     {
                         // window is too wide and has to narrow to fit screen
-                        wwidth = screen_corner2.Y - wright;
+                        wwidth = screenBottomRight.Y - wright;
                     }
                 }
                 // System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
@@ -291,7 +343,7 @@ namespace Timelapse.Util
             catch
             {
                 System.Diagnostics.Debug.Print("Catch: Problem in TimelapseAvalonExtensions - FitIntoScreen");
-                return new Rect(5, 5, 740, 740);     
+                return new Rect(5, 5, 740, 740);
             }
         }
 
@@ -323,7 +375,7 @@ namespace Timelapse.Util
         }
 
         // As Deserialization rebuilds the Docking Manager, we need to reset the original layoutAnchorable and layoutDocument pointers to the rebuilt ones
-        // Note if we define new LayoutAnchorables and LayoutDocuments in the future, we will have tomodify this method accordingly
+        // Note if we define new LayoutAnchorables and LayoutDocuments in the future, we will have to modify this method accordingly
         private static void AvalonDock_ResetAfterDeserialize(this TimelapseWindow timelapse)
         {
             IEnumerable<LayoutAnchorable> layoutAnchorables = timelapse.DockingManager.Layout.Descendents().OfType<LayoutAnchorable>();
@@ -332,6 +384,7 @@ namespace Timelapse.Util
                 if (layoutAnchorable.ContentId == timelapse.DataEntryControlPanel.ContentId)
                 {
                     timelapse.DataEntryControlPanel = layoutAnchorable;
+                    System.Diagnostics.Debug.Print("DataEntryControlPanel Reset");
                 }
             }
 

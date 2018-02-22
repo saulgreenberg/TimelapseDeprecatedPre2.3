@@ -492,7 +492,7 @@ namespace Timelapse.Images
 
             // clear the bookmark (if any) as it will no longer be correct
             // if needed, the bookmark could be rescaled instead
-            this.bookmark.Reset();
+            //this.bookmark.Reset();
         }
 
         // Refresh the clickable image grid when the timer fires 
@@ -738,7 +738,30 @@ namespace Timelapse.Images
         {
             // a user may want to flip between completely zoomed out / normal pan settings and a saved zoom / pan setting that focuses in on a particular region
             // To do this, we save / restore the zoom pan settings of a particular view, or return to the default zoom/pan.
+            if (this.imageToDisplayScale.ScaleX == 1 && this.imageToDisplayScale.ScaleY == 1)
+            {
+                // If the scale is unzoomed, then don't bother saving it as it may just be the result of an unintended key press. 
+                return;
+            }
             this.bookmark.Set(this.imageToDisplayScale, this.imageToDisplayTranslation);
+        }
+
+        // This version sets the bookmark with the provided points (retrieved from the registry) indicating scale and translation saved from a previous session
+        public void SetBookmark(Point scale, Point translation)
+        {
+            this.bookmark.Set(scale, translation);
+        }
+
+        // return the current Bookmark scale point
+        public Point GetBookmarkScale()
+        {
+            return this.bookmark.GetScale();
+        }
+
+        // return the current Bookmark Translation as a point
+        public Point GetBookmarkTranslation()
+        {
+            return this.bookmark.GetTranslation();
         }
 
         // Return to the zoom / pan levels saved as a bookmark

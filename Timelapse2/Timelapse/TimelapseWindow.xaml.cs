@@ -84,6 +84,8 @@ namespace Timelapse
             // Recall user's state from prior sessions
             this.state = new TimelapseState();
             this.state.ReadSettingsFromRegistry();
+            this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
+            
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
             this.MenuItemOrderFilesByDateTime.IsChecked = this.state.OrderFilesByDateTime;
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
@@ -221,6 +223,9 @@ namespace Timelapse
             }
 
             // persist user specific state to the registry
+            // note that we have to set the bookmark scale and transform in the state, as it is not done elsewhere
+            this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
+            this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
             this.state.WriteSettingsToRegistry();
         }
 
@@ -838,7 +843,7 @@ namespace Timelapse
             {
                 DataGridPane_IsActiveChanged(null, null);
             }
-       }
+        }
         #endregion
 
         #region Enabling or Disabling Menus and Controls

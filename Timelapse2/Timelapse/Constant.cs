@@ -421,6 +421,12 @@ namespace Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
                 public const string OrderFilesByDateTime = "OrderFilesByDateTime";
 
+                // bookmark scale and transform coordinates
+                public const string BookmarkScaleX = "BookmarkScaleX";
+                public const string BookmarkScaleY = "BookmarkScaleY";
+                public const string BookmarkTranslationX = "BookmarkTransformX";
+                public const string BookmarkTranslationY = "BookmarkTransformY";
+
                 // dialog opt outs
                 public const string SuppressAmbiguousDatesDialog = "SuppressAmbiguousDatesDialog";
                 public const string SuppressCsvExportDialog = "SuppressCsvExportDialog";
