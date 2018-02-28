@@ -3067,7 +3067,7 @@ namespace Timelapse
                                                                }))
             {
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
-                this.ShowBulkImageEditDialog(dateTimeChange);
+                this.ShowBulkImageEditDialog(dateTimeChange, true);
             }
         }
 
