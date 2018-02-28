@@ -3038,7 +3038,7 @@ namespace Timelapse
                                                                }))
             { 
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(linearDateCorrection);
+                this.ShowBulkImageEditDialog(linearDateCorrection, true);
             }
         }
 

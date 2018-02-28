@@ -203,6 +203,15 @@ namespace Timelapse
 
         private void DateTimePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            // Because of the bug in the DateTimePicker, we have to get the changed value from the string
+            // as DateTimePicker.Value.Value can have the old date rather than the new one.
+            if (DateTimeHandler.TryParseDisplayDateTimeString(this.dateTimePickerLatestDateTime.Text, out DateTime newDateTime) == false)
+            {
+                // If we can't parse the date,  do nothing.
+                System.Diagnostics.Debug.Print ("DateTimeLinearCorrection|ValueChanged: Could not parse the date:" + this.dateTimePickerLatestDateTime.Text);
+                return;
+            }
+
             // Don't let the date picker go below the oldest time. If it does, don't change the date and play a beep.
             if (this.dateTimePickerLatestDateTime.Value.Value <= this.earliestImageDateTime)
             {
@@ -218,10 +227,10 @@ namespace Timelapse
             else
             {
                 // Keep track of the last valid date in the date picker so we can revert to it if needed.
-                this.lastDateEnteredWithDateTimePicker = this.dateTimePickerLatestDateTime.Value.Value;
+                this.lastDateEnteredWithDateTimePicker = newDateTime;
             }
             // Enable the Ok button only if the latest time has actually changed from its original version
-            TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
+            TimeSpan newestImageAdjustment = newDateTime - this.latestImageDateTime;
             this.OkButton.IsEnabled = (newestImageAdjustment == TimeSpan.Zero) ? false : true;
         }
 
