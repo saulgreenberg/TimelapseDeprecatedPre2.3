@@ -95,7 +95,16 @@ namespace Timelapse.Dialog
 
             // 2nd click
             // Calculate and apply the date/time difference
-            DateTime originalDateTime = DateTimeHandler.ParseDisplayDateTimeString((string)this.OriginalDate.Content);
+            // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
+            // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
+            DateTime originalDateTime;
+            if (DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out originalDateTime) == false)
+            {
+                this.DialogResult = false; // No difference, so nothing to correct
+                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recongized by Timelapse: " + (string)this.OriginalDate.Content);
+                return;
+            }
+
             TimeSpan adjustment = this.DateTimePicker.Value.Value - originalDateTime;
             if (adjustment == TimeSpan.Zero)
             {
@@ -116,8 +125,19 @@ namespace Timelapse.Dialog
 
         private void DateTimePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            TimeSpan difference = this.DateTimePicker.Value.Value - this.initialDate;
+            TimeSpan difference = TimeSpan.Zero;
+            if (DateTimeHandler.TryParseDisplayDateTimeString(this.DateTimePicker.Text, out DateTime newDateTime))
+            { 
+                difference = newDateTime - this.initialDate;
+                this.ChangesButton.IsEnabled = (difference == TimeSpan.Zero) ? false : true;
+            }
             this.ChangesButton.IsEnabled = (difference == TimeSpan.Zero) ? false : true;
+        }
+
+        // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
+        private void DateTimePicker_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            DateTimePicker_ValueChanged(null, null);
         }
     }
 }

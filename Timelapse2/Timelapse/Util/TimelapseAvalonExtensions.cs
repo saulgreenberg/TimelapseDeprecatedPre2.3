@@ -172,7 +172,6 @@ namespace Timelapse.Util
 
         public static Rect FitIntoASingleScreen(this TimelapseWindow timelapse, Rect windowRect)
         {
-            //System.Diagnostics.Debug.Print("windowRect: " + windowRect.ToString());
             try
             {
                 // Find the screen (if any) that contains the window
@@ -221,7 +220,6 @@ namespace Timelapse.Util
                         windowRect.Top >= screenTopLeft.Y && windowRect.Top < screenBottomRight.Y)
                     {
                         screenContainingWindow = screen;
-                        //System.Diagnostics.Debug.Print("In Screen: " + screenTopLeft.ToString() + screenBottomRight.ToString());
                     }
                 }
 
@@ -336,8 +334,6 @@ namespace Timelapse.Util
                         wwidth = screenBottomRight.Y - wright;
                     }
                 }
-                // System.Diagnostics.Debug.Print("NewWindow: " + wleft + "," + wtop + "," + wwidth + "," + wheight);
-                // System.Diagnostics.Debug.Print("Screen: " + screen_corner1 + "," + screen_corner2);
                 return new Rect(wleft, wtop, wwidth, wheight);
             }
             catch
@@ -384,7 +380,6 @@ namespace Timelapse.Util
                 if (layoutAnchorable.ContentId == timelapse.DataEntryControlPanel.ContentId)
                 {
                     timelapse.DataEntryControlPanel = layoutAnchorable;
-                    System.Diagnostics.Debug.Print("DataEntryControlPanel Reset");
                 }
             }
 

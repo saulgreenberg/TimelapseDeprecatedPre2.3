@@ -71,7 +71,7 @@
                     </Grid.RowDefinitions>
                     <Label Content="Latest:"               HorizontalAlignment="Left"  HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
                     <Label Content="latest.jpg"            HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="latestImageName"/>
-                    <xctk:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0"/>
+                    <xctk:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0" MouseLeave="dateTimePickerLatestDateTime_MouseLeave" />
 
                     <!-- <Label Content="dd-MMM-yyyy HH:mm:ss"       HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="1" Grid.Column="1" Margin="0,-8,0,0" Name="imageLatestDate"    />-->
                 </Grid>

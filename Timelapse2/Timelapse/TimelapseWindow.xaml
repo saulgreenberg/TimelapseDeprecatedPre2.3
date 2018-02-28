@@ -204,47 +204,47 @@
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="True">
 
-                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
+                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
                         <MenuItem.Icon>
                             <Image Source="Icons/LayoutDataEntryOnTop_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_Data Entry on Side" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears at the window's side" Tag="AvalonLayout_DataEntryOnSide">
+                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_Data Entry on Side" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's side" Tag="AvalonLayout_DataEntryOnSide">
                         <MenuItem.Icon>
                         <Image Source="Icons/LayoutDataEntryOnSide_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_Data Entry Floating" Click="MenuItemWindow_Click" ToolTip="Data entry panel appears as a floating window" Tag="AvalonLayout_DataEntryFloating">
+                <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_Data Entry Floating" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears as a floating window" Tag="AvalonLayout_DataEntryFloating">
                         <MenuItem.Icon>
                         <Image Source="Icons/LayoutDataEntryFloating_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                 <!--</MenuItem>-->
                 <Separator/>
-                <MenuItem Name="MenuItemWindowLoadCustom" Header="Load a Custom Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">
+                <MenuItem Name="MenuItemWindowLoadCustom" Header="Restore a Saved Window Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutCustomLoad_32x.png" />
                     </MenuItem.Icon>
-                    <MenuItem Name="MenuItemWindowCustom1Load" Header="Layout _1" Click="MenuItemWindow_Click" ToolTip="Load a previously saved layout" Tag="AvalonLayout_Custom1"/>
-                    <MenuItem Name="MenuItemWindowCustom2Load" Header="Layout _2" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="AvalonLayout_Custom2"/>
-                    <MenuItem Name="MenuItemWindowCustom3Load" Header="Layout _3" Click="MenuItemWindow_Click" ToolTip="Restore the saved layout" Tag="AvalonLayout_Custom3"/>
+                    <MenuItem Name="MenuItemWindowCustom1Load" Header="Layout _1" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom1"/>
+                    <MenuItem Name="MenuItemWindowCustom2Load" Header="Layout _2" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom2"/>
+                    <MenuItem Name="MenuItemWindowCustom3Load" Header="Layout _3" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom3"/>
                 </MenuItem>
-                <MenuItem Name="MenuItemWindowSaveCustom" Header="Save a Custom Layout">
+                <MenuItem Name="MenuItemWindowSaveCustom" Header="Save the Current Window Layout">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutCustomSave_32x.png" />
                     </MenuItem.Icon>
-                    <MenuItem Name="MenuItemWindowCustom1Save" Header="Layout _1" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom1"/>
-                    <MenuItem Name="MenuItemWindowCustom2Save" Header="Layout _2" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom2"/>
-                    <MenuItem Name="MenuItemWindowCustom3Save" Header="Layout _3" Click="MenuItemWindowSave_Click" ToolTip="Save the current layout" Tag="AvalonLayout_Custom3"/>
+                    <MenuItem Name="MenuItemWindowCustom1Save" Header="Layout _1" Click="MenuItemWindowSave_Click" ToolTip="Save the current window layout" Tag="AvalonLayout_Custom1"/>
+                    <MenuItem Name="MenuItemWindowCustom2Save" Header="Layout _2" Click="MenuItemWindowSave_Click" ToolTip="Save the current window layout" Tag="AvalonLayout_Custom2"/>
+                    <MenuItem Name="MenuItemWindowCustom3Save" Header="Layout _3" Click="MenuItemWindowSave_Click" ToolTip="Save the current window layout" Tag="AvalonLayout_Custom3"/>
                 </MenuItem>
 
                 <Separator/>
-                <MenuItem Name="MenuItemWindowReset" Header="_Reset to default" Click="MenuItemWindow_Click" ToolTip="Reset the layout to the default " Tag="AvalonLayout_DataEntryOnTop">
+                <MenuItem Name="MenuItemWindowReset" Header="_Reset to default" Click="MenuItemWindowRestore_Click" ToolTip="Reset the layout to the default " Tag="AvalonLayout_DataEntryOnTop">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutDefault_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Name="MenuItemWindowLastUsed" Header="_Reset to Initial Layout" Click="MenuItemWindow_Click" ToolTip="Reset to the initial layout" Tag="AvalonLayout_LastUsed"/>
+                <MenuItem Name="MenuItemWindowLastUsed" Header="_Reset to Initial Layout" Click="MenuItemWindowRestore_Click" ToolTip="Reset to the initial layout" Tag="AvalonLayout_LastUsed"/>
             </MenuItem>
             
             <!-- Help Menu -->

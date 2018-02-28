@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Timelapse.Controls;
@@ -20,14 +22,11 @@ using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Images;
 using Timelapse.Util;
+using Xceed.Wpf.AvalonDock.Controls;
+using Xceed.Wpf.AvalonDock.Layout;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
-using System.Windows.Media.Animation;
-using System.Data;
-
-using Xceed.Wpf.AvalonDock.Layout;
-using Xceed.Wpf.AvalonDock.Controls;
 
 namespace Timelapse
 {
@@ -260,7 +259,6 @@ namespace Timelapse
         #endregion
 
         #region Image Set Loading
-        
         // Prompt user to select a template.
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
@@ -854,8 +852,8 @@ namespace Timelapse
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
-            // file menu
 
+            // file menu
             this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
             this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
@@ -865,13 +863,17 @@ namespace Timelapse
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
+
             // edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
+            // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
+
             // view menu
             this.MenuItemView.IsEnabled = filesSelected;
             // select menu
             this.MenuItemSelect.IsEnabled = filesSelected;
+
             // options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = imageSetAvailable;
@@ -885,10 +887,7 @@ namespace Timelapse
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = filesSelected;
 
-            // Windows menu
-            this.MenuItemWindow.IsEnabled = imageSetAvailable;
-
-            // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
+            // windows menu is always enabled
 
             // Also adjust the enablement of the various other UI components.
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
@@ -923,25 +922,38 @@ namespace Timelapse
         #endregion
 
         #region File Selection
+
+        // Simplest form: It doesn't force an update if the file index hasn't changed
         private void SelectFilesAndShowFile()
+        {
+            SelectFilesAndShowFile(false);
+        }
+        private void SelectFilesAndShowFile(bool forceUpdate)
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 Utilities.PrintFailure("SelectFilesAndShowFile: Expected a file database to be available.");
             }
-            this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
 
-        private void SelectFilesAndShowFile(FileSelection selection)
+        private void SelectFilesAndShowFile(FileSelection selection, bool forceUpdate)
         {
             long fileID = Constant.Database.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            this.SelectFilesAndShowFile(fileID, selection);
+            this.SelectFilesAndShowFile(fileID, selection, forceUpdate);
         }
+
+        // Basic form doesn't force an update
         private void SelectFilesAndShowFile(long imageID, FileSelection selection)
+        {
+            SelectFilesAndShowFile(imageID, selection, false);
+        }
+
+        private void SelectFilesAndShowFile(long imageID, FileSelection selection, bool forceUpdate)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
@@ -955,8 +967,6 @@ namespace Timelapse
                 Utilities.PrintFailure("SelectFilesAndShowFile() should not be reachable with a null database.  Is a menu item wrongly enabled?");
                 return;
             }
-
-
 
             // Select the files according to the given selection
             this.dataHandler.FileDatabase.SelectFiles(selection);
@@ -1069,7 +1079,7 @@ namespace Timelapse
             {
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
-            this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID));
+            this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), forceUpdate);
 
             // Update the status bar accordingly
             this.StatusBar.SetCurrentFile(this.dataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list
@@ -1577,19 +1587,28 @@ namespace Timelapse
 
         #region Showing images
         // ShowFile is invoked here from a 1-based slider, so we need to correct it to the 0-base index
+        // By default, don't force the update
         private void ShowFile(Slider fileNavigatorSlider)
         {
-            this.ShowFile((int)fileNavigatorSlider.Value - 1, true);
+            this.ShowFile((int)fileNavigatorSlider.Value - 1, true, false);
         }
 
-        // ShowFile is invoked from elsewhere than from the slider
+        // ShowFile is invoked from elsewhere than from the slider. 
+        // By default, don't force the update
         private void ShowFile(int fileIndex)
         {
-            this.ShowFile(fileIndex, false);
+            this.ShowFile(fileIndex, false, false);
+        }
+
+        // ShowFile is invoked from elsewhere than from the slider. 
+        // The argument specifies whether we should force the update
+        private void ShowFile(int fileIndex, bool forceUpdate)
+        {
+            this.ShowFile(fileIndex, false, forceUpdate);
         }
 
         // Show the image in the specified row, but only if its a different image.
-        private void ShowFile(int fileIndex, bool isInSliderNavigation)
+        private void ShowFile(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
             if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
@@ -1603,12 +1622,12 @@ namespace Timelapse
                 return;
             }
 
-            // If we are already showing the desired file, then abort as there is no need to redisplay it.
-            if (this.dataHandler.ImageCache.CurrentRow == fileIndex)
+            // If we are already showing the desired file, and if we are not forcing an update, 
+            // then abort as there is no need to redisplay the image.
+            if (this.dataHandler.ImageCache.CurrentRow == fileIndex && forceUpdate == false)
             {
                 return;
             }
-
 
             // Reset the Clickable Images Grid to the current image
             // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
@@ -1622,7 +1641,7 @@ namespace Timelapse
             {
                 throw new ArgumentOutOfRangeException("newImageRow", String.Format("{0} is not a valid row index in the image table.", fileIndex));
             }
-            
+
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
             // the call to TryMoveToImage() above refreshes the data stored under this.dataHandler.ImageCache.Current.
@@ -2844,17 +2863,21 @@ namespace Timelapse
             }
         }
 
+        private void ShowBulkImageEditDialog(Window dialog)
+        {
+            ShowBulkImageEditDialog(dialog, false);
+        }
+
         // Various dialogs perform a bulk edit, after which various states have to be refreshed
         // This method shows the dialog and (if a bulk edit is done) refreshes those states.
-        private void ShowBulkImageEditDialog(Window dialog)
+        private void ShowBulkImageEditDialog(Window dialog, bool forceUpdate)
         {
             dialog.Owner = this;
             long currentFileID = this.dataHandler.ImageCache.Current.ID;
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
-                this.SelectFilesAndShowFile();
-                // SAULXX: Note that the above operation may remove some of the files from view, as it may no longer fit into the selection. Should we give feedback to the user about this?
+                this.SelectFilesAndShowFile(forceUpdate);
             }
         }
         #endregion
@@ -2999,7 +3022,7 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                this.ShowBulkImageEditDialog(fixedDateCorrection);
+                this.ShowBulkImageEditDialog(fixedDateCorrection, true);
             }
         }
 
@@ -3277,23 +3300,40 @@ namespace Timelapse
             this.MenuItemWindowCustom3Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
         }
 
-        private void MenuItemWindow_Click(object sender, RoutedEventArgs e)
+        // Restore a particular window layout as identified in the menu's tag
+        private void MenuItemWindowRestore_Click(object sender, RoutedEventArgs e)
         {
             MenuItem mi = sender as MenuItem;
             string layout = mi.Tag.ToString();
             this.AvalonLayout_TryLoad(layout);
+
+            // If an image set is currently loaded, make the image set pane the active pane
+            if (this.IsFileDatabaseAvailable())
+            {
+                this.ImageSetPane.IsActive = true;
+            }
+            else
+            {
+                this.InstructionPane.IsActive = true;
+            }
         }
 
+        // Save a particular window layout, where the layout name is identified in the menu's tag
         private void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
         {
             // Save the window layout to the registry, where the registry key name is found in the menu tag
+            // Note that the data entry control panel must be visible in order to save its location.
+            // So if its not visible, temporarily make it visible.
             MenuItem mi = sender as MenuItem;
+            bool visibilityState = this.DataEntryControlPanel.IsVisible;
+            this.DataEntryControlPanel.IsVisible = true;
             this.AvalonLayout_TrySave(mi.Tag.ToString());
+            this.DataEntryControlPanel.IsVisible = visibilityState;
         }
         #endregion
 
         #region Help Menu Callbacks
-            private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
+        private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
         }

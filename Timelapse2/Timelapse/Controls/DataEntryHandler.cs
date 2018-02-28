@@ -419,13 +419,16 @@ namespace Timelapse.Controls
                 return;
             }
             DateTime oldDateTime = dateTimePicker.Value.Value;
-            DateTime newDateTime = Util.DateTimeHandler.ParseDisplayDateTimeString(dateTimePicker.Text);
-            if (oldDateTime == newDateTime)
+
+            // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
+            // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
+            // Otherwise, if the dates differe, update using the new date.
+            DateTime newDateTime;
+            if (Util.DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out newDateTime) &&
+                (oldDateTime != newDateTime))
             {
-                // No changes have been made to the date or time, so no need to do anything
-                return;
+                this.DateTimeUpdate(dateTimePicker, newDateTime);
             }
-            this.DateTimeUpdate(dateTimePicker, newDateTime);
         }
 
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

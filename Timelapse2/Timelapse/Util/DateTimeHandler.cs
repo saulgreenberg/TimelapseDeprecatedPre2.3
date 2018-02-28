@@ -40,9 +40,19 @@ namespace Timelapse.Util
             return utcOffset;
         }
 
-        public static DateTime ParseDisplayDateTimeString(string dateTimeAsString)
+        // SAULXXX There may be an issue with and attempt to read dates.
+        public static bool TryParseDisplayDateTimeString(string dateTimeAsString, out DateTime dateTime)
         {
-            return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture);
+            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == true)
+            {
+                return true;
+            }
+            else
+            {
+                dateTime = DateTime.MinValue;
+                return false;
+            }
+            // return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture);
         }
 
         public static string ToDatabaseDateTimeString(DateTimeOffset dateTime)

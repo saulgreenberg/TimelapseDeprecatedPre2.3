@@ -224,5 +224,11 @@ namespace Timelapse
             TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
             this.OkButton.IsEnabled = (newestImageAdjustment == TimeSpan.Zero) ? false : true;
         }
+
+        // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
+        private void dateTimePickerLatestDateTime_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            DateTimePicker_ValueChanged(null, null);
+        }
     }
 }
