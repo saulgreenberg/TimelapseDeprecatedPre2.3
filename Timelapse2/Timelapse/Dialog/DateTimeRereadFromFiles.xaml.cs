@@ -108,10 +108,8 @@ namespace Timelapse.Dialog
                         {
                             filesToAdjust.Add(file);
                             feedbackMessage = "\x2716 "; // X mark
-                            feedbackMessage += (!sameDate) ? "different date, " : String.Empty;
-                            feedbackMessage += (!sameTime) ? "different time, " : String.Empty;
-                            feedbackMessage += (!sameUTCOffset) ? "different UTC offset, " : String.Empty;
-                            feedbackMessage += usingMetadataTimestamp ? "(from metadata) " : "(from file)";
+                            feedbackMessage += DateTimeHandler.ToDisplayDateTimeString(originalDateTime) + " \x2192 " + DateTimeHandler.ToDisplayDateTimeString(rescannedDateTime);
+                            feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
                         }
                     }
                     catch (Exception exception)
