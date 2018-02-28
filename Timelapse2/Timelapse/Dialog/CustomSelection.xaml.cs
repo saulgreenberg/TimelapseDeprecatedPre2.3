@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -172,9 +173,11 @@ namespace Timelapse.Dialog
                         FormatString = Constant.Time.DateTimeDisplayFormat,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = CustomSelection.DefaultControlWidth,
-                    Value = dateTime.DateTime
+                        Value = dateTime.DateTime
                     };
                     dateValue.ValueChanged += this.DateTime_SelectedDateChanged;
+                    // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
+                    dateValue.MouseMove += DateValue_MouseMove;
                     Grid.SetRow(dateValue, gridRowIndex);
                     Grid.SetColumn(dateValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(dateValue);
@@ -289,6 +292,12 @@ namespace Timelapse.Dialog
             }
             this.UpdateSearchCriteriaFeedback();
         }
+
+        // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
+        private void DateValue_MouseMove(object sender, MouseEventArgs e)
+        {
+            this.DateTime_SelectedDateChanged(sender, null);
+        }
         #endregion
 
         #region Query formation callbacks
@@ -358,9 +367,16 @@ namespace Timelapse.Dialog
             DateTimePicker datePicker = sender as DateTimePicker;
             if (datePicker.Value.HasValue)
             {
+
                 int row = Grid.GetRow(datePicker);
-                this.database.CustomSelection.SetDateTime(row - 1, datePicker.Value.Value, this.imageSetTimeZone);
-                this.UpdateSearchCriteriaFeedback();
+                // Because of the bug in the DateTimePicker, we have to get the changed value from the string
+                // as DateTimePicker.Value.Value can have the old date rather than the new one.
+                if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
+                { 
+                    //this.database.CustomSelection.SetDateTime(row - 1, datePicker.Value.Value, this.imageSetTimeZone);
+                    this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
+                    this.UpdateSearchCriteriaFeedback();
+                }
             }
         }
 
