@@ -3130,7 +3130,7 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(rereadDates);
+                this.ShowBulkImageEditDialog(rereadDates, true);
             }
         }
 
