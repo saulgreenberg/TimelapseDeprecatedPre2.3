@@ -24,7 +24,6 @@ namespace Timelapse.Util
 
             // Extended WPF toolkit
             "Xceed.Wpf.Toolkit.dll",
-            "Xceed.Wpf.DataGrid.dll",
             "Xceed.Wpf.AvalonDock.dll",
         };
 

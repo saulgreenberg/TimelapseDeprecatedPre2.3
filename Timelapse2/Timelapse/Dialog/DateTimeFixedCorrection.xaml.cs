@@ -100,8 +100,9 @@ namespace Timelapse.Dialog
             DateTime originalDateTime;
             if (DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out originalDateTime) == false)
             {
-                this.DialogResult = false; // No difference, so nothing to correct
+                // we couldn't parse it, thus we can't update anything.
                 System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recongized by Timelapse: " + (string)this.OriginalDate.Content);
+                this.DialogResult = false; 
                 return;
             }
 
@@ -122,12 +123,14 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
-
+        
         private void DateTimePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            // Because of the bug in the DateTimePicker, we have to get the changed value from the string
+            // as DateTimePicker.Value.Value can have the old date rather than the new one.
             TimeSpan difference = TimeSpan.Zero;
             if (DateTimeHandler.TryParseDisplayDateTimeString(this.DateTimePicker.Text, out DateTime newDateTime))
-            { 
+            {
                 difference = newDateTime - this.initialDate;
                 this.ChangesButton.IsEnabled = (difference == TimeSpan.Zero) ? false : true;
             }
@@ -137,7 +140,7 @@ namespace Timelapse.Dialog
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
         private void DateTimePicker_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            DateTimePicker_ValueChanged(null, null);
+             DateTimePicker_ValueChanged(null, null);
         }
     }
 }

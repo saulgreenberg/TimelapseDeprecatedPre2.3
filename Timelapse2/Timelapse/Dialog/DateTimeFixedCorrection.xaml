@@ -52,7 +52,7 @@
                     <Label Content="Current date/time:" Grid.Column="2" Height="28" Name="label2" Margin="5,0,0,0"  HorizontalAlignment="Right" HorizontalContentAlignment="Right" FontSize="12" FontWeight="Bold" />
                     <Label Name="OriginalDate" Grid.Column="3" Content="dd-MMM-yyyy HH:mm:ss" FontWeight="Normal" FontSize="12" Margin="2,0,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Left" />
                     <Label Content="Corrected date/time: " Grid.Column="4" Margin="0" HorizontalAlignment="Right" HorizontalContentAlignment="Right" FontSize="12" FontWeight="Bold" />
-                    <xctk:DateTimePicker x:Name="DateTimePicker" Grid.Column="5" Margin="0,2,0,2" HorizontalAlignment="Left" MouseLeave="DateTimePicker_MouseLeave" />
+                    <xctk:DateTimePicker x:Name="DateTimePicker" Grid.Column="5" Margin="0,2,0,2" HorizontalAlignment="Left" MouseLeave="DateTimePicker_MouseLeave" ValueChanged="DateTimePicker_ValueChanged" />
                 </Grid>
             </StackPanel>
             <Image Name="image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" DockPanel.Dock="Top" HorizontalAlignment="Left" VerticalAlignment="Top"/>
