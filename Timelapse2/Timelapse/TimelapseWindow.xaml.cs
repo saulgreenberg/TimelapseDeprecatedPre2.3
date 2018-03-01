@@ -3038,7 +3038,7 @@ namespace Timelapse
                                                                }))
             { 
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(linearDateCorrection);
+                this.ShowBulkImageEditDialog(linearDateCorrection, true);
             }
         }
 
@@ -3067,7 +3067,7 @@ namespace Timelapse
                                                                }))
             {
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
-                this.ShowBulkImageEditDialog(dateTimeChange);
+                this.ShowBulkImageEditDialog(dateTimeChange, true);
             }
         }
 
@@ -3130,7 +3130,7 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(rereadDates);
+                this.ShowBulkImageEditDialog(rereadDates, true);
             }
         }
 
