@@ -57,7 +57,7 @@ namespace Timelapse.Util
 
         public static string ToDatabaseDateTimeString(DateTimeOffset dateTime)
         {
-            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeDatabaseFormat);
+            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeDatabaseFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDatabaseUtcOffsetString(TimeSpan timeSpan)
@@ -70,17 +70,17 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToDisplayDateString(DateTimeOffset date)
         {
-            return date.DateTime.ToString(Constant.Time.DateFormat);
+            return date.DateTime.ToString(Constant.Time.DateFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayDateTimeString(DateTimeOffset dateTime)
         {
-            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat);
+            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayDateTimeUtcOffsetString(DateTimeOffset dateTime)
         {
-            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat) + " " + DateTimeHandler.ToDisplayUtcOffsetString(dateTime.Offset);
+            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US")) + " " + DateTimeHandler.ToDisplayUtcOffsetString(dateTime.Offset);
         }
 
         public static string ToDisplayTimeSpanString(TimeSpan timeSpan)
@@ -107,7 +107,7 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToDisplayTimeString(DateTimeOffset time)
         {
-            return time.DateTime.ToString(Constant.Time.TimeFormat);
+            return time.DateTime.ToString(Constant.Time.TimeFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayUtcOffsetString(TimeSpan utcOffset)
@@ -138,12 +138,11 @@ namespace Timelapse.Util
 
         public static bool TryParseDatabaseUtcOffsetString(string utcOffsetAsString, out TimeSpan utcOffset)
         {
-            double utcOffsetAsDouble;
-            if (double.TryParse(utcOffsetAsString, out utcOffsetAsDouble))
+            if (double.TryParse(utcOffsetAsString, out double utcOffsetAsDouble))
             {
                 utcOffset = TimeSpan.FromHours(utcOffsetAsDouble);
                 return (utcOffset >= Constant.Time.MinimumUtcOffset) &&
-                       (utcOffset <= Constant.Time.MaximumUtcOffset) && 
+                       (utcOffset <= Constant.Time.MaximumUtcOffset) &&
                        (utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0);
             }
 

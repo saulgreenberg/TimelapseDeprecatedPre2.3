@@ -116,8 +116,6 @@ namespace Timelapse.Database
                             // capture components of image's unique identifier for constructing where clause
                             // at least for now, it's assumed all renames or moves are done through Timelapse and hence file name + folder + relative path form 
                             // an immutable (and unique) ID
-                            DateTime dateTime;
-                            TimeSpan utcOffset;
                             if (dataLabel == Constant.DatabaseColumn.File)
                             {
                                 imageFileName = value;
@@ -141,12 +139,12 @@ namespace Timelapse.Database
                                 // when saving csv files
                                 continue;
                             }
-                            else if (dataLabel == Constant.DatabaseColumn.DateTime && DateTimeHandler.TryParseDatabaseDateTime(value, out dateTime))
+                            else if (dataLabel == Constant.DatabaseColumn.DateTime && DateTimeHandler.TryParseDatabaseDateTime(value, out DateTime dateTime))
                             {
                                 // pass DateTime to ColumnTuple rather than the string as ColumnTuple owns validation and formatting
                                 imageToUpdate.Columns.Add(new ColumnTuple(dataLabel, dateTime));
                             }
-                            else if (dataLabel == Constant.DatabaseColumn.UtcOffset && DateTimeHandler.TryParseDatabaseUtcOffsetString(value, out utcOffset))
+                            else if (dataLabel == Constant.DatabaseColumn.UtcOffset && DateTimeHandler.TryParseDatabaseUtcOffsetString(value, out TimeSpan utcOffset))
                             {
                                 // as with DateTime, pass parsed UTC offset to ColumnTuple rather than the string as ColumnTuple owns validation and formatting
                                 imageToUpdate.Columns.Add(new ColumnTuple(dataLabel, utcOffset));

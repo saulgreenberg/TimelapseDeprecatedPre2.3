@@ -73,6 +73,7 @@ namespace Timelapse.Controls
             dateTimePicker.FormatString = Constant.Time.DateTimeDisplayFormat;
             dateTimePicker.TimeFormat = DateTimeFormat.Custom;
             dateTimePicker.TimeFormatString = Constant.Time.TimeFormat;
+            dateTimePicker.CultureInfo = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             dateTimePicker.Value = defaultValue;
         }
         
@@ -423,8 +424,7 @@ namespace Timelapse.Controls
             // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
             // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
             // Otherwise, if the dates differe, update using the new date.
-            DateTime newDateTime;
-            if (Util.DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out newDateTime) &&
+            if (Util.DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out DateTime newDateTime) &&
                 (oldDateTime != newDateTime))
             {
                 this.DateTimeUpdate(dateTimePicker, newDateTime);

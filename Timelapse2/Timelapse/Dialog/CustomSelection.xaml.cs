@@ -172,7 +172,8 @@ namespace Timelapse.Dialog
                         Format = DateTimeFormat.Custom,
                         FormatString = Constant.Time.DateTimeDisplayFormat,
                         IsEnabled = searchTerm.UseForSearching,
-                        Width = CustomSelection.DefaultControlWidth,
+                        Width = DefaultControlWidth,
+                        CultureInfo = CultureInfo.CreateSpecificCulture("en-US"),
                         Value = dateTime.DateTime
                     };
                     dateValue.ValueChanged += this.DateTime_SelectedDateChanged;

@@ -93,7 +93,8 @@ namespace Timelapse.Editor.Util
             DateTimePicker dateTimePicker = new DateTimePicker()
             {
                 ToolTip = control.Tooltip,
-                Width = control.Width
+                Width = control.Width,
+                CultureInfo = System.Globalization.CultureInfo.CreateSpecificCulture("en-US")
             };
             DataEntryHandler.Configure(dateTimePicker, Constant.ControlDefault.DateTimeValue.DateTime);
             return dateTimePicker;

@@ -3094,7 +3094,7 @@ namespace Timelapse
                     messageBox.Close();
                     return;
                  }
-                 this.ShowBulkImageEditDialog(dateCorrection);
+                 this.ShowBulkImageEditDialog(dateCorrection, true);
             }
         }
 
