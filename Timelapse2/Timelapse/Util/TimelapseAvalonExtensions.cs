@@ -90,7 +90,7 @@ namespace Timelapse.Util
 
             // Force an update to the DataEntryControlPanel if its visible, as the above doesn't trigger it
             timelapse.DataEntryControlPanel.IsVisible = true;
-            //timelapse.DataEntryControls.Visibility= Visibility.Visible;
+            // timelapse.DataEntryControls.Visibility= Visibility.Visible;
 
             // Special case for DataEntryFloating:
             // Reposition the floating window in the middle of the main window, but just below the top
@@ -149,9 +149,7 @@ namespace Timelapse.Util
             windowRect.Width = Math.Abs(windowRect.Width);
 
             // Adjust the window position and size, if needed, to fit into the current screen dimensions
-            //System.Diagnostics.Debug.Print("Old timelapse win: " + windowRect.ToString());
             windowRect = timelapse.FitIntoASingleScreen(windowRect);
-            //System.Diagnostics.Debug.Print("New timelapse win: " + windowRect.ToString());
             timelapse.Left = windowRect.Left;
             timelapse.Top = windowRect.Top;
             timelapse.Width = windowRect.Width;
@@ -160,9 +158,7 @@ namespace Timelapse.Util
             foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
             {
                 windowRect = new Rect(floatingWindow.Left, floatingWindow.Top, floatingWindow.Width, floatingWindow.Height);
-                //System.Diagnostics.Debug.Print("Old float win: " + windowRect.ToString());
                 windowRect = timelapse.FitIntoASingleScreen(windowRect);
-                //System.Diagnostics.Debug.Print("New float win: " + windowRect.ToString());
                 floatingWindow.Left = windowRect.Left;
                 floatingWindow.Top = windowRect.Top;
                 floatingWindow.Width = windowRect.Width;
@@ -200,7 +196,6 @@ namespace Timelapse.Util
 
                     if (screenContainingWindow != null)
                     {
-                        //System.Diagnostics.Debug.Print("Primary Screen: " + screen.Bounds.ToString());
                         continue;
                     }
 
@@ -213,7 +208,6 @@ namespace Timelapse.Util
 
                     screenTopLeft = source.CompositionTarget.TransformFromDevice.Transform(screenTopLeft);
                     screenBottomRight = source.CompositionTarget.TransformFromDevice.Transform(screenBottomRight);
-
 
                     // If the upper left corner of the window is in this screen, then we have found the screen containing the window
                     if (windowRect.Left >= screenTopLeft.X && windowRect.Left < screenBottomRight.X &&

@@ -492,7 +492,7 @@ namespace Timelapse.Images
 
             // clear the bookmark (if any) as it will no longer be correct
             // if needed, the bookmark could be rescaled instead
-            //this.bookmark.Reset();
+            // this.bookmark.Reset();
         }
 
         // Refresh the clickable image grid when the timer fires 

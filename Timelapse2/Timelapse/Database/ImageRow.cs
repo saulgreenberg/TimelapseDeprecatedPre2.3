@@ -356,7 +356,6 @@ namespace Timelapse.Database
                     ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
                     if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false))
                     {
-                        // System.Diagnostics.Debug.Print(this.GetFilePath(folderPath));
                         return DateTimeAdjustment.MetadataNotUsed;
                     }
                 }

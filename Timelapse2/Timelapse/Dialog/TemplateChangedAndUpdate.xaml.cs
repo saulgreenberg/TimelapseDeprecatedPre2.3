@@ -127,25 +127,31 @@ namespace Timelapse.Dialog
         private void CreateRow(string datalabel, string type, int row, bool addOrDeleteOnly, string action)
         {
             // Create a new row
-            RowDefinition rd = new RowDefinition();
-            rd.Height = new GridLength(30);
+            RowDefinition rd = new RowDefinition
+            {
+                Height = new GridLength(30)
+            };
             this.ActionGrid.RowDefinitions.Add(rd);
             this.actionRows.Add(row);
 
             // Type
-            TextBlock textblockType = new TextBlock();
-            textblockType.Text = type;
-            textblockType.Margin = new Thickness(20, 0, 0, 0);
-            textblockType.VerticalAlignment = VerticalAlignment.Center;
+            TextBlock textblockType = new TextBlock
+            {
+                Text = type,
+                Margin = new Thickness(20, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
             Grid.SetColumn(textblockType, 0);
             Grid.SetRow(textblockType, row);
             this.ActionGrid.Children.Add(textblockType);
 
             // Data label
-            TextBlock textblockDataLabel = new TextBlock();
-            textblockDataLabel.Text = datalabel;
-            textblockDataLabel.Margin = new Thickness(10, 0, 0, 0);
-            textblockDataLabel.VerticalAlignment = VerticalAlignment.Center;
+            TextBlock textblockDataLabel = new TextBlock
+            {
+                Text = datalabel,
+                Margin = new Thickness(10, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
             Grid.SetColumn(textblockDataLabel, 1);
             Grid.SetRow(textblockDataLabel, row);
             this.ActionGrid.Children.Add(textblockDataLabel);
@@ -153,11 +159,13 @@ namespace Timelapse.Dialog
             // Add or Delete command without renaming
             if (addOrDeleteOnly)
             {
-                Label labelActionDefaultAction = new Label();
-                labelActionDefaultAction.Tag = rd;
-                labelActionDefaultAction.Content = action;
-                labelActionDefaultAction.Margin = new Thickness(10, 0, 0, 0);
-                labelActionDefaultAction.VerticalAlignment = VerticalAlignment.Center;
+                Label labelActionDefaultAction = new Label
+                {
+                    Tag = rd,
+                    Content = action,
+                    Margin = new Thickness(10, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
+                };
                 Grid.SetColumn(labelActionDefaultAction, 2);
                 Grid.SetRow(labelActionDefaultAction, row);
                 this.ActionGrid.Children.Add(labelActionDefaultAction);
@@ -165,30 +173,36 @@ namespace Timelapse.Dialog
             }
 
             // Add command with renaming
-            RadioButton radiobuttonActionDefaultAction = new RadioButton();
-            radiobuttonActionDefaultAction.GroupName = datalabel;
-            radiobuttonActionDefaultAction.Content = action;
-            radiobuttonActionDefaultAction.Margin = new Thickness(10, 0, 0, 0);
-            radiobuttonActionDefaultAction.VerticalAlignment = VerticalAlignment.Center;
-            radiobuttonActionDefaultAction.IsChecked = true;
+            RadioButton radiobuttonActionDefaultAction = new RadioButton
+            {
+                GroupName = datalabel,
+                Content = action,
+                Margin = new Thickness(10, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                IsChecked = true
+            };
             Grid.SetColumn(radiobuttonActionDefaultAction, 2);
             Grid.SetRow(radiobuttonActionDefaultAction, row);
             this.ActionGrid.Children.Add(radiobuttonActionDefaultAction);
 
             // Combobox showing renaming possibilities
 
-            ComboBox comboboxRenameMenu = new ComboBox();
-            comboboxRenameMenu.Width = double.NaN;
-            comboboxRenameMenu.Height = 25;
-            comboboxRenameMenu.Margin = new Thickness(10, 0, 0, 0);
-            comboboxRenameMenu.VerticalAlignment = VerticalAlignment.Center;
-            comboboxRenameMenu.MinWidth = 150;
-            comboboxRenameMenu.IsEnabled = false;
+            ComboBox comboboxRenameMenu = new ComboBox
+            {
+                Width = double.NaN,
+                Height = 25,
+                Margin = new Thickness(10, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                MinWidth = 150,
+                IsEnabled = false
+            };
             foreach (string str in this.inTemplateOnly[type].Keys)
             {
-                ComboBoxItem item = new ComboBoxItem();
-                item.Content = str;
-                item.IsEnabled = true;
+                ComboBoxItem item = new ComboBoxItem
+                {
+                    Content = str,
+                    IsEnabled = true
+                };
                 comboboxRenameMenu.Items.Add(item);
             }
 
@@ -199,12 +213,14 @@ namespace Timelapse.Dialog
 
             comboboxRenameMenu.SelectionChanged += this.CbRenameMenu_SelectionChanged;
 
-            RadioButton radiobuttonRenameAction = new RadioButton();
-            radiobuttonRenameAction.GroupName = datalabel;
-            radiobuttonRenameAction.Content = "Rename to";
-            radiobuttonRenameAction.Margin = new Thickness(10, 0, 0, 0);
-            radiobuttonRenameAction.VerticalAlignment = VerticalAlignment.Center;
-            radiobuttonRenameAction.Tag = comboboxRenameMenu;
+            RadioButton radiobuttonRenameAction = new RadioButton
+            {
+                GroupName = datalabel,
+                Content = "Rename to",
+                Margin = new Thickness(10, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Tag = comboboxRenameMenu
+            };
             Grid.SetColumn(radiobuttonRenameAction, 3);
             Grid.SetRow(radiobuttonRenameAction, row);
             this.ActionGrid.Children.Add(radiobuttonRenameAction);
@@ -267,8 +283,7 @@ namespace Timelapse.Dialog
                 UIElement uiComboBox = this.GetUIElement(row, 4);
                 if (uiComboBox != null)
                 {
-                    ComboBox cb = uiComboBox as ComboBox;
-                    if (cb != null && cb.IsEnabled == true)
+                    if (uiComboBox is ComboBox cb && cb.IsEnabled == true)
                     {
                         ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
                         if (cb.SelectedItem != null)
@@ -288,8 +303,7 @@ namespace Timelapse.Dialog
 
                 // Retrieve the data label
                 string datalabel = String.Empty;
-                TextBlock textblockDataLabel = this.GetUIElement(row, 1) as TextBlock;
-                if (textblockDataLabel != null)
+                if (this.GetUIElement(row, 1) is TextBlock textblockDataLabel)
                 {
                     this.ActionGrid.RowDefinitions[row].Height = selectedDataLabels.Contains(textblockDataLabel.Text) ? new GridLength(0) : new GridLength(30);
                 }
@@ -308,17 +322,15 @@ namespace Timelapse.Dialog
                 UIElement uiComboBox = this.GetUIElement(row, 4);
                 if (uiComboBox != null)
                 {
-                    ComboBox cb = uiComboBox as ComboBox;
-                    if (cb != null && cb.IsEnabled == true)
+                    if (uiComboBox is ComboBox cb && cb.IsEnabled == true)
                     {
                         // The combobox is enabled, thus it's a renume
                         ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
                         if (cb.SelectedItem == null || cb.SelectedItem.ToString() == String.Empty)
-                        { 
+                        {
                             // Retrieve the data label and add it as an problem 
                             string datalabel = String.Empty;
-                            TextBlock textblockDataLabel = this.GetUIElement(row, 1) as TextBlock;
-                            if (textblockDataLabel != null)
+                            if (this.GetUIElement(row, 1) is TextBlock textblockDataLabel)
                             {
                                 problemDataLabels.Add(textblockDataLabel.Text);
                             }
@@ -356,18 +368,15 @@ namespace Timelapse.Dialog
 
                 // Retrieve the data label
                 string datalabel = String.Empty;
-                TextBlock textblockDataLabel = this.GetUIElement(row, 1) as TextBlock;
-                if (textblockDataLabel != null)
+                if (this.GetUIElement(row, 1) is TextBlock textblockDataLabel)
                 {
                     datalabel = textblockDataLabel.Text;
                 }
 
                 // Retrieve the command type
                 // Add action 
-                Label labelAction = this.GetUIElement(row, 2) as Label;
-                if (labelAction != null && labelAction.Content.ToString() == this.actionAdd)
+                if (this.GetUIElement(row, 2) is Label labelAction && labelAction.Content.ToString() == this.actionAdd)
                 {
-                    // System.Diagnostics.Debug.Print("Add: " + datalabel);
                     this.TemplateSyncResults.DataLabelsToAdd.Add(datalabel);
                     continue;
                 }
@@ -376,21 +385,18 @@ namespace Timelapse.Dialog
                 UIElement uiComboBox = this.GetUIElement(row, 4);
                 if (uiComboBox != null)
                 {
-                    ComboBox cb = uiComboBox as ComboBox;
-                    if (cb != null && cb.IsEnabled == true)
+                    if (uiComboBox is ComboBox cb && cb.IsEnabled == true)
                     {
                         ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
                         if (cb.SelectedItem != null)
                         {
-                            // System.Diagnostics.Debug.Print("Renamed: " + datalabel + " to " + cbi.Content.ToString());
                             this.TemplateSyncResults.DataLabelsToRename.Add(new KeyValuePair<string, string>(datalabel, cbi.Content.ToString()));
                             continue;
-                        }   
+                        }
                     }
                 }
 
                 // If we arrived here, it must be an ACTION_DELETED
-                // System.Diagnostics.Debug.Print("Deleted: " + datalabel );
                 this.TemplateSyncResults.DataLabelsToDelete.Add(datalabel);
             }
         }
@@ -406,13 +412,17 @@ namespace Timelapse.Dialog
         // Create a grey line separator in the Action Grid
         private void AddSeparator(int row)
         {
-            RowDefinition rd = new RowDefinition();
-            rd.Height = new GridLength(1);
+            RowDefinition rd = new RowDefinition
+            {
+                Height = new GridLength(1)
+            };
             this.ActionGrid.RowDefinitions.Add(rd);
 
-            Rectangle rect = new Rectangle();
-            rect.Fill = Brushes.Gray;
- 
+            Rectangle rect = new Rectangle
+            {
+                Fill = Brushes.Gray
+            };
+
             Grid.SetRow(rect, this.ActionGrid.RowDefinitions.Count - 1);
             Grid.SetColumn(rect, 0);
             Grid.SetColumnSpan(rect, 5);

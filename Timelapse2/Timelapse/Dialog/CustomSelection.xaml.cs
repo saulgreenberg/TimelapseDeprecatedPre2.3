@@ -368,13 +368,12 @@ namespace Timelapse.Dialog
             DateTimePicker datePicker = sender as DateTimePicker;
             if (datePicker.Value.HasValue)
             {
-
                 int row = Grid.GetRow(datePicker);
                 // Because of the bug in the DateTimePicker, we have to get the changed value from the string
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
                 { 
-                    //this.database.CustomSelection.SetDateTime(row - 1, datePicker.Value.Value, this.imageSetTimeZone);
+                    // this.database.CustomSelection.SetDateTime(row - 1, datePicker.Value.Value, this.imageSetTimeZone);
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
                     this.UpdateSearchCriteriaFeedback();
                 }
@@ -458,7 +457,6 @@ namespace Timelapse.Dialog
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
                 {
                     numberOfDateTimesSearchTerms++;
-                    // System.Diagnostics.Debug.Print(numberOfDateTimesSearchTerms.ToString());
                 }
 
                 // Construct the search term 

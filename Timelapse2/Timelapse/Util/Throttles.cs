@@ -23,10 +23,12 @@ namespace Timelapse.Util
 
         public void SetDesiredImageRendersPerSecond(double rendersPerSecond)
         {
+            // Ensure that the renders per second is within range. If not, set it to the default
             if (rendersPerSecond < Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound ||
                 rendersPerSecond > Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound)
             {
-                throw new ArgumentOutOfRangeException("rendersPerSecond");
+                rendersPerSecond = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault;
+                System.Diagnostics.Debug.Print("RendersPerSecond corrected as it was not within range");
             }
 
             this.DesiredImageRendersPerSecond = rendersPerSecond;

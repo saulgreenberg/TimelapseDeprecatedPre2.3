@@ -71,19 +71,16 @@ namespace Timelapse.Controls
         {
             if (previousControlDataLabel == null)
             {
-                // System.Diagnostics.Debug.Print("1 - " + previousControl + " : " + this.DataLabel);
                 this.LabelControl.IsChecked = true;
                 previousControlDataLabel = this.DataLabel;
             }
             else if (previousControlDataLabel == this.DataLabel)
             {
-                // System.Diagnostics.Debug.Print("1 - " + previousControl + " : " + this.DataLabel);
                 this.LabelControl.IsChecked = false;
                 previousControlDataLabel = String.Empty;
             }
             else
             {
-                // System.Diagnostics.Debug.Print("1 - " + previousControl + " : " + this.DataLabel);
                 this.LabelControl.IsChecked = true;
                 previousControlDataLabel = this.DataLabel;
             }
@@ -109,7 +106,6 @@ namespace Timelapse.Controls
                 if (textBox != null)
                 {
                     textBox.Text = Constant.Unicode.Ellipsis;
-                    // System.Diagnostics.Debug.Print("1 Value null, Textbox1 not null: Ellipsis, ");
                 }
                 // We really need an else statement to somehow coerce it to put in an ellipsis later (if its null), 
                 // but I can't do it without changing the IntegerUpDown class
@@ -128,10 +124,8 @@ namespace Timelapse.Controls
                     if (textBox != null)
                     {
                         textBox.Text = intvalue.ToString();
-                        // System.Diagnostics.Debug.Print("Intvalue, textbox not null, value is '" + value + "'");
                     }
                     this.ContentControl.Value = intvalue;
-                    // System.Diagnostics.Debug.Print("Intvalue: " + value);
                 }
                 else
                 {
@@ -140,12 +134,7 @@ namespace Timelapse.Controls
                     if (textBox != null)
                     {
                         textBox.Text = value;
-                        // System.Diagnostics.Debug.Print("2 Value not null and not int, textbox not null, value is '" + value + "'");
                     }
-                    // else
-                    // {
-                    //    System.Diagnostics.Debug.Print("2 Value not null and not int, textbox is null, value is '" + value + "'");
-                    // }
                 }
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for all selected images";

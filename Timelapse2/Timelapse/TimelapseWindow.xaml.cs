@@ -687,7 +687,6 @@ namespace Timelapse
                 this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, folderLoadProgress.GetMessage());
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
-                // Debug.Print("Show: " + folderLoadProgress.CurrentFile.ToString());
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
@@ -2588,7 +2587,6 @@ namespace Timelapse
                 this.dataHandler = null;
                 this.templateDatabase = null;
                 this.DataEntryControlPanel.IsVisible = false;
-
             }
             // Clear the data grid
             this.DataGrid.ItemsSource = null;
@@ -3521,12 +3519,10 @@ namespace Timelapse
                 {
                     if (floatingWindow.Height > this.DataEntryScrollViewer.ActualHeight)
                     {
-                        // System.Diagnostics.Debug.Print(String.Format("Height {0} {1}", floatingWindow.ActualHeight, this.DataEntryScrollViewer.ActualHeight));
                         floatingWindow.Height = this.DataEntryScrollViewer.ActualHeight + Constant.AvalonDock.FloatingWindowLimitSizeHeightCorrection;
                     }
                     if (floatingWindow.Width > this.DataEntryScrollViewer.ActualWidth)
                     {
-                        // System.Diagnostics.Debug.Print(String.Format("Width {0} {1}", floatingWindow.ActualWidth, this.DataEntryScrollViewer.ActualWidth));
                         floatingWindow.Width = this.DataEntryScrollViewer.ActualWidth + Constant.AvalonDock.FloatingWindowLimitSizeWidthCorrection;
                     }
                 }

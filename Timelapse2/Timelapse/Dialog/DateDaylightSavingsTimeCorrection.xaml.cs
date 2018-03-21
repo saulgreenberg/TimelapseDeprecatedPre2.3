@@ -80,7 +80,6 @@ namespace Timelapse.Dialog
         {
             if ((bool)rbAddHour.IsChecked || (bool)rbSubtractHour.IsChecked) 
             {
-
                 if (DateTimeHandler.TryParseDisplayDateTime((string)this.OriginalDate.Content, out DateTime dateTime) == false)
                 {
                     this.NewDate.Content = "Problem with this date...";

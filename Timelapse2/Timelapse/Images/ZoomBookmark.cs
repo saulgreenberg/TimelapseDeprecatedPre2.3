@@ -44,7 +44,7 @@ namespace Timelapse.Images
             this.Translation = translation;
         }
 
-        public Point GetScale ()
+        public Point GetScale()
         {
             return this.Scale;
         }

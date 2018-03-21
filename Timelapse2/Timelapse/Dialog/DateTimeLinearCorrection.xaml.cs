@@ -208,7 +208,7 @@ namespace Timelapse
             if (DateTimeHandler.TryParseDisplayDateTimeString(this.dateTimePickerLatestDateTime.Text, out DateTime newDateTime) == false)
             {
                 // If we can't parse the date,  do nothing.
-                System.Diagnostics.Debug.Print ("DateTimeLinearCorrection|ValueChanged: Could not parse the date:" + this.dateTimePickerLatestDateTime.Text);
+                System.Diagnostics.Debug.Print("DateTimeLinearCorrection|ValueChanged: Could not parse the date:" + this.dateTimePickerLatestDateTime.Text);
                 return;
             }
 
@@ -235,7 +235,7 @@ namespace Timelapse
         }
 
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
-        private void dateTimePickerLatestDateTime_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        private void DateTimePickerLatestDateTime_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
             DateTimePicker_ValueChanged(null, null);
         }

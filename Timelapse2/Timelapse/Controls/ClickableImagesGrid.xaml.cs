@@ -147,14 +147,12 @@ namespace Timelapse.Controls
                             {
                                // Re-render the cached image, as its smaller than the resolution width 
                                imageHeight = ci.Rerender(desiredWidth);
-                                // System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Rererendered"));
                             }
                             else
                             {
                                 // Reuse the cached image, as its at least of the same or greater resolution width. 
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
-                                // System.Diagnostics.Debug.Print(String.Format("{0}", "Cached Reused"));
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             ci.TextFontSize = desiredWidth / 20;
@@ -182,7 +180,6 @@ namespace Timelapse.Controls
                         imageHeight = ci.Rerender(desiredWidth);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
                         ci.TextFontSize = desiredWidth / 20;
-                        // System.Diagnostics.Debug.Print(String.Format("{0}", "No Cache"));
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)
                         {
