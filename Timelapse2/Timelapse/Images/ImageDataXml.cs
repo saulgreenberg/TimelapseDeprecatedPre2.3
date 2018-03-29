@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -10,7 +11,7 @@ namespace Timelapse.Images
     {
         // Read all the data into the imageData structure from the XML file in the filepath.
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
-        public static void Read(string filePath, FileDatabase imageDatabase)
+        public static void Read(string filePath, string xmlDataFileName, FileDatabase imageDatabase)
         {
             // XML Preparation
             XmlDocument xmlDoc = new XmlDocument();
@@ -71,7 +72,9 @@ namespace Timelapse.Images
 
                 // If the Folder Path differs from where we had previously loaded it, 
                 // warn the user that the new path will be substituted in its place
-
+                // This gets the folderName in the Xml file, but we still ahve to get the folderName as it currently exists.
+                // string folderName = node[Constant.ImageXml.Folder].InnerText;
+              
                 // Date - We use the original date, as the analyst may have adjusted them 
                 string date = node[Constant.ImageXml.Date].InnerText;
                 columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Date, date));
@@ -93,6 +96,7 @@ namespace Timelapse.Images
                 XmlNodeList innerNodeList = node.SelectNodes(Constant.Control.Note);
                 foreach (XmlNode innerNode in innerNodeList)
                 {
+                    System.Diagnostics.Debug.Print("Note: " + noteControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
                     columnsToUpdate.Add(new ColumnTuple(noteControlNames[innerNodeIndex++], innerNode.InnerText));
                 }
 
@@ -101,11 +105,12 @@ namespace Timelapse.Images
                 innerNodeList = node.SelectNodes(Constant.Control.FixedChoice);
                 foreach (XmlNode innerNode in innerNodeList)
                 {
+                    System.Diagnostics.Debug.Print("Choice: " + choiceControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
                     columnsToUpdate.Add(new ColumnTuple(choiceControlNames[innerNodeIndex++], innerNode.InnerText));
                 }
 
                 // Counters: Iterate through  
-                List<ColumnTuple> counterCoordinates = new List<ColumnTuple>();
+                List <ColumnTuple> counterCoordinates = new List<ColumnTuple>();
                 innerNodeIndex = 0;
                 innerNodeList = node.SelectNodes(Constant.Control.Counter);
                 string where = String.Empty;
@@ -113,6 +118,7 @@ namespace Timelapse.Images
                 {
                     // Add the value of each counter to the dataline 
                     XmlNodeList dataNode = innerNode.SelectNodes(Constant.DatabaseColumn.Data);
+                    System.Diagnostics.Debug.Print("Counter: " + counterControlNames[innerNodeIndex] + " | " + dataNode[0].InnerText);
                     columnsToUpdate.Add(new ColumnTuple(counterControlNames[innerNodeIndex], dataNode[0].InnerText));
 
                     // For each counter, find the points associated with it and compose them together as x1,y1|x2,y2|...|xn,yn 
@@ -146,7 +152,9 @@ namespace Timelapse.Images
 
                 // add this image's updates to the update lists
                 ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere(columnsToUpdate);
-                imageToUpdate.SetWhere(null, null, imageFileName);
+                // Since TImelapse1 didn't have relative paths, we only need to set Where using the image filename 
+                //imageToUpdate.SetWhere(currentFolderName, null, imageFileName); //<- replaced by the simpler SetWhere form below
+                imageToUpdate.SetWhere(imageFileName);
                 imagesToUpdate.Add(imageToUpdate);
 
                 ColumnTuplesWithWhere markerToUpdate = new ColumnTuplesWithWhere(counterCoordinates, imageID);

@@ -722,9 +722,9 @@ namespace Timelapse
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
-                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
-                        this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection); // to regenerate the controls and markers for this image
-                    }
+                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), Constant.File.XmlDataFileName, this.dataHandler.FileDatabase);
+                        this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
+                   }
                 }
             };
 
