@@ -84,8 +84,7 @@ namespace Timelapse.Images
                 columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Time, time));
 
                 // DateTime
-                DateTimeOffset dateTime;
-                if (DateTimeHandler.TryParseLegacyDateTime(date, time, imageSetTimeZone, out dateTime))
+                if (DateTimeHandler.TryParseLegacyDateTime(date, time, imageSetTimeZone, out DateTimeOffset dateTime))
                 {
                     columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.DateTime, dateTime.UtcDateTime));
                     columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.UtcOffset, dateTime.Offset));
@@ -110,7 +109,7 @@ namespace Timelapse.Images
                 }
 
                 // Counters: Iterate through  
-                List <ColumnTuple> counterCoordinates = new List<ColumnTuple>();
+                List<ColumnTuple> counterCoordinates = new List<ColumnTuple>();
                 innerNodeIndex = 0;
                 innerNodeList = node.SelectNodes(Constant.Control.Counter);
                 string where = String.Empty;
@@ -152,8 +151,8 @@ namespace Timelapse.Images
 
                 // add this image's updates to the update lists
                 ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere(columnsToUpdate);
-                // Since TImelapse1 didn't have relative paths, we only need to set Where using the image filename 
-                //imageToUpdate.SetWhere(currentFolderName, null, imageFileName); //<- replaced by the simpler SetWhere form below
+                // Since Timelapse1 didn't have relative paths, we only need to set Where using the image filename 
+                // imageToUpdate.SetWhere(currentFolderName, null, imageFileName); //<- replaced by the simpler SetWhere form below
                 imageToUpdate.SetWhere(imageFileName);
                 imagesToUpdate.Add(imageToUpdate);
 

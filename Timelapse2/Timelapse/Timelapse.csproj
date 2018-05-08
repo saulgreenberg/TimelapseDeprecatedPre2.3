@@ -229,6 +229,9 @@
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\UpdateRootFolder.xaml.cs">
+      <DependentUpon>UpdateRootFolder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\TemplateChangedAndUpdate.xaml.cs">
       <DependentUpon>TemplateChangedAndUpdate.xaml</DependentUpon>
     </Compile>
@@ -387,6 +390,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\FileCountsByQuality.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\UpdateRootFolder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

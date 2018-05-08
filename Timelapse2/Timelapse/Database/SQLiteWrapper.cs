@@ -327,6 +327,15 @@ namespace Timelapse.Database
             this.ExecuteNonQuery(query);
         }
 
+        public void Update(string tableName, ColumnTuple columnToUpdate)
+        {
+            // UPDATE table_name SET 
+            // columnname = value, 
+            string query = Constant.Sql.Update + tableName + Constant.Sql.Set;
+            query += String.Format(" {0} = {1}", columnToUpdate.Name, Utilities.QuoteForSql(columnToUpdate.Value));
+            this.ExecuteNonQuery(query);
+        }
+
         // Return a single update query as a string
         private string CreateUpdateQuery(string tableName, ColumnTuplesWithWhere columnsToUpdate)
         {

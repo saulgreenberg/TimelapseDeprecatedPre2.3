@@ -95,7 +95,7 @@ namespace Timelapse.Database
 
         public List<object> GetDistinctValuesInColumn(string table, string columnName)
         {
-            return this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
+            return this.Database.GetDistinctValuesInColumn(table, columnName);
         }
 
         /// <summary>Gets the number of files currently in the file table.</summary>
@@ -892,6 +892,11 @@ namespace Timelapse.Database
                 filesToUpdate
             };
             this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdateList);
+        }
+
+        public void UpdateFiles(ColumnTuple columnToUpdate)
+        {
+            this.Database.Update(Constant.DatabaseTable.FileData, columnToUpdate);
         }
 
         // Given a range of selected files, update the field identifed by dataLabel with the value in valueSource

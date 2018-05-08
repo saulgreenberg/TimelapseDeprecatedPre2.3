@@ -369,6 +369,9 @@ namespace Timelapse
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(this, fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
+            // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
+            this.CheckAndCorrectRootFolder(fileDatabase);
+
             // Check to see if there are any missing folders as specified by the relative paths. For thos missing, as the user to try to locate those folders.
             this.CheckAndCorrectForMissingFolders(fileDatabase);
 
@@ -394,6 +397,41 @@ namespace Timelapse
                 this.OnFolderLoadingComplete(false);
             }
             return true;
+        }
+
+        // Get the root folder name from the database, and check to see if its the same as the actual root folder.
+        // If not, ask the user if he/she wants to update the database.
+        public void CheckAndCorrectRootFolder(FileDatabase fileDatabase)
+        {
+            List<object> allRootFolderPaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.Folder);
+            if (allRootFolderPaths.Count < 1)
+            {
+                System.Diagnostics.Debug.Print("Checking the root folder name in the database, but no entries were found. Perhaps the database is empty?");
+                return;
+            }
+
+            // retrieve and compare the db and actual root folder path names. While there really should be only one entry in the allRootFolderPaths,
+            // we still do a check in case there is more than one. If even one entry doesn't match, we use that entry to ask the user if he/she
+            // wants to update the root folder to match the actual location of the root folder containing the template, data and image files.
+            string actualRootFolderName = fileDatabase.FolderPath.Split(Path.DirectorySeparatorChar).Last();
+            foreach (string dbRootFolderName in allRootFolderPaths)
+            {
+                if (dbRootFolderName.Equals(actualRootFolderName)) continue;
+                else
+                {
+                    // We have at least one entry where there is a mismatch between the actual root folder and the stored root folder
+                    // Consequently, ask the user if he/she wants to update the db entry 
+                    Dialog.UpdateRootFolder renameRootFolderDialog;
+                    renameRootFolderDialog = new Dialog.UpdateRootFolder(this, dbRootFolderName, actualRootFolderName);
+                    bool? result = renameRootFolderDialog.ShowDialog();
+                    if (result == true)
+                    {
+                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.Folder, actualRootFolderName);
+                        fileDatabase.UpdateFiles(columnToUpdate);
+                    }
+                    return;
+                }
+            }
         }
 
         // Get all the distinct relative folder paths and check to see if the folder exists.
@@ -437,7 +475,6 @@ namespace Timelapse
                 bool? result = findMissingImageFolderDialog.ShowDialog();
                 if (result == true)
                 {
-                    ColumnTuplesWithWhere relativePathToUpdate = new ColumnTuplesWithWhere();
                     ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, findMissingImageFolderDialog.NewFolderName);
                     ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
                     fileDatabase.UpdateFiles(columnToUpdateWithWhere);
