@@ -254,7 +254,14 @@ namespace Timelapse
         // If we get an exception that wasn't handled, show a dialog asking the user to send the bug report to us.
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Utilities.ShowExceptionReportingDialog("The template editor needs to close.", e, this);
+            if (e.ExceptionObject.ToString().Contains("System.IO.PathTooLongException"))
+            {
+                Utilities.ShowFilePathTooLongDialog(e, this);
+            }
+            else
+            { 
+                Utilities.ShowExceptionReportingDialog("The template editor needs to close.", e, this);
+            }
         }
         #endregion
 

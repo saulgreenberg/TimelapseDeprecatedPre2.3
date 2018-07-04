@@ -65,7 +65,14 @@ namespace Timelapse.Database
             string sourceFileExtension = Path.GetExtension(sourceFileName);
             string destinationFileName = String.Concat(sourceFileNameWithoutExtension, ".", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"), sourceFileExtension);
             string destinationFilePath = Path.Combine(backupFolder.FullName, destinationFileName);
-            File.Copy(sourceFilePath, destinationFilePath, true);
+            try
+            {
+                File.Copy(sourceFilePath, destinationFilePath, true);
+            }
+            catch (Exception e)
+            {
+                throw new PathTooLongException("Backup failure: Could not create backups as the file path is too long", e);
+            }
 
             // age out older backup files
             IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
