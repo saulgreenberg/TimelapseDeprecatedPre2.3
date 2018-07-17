@@ -221,7 +221,10 @@ namespace Timelapse.Images
                 BitmapSource unalteredImage = null;
                 if (this.Current.IsVideo == false)
                 {
-                    this.TryGetBitmap(this.Current, out unalteredImage);
+                    if (this.TryGetBitmap(this.Current, out unalteredImage) == false)
+                    {
+                        return false;
+                    }
                 }
                 // all moves are to display of unaltered images and invalidate any cached differences
                 // it is assumed images on disk are not altered while Timelapse is running and hence unaltered bitmaps can safely be cached by their IDs
@@ -271,26 +274,40 @@ namespace Timelapse.Images
 
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)
         {
-            // locate the requested bitmap
-            if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == false)
+            // Its in a try/catch because one user was getting a GenericKeyNotFoundException: The given kye was not present in the dictionary", 
+            // invoked from 'System.Collections.Concurrent.ConcurrentDictionary;2.get_Item(TKey key) somewhere in here.
+            // However, I could not replicate the error. So I am not sure if the catch actually works properly, especially if the
+            // calling routines don't check the boolean return value
+            try
             {
-                if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
+                // locate the requested bitmap
+                if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == false)
                 {
-                    // bitmap retrieval's already in progress, so wait for it to complete
-                    prefetch.Wait();
-                    bitmap = this.unalteredBitmapsByID[fileRow.ID];
+                    if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
+                    {
+                        // bitmap retrieval's already in progress, so wait for it to complete
+                        prefetch.Wait();
+                        bitmap = this.unalteredBitmapsByID[fileRow.ID];
+                    }
+                    else
+                    {
+                        // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
+                        bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
+                        this.CacheBitmap(fileRow.ID, bitmap);
+                    }
                 }
-                else
-                {
-                    // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
-                    bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
-                    this.CacheBitmap(fileRow.ID, bitmap);
-                }
-            }
 
-            // assuming a sequential forward scan order, start on the next bitmap
-            this.TryInitiateBitmapPrefetch(this.CurrentRow + 1);
-            return true;
+                // assuming a sequential forward scan order, start on the next bitmap
+                this.TryInitiateBitmapPrefetch(this.CurrentRow + 1);
+                return true;
+            }
+            catch (ArgumentException e)
+            {
+                bitmap = null;
+                Utilities.PrintFailure(String.Format("TryGetBitmap failure in ImageCache: " + e.Message));
+                // System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show (e.Message);
+                return false;
+            }
         }
 
         private bool TryGetBitmap(int fileRow, out BitmapSource bitmap)
