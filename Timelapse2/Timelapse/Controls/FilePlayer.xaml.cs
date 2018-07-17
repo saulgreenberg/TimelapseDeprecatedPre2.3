@@ -57,6 +57,7 @@ namespace Timelapse.Controls
         public FilePlayer()
         {
             this.InitializeComponent();
+            this.SwitchFileMode(true);
         }
 
         public void Stop()

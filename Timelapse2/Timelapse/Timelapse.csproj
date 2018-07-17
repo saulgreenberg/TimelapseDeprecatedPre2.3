@@ -223,6 +223,9 @@
     <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
       <DependentUpon>DialogsHideOrShow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\FilePlayerOptions.xaml.cs">
+      <DependentUpon>FilePlayerOptions.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\FindMissingImageFolder.xaml.cs">
       <DependentUpon>FindMissingImageFolder.xaml</DependentUpon>
     </Compile>
@@ -358,6 +361,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\EditLog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\FilePlayerOptions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

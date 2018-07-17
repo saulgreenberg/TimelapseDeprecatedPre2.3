@@ -2958,6 +2958,11 @@ namespace Timelapse
             advancedImageSetOptions.ShowDialog();
         }
 
+        private void MenuItemFilePlayerOptions_Click(object sender, RoutedEventArgs e)
+        {
+            FilePlayerOptions filePlayerOptions = new FilePlayerOptions(this.state, this);
+            filePlayerOptions.ShowDialog();
+        }
         /// <summary>Show advanced Timelapse options</summary>
         private void MenuItemAdvancedTimelapseOptions_Click(object sender, RoutedEventArgs e)
         {
@@ -3599,10 +3604,12 @@ namespace Timelapse
                     FilePlayerTimer_Tick(null, null);
                     break;
                 case FilePlayerSelection.PlayFast:
-                    FilePlayer_Play(Constant.ThrottleValues.PlayQuickly);
+                    //FilePlayer_Play(Constant.FilePlayerValues.PlayFastDefault);
+                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
                     break;
                 case FilePlayerSelection.PlaySlow:
-                    FilePlayer_Play(Constant.ThrottleValues.PlaySlowly);
+                    //FilePlayer_Play(Constant.FilePlayerValues.PlaySlowDefault);
+                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
                     break;
                 case FilePlayerSelection.Stop:
                 default:
@@ -3984,6 +3991,5 @@ namespace Timelapse
 
 
         #endregion
-
     }
 }

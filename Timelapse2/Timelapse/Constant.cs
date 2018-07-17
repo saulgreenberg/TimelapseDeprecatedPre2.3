@@ -262,11 +262,23 @@ namespace Timelapse
             public const string TemplateDatabaseFileExtension = ".tdb";
             public const string XmlTemplateFileName = "CodeTemplate.xml";
             public const string XmlDataFileName = "ImageData.xml";
-            public const int Max_PathLength = 260;
+            public const int MaxPathLength = 260;
 
             public static readonly TimeSpan BackupInterval = TimeSpan.FromMinutes(10);
         }
 
+        // Default settings for the FilePlayer
+        public static class FilePlayerValues
+        {
+            public static readonly TimeSpan PlaySlowMinimum = TimeSpan.FromMilliseconds(500.0);
+            public static readonly TimeSpan PlaySlowDefault = TimeSpan.FromMilliseconds(500.0);
+            public static readonly TimeSpan PlaySlowMaximum = TimeSpan.FromMilliseconds(5000.0);
+
+            public static readonly TimeSpan PlayFastMinimum = TimeSpan.FromMilliseconds(40.0);
+            public static readonly TimeSpan PlayFastDefault = TimeSpan.FromMilliseconds(100.0);
+            public static readonly TimeSpan PlayFastMaximum = TimeSpan.FromMilliseconds(500.0);
+        }
+        
         // shorthands for FileSelection.<value>.ToString()
         public static class ImageQuality
         {
@@ -406,6 +418,10 @@ namespace Timelapse
                 public const string DarkPixelThreshold = "DarkPixelThreshold";
                 public const string DarkPixelRatio = "DarkPixelRatio";
 
+                // File Player play speeds (slow and fast)
+                public const string FilePlayerSlowValue = "FilePlayerSlowValue";
+                public const string FilePlayerFastValue = "FilePlayerFastValue";
+
                 // Rendering image speed
                 public const string DesiredImageRendersPerSecond = "DesiredImageRendersPerSecond";
 
@@ -523,9 +539,6 @@ namespace Timelapse
             public static readonly TimeSpan PollIntervalForVideoLoad = TimeSpan.FromMilliseconds(1.0);
             public static readonly TimeSpan RenderingBackoffTime = TimeSpan.FromMilliseconds(25.0);
             public static readonly TimeSpan VideoRenderingBackoffTime = TimeSpan.FromMilliseconds(10.0);
-            public static readonly TimeSpan PlaySlowly = TimeSpan.FromMilliseconds(300.0);
-            public static readonly TimeSpan PlayQuickly = TimeSpan.FromMilliseconds(25.0);
-
             public static readonly TimeSpan DataGridTimerInterval = TimeSpan.FromMilliseconds(250);
         }
 

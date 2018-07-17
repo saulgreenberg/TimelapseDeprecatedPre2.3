@@ -1,0 +1,91 @@
+﻿using System.Windows;
+using Timelapse.Util;
+
+namespace Timelapse.Dialog
+{
+    /// <summary>
+    /// Interaction logic for FilePlayerOptions.xaml
+    /// </summary>
+    public partial class FilePlayerOptions : Window
+    {
+        private double playSlowMinimum = Constant.FilePlayerValues.PlaySlowMinimum.TotalSeconds;
+        private double playFastMaximum = Constant.FilePlayerValues.PlayFastMaximum.TotalSeconds;
+        private TimelapseState state;
+
+        public FilePlayerOptions(TimelapseState state, Window owner)
+        {
+            this.InitializeComponent();
+            this.Owner = owner;
+            this.state = state;
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Utilities.SetDefaultDialogPosition(this);
+            Utilities.TryFitDialogWindowInWorkingArea(this);
+
+            this.SlowSpeedSlider.Minimum = playSlowMinimum;
+            this.SlowSpeedSlider.Maximum = Constant.FilePlayerValues.PlaySlowMaximum.TotalSeconds;
+            this.SlowSpeedSlider.Value = this.state.FilePlayerSlowValue;
+            this.SlowSpeedSlider.ValueChanged += SlowSpeedSlider_ValueChanged;
+
+            this.FastSpeedSlider.Minimum = Constant.FilePlayerValues.PlayFastMinimum.TotalSeconds;
+            this.FastSpeedSlider.Maximum = playFastMaximum;
+            this.FastSpeedSlider.Value = this.state.FilePlayerFastValue;
+            this.FastSpeedSlider.ValueChanged += FastSpeedSlider_ValueChanged;
+
+            DisplayFeedback();
+        }
+
+        private void SlowSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
+            DisplayFeedback();
+        }
+
+        private void DisplayFeedback()
+        {
+            if (this.state.FilePlayerSlowValue <= 1)
+            {
+                int framerate = (int)System.Math.Round(1.0 / this.state.FilePlayerSlowValue);
+                string plural = (framerate == 1) ? string.Empty : "s";
+                this.SlowSpeedText.Text = string.Format("{0} image{1} every second", framerate, plural);
+            }
+            else
+            {
+                this.SlowSpeedText.Text = string.Format("1 image every {0:N2} seconds", this.state.FilePlayerSlowValue);
+            }
+
+            if (this.state.FilePlayerFastValue <= 1)
+            {
+                int framerate = (int)System.Math.Round(1.0 / this.state.FilePlayerFastValue);
+                string plural = (framerate == 1) ? string.Empty : "s";
+                this.FastSpeedText.Text = string.Format("{0} image{1} every second", framerate, plural);
+            }
+            else
+            {
+                this.FastSpeedText.Text = string.Format("1 image every {0:N2} seconds", this.state.FilePlayerFastValue);
+            }
+        }
+
+        private void ResetSlowSpeedSlider_Click(object sender, RoutedEventArgs e)
+        {
+            this.SlowSpeedSlider.Value = Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds;
+        }
+
+        private void FastSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.state.FilePlayerFastValue = this.FastSpeedSlider.Value;
+            DisplayFeedback();
+        }
+
+        private void ResetFastSpeedSlider_Click(object sender, RoutedEventArgs e)
+        {
+            this.FastSpeedSlider.Value = Constant.FilePlayerValues.PlayFastDefault.TotalSeconds;
+        }
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
+        }
+    }
+}

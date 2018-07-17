@@ -15,6 +15,8 @@ namespace Timelapse.Util
         public CustomSelectionOperator CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
+        public double FilePlayerSlowValue { get; set; }
+        public double FilePlayerFastValue { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
         public MostRecentlyUsedList<string> MostRecentImageSets { get; private set; }
         public bool OrderFilesByDateTime { get; set; }
@@ -63,6 +65,8 @@ namespace Timelapse.Util
                 this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperator>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperator.And);
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.Images.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.Images.DarkPixelThresholdDefault);
+                this.FilePlayerSlowValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
+                this.FilePlayerFastValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.ReadMostRecentlyUsedList(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets);
                 this.OrderFilesByDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.OrderFilesByDateTime, false);
@@ -132,6 +136,8 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelRatio, this.DarkPixelRatioThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelThreshold, this.DarkPixelThreshold);
+                registryKey.Write(Constant.Registry.TimelapseKey.FilePlayerSlowValue, this.FilePlayerSlowValue);
+                registryKey.Write(Constant.Registry.TimelapseKey.FilePlayerFastValue, this.FilePlayerFastValue);
                 registryKey.Write(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, this.Throttles.DesiredImageRendersPerSecond);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets, this.MostRecentImageSets);
