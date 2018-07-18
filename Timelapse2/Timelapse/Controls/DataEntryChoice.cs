@@ -101,7 +101,7 @@ namespace Timelapse.Controls
                 return;
             }
             this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
+            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
         }
     }
 }

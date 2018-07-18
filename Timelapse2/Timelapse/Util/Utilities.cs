@@ -187,7 +187,7 @@ namespace Timelapse.Util
             exitNotification.Message.Problem = "Timelapse has to shut down as one or more of your file paths are too long.";
             exitNotification.Message.Solution = "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine + "\u2022 Use shorter folder or file names.";
             exitNotification.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
-            exitNotification.Message.Result = String.Format("Timelapse will shut down until you fix this.", Constant.File.BackupFolder);
+            exitNotification.Message.Result = "Timelapse will shut down until you fix this.";
             exitNotification.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
             Clipboard.SetText(e.ExceptionObject.ToString());
             exitNotification.ShowDialog();

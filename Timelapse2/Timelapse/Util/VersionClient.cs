@@ -107,7 +107,7 @@ namespace Timelapse.Util
                 {
                     messageBox.Owner = this.window;
                 }
-                bool? messageBoxResult = messageBox.ShowDialog();
+                messageBox.ShowDialog();
             }
             return true;
         }

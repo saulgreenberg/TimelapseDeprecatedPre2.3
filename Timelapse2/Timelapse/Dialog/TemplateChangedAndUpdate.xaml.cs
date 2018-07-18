@@ -93,7 +93,7 @@ namespace Timelapse.Dialog
                     if (inTemplateCount > 0 || inImageOnlyCount > 0)
                     {
                         row++;
-                        this.AddSeparator(row);
+                        this.AddSeparator();
                     }
                 }
             }
@@ -410,7 +410,7 @@ namespace Timelapse.Dialog
         }
 
         // Create a grey line separator in the Action Grid
-        private void AddSeparator(int row)
+        private void AddSeparator()
         {
             RowDefinition rd = new RowDefinition
             {

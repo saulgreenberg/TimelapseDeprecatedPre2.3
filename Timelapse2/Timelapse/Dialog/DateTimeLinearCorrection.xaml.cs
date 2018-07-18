@@ -80,7 +80,6 @@ namespace Timelapse
             // Preview the changes
             TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
             TimeSpan intervalFromOldestToNewestImage = this.latestImageDateTime - this.earliestImageDateTime;
-            TimeSpan mostRecentAdjustment = TimeSpan.Zero;
             foreach (ImageRow image in this.fileDatabase.Files)
             {
                 string oldDT = image.Date + " " + image.Time;

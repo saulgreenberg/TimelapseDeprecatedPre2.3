@@ -126,7 +126,6 @@ namespace Timelapse.Dialog
                 }
 
                 // Pass 2. Update each date as needed 
-                string message = String.Empty;
                 backgroundWorker.ReportProgress(0, new DateTimeRereadFeedbackTuple(String.Empty, String.Empty)); // A blank separator
                 backgroundWorker.ReportProgress(0, new DateTimeRereadFeedbackTuple("Pass 2: Updating dates and times", String.Format("Updating {0} images and videos...", filesToAdjust.Count)));
                 Thread.Yield(); // Allow the UI to update.

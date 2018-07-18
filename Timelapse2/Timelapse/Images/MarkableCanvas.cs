@@ -46,7 +46,6 @@ namespace Timelapse.Images
 
         // mouse and position states used to discriminate clicks from drags
         private UIElement mouseDownSender;
-        private DateTime mouseDownTime;
         private Point mouseDownLocation;
         private Point previousMousePosition;
 
@@ -321,7 +320,6 @@ namespace Timelapse.Images
             {
                 this.mouseDownLocation = e.GetPosition(this.ImageToDisplay);
                 this.mouseDownSender = (UIElement)sender;
-                this.mouseDownTime = DateTime.Now;
 
                 // If its more than the given time interval since the last click, then we are on the 2nd click of a double click
                 // If we aren't then we are on the first click and thus we want to reset the time.
@@ -822,7 +820,7 @@ namespace Timelapse.Images
             markerCanvas.MouseRightButtonUp += new MouseButtonEventHandler(this.Marker_MouseRightButtonUp);
             markerCanvas.MouseWheel += new MouseWheelEventHandler(this.ImageOrCanvas_MouseWheel); // Make the mouse wheel work over marks as well as the image
 
-            if (marker.Tooltip.Trim() == String.Empty)
+            if (String.IsNullOrEmpty(marker.Tooltip.Trim()))
             {
                 markerCanvas.ToolTip = null;
             }

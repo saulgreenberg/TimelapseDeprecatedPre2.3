@@ -374,7 +374,7 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(this, fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
             this.CheckAndCorrectRootFolder(fileDatabase);
@@ -766,7 +766,7 @@ namespace Timelapse
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
-                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), Constant.File.XmlDataFileName, this.dataHandler.FileDatabase);
+                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
                         this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
                    }
                 }
@@ -1719,7 +1719,7 @@ namespace Timelapse
             // display new file if the file changed
             // this avoids unnecessary image reloads and refreshes in cases where ShowFile() is just being called to refresh controls
             this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
-            List<Marker> displayMarkers = this.GetDisplayMarkers(false);
+            List<Marker> displayMarkers = this.GetDisplayMarkers();
 
             if (newFileToDisplay)
             {
@@ -2084,7 +2084,7 @@ namespace Timelapse
             // Part 1. Decrement the counter only if there is a number in it
             string oldCounterData = counter.Content;
             string newCounterData = String.Empty;
-            if (oldCounterData != String.Empty)
+            if (String.IsNullOrEmpty(oldCounterData))
             {
                 int count = Convert.ToInt32(oldCounterData);
                 count = (count == 0) ? 0 : count - 1;           // Make sure its never negative, which could happen if a person manually enters the count 
@@ -2176,7 +2176,7 @@ namespace Timelapse
 
             // update this counter's list of points in the database
             this.dataHandler.FileDatabase.SetMarkerPositions(this.dataHandler.ImageCache.Current.ID, markersForCounter);
-            this.MarkableCanvas.Markers = this.GetDisplayMarkers(true);
+            this.MarkableCanvas.Markers = this.GetDisplayMarkers();
             this.Speak(counter.Content + " " + counter.Label); // Speak the current count
         }
 
@@ -2184,10 +2184,10 @@ namespace Timelapse
         // and then set the markableCanvas's list of markers to that list. We also reset the emphasis for those tags as needed.
         private void MarkableCanvas_UpdateMarkers()
         {
-            this.MarkableCanvas.Markers = this.GetDisplayMarkers(false); // By default, we don't show the annotation
+            this.MarkableCanvas.Markers = this.GetDisplayMarkers(); // By default, we don't show the annotation
         }
 
-        private List<Marker> GetDisplayMarkers(bool showAnnotation)
+        private List<Marker> GetDisplayMarkers()
         {
             // No markers?
             if (this.markersOnCurrentFile == null)
@@ -2994,7 +2994,7 @@ namespace Timelapse
                     // populate the list
                     foreach (ImageRow image in table)
                     {
-                        string separator = (image.RelativePath == String.Empty) ? "" : "/";
+                        string separator = String.IsNullOrEmpty(image.RelativePath) ? "" : "/";
                         filenames.Add(image.RelativePath + separator + image.FileName );
                     }
                 }
@@ -3163,7 +3163,7 @@ namespace Timelapse
         private void MenuItemDialogsOnOrOff_Click(object sender, RoutedEventArgs e)
         {
             DialogsHideOrShow dialog = new DialogsHideOrShow(this.state, this);
-            bool? result = dialog.ShowDialog();
+            dialog.ShowDialog();
         }
 
         private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
@@ -3841,7 +3841,7 @@ namespace Timelapse
             }
             if (this.DataGrid.Items.Count > 0)
             { 
-                this.DataGrid.SelectAndScrollIntoView(IdRowIndex, this.dataHandler.ImageCache.CurrentRow);
+                this.DataGrid.SelectAndScrollIntoView(IdRowIndex);
             }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             this.DataGridSelectionsTimer_Reset();

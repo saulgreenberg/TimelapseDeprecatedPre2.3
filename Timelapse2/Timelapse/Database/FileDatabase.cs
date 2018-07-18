@@ -60,7 +60,7 @@ namespace Timelapse.Database
             this.OrderFilesByDateTime = false;
         }
 
-        public static FileDatabase CreateOrOpen(Window window, string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -363,7 +363,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
+            this.UpgradeDatabasesForBackwardsCompatability();
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -446,7 +446,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
+        private void UpgradeDatabasesForBackwardsCompatability()
         {
             this.SelectFiles(FileSelection.All);
             bool refreshImageDataTable = false;

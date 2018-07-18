@@ -116,14 +116,18 @@ namespace Timelapse.Dialog
             int rowIndex = 0;
             foreach (ImageRow imageProperties in imagesToDelete)
             {
-                Label imageLabel = new Label();
-                imageLabel.Content = imageProperties.FileName;
+                Label imageLabel = new Label
+                {
+                    Content = imageProperties.FileName
+                };
                 imageLabel.ToolTip = imageLabel.Content;
                 imageLabel.Height = 25;
                 imageLabel.VerticalAlignment = VerticalAlignment.Top;
 
-                Image imageControl = new Image();
-                imageControl.Source = imageProperties.LoadBitmap(database.FolderPath, Constant.Images.ThumbnailWidth);
+                Image imageControl = new Image
+                {
+                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.Images.ThumbnailWidth)
+                };
 
                 Grid.SetRow(imageLabel, rowIndex);
                 Grid.SetRow(imageControl, rowIndex + 1);

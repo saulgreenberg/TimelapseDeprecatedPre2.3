@@ -318,7 +318,6 @@ namespace Timelapse.Dialog
         {
             CheckBox select = sender as CheckBox;
             int row = Grid.GetRow(select);  // And you have the row number...
-            bool state = select.IsChecked.Value;
 
             SearchTerm searchterms = this.database.CustomSelection.SearchTerms[row - 1];
             searchterms.UseForSearching = select.IsChecked.Value;

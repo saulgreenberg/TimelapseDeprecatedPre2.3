@@ -11,7 +11,7 @@ namespace Timelapse.Images
     {
         // Read all the data into the imageData structure from the XML file in the filepath.
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
-        public static void Read(string filePath, string xmlDataFileName, FileDatabase imageDatabase)
+        public static void Read(string filePath, FileDatabase imageDatabase)
         {
             // XML Preparation
             XmlDocument xmlDoc = new XmlDocument();
@@ -139,7 +139,7 @@ namespace Timelapse.Images
                     }
 
                     // Remove the last "|" from the point list
-                    if (!countercoord.Equals(String.Empty))
+                    if (!String.IsNullOrEmpty(countercoord))
                     {
                         countercoord = countercoord.Remove(countercoord.Length - 1); // Remove the last "|"
                     }

@@ -52,7 +52,7 @@ namespace Timelapse.Dialog
             TimeSpan adjustment = this.DateTimePicker.Value.Value - this.initialDate.DateTime;
 
             // Preview the changes
-            TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetTimeZone();
+
             foreach (ImageRow image in this.fileDatabase.Files)
             {
                 string newDateTime = String.Empty;
@@ -97,12 +97,11 @@ namespace Timelapse.Dialog
             // Calculate and apply the date/time difference
             // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
             // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
-            DateTime originalDateTime;
-            if (DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out originalDateTime) == false)
+            if (DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out DateTime originalDateTime) == false)
             {
                 // we couldn't parse it, thus we can't update anything.
                 System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recongized by Timelapse: " + (string)this.OriginalDate.Content);
-                this.DialogResult = false; 
+                this.DialogResult = false;
                 return;
             }
 

@@ -355,7 +355,7 @@ namespace Timelapse.Controls
             messageBox.Message.Icon = MessageBoxImage.Question;
             messageBox.Message.What = "Copy Forward is not undoable, and can overwrite existing values.";
             messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
-            if (!checkForZero && text.Equals(String.Empty))
+            if (!checkForZero && String.IsNullOrEmpty(text))
             {
                 messageBox.Message.Result += "\u2022 copy the (empty) value \u00AB" + text + "\u00BB in this field from here to the last file of your selected files.";
             }
@@ -377,7 +377,7 @@ namespace Timelapse.Controls
             messageBox.Message.Icon = MessageBoxImage.Question;
             messageBox.Message.What = "Copy to All is not undoable, and can overwrite existing values.";
             messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
-            if (!checkForZero && text.Equals(String.Empty))
+            if (!checkForZero && String.IsNullOrEmpty(text))
             {
                 messageBox.Message.Result += "\u2022 clear this field across all " + filesAffected.ToString() + " of your selected files.";
             }

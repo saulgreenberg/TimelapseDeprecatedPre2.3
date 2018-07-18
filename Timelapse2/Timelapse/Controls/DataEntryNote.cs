@@ -46,7 +46,7 @@ namespace Timelapse.Controls
             // If the value to be empty, we just make it the same as the tooltip so something meaningful is displayed..
             this.ContentChanged = this.ContentControl.Text != value;
             this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = (value != String.Empty) ? value : this.LabelControl.ToolTip;
+            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
         }
     }
 }

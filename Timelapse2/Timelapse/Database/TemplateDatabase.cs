@@ -166,7 +166,7 @@ namespace Timelapse.Database
             foreach (ControlRow control in controlsInSpreadsheetOrder)
             {
                 string dataLabel = control.DataLabel;
-                if (dataLabel == String.Empty)
+                if (String.IsNullOrEmpty(dataLabel))
                 {
                     dataLabel = control.Label;
                 }
@@ -189,7 +189,7 @@ namespace Timelapse.Database
             foreach (ControlRow control in controlsInSpreadsheetOrder)
             {
                 string dataLabel = control.DataLabel;
-                if (dataLabel == String.Empty)
+                if (String.IsNullOrEmpty(dataLabel))
                 {
                     dataLabel = control.Label;
                 }

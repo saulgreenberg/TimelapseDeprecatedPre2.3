@@ -177,7 +177,6 @@ namespace Timelapse.Images
             // so reverse order may be a little faster on average in cases of nighttime images with black skies
             // TODO DISCRETIONARY: Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
             byte* currentPixel = (byte*)image.BackBuffer.ToPointer(); // the imageIndex will point to a particular byte in the pixel array
-            int pixelSizeInBytes = image.Format.BitsPerPixel / 8;
             int pixelStride = Constant.Images.DarkPixelSampleStrideDefault;
             int totalPixels = image.PixelHeight * image.PixelWidth; // total number of pixels in the image
             for (int pixelIndex = totalPixels - 1; pixelIndex > 0; pixelIndex -= pixelStride)

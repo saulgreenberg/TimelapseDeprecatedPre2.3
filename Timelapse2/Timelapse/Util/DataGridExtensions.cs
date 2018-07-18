@@ -44,7 +44,7 @@ namespace Timelapse.Util
         // which will occur *unless* the the user has resorted the datagrid by clicking a column header 
         // For efficiency, we check each tuple to see if the ID provided matches the ID in the row specified by rowIndex. If so, 
         // we can quickly highlight those rows.  Otherwise we need to search the datagrid for each ID
-        public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes, int possibleRowIndex)
+        public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes)
         {
             // If there are no selections, just unselect everything
             if (idRowIndexes.Count.Equals(0))
@@ -186,6 +186,7 @@ namespace Timelapse.Util
             }
         }
 
+        // UNUSED 
         // Get a cell from the DataGrid
         private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
         {

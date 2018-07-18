@@ -300,7 +300,7 @@ namespace Timelapse.Database
             foreach (ColumnTuplesWithWhere updateQuery in updateQueryList)
             {
                 string query = this.CreateUpdateQuery(tableName, updateQuery);
-                if (query.Equals(String.Empty))
+                if (String.IsNullOrEmpty(query))
                 {
                     continue; // skip non-queries
                 }
@@ -440,7 +440,7 @@ namespace Timelapse.Database
             foreach (string whereClause in whereClauses)
             {
                 // Add the WHERE clause only when uts is not empty
-                if (!whereClause.Trim().Equals(String.Empty))
+                if (!String.IsNullOrEmpty(whereClause.Trim()))
                 {                                                            // Construct each query statement
                     string query = Constant.Sql.DeleteFrom + tableName;     // DELETE FROM tablename
                     query += Constant.Sql.Where;                            // DELETE FROM tablename WHERE
@@ -525,7 +525,7 @@ namespace Timelapse.Database
                 {
                     connection.Open();
                     // Some basic error checking to make sure we can do the operation
-                    if (columnName.Trim() == String.Empty)
+                    if (String.IsNullOrEmpty(columnName.Trim()))
                     {
                         return false;  // The provided column names= is an empty string
                     }
@@ -663,7 +663,7 @@ namespace Timelapse.Database
         private void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type, string otherOptions)
         {
             string columnDefinition = name + " " + type;
-            if (otherOptions != String.Empty)
+            if (String.IsNullOrEmpty(otherOptions))
             {
                 columnDefinition += " " + otherOptions;
             }
@@ -756,7 +756,7 @@ namespace Timelapse.Database
                                 }
                                 break;
                             case 4:  // dflt_value (Column has a default value)
-                                if (reader[field].ToString() != String.Empty)
+                                if (String.IsNullOrEmpty(reader[field].ToString()))
                                 {
                                     existingColumnDefinition += Constant.Sql.Default + reader[field].ToString() + " ";
                                 }
@@ -899,7 +899,7 @@ namespace Timelapse.Database
                             }
                             break;
                         case 4:  // dflt_value (Column has a default value)
-                            if (reader[field].ToString() != String.Empty)
+                            if (String.IsNullOrEmpty(reader[field].ToString()))
                             {
                                 existingColumnDefinition += Constant.Sql.Default + Utilities.QuoteForSql(reader[field].ToString()) + " ";
                             }
