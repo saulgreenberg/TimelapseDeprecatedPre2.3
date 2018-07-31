@@ -188,34 +188,34 @@ namespace Timelapse.Util
 
         // UNUSED 
         // Get a cell from the DataGrid
-        private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
-        {
-            if (rowContainer != null)
-            {
-                DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
-                if (presenter == null)
-                {
-                    /* if the row has been virtualized away, call its ApplyTemplate() method 
-                     * to build its visual tree in order for the DataGridCellsPresenter
-                     * and the DataGridCells to be created */
-                    rowContainer.ApplyTemplate();
-                    presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
-                }
-                if (presenter != null)
-                {
-                    DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
-                    if (cell == null)
-                    {
-                        /* bring the column into view
-                         * in case it has been virtualized away */
-                        dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[column]);
-                        cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
-                    }
-                    return cell;
-                }
-            }
-            return null;
-        }
+        // private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
+        // {
+        //    if (rowContainer != null)
+        //    {
+        //        DataGridCellsPresenter presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+        //        if (presenter == null)
+        //        {
+        //            /* if the row has been virtualized away, call its ApplyTemplate() method 
+        //             * to build its visual tree in order for the DataGridCellsPresenter
+        //             * and the DataGridCells to be created */
+        //            rowContainer.ApplyTemplate();
+        //            presenter = FindVisualChild<DataGridCellsPresenter>(rowContainer);
+        //        }
+        //        if (presenter != null)
+        //        {
+        //            DataGridCell cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+        //            if (cell == null)
+        //            {
+        //                /* bring the column into view
+        //                 * in case it has been virtualized away */
+        //                dataGrid.ScrollIntoView(rowContainer, dataGrid.Columns[column]);
+        //                cell = presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+        //            }
+        //            return cell;
+        //        }
+        //    }
+        //    return null;
+        // }
 
         // Enumerate the members of a visual tree, in order to programmatic access objects in the visual tree.
         private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject

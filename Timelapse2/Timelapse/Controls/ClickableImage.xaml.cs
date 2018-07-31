@@ -123,7 +123,7 @@ namespace Timelapse.Controls
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
             // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.
-            if (bf == Constant.Images.FileNoLongerAvailable.Value || bf == Constant.Images.Corrupt.Value)
+            if (bf == Constant.ImageValues.FileNoLongerAvailable.Value || bf == Constant.ImageValues.Corrupt.Value)
             {
                 this.Image.Height = 0.75 * width; 
             }

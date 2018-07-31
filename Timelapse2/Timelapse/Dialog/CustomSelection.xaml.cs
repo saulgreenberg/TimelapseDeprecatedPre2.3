@@ -37,7 +37,7 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
 
             this.database = database;
-            this.imageSetTimeZone = this.database.ImageSet.GetTimeZone();
+            this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
         }

@@ -602,8 +602,8 @@ namespace Timelapse.Database
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { relativePathControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
-                this.SetControlID(Constant.DatabaseColumn.RelativePath, Constant.Database.RelativePathPosition);
-                this.SetControlOrders(Constant.DatabaseColumn.RelativePath, Constant.Database.RelativePathPosition);
+                this.SetControlID(Constant.DatabaseColumn.RelativePath, Constant.DatabaseValues.RelativePathPosition);
+                this.SetControlOrders(Constant.DatabaseColumn.RelativePath, Constant.DatabaseValues.RelativePathPosition);
             }
 
             // add DateTime and UtcOffset controls to pre v2.1.0.5 databases if they haven't already been inserted
@@ -633,8 +633,8 @@ namespace Timelapse.Database
                 }
 
                 // move the date time control to ID and order 2 for consistency with newly created templates
-                this.SetControlID(Constant.DatabaseColumn.DateTime, Constant.Database.DateTimePosition);
-                this.SetControlOrders(Constant.DatabaseColumn.DateTime, Constant.Database.DateTimePosition);
+                this.SetControlID(Constant.DatabaseColumn.DateTime, Constant.DatabaseValues.DateTimePosition);
+                this.SetControlOrders(Constant.DatabaseColumn.DateTime, Constant.DatabaseValues.DateTimePosition);
             }
 
             long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
@@ -646,8 +646,8 @@ namespace Timelapse.Database
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { utcOffsetControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
-                this.SetControlID(Constant.DatabaseColumn.UtcOffset, Constant.Database.UtcOffsetPosition);
-                this.SetControlOrders(Constant.DatabaseColumn.UtcOffset, Constant.Database.UtcOffsetPosition);
+                this.SetControlID(Constant.DatabaseColumn.UtcOffset, Constant.DatabaseValues.UtcOffsetPosition);
+                this.SetControlOrders(Constant.DatabaseColumn.UtcOffset, Constant.DatabaseValues.UtcOffsetPosition);
             }
 
             // Backwards compatability: ensure a DeleteFlag control exists, replacing the MarkForDeletion data label used in pre 2.1.0.4 templates if necessary

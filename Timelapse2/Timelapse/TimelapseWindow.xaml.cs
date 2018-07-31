@@ -571,7 +571,7 @@ namespace Timelapse
                 // which is less confusing than TPL's default partitioning where the displayed image jumps back and forth through the image set.  Pulling files
                 // nearly sequentially may also offer some minor disk performance benefit.                
                 List<ImageRow> filesToInsert = new List<ImageRow>();
-                TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetTimeZone();
+                TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
                 DateTime previousImageRender = DateTime.UtcNow - this.state.Throttles.DesiredIntervalBetweenRenders;
 
                 // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
@@ -587,7 +587,7 @@ namespace Timelapse
                     {
                         // the database already has an entry for this file so skip it
                         // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
-                        folderLoadProgress.BitmapSource = Constant.Images.FileAlreadyLoaded.Value;
+                        folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
                         folderLoadProgress.CurrentFile = filesProcessed;
                         folderLoadProgress.CurrentFileName = file.FileName;
 
@@ -614,7 +614,7 @@ namespace Timelapse
                             bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntent.TransientLoading);
 
                             // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                            if (bitmapSource == Constant.Images.Corrupt.Value)
+                            if (bitmapSource == Constant.ImageValues.Corrupt.Value)
                             {
                                 file.ImageQuality = FileSelection.Corrupted;
                             }
@@ -663,7 +663,7 @@ namespace Timelapse
                     {
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
                         Utilities.PrintFailure(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
-                        bitmapSource = Constant.Images.Corrupt.Value;
+                        bitmapSource = Constant.ImageValues.Corrupt.Value;
                         file.ImageQuality = FileSelection.Corrupted;
                     }
 
@@ -864,7 +864,7 @@ namespace Timelapse
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
             FileSelection fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
-            if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.Database.InvalidRow))
+            if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {
                 // if this is completion of an add to an existing image set stay on the image, ideally, shown before the import
                 mostRecentFileID = this.dataHandler.ImageCache.Current.ID;
@@ -941,7 +941,7 @@ namespace Timelapse
 
             if (filesSelected == false)
             {
-                this.ShowFile(Constant.Database.InvalidRow);
+                this.ShowFile(Constant.DatabaseValues.InvalidRow);
                 this.StatusBar.SetMessage("Image set is empty.");
                 this.StatusBar.SetCurrentFile(0);
                 this.StatusBar.SetCount(0);
@@ -982,7 +982,7 @@ namespace Timelapse
 
         private void SelectFilesAndShowFile(FileSelection selection, bool forceUpdate)
         {
-            long fileID = Constant.Database.DefaultFileID;
+            long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
@@ -1656,7 +1656,7 @@ namespace Timelapse
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
             if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
             {
-                this.MarkableCanvas.SetNewImage(Constant.Images.NoFilesAvailable.Value, null);
+                this.MarkableCanvas.SetNewImage(Constant.ImageValues.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
                 this.MarkableCanvas_UpdateMarkers();
                 this.MarkableCanvas.SwitchToImageView();

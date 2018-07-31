@@ -136,13 +136,13 @@ namespace Timelapse.Database
 
             // Create a dataline from each of the image properties, add it to a list of data lines,
             // then do a multiple insert of the list of datalines to the database 
-            for (int image = 0; image < files.Count; image += Constant.Database.RowsPerInsert)
+            for (int image = 0; image < files.Count; image += Constant.DatabaseValues.RowsPerInsert)
             {
                 // Create a dataline from the image properties, add it to a list of data lines,
                 // then do a multiple insert of the list of datalines to the database 
                 List<List<ColumnTuple>> fileDataRows = new List<List<ColumnTuple>>();
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
-                for (int insertIndex = image; (insertIndex < (image + Constant.Database.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
+                for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
@@ -247,7 +247,7 @@ namespace Timelapse.Database
 
                 if (onFileAdded != null)
                 {
-                    int lastImageInserted = Math.Min(files.Count - 1, image + Constant.Database.RowsPerInsert);
+                    int lastImageInserted = Math.Min(files.Count - 1, image + Constant.DatabaseValues.RowsPerInsert);
                     onFileAdded.Invoke(files[lastImageInserted], lastImageInserted);
                 }
             }
@@ -298,7 +298,7 @@ namespace Timelapse.Database
             // Create the ImageSetTable and initialize a single row in it
             columnDefinitions.Clear();
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.Database.ImageSetDefaultLog));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));       
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
             int allImages = (int)FileSelection.All;
@@ -310,9 +310,9 @@ namespace Timelapse.Database
             // Populate the data for the image set with defaults
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
             {
-                new ColumnTuple(Constant.DatabaseColumn.Log, Constant.Database.ImageSetDefaultLog),
+                new ColumnTuple(Constant.DatabaseColumn.Log, Constant.DatabaseValues.ImageSetDefaultLog),
                 new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.Database.InvalidID),
+                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
                 new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id)
@@ -456,7 +456,7 @@ namespace Timelapse.Database
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.Database.RelativePathPosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
                 refreshImageDataTable = true;
             }
 
@@ -466,7 +466,7 @@ namespace Timelapse.Database
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.Database.DateTimePosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
                 refreshImageDataTable = true;
             }
 
@@ -476,7 +476,7 @@ namespace Timelapse.Database
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.Database.UtcOffsetPosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
                 refreshImageDataTable = true;
             }
 
@@ -554,7 +554,7 @@ namespace Timelapse.Database
             // Populate DateTime column if the column has just been added
             if (!timeZoneColumnIsNotPopulated)
             {
-                TimeZoneInfo imageSetTimeZone = this.ImageSet.GetTimeZone();
+                TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
                 List<ColumnTuplesWithWhere> updateQuery = new List<ColumnTuplesWithWhere>();
 
                 foreach (ImageRow image in this.Files)
@@ -1063,7 +1063,7 @@ namespace Timelapse.Database
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             ImageRow firstImage = this.Files[startRow];
             ImageRow lastImage = null;
-            TimeZoneInfo imageSetTimeZone = this.ImageSet.GetTimeZone();
+            TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
             DateTimeOffset mostRecentOriginalDateTime = DateTime.MinValue;
             DateTimeOffset mostRecentReversedDateTime = DateTime.MinValue;
             for (int row = startRow; row <= endRow; row++)
@@ -1318,7 +1318,7 @@ namespace Timelapse.Database
 
         private void GetImageSet()
         {
-            string imageSetQuery = "Select * From " + Constant.DatabaseTable.ImageSet + " WHERE " + Constant.DatabaseColumn.ID + " = " + Constant.Database.ImageSetRowID.ToString();
+            string imageSetQuery = "Select * From " + Constant.DatabaseTable.ImageSet + " WHERE " + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
         }

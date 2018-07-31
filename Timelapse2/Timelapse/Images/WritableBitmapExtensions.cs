@@ -99,7 +99,7 @@ namespace Timelapse.Images
                 // TODO DISCRETIONARY: Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
                 byte* currentPixel = (byte*)image.BackBuffer.ToPointer(); // the imageIndex will point to a particular byte in the pixel array
                 int pixelSizeInBytes = image.Format.BitsPerPixel / 8;
-                int pixelStride = Constant.Images.DarkPixelSampleStrideDefault;
+                int pixelStride = Constant.ImageValues.DarkPixelSampleStrideDefault;
                 int totalPixels = image.PixelHeight * image.PixelWidth; // total number of pixels in the image
 
                 for (int pixelIndex = 0; pixelIndex < totalPixels; pixelIndex += pixelStride)
@@ -126,7 +126,7 @@ namespace Timelapse.Images
                     // In practice a grey scale pixel's rgb are all equal (i.e., delta = 0) but we need the value as we want to see how 'close' the pixel 
                     // actually is to 0, i.e., to allow some slop in determining grey versus color pixels.
                     int rgbDelta = Math.Abs(r - g) + Math.Abs(g - b) + Math.Abs(b - r);
-                    if (rgbDelta <= Constant.Images.GreyScalePixelThreshold)
+                    if (rgbDelta <= Constant.ImageValues.GreyscalePixelThreshold)
                     {
                         ++uncoloredPixels;
                     }
@@ -138,7 +138,7 @@ namespace Timelapse.Images
                 // Check if its a grey scale image, i.e., at least 90% of the pixels in this image (given this slop) are grey scale.
                 // If not, its a color image so judge it as not dark
                 double uncoloredPixelFraction = 1d * uncoloredPixels / countedPixels;
-                if (uncoloredPixelFraction < Constant.Images.GreyScaleImageThreshold)
+                if (uncoloredPixelFraction < Constant.ImageValues.GreyscaleImageThreshold)
                 {
                     darkPixelFraction = 1 - uncoloredPixelFraction;
                     isColor = true;
@@ -177,7 +177,7 @@ namespace Timelapse.Images
             // so reverse order may be a little faster on average in cases of nighttime images with black skies
             // TODO DISCRETIONARY: Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
             byte* currentPixel = (byte*)image.BackBuffer.ToPointer(); // the imageIndex will point to a particular byte in the pixel array
-            int pixelStride = Constant.Images.DarkPixelSampleStrideDefault;
+            int pixelStride = Constant.ImageValues.DarkPixelSampleStrideDefault;
             int totalPixels = image.PixelHeight * image.PixelWidth; // total number of pixels in the image
             for (int pixelIndex = totalPixels - 1; pixelIndex > 0; pixelIndex -= pixelStride)
             {

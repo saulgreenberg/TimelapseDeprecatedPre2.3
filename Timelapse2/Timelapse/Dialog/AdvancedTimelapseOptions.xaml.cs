@@ -33,8 +33,8 @@ namespace Timelapse.Dialog
             // Image Differencing Thresholds
             this.DifferenceThreshold.Value = this.timelapseState.DifferenceThreshold;
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
-            this.DifferenceThreshold.Maximum = Constant.Images.DifferenceThresholdMax;
-            this.DifferenceThreshold.Minimum = Constant.Images.DifferenceThresholdMin;
+            this.DifferenceThreshold.Maximum = Constant.ImageValues.DifferenceThresholdMax;
+            this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
 
             // Showing Images
             this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.SuppressThrottleWhenLoading ? true : false;
@@ -72,7 +72,7 @@ namespace Timelapse.Dialog
 
         private void ResetImageDifferencingButton_Click(object sender, RoutedEventArgs e)
         {
-            this.timelapseState.DifferenceThreshold = Constant.Images.DifferenceThresholdDefault;
+            this.timelapseState.DifferenceThreshold = Constant.ImageValues.DifferenceThresholdDefault;
             this.DifferenceThreshold.Value = this.timelapseState.DifferenceThreshold;
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
         }

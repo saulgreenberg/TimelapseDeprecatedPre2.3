@@ -182,7 +182,7 @@ namespace Timelapse.Dialog
                 // This tuple list will hold the id, key and value that we will want to update in the database
                 string dataLabelToUpdate = this.dataLabelByLabel[this.dataFieldLabel];
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetTimeZone();
+                TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
                 for (int imageIndex = 0; imageIndex < database.CurrentlySelectedFileCount; ++imageIndex)
                 {
                     ImageRow image = database.Files[imageIndex];

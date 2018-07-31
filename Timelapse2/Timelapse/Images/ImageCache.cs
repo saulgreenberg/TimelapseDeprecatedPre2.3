@@ -11,7 +11,7 @@ namespace Timelapse.Images
     public class ImageCache : FileTableEnumerator
     {
         private Dictionary<ImageDifference, BitmapSource> differenceBitmapCache;
-        private MostRecentlyUsedList<long> mostRecentlyUsedIDs;
+        private MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
         private ConcurrentDictionary<long, Task> prefetechesByID;
         private ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
 
@@ -22,7 +22,7 @@ namespace Timelapse.Images
         {
             this.CurrentDifferenceState = ImageDifference.Unaltered;
             this.differenceBitmapCache = new Dictionary<ImageDifference, BitmapSource>();
-            this.mostRecentlyUsedIDs = new MostRecentlyUsedList<long>(Constant.Images.BitmapCacheSize);
+            this.mostRecentlyUsedIDs = new MostRecentlyUsedCollection<long>(Constant.ImageValues.BitmapCacheSize);
             this.prefetechesByID = new ConcurrentDictionary<long, Task>();
             this.unalteredBitmapsByID = new ConcurrentDictionary<long, BitmapSource>();
         }

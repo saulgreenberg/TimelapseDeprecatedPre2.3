@@ -16,7 +16,7 @@ namespace Timelapse.Dialog
             this.Owner = owner;
             this.database = database;
 
-            this.currentImageSetTimeZone = database.ImageSet.GetTimeZone();
+            this.currentImageSetTimeZone = database.ImageSet.GetSystemTimeZone();
             this.TimeZones.SelectedItem = this.currentImageSetTimeZone.DisplayName;
         }
 

@@ -187,7 +187,7 @@ namespace Timelapse
             public const string MarkForDeletion = "MarkForDeletion";
         }
 
-        public static class Database
+        public static class DatabaseValues
         {
             // default values
             public const long DefaultFileID = 1;
@@ -289,7 +289,7 @@ namespace Timelapse
             public const string ListOfValues = "Ok|Dark|Corrupted|Missing";
         }
 
-        public static class Images
+        public static class ImageValues
         {
             public const int BitmapCacheSize = 9;
 
@@ -305,9 +305,9 @@ namespace Timelapse
             public const byte DifferenceThresholdMin = 0;
 
             // A greyscale image (given the above slop) will typically have about 90% of its pixels as grey scale
-            public const double GreyScaleImageThreshold = 0.9;
+            public const double GreyscaleImageThreshold = 0.9;
             // A grey scale pixel has r = g = b. But we will allow some slop in here just in case a bit of color creeps in
-            public const int GreyScalePixelThreshold = 40;
+            public const int GreyscalePixelThreshold = 40;
 
             // The number of images that are considered large enough to deserve special treatment on deletion
             public const int LargeNumberOfDeletedImages = 30;
@@ -316,11 +316,11 @@ namespace Timelapse
             public const int ThumnnailWithWhenNavigating = 300;
             public const int ThumbnailWidth = 128;
 
-            public static readonly Lazy<BitmapImage> Corrupt = Images.Load("Corrupted.jpg");
-            public static readonly Lazy<BitmapImage> FileNoLongerAvailable = Images.Load("FileNoLongerAvailable.jpg");
-            public static readonly Lazy<BitmapImage> NoFilesAvailable = Images.Load("NoFilesAvailable.jpg");
-            public static readonly Lazy<BitmapImage> BlankVideo = Images.Load("BlankVideo.jpg");
-            public static readonly Lazy<BitmapImage> FileAlreadyLoaded = Images.Load("FileAlreadyLoaded.jpg");
+            public static readonly Lazy<BitmapImage> Corrupt = ImageValues.Load("Corrupted.jpg");
+            public static readonly Lazy<BitmapImage> FileNoLongerAvailable = ImageValues.Load("FileNoLongerAvailable.jpg");
+            public static readonly Lazy<BitmapImage> NoFilesAvailable = ImageValues.Load("NoFilesAvailable.jpg");
+            public static readonly Lazy<BitmapImage> BlankVideo = ImageValues.Load("BlankVideo.jpg");
+            public static readonly Lazy<BitmapImage> FileAlreadyLoaded = ImageValues.Load("FileAlreadyLoaded.jpg");
 
             private static Lazy<BitmapImage> Load(string fileName)
             {

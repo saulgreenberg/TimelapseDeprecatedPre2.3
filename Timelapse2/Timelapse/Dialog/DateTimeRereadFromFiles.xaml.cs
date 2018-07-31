@@ -76,7 +76,7 @@ namespace Timelapse.Dialog
                 // Pass 1. Check to see what dates/times need updating.
                 List<ImageRow> filesToAdjust = new List<ImageRow>();
                 int count = this.database.CurrentlySelectedFileCount;
-                TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetTimeZone();
+                TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
                 for (int fileIndex = 0; fileIndex < count; ++fileIndex)
                 {
                     // We will store the various times here

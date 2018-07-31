@@ -99,6 +99,12 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>StrongNameKeyFile.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -476,7 +482,7 @@
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Controls\ControlLabelStyle.cs" />
     <Compile Include="Controls\ControlContentStyle.cs" />
-    <Compile Include="Util\MostRecentlyUsedList.cs" />
+    <Compile Include="Util\MostRecentlyUsedCollection.cs" />
     <Compile Include="Controls\DataEntryControl.cs" />
     <Compile Include="Controls\DataEntryCounter.cs" />
     <Compile Include="Controls\DataEntryChoice.cs" />
@@ -552,6 +558,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="StrongNameKeyFile.snk" />
     <Resource Include="Resources\AvalonLayout_DataEntryFloating.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnSide.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnTop.config" />

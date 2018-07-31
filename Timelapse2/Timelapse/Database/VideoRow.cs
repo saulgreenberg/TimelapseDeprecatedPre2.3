@@ -28,7 +28,7 @@ namespace Timelapse.Database
             string path = this.GetFilePath(imageFolderPath);
             if (!File.Exists(path))
             {
-                    return Constant.Images.FileNoLongerAvailable.Value;
+                    return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
 
             MediaPlayer mediaPlayer = new MediaPlayer();
@@ -49,7 +49,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return Constant.Images.BlankVideo.Value;
+                        return Constant.ImageValues.BlankVideo.Value;
                     }
                 }
 
@@ -109,7 +109,7 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 Utilities.PrintFailure(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                return Constant.Images.BlankVideo.Value;
+                return Constant.ImageValues.BlankVideo.Value;
             }
         }
     }

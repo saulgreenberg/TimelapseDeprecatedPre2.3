@@ -18,7 +18,7 @@ namespace Timelapse.Util
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
-        public MostRecentlyUsedList<string> MostRecentImageSets { get; private set; }
+        public MostRecentlyUsedCollection<string> MostRecentImageSets { get; private set; }
         public bool OrderFilesByDateTime { get; set; }
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
@@ -63,8 +63,8 @@ namespace Timelapse.Util
                 this.BookmarkTranslation = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationY, 1.0));
                 this.ClassifyDarkImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperator>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperator.And);
-                this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.Images.DarkPixelRatioThresholdDefault);
-                this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.Images.DarkPixelThresholdDefault);
+                this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
+                this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
                 this.FilePlayerSlowValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);

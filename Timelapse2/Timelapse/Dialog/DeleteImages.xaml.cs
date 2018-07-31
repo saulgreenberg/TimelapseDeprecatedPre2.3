@@ -83,7 +83,7 @@ namespace Timelapse.Dialog
                 this.Message.What = String.Format("Deletes {0} image and/or video(s) that are marked for deletion (shown below), ",  numberOfImagesToDelete.ToString());
                 this.Message.Result = String.Empty;
                 this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
-                if (numberOfImagesToDelete > Constant.Images.LargeNumberOfDeletedImages)
+                if (numberOfImagesToDelete > Constant.ImageValues.LargeNumberOfDeletedImages)
                 {
                     this.Message.Result += String.Format("Deleting {0} files will take a few moments. Please be patient.{1}", numberOfImagesToDelete.ToString(), Environment.NewLine);
                 }
@@ -124,7 +124,7 @@ namespace Timelapse.Dialog
 
                 Image imageControl = new Image
                 {
-                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.Images.ThumbnailWidth)
+                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth)
                 };
 
                 Grid.SetRow(imageLabel, rowIndex);

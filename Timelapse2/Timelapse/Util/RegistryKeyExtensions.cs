@@ -116,10 +116,10 @@ namespace Timelapse.Util
         }
 
         // read a series of REG_SZ keys' values from the registry
-        public static MostRecentlyUsedList<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
+        public static MostRecentlyUsedCollection<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
         {
             RegistryKey subKey = registryKey.OpenSubKey(subKeyPath);
-            MostRecentlyUsedList<string> values = new MostRecentlyUsedList<string>(Constant.NumberOfMostRecentDatabasesToTrack);
+            MostRecentlyUsedCollection<string> values = new MostRecentlyUsedCollection<string>(Constant.NumberOfMostRecentDatabasesToTrack);
 
             if (subKey != null)
             {
@@ -151,7 +151,7 @@ namespace Timelapse.Util
             registryKey.Write(subKeyPath, value.ToString());
         }
 
-        public static void Write(this RegistryKey registryKey, string subKeyPath, MostRecentlyUsedList<string> values)
+        public static void Write(this RegistryKey registryKey, string subKeyPath, MostRecentlyUsedCollection<string> values)
         {
             if (values != null)
             {

@@ -49,17 +49,19 @@ namespace Timelapse.Database
 
         public override ColumnTuplesWithWhere GetColumnTuples()
         {
-            List<ColumnTuple> columnTuples = new List<ColumnTuple>();
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.Selection, (int)this.FileSelection));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.Log, this.Log));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, this.MagnifyingGlassEnabled));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, this.MostRecentFileID));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.TimeZone, this.TimeZone));
-            columnTuples.Add(new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed));
+            List<ColumnTuple> columnTuples = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.DatabaseColumn.Selection, (int)this.FileSelection),
+                new ColumnTuple(Constant.DatabaseColumn.Log, this.Log),
+                new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, this.MagnifyingGlassEnabled),
+                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, this.MostRecentFileID),
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, this.TimeZone),
+                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed)
+            };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
 
-        public TimeZoneInfo GetTimeZone()
+        public TimeZoneInfo GetSystemTimeZone()
         {
             return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
         }

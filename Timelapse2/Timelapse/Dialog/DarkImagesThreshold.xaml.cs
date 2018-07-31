@@ -251,11 +251,11 @@ namespace Timelapse.Dialog
         private void MenuItemResetDefault_Click(object sender, RoutedEventArgs e)
         {
             // Move the thumb to correspond to the original value
-            this.darkPixelRatio = Constant.Images.DarkPixelRatioThresholdDefault;
+            this.darkPixelRatio = Constant.ImageValues.DarkPixelRatioThresholdDefault;
             Canvas.SetLeft(this.DarkPixelRatioThumb, this.darkPixelRatio * (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth));
 
             // Move the slider to its original position
-            this.DarkThreshold.Value = Constant.Images.DarkPixelThresholdDefault;
+            this.DarkThreshold.Value = Constant.ImageValues.DarkPixelThresholdDefault;
             this.RecalculateImageQualityForCurrentImage();
             this.Repaint();
         }

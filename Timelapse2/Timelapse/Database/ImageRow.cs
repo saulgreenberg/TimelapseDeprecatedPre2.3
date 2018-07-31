@@ -201,7 +201,7 @@ namespace Timelapse.Database
         {
             if (imageExpectedUsage == ImageDisplayIntent.TransientNavigating)
             { 
-                return this.LoadBitmap(baseFolderPath, Constant.Images.ThumbnailWidth, imageExpectedUsage);
+                return this.LoadBitmap(baseFolderPath, Constant.ImageValues.ThumbnailWidth, imageExpectedUsage);
             }
             else
             {
@@ -218,7 +218,7 @@ namespace Timelapse.Database
             string path = this.GetFilePath(baseFolderPath);
             if (!File.Exists(path))
             {
-                 return Constant.Images.FileNoLongerAvailable.Value;
+                 return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
             try
             {
@@ -250,7 +250,7 @@ namespace Timelapse.Database
             {
                 // We don't show the exception (Exception exception)
                 Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: Loading of {0} failed in LoadBitmap - Images.Corrupt returned.", this.FileName));
-                return Constant.Images.Corrupt.Value;
+                return Constant.ImageValues.Corrupt.Value;
             }
         }
 

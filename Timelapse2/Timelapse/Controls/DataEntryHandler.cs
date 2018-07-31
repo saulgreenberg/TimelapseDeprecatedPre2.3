@@ -481,7 +481,6 @@ namespace Timelapse.Controls
             {
                 return;
             }
-            DataEntryControl control = (DataEntryControl)utcOffsetPicker.Tag;
 
             DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
             DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);

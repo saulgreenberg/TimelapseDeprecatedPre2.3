@@ -53,7 +53,7 @@ namespace Timelapse.Images
 
             XmlNodeList nodeList = xmlDoc.SelectNodes(Constant.ImageXml.Images + Constant.ImageXml.Slash + Constant.DatabaseColumn.Image);
             int imageID = 0;
-            TimeZoneInfo imageSetTimeZone = imageDatabase.ImageSet.GetTimeZone();
+            TimeZoneInfo imageSetTimeZone = imageDatabase.ImageSet.GetSystemTimeZone();
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             List<ColumnTuplesWithWhere> markersToUpdate = new List<ColumnTuplesWithWhere>();
             foreach (XmlNode node in nodeList)

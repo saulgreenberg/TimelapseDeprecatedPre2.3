@@ -30,7 +30,7 @@ namespace Timelapse.Dialog
             this.image.Source = imageToCorrect.LoadBitmap(this.fileDatabase.FolderPath);
 
             // configure timezone picker
-            TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetTimeZone();
+            TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
             this.TimeZones.SelectedItem = imageSetTimeZone.DisplayName;
             this.TimeZones.SelectionChanged += this.TimeZones_SelectionChanged;
         }

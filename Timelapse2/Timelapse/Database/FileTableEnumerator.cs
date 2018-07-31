@@ -13,7 +13,7 @@ namespace Timelapse.Database
         public int CurrentRow { get; private set; }
 
         public FileTableEnumerator(FileDatabase fileDatabase) :
-            this(fileDatabase, Constant.Database.InvalidRow)
+            this(fileDatabase, Constant.DatabaseValues.InvalidRow)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Timelapse.Database
         public virtual void Reset()
         {
             this.Current = null;
-            this.CurrentRow = Constant.Database.InvalidRow;
+            this.CurrentRow = Constant.DatabaseValues.InvalidRow;
         }
 
         /// <summary>

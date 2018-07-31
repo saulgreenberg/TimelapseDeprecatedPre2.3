@@ -604,7 +604,7 @@ namespace Timelapse.Images
         {
             if (videoFile.Exists == false)
             {
-                this.SetNewImage(Constant.Images.FileNoLongerAvailable.Value, markers);
+                this.SetNewImage(Constant.ImageValues.FileNoLongerAvailable.Value, markers);
                 this.displayingImage = true;
                 return;
             }
