@@ -20,7 +20,6 @@ namespace Timelapse.Dialog
     {
         // these variables will hold the values of the passed in parameters
         private bool deleteImageAndData;
-        private FileDatabase fileDatabase;
         private List<ImageRow> filesToDelete;
 
         public List<long> ImageFilesRemovedByID { get; private set; }
@@ -35,7 +34,6 @@ namespace Timelapse.Dialog
         {
             this.InitializeComponent();
             this.deleteImageAndData = deleteImageAndData;
-            this.fileDatabase = database;
             this.filesToDelete = imagesToDelete;
             this.Owner = owner;
 

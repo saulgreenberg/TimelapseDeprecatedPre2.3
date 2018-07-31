@@ -583,7 +583,7 @@ namespace Timelapse
                 {
                     // Note that calling GetOrCreateFile inserts the the creation date as the Date/Time. 
                     // We should ensure that a later call examines the bitmap metadata, and - if that metadata date exists - over-writes the creation date  
-                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, imageSetTimeZone, out ImageRow file))
+                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
                     {
                         // the database already has an entry for this file so skip it
                         // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
@@ -2332,7 +2332,7 @@ namespace Timelapse
             CsvReaderWriter csvWriter = new CsvReaderWriter();
             try
             {
-                csvWriter.ExportToCsv(this.dataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
+                CsvReaderWriter.ExportToCsv(this.dataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
             }
             catch (IOException exception)
             {
@@ -2491,7 +2491,7 @@ namespace Timelapse
             CsvReaderWriter csvReader = new CsvReaderWriter();
             try
             {
-                if (csvReader.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
+                if (CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
                 {
                     MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                     messageBox.Message.Icon = MessageBoxImage.Error;

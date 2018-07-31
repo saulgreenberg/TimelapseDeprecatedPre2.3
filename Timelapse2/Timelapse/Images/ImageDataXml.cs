@@ -112,7 +112,6 @@ namespace Timelapse.Images
                 List<ColumnTuple> counterCoordinates = new List<ColumnTuple>();
                 innerNodeIndex = 0;
                 innerNodeList = node.SelectNodes(Constant.Control.Counter);
-                string where = String.Empty;
                 foreach (XmlNode innerNode in innerNodeList)
                 {
                     // Add the value of each counter to the dataline 

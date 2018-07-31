@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Timelapse.Util
 {
-    public class DateTimeHandler
+    public static class DateTimeHandler
     {
         public static DateTimeOffset CreateDateTimeOffset(DateTime dateTime, TimeZoneInfo imageSetTimeZone)
         {

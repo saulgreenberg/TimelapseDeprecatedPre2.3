@@ -67,8 +67,7 @@ namespace Timelapse.Dialog
             int start = this.SearchForNextAmbiguousDateInSelectedImageSet(0);
             while (start != -1)
             {
-                int count;
-                int end = this.GetLastImageOnSameDay(start, out count);
+                int end = this.GetLastImageOnSameDay(start, out int count);
                 this.ambiguousDatesList.Add(new AmbiguousDate(start, end, count, false));
                 start = this.SearchForNextAmbiguousDateInSelectedImageSet(end + 1);
             }
@@ -171,8 +170,7 @@ namespace Timelapse.Dialog
             this.OriginalDateLabel.Content = image.GetDateTime().Date;
 
             // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
-            DateTimeOffset swappedDate;
-            this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out swappedDate) ? DateTimeHandler.ToDisplayDateTimeString(swappedDate) : DateTimeHandler.ToDisplayDateTimeString(image.GetDateTime());
+            this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateTimeString(swappedDate) : DateTimeHandler.ToDisplayDateTimeString(image.GetDateTime());
 
             this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
@@ -200,8 +198,7 @@ namespace Timelapse.Dialog
                 this.OriginalDateLabel.Content = DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
 
                 // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
-                DateTimeOffset swappedDate;
-                this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out swappedDate) ? DateTimeHandler.ToDisplayDateString(swappedDate.Date) : DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
+                this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateString(swappedDate.Date) : DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
 
                 this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
@@ -247,8 +244,7 @@ namespace Timelapse.Dialog
                 string newDate = String.Empty;
                 if (ambiguousDate.Swapped)
                 {
-                    DateTimeOffset swappedDate;
-                    DateTimeHandler.TrySwapDayMonth(image.DateTime, out swappedDate);
+                    DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate);
                     newDate = DateTimeHandler.ToDisplayDateString(swappedDate.Date);
                     string countStatus = ambiguousDate.Count.ToString() + " file";
                     countStatus += (ambiguousDate.Count > 1) ? "s" : String.Empty;
@@ -266,10 +262,6 @@ namespace Timelapse.Dialog
         {
             foreach (AmbiguousDate ambDate in this.ambiguousDatesList)
             {
-                ImageRow image;
-                image = this.database.Files[ambDate.StartRange];
-                string newDate = String.Empty;
-
                 if (ambDate.Swapped)
                 {
                     this.database.ExchangeDayAndMonthInFileDates(ambDate.StartRange, ambDate.EndRange);

@@ -6,7 +6,7 @@ using System.Text;
 namespace Timelapse.Util
 {
     // Captures a single metadata record entry as extracted by MetaDataExtractor. 
-    public class Metadata
+    public class ImageMetadata
     {
         public string Directory { get; set; }
         public string Name { get; set; }
@@ -19,11 +19,11 @@ namespace Timelapse.Util
             }
         }
 
-        public Metadata()
+        public ImageMetadata()
         {
             this.Initialize(String.Empty, String.Empty, String.Empty);
         }
-        public Metadata(string directory, string name, string value)
+        public ImageMetadata(string directory, string name, string value)
         {
             this.Initialize(directory, name, value);
         }

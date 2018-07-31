@@ -62,7 +62,6 @@ namespace Timelapse.Controls
         private RowColumn cellChosenOnMouseDown;
         private bool modifierKeyPressedOnMouseDown = false;
         private RowColumn cellWithLastMouseOver = new RowColumn(-1, -1);
-        private bool cellChosenOnMouseDownSelectionState = false;
         #endregion
 
         #region Constructor
@@ -294,7 +293,6 @@ namespace Timelapse.Controls
                 if (ci != null)
                 {
                     this.SelectNone();
-                    this.cellChosenOnMouseDownSelectionState = ci.IsSelected;
                     ci.IsSelected = true; 
                 }
             }
@@ -386,7 +384,7 @@ namespace Timelapse.Controls
             this.SelectNone(); // Clear the selections
 
             // Determine which cell is 
-            this.DetermineTopLeftBottomRightCells(cellChosenOnMouseDown, currentCell, out RowColumn startCell, out RowColumn endCell);
+            DetermineTopLeftBottomRightCells(cellChosenOnMouseDown, currentCell, out RowColumn startCell, out RowColumn endCell);
 
             // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
             RowColumn indexCell = startCell;
@@ -416,7 +414,7 @@ namespace Timelapse.Controls
         // Select all cells between the initial and currently selected cell
         private void SelectFromTo(RowColumn cell1, RowColumn cell2)
         {
-            this.DetermineTopLeftBottomRightCells(cell1, cell2, out RowColumn startCell, out RowColumn endCell);
+            DetermineTopLeftBottomRightCells(cell1, cell2, out RowColumn startCell, out RowColumn endCell);
 
             // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
             RowColumn indexCell = startCell;
@@ -576,7 +574,7 @@ namespace Timelapse.Controls
         #region Cell Calculation methods
 
         // Given two cells, determine which one is the start vs the end cell
-        private void DetermineTopLeftBottomRightCells(RowColumn cell1, RowColumn cell2, out RowColumn startCell, out RowColumn endCell)
+        private static void DetermineTopLeftBottomRightCells(RowColumn cell1, RowColumn cell2, out RowColumn startCell, out RowColumn endCell)
         {
             startCell = new RowColumn();
             endCell = new RowColumn();

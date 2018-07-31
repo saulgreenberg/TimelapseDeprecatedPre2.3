@@ -243,8 +243,8 @@
     <Compile Include="Util\DataGridExtensions.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
-    <Compile Include="Util\Metadata.cs" />
-    <Compile Include="Util\MetadataDictionary.cs" />
+    <Compile Include="Util\ImageMetadata.cs" />
+    <Compile Include="Util\ImageMetadataDictionary.cs" />
     <Compile Include="Util\RegistryKeyExtensions.cs" />
     <Compile Include="Util\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />

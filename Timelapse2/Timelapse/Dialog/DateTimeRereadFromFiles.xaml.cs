@@ -91,7 +91,7 @@ namespace Timelapse.Dialog
                         DateTimeAdjustment dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.database.FolderPath, imageSetTimeZone);
                         if (dateTimeAdjustment == DateTimeAdjustment.MetadataNotUsed)
                         {
-                            file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath, imageSetTimeZone);  // We couldn't read the metadata, so get a candidate date/time from the file
+                            file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);  // We couldn't read the metadata, so get a candidate date/time from the file
                             usingMetadataTimestamp = false;
                         }
                         DateTimeOffset rescannedDateTime = file.GetDateTime();

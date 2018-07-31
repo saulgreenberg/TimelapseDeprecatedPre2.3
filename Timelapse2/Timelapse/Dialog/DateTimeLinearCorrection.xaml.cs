@@ -18,7 +18,6 @@ namespace Timelapse
     {
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
-        private DateTimeOffset lastDateEnteredWithDateTimePicker; // Keeps track of the last valid date in the date picker so we can revert to it if needed.
         private bool displayingPreview = false;
         private FileDatabase fileDatabase;
 
@@ -61,7 +60,6 @@ namespace Timelapse
             // Configure feedback for latest date (in datetime picker) and its image
             this.latestImageName.Content = latestImageRow.FileName;
             DataEntryHandler.Configure(this.dateTimePickerLatestDateTime, this.latestImageDateTime.DateTime);
-            this.lastDateEnteredWithDateTimePicker = this.latestImageDateTime;
             this.dateTimePickerLatestDateTime.ValueChanged += this.DateTimePicker_ValueChanged;
             this.imageLatest.Source = latestImageRow.LoadBitmap(this.fileDatabase.FolderPath);
         }
@@ -214,7 +212,6 @@ namespace Timelapse
             // Don't let the date picker go below the oldest time. If it does, don't change the date and play a beep.
             if (this.dateTimePickerLatestDateTime.Value.Value <= this.earliestImageDateTime)
             {
-               // SAULXX this.dateTimePickerLatestDateTime.Value = this.lastDateEnteredWithDateTimePicker;
                 MessageBox messageBox = new MessageBox("Your new time has to be later than the earliest time", this);
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.Message.Problem = "Your new time has to be later than the earliest time   ";
@@ -223,11 +220,7 @@ namespace Timelapse
                 messageBox.Message.Hint = "The image on the left shows the earliest time recorded for images in this filtered view  shown over the left image";
                 messageBox.ShowDialog();
             }
-            else
-            {
-                // Keep track of the last valid date in the date picker so we can revert to it if needed.
-                this.lastDateEnteredWithDateTimePicker = newDateTime;
-            }
+
             // Enable the Ok button only if the latest time has actually changed from its original version
             TimeSpan newestImageAdjustment = newDateTime - this.latestImageDateTime;
             this.OkButton.IsEnabled = (newestImageAdjustment == TimeSpan.Zero) ? false : true;

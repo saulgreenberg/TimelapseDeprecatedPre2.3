@@ -16,7 +16,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
-        public void ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
+        public static void ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
         {
             using (TextWriter fileWriter = new StreamWriter(filePath, false))
             {
@@ -32,7 +32,7 @@ namespace Timelapse.Database
                     {
                         continue;
                     }
-                    header.Append(this.AddColumnValue(dataLabel));
+                    header.Append(AddColumnValue(dataLabel));
                 }
                 fileWriter.WriteLine(header.ToString());
 
@@ -49,14 +49,14 @@ namespace Timelapse.Database
                         {
                             continue;
                         }
-                        csvRow.Append(this.AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                        csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
                     }
                     fileWriter.WriteLine(csvRow.ToString());
                 }
             }
         }
 
-        public bool TryImportFromCsv(string filePath, FileDatabase fileDatabase, out List<string> importErrors)
+        public static bool TryImportFromCsv(string filePath, FileDatabase fileDatabase, out List<string> importErrors)
         {
             importErrors = new List<string>();
             
@@ -66,7 +66,7 @@ namespace Timelapse.Database
                 using (StreamReader csvReader = new StreamReader(stream))
                 {
                     // validate .csv file headers against the database
-                    List<string> dataLabelsFromHeader = this.ReadAndParseLine(csvReader);
+                    List<string> dataLabelsFromHeader = ReadAndParseLine(csvReader);
                     List<string> dataLabelsInFileDatabaseButNotInHeader = dataLabels.Except(dataLabelsFromHeader).ToList();
                     foreach (string dataLabel in dataLabelsInFileDatabaseButNotInHeader)
                     {
@@ -89,7 +89,7 @@ namespace Timelapse.Database
 
                     // read image updates from the .csv file
                     List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                    for (List<string> row = this.ReadAndParseLine(csvReader); row != null; row = this.ReadAndParseLine(csvReader))
+                    for (List<string> row = ReadAndParseLine(csvReader); row != null; row = ReadAndParseLine(csvReader))
                     {
                         if (row.Count == dataLabels.Count - 1)
                         {
@@ -181,7 +181,7 @@ namespace Timelapse.Database
             }
         }
 
-        private string AddColumnValue(string value)
+        private static string AddColumnValue(string value)
         {
             if (value == null)
             {
@@ -197,7 +197,7 @@ namespace Timelapse.Database
             return value + ",";
         }
 
-        private List<string> ReadAndParseLine(StreamReader csvReader)
+        private static List<string> ReadAndParseLine(StreamReader csvReader)
         {
             string unparsedLine = csvReader.ReadLine();
             if (unparsedLine == null)

@@ -21,7 +21,7 @@ namespace Timelapse.Util
     /// <summary>
     /// A variety of miscellaneous utility functions
     /// </summary>
-    public class Utilities
+    public static class Utilities
     {
         // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
         public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)

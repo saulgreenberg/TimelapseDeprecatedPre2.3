@@ -13,7 +13,7 @@ namespace Timelapse.Editor.Dialog
     // Note: There are lots of commonalities between this dialog and DialogPopulate, but its not clear if it's worth the effort of factoring the two.
     public partial class InspectMetadata : Window
     {
-        private Dictionary<string, Metadata> metadataDictionary;
+        private Dictionary<string, ImageMetadata> metadataDictionary;
         private string metadataName = String.Empty;
         private string noteLabel = String.Empty;
         private string noteDataLabel = String.Empty;
@@ -97,16 +97,16 @@ namespace Timelapse.Editor.Dialog
                 this.ImageName.ToolTip = this.ImageName.Content;
 
                 // Retrieve the metadata
-                this.metadataDictionary = MetadataDictionary.LoadMetadata(this.imageFilePath);
+                this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);
                 // If there is no metadata, this is an easy way to inform the user
                 if (this.metadataDictionary.Count == 0)
                 {
-                    this.metadataDictionary.Add("Empty", new Timelapse.Util.Metadata("Empty", "No metadata found", String.Empty));
+                    this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found", String.Empty));
                 }
 
                 // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
                 List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
-                foreach (KeyValuePair<string, Metadata> metadata in this.metadataDictionary)
+                foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
                 {
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
                 }

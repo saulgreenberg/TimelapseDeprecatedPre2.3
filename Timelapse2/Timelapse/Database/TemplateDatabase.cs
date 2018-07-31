@@ -153,7 +153,7 @@ namespace Timelapse.Database
         private void GetControlsSortedByControlOrder()
         {
             // Utilities.PrintMethodName();
-            DataTable templateTable = this.Database.GetDataTableFromSelect(Constant.Sql.SelectStarFrom + Constant.DatabaseTable.Controls + Constant.Sql.OrderBy + Constant.Control.ControlOrder);
+            DataTable templateTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.Controls + Constant.Sqlite.OrderBy + Constant.Control.ControlOrder);
             this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
         }
@@ -444,18 +444,18 @@ namespace Timelapse.Database
             // create the template table
             List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sql.CreationStringPrimaryKey),
-                new ColumnDefinition(Constant.Control.ControlOrder, Constant.Sql.Integer),
-                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Constant.Sql.Integer),
-                new ColumnDefinition(Constant.Control.Type, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.DefaultValue, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.Label, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.DataLabel, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.Tooltip, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.TextBoxWidth, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.Copyable, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.Visible, Constant.Sql.Text),
-                new ColumnDefinition(Constant.Control.List, Constant.Sql.Text)
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey),
+                new ColumnDefinition(Constant.Control.ControlOrder, Constant.Sqlite.Integer),
+                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Constant.Sqlite.Integer),
+                new ColumnDefinition(Constant.Control.Type, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.DefaultValue, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.Label, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.DataLabel, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.Tooltip, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.TextBoxWidth, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.Copyable, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.Visible, Constant.Sqlite.Text),
+                new ColumnDefinition(Constant.Control.List, Constant.Sqlite.Text)
             };
             this.Database.CreateTable(Constant.DatabaseTable.Controls, templateTableColumns);
 
@@ -489,7 +489,7 @@ namespace Timelapse.Database
             standardControls.Add(file);
 
             // relative path
-            standardControls.Add(this.GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
+            standardControls.Add(GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
 
             // folder
             List<ColumnTuple> folder = new List<ColumnTuple>
@@ -509,10 +509,10 @@ namespace Timelapse.Database
             standardControls.Add(folder);
 
             // datetime
-            standardControls.Add(this.GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
+            standardControls.Add(GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
 
             // utcOffset
-            standardControls.Add(this.GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
+            standardControls.Add(GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
 
             // date
             List<ColumnTuple> date = new List<ColumnTuple>
@@ -566,7 +566,7 @@ namespace Timelapse.Database
             standardControls.Add(imageQuality);
 
             // delete flag
-            standardControls.Add(this.GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
+            standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
 
             // insert standard controls into the template table
             this.Database.Insert(Constant.DatabaseTable.Controls, standardControls);
@@ -598,7 +598,7 @@ namespace Timelapse.Database
             {
                 // insert a relative path control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
-                List<ColumnTuple> relativePathControl = this.GetRelativePathTuples(order, order, true);
+                List<ColumnTuple> relativePathControl = GetRelativePathTuples(order, order, true);
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { relativePathControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
@@ -617,7 +617,7 @@ namespace Timelapse.Database
                 // if either the date or time was visible make the date time visible
                 bool dateTimeVisible = date.Visible || time.Visible;
                 long order = this.GetOrderForNewControl();
-                List<ColumnTuple> dateTimeControl = this.GetDateTimeTuples(order, order, dateTimeVisible);
+                List<ColumnTuple> dateTimeControl = GetDateTimeTuples(order, order, dateTimeVisible);
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { dateTimeControl });
 
                 // make date and time controls invisible as they're replaced by the date time control
@@ -642,7 +642,7 @@ namespace Timelapse.Database
             {
                 // insert a relative path control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
-                List<ColumnTuple> utcOffsetControl = this.GetUtcOffsetTuples(order, order, false);
+                List<ColumnTuple> utcOffsetControl = GetUtcOffsetTuples(order, order, false);
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { utcOffsetControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
@@ -654,7 +654,7 @@ namespace Timelapse.Database
             ControlRow markForDeletion = this.GetControlFromTemplateTable(Constant.ControlsDeprecated.MarkForDeletion);
             if (markForDeletion != null)
             {
-                List<ColumnTuple> deleteFlagControl = this.GetDeleteFlagTuples(markForDeletion.ControlOrder, markForDeletion.SpreadsheetOrder, markForDeletion.Visible);
+                List<ColumnTuple> deleteFlagControl = GetDeleteFlagTuples(markForDeletion.ControlOrder, markForDeletion.SpreadsheetOrder, markForDeletion.Visible);
                 this.Database.Update(Constant.DatabaseTable.Controls, new ColumnTuplesWithWhere(deleteFlagControl, markForDeletion.ID));
                 this.GetControlsSortedByControlOrder();
             }
@@ -662,7 +662,7 @@ namespace Timelapse.Database
             {
                 // insert a DeleteFlag control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
-                List<ColumnTuple> deleteFlagControl = this.GetDeleteFlagTuples(order, order, true);
+                List<ColumnTuple> deleteFlagControl = GetDeleteFlagTuples(order, order, true);
                 this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { deleteFlagControl });
                 this.GetControlsSortedByControlOrder();
             }
@@ -740,25 +740,25 @@ namespace Timelapse.Database
                 Debug.Assert((maximumID > 0) && (maximumID <= Int64.MaxValue), String.Format("Maximum ID found is {0}, which is out of range.", maximumID));
                 string jumpAmount = maximumID.ToString();
 
-                string increaseIDs = Constant.Sql.Update + Constant.DatabaseTable.Controls;
-                increaseIDs += Constant.Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " + 1 + " + jumpAmount;
-                increaseIDs += Constant.Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
+                string increaseIDs = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
+                increaseIDs += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " + 1 + " + jumpAmount;
+                increaseIDs += Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(increaseIDs);
 
                 // Second update: decrease IDs above newID to be one more than their original value
                 // This leaves everything in sequence except for an open spot at newID.
-                string reduceIDs = Constant.Sql.Update + Constant.DatabaseTable.Controls;
-                reduceIDs += Constant.Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " - " + jumpAmount;
-                reduceIDs += Constant.Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
+                string reduceIDs = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
+                reduceIDs += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " - " + jumpAmount;
+                reduceIDs += Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(reduceIDs);
             }
 
             // 3rd update: change the target ID to the desired ID
             this.CreateBackupIfNeeded();
 
-            string setControlID = Constant.Sql.Update + Constant.DatabaseTable.Controls;
-            setControlID += Constant.Sql.Set + Constant.DatabaseColumn.ID + " = " + newID;
-            setControlID += Constant.Sql.Where + Constant.Control.DataLabel + " = '" + dataLabel + "'";
+            string setControlID = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
+            setControlID += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + newID;
+            setControlID += Constant.Sqlite.Where + Constant.Control.DataLabel + " = '" + dataLabel + "'";
             queries.Add(setControlID);
             this.Database.ExecuteNonQueryWrappedInBeginEnd(queries);
 
@@ -832,7 +832,7 @@ namespace Timelapse.Database
             }
         }
 
-        private List<ColumnTuple> GetDateTimeTuples(long controlOrder, long spreadsheetOrder, bool visible)
+        private static List<ColumnTuple> GetDateTimeTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
             List<ColumnTuple> dateTime = new List<ColumnTuple>
             {
@@ -852,7 +852,7 @@ namespace Timelapse.Database
         }
 
         // Defines a RelativePath control. The definition is used by its caller to insert a RelativePath control into the template for backwards compatability. 
-        private List<ColumnTuple> GetRelativePathTuples(long controlOrder, long spreadsheetOrder, bool visible)
+        private static List<ColumnTuple> GetRelativePathTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
             List<ColumnTuple> relativePath = new List<ColumnTuple>
             {
@@ -872,7 +872,7 @@ namespace Timelapse.Database
         }
 
         // Defines a DeleteFlag control. The definition is used by its caller to insert a DeleteFlag control into the template for backwards compatability. 
-        private List<ColumnTuple> GetDeleteFlagTuples(long controlOrder, long spreadsheetOrder, bool visible)
+        private static List<ColumnTuple> GetDeleteFlagTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
             List<ColumnTuple> deleteFlag = new List<ColumnTuple>
             {
@@ -891,7 +891,7 @@ namespace Timelapse.Database
             return deleteFlag;
         }
 
-        private List<ColumnTuple> GetUtcOffsetTuples(long controlOrder, long spreadsheetOrder, bool visible)
+        private static List<ColumnTuple> GetUtcOffsetTuples(long controlOrder, long spreadsheetOrder, bool visible)
         {
             List<ColumnTuple> utcOffset = new List<ColumnTuple>
             {

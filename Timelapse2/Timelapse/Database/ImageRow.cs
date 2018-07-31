@@ -262,7 +262,7 @@ namespace Timelapse.Database
             this.Time = DateTimeHandler.ToDisplayTimeString(dateTime);
         }
 
-        public void SetDateTimeOffsetFromFileInfo(string folderPath, TimeZoneInfo imageSetTimeZone)
+        public void SetDateTimeOffsetFromFileInfo(string folderPath)
         {
             // populate new image's default date and time
             // Typically the creation time is the time a file was created in the local file system and the last write time when it was

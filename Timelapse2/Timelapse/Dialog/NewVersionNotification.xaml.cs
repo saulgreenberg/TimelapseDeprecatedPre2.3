@@ -29,13 +29,13 @@ namespace Timelapse.Dialog
         private Version currentVersionNumber;
         private Version lastestVersionNumber;
 
-        public NewVersionNotification(Window owner, string application_name, Version current_version_number, Version latest_version_number)
+        public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latest_version_number)
         {
             this.InitializeComponent();
 
             this.Owner = owner;
-            this.applicationName = application_name;
-            this.currentVersionNumber = current_version_number;
+            this.applicationName = applicationName;
+            this.currentVersionNumber = currentVersionNumber;
             this.lastestVersionNumber = latest_version_number;
 
             // Construct the template message
@@ -53,9 +53,11 @@ namespace Timelapse.Dialog
             try
             {
                 // Create a flow document
-                FlowDocument content = new FlowDocument();
-                content.FontFamily = new FontFamily("Segui UI");
-                content.FontSize = 12;
+                FlowDocument content = new FlowDocument
+                {
+                    FontFamily = new FontFamily("Segui UI"),
+                    FontSize = 12
+                };
                 TextRange textRange = new TextRange(content.ContentStart, content.ContentEnd);
 
                 // Try to load the rtf file pointed at by the URI as a string
@@ -83,9 +85,11 @@ namespace Timelapse.Dialog
             catch
             {
                 // We couldn't get the version notes. Display a generic message instead
-                FlowDocument content = new FlowDocument();
-                content.FontFamily = new FontFamily("Segui UI");
-                content.FontSize = 12;
+                FlowDocument content = new FlowDocument
+                {
+                    FontFamily = new FontFamily("Segui UI"),
+                    FontSize = 12
+                };
                 Paragraph p1 = new Paragraph();
                 p1.Inlines.Add("See version change details at: ");
                 Hyperlink h1 = new Hyperlink();

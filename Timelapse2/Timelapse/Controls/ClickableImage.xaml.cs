@@ -102,7 +102,6 @@ namespace Timelapse.Controls
         private Point point = new Point(0, 0);
         private Brush unselectedBrush = Brushes.Black;
         private Brush selectedBrush = Brushes.LightBlue;
-        private Point mouseDownCoords = new Point(0, 0);
         #endregion
 
         // Constructors: Width is the desired width of the image

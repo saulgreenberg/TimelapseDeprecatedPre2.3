@@ -476,7 +476,7 @@ namespace Timelapse
             public const string NotEqual = "\u2260";
         }
 
-        public static class Sql
+        public static class Sqlite
         {
             public const string AddColumn = " ADD COLUMN ";
             public const string AlterTable = " ALTER TABLE ";

@@ -39,14 +39,16 @@ namespace Timelapse.Database
                 }
 
                 // create search term for the control
-                SearchTerm searchTerm = new SearchTerm();
-                searchTerm.ControlType = controlType;
-                searchTerm.DataLabel = control.DataLabel;
-                searchTerm.DatabaseValue = control.DefaultValue;
-                searchTerm.Operator = Constant.SearchTermOperator.Equal;
-                searchTerm.Label = control.Label;
-                searchTerm.List = control.GetChoices(true);
-                searchTerm.UseForSearching = false;
+                SearchTerm searchTerm = new SearchTerm
+                {
+                    ControlType = controlType,
+                    DataLabel = control.DataLabel,
+                    DatabaseValue = control.DefaultValue,
+                    Operator = Constant.SearchTermOperator.Equal,
+                    Label = control.Label,
+                    List = control.GetChoices(true),
+                    UseForSearching = false
+                };
                 this.SearchTerms.Add(searchTerm);
 
                 // Create a new search term for each row, where each row specifies a particular control and how it can be searched
@@ -64,8 +66,10 @@ namespace Timelapse.Database
 
                     // support querying on a range of datetimes by giving the user two search terms, one configured for the start of the interval and one
                     // for the end
-                    SearchTerm dateTimeLessThanOrEqual = new SearchTerm(searchTerm);
-                    dateTimeLessThanOrEqual.Operator = Constant.SearchTermOperator.LessThanOrEqual;
+                    SearchTerm dateTimeLessThanOrEqual = new SearchTerm(searchTerm)
+                    {
+                        Operator = Constant.SearchTermOperator.LessThanOrEqual
+                    };
                     this.SearchTerms.Add(dateTimeLessThanOrEqual);
                 }
                 else if (controlType == Constant.Control.Flag)
@@ -113,7 +117,7 @@ namespace Timelapse.Database
                 {
                     // The where expression constructed should look something like DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue)); 
-                    whereForTerm = searchTerm.DataLabel + this.TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    whereForTerm = searchTerm.DataLabel + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
                 }
 
                 // if there is already a term in the query add either and 'And' or an 'Or' to it 
@@ -121,7 +125,7 @@ namespace Timelapse.Database
                 {
                     if (numberOfDateTimesSearchTerms == 2)
                     {
-                        where += Constant.Sql.And;
+                        where += Constant.Sqlite.And;
                         numberOfDateTimesSearchTerms = 0;
                     }
                     else
@@ -129,10 +133,10 @@ namespace Timelapse.Database
                         switch (this.TermCombiningOperator)
                         {
                             case CustomSelectionOperator.And:
-                                where += Constant.Sql.And;
+                                where += Constant.Sqlite.And;
                                 break;
                             case CustomSelectionOperator.Or:
-                                where += Constant.Sql.Or;
+                                where += Constant.Sqlite.Or;
                                 break;
                             default:
                                 throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
@@ -167,7 +171,7 @@ namespace Timelapse.Database
         // return SQL expressions to database equivalents
         // this is needed as the searchterm operators are unicodes representing symbols rather than real opeators 
         // e.g., \u003d is the symbol for '='
-        private string TermToSqlOperator(string expression)
+        private static string TermToSqlOperator(string expression)
         {
             switch (expression)
             {

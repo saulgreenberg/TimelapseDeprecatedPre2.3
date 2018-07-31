@@ -225,7 +225,7 @@ namespace Timelapse.Controls
             ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.Files[this.ClickableImagesGrid.GetSelected()[0]];
             int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
             string valueToCopy = imageRow.GetValueDisplayString(dataLabel);
-            if (this.ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
+            if (ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
             {
                 return;
             }
@@ -281,7 +281,7 @@ namespace Timelapse.Controls
             }
 
             int filesAffected = currentRowIndex - indexToCopyFrom;
-            if (this.ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
+            if (ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
             {
                 return this.FileDatabase.Files[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
@@ -299,7 +299,7 @@ namespace Timelapse.Controls
             
             string displayValueToCopy = control.Content;
 
-            if (this.ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
+            if (ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
             {
                 return;
             }
@@ -312,7 +312,7 @@ namespace Timelapse.Controls
             this.FileDatabase.UpdateFiles(imageRow, control.DataLabel);
         }
 
-        public bool IsCopyForwardPossible(DataEntryControl control)
+        public bool IsCopyForwardPossible()
         {
             if (this.ImageCache.Current == null)
             {
@@ -347,7 +347,7 @@ namespace Timelapse.Controls
       
         #region Confirmation Dialogs for Copy Forward/Backwards, etc
         // Ask the user to confirm value propagation from the last value
-        private bool? ConfirmCopyForward(string text, int imagesAffected, bool checkForZero)
+        private static bool? ConfirmCopyForward(string text, int imagesAffected, bool checkForZero)
         {
             text = text.Trim();
 
@@ -369,7 +369,7 @@ namespace Timelapse.Controls
         }
 
         // Ask the user to confirm value propagation to all selected files
-        private bool? ConfirmCopyCurrentValueToAll(String text, int filesAffected, bool checkForZero)
+        private static bool? ConfirmCopyCurrentValueToAll(String text, int filesAffected, bool checkForZero)
         {
             text = text.Trim();
 
@@ -390,7 +390,7 @@ namespace Timelapse.Controls
         }
 
         // Ask the user to confirm value propagation from the last value
-        private bool? ConfirmPropagateFromLastValue(String text, int imagesAffected)
+        private static bool? ConfirmPropagateFromLastValue(String text, int imagesAffected)
         {
             text = text.Trim();
             MessageBox messageBox = new MessageBox("Please confirm 'Propagate to Here' for this field.", Application.Current.MainWindow, MessageBoxButton.YesNo);
@@ -610,7 +610,7 @@ namespace Timelapse.Controls
             // - otherwise enable the menut item only if the resulting action is coherent
             bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
             menuItemCopyToAll.IsEnabled = enabledIsPossible;
-            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible(control) : false;
+            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible() : false;
             menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
         }
         #endregion

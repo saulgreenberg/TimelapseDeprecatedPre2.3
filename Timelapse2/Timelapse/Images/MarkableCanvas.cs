@@ -399,9 +399,6 @@ namespace Timelapse.Images
             this.Cursor = Cursors.Arrow;
             this.mouseDoubleClickTime = DateTime.Now;
 
-            // Get the current position
-            Point mouseLocation = e.GetPosition(this.ImageToDisplay);
-
             // Is this the end of a translate operation, or of placing a marker?
             // We decide by checking if the left button has been released, the mouse location is
             // smaller than a given threshold, and less than 200 ms have passed since the original
@@ -982,11 +979,7 @@ namespace Timelapse.Images
 
         private void RedrawMagnifyingGlassIfVisible()
         {
-            this.magnifyingGlass.RedrawIfVisible(NativeMethods.GetCursorPos(this),
-                                                 NativeMethods.GetCursorPos(this.ImageToDisplay),
-                                                 this.ImageToDisplay.ActualWidth,
-                                                 this.ImageToDisplay.ActualHeight,
-                                                 this.canvasToMagnify);
+            this.magnifyingGlass.RedrawIfVisible(NativeMethods.GetCursorPos(this), this.canvasToMagnify);
         }
 
         // This should be called on images only

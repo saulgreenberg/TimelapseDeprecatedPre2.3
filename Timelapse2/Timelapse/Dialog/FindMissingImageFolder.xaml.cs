@@ -37,7 +37,6 @@ namespace Timelapse.Dialog
         // Folder dialog where the user can only select a sub-folder of the root folder path
         private void LocateFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            string newFolderPath = string.Empty;
             CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
             {
                 Title = "Select one or more folders ...",

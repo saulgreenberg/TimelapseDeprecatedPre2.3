@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Timelapse.Util
 {
-    public class Dependencies
+    public static class Dependencies
     {
         private static readonly List<string> CommonRequiredBinaries = new List<string>()
         {

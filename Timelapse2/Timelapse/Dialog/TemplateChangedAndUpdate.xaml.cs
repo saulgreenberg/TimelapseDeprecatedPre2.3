@@ -37,17 +37,17 @@ namespace Timelapse.Dialog
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
             if (this.TemplateSyncResults.SyncRequiredAsDataLabelsDiffer)
             {
-                this.inImageOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Note));
-                this.inTemplateOnly.Add(Constant.Control.Note, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Note));
+                this.inImageOnly.Add(Constant.Control.Note, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Note));
+                this.inTemplateOnly.Add(Constant.Control.Note, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Note));
 
-                this.inImageOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Counter));
-                this.inTemplateOnly.Add(Constant.Control.Counter, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Counter));
+                this.inImageOnly.Add(Constant.Control.Counter, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Counter));
+                this.inTemplateOnly.Add(Constant.Control.Counter, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Counter));
 
-                this.inImageOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.FixedChoice));
-                this.inTemplateOnly.Add(Constant.Control.FixedChoice, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.FixedChoice));
+                this.inImageOnly.Add(Constant.Control.FixedChoice, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.FixedChoice));
+                this.inTemplateOnly.Add(Constant.Control.FixedChoice, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.FixedChoice));
 
-                this.inImageOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Flag));
-                this.inTemplateOnly.Add(Constant.Control.Flag, this.DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Flag));
+                this.inImageOnly.Add(Constant.Control.Flag, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInImageButNotTemplateDatabase, Constant.Control.Flag));
+                this.inTemplateOnly.Add(Constant.Control.Flag, DictionaryFilterByType(this.TemplateSyncResults.DataLabelsInTemplateButNotImageDatabase, Constant.Control.Flag));
 
                 int row = 0;
                 string[] types = { Constant.Control.Note, Constant.Control.Counter, Constant.Control.FixedChoice, Constant.Control.Flag };
@@ -118,7 +118,7 @@ namespace Timelapse.Dialog
         }
 
         // Get a subset of the dictionary filtered by the type of control
-        private Dictionary<string, string> DictionaryFilterByType(Dictionary<string, string> dictionary, string controlType)
+        private static Dictionary<string, string> DictionaryFilterByType(Dictionary<string, string> dictionary, string controlType)
         {
             return dictionary.Where(i => (i.Value == controlType)).ToDictionary(i => i.Key, i => i.Value);
         }
@@ -302,7 +302,6 @@ namespace Timelapse.Dialog
                 }
 
                 // Retrieve the data label
-                string datalabel = String.Empty;
                 if (this.GetUIElement(row, 1) is TextBlock textblockDataLabel)
                 {
                     this.ActionGrid.RowDefinitions[row].Height = selectedDataLabels.Contains(textblockDataLabel.Text) ? new GridLength(0) : new GridLength(30);
@@ -325,11 +324,9 @@ namespace Timelapse.Dialog
                     if (uiComboBox is ComboBox cb && cb.IsEnabled == true)
                     {
                         // The combobox is enabled, thus it's a renume
-                        ComboBoxItem cbi = cb.SelectedItem as ComboBoxItem;
                         if (cb.SelectedItem == null || cb.SelectedItem.ToString() == String.Empty)
                         {
                             // Retrieve the data label and add it as an problem 
-                            string datalabel = String.Empty;
                             if (this.GetUIElement(row, 1) is TextBlock textblockDataLabel)
                             {
                                 problemDataLabels.Add(textblockDataLabel.Text);

@@ -23,7 +23,7 @@ namespace Timelapse.Dialog
         private FileDatabase database;
         private string dataFieldLabel;
         private bool dataFieldSelected;
-        private Dictionary<string, Metadata> metadataDictionary;
+        private Dictionary<string, ImageMetadata> metadataDictionary;
         private Dictionary<string, string> dataLabelByLabel;
         private string filePath;
         private string metadataFieldName;
@@ -56,11 +56,11 @@ namespace Timelapse.Dialog
 
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
-            this.metadataDictionary = MetadataDictionary.LoadMetadata(this.filePath);
+            this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.filePath);
             // If there is no metadata, this is an easy way to inform the user
             if (this.metadataDictionary.Count == 0)
             {
-                this.metadataDictionary.Add("Empty", new Timelapse.Util.Metadata("Empty", "No metadata found", String.Empty));
+                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found", String.Empty));
                 this.noMetadataAvailable = true;
             }
             else
@@ -70,7 +70,7 @@ namespace Timelapse.Dialog
 
             // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
             List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
-            foreach (KeyValuePair<string, Metadata> metadata in this.metadataDictionary)
+            foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
                 metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
             }
@@ -186,7 +186,7 @@ namespace Timelapse.Dialog
                 for (int imageIndex = 0; imageIndex < database.CurrentlySelectedFileCount; ++imageIndex)
                 {
                     ImageRow image = database.Files[imageIndex];
-                    Dictionary<string, Metadata> metadata = MetadataDictionary.LoadMetadata(image.GetFilePath(database.FolderPath));
+                    Dictionary<string, ImageMetadata> metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(database.FolderPath));
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
                         if (this.clearIfNoMetadata)
@@ -194,7 +194,7 @@ namespace Timelapse.Dialog
                             // Clear the data field if there is no metadata...
                             if (dataLabelToUpdate == Constant.DatabaseColumn.DateTime)
                             {
-                                image.SetDateTimeOffsetFromFileInfo(this.database.FolderPath, imageSetTimeZone);
+                                image.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);
                                 imagesToUpdate.Add(image.GetDateTimeColumnTuples());
                                 backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, "No metadata found - date/time reread from file"));
                             }
