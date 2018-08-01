@@ -803,32 +803,44 @@ namespace Timelapse.Database
             // makes it the same as the label. Ultimately, it guarantees that there will always be a (hopefully unique)
             // data label and label name. 
             // As well, the contents of the template table are loaded into memory.
-            foreach (ControlRow control in this.Controls)
+            try
             {
-                // Check if various values are empty, and if so update the row and fill the dataline with appropriate defaults
-                ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
-                bool noDataLabel = String.IsNullOrWhiteSpace(control.DataLabel);
-                if (noDataLabel && String.IsNullOrWhiteSpace(control.Label))
+                foreach (ControlRow control in this.Controls)
                 {
-                    string dataLabel = this.GetNextUniqueDataLabel(control.Type);
-                    columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, dataLabel));
-                    columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, dataLabel));
-                    control.Label = dataLabel;
-                    control.DataLabel = dataLabel;
-                }
-                else if (noDataLabel)
-                {
-                    // No data label but a label, so use the label's value as the data label
-                    columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, control.Label));
-                    control.DataLabel = control.Label;
-                }
+                    // Check if various values are empty, and if so update the row and fill the dataline with appropriate defaults
+                    ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
+                    bool noDataLabel = String.IsNullOrWhiteSpace(control.DataLabel);
+                    if (noDataLabel && String.IsNullOrWhiteSpace(control.Label))
+                    {
+                        string dataLabel = this.GetNextUniqueDataLabel(control.Type);
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, dataLabel));
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, dataLabel));
+                        control.Label = dataLabel;
+                        control.DataLabel = dataLabel;
+                    }
+                    else if (noDataLabel)
+                    {
+                        // No data label but a label, so use the label's value as the data label
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, control.Label));
+                        control.DataLabel = control.Label;
+                    }
 
-                // Now add the new values to the database
-                if (columnsToUpdate.Columns.Count > 0)
-                {
-                    columnsToUpdate.SetWhere(control.ID);
-                    this.Database.Update(Constant.DatabaseTable.Controls, columnsToUpdate);
+                    // Now add the new values to the database
+                    if (columnsToUpdate.Columns.Count > 0)
+                    {
+                        columnsToUpdate.SetWhere(control.ID);
+                        this.Database.Update(Constant.DatabaseTable.Controls, columnsToUpdate);
+                    }
                 }
+            }
+            catch (NullReferenceException e)
+            {
+                // Throw a custom exception so we can give a more informative fatal error message.
+                // Whle this method does not normally fail, one user did report it crashing here due to his Citrix system
+                // limiting how the template file is manipulated. The actual failure happens before this, but this
+                // is where it is caught.
+                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException,null);
+                throw (custom_e);   
             }
         }
 

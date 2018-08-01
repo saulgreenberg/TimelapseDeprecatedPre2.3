@@ -246,6 +246,11 @@ namespace Timelapse
             public const string Markers = "MarkersTable";         // the table containing the marker data
         }
 
+        public static class ExceptionTypes
+        {
+            public const string TemplateReadWriteException = "TemplateReadWriteException";
+        }
+
         public static class File
         {
             public const string AviFileExtension = ".avi";

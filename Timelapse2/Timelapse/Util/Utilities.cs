@@ -174,6 +174,23 @@ namespace Timelapse.Util
             }
             exitNotification.Message.Result = String.Format("The data file is likely OK.  If it's not you can restore from the {0} folder.", Constant.File.BackupFolder);
             exitNotification.Message.Hint = "\u2022 If you do the same thing this'll probably happen again.  If so, that's helpful to know as well." + Environment.NewLine;
+
+            // Modify text for custom exceptions
+            Exception custom_excepton = (Exception)e.ExceptionObject;
+            switch (custom_excepton.Message)
+            {
+                case Constant.ExceptionTypes.TemplateReadWriteException:
+                    exitNotification.Message.Problem =
+                        "Timelapse could not read data from the template (.tdb) file. This could be because: " + Environment.NewLine +
+                        "\u2022 the .tdb file is corrupt, or" + Environment.NewLine +
+                        "\u2022 your system is somehow blocking Timelapse from manipulating that file (e.g., Citrix security will do that)" + Environment.NewLine +
+                        "If you let us know, we will try and fix it. ";
+                    break;
+                default:
+                    exitNotification.Message.Problem = "Timelapse encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
+                    break;
+            }
+
             Clipboard.SetText(exitNotification.Message.Reason);
             exitNotification.ShowDialog();
         }
