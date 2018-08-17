@@ -79,11 +79,23 @@ namespace Timelapse.Util
             throw new NotSupportedException(String.Format("Registry key {0}\\{1} has unhandled type {2}.", registryKey.Name, subKeyPath, value.GetType().FullName));
         }
 
+        // Read a rect frin the registry. If there are issues, just return the default value.
         public static Rect ReadRect(this RegistryKey registryKey, string subKeyPath, Rect defaultValue)
         {
             string rectAsString = registryKey.ReadString(subKeyPath);
+           
             if (rectAsString == null)
             {
+                return defaultValue;
+            }
+            try
+            {
+                Rect rectangle = Rect.Parse(rectAsString);
+            }
+            catch 
+            {
+                // The parse can fail if the number format was saved as a non-American number, eg, Portugese uses , vs. as the decimal place.
+                // This shouldn't happen as I have used an invarient to save numbers, but just in case...
                 return defaultValue;
             }
             return Rect.Parse(rectAsString);
@@ -148,7 +160,7 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, double value)
         {
-            registryKey.Write(subKeyPath, value.ToString());
+            registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, MostRecentlyUsedCollection<string> values)
@@ -186,12 +198,12 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, Rect value)
         {
-            registryKey.Write(subKeyPath, value.ToString());
+            registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, Size value)
         {
-            registryKey.Write(subKeyPath, value.ToString());
+            registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, string value)
