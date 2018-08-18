@@ -15,6 +15,7 @@ namespace Timelapse.Controls
     /// <summary>
     /// The code in here propagates values of a control across the various images in various ways.
     /// Note that this is control-type specific, which means this code would have to be modified to handle new control types
+    /// Pay attention to the hacks described by SAULXXX DateTimePicker Workaround as these may not be needed if future versions of the DateTimePicker work as they are supposed to.
     /// </summary>
     public class DataEntryHandler : IDisposable
     {
@@ -108,9 +109,21 @@ namespace Timelapse.Controls
                         }
                         break;
                     case Constant.DatabaseColumn.DateTime:
+                        // SAULXXX There are several issues with the XCEED DateTimePicker. In particular, the date in the 
+                        // text date area is not well coordinated with the date in the calendar, i.e., the two aren't necessarily in
+                        // sync. As well, changing a date on the calendar doesnt' appear to trigger the DateTimeContro_ValueChanged event
+                        // Various workarounds are implemented as commented below with SAULXXX DateTimePicker Workaround.
+                        // If the toolkit is updated to fix them, then those workarounds can be deleted (but test them first).
                         DataEntryDateTime dateTime = (DataEntryDateTime)pair.Value;
                         dateTime.ContentControl.ValueChanged += this.DateTimeControl_ValueChanged;
-                        dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave;
+
+                        // SAULXXX DateTimePicker Workaround. 
+                        // We need to access the calendar part of the DateTImePicker, but 
+                        // we can't do that until the control is loaded.
+                        dateTime.ContentControl.Loaded += DateTimePicker_Loaded;
+ 
+                        // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
+                        // dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave; 
                         break;
                     case Constant.DatabaseColumn.UtcOffset:
                         DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
@@ -142,6 +155,27 @@ namespace Timelapse.Controls
                 }
             }
         }
+
+        // SAULXXX DateTimePicker Workaround. 
+        // Access the calendar part of the datetimepicker, and
+        // add an event to it that is triggered whenever the user changes the calendar.
+        // For convenience, we use the calendar's tag to store the DateTimePicker control so we can retrieve it from the event.
+        private void DateTimePicker_Loaded(object sender, RoutedEventArgs e)
+        {
+            DateTimePicker dateTimePicker = sender as DateTimePicker;
+            if (dateTimePicker.Template.FindName("PART_Calendar", dateTimePicker) is Calendar calendar)
+            {
+                // System.Diagnostics.Debug.Print("DateTimePicker_Loaded: Adding calendar event ");
+                calendar.Tag = dateTimePicker;
+                calendar.IsTodayHighlighted = false; // Don't highlight today's date, as it could be confusing given what this control is used for.
+                calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
+            }
+            //else
+            //{
+            //    System.Diagnostics.Debug.Print("DateTimePicker_Loaded: Couldnt add calendar event ");
+            //}
+        }
+
 
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
@@ -406,12 +440,13 @@ namespace Timelapse.Controls
 
         #region Event handlers - Content Selections and Changes
 
+        // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
+        // SAULXXX The original issue was reported in  https://github.com/xceedsoftware/wpftoolkit/issues/1206 
+        // SAULXXX Delete this in future Timelapse versions
         // The DateTimePicker has a 'bug' where it does not trigger the value update event unless a return has been pressed (or similar)
         // As this does not always happen, this means some text changes don't actually get remembered. 
         // This workaround checks to see if the mouse has left the DateTimePicker. If so, it checks for changes to the date/time and updates
         // the values correctly. 
-        // SAULXXX: I think this is repaired in later versions of Xceed: see https://github.com/xceedsoftware/wpftoolkit/issues/1206 for patch
-
         private void DateTime_MouseLeave(object sender, MouseEventArgs e)
         {
             DateTimePicker dateTimePicker = sender as DateTimePicker;
@@ -433,6 +468,7 @@ namespace Timelapse.Controls
 
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            // System.Diagnostics.Debug.Print("ValueChanged triggered");
             if (this.IsProgrammaticControlUpdate)
             {
                 return;
@@ -445,9 +481,53 @@ namespace Timelapse.Controls
             }
             // Update file data table and write the new DateTime, Date, and Time to the database
             this.DateTimeUpdate(dateTimePicker, dateTimePicker.Value.Value);
+
+            // SAULXXX DateTimePicker Workaround. 
+            // There is a bug (?) in the dateTimePicker where it doesn't update the calendar to the
+            // changed date. This means that if you open the calendar it shows the
+            // original date, and when you close it (even without selecting a date) it reverts to the old date.
+            // The fix below updates the calendar to the current date.
+            if (dateTimePicker.Template.FindName("PART_Calendar", dateTimePicker) is Calendar calendar)
+            {
+                this.IsProgrammaticControlUpdate = true;
+                //System.Diagnostics.Debug.Print("Got it " + calendar.ToString());
+                calendar.DisplayDate = dateTimePicker.Value.Value;
+                calendar.SelectedDate = dateTimePicker.Value.Value;
+                if (calendar.Template.FindName("PART_TimePicker", calendar) is TimePicker timepicker)
+                {
+                    timepicker.Value = dateTimePicker.Value.Value;
+                    //System.Diagnostics.Debug.Print("Setting Time pickker");
+                }
+                 this.IsProgrammaticControlUpdate = false;
+            }
+            //else
+            //{
+            //    System.Diagnostics.Debug.Print("Not a calendar");
+            //}
         }
 
-        // Helper method for above two.
+        // SAULXXX DateTimePicker Workaround. 
+        // Sync changes from the datetimepicker's calendar back to the datetimepicker text 
+        // and updates the database
+        private void Calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (this.IsProgrammaticControlUpdate)
+            {
+                return;
+            }
+            Calendar calendar = sender as Calendar;
+            DateTimePicker dateTimePicker = (DateTimePicker) calendar.Tag;
+            TimeSpan timespan = dateTimePicker.Value.Value.TimeOfDay;
+            this.IsProgrammaticControlUpdate = true;
+            dateTimePicker.Value = calendar.SelectedDate + timespan;// + dateTimePicker.Value.Value.TimeOfDay;
+            // Update file data table and write the new DateTime, Date, and Time to the database
+            this.DateTimeUpdate(dateTimePicker, (DateTime) dateTimePicker.Value);
+
+            // System.Diagnostics.Debug.Print("Got calendar event " + calendar.SelectedDate.ToString());
+            this.IsProgrammaticControlUpdate = false;
+        }
+
+        // Helper method for above DateTime changes.
         private void DateTimeUpdate(DateTimePicker dateTimePicker, DateTime dateTime)
         {
             // update file data table and write the new DateTime, Date, and Time to the database
