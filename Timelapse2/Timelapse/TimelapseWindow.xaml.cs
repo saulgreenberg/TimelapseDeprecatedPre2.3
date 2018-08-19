@@ -149,6 +149,11 @@ namespace Timelapse
                 this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
                 this.state.FirstTimeFileLoading = false;
             }
+
+            if (! Util.Utilities.CheckAndGetLangaugeAndCulture (out string language, out string culturename, out string displayname))
+            {
+                this.HelpDocument.WarningRegionLanguage = displayname;
+            }
             this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
             this.InstructionPane.IsActive = true;
         }

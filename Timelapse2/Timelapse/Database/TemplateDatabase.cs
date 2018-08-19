@@ -836,11 +836,11 @@ namespace Timelapse.Database
             catch (NullReferenceException e)
             {
                 // Throw a custom exception so we can give a more informative fatal error message.
-                // Whle this method does not normally fail, one user did report it crashing here due to his Citrix system
+                // While this method does not normally fail, one user did report it crashing here due to his Citrix system
                 // limiting how the template file is manipulated. The actual failure happens before this, but this
                 // is where it is caught.
-                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException,null);
-                throw (custom_e);   
+                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
+                throw custom_e;   
             }
         }
 

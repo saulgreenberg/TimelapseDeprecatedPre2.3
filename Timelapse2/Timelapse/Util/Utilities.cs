@@ -35,8 +35,18 @@ namespace Timelapse.Util
             return dictionaryDifferences;
         }
 
-    // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
-    public static string GetDotNetVersion()
+        // Check to see if the language is english (en) and culture is en-US or en-CA. Return those values as well
+        public static bool CheckAndGetLangaugeAndCulture(out string language, out string culturename, out string displayname)
+        {
+            System.Globalization.CultureInfo cultureInfo = System.Threading.Thread.CurrentThread.CurrentCulture;
+            language = cultureInfo.TwoLetterISOLanguageName;
+            culturename = cultureInfo.Name;
+            displayname = cultureInfo.DisplayName;
+            return language == "en" && (culturename == "en-US" || culturename == "en-CA");
+        }
+        
+        // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
+        public static string GetDotNetVersion()
         {
             // adapted from https://msdn.microsoft.com/en-us/library/hh925568.aspx.
             int release = 0;

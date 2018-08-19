@@ -120,7 +120,7 @@ namespace Timelapse.Controls
                         // SAULXXX DateTimePicker Workaround. 
                         // We need to access the calendar part of the DateTImePicker, but 
                         // we can't do that until the control is loaded.
-                        dateTime.ContentControl.Loaded += DateTimePicker_Loaded;
+                        dateTime.ContentControl.Loaded += this.DateTimePicker_Loaded;
  
                         // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
                         // dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave; 
@@ -168,14 +168,13 @@ namespace Timelapse.Controls
                 // System.Diagnostics.Debug.Print("DateTimePicker_Loaded: Adding calendar event ");
                 calendar.Tag = dateTimePicker;
                 calendar.IsTodayHighlighted = false; // Don't highlight today's date, as it could be confusing given what this control is used for.
-                calendar.SelectedDatesChanged += Calendar_SelectedDatesChanged;
+                calendar.SelectedDatesChanged += this.Calendar_SelectedDatesChanged;
             }
-            //else
-            //{
+            // else
+            // {
             //    System.Diagnostics.Debug.Print("DateTimePicker_Loaded: Couldnt add calendar event ");
-            //}
+            // }
         }
-
 
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
@@ -490,20 +489,20 @@ namespace Timelapse.Controls
             if (dateTimePicker.Template.FindName("PART_Calendar", dateTimePicker) is Calendar calendar)
             {
                 this.IsProgrammaticControlUpdate = true;
-                //System.Diagnostics.Debug.Print("Got it " + calendar.ToString());
+                // System.Diagnostics.Debug.Print("Got it " + calendar.ToString());
                 calendar.DisplayDate = dateTimePicker.Value.Value;
                 calendar.SelectedDate = dateTimePicker.Value.Value;
                 if (calendar.Template.FindName("PART_TimePicker", calendar) is TimePicker timepicker)
                 {
                     timepicker.Value = dateTimePicker.Value.Value;
-                    //System.Diagnostics.Debug.Print("Setting Time pickker");
+                    // System.Diagnostics.Debug.Print("Setting Time pickker");
                 }
                  this.IsProgrammaticControlUpdate = false;
             }
-            //else
-            //{
+            // else
+            // {
             //    System.Diagnostics.Debug.Print("Not a calendar");
-            //}
+            // }
         }
 
         // SAULXXX DateTimePicker Workaround. 
@@ -516,12 +515,12 @@ namespace Timelapse.Controls
                 return;
             }
             Calendar calendar = sender as Calendar;
-            DateTimePicker dateTimePicker = (DateTimePicker) calendar.Tag;
+            DateTimePicker dateTimePicker = (DateTimePicker)calendar.Tag;
             TimeSpan timespan = dateTimePicker.Value.Value.TimeOfDay;
             this.IsProgrammaticControlUpdate = true;
-            dateTimePicker.Value = calendar.SelectedDate + timespan;// + dateTimePicker.Value.Value.TimeOfDay;
+            dateTimePicker.Value = calendar.SelectedDate + timespan; // + dateTimePicker.Value.Value.TimeOfDay;
             // Update file data table and write the new DateTime, Date, and Time to the database
-            this.DateTimeUpdate(dateTimePicker, (DateTime) dateTimePicker.Value);
+            this.DateTimeUpdate(dateTimePicker, (DateTime)dateTimePicker.Value);
 
             // System.Diagnostics.Debug.Print("Got calendar event " + calendar.SelectedDate.ToString());
             this.IsProgrammaticControlUpdate = false;

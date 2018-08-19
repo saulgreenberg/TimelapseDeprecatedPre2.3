@@ -16,6 +16,7 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class HelpUserControl : UserControl
     {
+        private FlowDocument flowDocument;
         // Substitute for parameter passing: 
         // The HelpFileProperty/ HelpFile lets us specify the location of the helpfile resource in the XAML
         // The Xaml using this user control should contain something like HelpFile="pack://application:,,/Resources/TimelapseHelp.rtf"
@@ -27,6 +28,9 @@ namespace Timelapse.Controls
             set { this.SetValue(HelpFileProperty, value); }
         }
 
+        // Set this (before the control is loaded) to a non-English (US or CAD) language, which will be used to add a warning about regions to the document.
+        public string WarningRegionLanguage { get; set; }
+
         public HelpUserControl()
         {
             this.InitializeComponent();
@@ -35,12 +39,18 @@ namespace Timelapse.Controls
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             this.CreateFlowDocument();
+
+            // Check to see if a language has been set. If so, warn the user that they may be better off setting en-US or en-CAN as the region
+            if (!String.IsNullOrEmpty(this.WarningRegionLanguage))
+            {
+                this.InsertCultureWarning();
+            }
         }
 
         // Create a flow document containing the contents of the resource specified in HelpFile
         private void CreateFlowDocument()
         {
-            FlowDocument flowDocument = new FlowDocument();
+            this.flowDocument = new FlowDocument();
             try
             {
                 // create a string containing the help text from the rtf help file
@@ -77,6 +87,65 @@ namespace Timelapse.Controls
             // Add the document to the FlowDocumentScollViewer, converting hyperlinks to active links
             this.SubscribeToAllHyperlinks(flowDocument);
             this.ScrollViewer.Document = flowDocument;
+        }
+
+        // Insert a warning into the beginning of the document about possible region issues. 
+        public void InsertCultureWarning()
+        {
+            Paragraph p1 = new Paragraph
+            {
+                Foreground = Brushes.DarkRed,
+                FontFamily = new FontFamily("Segui UI"),
+                FontSize = 12,
+                FontWeight = FontWeights.Normal,
+            };
+
+            Run run1 = new Run
+            {
+                FontWeight = FontWeights.Bold,
+                FontSize = 18,
+                Text = "Warning about your current Window's 'Region' setting",
+            };
+
+            Run run2 = new Run
+            {
+                FontWeight = FontWeights.Normal,
+                Text = "Timelapse was designed to work best in ",
+            };
+            Run run3 = new Run
+            {
+                FontWeight = FontWeights.Bold,
+                Text = "English(US)",
+            };
+
+            Run run4 = new Run
+            {
+                FontWeight = FontWeights.Normal,
+                Text = ". However, your Windows region setting is ",
+            };
+
+            Run run5 = new Run
+            {
+                FontWeight = FontWeights.Bold,
+                Text = this.WarningRegionLanguage,
+            };
+
+            Run run6 = new Run
+            {
+                FontWeight = FontWeights.Normal,
+                Text = ", which may format dates and numbers different from what Timelapse expects. Avoid possible issues by setting your Region and Region Format(date, time, numbers) to either English(US) or English(Canada) via your Windows Control Panel."
+            };
+
+            p1.Inlines.Add(run1);
+            p1.Inlines.Add(Environment.NewLine);
+            p1.Inlines.Add(Environment.NewLine);
+            p1.Inlines.Add(run2);
+            p1.Inlines.Add(run3);
+            p1.Inlines.Add(run4);
+            p1.Inlines.Add(run5);
+            p1.Inlines.Add(run6);
+
+            flowDocument.Blocks.InsertBefore(flowDocument.Blocks.FirstBlock, p1);
         }
 
         #region Activate all hyperlinks in the flow document
