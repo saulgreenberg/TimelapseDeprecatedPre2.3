@@ -2089,20 +2089,21 @@ namespace Timelapse
             // Part 1. Decrement the counter only if there is a number in it
             string oldCounterData = counter.Content;
             string newCounterData = String.Empty;
-            if (String.IsNullOrEmpty(oldCounterData))
+            if (!String.IsNullOrEmpty(oldCounterData))
             {
                 int count = Convert.ToInt32(oldCounterData);
                 count = (count == 0) ? 0 : count - 1;           // Make sure its never negative, which could happen if a person manually enters the count 
                 newCounterData = count.ToString();
-            }
-            if (!newCounterData.Equals(oldCounterData))
-            {
-                // Don't bother updating if the value hasn't changed (i.e., already at a 0 count)
-                // Update the datatable and database with the new counter values
-                this.dataHandler.IsProgrammaticControlUpdate = true;
-                counter.SetContentAndTooltip(newCounterData);
-                this.dataHandler.IsProgrammaticControlUpdate = false;
-                this.dataHandler.FileDatabase.UpdateFile(this.dataHandler.ImageCache.Current.ID, counter.DataLabel, newCounterData);
+
+                if (!newCounterData.Equals(oldCounterData))
+                {
+                    // Don't bother updating if the value hasn't changed (i.e., already at a 0 count)
+                    // Update the datatable and database with the new counter values
+                    this.dataHandler.IsProgrammaticControlUpdate = true;
+                    counter.SetContentAndTooltip(newCounterData);
+                    this.dataHandler.IsProgrammaticControlUpdate = false;
+                    this.dataHandler.FileDatabase.UpdateFile(this.dataHandler.ImageCache.Current.ID, counter.DataLabel, newCounterData);
+                }
             }
 
             // Part 2. Remove the marker in memory and from the database
