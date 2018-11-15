@@ -267,7 +267,7 @@ namespace Timelapse
             public const string TemplateDatabaseFileExtension = ".tdb";
             public const string XmlTemplateFileName = "CodeTemplate.xml";
             public const string XmlDataFileName = "ImageData.xml";
-            public const int MaxPathLength = 260;
+            public const int MaxPathLength = 250;
 
             public static readonly TimeSpan BackupInterval = TimeSpan.FromMinutes(10);
         }

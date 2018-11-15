@@ -148,6 +148,14 @@ namespace Timelapse.Util
             return true;
         }
 
+        /// <summary>
+        /// Returns true when the path length exceeds the maximum allowed by Windows
+        /// </summary>
+        public static bool IsPathLengthTooLong(string str)
+        {
+            return (str.Length > Constant.File.MaxPathLength);
+        }
+
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
         {
             if (Utilities.IsSingleTemplateFileDrag(dragEvent, out string templateDatabaseFilePath))
@@ -216,7 +224,10 @@ namespace Timelapse.Util
             exitNotification.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
             exitNotification.Message.Result = "Timelapse will shut down until you fix this.";
             exitNotification.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
-            Clipboard.SetText(e.ExceptionObject.ToString());
+            if (e != null)
+            {
+                Clipboard.SetText(e.ExceptionObject.ToString());
+            }
             exitNotification.ShowDialog();
         }
 

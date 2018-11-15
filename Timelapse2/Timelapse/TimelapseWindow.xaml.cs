@@ -301,6 +301,20 @@ namespace Timelapse
             backgroundWorker = null;
 
             // Try to create or open the template database
+            System.Diagnostics.Debug.Print("Lenghth " + templateDatabasePath.Length);
+            if (Utilities.IsPathLengthTooLong(templateDatabasePath))
+            {
+                // notify the user the template couldn't be loaded because its path is too long
+                MessageBox messageBox = new MessageBox("Timelapse could not load the template ", this);
+                messageBox.Message.Problem = "Timelapse could not load the Template File as its name is too long:" + Environment.NewLine;
+                messageBox.Message.Problem += "\u2022 " + templateDatabasePath;
+                messageBox.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
+                messageBox.Message.Solution = "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine + "\u2022 Use shorter folder or file names.";
+                messageBox.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
+                messageBox.Message.Icon = MessageBoxImage.Error;
+                messageBox.ShowDialog();
+                //return false;
+            }
             if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
             {
                 // notify the user the template couldn't be loaded rather than silently doing nothing
