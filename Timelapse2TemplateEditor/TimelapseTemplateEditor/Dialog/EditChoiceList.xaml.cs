@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using Timelapse.Util;
+using Timelapse.Dialog;
 
 namespace Timelapse.Editor.Dialog
 {
@@ -52,7 +52,7 @@ namespace Timelapse.Editor.Dialog
                     this.Left = mainWindowRightSide - this.ActualWidth - 100;
                 }
             }
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

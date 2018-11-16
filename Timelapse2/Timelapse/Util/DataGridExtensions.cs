@@ -67,7 +67,7 @@ namespace Timelapse.Util
                 // Get the row indicated by rowIndex (after first checking that such a row exists)
                 if (dataGrid.Items.Count < currentRowIndexThatMayContainID)
                 {
-                    System.Diagnostics.Debug.Print("row index " + currentRowIndexThatMayContainID + " is not in array sized " + dataGrid.Items.Count);
+                    // System.Diagnostics.Debug.Print("row index " + currentRowIndexThatMayContainID + " is not in array sized " + dataGrid.Items.Count);
                     return;
                 }
                 currentRow = dataGrid.Items[currentRowIndexThatMayContainID] as DataRowView;
@@ -102,7 +102,7 @@ namespace Timelapse.Util
                     if (idFound == false)
                     {
                         // The id should always be found. But just in case  we ignore IDS that aren't found
-                        System.Diagnostics.Debug.Print("could not find ID: " + currentID + " in array sized " + dataGrid.Items.Count);
+                        // System.Diagnostics.Debug.Print("could not find ID: " + currentID + " in array sized " + dataGrid.Items.Count);
                     }
                 }
             }

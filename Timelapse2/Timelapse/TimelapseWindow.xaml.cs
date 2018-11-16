@@ -261,7 +261,7 @@ namespace Timelapse
         {
             if (e.ExceptionObject.ToString().Contains("System.IO.PathTooLongException"))
             {
-                Utilities.ShowFilePathTooLongDialog(e, this);
+                Dialogs.ShowFilePathTooLongDialog(e, this);
             }
             else
             { 
@@ -301,37 +301,21 @@ namespace Timelapse
             backgroundWorker = null;
 
             // Try to create or open the template database
-            System.Diagnostics.Debug.Print("Lenghth " + templateDatabasePath.Length);
+            // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
             if (Utilities.IsPathLengthTooLong(templateDatabasePath))
             {
-                // notify the user the template couldn't be loaded because its path is too long
-                MessageBox messageBox = new MessageBox("Timelapse could not load the template ", this);
-                messageBox.Message.Problem = "Timelapse could not load the Template File as its name is too long:" + Environment.NewLine;
-                messageBox.Message.Problem += "\u2022 " + templateDatabasePath;
-                messageBox.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
-                messageBox.Message.Solution = "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine + "\u2022 Use shorter folder or file names.";
-                messageBox.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.ShowDialog();
-                //return false;
+                Dialogs.ShowTemplatePathTooLongDialog(templateDatabasePath, this);
+                return false;
             }
+            // Second, check to see if we can actually open it.
             if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
             {
                 // notify the user the template couldn't be loaded rather than silently doing nothing
-                MessageBox messageBox = new MessageBox("Timelapse could not load the template.", this);
-                messageBox.Message.Problem = "Timelapse could not load the Template File:" + Environment.NewLine;
-                messageBox.Message.Problem += "\u2022 " + templateDatabasePath;
-                messageBox.Message.Reason = "The template may be corrupted or somehow otherwise invalid. ";
-                messageBox.Message.Solution = "You may have to recreate the template, or use another copy of it (if you have one).";
-                messageBox.Message.Result = "Timelapse won't do anything. You can try to select another template file.";
-                messageBox.Message.Hint = "See if you can examine the template file in the Timelapse Template Editor.";
-                messageBox.Message.Hint += "If you can't, there is likley something wrong with it and you will have to recreate it.";
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.ShowDialog();
+                Dialogs.ShowTemplateCouldNotBeLoaded(templateDatabasePath, this);
                 return false;
             }
-            // The .tdb templateDatabase should now be loaded
 
+            // The .tdb templateDatabase should now be loaded
             // Try to get the image database file path 
             // importImages will be true if its a new image database file, (meaning we should later ask the user to try to import some images)
             if (this.TrySelectDatabaseFile(templateDatabasePath, out string fileDatabaseFilePath, out bool importImages) == false)
@@ -339,6 +323,20 @@ namespace Timelapse
                 // No image database file was selected
                 return false;
             }
+
+            // Check the file path length of the .ddb file and notify the user the ddb couldn't be loaded because its path is too long
+            if (Utilities.IsPathLengthTooLong(fileDatabaseFilePath))
+            {
+                Dialogs.ShowDatabasePathTooLongDialog(fileDatabaseFilePath, this);
+                return false;
+            }
+
+            // Check the expected file path length of the backup files, and warn the user if backups may not be made because thier path is too long
+            if (Utilities.IsBackupPathLengthTooLong(templateDatabasePath) || Utilities.IsBackupPathLengthTooLong(fileDatabaseFilePath))
+            {
+                Dialogs.ShowBackupPathTooLongDialog(this);
+            }
+
 
             // Before fully loading an existing image database, 
             // - upgrade the template tables if needed for backwards compatability (done automatically)
@@ -432,7 +430,7 @@ namespace Timelapse
             List<object> allRootFolderPaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.Folder);
             if (allRootFolderPaths.Count < 1)
             {
-                System.Diagnostics.Debug.Print("Checking the root folder name in the database, but no entries were found. Perhaps the database is empty?");
+                //  System.Diagnostics.Debug.Print("Checking the root folder name in the database, but no entries were found. Perhaps the database is empty?");
                 return;
             }
 
@@ -2497,6 +2495,7 @@ namespace Timelapse
             {
                 return;
             }
+
 
             // Create a backup database file
             if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))

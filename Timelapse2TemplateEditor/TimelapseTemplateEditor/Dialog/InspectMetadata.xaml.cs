@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Util;
+using Timelapse.Dialog;
 
 namespace Timelapse.Editor.Dialog
 {
@@ -30,8 +31,8 @@ namespace Timelapse.Editor.Dialog
         // After the interface is loaded, try to adjust the position of the dialog box
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+           Dialogs.SetDefaultDialogPosition(this);
+           Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         #region Datagrid callbacks

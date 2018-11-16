@@ -564,7 +564,7 @@ namespace Timelapse.Controls
             DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
             DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);
             this.ImageCache.Current.SetDateTimeOffset(newImageDateTime);
-            System.Diagnostics.Debug.Print(newImageDateTime.ToString());
+            // System.Diagnostics.Debug.Print(newImageDateTime.ToString());
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);  // write the new UtcOffset to the database
         }

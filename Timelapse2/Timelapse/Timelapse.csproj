@@ -216,6 +216,7 @@
     <Compile Include="Dialog\DeleteDuplicates.xaml.cs">
       <DependentUpon>DeleteDuplicates.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\Dialogs.cs" />
     <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
       <DependentUpon>DialogsHideOrShow.xaml</DependentUpon>
     </Compile>

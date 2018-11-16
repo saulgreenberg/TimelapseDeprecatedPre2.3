@@ -34,8 +34,8 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+           Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         // When the user clicks ok, add/subtract an hour propagated forwards/backwards as specified

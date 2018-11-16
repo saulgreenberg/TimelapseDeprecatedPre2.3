@@ -332,7 +332,7 @@ namespace Timelapse.Util
             }
             catch
             {
-                System.Diagnostics.Debug.Print("Catch: Problem in TimelapseAvalonExtensions - FitIntoScreen");
+                // System.Diagnostics.Debug.Print("Catch: Problem in TimelapseAvalonExtensions - FitIntoScreen");
                 return new Rect(5, 5, 740, 740);
             }
         }

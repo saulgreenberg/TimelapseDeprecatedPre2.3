@@ -17,6 +17,7 @@ using Timelapse.Database;
 using Timelapse.Editor.Dialog;
 using Timelapse.Editor.Util;
 using Timelapse.Util;
+using Timelapse.Dialog;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Editor
@@ -47,7 +48,7 @@ namespace Timelapse.Editor
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
             this.Title = EditorConstant.MainWindowBaseTitle;
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(EditorConstant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
@@ -143,6 +144,7 @@ namespace Timelapse.Editor
             newTemplateFilePathDialog.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name without the extension
             newTemplateFilePathDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension; // Default file extension
             newTemplateFilePathDialog.Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension; // Filter files by extension 
+            newTemplateFilePathDialog.AddExtension = true;
             newTemplateFilePathDialog.Title = "Select Location to Save New Template File";
 
             // Show save file dialog box
@@ -151,15 +153,30 @@ namespace Timelapse.Editor
             // Process save file dialog box results 
             if (result == true)
             {
-                // Overwrite the file if it exists
-                if (File.Exists(newTemplateFilePathDialog.FileName))
+                string templateFileName = newTemplateFilePathDialog.FileName;
+
+                // Ensure that the filename has a .tdb extension by replacing whatever extension is there with the desired extension.
+                templateFileName = Path.ChangeExtension(templateFileName, Constant.File.TemplateDatabaseFileExtension.Substring(1));
+
+                // Now try to create or open the template database
+                // First, check the file path length and notify the user the template couldn't be loaded because its path is too long 
+                // Note: The SaveFileDialog doesn't do the right thing when the user specifies a really long file name / path (it just returns the DefaultTemplateDatabaseFileName without a path), 
+                // so we test for that too as it also indicates a too longpath name
+                if (Utilities.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName) ))
                 {
-                    FileBackup.TryCreateBackup(newTemplateFilePathDialog.FileName);
-                    File.Delete(newTemplateFilePathDialog.FileName);
+                    Dialogs.ShowTemplatePathTooLongDialog(templateFileName, this);
+                    return ;
+                }
+
+                // Overwrite the file if it exists
+                if (File.Exists(templateFileName))
+                {
+                    FileBackup.TryCreateBackup(templateFileName);
+                    File.Delete(templateFileName);
                 }
 
                 // Open document 
-                this.InitializeDataGrid(newTemplateFilePathDialog.FileName);
+                this.InitializeDataGrid(templateFileName);
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
                 this.MenuFileClose.IsEnabled = true;
             }
@@ -172,6 +189,7 @@ namespace Timelapse.Editor
         {
             this.ApplyPendingEdits();
 
+            // Note that if we try to open a file with a too long path, the open file dialog will just say that it doesn't exist (which is a bad error message, but nothing we can do about it)
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name without the extension
             openFileDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension; // Default file extension
@@ -180,6 +198,13 @@ namespace Timelapse.Editor
 
             // Show open file dialog box
             Nullable<bool> result = openFileDialog.ShowDialog();
+
+            // This likely isn't needed as the OpenFileDialog won't let us do that anyways. But just in case...
+            if (Utilities.IsPathLengthTooLong(openFileDialog.FileName))
+            {
+                Dialogs.ShowTemplatePathTooLongDialog(openFileDialog.FileName, this);
+                return;
+            }
 
             // Process open file dialog box results 
             if (result == true)

@@ -20,8 +20,8 @@ namespace Timelapse.Dialog
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+           Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             this.SlowSpeedSlider.Minimum = playSlowMinimum;
             this.SlowSpeedSlider.Maximum = Constant.FilePlayerValues.PlaySlowMaximum.TotalSeconds;

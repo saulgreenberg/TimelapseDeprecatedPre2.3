@@ -17,6 +17,7 @@ namespace Timelapse.Dialog
             {
                 throw new ArgumentException("A title must be specified for the message box.", "title");
             }
+
             if (owner == null)
             {
                 throw new ArgumentNullException("owner");
@@ -50,8 +51,8 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

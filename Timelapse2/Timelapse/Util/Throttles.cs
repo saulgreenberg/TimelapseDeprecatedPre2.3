@@ -28,7 +28,7 @@ namespace Timelapse.Util
                 rendersPerSecond > Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound)
             {
                 rendersPerSecond = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault;
-                System.Diagnostics.Debug.Print("RendersPerSecond corrected as it was not within range");
+                // System.Diagnostics.Debug.Print("RendersPerSecond corrected as it was not within range");
             }
 
             this.DesiredImageRendersPerSecond = rendersPerSecond;

@@ -18,8 +18,8 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
             this.NavigateVersionUrl.NavigateUri = Constant.VersionChangesAddress;
             this.NavigateCreativeCommonLicense.NavigateUri = Constant.CreativeCommonsLicense;
             this.NavigateAdditionalLicenseDetails.NavigateUri = Constant.AdditionalLicenseDetails;

@@ -18,8 +18,8 @@ namespace Timelapse.Dialog
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
             this.Message.What = "A root folder location saved in your database (.ddb)  file is '" + dbfoldername + "'. However, your template is currently located in a different root folder '" + actualFolderName + "'.";
             this.Message.Solution = "Clicking Update will update the root folder location that is saved in your database from '" + dbfoldername + "' to '" + actualFolderName + "'.";
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Timelapse.Util;
+using Timelapse.Dialog;
 
 namespace Timelapse.Database
 {
@@ -65,13 +66,17 @@ namespace Timelapse.Database
             string sourceFileExtension = Path.GetExtension(sourceFileName);
             string destinationFileName = String.Concat(sourceFileNameWithoutExtension, ".", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"), sourceFileExtension);
             string destinationFilePath = Path.Combine(backupFolder.FullName, destinationFileName);
+
             try
             {
                 File.Copy(sourceFilePath, destinationFilePath, true);
             }
-            catch (Exception e)
+            catch // (Exception e)
             {
-                throw new PathTooLongException("Backup failure: Could not create backups as the file path is too long", e);
+                // Old code: We just don't create the backup now. While we previously threw an exception, we now test and warn the user earlier on in the code that a backup can't be made 
+                // System.Diagnostics.Debug.Print("Did not back up" + destinationFilePath);
+                // throw new PathTooLongException("Backup failure: Could not create backups as the file path is too long", e);
+                return false;
             }
 
             // age out older backup files

@@ -30,8 +30,8 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Adjust this dialog window position 
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+           Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             this.SuppressAmbiguousDatesDialog.IsChecked = this.state.SuppressAmbiguousDatesDialog;
             this.SuppressCsvExportDialog.IsChecked = this.state.SuppressCsvExportDialog;

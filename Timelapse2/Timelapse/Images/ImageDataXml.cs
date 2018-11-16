@@ -95,7 +95,7 @@ namespace Timelapse.Images
                 XmlNodeList innerNodeList = node.SelectNodes(Constant.Control.Note);
                 foreach (XmlNode innerNode in innerNodeList)
                 {
-                    System.Diagnostics.Debug.Print("Note: " + noteControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
+                    // System.Diagnostics.Debug.Print("Note: " + noteControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
                     columnsToUpdate.Add(new ColumnTuple(noteControlNames[innerNodeIndex++], innerNode.InnerText));
                 }
 
@@ -104,7 +104,7 @@ namespace Timelapse.Images
                 innerNodeList = node.SelectNodes(Constant.Control.FixedChoice);
                 foreach (XmlNode innerNode in innerNodeList)
                 {
-                    System.Diagnostics.Debug.Print("Choice: " + choiceControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
+                    // System.Diagnostics.Debug.Print("Choice: " + choiceControlNames[innerNodeIndex] + " | " + innerNode.InnerText);
                     columnsToUpdate.Add(new ColumnTuple(choiceControlNames[innerNodeIndex++], innerNode.InnerText));
                 }
 
@@ -116,7 +116,7 @@ namespace Timelapse.Images
                 {
                     // Add the value of each counter to the dataline 
                     XmlNodeList dataNode = innerNode.SelectNodes(Constant.DatabaseColumn.Data);
-                    System.Diagnostics.Debug.Print("Counter: " + counterControlNames[innerNodeIndex] + " | " + dataNode[0].InnerText);
+                    // System.Diagnostics.Debug.Print("Counter: " + counterControlNames[innerNodeIndex] + " | " + dataNode[0].InnerText);
                     columnsToUpdate.Add(new ColumnTuple(counterControlNames[innerNodeIndex], dataNode[0].InnerText));
 
                     // For each counter, find the points associated with it and compose them together as x1,y1|x2,y2|...|xn,yn 

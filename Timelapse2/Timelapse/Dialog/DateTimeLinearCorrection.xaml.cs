@@ -4,6 +4,7 @@ using System.Windows;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
+using Timelapse.Dialog;
 using Xceed.Wpf.Toolkit;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
@@ -66,8 +67,8 @@ namespace Timelapse
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Utilities.SetDefaultDialogPosition(this);
-            Utilities.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         private void PreviewDateTimeChanges()
@@ -205,7 +206,7 @@ namespace Timelapse
             if (DateTimeHandler.TryParseDisplayDateTimeString(this.dateTimePickerLatestDateTime.Text, out DateTime newDateTime) == false)
             {
                 // If we can't parse the date,  do nothing.
-                System.Diagnostics.Debug.Print("DateTimeLinearCorrection|ValueChanged: Could not parse the date:" + this.dateTimePickerLatestDateTime.Text);
+                // System.Diagnostics.Debug.Print("DateTimeLinearCorrection|ValueChanged: Could not parse the date:" + this.dateTimePickerLatestDateTime.Text);
                 return;
             }
 
