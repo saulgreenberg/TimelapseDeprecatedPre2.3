@@ -158,7 +158,7 @@ namespace Timelapse.Util
 
         public static bool IsBackupPathLengthTooLong(string str)
         {
-            return (str.Length + Constant.File.MaxPathLength > Constant.File.MaxAdditionalLengthOfBackupFiles);
+            return (str.Length + Constant.File.MaxAdditionalLengthOfBackupFiles > Constant.File.MaxPathLength);
         }
 
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
