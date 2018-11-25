@@ -293,7 +293,7 @@ namespace Timelapse
             return true;
         }
 
-        // Load the specified database template and then the associated images.
+        // Load the specified database template and then the associated images. 
         // templateDatabasePath is the Fully qualified path to the template database file.
         // Returns true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise
         private bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath, out BackgroundWorker backgroundWorker)
