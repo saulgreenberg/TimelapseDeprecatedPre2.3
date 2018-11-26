@@ -265,7 +265,7 @@ namespace Timelapse
             }
             else
             { 
-                Utilities.ShowExceptionReportingDialog("The template editor needs to close.", e, this);
+                Utilities.ShowExceptionReportingDialog("Timelapse", e, this);
             }
         }
         #endregion

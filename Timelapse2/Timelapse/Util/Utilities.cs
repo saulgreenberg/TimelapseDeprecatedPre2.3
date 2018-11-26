@@ -175,14 +175,15 @@ namespace Timelapse.Util
         }
 
 
-        public static void ShowExceptionReportingDialog(string title, UnhandledExceptionEventArgs e, Window owner)
+        public static void ShowExceptionReportingDialog(string programName, UnhandledExceptionEventArgs e, Window owner)
         {
             // once .NET 4.5+ is used it's meaningful to also report the .NET release version
             // See https://msdn.microsoft.com/en-us/library/hh925568.aspx.
+            string title = programName + " needs to close. Please report this error.";
             MessageBox exitNotification = new MessageBox(title, owner);
             exitNotification.Message.Icon = MessageBoxImage.Error;
             exitNotification.Message.Title = title;
-            exitNotification.Message.Problem = "Timelapse encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
+            exitNotification.Message.Problem = programName + " encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
             exitNotification.Message.What = "Please help us fix it! You should be able to paste the entire content of the Reason section below into an email to saul@ucalgary.ca , along with a description of what you were doing at the time.  To quickly copy the text, click on the 'Reason' details, hit ctrl+a to select all of it, ctrl+c to copy, and then email all that.";
             exitNotification.Message.Reason = String.Format("{0}, {1}, .NET runtime {2}{3}", typeof(TimelapseWindow).Assembly.GetName(), Environment.OSVersion, Environment.Version, Environment.NewLine);
             if (e.ExceptionObject != null)
@@ -198,13 +199,13 @@ namespace Timelapse.Util
             {
                 case Constant.ExceptionTypes.TemplateReadWriteException:
                     exitNotification.Message.Problem =
-                        "Timelapse could not read data from the template (.tdb) file. This could be because: " + Environment.NewLine +
+                        programName + "  could not read data from the template (.tdb) file. This could be because: " + Environment.NewLine +
                         "\u2022 the .tdb file is corrupt, or" + Environment.NewLine +
                         "\u2022 your system is somehow blocking Timelapse from manipulating that file (e.g., Citrix security will do that)" + Environment.NewLine +
                         "If you let us know, we will try and fix it. ";
                     break;
                 default:
-                    exitNotification.Message.Problem = "Timelapse encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
+                    exitNotification.Message.Problem = programName + " encountered a problem, likely due to a bug. If you let us know, we will try and fix it. ";
                     break;
             }
 

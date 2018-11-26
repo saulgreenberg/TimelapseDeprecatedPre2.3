@@ -97,7 +97,7 @@ namespace Timelapse.Editor
         // If we get an exception that wasn't handled, show a dialog asking the user to send the bug report to us.
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Utilities.ShowExceptionReportingDialog("The template editor needs to close.", e, this);
+            Utilities.ShowExceptionReportingDialog("Timelapse Editor", e, this);
         }
         #endregion
 
