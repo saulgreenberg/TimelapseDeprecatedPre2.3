@@ -47,6 +47,11 @@ namespace Timelapse.Database
         // flags
         public bool OrderFilesByDateTime { get; set; }
 
+        public string PrimarySortTerm1 { get; set; }
+        public string PrimarySortTerm2 { get; set; }
+        public string SecondarySortTerm1 { get; set; }
+        public string SecondarySortTerm2 { get; set; }
+
         #endregion
 
         private FileDatabase(string filePath)
@@ -723,9 +728,30 @@ namespace Timelapse.Database
             {
                 query += Constant.Sqlite.Where + where;
             }
-            if (this.OrderFilesByDateTime)
+
+            // Sort by primary and secondary sort criteria, if they are specified
+            if (!String.IsNullOrEmpty (this.PrimarySortTerm1))
             {
-                query += Constant.Sqlite.OrderBy + Constant.DatabaseColumn.DateTime;
+                query += Constant.Sqlite.OrderBy + this.PrimarySortTerm1;
+
+                // If there is a secondary term for the primary key, add it here.
+                if (!String.IsNullOrEmpty(PrimarySortTerm2))
+                {
+                    query += Constant.Sqlite.Comma + this.PrimarySortTerm2;
+                }
+
+                // Similarly, if there is a secondary sort key, add it here
+                if (!String.IsNullOrEmpty(SecondarySortTerm1))
+                {
+                    query += Constant.Sqlite.Comma + this.SecondarySortTerm1;
+
+                    // If there is a secondary term for the secondary key, add it here.
+                    if (!String.IsNullOrEmpty(SecondarySortTerm2))
+                        {
+                            query += Constant.Sqlite.Comma + this.SecondarySortTerm2;
+                        }
+                }
+                query += Constant.Sqlite.Semicolon;
             }
 
             DataTable images = this.Database.GetDataTableFromSelect(query);
@@ -1395,6 +1421,15 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DatabaseTable.Markers, marker.GetColumnTuples());
+        }
+        
+        // Convenience routine to set the sort criteria
+        public void SetSortCriteria(string primarySortTerm1, string primarySortTerm2, string secondarySortTerm3, string secondarySortTerm4)
+        {
+            this.PrimarySortTerm1 = primarySortTerm1;
+            this.PrimarySortTerm2 = primarySortTerm2;
+            this.SecondarySortTerm1 = secondarySortTerm3;
+            this.SecondarySortTerm2 = secondarySortTerm4;
         }
 
         // The id is the row to update, the datalabels are the labels of each control to updata, 

@@ -186,6 +186,7 @@
     <Compile Include="Database\FileTableColumn.cs" />
     <Compile Include="Database\DataRowExtensions.cs" />
     <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="Database\SortSelection.cs" />
     <Compile Include="Database\TemplateSyncResults.cs" />
     <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
     <Compile Include="Database\FileTableDateTimeColumn.cs" />
@@ -197,6 +198,9 @@
     <Compile Include="Database\VideoRow.cs" />
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\CustomSort.xaml.cs">
+      <DependentUpon>CustomSort.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\DarkImagesClassifyAutomatically.xaml.cs">
       <DependentUpon>DarkImagesClassifyAutomatically.xaml</DependentUpon>
@@ -304,6 +308,10 @@
     <Page Include="Dialog\AdvancedImageSetOptions.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialog\CustomSort.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\DarkImagesClassifyAutomatically.xaml">
       <SubType>Designer</SubType>
