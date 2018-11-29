@@ -10,6 +10,7 @@ namespace Timelapse.Database
         DateTime,
         FileName,
         ID,
-        Custom
+        Custom,
+        Ignore
     }
 }

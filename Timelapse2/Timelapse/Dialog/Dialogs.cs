@@ -152,12 +152,12 @@ namespace Timelapse.Dialog
         public static void ShowBackupPathTooLongDialog(Window owner)
         {
             MessageBox messageBox = new MessageBox("Timelapse may not be able to backup your files", owner);
-            messageBox.Message.Problem = "Timelapse may not be able to backup your files as your file names are very long." ;
+            messageBox.Message.Problem = "Timelapse may not be able to backup your files as your file names are very long.";
 
             messageBox.Message.Reason = "Timelapse normally creates backups of your template, database, and csv files in the " + Constant.File.BackupFolder + " folder." + Environment.NewLine;
             messageBox.Message.Reason += "However, Windows cannot create those files if the " + Constant.File.BackupFolder + " folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
-           
-            messageBox.Message.Solution =  "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine ;
+
+            messageBox.Message.Solution = "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine;
             messageBox.Message.Solution += "\u2022 Use shorter folder or file names.";
             messageBox.Message.Hint = "You can still use Timelapse, but backup files may not be created.";
             messageBox.Message.Icon = MessageBoxImage.Warning;

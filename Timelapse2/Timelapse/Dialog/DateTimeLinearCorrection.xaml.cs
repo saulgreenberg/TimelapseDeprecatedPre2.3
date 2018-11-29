@@ -3,9 +3,8 @@ using System.Diagnostics;
 using System.Windows;
 using Timelapse.Controls;
 using Timelapse.Database;
-using Timelapse.Util;
 using Timelapse.Dialog;
-using Xceed.Wpf.Toolkit;
+using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse

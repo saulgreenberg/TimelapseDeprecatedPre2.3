@@ -10,9 +10,10 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class CustomSort : Window
     {
-        private FileDatabase database;
         private const string FileRelativePathDisplayName = "File name (including relative path)";
         private const string EmptyDisplay = "-- None --";
+
+        private FileDatabase database;
 
         public CustomSort(FileDatabase database)
         {
@@ -54,17 +55,17 @@ namespace Timelapse.Dialog
             bool datetimeAdded = false;
             foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
             {
-                string dbName = searchTerm.DataLabel;
+                string databaseColumnName = searchTerm.DataLabel;
                 string displayName = (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath) ? FileRelativePathDisplayName : searchTerm.Label;
 
                 // Don't display File and UtcOffset
-                if (dbName == Constant.DatabaseColumn.File || dbName == Constant.DatabaseColumn.UtcOffset)
+                if (databaseColumnName == Constant.DatabaseColumn.File || databaseColumnName == Constant.DatabaseColumn.UtcOffset)
                 {
                     continue;
                 }
 
                 // Skip one of the DateTime fields as custom selection creates two of them
-                if (dbName == Constant.DatabaseColumn.DateTime)
+                if (databaseColumnName == Constant.DatabaseColumn.DateTime)
                 {
                     if (datetimeAdded == true)
                     {
@@ -81,7 +82,7 @@ namespace Timelapse.Dialog
                 }
             }
         }
-        private void PopulateSecondaryComboBox ()
+        private void PopulateSecondaryComboBox()
         {
             this.SecondaryComboBox.Items.Clear();
 
@@ -98,11 +99,11 @@ namespace Timelapse.Dialog
             bool datetimeAdded = false;
             foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
             {
-                string dbName = searchTerm.DataLabel;
+                string databaseColumnName = searchTerm.DataLabel;
                 string displayName = (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath) ? FileRelativePathDisplayName : searchTerm.Label;
 
                 // Don't display File and UtcOffset
-                if (dbName == Constant.DatabaseColumn.File || dbName == Constant.DatabaseColumn.UtcOffset)
+                if (databaseColumnName == Constant.DatabaseColumn.File || databaseColumnName == Constant.DatabaseColumn.UtcOffset)
                 {
                     continue;
                 }
@@ -110,7 +111,7 @@ namespace Timelapse.Dialog
                 // If the item is already selected in the primary combo box, we don't display it in the secondary combo box
                 if (displayName == (string)PrimaryComboBox.SelectedItem)
                 {
-                    if ((string) this.SecondaryComboBox.SelectedItem == dbName)
+                    if ((string)this.SecondaryComboBox.SelectedItem == databaseColumnName)
                     {
                         this.SecondaryComboBox.SelectedIndex = 0;
                     }
@@ -118,7 +119,7 @@ namespace Timelapse.Dialog
                 }
 
                 // Skip one of the DateTime fields as custom selection creates two of them
-                if (dbName == Constant.DatabaseColumn.DateTime)
+                if (databaseColumnName == Constant.DatabaseColumn.DateTime)
                 {
                     if (datetimeAdded == true)
                     {
@@ -147,7 +148,7 @@ namespace Timelapse.Dialog
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
-            string selectedPrimaryItem = (string) this.PrimaryComboBox.SelectedItem;
+            string selectedPrimaryItem = (string)this.PrimaryComboBox.SelectedItem;
             string selectedSecondaryItem = (string)this.SecondaryComboBox.SelectedItem;
             string primaryTerm1 = String.Empty;
             string primaryTerm2 = String.Empty;
@@ -204,7 +205,7 @@ namespace Timelapse.Dialog
             this.database.PrimarySortTerm2 = primaryTerm2;
             this.database.SecondarySortTerm1 = secondaryTerm1;
             this.database.SecondarySortTerm2 = secondaryTerm2;
-            //System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", primaryTerm1, primaryTerm2, secondaryTerm1, secondaryTerm2));
+            // System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", primaryTerm1, primaryTerm2, secondaryTerm1, secondaryTerm2));
             this.DialogResult = true;
         }
 
@@ -214,7 +215,5 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
-
-
     }
 }

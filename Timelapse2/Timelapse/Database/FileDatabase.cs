@@ -730,7 +730,7 @@ namespace Timelapse.Database
             }
 
             // Sort by primary and secondary sort criteria, if they are specified
-            if (!String.IsNullOrEmpty (this.PrimarySortTerm1))
+            if (!String.IsNullOrEmpty(this.PrimarySortTerm1))
             {
                 query += Constant.Sqlite.OrderBy + this.PrimarySortTerm1;
 

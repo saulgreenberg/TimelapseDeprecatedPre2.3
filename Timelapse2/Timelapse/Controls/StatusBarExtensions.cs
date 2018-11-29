@@ -44,7 +44,7 @@ namespace Timelapse.Controls
 
             // If there is no primary sort string, then we don't know what the sorting criteria is.
             // Note that this should not happen
-            if (String.IsNullOrEmpty (primarySortTerm1))
+            if (String.IsNullOrEmpty(primarySortTerm1))
             {
                 item.Content = "Unknown";
                 return;

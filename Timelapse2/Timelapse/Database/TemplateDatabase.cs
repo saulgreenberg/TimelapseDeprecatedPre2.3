@@ -833,7 +833,7 @@ namespace Timelapse.Database
                     }
                 }
             }
-            catch // (NullReferenceException e)
+            catch
             {
                 // Throw a custom exception so we can give a more informative fatal error message.
                 // While this method does not normally fail, one user did report it crashing here due to his Citrix system

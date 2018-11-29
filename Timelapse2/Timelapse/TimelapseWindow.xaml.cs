@@ -3352,6 +3352,19 @@ namespace Timelapse
             {
                 this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelection.Custom);
             }
+            else
+            {
+                // Since we canceled the custom selection, uncheck the item (but only if another menu item is shown checked)
+                
+                bool otherMenuItemIsChecked = 
+                    (this.MenuItemSelectAllFiles.IsChecked ||
+                    this.MenuItemSelectCorruptedFiles.IsChecked ||
+                    this.MenuItemSelectDarkFiles.IsChecked ||
+                    this.MenuItemSelectLightFiles.IsChecked ||
+                    this.MenuItemSelectFilesNoLongerAvailable.IsChecked ||
+                    this.MenuItemSelectFilesMarkedForDeletion.IsChecked);
+                this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
+            }
         }
 
         // Re-do the selection, based on the current select criteria. This is useful when, for example, the user has selected a view, 
@@ -3442,7 +3455,7 @@ namespace Timelapse
             this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
             // sets up various status indicators in the UI
-            this.ShowSortFeedback(SortSelection.ID);
+            this.ShowSortFeedback(SortSelection.Ignore);
         }
 
         // Show feedback in the UI based on the sort selection 
@@ -3456,12 +3469,16 @@ namespace Timelapse
             this.StatusBar.SetSort(this.dataHandler.FileDatabase.PrimarySortTerm1, this.dataHandler.FileDatabase.PrimarySortTerm2, this.dataHandler.FileDatabase.SecondarySortTerm1, this.dataHandler.FileDatabase.SecondarySortTerm2);
 
             // Reset menu item checkboxes on the current sort settings
+            // If its ignore, it means we don't reset the selection i.e., we keep the old one.
+            if (selection == SortSelection.Ignore)
+            {
+                return;
+            }
             this.MenuItemSortByDateTime.IsChecked = (selection == SortSelection.DateTime);
             this.MenuItemSortByFileName.IsChecked = (selection == SortSelection.FileName);
             this.MenuItemSortByOrderFilesWereAdded.IsChecked = (selection == SortSelection.ID);
             this.MenuItemSortCustom.IsChecked = (selection == SortSelection.Custom);
         }
-
         #endregion
 
         #region Window Menu Callbacks

@@ -14,10 +14,11 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
+using Timelapse.Dialog;
 using Timelapse.Editor.Dialog;
 using Timelapse.Editor.Util;
 using Timelapse.Util;
-using Timelapse.Dialog;
+
 using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Editor
@@ -162,10 +163,10 @@ namespace Timelapse.Editor
                 // First, check the file path length and notify the user the template couldn't be loaded because its path is too long 
                 // Note: The SaveFileDialog doesn't do the right thing when the user specifies a really long file name / path (it just returns the DefaultTemplateDatabaseFileName without a path), 
                 // so we test for that too as it also indicates a too longpath name
-                if (Utilities.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName) ))
+                if (Utilities.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName)))
                 {
                     Dialogs.ShowTemplatePathTooLongDialog(templateFileName, this);
-                    return ;
+                    return;
                 }
 
                 // Overwrite the file if it exists
