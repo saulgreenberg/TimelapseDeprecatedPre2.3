@@ -310,7 +310,12 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
+            // SAULXXX To test... We may be able to add a new column which is still backwards compatable with older Timelapse versions as they don't try to read this column. To test...
+            // columnDefinitions.Add(new ColumnDefinition("Foobar", Constant.Sqlite.Text));
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
+
+            // SAULXXX To test... We can create a new table to store additional information about the image set, which will make it backwards compatable with older Timelapse versions as they don't try to read this table.
+            // this.ExecuteNonQuery( "CREATE TABLE Junk ( Id INTEGER PRIMARY KEY AUTOINCREMENT, Key1 TEXT, DefaultValue 'SomeText' )" ) ;
 
             // Populate the data for the image set with defaults
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
@@ -320,7 +325,7 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
                 new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id)
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
