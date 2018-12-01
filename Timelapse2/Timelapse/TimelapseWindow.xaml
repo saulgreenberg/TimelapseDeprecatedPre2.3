@@ -152,8 +152,6 @@
 
             <!-- Options Menu -->
             <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
-                <MenuItem Name="MenuItemOrderFilesByDateTime" IsCheckable="True" IsChecked="False" Header="_Order files by date/time (default is by file name)" Click="MenuItemOrderFilesByDateTime_Click" ToolTip="Sort files by their date/time rather than the order in which they were added to the image set." IsEnabled="False" />
-                <Separator/>
                 <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
                 <Separator/>
                 <MenuItem Name="MenuItemMagnifyingGlass" Header="_Magnifying Glass" IsEnabled="False">
@@ -201,9 +199,22 @@
                 <MenuItem Name="MenuItemSelectFilesMarkedForDeletion" IsCheckable="True" IsChecked="False" Header="Files marked for d_eletion" Click="MenuItemSelectFiles_Click" ToolTip="Show only those marked for deletion"/>
                 <MenuItem Name="MenuItemSelectCustomSelection" IsCheckable="True" IsChecked="False" Header="_Custom Selection..."  ToolTip="Create a custom selection to display only particular files" Click="MenuItemSelectCustomSelection_Click"/>
                 <Separator/>
-                <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" IsEnabled="False" ToolTip="Display statistics of the total number of files and their types"/>
+                <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" ToolTip="Display statistics of the total number of files and their types"/>
+                <Separator/>
+                <MenuItem Name="MenuItemSelectReselect" Header="Select again (refreshes the selection)" Click="MenuItemSelectReselect_Click" ToolTip="Reselects the files based on the current select criteria (useful if you update your data)."/>
             </MenuItem>
 
+            <!-- Sort Menu -->
+            <MenuItem Name="MenuItemSort" Header="_Sort" IsEnabled="False" IsTabStop="false" SubmenuOpened="Sort_SubmenuOpening">
+                <MenuItem Name="MenuItemSortByDateTime" IsCheckable="True" IsChecked="False" Header="_By date/time" Click="MenuItemSortByDateTime_Click" ToolTip="Sort files by their date/time." />
+                <MenuItem Name="MenuItemSortByFileName" IsCheckable="True" IsChecked="False" Header="_By relative path and file name" Click="MenuItemSortByFileName_Click" ToolTip="Sort files by their relative path and file name."  />
+                <MenuItem Name="MenuItemSortByOrderFilesWereAdded" IsCheckable="True" IsChecked="False" Header="_By Id (the order files were added to Timelapse)" Click="MenuItemSortByOrderFilesWereAdded_Click" ToolTip="Sort files by the order they were added into Timelapse."/>
+                <Separator/>
+                <MenuItem Name="MenuItemSortCustom" IsCheckable="True" IsChecked="False" Header="_Custom sort..." Click="MenuItemSortCustom_Click" ToolTip="Customize the sorting order by particular fields."/>
+                <Separator/>
+                <MenuItem Name="MenuItemSortResort" Header="Sort again (refreshes the sort)" Click="MenuItemSortResort_Click" ToolTip="Re-sorts the files based on the current sort criteria (useful if you update your data)."  />
+            </MenuItem>
+            
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="True">
 
@@ -464,12 +475,44 @@
 
         <!-- Status bar -->
         <StatusBar Grid.Row="2" VerticalAlignment="Bottom" Name="StatusBar" ItemsSource="{Binding}">
-            <StatusBarItem Content="File:" FontWeight="Bold" />
-            <StatusBarItem Content="0"/>
-            <StatusBarItem Content="of"/>
-            <StatusBarItem Content="Unknown"/>
-            <StatusBarItem Content=""/>
-            <StatusBarItem Content="" HorizontalAlignment="Right" />
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" /> <!-- File:-->
+                            <ColumnDefinition Width="Auto" /> <!-- # -->
+                            <ColumnDefinition Width="Auto" /> <!-- of -->
+                            <ColumnDefinition Width="Auto" /> <!-- # -->
+                            <ColumnDefinition Width="Auto" /> <!-- | -->
+                            <ColumnDefinition Width="Auto" /> <!-- Select: -->
+                             <ColumnDefinition Width="Auto" /> <!-- selection type -->
+                            <ColumnDefinition Width="Auto" /> <!-- | -->
+                            <ColumnDefinition Width="Auto" /> <!-- Sort: -->
+                            <ColumnDefinition Width="Auto" /> <!-- sort type -->
+                            <ColumnDefinition Width="Auto" /> <!-- | -->
+                            <ColumnDefinition Width="*" /> <!-- Message: -->
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem  Grid.Column="0" Content="File:" FontWeight="Bold" />
+            <StatusBarItem  Grid.Column="1" Content="0" />
+            <StatusBarItem  Grid.Column="2" Content="of" />
+            <StatusBarItem  Grid.Column="3" Content="none" />
+            
+            <Separator Grid.Column="4" Margin="5,0,5,0"/>
+            
+            <StatusBarItem  Grid.Column="5" Content="Select:" FontWeight="Bold" />
+            <StatusBarItem  Grid.Column="6" Content="---" />
+            
+            <Separator Grid.Column="7" Margin="5,0,5,0" />
+            
+            <StatusBarItem  Grid.Column="8" Content="Sorted by:" FontWeight="Bold" />
+            <StatusBarItem  Grid.Column="9" Content="---" />
+
+            <Separator Grid.Column="10" Margin="5,0,5,0" />
+            
+            <StatusBarItem  Grid.Column="11" Content="---" HorizontalAlignment="Right" HorizontalContentAlignment="Stretch"/>
         </StatusBar>
     </Grid>
 </Window>

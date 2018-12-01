@@ -536,8 +536,8 @@ namespace Timelapse
         public static class ThrottleValues
         {
             public const double DesiredMaximumImageRendersPerSecondLowerBound = 4.0;     // Likely very safe render rate 
-            public const double DesiredMaximumImageRendersPerSecondDefault = 9.0;   // Default render rate - could exhibit stalls on poor machines
-            public const double DesiredMaximumImageRendersPerSecondUpperBound = 30.0;    // Risky render rate that may work on high end machines machines
+            public const double DesiredMaximumImageRendersPerSecondDefault = 7.0;   // Default render rate - could exhibit stalls on poor machines
+            public const double DesiredMaximumImageRendersPerSecondUpperBound = 15.0;    // Risky render rate that may work on high end machines machines
             public const int MaximumRenderAttempts = 10;
             public const int SleepForImageRenderInterval = 100;
             public const int ShowOnlyEveryNthImageWhenLoading = 10;

@@ -86,7 +86,10 @@ namespace Timelapse
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
             
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
-            this.MenuItemOrderFilesByDateTime.IsChecked = this.state.OrderFilesByDateTime;
+            // SAULXXX NEED TO CHANGE HOW this.state.OrderFilesByDateTime WORKS
+            // SortSelection selection = this.state.OrderFilesByDateTime ? SortSelection.DateTime : SortSelection.ID;
+            // this.MenuItemSortSetSelection(selection);
+
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
 
             // Populate the most recent image set list
@@ -863,7 +866,21 @@ namespace Timelapse
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
         private void OnFolderLoadingComplete(bool filesJustAdded)
-        {   
+        {
+            // SAULXXX TEMPORARY UNTIL WE REDO HOW SORTING STATE IS SAVED 
+            // Reset the Sorting criteria
+            SortSelection selection = this.state.OrderFilesByDateTime ? SortSelection.DateTime : SortSelection.ID;
+            if (this.state.OrderFilesByDateTime)
+            {
+                this.dataHandler.FileDatabase.PrimarySortTerm1 = Constant.DatabaseColumn.RelativePath;
+                this.dataHandler.FileDatabase.PrimarySortTerm2 = Constant.DatabaseColumn.File;
+            }
+            else
+            {
+                this.dataHandler.FileDatabase.PrimarySortTerm1 = Constant.DatabaseColumn.ID;
+            }
+            this.ShowSortFeedback(selection);
+
             // Show the image, hide the load button, and make the feedback panels visible
             this.ImageSetPane.IsActive = true;
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
@@ -913,7 +930,7 @@ namespace Timelapse
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
 
-            // file menu
+            // File menu
             this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
             this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
@@ -924,32 +941,34 @@ namespace Timelapse
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
 
-            // edit menu
+            // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
             // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
 
-            // view menu
-            this.MenuItemView.IsEnabled = filesSelected;
-            // select menu
-            this.MenuItemSelect.IsEnabled = filesSelected;
-
-            // options menu
+            // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
-            this.MenuItemOptions.IsEnabled = imageSetAvailable;
-            this.MenuItemOrderFilesByDateTime.IsEnabled = filesSelected;
+            this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;
             this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected;
             this.MenuItemAudioFeedback.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemImageCounts.IsEnabled = filesSelected;
-
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = filesSelected;
 
-            // windows menu is always enabled
+            // View menu
+            this.MenuItemView.IsEnabled = filesSelected;
 
-            // Also adjust the enablement of the various other UI components.
+            // Select menu
+            this.MenuItemSelect.IsEnabled = filesSelected;
+
+            // Sort menu
+            this.MenuItemSort.IsEnabled = filesSelected;
+
+            // Windows menu is always enabled
+
+            // Enablement state of the various other UI components.
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
             this.CopyPreviousValuesButton.IsEnabled = filesSelected;
             this.FileNavigatorSlider.IsEnabled = filesSelected;
@@ -1090,25 +1109,25 @@ namespace Timelapse
             switch (selection)
             {
                 case FileSelection.All:
-                    status = "all files";
+                    status = "All files";
                     break;
                 case FileSelection.Corrupted:
-                    status = "corrupted files";
+                    status = "Corrupted files";
                     break;
                 case FileSelection.Custom:
-                    status = "files matching your custom selection";
+                    status = "Custom selection";
                     break;
                 case FileSelection.Dark:
-                    status = "dark files";
+                    status = "Dark files";
                     break;
                 case FileSelection.MarkedForDeletion:
-                    status = "files marked for deletion";
+                    status = "Files marked for deletion";
                     break;
                 case FileSelection.Missing:
-                    status = "missing files no longer available for display";
+                    status = "Missing files";
                     break;
                 case FileSelection.Ok:
-                    status = "light files";
+                    status = "Light and Okay files";
                     break;
                 default:
                     throw new NotSupportedException(String.Format("Unhandled file selection {0}.", selection));
@@ -1679,6 +1698,7 @@ namespace Timelapse
                 this.MarkableCanvas.SwitchToImageView();
 
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
+                this.dataHandler.IsProgrammaticControlUpdate = false;
                 return;
             }
 
@@ -1699,7 +1719,8 @@ namespace Timelapse
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out bool newFileToDisplay) == false)
             {
-                throw new ArgumentOutOfRangeException("newImageRow", String.Format("{0} is not a valid row index in the image table.", fileIndex));
+                this.dataHandler.IsProgrammaticControlUpdate = false;
+                throw new Exception(String.Format("in ShowFile: possible problem with fileIndex, where its not a valid row index in the image table.", fileIndex));
             }
 
             // Update each control with the data for the now current image
@@ -1831,7 +1852,7 @@ namespace Timelapse
                 desiredRow = 0;
             }
 
-            // If the desired row is the same as the current row, the image us already being displayed
+            // If the desired row is the same as the current row, the image is already being displayed
             if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
             {
                 // Move to the desired row
@@ -2948,21 +2969,6 @@ namespace Timelapse
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
         }
-        /// <summary>Show advanced image set options</summary>
-        private void MenuItemOrderFilesByDateTime_Click(object sender, RoutedEventArgs e)
-        {
-            this.state.OrderFilesByDateTime = !this.state.OrderFilesByDateTime;
-            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
-            {
-                this.dataHandler.FileDatabase.OrderFilesByDateTime = this.state.OrderFilesByDateTime;
-            }
-            this.MenuItemOrderFilesByDateTime.IsChecked = this.state.OrderFilesByDateTime;
-
-            // Reselect on the current select settings, which reorders the list to date or name order, depending on the above
-            this.SelectFilesAndShowFile();
-            string message = (this.state.OrderFilesByDateTime) ? "Files now sorted by date and time" : "Files now sorted by the order they were added to the image set";
-            this.StatusBar.SetMessage(message);
-        }
 
         private void MenuItemClassifyDarkImagesWhenLoading_Click(object sender, RoutedEventArgs e)
         {
@@ -3260,9 +3266,6 @@ namespace Timelapse
         {
             this.TryViewCombinedDifference();
         }
-
-
-
         #endregion
 
         #region Selection Menu Callbacks
@@ -3349,12 +3352,132 @@ namespace Timelapse
             {
                 this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelection.Custom);
             }
+            else
+            {
+                // Since we canceled the custom selection, uncheck the item (but only if another menu item is shown checked)
+                
+                bool otherMenuItemIsChecked = 
+                    (this.MenuItemSelectAllFiles.IsChecked ||
+                    this.MenuItemSelectCorruptedFiles.IsChecked ||
+                    this.MenuItemSelectDarkFiles.IsChecked ||
+                    this.MenuItemSelectLightFiles.IsChecked ||
+                    this.MenuItemSelectFilesNoLongerAvailable.IsChecked ||
+                    this.MenuItemSelectFilesMarkedForDeletion.IsChecked);
+                this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
+            }
+        }
+
+        // Re-do the selection, based on the current select criteria. This is useful when, for example, the user has selected a view, 
+        // but then changed some data values where items no longer match the current selection.
+        private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
+        {
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
         }
 
         /// <summary>Show a dialog box telling the user how many images were loaded, etc.</summary>
         public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
         {
             this.MaybeShowFileCountsDialog(false, this);
+        }
+        #endregion
+
+        #region Sort Menu Callbacks
+        private void Sort_SubmenuOpening(object sender, RoutedEventArgs e)
+        {
+            FilePlayer_Stop(); // In case the FilePlayer is going
+        }
+
+        private void MenuItemSortByDateTime_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            {
+                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.DateTime, String.Empty, String.Empty, String.Empty);
+            }
+
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+
+            // sets up various status indicators in the UI
+            this.ShowSortFeedback(SortSelection.DateTime);
+        }
+
+        private void MenuItemSortByFileName_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            {
+                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.RelativePath, Constant.DatabaseColumn.File, String.Empty, String.Empty);
+            }
+
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+
+            // sets up various status indicators in the UI
+            this.ShowSortFeedback(SortSelection.FileName);
+        }
+
+        private void MenuItemSortByOrderFilesWereAdded_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            {
+                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.ID, String.Empty, String.Empty, String.Empty);
+            }
+
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+
+            // sets up various status indicators in the UI
+            this.ShowSortFeedback(SortSelection.ID);
+        }
+
+        private void MenuItemSortCustom_Click(object sender, RoutedEventArgs e)
+        {  
+            // Raise a dialog where user can specify the sorting criteria
+            Dialog.CustomSort customSort = new Dialog.CustomSort(this.dataHandler.FileDatabase)
+            {
+                Owner = this
+            };
+            if (customSort.ShowDialog() == true)
+            {
+                // Reselect the images, which re-sorts them to the current sort criteria. 
+                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+
+                // sets up various status indicators in the UI
+                this.ShowSortFeedback(SortSelection.Custom);
+            }
+        }
+
+        // Resort the files based on the current criteria. This is useful when, for example, the user has sorted things, 
+        // but then changed some data values where items are no longer in the correct sort order.
+        private void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
+        {
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+
+            // sets up various status indicators in the UI
+            this.ShowSortFeedback(SortSelection.Ignore);
+        }
+
+        // Show feedback in the UI based on the sort selection 
+        // Also, record the sort state
+        private void ShowSortFeedback (SortSelection selection)
+        {
+            // SAULXXX Record the state Until we figure out how to save the sorting state correctly
+            this.state.OrderFilesByDateTime = (this.dataHandler.FileDatabase.PrimarySortTerm1 == Constant.DatabaseColumn.DateTime && String.IsNullOrEmpty(this.dataHandler.FileDatabase.SecondarySortTerm1)) ? true : false;
+    
+            // Provide feedback in the status bar of what sort terms are being used
+            this.StatusBar.SetSort(this.dataHandler.FileDatabase.PrimarySortTerm1, this.dataHandler.FileDatabase.PrimarySortTerm2, this.dataHandler.FileDatabase.SecondarySortTerm1, this.dataHandler.FileDatabase.SecondarySortTerm2);
+
+            // Reset menu item checkboxes on the current sort settings
+            // If its ignore, it means we don't reset the selection i.e., we keep the old one.
+            if (selection == SortSelection.Ignore)
+            {
+                return;
+            }
+            this.MenuItemSortByDateTime.IsChecked = (selection == SortSelection.DateTime);
+            this.MenuItemSortByFileName.IsChecked = (selection == SortSelection.FileName);
+            this.MenuItemSortByOrderFilesWereAdded.IsChecked = (selection == SortSelection.ID);
+            this.MenuItemSortCustom.IsChecked = (selection == SortSelection.Custom);
         }
         #endregion
 

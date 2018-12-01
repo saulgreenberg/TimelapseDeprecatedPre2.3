@@ -47,6 +47,11 @@ namespace Timelapse.Database
         // flags
         public bool OrderFilesByDateTime { get; set; }
 
+        public string PrimarySortTerm1 { get; set; }
+        public string PrimarySortTerm2 { get; set; }
+        public string SecondarySortTerm1 { get; set; }
+        public string SecondarySortTerm2 { get; set; }
+
         #endregion
 
         private FileDatabase(string filePath)
@@ -305,7 +310,12 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
+            // SAULXXX To test... We may be able to add a new column which is still backwards compatable with older Timelapse versions as they don't try to read this column. To test...
+            // columnDefinitions.Add(new ColumnDefinition("Foobar", Constant.Sqlite.Text));
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
+
+            // SAULXXX To test... We can create a new table to store additional information about the image set, which will make it backwards compatable with older Timelapse versions as they don't try to read this table.
+            // this.ExecuteNonQuery( "CREATE TABLE Junk ( Id INTEGER PRIMARY KEY AUTOINCREMENT, Key1 TEXT, DefaultValue 'SomeText' )" ) ;
 
             // Populate the data for the image set with defaults
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
@@ -315,7 +325,7 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
                 new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id)
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
@@ -723,9 +733,30 @@ namespace Timelapse.Database
             {
                 query += Constant.Sqlite.Where + where;
             }
-            if (this.OrderFilesByDateTime)
+
+            // Sort by primary and secondary sort criteria, if they are specified
+            if (!String.IsNullOrEmpty(this.PrimarySortTerm1))
             {
-                query += Constant.Sqlite.OrderBy + Constant.DatabaseColumn.DateTime;
+                query += Constant.Sqlite.OrderBy + this.PrimarySortTerm1;
+
+                // If there is a secondary term for the primary key, add it here.
+                if (!String.IsNullOrEmpty(PrimarySortTerm2))
+                {
+                    query += Constant.Sqlite.Comma + this.PrimarySortTerm2;
+                }
+
+                // Similarly, if there is a secondary sort key, add it here
+                if (!String.IsNullOrEmpty(SecondarySortTerm1))
+                {
+                    query += Constant.Sqlite.Comma + this.SecondarySortTerm1;
+
+                    // If there is a secondary term for the secondary key, add it here.
+                    if (!String.IsNullOrEmpty(SecondarySortTerm2))
+                        {
+                            query += Constant.Sqlite.Comma + this.SecondarySortTerm2;
+                        }
+                }
+                query += Constant.Sqlite.Semicolon;
             }
 
             DataTable images = this.Database.GetDataTableFromSelect(query);
@@ -1395,6 +1426,15 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DatabaseTable.Markers, marker.GetColumnTuples());
+        }
+        
+        // Convenience routine to set the sort criteria
+        public void SetSortCriteria(string primarySortTerm1, string primarySortTerm2, string secondarySortTerm3, string secondarySortTerm4)
+        {
+            this.PrimarySortTerm1 = primarySortTerm1;
+            this.PrimarySortTerm2 = primarySortTerm2;
+            this.SecondarySortTerm1 = secondarySortTerm3;
+            this.SecondarySortTerm2 = secondarySortTerm4;
         }
 
         // The id is the row to update, the datalabels are the labels of each control to updata, 

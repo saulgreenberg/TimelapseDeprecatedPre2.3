@@ -153,12 +153,12 @@ namespace Timelapse.Util
         /// </summary>
         public static bool IsPathLengthTooLong(string str)
         {
-            return (str.Length > Constant.File.MaxPathLength);
+            return str.Length > Constant.File.MaxPathLength;
         }
 
         public static bool IsBackupPathLengthTooLong(string str)
         {
-            return (str.Length + Constant.File.MaxAdditionalLengthOfBackupFiles > Constant.File.MaxPathLength);
+            return str.Length + Constant.File.MaxAdditionalLengthOfBackupFiles > Constant.File.MaxPathLength;
         }
 
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
@@ -173,7 +173,6 @@ namespace Timelapse.Util
             }
             dragEvent.Handled = true;
         }
-
 
         public static void ShowExceptionReportingDialog(string programName, UnhandledExceptionEventArgs e, Window owner)
         {

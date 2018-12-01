@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Timelapse.Util;
-using Timelapse.Dialog;
 
 namespace Timelapse.Database
 {
@@ -71,7 +69,7 @@ namespace Timelapse.Database
             {
                 File.Copy(sourceFilePath, destinationFilePath, true);
             }
-            catch // (Exception e)
+            catch 
             {
                 // Old code: We just don't create the backup now. While we previously threw an exception, we now test and warn the user earlier on in the code that a backup can't be made 
                 // System.Diagnostics.Debug.Print("Did not back up" + destinationFilePath);
