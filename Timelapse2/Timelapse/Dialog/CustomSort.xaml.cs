@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
@@ -10,10 +11,13 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class CustomSort : Window
     {
-        private const string FileRelativePathDisplayName = "File name (including relative path)";
         private const string EmptyDisplay = "-- None --";
-
+        private List<SortTerm> SortTermList;
+        private string FileLabel = String.Empty;
+        private string DateLabel = String.Empty;
         private FileDatabase database;
+
+        public string SortTerms { get; set; }
 
         public CustomSort(FileDatabase database)
         {
@@ -28,55 +32,43 @@ namespace Timelapse.Dialog
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
-            // Create the sort term combo box entries
-            // Note that we use the custom selection for convenience, as it gets the fields we need. 
-            // Note that it also skips hidden fields, and only shows DateTime vs. Date and Time
-            // However, we have to special case File/Relative Path (we do it on relative path), as it is actually two search terms.
-            // We also have to delete one of the DateTimes, as custom selection creates two of them
+            // Get the sort terms. 
+            SortTermList = Database.SortTerms.GetSortTerms(database);
 
-            PopulatePrimaryComboBox();
-            PopulateSecondaryComboBox();
+            // We need the labels of the File and Date datalabels, as we will check to see if they are seleccted in the combo box
+            foreach (SortTerm sortTerm in this.SortTermList)
+            {
+                if (sortTerm.DataLabel == Constant.DatabaseColumn.File)
+                {
+                    FileLabel = sortTerm.Label;
+                }
+                else if (sortTerm.DataLabel == Constant.DatabaseColumn.Date)
+                {
+                    DateLabel = sortTerm.Label;
+                }
+            }
+
+            // Create the combo box entries showing the sort terms
+            // As a side effect, PopulatePrimaryComboBox() invokes PrimaryComboBox_SelectionChanged, which then populates the secondary combo bo
+            PopulatePrimaryComboBox(); 
         }
 
         #region Populate ComboBoxes
         // Populate the two combo boxes  with potential sort terms
         // We use the custom selection to get the field we need, but note that: 
-        // - it skips hidden fields, 
-        // - it only shows DateTime vs. Date and Time
-        // - we have to add Id as it is not included in the custom selection list
-        // - we have to special case the File/RelativePath terms (we do it on relative path), as we want to combine both as a single search term.
-        // - as custom selection generates two DateTimes, we have to delete one of them
+        // - we add a None entry to the secondary combo box, allowing the user to clear the selection
+
         private void PopulatePrimaryComboBox()
         {
             // By default, we select sort by ID unless its over-ridden
-            this.PrimaryComboBox.Items.Add(Constant.DatabaseColumn.ID);
             this.PrimaryComboBox.SelectedIndex = 0;
 
-            bool datetimeAdded = false;
-            foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
+            foreach (SortTerm sortTerm in this.SortTermList)
             {
-                string databaseColumnName = searchTerm.DataLabel;
-                string displayName = (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath) ? FileRelativePathDisplayName : searchTerm.Label;
-
-                // Don't display File and UtcOffset
-                if (databaseColumnName == Constant.DatabaseColumn.File || databaseColumnName == Constant.DatabaseColumn.UtcOffset)
-                {
-                    continue;
-                }
-
-                // Skip one of the DateTime fields as custom selection creates two of them
-                if (databaseColumnName == Constant.DatabaseColumn.DateTime)
-                {
-                    if (datetimeAdded == true)
-                    {
-                        continue;
-                    }
-                    datetimeAdded = true;
-                }
-                this.PrimaryComboBox.Items.Add(displayName);
+                this.PrimaryComboBox.Items.Add(sortTerm.Label);
 
                 // If the current PrimarySort sort term matches the current item, then set it as selected
-                if (database.PrimarySortTerm1 == searchTerm.DataLabel)
+                if (sortTerm.DataLabel == database.ImageSet.GetSortTerm(0) || sortTerm.DataLabel == database.ImageSet.GetSortTerm(1))
                 {
                     this.PrimaryComboBox.SelectedIndex = this.PrimaryComboBox.Items.Count - 1;
                 }
@@ -85,52 +77,23 @@ namespace Timelapse.Dialog
         private void PopulateSecondaryComboBox()
         {
             this.SecondaryComboBox.Items.Clear();
-
-            // By default, we don't sort on a secondary term, unless its over-ridden
+            // Add a 'None' entry, as sorting on a second term is optional
             this.SecondaryComboBox.Items.Add(EmptyDisplay);
             this.SecondaryComboBox.SelectedIndex = 0;
 
-            // Add the Id unless its already selected as the primary sort choice
-            if (Constant.DatabaseColumn.ID != (string)PrimaryComboBox.SelectedItem)
-            { 
-                this.SecondaryComboBox.Items.Add(Constant.DatabaseColumn.ID);
-            }
-
-            bool datetimeAdded = false;
-            foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
+            foreach (SortTerm sortTerm in this.SortTermList)
             {
-                string databaseColumnName = searchTerm.DataLabel;
-                string displayName = (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath) ? FileRelativePathDisplayName : searchTerm.Label;
-
-                // Don't display File and UtcOffset
-                if (databaseColumnName == Constant.DatabaseColumn.File || databaseColumnName == Constant.DatabaseColumn.UtcOffset)
+                // If the current sort term is the one already selected in the primary combo box, skip it
+                // as it doesn't make sense to sort again on the same term
+                if (sortTerm.Label == (string)PrimaryComboBox.SelectedItem)
                 {
                     continue;
                 }
+                this.SecondaryComboBox.Items.Add(sortTerm.Label);
 
-                // If the item is already selected in the primary combo box, we don't display it in the secondary combo box
-                if (displayName == (string)PrimaryComboBox.SelectedItem)
-                {
-                    if ((string)this.SecondaryComboBox.SelectedItem == databaseColumnName)
-                    {
-                        this.SecondaryComboBox.SelectedIndex = 0;
-                    }
-                    continue;
-                }
-
-                // Skip one of the DateTime fields as custom selection creates two of them
-                if (databaseColumnName == Constant.DatabaseColumn.DateTime)
-                {
-                    if (datetimeAdded == true)
-                    {
-                        continue;
-                    }
-                    datetimeAdded = true;
-                }
-                this.SecondaryComboBox.Items.Add(displayName);
-
-                // If the current SecondarySort sort term matches the current item, then set it as selected
-                if (database.SecondarySortTerm1 == searchTerm.DataLabel)
+                // If the current SecondarySort sort term matches the current item, then set it as selected.
+                // Note that we check both terms for it, as File would be the 2nd term vs. the 1st term
+                if (database.ImageSet.GetSortTerm(2) == sortTerm.DataLabel || database.ImageSet.GetSortTerm(3) == sortTerm.DataLabel)
                 {
                     this.SecondaryComboBox.SelectedIndex = this.SecondaryComboBox.Items.Count - 1;
                 }
@@ -150,62 +113,57 @@ namespace Timelapse.Dialog
         {
             string selectedPrimaryItem = (string)this.PrimaryComboBox.SelectedItem;
             string selectedSecondaryItem = (string)this.SecondaryComboBox.SelectedItem;
-            string primaryTerm1 = String.Empty;
-            string primaryTerm2 = String.Empty;
-            string secondaryTerm1 = String.Empty;
-            string secondaryTerm2 = String.Empty;
+            string term0 = String.Empty;
+            string term1 = String.Empty;
+            string term2 = String.Empty;
+            string term3 = String.Empty;
 
-            if (selectedPrimaryItem == Constant.DatabaseColumn.ID)
+            foreach (SortTerm sortTerm in this.SortTermList)
             {
-                primaryTerm1 = Constant.DatabaseColumn.ID;
-            }
-            else
-            {
-                foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
+                if (selectedPrimaryItem == this.FileLabel)
                 {
-                    if (selectedPrimaryItem == searchTerm.Label)
-                    {
-                        primaryTerm1 = searchTerm.DataLabel;
-                        break;
-                    }
-                    else if (selectedPrimaryItem == FileRelativePathDisplayName)
-                    {
-                        primaryTerm1 = Constant.DatabaseColumn.RelativePath;
-                        primaryTerm2 = Constant.DatabaseColumn.File;
-                        break;
-                    }
+                    term0 = Constant.DatabaseColumn.RelativePath;
+                    term1 = Constant.DatabaseColumn.File;
+                }
+                else if (selectedPrimaryItem == this.DateLabel)
+                {
+                    term0 = Constant.DatabaseColumn.Date;
+                    term1 = Constant.DatabaseColumn.Time;
+                }
+                else if (selectedPrimaryItem == sortTerm.Label)
+                {
+                    term0 = sortTerm.DataLabel;
+                    term1 = String.Empty;
+                    break;
                 }
             }
 
             if (selectedSecondaryItem != EmptyDisplay)
             {
-                if (selectedSecondaryItem == Constant.DatabaseColumn.ID)
+                foreach (SortTerm sortTerm in this.SortTermList)
                 {
-                    secondaryTerm1 = Constant.DatabaseColumn.ID;
-                }
-                else
-                {
-                    foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
+                    if (selectedSecondaryItem == FileLabel)
                     {
-                        if (selectedSecondaryItem == searchTerm.Label)
-                        {
-                            secondaryTerm1 = searchTerm.DataLabel;
-                            break;
-                        }
-                        else if (selectedSecondaryItem == FileRelativePathDisplayName)
-                        {
-                            secondaryTerm1 = Constant.DatabaseColumn.RelativePath;
-                            secondaryTerm2 = Constant.DatabaseColumn.File;
-                            break;
-                        }
+                        term2 = Constant.DatabaseColumn.RelativePath;
+                        term3 = Constant.DatabaseColumn.File;
+                        break;
+                    }
+                    else if (selectedSecondaryItem == DateLabel)
+                    {
+                        term2 = Constant.DatabaseColumn.Date;
+                        term3 = Constant.DatabaseColumn.Time;
+                        break;
+                    }
+                    else if (selectedSecondaryItem == sortTerm.Label)
+                    {
+                        term2 = sortTerm.DataLabel;
+                        term3 = String.Empty;
+                        break;
                     }
                 }
             }
-            this.database.PrimarySortTerm1 = primaryTerm1;
-            this.database.PrimarySortTerm2 = primaryTerm2;
-            this.database.SecondarySortTerm1 = secondaryTerm1;
-            this.database.SecondarySortTerm2 = secondaryTerm2;
-            // System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", primaryTerm1, primaryTerm2, secondaryTerm1, secondaryTerm2));
+            // Create the sort term list from the individual terms
+            this.SortTerms = String.Join(",", term0, term1, term2, term3);
             this.DialogResult = true;
         }
 

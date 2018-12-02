@@ -46,12 +46,6 @@ namespace Timelapse.Database
 
         // flags
         public bool OrderFilesByDateTime { get; set; }
-
-        public string PrimarySortTerm1 { get; set; }
-        public string PrimarySortTerm2 { get; set; }
-        public string SecondarySortTerm1 { get; set; }
-        public string SecondarySortTerm2 { get; set; }
-
         #endregion
 
         private FileDatabase(string filePath)
@@ -310,14 +304,14 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
-            // SAULXXX To test... We may be able to add a new column which is still backwards compatable with older Timelapse versions as they don't try to read this column. To test...
-            // columnDefinitions.Add(new ColumnDefinition("Foobar", Constant.Sqlite.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
 
-            // SAULXXX To test... We can create a new table to store additional information about the image set, which will make it backwards compatable with older Timelapse versions as they don't try to read this table.
-            // this.ExecuteNonQuery( "CREATE TABLE Junk ( Id INTEGER PRIMARY KEY AUTOINCREMENT, Key1 TEXT, DefaultValue 'SomeText' )" ) ;
-
             // Populate the data for the image set with defaults
+            // VersionCompatabily
+            Version timelapseCurrentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.DatabaseColumn.Log, Constant.DatabaseValues.ImageSetDefaultLog),
@@ -326,6 +320,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
+                new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortCriteria)
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
@@ -543,6 +539,33 @@ namespace Timelapse.Database
                 // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
+            // Make sure that the column containing the VersionCompatabily exists in the image set table. 
+            // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
+            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            if (!versionCompatabilityColumnExists)
+            {
+                // create the versioncompatability column
+                string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, currentVersionNumberAsString));
+
+                // Update the image set
+                this.GetImageSet();
+                // This still has to be synchronized, which will occur after we prepare all missing columns
+            }
+
+            // Make sure that the column containing the SortCriteria exists in the image set table. 
+            // If not, add it and set it to the default
+            bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SortTerms);
+            if (!sortCriteriaColumnExists)
+            {
+                // create the sortCriteria column
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortCriteria));
+
+                // Update the image set
+                this.GetImageSet();
+                // This still has to be synchronized, which will occur after we prepare all missing columns
+            }
+
             // Timezone column (if missing) needs to be added to the Imageset Table
             bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone);
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
@@ -556,7 +579,7 @@ namespace Timelapse.Database
             }
 
             // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
-            if (!timeZoneColumnExists || (!whiteSpaceColumnExists))
+            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists)))
             {
                 this.SyncImageSetToDatabase();
             }
@@ -727,6 +750,7 @@ namespace Timelapse.Database
         /// </summary>
         public void SelectFiles(FileSelection selection)
         {
+
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(selection);
             if (String.IsNullOrEmpty(where) == false)
@@ -734,29 +758,40 @@ namespace Timelapse.Database
                 query += Constant.Sqlite.Where + where;
             }
 
-            // Sort by primary and secondary sort criteria, if they are specified
-            if (!String.IsNullOrEmpty(this.PrimarySortTerm1))
+            // Sort by primary and secondary sort criteria
+            // However, we may be doing a select before an image set is actually initialized, so only sort
+            // if its not null
+            if (this.ImageSet != null)
             {
-                query += Constant.Sqlite.OrderBy + this.PrimarySortTerm1;
+                string term0 = this.ImageSet.GetSortTerm(0);
+                string term1 = this.ImageSet.GetSortTerm(1);
+                string term2 = this.ImageSet.GetSortTerm(2);
+                string term3 = this.ImageSet.GetSortTerm(3);
 
-                // If there is a secondary term for the primary key, add it here.
-                if (!String.IsNullOrEmpty(PrimarySortTerm2))
+                if (!String.IsNullOrEmpty(term0))
                 {
-                    query += Constant.Sqlite.Comma + this.PrimarySortTerm2;
-                }
+                    query += Constant.Sqlite.OrderBy + term0;
 
-                // Similarly, if there is a secondary sort key, add it here
-                if (!String.IsNullOrEmpty(SecondarySortTerm1))
-                {
-                    query += Constant.Sqlite.Comma + this.SecondarySortTerm1;
+                    // If there is a secondary term for the primary key, add it here.
 
-                    // If there is a secondary term for the secondary key, add it here.
-                    if (!String.IsNullOrEmpty(SecondarySortTerm2))
+                    if (!String.IsNullOrEmpty(term1))
+                    {
+                        query += Constant.Sqlite.Comma + term1;
+                    }
+
+                    // Similarly, if there is a secondary sort key, add it here
+                    if (!String.IsNullOrEmpty(term2))
+                    {
+                        query += Constant.Sqlite.Comma + term2;
+
+                        // If there is a secondary term for the secondary key, add it here.
+                        if (!String.IsNullOrEmpty(term3))
                         {
-                            query += Constant.Sqlite.Comma + this.SecondarySortTerm2;
+                            query += Constant.Sqlite.Comma + term3;
                         }
+                    }
+                    query += Constant.Sqlite.Semicolon;
                 }
-                query += Constant.Sqlite.Semicolon;
             }
 
             DataTable images = this.Database.GetDataTableFromSelect(query);
@@ -1426,15 +1461,6 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DatabaseTable.Markers, marker.GetColumnTuples());
-        }
-        
-        // Convenience routine to set the sort criteria
-        public void SetSortCriteria(string primarySortTerm1, string primarySortTerm2, string secondarySortTerm3, string secondarySortTerm4)
-        {
-            this.PrimarySortTerm1 = primarySortTerm1;
-            this.PrimarySortTerm2 = primarySortTerm2;
-            this.SecondarySortTerm1 = secondarySortTerm3;
-            this.SecondarySortTerm2 = secondarySortTerm4;
         }
 
         // The id is the row to update, the datalabels are the labels of each control to updata, 

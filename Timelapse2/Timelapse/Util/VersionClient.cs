@@ -22,6 +22,8 @@ namespace Timelapse.Util
             this.window = window;
         }
 
+      
+
         // Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
         // timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
         public bool TryGetAndParseVersion(bool showNoUpdatesMessage)
@@ -84,7 +86,7 @@ namespace Timelapse.Util
             }
 
             // get the running version  
-            Version currentVersionNumber = Assembly.GetExecutingAssembly().GetName().Version;
+            Version currentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
 
             // compare the versions  
             if (currentVersionNumber < latestVersionNumber)
@@ -110,6 +112,20 @@ namespace Timelapse.Util
                 messageBox.ShowDialog();
             }
             return true;
+        }
+
+        // Return the current timelapse version number
+        public static Version GetTimelapseCurrentVersionNumber()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Version;
+        }
+
+        // returns true if version1 is greater than version2
+        public static bool IsVersion1GreaterThanVersion2(string versionNumber1, string versionNumber2)
+        {
+            Version version1 = new Version(versionNumber1);
+            Version version2 = new Version(versionNumber2);
+            return version1 > version2;
         }
     }
 }

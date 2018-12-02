@@ -177,12 +177,12 @@
     <Compile Include="Database\ColumnDefinition.cs" />
     <Compile Include="Database\ControlRow.cs" />
     <Compile Include="Database\CustomSelectionOperator.cs" />
+    <Compile Include="Database\SortTerms.cs" />
     <Compile Include="Database\DataTableBackedList.cs" />
     <Compile Include="Database\FileTableChoiceColumn.cs" />
     <Compile Include="Database\FileTableColumn.cs" />
     <Compile Include="Database\DataRowExtensions.cs" />
     <Compile Include="Database\FileTableCounterColumn.cs" />
-    <Compile Include="Database\SortSelection.cs" />
     <Compile Include="Database\TemplateSyncResults.cs" />
     <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
     <Compile Include="Database\FileTableDateTimeColumn.cs" />
