@@ -444,7 +444,6 @@ namespace Timelapse
 
                 // list of most recently image sets opened by Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
-                public const string OrderFilesByDateTime = "OrderFilesByDateTime";
 
                 // bookmark scale and transform coordinates
                 public const string BookmarkScaleX = "BookmarkScaleX";

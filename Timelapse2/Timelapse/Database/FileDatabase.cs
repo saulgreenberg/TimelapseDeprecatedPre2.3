@@ -43,9 +43,6 @@ namespace Timelapse.Database
 
         // contains the markers
         public DataTableBackedList<MarkerRow> Markers { get; private set; }
-
-        // flags
-        public bool OrderFilesByDateTime { get; set; }
         #endregion
 
         private FileDatabase(string filePath)
@@ -56,10 +53,9 @@ namespace Timelapse.Database
             this.FolderPath = Path.GetDirectoryName(filePath);
             this.FileName = Path.GetFileName(filePath);
             this.FileTableColumnsByDataLabel = new Dictionary<string, FileTableColumn>();
-            this.OrderFilesByDateTime = false;
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, bool orderFilesByDate, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -87,7 +83,6 @@ namespace Timelapse.Database
                 fileDatabase.GetMarkers();
             }
             fileDatabase.CustomSelection = new CustomSelection(fileDatabase.Controls, customSelectionTermCombiningOperator);
-            fileDatabase.OrderFilesByDateTime = orderFilesByDate;
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
         }
@@ -1333,9 +1328,8 @@ namespace Timelapse.Database
             }
 
             // when sorted by ID ascending so an inexact binary search works
-            // Sorting by datetime is usually identical to ID sorting in single camera image sets, so ignoring this.OrderFilesByDateTime has no effect in 
-            // simple cases.  In complex, multi-camera image sets it will be wrong but typically still tend to select a plausibly reasonable file rather
-            // than a ridiculous one.  But no datetime seed is available if direct ID lookup fails.  Thw API can be reworked to provide a datetime hint
+            // Sorting by datetime is usually identical to ID sorting in single camera image sets 
+            // But no datetime seed is available if direct ID lookup fails.  Thw API can be reworked to provide a datetime hint
             // if this proves too troublesome.
             int firstIndex = 0;
             int lastIndex = this.CurrentlySelectedFileCount - 1;
