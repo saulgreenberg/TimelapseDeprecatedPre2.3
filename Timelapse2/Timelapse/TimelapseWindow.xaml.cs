@@ -385,7 +385,6 @@ namespace Timelapse
                 }
             }
 
-
             // At this point:
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
             // - we should have a valid template and image database loaded
@@ -3377,7 +3376,6 @@ namespace Timelapse
         #endregion
 
         #region Sort Menu Callbacks
-
         private void Sort_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
@@ -3397,8 +3395,7 @@ namespace Timelapse
             switch (mi.Name)
             {
                 case "MenuItemSortByDateTime":
-                    term0 = Constant.DatabaseColumn.Date;
-                    term1 = Constant.DatabaseColumn.Time;
+                    term0 = Constant.DatabaseColumn.DateTime;
                     break;
                 case "MenuItemSortByFileName":
                     term0 = Constant.DatabaseColumn.RelativePath;
@@ -3449,12 +3446,12 @@ namespace Timelapse
         // Do the sort and show feedback of 
         private void DoSortAnShowSortFeedback (bool updateMenuChecks)
         {
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
             this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
+            
+            // Reselect the images, which re-sorts them to the current sort criteria. 
+            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
             // sets up various status indicators in the UI
             this.ShowSortFeedback(updateMenuChecks);
@@ -3489,7 +3486,7 @@ namespace Timelapse
             this.MenuItemSortCustom.IsChecked = false;
 
             // Determine which selection best fits the sort terms (e.g., a custom selection on just ID will be ID rather than Custom)
-            if (term0 == Constant.DatabaseColumn.Date && term1 == Constant.DatabaseColumn.Time && term2 == String.Empty && term3 == String.Empty)
+            if (term0 == Constant.DatabaseColumn.DateTime && term1 == String.Empty && term2 == String.Empty && term3 == String.Empty)
             {
                 this.MenuItemSortByDateTime.IsChecked = true;
             }

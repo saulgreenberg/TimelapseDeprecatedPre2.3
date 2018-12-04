@@ -77,6 +77,8 @@ namespace Timelapse.Controls
             {
                 case Constant.DatabaseColumn.ID:
                     return "Id (the order files were added to Timelapse)";
+                case Constant.DatabaseColumn.DateTime:
+                    return "Date+Time";
                 default:
                     return sortTerm;
             }

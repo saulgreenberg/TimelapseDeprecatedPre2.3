@@ -42,7 +42,7 @@ namespace Timelapse.Dialog
                 {
                     FileLabel = sortTerm.Label;
                 }
-                else if (sortTerm.DataLabel == Constant.DatabaseColumn.Date)
+                else if (sortTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
                     DateLabel = sortTerm.Label;
                 }
@@ -127,8 +127,7 @@ namespace Timelapse.Dialog
                 }
                 else if (selectedPrimaryItem == this.DateLabel)
                 {
-                    term0 = Constant.DatabaseColumn.Date;
-                    term1 = Constant.DatabaseColumn.Time;
+                    term0 = Constant.DatabaseColumn.DateTime;
                 }
                 else if (selectedPrimaryItem == sortTerm.Label)
                 {
@@ -150,8 +149,8 @@ namespace Timelapse.Dialog
                     }
                     else if (selectedSecondaryItem == DateLabel)
                     {
-                        term2 = Constant.DatabaseColumn.Date;
-                        term3 = Constant.DatabaseColumn.Time;
+                        term2 = Constant.DatabaseColumn.DateTime;
+                        term3 = String.Empty;
                         break;
                     }
                     else if (selectedSecondaryItem == sortTerm.Label)

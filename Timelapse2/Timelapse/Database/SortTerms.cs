@@ -17,25 +17,24 @@ namespace Timelapse.Database
             List <SortTerm> SortTerms = new List<SortTerm>();
 
             // Constraints. 
-            // - Add Id and Date: the SearchTerms list excludes Id, Date, Time and Folder. It does include RelativePath, DateTime, and UTCOffset 
-            // - Exclude RelativePath (only use File): sorts on 'File' will sort on RelativePath and then by File.
-            // - Exclude Time (only use Date): sorts on 'Date' will  will sort  Date and then by Time.
-            // - Exclude DateTime and UTCOffset, as that would involve the UTCOffset complication. While limiting, we suspect that users will not care in practice.
-            // 
-            // Necessary modification:
-            // - Add Id and Date as they are missing
+            // - the SearchTerms list excludes Id, Date, Time and Folder. It also includes two DateTime copies of DateTime
+            // - Add Id 
+            // - Exclude RelativePath (as we only use File): sorts on 'File' will sort on RelativePath and then by File.
+            // - Exclude Date and Time (as we only use DateTime): although the UTC Offset is not calculated in. While limiting, we suspect that users will not care in practice.
+            // - Exclude UTCOffset, as that would involve UTCOffset complication. 
+            // - Remove the 2nd DateTiime
+            // - Add Id as it is missing
+            bool firstDateTimeSeen = false;
             SortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID));
-            SortTerms.Add(new SortTerm(Constant.DatabaseColumn.Date, DateLabel));
 
             foreach (SearchTerm searchTerm in database.CustomSelection.SearchTerms)
             {
                 // Necessary modifications:
-                // - Exclude DateTime, UtcOffset
-                // - Exclude RelativePath
-                // - Exclude Time, Folder (they shouldn't be in the SearchTerm list, but just in case)               
+                // - Exclude UtcOffset, RelativePath
+                // - Exclude Date, Time, Folder (they shouldn't be in the SearchTerm list, but just in case)               
                 if (searchTerm.DataLabel == Constant.DatabaseColumn.Folder ||
                     searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath ||
-                    searchTerm.DataLabel == Constant.DatabaseColumn.DateTime || 
+                    searchTerm.DataLabel == Constant.DatabaseColumn.Date || 
                     searchTerm.DataLabel == Constant.DatabaseColumn.Time ||
                     searchTerm.DataLabel == Constant.DatabaseColumn.UtcOffset)
                 {
@@ -44,6 +43,16 @@ namespace Timelapse.Database
                 if (searchTerm.DataLabel == Constant.DatabaseColumn.File)
                 {
                     SortTerms.Add(new SortTerm(searchTerm.DataLabel, FileLabel));
+                }
+                else if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime)
+                {
+                    // Skip the second DateTime
+                    if (firstDateTimeSeen == true)
+                    {
+                        continue;
+                    }
+                    firstDateTimeSeen = true;
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, DateLabel));
                 }
                 else
                 {
