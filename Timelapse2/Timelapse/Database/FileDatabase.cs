@@ -745,7 +745,7 @@ namespace Timelapse.Database
         /// </summary>
         public void SelectFiles(FileSelection selection)
         {
-
+            // SAULXXX SELECT * FROM DataTable ORDER BY datetime(DateTime, UtcOffset || ' hours' ) ;
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(selection);
             if (String.IsNullOrEmpty(where) == false)
@@ -762,6 +762,24 @@ namespace Timelapse.Database
                 string term1 = this.ImageSet.GetSortTerm(1);
                 string term2 = this.ImageSet.GetSortTerm(2);
                 string term3 = this.ImageSet.GetSortTerm(3);
+
+                // Special case for DateTime sorting.
+                // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
+                // this can result in odd DateTime sorts (assuming intermixed images with similar datetimes but with different UTCOffsets)
+                // where the user is expected sorting by local time. 
+                // To sort by true local time rather then UTC, we need to alter
+                // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
+                // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
+                // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
+                // Given the format of the corrected DateTime
+                if (term0 == Constant.DatabaseColumn.DateTime)
+                {
+                    term0 = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                }
+                else if (term2 == Constant.DatabaseColumn.DateTime)
+                {
+                    term2 = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                }
 
                 if (!String.IsNullOrEmpty(term0))
                 {
