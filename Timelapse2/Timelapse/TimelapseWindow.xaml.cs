@@ -86,10 +86,6 @@ namespace Timelapse
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
             
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
-            // SAULXXX NEED TO CHANGE HOW this.state.OrderFilesByDateTime WORKS
-            // SortSelection selection = this.state.OrderFilesByDateTime ? SortSelection.DateTime : SortSelection.ID;
-            // this.MenuItemSortSetSelection(selection);
-
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
 
             // Populate the most recent image set list
@@ -394,7 +390,7 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.OrderFilesByDateTime, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
             this.CheckAndCorrectRootFolder(fileDatabase);
@@ -413,6 +409,15 @@ namespace Timelapse
             this.Title =  Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) +  ")";
             this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);
             this.MenuItemRecentFileSets_Refresh();
+
+            // Record the version number of the currently executing version of Timelapse only if its greater than the one already stored in the ImageSet Table.
+            // This will indicate the latest timelapse version that is compatable with the database structure. 
+            string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+            if (VersionClient.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.dataHandler.FileDatabase.ImageSet.VersionCompatability))
+            {
+                this.dataHandler.FileDatabase.ImageSet.VersionCompatability = currentVersionNumberAsString;
+                this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+            }
 
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
@@ -867,19 +872,7 @@ namespace Timelapse
         /// </summary>
         private void OnFolderLoadingComplete(bool filesJustAdded)
         {
-            // SAULXXX TEMPORARY UNTIL WE REDO HOW SORTING STATE IS SAVED 
-            // Reset the Sorting criteria
-            SortSelection selection = this.state.OrderFilesByDateTime ? SortSelection.DateTime : SortSelection.ID;
-            if (this.state.OrderFilesByDateTime)
-            {
-                this.dataHandler.FileDatabase.PrimarySortTerm1 = Constant.DatabaseColumn.RelativePath;
-                this.dataHandler.FileDatabase.PrimarySortTerm2 = Constant.DatabaseColumn.File;
-            }
-            else
-            {
-                this.dataHandler.FileDatabase.PrimarySortTerm1 = Constant.DatabaseColumn.ID;
-            }
-            this.ShowSortFeedback(selection);
+            this.ShowSortFeedback(true);
 
             // Show the image, hide the load button, and make the feedback panels visible
             this.ImageSetPane.IsActive = true;
@@ -3388,50 +3381,49 @@ namespace Timelapse
             FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
-        private void MenuItemSortByDateTime_Click(object sender, RoutedEventArgs e)
+        private void MenuItemSort_Click (object sender, RoutedEventArgs e)
         {
-            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            // While this should never happen, don't do anything if we don's have any data
+            if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
-                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.DateTime, String.Empty, String.Empty, String.Empty);
+                return;
             }
 
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-            // sets up various status indicators in the UI
-            this.ShowSortFeedback(SortSelection.DateTime);
-        }
-
-        private void MenuItemSortByFileName_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            MenuItem mi = (MenuItem)sender;
+            SortTerm sortTerm1 = new SortTerm();
+            SortTerm sortTerm2 = new SortTerm();
+            switch (mi.Name)
             {
-                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.RelativePath, Constant.DatabaseColumn.File, String.Empty, String.Empty);
+                case "MenuItemSortByDateTime":
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.Label = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
+                    break;
+                case "MenuItemSortByFileName":
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.File;
+                    sortTerm1.Label = Constant.DatabaseColumn.File;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.File;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
+                    break;
+                case "MenuItemSortById":
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.ID;
+                    sortTerm1.Label = Constant.DatabaseColumn.ID;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.ID;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
+                    break;
+                default:
+                    break;
             }
+            // Record the sort terms in the image set
+            this.dataHandler.FileDatabase.ImageSet.SetSortTerm(sortTerm1, sortTerm2);
 
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-            // sets up various status indicators in the UI
-            this.ShowSortFeedback(SortSelection.FileName);
-        }
-
-        private void MenuItemSortByOrderFilesWereAdded_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
-            {
-                this.dataHandler.FileDatabase.SetSortCriteria(Constant.DatabaseColumn.ID, String.Empty, String.Empty, String.Empty);
-            }
-
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-            // sets up various status indicators in the UI
-            this.ShowSortFeedback(SortSelection.ID);
+            // Do the sort, showing feedback in the status bar and by checking the appropriate menu item
+            this.DoSortAnShowSortFeedback(true);
         }
 
         private void MenuItemSortCustom_Click(object sender, RoutedEventArgs e)
-        {  
+        {
             // Raise a dialog where user can specify the sorting criteria
             Dialog.CustomSort customSort = new Dialog.CustomSort(this.dataHandler.FileDatabase)
             {
@@ -3439,11 +3431,17 @@ namespace Timelapse
             };
             if (customSort.ShowDialog() == true)
             {
-                // Reselect the images, which re-sorts them to the current sort criteria. 
-                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-                // sets up various status indicators in the UI
-                this.ShowSortFeedback(SortSelection.Custom);
+                if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+                {
+                    //this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
+                    this.dataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
+                }
+                this.DoSortAnShowSortFeedback(true);
+            }
+            else
+            {
+                // Ensure the checkmark appears next to the correct menu item 
+                ShowSortFeedback(true); 
             }
         }
 
@@ -3451,33 +3449,66 @@ namespace Timelapse
         // but then changed some data values where items are no longer in the correct sort order.
         private void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
         {
+            this.DoSortAnShowSortFeedback(false);
+        }
+
+        // Do the sort and show feedback of 
+        private void DoSortAnShowSortFeedback (bool updateMenuChecks)
+        {
+            // Sync the current sort settings into the actual database. While this is done
+            // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
+            this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
+            
             // Reselect the images, which re-sorts them to the current sort criteria. 
             this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
             // sets up various status indicators in the UI
-            this.ShowSortFeedback(SortSelection.Ignore);
+            this.ShowSortFeedback(updateMenuChecks);
         }
 
         // Show feedback in the UI based on the sort selection 
         // Also, record the sort state
-        private void ShowSortFeedback (SortSelection selection)
+        private void ShowSortFeedback(bool updateMenuChecks)
         {
-            // SAULXXX Record the state Until we figure out how to save the sorting state correctly
-            this.state.OrderFilesByDateTime = (this.dataHandler.FileDatabase.PrimarySortTerm1 == Constant.DatabaseColumn.DateTime && String.IsNullOrEmpty(this.dataHandler.FileDatabase.SecondarySortTerm1)) ? true : false;
-    
-            // Provide feedback in the status bar of what sort terms are being used
-            this.StatusBar.SetSort(this.dataHandler.FileDatabase.PrimarySortTerm1, this.dataHandler.FileDatabase.PrimarySortTerm2, this.dataHandler.FileDatabase.SecondarySortTerm1, this.dataHandler.FileDatabase.SecondarySortTerm2);
+            // Get the two sort terms
+            SortTerm[] sortTerm = new SortTerm[2];
+            string [] statusbar_feedback = new string[]{ String.Empty, String.Empty};
 
-            // Reset menu item checkboxes on the current sort settings
-            // If its ignore, it means we don't reset the selection i.e., we keep the old one.
-            if (selection == SortSelection.Ignore)
+            for (int i=0; i<=1;  i++)
+            {
+                sortTerm[i] = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(i);
+            }
+
+            // If instructed to do so, Reset menu item checkboxes based on the current sort terms.
+            if (updateMenuChecks == false)
             {
                 return;
             }
-            this.MenuItemSortByDateTime.IsChecked = (selection == SortSelection.DateTime);
-            this.MenuItemSortByFileName.IsChecked = (selection == SortSelection.FileName);
-            this.MenuItemSortByOrderFilesWereAdded.IsChecked = (selection == SortSelection.ID);
-            this.MenuItemSortCustom.IsChecked = (selection == SortSelection.Custom);
+            
+            this.MenuItemSortByDateTime.IsChecked = false;
+            this.MenuItemSortByFileName.IsChecked = false;
+            this.MenuItemSortById.IsChecked = false;
+            this.MenuItemSortCustom.IsChecked = false;
+
+            // Determine which selection best fits the sort terms (e.g., a custom selection on just ID will be ID rather than Custom)
+            if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            {
+                this.MenuItemSortByDateTime.IsChecked = true;
+            }
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            {
+                this.MenuItemSortById.IsChecked = true;
+            }
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.File && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            {
+                this.MenuItemSortByFileName.IsChecked = true;
+            }
+            else
+            {
+                this.MenuItemSortCustom.IsChecked = true;
+            }
+            // Provide feedback in the status bar of what sort terms are being used
+            this.StatusBar.SetSort(sortTerm[0].DataLabel, sortTerm[0].IsAscending == Constant.BooleanValue.True, sortTerm[1].DataLabel, sortTerm[1].IsAscending == Constant.BooleanValue.True);
         }
         #endregion
 

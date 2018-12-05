@@ -199,6 +199,7 @@ namespace Timelapse
             public const int RelativePathPosition = 2;
             public const int RowsPerInsert = 100;
             public const int UtcOffsetPosition = 5;
+            public const string DefaultSortCriteria = Constant.DatabaseColumn.ID;
 
             // Special characters
             public const char MarkerBar = '|';              // Separator used to separate marker points in the database i.e. "2.3,5.6 | 7.1, 3.3"
@@ -224,10 +225,11 @@ namespace Timelapse
             public const string Log = "Log";                    // String holding a user-created text log
             public const string MagnifyingGlass = "Magnifier";        // string holding the true/false state of the magnifying glass (on or off)
             public const string MostRecentFileID = "Row";       // ID of the last image displayed. It used to hold the current row #, but we repurposed ROW to  hold the MostRecentFileID as it simplifies backwards compatability
-            // public const string Row = "Row";                    // string holding the currently selected row
             public const string Selection = "Filter";           // string holding the currently selected selection. For backwards compatability, leave the actual column name as Filter.
             public const string TimeZone = "TimeZone";
-            public const string WhiteSpaceTrimmed = "WhiteSpaceTrimmed";          // string holding the true/false state of whether the white space has been trimmed from the data.
+            public const string WhiteSpaceTrimmed = "WhiteSpaceTrimmed";        // string holding the true/false state of whether the white space has been trimmed from the data.
+            public const string VersionCompatabily = "VersionCompatabily";      // The latest version of Timelapse that opened this database. Useful for cases when we want to check for backwards compatability
+            public const string SortTerms = "SortCriteria";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms, and the Secondary 1st and 2nd sort terms
 
             // other columns found in Old XML files
             public const string Data = "Data";                 // the data describing the attributes of that control
@@ -442,7 +444,6 @@ namespace Timelapse
 
                 // list of most recently image sets opened by Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
-                public const string OrderFilesByDateTime = "OrderFilesByDateTime";
 
                 // bookmark scale and transform coordinates
                 public const string BookmarkScaleX = "BookmarkScaleX";
@@ -488,6 +489,8 @@ namespace Timelapse
             public const string AlterTable = " ALTER TABLE ";
             public const string And = " AND ";
             public const string As = " AS ";
+            public const string Ascending = " ASC ";
+            public const string Descending = " DESC ";
             public const string Begin = " BEGIN ";
             public const string CreateTable = "CREATE TABLE ";
             public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";

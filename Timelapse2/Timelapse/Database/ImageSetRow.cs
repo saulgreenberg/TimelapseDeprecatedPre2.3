@@ -4,8 +4,11 @@ using System.Data;
 
 namespace Timelapse.Database
 {
+
     public class ImageSetRow : DataRowBackedObject
     {
+        private const int MaxSortTerms = 8;           
+
         public ImageSetRow(DataRow row)
             : base(row)
         {
@@ -47,6 +50,24 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.WhiteSpaceTrimmed, value); }
         }
 
+        public string VersionCompatability
+        {
+            get { return this.Row.GetStringField(Constant.DatabaseColumn.VersionCompatabily); }
+            set { this.Row.SetField(Constant.DatabaseColumn.VersionCompatabily, value); }
+        }
+
+        // The SortTerms comprises a comma-separated list of terms e.g., "RelativePath, File,,"
+        // Helper functions unpack and pack those terms (see below)
+        // The first two and second two terms act as Sorting pairs. For most cases, the first term in a pair
+        // is the sorting term, where the second term is empty. 
+        // However, some sorting criteria are compound. For example, if the user specifies 'Date' the pair 
+        // will actually comprise Date,Time. Similarly File is 'RelativePath,File'.
+        public string SortTerms
+        {
+            get { return this.Row.GetStringField(Constant.DatabaseColumn.SortTerms); }
+            set { this.Row.SetField(Constant.DatabaseColumn.SortTerms, value); }
+        }
+       
         public override ColumnTuplesWithWhere GetColumnTuples()
         {
             List<ColumnTuple> columnTuples = new List<ColumnTuple>
@@ -56,7 +77,9 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, this.MagnifyingGlassEnabled),
                 new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, this.MostRecentFileID),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, this.TimeZone),
-                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed)
+                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed),
+                new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, this.VersionCompatability),
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, this.SortTerms)
             };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
@@ -65,5 +88,39 @@ namespace Timelapse.Database
         {
             return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
         }
+
+        #region SortTerms helper functions: setting and getting individual terms in the sort term list
+        // The sort term is stored in the database as a string (as a comma-separated list) 
+        //  thathas 8 slots. The primary and secondary sort terms
+        // are defined in positions 0-3 and 4-7 respectively as:
+        //     DataLabel, Label, ControlType, IsAscending, DataLabel, Label, ControlType, IsAscending,
+
+        // Return the first or second sort term structure defining the 1st or 2nd sort term
+        public SortTerm GetSortTerm(int whichOne)
+        {
+            int index = (whichOne == 0) ? 0 : 4;
+            return new SortTerm(
+                GetSortTermAtPosition(index),
+                GetSortTermAtPosition(index + 1), 
+                GetSortTermAtPosition(index + 2), 
+                GetSortTermAtPosition(index + 3));
+        }
+
+        public void SetSortTerm(SortTerm sortTerm1, SortTerm sortTerm2)
+        {
+            this.SortTerms = String.Join(",", sortTerm1.DataLabel, sortTerm1.Label, sortTerm1.ControlType, sortTerm1.IsAscending, sortTerm2.DataLabel, sortTerm2.Label, sortTerm2.ControlType, sortTerm2.IsAscending);
+        }
+
+        // Return a particular  term at the index position in the sort term
+        private string GetSortTermAtPosition(int termIndex)
+        {
+            string[] sortcriteria = SortTerms.Split(',');
+            if (termIndex < sortcriteria.Length)
+            {
+                return (sortcriteria[termIndex].Trim());
+            }
+            return (String.Empty);
+        }
+        #endregion
     }
 }

@@ -19,7 +19,6 @@ namespace Timelapse.Util
         public double FilePlayerFastValue { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
         public MostRecentlyUsedCollection<string> MostRecentImageSets { get; private set; }
-        public bool OrderFilesByDateTime { get; set; }
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
         public bool SuppressCsvImportPrompt { get; set; }
@@ -69,7 +68,6 @@ namespace Timelapse.Util
                 this.FilePlayerFastValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.ReadMostRecentlyUsedList(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets);
-                this.OrderFilesByDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.OrderFilesByDateTime, false);
                 this.SuppressAmbiguousDatesDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, false);
                 this.SuppressCsvImportPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, false);
@@ -141,7 +139,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, this.Throttles.DesiredImageRendersPerSecond);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets, this.MostRecentImageSets);
-                registryKey.Write(Constant.Registry.TimelapseKey.OrderFilesByDateTime, this.OrderFilesByDateTime);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, this.SuppressAmbiguousDatesDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, this.SuppressCsvExportDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, this.SuppressCsvImportPrompt);
