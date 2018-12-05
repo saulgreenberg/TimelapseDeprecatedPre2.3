@@ -745,7 +745,6 @@ namespace Timelapse.Database
         /// </summary>
         public void SelectFiles(FileSelection selection)
         {
-            // SAULXXX SELECT * FROM DataTable ORDER BY datetime(DateTime, UtcOffset || ' hours' ) ;
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(selection);
             if (String.IsNullOrEmpty(where) == false)
@@ -753,15 +752,11 @@ namespace Timelapse.Database
                 query += Constant.Sqlite.Where + where;
             }
 
-            // Sort by primary and secondary sort criteria
-            // However, we may be doing a select before an image set is actually initialized, so only sort
-            // if its not null
+            // Sort by primary and secondary sort criteria if an image set is actually initialized (i.e., not null)
             if (this.ImageSet != null)
             {
-                string term0 = this.ImageSet.GetSortTerm(0);
-                string term1 = this.ImageSet.GetSortTerm(1);
-                string term2 = this.ImageSet.GetSortTerm(2);
-                string term3 = this.ImageSet.GetSortTerm(3);
+                SortTerm[] sortTerm = new SortTerm[2];
+                string[] term = new string[] { String.Empty, String.Empty}; 
 
                 // Special case for DateTime sorting.
                 // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
@@ -772,41 +767,55 @@ namespace Timelapse.Database
                 // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
                 // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
                 // Given the format of the corrected DateTime
-                if (term0 == Constant.DatabaseColumn.DateTime)
+                for (int i = 0; i<=1; i++)
                 {
-                    term0 = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
-                }
-                else if (term2 == Constant.DatabaseColumn.DateTime)
-                {
-                    term2 = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
-                }
+                    sortTerm[i] = this.ImageSet.GetSortTerm(i);
 
-                if (!String.IsNullOrEmpty(term0))
-                {
-                    query += Constant.Sqlite.OrderBy + term0;
-
-                    // If there is a secondary term for the primary key, add it here.
-
-                    if (!String.IsNullOrEmpty(term1))
+                    // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
+                    if (sortTerm[i].DataLabel == String.Empty)
                     {
-                        query += Constant.Sqlite.Comma + term1;
+                        break;
                     }
-
-                    // Similarly, if there is a secondary sort key, add it here
-                    if (!String.IsNullOrEmpty(term2))
+                    // First Check for special cases, where we want to modify how sorting is done
+                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
                     {
-                        query += Constant.Sqlite.Comma + term2;
+                        // DateTime:the modified query adds the UTC Offset to it
+                        term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                    }
+                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
+                    {
+                        // File: the modified term creates a file path by concatonating relative path and file
+                        term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Constant.Sqlite.Comma, Constant.DatabaseColumn.File);
+                    }
+                    else if (sortTerm[i].ControlType == Constant.Control.Counter)
+                    {
+                        // Its a counter type: modify sorting of blanks by transforming it into a '-1' and then by casting it as an integer
+                        term[i] = String.Format("Cast(COALESCE(NULLIF({0}, ''), '-1') as Integer)", sortTerm[i].DataLabel);
+                    }
+                    else
+                    {
+                        // Default: just sort by the data label
+                        term[i] = sortTerm[i].DataLabel;
+                    }
+                    // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
+                    if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
+                    {
+                        term[i] += Constant.Sqlite.Descending;
+                    }
+                }
 
-                        // If there is a secondary term for the secondary key, add it here.
-                        if (!String.IsNullOrEmpty(term3))
-                        {
-                            query += Constant.Sqlite.Comma + term3;
-                        }
+                if (!String.IsNullOrEmpty(term[0]))
+                {
+                    query += Constant.Sqlite.OrderBy + term[0];
+
+                    // If there is a second sort key, add it here
+                    if (!String.IsNullOrEmpty(term[1]))
+                    {
+                        query += Constant.Sqlite.Comma + term[1];
                     }
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.Files = new FileTable(images);
             this.Files.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);

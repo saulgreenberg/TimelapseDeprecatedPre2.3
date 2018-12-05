@@ -3390,25 +3390,33 @@ namespace Timelapse
             }
 
             MenuItem mi = (MenuItem)sender;
-            string term0 = String.Empty;
-            string term1 = String.Empty;
+            SortTerm sortTerm1 = new SortTerm();
+            SortTerm sortTerm2 = new SortTerm();
             switch (mi.Name)
             {
                 case "MenuItemSortByDateTime":
-                    term0 = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.Label = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;
                 case "MenuItemSortByFileName":
-                    term0 = Constant.DatabaseColumn.RelativePath;
-                    term1 = Constant.DatabaseColumn.File;
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.File;
+                    sortTerm1.Label = Constant.DatabaseColumn.File;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.File;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;
                 case "MenuItemSortById":
-                    term0 = Constant.DatabaseColumn.ID;
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.ID;
+                    sortTerm1.Label = Constant.DatabaseColumn.ID;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.ID;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;
                 default:
                     break;
             }
             // Record the sort terms in the image set
-            this.dataHandler.FileDatabase.ImageSet.SetSortTerm(term0, term1, String.Empty, String.Empty);
+            this.dataHandler.FileDatabase.ImageSet.SetSortTerm(sortTerm1, sortTerm2);
 
             // Do the sort, showing feedback in the status bar and by checking the appropriate menu item
             this.DoSortAnShowSortFeedback(true);
@@ -3425,7 +3433,8 @@ namespace Timelapse
             {
                 if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
                 {
-                    this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
+                    //this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
+                    this.dataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
                 }
                 this.DoSortAnShowSortFeedback(true);
             }
@@ -3461,18 +3470,14 @@ namespace Timelapse
         // Also, record the sort state
         private void ShowSortFeedback(bool updateMenuChecks)
         {
-            // The SortTerms comprises a comma-separated list of 4 terms,
-            // where the terms 0/1 and terms 2,3 are pairs.
-            // In most cases, the first term in a pair is the sorting term, and the second term is empty. 
-            // However, some sorting criteria are compound. For example, if the user specified 'Date',
-            // the pair will actually comprise Date,Time. Similarly File is 'RelativePath,File'.
-            string term0 = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(0);
-            string term1 = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(1);
-            string term2 = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(2);
-            string term3 = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(3);
+            // Get the two sort terms
+            SortTerm[] sortTerm = new SortTerm[2];
+            string [] statusbar_feedback = new string[]{ String.Empty, String.Empty};
 
-            // Provide feedback in the status bar of what sort terms are being used
-            this.StatusBar.SetSort(term0, term1, term2, term3);
+            for (int i=0; i<=1;  i++)
+            {
+                sortTerm[i] = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(i);
+            }
 
             // If instructed to do so, Reset menu item checkboxes based on the current sort terms.
             if (updateMenuChecks == false)
@@ -3486,15 +3491,15 @@ namespace Timelapse
             this.MenuItemSortCustom.IsChecked = false;
 
             // Determine which selection best fits the sort terms (e.g., a custom selection on just ID will be ID rather than Custom)
-            if (term0 == Constant.DatabaseColumn.DateTime && term1 == String.Empty && term2 == String.Empty && term3 == String.Empty)
+            if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
             {
                 this.MenuItemSortByDateTime.IsChecked = true;
             }
-            else if (term0 == Constant.DatabaseColumn.ID && term1 == String.Empty && term2 == String.Empty && term3 == String.Empty)
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
             {
                 this.MenuItemSortById.IsChecked = true;
             }
-            else if (term0 == Constant.DatabaseColumn.RelativePath && term1 == Constant.DatabaseColumn.File && term2 == String.Empty && term3 == String.Empty)
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.File && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
             {
                 this.MenuItemSortByFileName.IsChecked = true;
             }
@@ -3502,6 +3507,8 @@ namespace Timelapse
             {
                 this.MenuItemSortCustom.IsChecked = true;
             }
+            // Provide feedback in the status bar of what sort terms are being used
+            this.StatusBar.SetSort(sortTerm[0].DataLabel, sortTerm[0].IsAscending == Constant.BooleanValue.True, sortTerm[1].DataLabel, sortTerm[1].IsAscending == Constant.BooleanValue.True);
         }
         #endregion
 

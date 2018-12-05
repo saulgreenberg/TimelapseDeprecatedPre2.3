@@ -9,6 +9,7 @@ namespace Timelapse.Database
         /// Create a CustomSort, where we build a list of potential sort terms based on the controls found in the sorted template table
         /// We do this by using and modifying the values returned by CustomSelect. 
         /// While a bit of a hack and less efficient, its easier than re-implementing what we can already get from customSelect.
+        /// Note that each sort term is a triplet indicating the Data Label, Label, and a string flag on whether the sort should be ascending (default) or descending.
         /// </summary>
         static public List<SortTerm> GetSortTerms(FileDatabase database)
         {
@@ -25,7 +26,7 @@ namespace Timelapse.Database
             // - Remove the 2nd DateTiime
             // - Add Id as it is missing
             bool firstDateTimeSeen = false;
-            SortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID));
+            SortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID, Constant.Sqlite.Integer, Constant.BooleanValue.True));
 
             foreach (SearchTerm searchTerm in database.CustomSelection.SearchTerms)
             {
@@ -42,7 +43,7 @@ namespace Timelapse.Database
                 }
                 if (searchTerm.DataLabel == Constant.DatabaseColumn.File)
                 {
-                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, FileLabel));
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, FileLabel, searchTerm.ControlType, Constant.BooleanValue.True));
                 }
                 else if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
@@ -52,32 +53,41 @@ namespace Timelapse.Database
                         continue;
                     }
                     firstDateTimeSeen = true;
-                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, DateLabel));
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, DateLabel, searchTerm.ControlType, Constant.BooleanValue.True));
                 }
                 else
                 {
-                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, searchTerm.Label));
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, searchTerm.Label, searchTerm.ControlType, Constant.BooleanValue.True));
                 }
             }
             return SortTerms;
         }
     }
-
-    // A SortTerm comprises a DataLabel and a Label
+    /// <summary>
+    /// A SortTerm is a tuple of 4 that indicates various aspects that may be considered when sorting 
+    /// </summary>
     public class SortTerm
     {
         public string DataLabel { get; set; }
         public string Label { get; set; }
+        public string ControlType { get; set; }
+
+        // IsAscending  indicating(via Constant.BooleanValue.True or False) if the sort should be ascending or descending
+        public string IsAscending { get; set; }
 
         public SortTerm()
         {
             this.DataLabel = String.Empty;
             this.Label = String.Empty;
+            this.ControlType = String.Empty;
+            this.IsAscending = Constant.BooleanValue.True;
         }
-        public SortTerm(string dataLabel, string label)
+        public SortTerm(string dataLabel, string label, string controlType, string isAscending)
         {
             this.DataLabel = dataLabel;
             this.Label = label;
+            this.ControlType = controlType;
+            this.IsAscending = isAscending;
         }
     }
 }

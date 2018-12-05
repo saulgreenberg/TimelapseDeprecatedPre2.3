@@ -489,6 +489,8 @@ namespace Timelapse
             public const string AlterTable = " ALTER TABLE ";
             public const string And = " AND ";
             public const string As = " AS ";
+            public const string Ascending = " ASC ";
+            public const string Descending = " DESC ";
             public const string Begin = " BEGIN ";
             public const string CreateTable = "CREATE TABLE ";
             public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";

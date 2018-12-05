@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
 namespace Timelapse.Controls
@@ -37,50 +38,47 @@ namespace Timelapse.Controls
 
         // Display a message in the sort portion of the status bar
         // Note that we massage the message in a few cases (e.g., for File and for Id types
-        public static void SetSort(this StatusBar statusBar, string primarySortTerm1, string primarySortTerm2, string secondarySortTerm1, string secondarySortTerm2)
+        public static void SetSort(this StatusBar statusBar, string primarySortTerm, bool primarySortTermIsAscending, string secondarySortTerm, bool secondarySortTermIsAscending)
         {
             StatusBarItem item = (StatusBarItem)statusBar.Items[9];
-            string message = String.Empty;
+            TextBlock message = new TextBlock();
+            message.Text = String.Empty;
 
             // If there is no primary sort string, then we don't know what the sorting criteria is.
             // Note that this should not happen
-            if (String.IsNullOrEmpty(primarySortTerm1))
+            if (String.IsNullOrEmpty(primarySortTerm))
             {
                 item.Content = "Unknown";
                 return;
             }
 
             // Add the primary first key
-            message += SetSortAlterTextIfNeeded(primarySortTerm1);
-
-            // Add the primary second key if it exists
-            if (!String.IsNullOrEmpty(primarySortTerm2))
-            {
-                message += "+" + SetSortAlterTextIfNeeded(primarySortTerm2);
-            }
+            message.Text += SetSortAlterTextAsNeeded(primarySortTerm, secondarySortTermIsAscending);
 
             // Add the secomdary first key if it exists
-            if (!String.IsNullOrEmpty(secondarySortTerm1))
+            if (!String.IsNullOrEmpty(secondarySortTerm))
             {
-                message += " then by " + SetSortAlterTextIfNeeded(secondarySortTerm1);
-            }
-            if (!String.IsNullOrEmpty(secondarySortTerm2))
-            {
-                message += "+" + SetSortAlterTextIfNeeded(secondarySortTerm2);
+                message.Text += " then by ";
+                message.Text += SetSortAlterTextAsNeeded(secondarySortTerm, secondarySortTermIsAscending);
             }
             item.Content = message;
         }
 
-        private static string SetSortAlterTextIfNeeded(string sortTerm)
+        private static string SetSortAlterTextAsNeeded(string sortTerm, bool isAscending)
         {
+            // Add an up or down arrow to indicate sorting direction
+            string specialCharacter = (isAscending == true) ? "\u2191" : "\u2193";
+
             switch (sortTerm)
             {
                 case Constant.DatabaseColumn.ID:
-                    return "Id (the order files were added to Timelapse)";
+                    return String.Format ("Id{0} (the order files were added to Timelapse)", specialCharacter);
                 case Constant.DatabaseColumn.DateTime:
-                    return "Date+Time";
+                    return String.Format("Date/Time{0}", specialCharacter);
+                case Constant.DatabaseColumn.File:
+                    return String.Format("File path{0}", specialCharacter);
                 default:
-                    return sortTerm;
+                    return String.Format("{0}{1}", sortTerm, specialCharacter);
             }
         }
 

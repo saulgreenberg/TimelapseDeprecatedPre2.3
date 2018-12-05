@@ -7,7 +7,7 @@ namespace Timelapse.Database
 
     public class ImageSetRow : DataRowBackedObject
     {
-        private const int MaxSortTerms = 4;                              // The max number of sort terms allowed in the SortTerms list
+        private const int MaxSortTerms = 8;           
 
         public ImageSetRow(DataRow row)
             : base(row)
@@ -90,38 +90,36 @@ namespace Timelapse.Database
         }
 
         #region SortTerms helper functions: setting and getting individual terms in the sort term list
-        // Return a sort term at the index position in the 0-based list of sort terms
-        public string GetSortTerm(int indexInSortTerms)
+        // The sort term is stored in the database as a string (as a comma-separated list) 
+        //  thathas 8 slots. The primary and secondary sort terms
+        // are defined in positions 0-3 and 4-7 respectively as:
+        //     DataLabel, Label, ControlType, IsAscending, DataLabel, Label, ControlType, IsAscending,
+
+        // Return the first or second sort term structure defining the 1st or 2nd sort term
+        public SortTerm GetSortTerm(int whichOne)
         {
-            string[] sortcriteria = SortTerms.Split(',');
-            if (indexInSortTerms < sortcriteria.Length)
-            {
-                return (sortcriteria[indexInSortTerms].Trim());
-            }
-            return (String.Empty);
+            int index = (whichOne == 0) ? 0 : 4;
+            return new SortTerm(
+                GetSortTermAtPosition(index),
+                GetSortTermAtPosition(index + 1), 
+                GetSortTermAtPosition(index + 2), 
+                GetSortTermAtPosition(index + 3));
         }
 
-        // Set a sort term at the index position in the 0-based list of sort terms
-        public void SetSortTerm(string sortTerm, int indexInSortTerms)
+        public void SetSortTerm(SortTerm sortTerm1, SortTerm sortTerm2)
         {
-            string[] current_sortterms = SortTerms.Split(',');
-            string[] new_sortterms = new string[MaxSortTerms];
-            for (int i = 0; i < MaxSortTerms; i++)
-            {
-                if (i == indexInSortTerms)
-                {
-                    new_sortterms[i] = sortTerm;
-                }
-                else
-                {
-                    new_sortterms[i] = (indexInSortTerms < SortTerms.Length) ? current_sortterms[i] : String.Empty;
-                }
-            }
-            this.SortTerms = String.Join(",", new_sortterms);
+            this.SortTerms = String.Join(",", sortTerm1.DataLabel, sortTerm1.Label, sortTerm1.ControlType, sortTerm1.IsAscending, sortTerm2.DataLabel, sortTerm2.Label, sortTerm2.ControlType, sortTerm2.IsAscending);
         }
-        public void SetSortTerm(string term1, string term2, string term3, string term4)
+
+        // Return a particular  term at the index position in the sort term
+        private string GetSortTermAtPosition(int termIndex)
         {
-            this.SortTerms = String.Join(",", term1, term2, term3, term4);
+            string[] sortcriteria = SortTerms.Split(',');
+            if (termIndex < sortcriteria.Length)
+            {
+                return (sortcriteria[termIndex].Trim());
+            }
+            return (String.Empty);
         }
         #endregion
     }
