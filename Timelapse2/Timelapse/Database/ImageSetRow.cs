@@ -108,7 +108,7 @@ namespace Timelapse.Database
 
         public void SetSortTerm(SortTerm sortTerm1, SortTerm sortTerm2)
         {
-            this.SortTerms = String.Join(",", sortTerm1.DataLabel, sortTerm1.Label, sortTerm1.ControlType, sortTerm1.IsAscending, sortTerm2.DataLabel, sortTerm2.Label, sortTerm2.ControlType, sortTerm2.IsAscending);
+            this.SortTerms = String.Join(",", sortTerm1.DataLabel, sortTerm1.DisplayLabel, sortTerm1.ControlType, sortTerm1.IsAscending, sortTerm2.DataLabel, sortTerm2.DisplayLabel, sortTerm2.ControlType, sortTerm2.IsAscending);
         }
 
         // Return a particular  term at the index position in the sort term

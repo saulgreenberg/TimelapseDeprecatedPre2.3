@@ -3396,19 +3396,19 @@ namespace Timelapse
             {
                 case "MenuItemSortByDateTime":
                     sortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
-                    sortTerm1.Label = Constant.DatabaseColumn.DateTime;
+                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.DateTime;
                     sortTerm1.ControlType = Constant.DatabaseColumn.DateTime;
                     sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;
                 case "MenuItemSortByFileName":
                     sortTerm1.DataLabel = Constant.DatabaseColumn.File;
-                    sortTerm1.Label = Constant.DatabaseColumn.File;
+                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.File;
                     sortTerm1.ControlType = Constant.DatabaseColumn.File;
                     sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;
                 case "MenuItemSortById":
                     sortTerm1.DataLabel = Constant.DatabaseColumn.ID;
-                    sortTerm1.Label = Constant.DatabaseColumn.ID;
+                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.ID;
                     sortTerm1.ControlType = Constant.DatabaseColumn.ID;
                     sortTerm1.IsAscending = Constant.BooleanValue.True;
                     break;

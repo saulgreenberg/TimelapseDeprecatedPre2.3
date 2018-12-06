@@ -483,7 +483,20 @@ namespace Timelapse
             public const string NotEqual = "\u2260";
         }
 
-        public static class Sqlite
+        public static class SortTermValues
+        {
+            public const string NoneDisplayLabel = "-- None --";
+            public const string DateDisplayLabel = "Date/Time";
+            public const string FileDisplayLabel = "File Path (relative path + file name)";
+
+            public const string DateStatusBarLabel = "Date/Time{0}";
+            public const string FileStatusBarLabel = "File Path{0}";
+            public const string IDStatusBarLabel = "Id{0} (the order files were added to Timelapse)";
+
+            public const string AscendingCharacter = "\u2191";
+            public const string DescendingCharacter = "\u2193";
+        }
+            public static class Sqlite
         {
             public const string AddColumn = " ADD COLUMN ";
             public const string AlterTable = " ALTER TABLE ";

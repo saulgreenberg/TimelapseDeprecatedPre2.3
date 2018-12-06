@@ -67,16 +67,17 @@ namespace Timelapse.Controls
         private static string SetSortAlterTextAsNeeded(string sortTerm, bool isAscending)
         {
             // Add an up or down arrow to indicate sorting direction
-            string specialCharacter = (isAscending == true) ? "\u2191" : "\u2193";
+            string specialCharacter = (isAscending == true) ? Constant.SortTermValues.AscendingCharacter : Constant.SortTermValues.DescendingCharacter;
 
             switch (sortTerm)
             {
+                // Note that the string format Constants include the position to insert the special character.
                 case Constant.DatabaseColumn.ID:
-                    return String.Format ("Id{0} (the order files were added to Timelapse)", specialCharacter);
+                    return String.Format (Constant.SortTermValues.IDStatusBarLabel, specialCharacter);
                 case Constant.DatabaseColumn.DateTime:
-                    return String.Format("Date/Time{0}", specialCharacter);
+                    return String.Format(Constant.SortTermValues.DateStatusBarLabel, specialCharacter);
                 case Constant.DatabaseColumn.File:
-                    return String.Format("File path{0}", specialCharacter);
+                    return String.Format(Constant.SortTermValues.FileStatusBarLabel, specialCharacter);
                 default:
                     return String.Format("{0}{1}", sortTerm, specialCharacter);
             }

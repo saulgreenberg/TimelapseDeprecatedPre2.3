@@ -13,8 +13,6 @@ namespace Timelapse.Database
         /// </summary>
         static public List<SortTerm> GetSortTerms(FileDatabase database)
         {
-            const string DateLabel = "Date and time";
-            const string FileLabel = "File path (relative path + file name)";
             List <SortTerm> SortTerms = new List<SortTerm>();
 
             // Constraints. 
@@ -43,7 +41,7 @@ namespace Timelapse.Database
                 }
                 if (searchTerm.DataLabel == Constant.DatabaseColumn.File)
                 {
-                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, FileLabel, searchTerm.ControlType, Constant.BooleanValue.True));
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, Constant.SortTermValues.FileDisplayLabel, searchTerm.ControlType, Constant.BooleanValue.True));
                 }
                 else if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
@@ -53,7 +51,7 @@ namespace Timelapse.Database
                         continue;
                     }
                     firstDateTimeSeen = true;
-                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, DateLabel, searchTerm.ControlType, Constant.BooleanValue.True));
+                    SortTerms.Add(new SortTerm(searchTerm.DataLabel, Constant.SortTermValues.DateDisplayLabel, searchTerm.ControlType, Constant.BooleanValue.True));
                 }
                 else
                 {
@@ -69,7 +67,8 @@ namespace Timelapse.Database
     public class SortTerm
     {
         public string DataLabel { get; set; }
-        public string Label { get; set; }
+        // The text representing the sort term, to be displayed in the dropdown menu 
+        public string DisplayLabel { get; set; }
         public string ControlType { get; set; }
 
         // IsAscending  indicating(via Constant.BooleanValue.True or False) if the sort should be ascending or descending
@@ -78,14 +77,14 @@ namespace Timelapse.Database
         public SortTerm()
         {
             this.DataLabel = String.Empty;
-            this.Label = String.Empty;
+            this.DisplayLabel = String.Empty;
             this.ControlType = String.Empty;
             this.IsAscending = Constant.BooleanValue.True;
         }
         public SortTerm(string dataLabel, string label, string controlType, string isAscending)
         {
             this.DataLabel = dataLabel;
-            this.Label = label;
+            this.DisplayLabel = label;
             this.ControlType = controlType;
             this.IsAscending = isAscending;
         }
