@@ -372,9 +372,9 @@
                                             HorizontalAlignment="Right" VerticalAlignment="Stretch"
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                              ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
-                                            Click="TryCopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave">
+                                            Click="TryCopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave" IsTabStop="True" KeyDown="TryCopyPreviousValues_KeyDown">
                                             <TextBlock TextWrapping="Wrap" FontWeight="Bold">
-                                            Copy<LineBreak/>Previous<LineBreak/>Values
+                                                Copy<LineBreak/>Previous<LineBreak/>Values
                                             </TextBlock>
                                             <Button.Style>
                                                 <Style TargetType="{x:Type Button}">

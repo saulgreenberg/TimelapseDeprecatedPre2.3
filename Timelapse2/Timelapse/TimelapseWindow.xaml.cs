@@ -84,7 +84,7 @@ namespace Timelapse
             this.state = new TimelapseState();
             this.state.ReadSettingsFromRegistry();
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
-            
+
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
 
@@ -137,7 +137,7 @@ namespace Timelapse
             if (DateTime.Now.Year != this.state.MostRecentCheckForUpdates.Year ||
                 DateTime.Now.Month != this.state.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.state.MostRecentCheckForUpdates.Day)
-            { 
+            {
                 VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
@@ -149,7 +149,7 @@ namespace Timelapse
                 this.state.FirstTimeFileLoading = false;
             }
 
-            if (! Util.Utilities.CheckAndGetLangaugeAndCulture (out string language, out string culturename, out string displayname))
+            if (!Util.Utilities.CheckAndGetLangaugeAndCulture(out string language, out string culturename, out string displayname))
             {
                 this.HelpDocument.WarningRegionLanguage = displayname;
             }
@@ -187,7 +187,7 @@ namespace Timelapse
 
                 // Persist the current ID in the database image set, so we can go back to that image when restarting timelapse
                 if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
-                { 
+                {
                     this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
                 }
 
@@ -263,7 +263,7 @@ namespace Timelapse
                 Dialogs.ShowFilePathTooLongDialog(e, this);
             }
             else
-            { 
+            {
                 Utilities.ShowExceptionReportingDialog("Timelapse", e, this);
             }
         }
@@ -273,7 +273,7 @@ namespace Timelapse
         // Prompt user to select a template.
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
-            
+
             // Default the template selection dialog to the most recently opened database
             this.state.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
             if (Utilities.TryGetFileFromUser("Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
@@ -342,7 +342,7 @@ namespace Timelapse
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
             using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
-            { 
+            {
                 // A file database was available to open
                 if (fileDB != null)
                 {
@@ -351,7 +351,7 @@ namespace Timelapse
                         // There are unresolvable syncronization issues. Report them now as we cannot use this template.
                         // Depending on the user response, we either abort Timelapse or use the template found in the ddb file
                         Dialog.TemplateSynchronization templatesNotCompatibleDialog;
-                        
+
                         templatesNotCompatibleDialog = new Dialog.TemplateSynchronization(templateSyncResults.ControlSynchronizationErrors, templateSyncResults.ControlSynchronizationWarnings, this);
                         bool? result = templatesNotCompatibleDialog.ShowDialog();
                         if (result == false)
@@ -406,7 +406,7 @@ namespace Timelapse
             this.dataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
             this.dataHandler.MarkableCanvas = this.MarkableCanvas;
 
-            this.Title =  Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) +  ")";
+            this.Title = Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
             this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);
             this.MenuItemRecentFileSets_Refresh();
 
@@ -425,7 +425,7 @@ namespace Timelapse
                 this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
             }
             else
-            { 
+            {
                 this.OnFolderLoadingComplete(false);
             }
             return true;
@@ -471,7 +471,7 @@ namespace Timelapse
         public void CheckAndCorrectForMissingFolders(FileDatabase fileDatabase)
         {
             List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
-            List<string> missingRelativePaths = new List<string>(); 
+            List<string> missingRelativePaths = new List<string>();
             foreach (string relativePath in allRelativePaths)
             {
                 string path = Path.Combine(fileDatabase.FolderPath, relativePath);
@@ -486,7 +486,7 @@ namespace Timelapse
             {
                 MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", this, MessageBoxButton.OKCancel);
                 messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
-                foreach(string relativePath in missingRelativePaths)
+                foreach (string relativePath in missingRelativePaths)
                 {
                     messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
                 }
@@ -793,7 +793,7 @@ namespace Timelapse
                     {
                         ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
                         this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
-                   }
+                    }
                 }
             };
 
@@ -1087,7 +1087,7 @@ namespace Timelapse
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Ok', set their 'ImageQuality' field to 'Ok' and then reselect Ok files.";
                         break;
                     default:
-                    throw new NotSupportedException(String.Format("Unhandled selection {0}.", selection));
+                        throw new NotSupportedException(String.Format("Unhandled selection {0}.", selection));
                 }
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 messageBox.ShowDialog();
@@ -1145,7 +1145,7 @@ namespace Timelapse
                 this.FileNavigatorSlider.IsSnapToTickEnabled = false;
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
             }
- 
+
             // SAULXXX Reset the clickable grid selection after every change in the selectin
             if (this.IsDisplayingMultipleImagesInOverview())
             {
@@ -1301,16 +1301,31 @@ namespace Timelapse
             this.MarkableCanvas_UpdateMarkers();
         }
 
+        // Move the focus (usually because of tabbing or shift-tab)
+        // It cycles between the data entry controls to the CopyPrevious button to the File Navigator
         private void MoveFocusToNextOrPreviousControlOrImageSlider(bool moveToPreviousControl)
         {
             // identify the currently selected control
             // if focus is currently set to the canvas this defaults to the first or last control, as appropriate
             int currentControl = moveToPreviousControl ? this.DataEntryControls.Controls.Count : -1;
+            Type type;
 
             IInputElement focusedElement = FocusManager.GetFocusedElement(this);
             if (focusedElement != null)
             {
-                Type type = focusedElement.GetType();
+                type = focusedElement.GetType();
+
+                if (type == CopyPreviousValuesButton.GetType() && moveToPreviousControl == false)
+                {
+                    this.FileNavigatorSlider.Focus();
+                    return;
+                }
+                else if (type == FileNavigatorSlider.GetType() && moveToPreviousControl == true)
+                {
+                    this.CopyPreviousValuesButton.Focus();
+                    return;
+                }
+
                 if (Constant.Control.KeyboardInputTypes.Contains(type))
                 {
                     if (DataEntryHandler.TryFindFocusedControl(focusedElement, out DataEntryControl focusedControl))
@@ -1351,10 +1366,17 @@ namespace Timelapse
                 }
             }
 
-            // no control was found so set focus to the slider
+            // no control was found so set focus to the CopyPreviousValue button
             // this has also the desirable side effect of binding the controls into both next and previous loops so that keys can be used to cycle
             // continuously through them
-            this.FileNavigatorSlider.Focus();
+            if (moveToPreviousControl == true)
+            {
+                this.FileNavigatorSlider.Focus();
+            }
+            else
+            {
+                this.CopyPreviousValuesButton.Focus();
+            }
         }
 
         /// <summary>
@@ -1385,7 +1407,28 @@ namespace Timelapse
                 control.Container.ClearValue(Control.BackgroundProperty);
             }
         }
+
+        // <summary>
+        ///  When a space is entered on the focused copy button, copy the previous data values
+        /// </summary>
+        private void TryCopyPreviousValues_KeyDown(object sender, KeyEventArgs eventArgs)
+        {
+            if (eventArgs.Key == Key.Space)
+            {
+                TryCopyPreviousValues();
+            }
+        }
+
+        // <summary>
+        ///  When the CopyPreviousValues button is pressed, copy the previous data values  
+        /// </summary>
         private void TryCopyPreviousValues_Click(object sender, RoutedEventArgs e)
+        {
+            TryCopyPreviousValues();
+        }
+
+        // Actually copy the previous data values
+        private void TryCopyPreviousValues()
         {
             if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
 
@@ -1440,7 +1483,7 @@ namespace Timelapse
             {
                 return;
             }
-            
+
             // Note:  No matter what image we are viewing, the source image should have  been cached before entering this function\
             // If it isn't (or if its a video), abort
             if (this.dataHandler == null ||
@@ -1571,7 +1614,7 @@ namespace Timelapse
             FilePlayer_Stop(); // In case the FilePlayer is going
             this.state.FileNavigatorSliderDragging = false;
             this.ShowFile(this.FileNavigatorSlider);
-            this.timerFileNavigator.Stop(); 
+            this.timerFileNavigator.Stop();
         }
 
 
@@ -1584,7 +1627,7 @@ namespace Timelapse
             }
 
             // Stop the timer, but restart it if we are dragging
-            this.timerFileNavigator.Stop(); 
+            this.timerFileNavigator.Stop();
             if (this.state.FileNavigatorSliderDragging == true)
             {
                 this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders; // Throttle values may have changed, so we reset it just in case.
@@ -1881,7 +1924,7 @@ namespace Timelapse
                         // To do that, we would have to iterate through the floating windows and set it.
                         //if (this.DataGridPane.IsFloating)
                         //{
-                            
+
                         //}
                         break;
                     default:
@@ -1985,7 +2028,7 @@ namespace Timelapse
                         this.FilePlayer.Direction = FilePlayerDirection.Backward;
                         this.FilePlayer_ScrollPage();
                     }
-                    break;          
+                    break;
                 case Key.Home:
                     {
                         this.ImageSetPane.IsActive = true;
@@ -1993,7 +2036,7 @@ namespace Timelapse
                     }
                 case Key.End:
                     {
-                        this.DataGridPane.IsActive = true; 
+                        this.DataGridPane.IsActive = true;
                         break;
                     }
                 default:
@@ -2156,12 +2199,12 @@ namespace Timelapse
 
             // Part 3. Remove the found metatag from the metatagcounter and from the database
             if (markersForCounter != null)
-            { 
-                    markersForCounter.RemoveMarker(e.Marker);
-                    this.Speak(counter.Content); // Speak the current count
-                    this.dataHandler.FileDatabase.SetMarkerPositions(this.dataHandler.ImageCache.Current.ID, markersForCounter);
-             }
-             this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
+            {
+                markersForCounter.RemoveMarker(e.Marker);
+                this.Speak(counter.Content); // Speak the current count
+                this.dataHandler.FileDatabase.SetMarkerPositions(this.dataHandler.ImageCache.Current.ID, markersForCounter);
+            }
+            this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
         }
 
         /// <summary>
@@ -2295,7 +2338,7 @@ namespace Timelapse
             this.MenuItemRecentFileSets_Refresh();
 
             // Enable / disable various menu items depending on whether we are looking at the single image view or overview
-            MenuItemExportThisImage.IsEnabled = this.IsDisplayingSingleImage(); 
+            MenuItemExportThisImage.IsEnabled = this.IsDisplayingSingleImage();
         }
 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
@@ -2658,7 +2701,7 @@ namespace Timelapse
                     this.dataHandler.ImageCache.Dispose();
                 }
                 if (this.dataHandler != null)
-                { 
+                {
                     this.dataHandler.Dispose();
                 }
                 this.dataHandler = null;
@@ -2761,15 +2804,15 @@ namespace Timelapse
                 }
             }
 
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt, 
-                                                               "'Populate a data field with image metadata...'", 
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt,
+                                                               "'Populate a data field with image metadata...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
                 PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath), this);
-                    this.ShowBulkImageEditDialog(populateField);
+                this.ShowBulkImageEditDialog(populateField);
             }
         }
 
@@ -2997,7 +3040,7 @@ namespace Timelapse
                 // Need to be viewing all files
                 MessageBox messageBox = new MessageBox("You need to select All Files before deleting duplicates", this);
                 messageBox.Message.Problem = "Delete Duplicates should be applied to All Files, but you only have a subset selected";
-                messageBox.Message.Solution = "On the Select menu, choose 'All Files' and try again" ;
+                messageBox.Message.Solution = "On the Select menu, choose 'All Files' and try again";
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.ShowDialog();
                 return;
@@ -3008,12 +3051,12 @@ namespace Timelapse
                 List<string> filenames = new List<string>();
                 FileTable table = this.dataHandler.FileDatabase.GetDuplicateFiles();
                 if (table != null && table.Count() != 0)
-                { 
+                {
                     // populate the list
                     foreach (ImageRow image in table)
                     {
                         string separator = String.IsNullOrEmpty(image.RelativePath) ? "" : "/";
-                        filenames.Add(image.RelativePath + separator + image.FileName );
+                        filenames.Add(image.RelativePath + separator + image.FileName);
                     }
                 }
 
@@ -3023,10 +3066,10 @@ namespace Timelapse
                 if (result == true)
                 {
                     // Delete the duplicate files
-                   this.dataHandler.FileDatabase.DeleteDuplicateFiles();
-                   // Reselect on the current select settings, which updates the view to remove the deleted files
-                   this.SelectFilesAndShowFile();
-                }  
+                    this.dataHandler.FileDatabase.DeleteDuplicateFiles();
+                    // Reselect on the current select settings, which updates the view to remove the deleted files
+                    this.SelectFilesAndShowFile();
+                }
             }
         }
 
@@ -3042,8 +3085,8 @@ namespace Timelapse
         /// the increase effect more visible through a menu option versus the keyboard equivalent</summary>
         private void MenuItemMagnifyingGlassIncrease_Click(object sender, RoutedEventArgs e)
         {
-            for (int i=0; i<6; i++)
-            { 
+            for (int i = 0; i < 6; i++)
+            {
                 this.MarkableCanvas.MagnifierZoomIn();
             }
         }
@@ -3078,9 +3121,9 @@ namespace Timelapse
         /// <summary>Correct the date by specifying an offset</summary>
         private void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
         {
-             // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeFixedCorrectionPrompt, 
-                                                               "'Add a fixed correction value to every date/time...'", 
+            // Warn user that they are in a selected view, and verify that they want to continue
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeFixedCorrectionPrompt,
+                                                               "'Add a fixed correction value to every date/time...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.state.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
@@ -3101,7 +3144,7 @@ namespace Timelapse
                                                                {
                                                                    this.state.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
                                                                }))
-            { 
+            {
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
                 this.ShowBulkImageEditDialog(linearDateCorrection, true);
             }
@@ -3124,8 +3167,8 @@ namespace Timelapse
                 return;
             }
 
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDaylightSavingsCorrectionPrompt, 
-                                                               "'Correct for daylight savings time...'", 
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDaylightSavingsCorrectionPrompt,
+                                                               "'Correct for daylight savings time...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.state.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
@@ -3140,7 +3183,7 @@ namespace Timelapse
         private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
             // Warn user that they are in a selection view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedAmbiguousDatesPrompt, 
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedAmbiguousDatesPrompt,
                                                                "'Correct ambiguous dates...'",
                                                                (bool optOut) =>
                                                                {
@@ -3158,8 +3201,8 @@ namespace Timelapse
                     messageBox.ShowDialog();
                     messageBox.Close();
                     return;
-                 }
-                 this.ShowBulkImageEditDialog(dateCorrection, true);
+                }
+                this.ShowBulkImageEditDialog(dateCorrection, true);
             }
         }
 
@@ -3348,8 +3391,8 @@ namespace Timelapse
             else
             {
                 // Since we canceled the custom selection, uncheck the item (but only if another menu item is shown checked)
-                
-                bool otherMenuItemIsChecked = 
+
+                bool otherMenuItemIsChecked =
                     (this.MenuItemSelectAllFiles.IsChecked ||
                     this.MenuItemSelectCorruptedFiles.IsChecked ||
                     this.MenuItemSelectDarkFiles.IsChecked ||
@@ -3381,7 +3424,7 @@ namespace Timelapse
             FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
-        private void MenuItemSort_Click (object sender, RoutedEventArgs e)
+        private void MenuItemSort_Click(object sender, RoutedEventArgs e)
         {
             // While this should never happen, don't do anything if we don's have any data
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
@@ -3441,7 +3484,7 @@ namespace Timelapse
             else
             {
                 // Ensure the checkmark appears next to the correct menu item 
-                ShowSortFeedback(true); 
+                ShowSortFeedback(true);
             }
         }
 
@@ -3453,12 +3496,12 @@ namespace Timelapse
         }
 
         // Do the sort and show feedback of 
-        private void DoSortAnShowSortFeedback (bool updateMenuChecks)
+        private void DoSortAnShowSortFeedback(bool updateMenuChecks)
         {
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
             this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
-            
+
             // Reselect the images, which re-sorts them to the current sort criteria. 
             this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
@@ -3472,9 +3515,9 @@ namespace Timelapse
         {
             // Get the two sort terms
             SortTerm[] sortTerm = new SortTerm[2];
-            string [] statusbar_feedback = new string[]{ String.Empty, String.Empty};
+            string[] statusbar_feedback = new string[] { String.Empty, String.Empty };
 
-            for (int i=0; i<=1;  i++)
+            for (int i = 0; i <= 1; i++)
             {
                 sortTerm[i] = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(i);
             }
@@ -3484,7 +3527,7 @@ namespace Timelapse
             {
                 return;
             }
-            
+
             this.MenuItemSortByDateTime.IsChecked = false;
             this.MenuItemSortByFileName.IsChecked = false;
             this.MenuItemSortById.IsChecked = false;
@@ -3647,7 +3690,7 @@ namespace Timelapse
             return false;
         }
         #endregion
-    
+
         #region Bookmarking pan/zoom levels
         // Bookmark (Save) the current pan / zoom level of the image
         private void MenuItem_BookmarkSavePanZoom(object sender, RoutedEventArgs e)
@@ -3682,7 +3725,7 @@ namespace Timelapse
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
         {
             if (this.DockingManager.FloatingWindows.Count() > 0)
-            { 
+            {
                 this.DockingManager_FloatingDataEntryWindowWindowTopmost(false);
             }
         }
@@ -3719,7 +3762,7 @@ namespace Timelapse
                 {
                     // Set this to null if we want windows NOT to appear always on top, otherwise to true
                     // floatingWindow.Owner = null;
-                   floatingWindow.ShowInTaskbar = true;
+                    floatingWindow.ShowInTaskbar = true;
                 }
             }
         }
@@ -3852,7 +3895,7 @@ namespace Timelapse
             bool isForward = (findButton == this.FindForwardButton) ? true : false;
             this.FindBox_FindImage(isForward);
         }
-        
+
         // Close the find box
         private void FindBoxClose_Click(object sender, RoutedEventArgs e)
         {
@@ -3883,7 +3926,7 @@ namespace Timelapse
         }
 
         // Make the find box visible on the display
-        private void FindBoxVisibility (bool isVisible)
+        private void FindBoxVisibility(bool isVisible)
         {
             // Only make the find box visible if there are files to view
             if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
@@ -3898,7 +3941,7 @@ namespace Timelapse
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()
         {
-            return IsDisplayingSingleImage() && this.ImageSetPane.IsActive; 
+            return IsDisplayingSingleImage() && this.ImageSetPane.IsActive;
         }
 
         // Check to see if we are displaying at least one image (not in the overview), regardless of whether the ImageSetPane is active
@@ -3913,7 +3956,7 @@ namespace Timelapse
         }
 
         private bool IsDisplayingMultipleImagesInOverview()
-        {       
+        {
             return this.MarkableCanvas.IsClickableImagesGridVisible && this.ImageSetPane.IsActive ? true : false;
         }
 
@@ -3932,7 +3975,7 @@ namespace Timelapse
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
         private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
         {
-           if (e.ImageRow != null )
+            if (e.ImageRow != null)
             {
                 // Switch to either the video or image view as needed
                 if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
@@ -3954,7 +3997,7 @@ namespace Timelapse
         #region DataGrid events
         // When a user selects a row in the datagrid, show its corresponding image.
         // Note that because multiple selections are enabled, we show the image of the row that received the mouse-up
-        private void DataGrid_RowSelected (object sender, MouseButtonEventArgs e)
+        private void DataGrid_RowSelected(object sender, MouseButtonEventArgs e)
         {
             if (sender != null)
             {
@@ -3997,12 +4040,12 @@ namespace Timelapse
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
-            List<Tuple<long,int>> IdRowIndex = new List<Tuple<long, int>>(); 
+            List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
             if (this.IsDisplayingSingleImage())
             {
                 // Only the current row is  selected in the single images view, so just use that.
                 int currentRowIndex = this.dataHandler.ImageCache.CurrentRow;
-                IdRowIndex.Add(new Tuple<long,int>(this.dataHandler.FileDatabase.Files[currentRowIndex].ID, currentRowIndex));
+                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[currentRowIndex].ID, currentRowIndex));
             }
             else
             {
@@ -4013,7 +4056,7 @@ namespace Timelapse
                 }
             }
             if (this.DataGrid.Items.Count > 0)
-            { 
+            {
                 this.DataGrid.SelectAndScrollIntoView(IdRowIndex);
             }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
@@ -4036,7 +4079,7 @@ namespace Timelapse
         {
             // Stop the timer only if we are actually scrolling, i.e., if the scrolbar thumb has changed positions
             if (e.VerticalChange != 0)
-            { 
+            {
                 this.DataGridSelectionsTimer.Stop();
             }
         }
