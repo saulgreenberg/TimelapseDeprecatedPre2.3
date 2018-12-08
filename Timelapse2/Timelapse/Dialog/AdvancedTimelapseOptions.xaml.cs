@@ -17,6 +17,9 @@ namespace Timelapse.Dialog
             this.markableCanvas = markableCanvas;
             this.timelapseState = timelapseState;
 
+            // Deletion Management
+            this.RadioButtonDeletionManagement_Set(this.timelapseState.DeleteFolderManagement);
+
             // Throttles
             this.ImageRendersPerSecond.Minimum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound;
             this.ImageRendersPerSecond.Maximum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound;
@@ -39,6 +42,54 @@ namespace Timelapse.Dialog
             // Showing Images
             this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.SuppressThrottleWhenLoading ? true : false;
         }
+
+        #region Delete Folder Management
+        // Check the appropriate radio button to match the state
+        private void RadioButtonDeletionManagement_Set(DeleteFolderManagement deleteFolderManagement)
+        {
+            switch (deleteFolderManagement)
+            {
+                case DeleteFolderManagement.ManualDelete:
+                    this.RadioButtonManualDelete.IsChecked = true;
+                    break;
+                case DeleteFolderManagement.AskToDeleteOnExit:
+                    this.RadioButtonAskToDelete.IsChecked = true;
+                    break;
+                case DeleteFolderManagement.AutoDeleteOnExit:
+                    this.RadioButtonAutoDeleteOnExit.IsChecked = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Set the state to match the radio button selection
+        private void DeletedFileManagement_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButton rb = (RadioButton)sender;
+            switch (rb.Name)
+            {
+                case "RadioButtonManualDelete":
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.ManualDelete;
+                    break;
+                case "RadioButtonAskToDelete":
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.AskToDeleteOnExit;
+                    break;
+                case "RadioButtonAutoDeleteOnExit":
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.AutoDeleteOnExit;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Reset to the Default, i.e. manual deletion
+        private void ResetDeletedFileManagement_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButtonManualDelete.IsChecked = true;
+            this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.ManualDelete;
+        }
+        #endregion
 
         private void ImageRendersPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -83,15 +134,15 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
         }
 
-        private void OkButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
-        }
-
         private void SuppressThrottleWhenLoading_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
             this.timelapseState.SuppressThrottleWhenLoading = (cb.IsChecked == true) ? true : false;
+        }
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
         }
     }
 }

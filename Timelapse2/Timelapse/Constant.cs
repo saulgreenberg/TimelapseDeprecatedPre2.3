@@ -426,6 +426,9 @@ namespace Timelapse
                 public const string DarkPixelThreshold = "DarkPixelThreshold";
                 public const string DarkPixelRatio = "DarkPixelRatio";
 
+                // How the DeleteFolder is managed (e.g.,manual, by asking, or automatic deletion)
+                public const string DeleteFolderManagementValue = "DeleteFolderManagement";
+
                 // File Player play speeds (slow and fast)
                 public const string FilePlayerSlowValue = "FilePlayerSlowValue";
                 public const string FilePlayerFastValue = "FilePlayerFastValue";

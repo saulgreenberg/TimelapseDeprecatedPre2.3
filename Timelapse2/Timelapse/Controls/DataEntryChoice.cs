@@ -50,13 +50,13 @@ namespace Timelapse.Controls
             }
             if (includesEmptyChoice)
             {
-                // put empty choice at the end of the control below a separator for visual clarity
-                // this.ContentControl.Items.Add(new Separator());
+                // put empty choice at the beginning of the control below a separator for visual clarity
+                this.ContentControl.Items.Insert(0,new Separator());
                 cbi = new ComboBoxItem()
                 {
                     Content = String.Empty
                 };
-                this.ContentControl.Items.Add(cbi);
+                this.ContentControl.Items.Insert(0, cbi);
             }
             // We include an invisible ellipsis menu item. This allows us to display an ellipsis in the combo box text field
             // when multiple images with different values are selected
@@ -85,6 +85,32 @@ namespace Timelapse.Controls
                     {
                         comboBox.SelectedValue = comboBoxItem.Content.ToString();
                     }
+                }
+            }
+            else if (e.Key == Key.Up || e.Key == Key.Right || e.Key == Key.Down  || e.Key == Key.Left)
+            {
+                // Because we have inserted an invisible ellipses into the list, we have to skip over it when a 
+                // user navigates the combobox with the keyboard using the arrow keys
+                ComboBox comboBox = sender as ComboBox;
+                
+                if ( (e.Key == Key.Up || e.Key == Key.Left) && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1) )
+                {
+                    // If the user tries to navigate to the ellisis at the beginning of the list, keep it on the first valid item
+                    if (comboBox.SelectedIndex == -1)
+                    {
+                        comboBox.SelectedIndex = 1;
+                    }
+                    e.Handled = true;
+                } 
+                else if ( (e.Key == Key.Down || e.Key == Key.Right ) && (comboBox.SelectedIndex == comboBox.Items.Count - 1 || comboBox.SelectedIndex == -1))
+                {
+                    // If the user tries to navigate beyond the end of the list, keep it on the last valid item
+                    // But the -1 should only be triggered to go back to the beginning
+                    if (comboBox.SelectedIndex == -1)
+                    {
+                        comboBox.SelectedIndex = 1; //comboBox.SelectedIndex = comboBox.Items.Count - 1;
+                    }
+                    e.Handled = true;
                 }
             }
         }

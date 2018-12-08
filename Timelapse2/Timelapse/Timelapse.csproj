@@ -213,6 +213,9 @@
     <Compile Include="Dialog\DateTimeLinearCorrection.xaml.cs">
       <DependentUpon>DateTimeLinearCorrection.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\DeleteDeleteFolder.xaml.cs">
+      <DependentUpon>DeleteDeleteFolder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\DeleteDuplicates.xaml.cs">
       <DependentUpon>DeleteDuplicates.xaml</DependentUpon>
     </Compile>
@@ -240,6 +243,7 @@
     <Compile Include="Util\DataGridExtensions.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
+    <Compile Include="Util\DeletiionManagement.cs" />
     <Compile Include="Util\ImageMetadata.cs" />
     <Compile Include="Util\ImageMetadataDictionary.cs" />
     <Compile Include="Util\RegistryKeyExtensions.cs" />
@@ -346,6 +350,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\DateTimeRereadFromFiles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DeleteDeleteFolder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

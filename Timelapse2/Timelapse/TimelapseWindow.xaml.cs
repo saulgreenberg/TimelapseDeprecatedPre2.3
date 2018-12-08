@@ -195,6 +195,15 @@ namespace Timelapse
 
                 // ensure custom filter operator is synchronized in state for writing to user's registry
                 this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+
+                // Check if we should delete the DeletedFiles folder, and if so do it.
+                // Note that we can only do this if we know where the DeletedFolder is,
+                // i.e. because the datahandler and datahandler.FileDatabae is not null
+                // That is why its in this if statement.
+                if (this.state.DeleteFolderManagement != DeleteFolderManagement.ManualDelete)
+                {
+                    this.DeleteTheDeletedFilesFolderIfNeeded();
+                }
             }
 
             // persist user specific state to the registry
@@ -230,6 +239,38 @@ namespace Timelapse
             this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
             this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
             this.state.WriteSettingsToRegistry();
+
+
+        }
+
+        private void DeleteTheDeletedFilesFolderIfNeeded()
+        {
+            string deletedFolderPath = Path.Combine(this.dataHandler.FileDatabase.FolderPath, Constant.File.DeletedFilesFolder);
+            int howManyDeletedFiles = Directory.Exists(deletedFolderPath) ? Directory.GetFiles(this.dataHandler.FileDatabase.FolderPath).Length : 0;
+
+            // If there are no files, there is nothing to delete
+            if (howManyDeletedFiles <= 0)
+            {
+                return;
+            }
+
+            // We either have auto deletion, or ask the user. Check both cases.
+            // If its auto deletion, then set the flag to delete
+            bool deleteTheDeletedFolder = (this.state.DeleteFolderManagement == DeleteFolderManagement.AutoDeleteOnExit) ? true : false;
+
+            // if its ask the user, then set the flag according to the response
+            if (this.state.DeleteFolderManagement == DeleteFolderManagement.AskToDeleteOnExit)
+            {
+                Dialog.DeleteDeleteFolder deleteDeletedFolders = new Dialog.DeleteDeleteFolder(howManyDeletedFiles)
+                {
+                    Owner = this
+                };
+                 deleteTheDeletedFolder = deleteDeletedFolders.ShowDialog() == true ? true : false;
+            }
+            if (deleteTheDeletedFolder == true)
+            {
+                Directory.Delete(deletedFolderPath, true);
+            }
         }
 
         public void Dispose()
@@ -1734,7 +1775,10 @@ namespace Timelapse
                 this.MarkableCanvas.SwitchToImageView();
 
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
-                this.dataHandler.IsProgrammaticControlUpdate = false;
+                if (this.dataHandler != null)
+                {
+                    this.dataHandler.IsProgrammaticControlUpdate = false;
+                }
                 return;
             }
 
@@ -1755,7 +1799,10 @@ namespace Timelapse
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out bool newFileToDisplay) == false)
             {
-                this.dataHandler.IsProgrammaticControlUpdate = false;
+                if (this.dataHandler != null)
+                { 
+                    this.dataHandler.IsProgrammaticControlUpdate = false;
+                }
                 throw new Exception(String.Format("in ShowFile: possible problem with fileIndex, where its not a valid row index in the image table.", fileIndex));
             }
 
