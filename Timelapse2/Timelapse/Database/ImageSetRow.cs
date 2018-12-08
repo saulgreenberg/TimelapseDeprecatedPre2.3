@@ -4,7 +4,6 @@ using System.Data;
 
 namespace Timelapse.Database
 {
-
     public class ImageSetRow : DataRowBackedObject
     {
         private const int MaxSortTerms = 8;           
@@ -117,9 +116,9 @@ namespace Timelapse.Database
             string[] sortcriteria = SortTerms.Split(',');
             if (termIndex < sortcriteria.Length)
             {
-                return (sortcriteria[termIndex].Trim());
+                return sortcriteria[termIndex].Trim();
             }
-            return (String.Empty);
+            return String.Empty;
         }
         #endregion
     }

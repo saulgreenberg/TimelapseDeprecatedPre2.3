@@ -177,6 +177,7 @@
     <Compile Include="Database\ColumnDefinition.cs" />
     <Compile Include="Database\ControlRow.cs" />
     <Compile Include="Database\CustomSelectionOperator.cs" />
+    <Compile Include="Database\SortTerm.cs" />
     <Compile Include="Database\SortTerms.cs" />
     <Compile Include="Database\DataTableBackedList.cs" />
     <Compile Include="Database\FileTableChoiceColumn.cs" />

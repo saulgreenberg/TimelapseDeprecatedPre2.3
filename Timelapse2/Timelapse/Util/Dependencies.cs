@@ -12,7 +12,6 @@ namespace Timelapse.Util
         private static readonly List<string> CommonRequiredBinaries = new List<string>()
         {
             // MetadataExtractor
-            //"ICSharpCode.SharpZipLib.dll",
             "MetadataExtractor.dll",
             "XmpCore.dll",
 

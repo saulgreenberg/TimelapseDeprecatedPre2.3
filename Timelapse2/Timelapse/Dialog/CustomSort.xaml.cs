@@ -11,9 +11,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class CustomSort : Window
     {
-        private List<SortTerm> SortTermList;
-        private string FileDisplayLabel = String.Empty;
-        private string DateDisplayLabel = String.Empty;
+        private List<SortTerm> sortTermList;
+        private string fileDisplayLabel = String.Empty;
+        private string dateDisplayLabel = String.Empty;
         private FileDatabase database;
 
         public SortTerm SortTerm1 { get; set; }
@@ -35,18 +35,18 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             // Get the sort terms. 
-            SortTermList = Database.SortTerms.GetSortTerms(database);
+            sortTermList = Database.SortTerms.GetSortTerms(database);
 
             // We need the labels of the File and Date datalabels, as we will check to see if they are seleccted in the combo box
-            foreach (SortTerm sortTerm in this.SortTermList)
+            foreach (SortTerm sortTerm in this.sortTermList)
             {
                 if (sortTerm.DataLabel == Constant.DatabaseColumn.File)
                 {
-                    FileDisplayLabel = sortTerm.DisplayLabel;
+                    fileDisplayLabel = sortTerm.DisplayLabel;
                 }
                 else if (sortTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
-                    DateDisplayLabel = sortTerm.DisplayLabel;
+                    dateDisplayLabel = sortTerm.DisplayLabel;
                 }
             }
 
@@ -59,15 +59,13 @@ namespace Timelapse.Dialog
         // Populate the two combo boxes  with potential sort terms
         // We use the custom selection to get the field we need, but note that: 
         // - we add a None entry to the secondary combo box, allowing the user to clear the selection
-
         private void PopulatePrimaryUIElements()
         {
-
             // Populate the Primary combo box with choices
             // By default, we select sort by ID unless its over-ridden
             this.PrimaryComboBox.SelectedIndex = 0;
             SortTerm sortTermDB = database.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
-            foreach (SortTerm sortTerm in this.SortTermList)
+            foreach (SortTerm sortTerm in this.sortTermList)
             {
                 this.PrimaryComboBox.Items.Add(sortTerm.DisplayLabel);
 
@@ -81,8 +79,8 @@ namespace Timelapse.Dialog
             }
 
             // Set the radio buttons to the default values
-            this.PrimaryAscending.IsChecked = (sortTermDB.IsAscending == Constant.BooleanValue.True);
-            this.PrimaryDescending.IsChecked = (sortTermDB.IsAscending == Constant.BooleanValue.False);
+            this.PrimaryAscending.IsChecked = sortTermDB.IsAscending == Constant.BooleanValue.True;
+            this.PrimaryDescending.IsChecked = sortTermDB.IsAscending == Constant.BooleanValue.False;
         }
         private void PopulateSecondaryUIElements()
         {
@@ -94,7 +92,7 @@ namespace Timelapse.Dialog
             this.SecondaryComboBox.SelectedIndex = 0;
 
             SortTerm sortTermDB = database.ImageSet.GetSortTerm(1); // Get the 2nd sort term from the database
-            foreach (SortTerm sortTerm in this.SortTermList)
+            foreach (SortTerm sortTerm in this.sortTermList)
             {
                 // If the current sort term is the one already selected in the primary combo box, skip it
                 // as it doesn't make sense to sort again on the same term
@@ -105,16 +103,15 @@ namespace Timelapse.Dialog
                 this.SecondaryComboBox.Items.Add(sortTerm.DisplayLabel);
 
                 // If the current SecondarySort sort term matches the current item, then set it as selected.
-                //// Note that we check both terms for it, as File would be the 2nd term vs. the 1st term
-                //if (database.ImageSet.GetSortTerm(2) == sortTerm.DataLabel || database.ImageSet.GetSortTerm(3) == sortTerm.DataLabel)
+                // Note that we check both terms for it, as File would be the 2nd term vs. the 1st term
                 if (sortTermDB.DataLabel == sortTerm.DataLabel)
                 {
                     this.SecondaryComboBox.SelectedIndex = this.SecondaryComboBox.Items.Count - 1;
                 }
             }
             // Set the radio buttons to the default values
-            this.SecondaryAscending.IsChecked = (sortTermDB.IsAscending == Constant.BooleanValue.True);
-            this.SecondaryDescending.IsChecked = (sortTermDB.IsAscending == Constant.BooleanValue.False);
+            this.SecondaryAscending.IsChecked = sortTermDB.IsAscending == Constant.BooleanValue.True;
+            this.SecondaryDescending.IsChecked = sortTermDB.IsAscending == Constant.BooleanValue.False;
         }
         #endregion
 
@@ -131,19 +128,18 @@ namespace Timelapse.Dialog
             string selectedPrimaryItem = (string)this.PrimaryComboBox.SelectedItem;
             string selectedSecondaryItem = (string)this.SecondaryComboBox.SelectedItem;
 
-            foreach (SortTerm sortTerm in this.SortTermList)
+            foreach (SortTerm sortTerm in this.sortTermList)
             {
-                if (selectedPrimaryItem == this.FileDisplayLabel)
+                if (selectedPrimaryItem == this.fileDisplayLabel)
                 {
                     this.SortTerm1.DataLabel = Constant.DatabaseColumn.File;
-                    this.SortTerm1.DisplayLabel = this.FileDisplayLabel;
+                    this.SortTerm1.DisplayLabel = this.fileDisplayLabel;
                     this.SortTerm1.ControlType = String.Empty;
-                   
                 }
-                else if (selectedPrimaryItem == this.DateDisplayLabel)
+                else if (selectedPrimaryItem == this.dateDisplayLabel)
                 {
                     this.SortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
-                    this.SortTerm1.DisplayLabel = this.DateDisplayLabel;
+                    this.SortTerm1.DisplayLabel = this.dateDisplayLabel;
                     this.SortTerm1.ControlType = String.Empty;
                 }
                 else if (selectedPrimaryItem == sortTerm.DisplayLabel)
@@ -157,19 +153,19 @@ namespace Timelapse.Dialog
 
             if (selectedSecondaryItem != Constant.SortTermValues.NoneDisplayLabel)
             {
-                foreach (SortTerm sortTerm in this.SortTermList)
+                foreach (SortTerm sortTerm in this.sortTermList)
                 {
-                    if (selectedSecondaryItem == FileDisplayLabel)
+                    if (selectedSecondaryItem == fileDisplayLabel)
                     {
                         this.SortTerm2.DataLabel = Constant.DatabaseColumn.File;
-                        this.SortTerm2.DisplayLabel = this.FileDisplayLabel;
+                        this.SortTerm2.DisplayLabel = this.fileDisplayLabel;
                         this.SortTerm2.ControlType = String.Empty;
                         this.SortTerm2.IsAscending = (this.SecondaryAscending.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
                     }
-                    else if (selectedSecondaryItem == DateDisplayLabel)
+                    else if (selectedSecondaryItem == dateDisplayLabel)
                     {
                         this.SortTerm2.DataLabel = Constant.DatabaseColumn.DateTime;
-                        this.SortTerm2.DisplayLabel = this.DateDisplayLabel;
+                        this.SortTerm2.DisplayLabel = this.dateDisplayLabel;
                         this.SortTerm2.ControlType = String.Empty;
                         this.SortTerm2.IsAscending = (this.SecondaryAscending.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
                     }

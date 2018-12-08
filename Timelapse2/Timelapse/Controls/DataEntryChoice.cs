@@ -51,7 +51,7 @@ namespace Timelapse.Controls
             if (includesEmptyChoice)
             {
                 // put empty choice at the beginning of the control below a separator for visual clarity
-                this.ContentControl.Items.Insert(0,new Separator());
+                this.ContentControl.Items.Insert(0, new Separator());
                 cbi = new ComboBoxItem()
                 {
                     Content = String.Empty
@@ -93,7 +93,7 @@ namespace Timelapse.Controls
                 // user navigates the combobox with the keyboard using the arrow keys
                 ComboBox comboBox = sender as ComboBox;
                 
-                if ( (e.Key == Key.Up || e.Key == Key.Left) && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1) )
+                if ((e.Key == Key.Up || e.Key == Key.Left) && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1))
                 {
                     // If the user tries to navigate to the ellisis at the beginning of the list, keep it on the first valid item
                     if (comboBox.SelectedIndex == -1)
@@ -102,13 +102,13 @@ namespace Timelapse.Controls
                     }
                     e.Handled = true;
                 } 
-                else if ( (e.Key == Key.Down || e.Key == Key.Right ) && (comboBox.SelectedIndex == comboBox.Items.Count - 1 || comboBox.SelectedIndex == -1))
+                else if ((e.Key == Key.Down || e.Key == Key.Right) && (comboBox.SelectedIndex == comboBox.Items.Count - 1 || comboBox.SelectedIndex == -1))
                 {
                     // If the user tries to navigate beyond the end of the list, keep it on the last valid item
                     // But the -1 should only be triggered to go back to the beginning
                     if (comboBox.SelectedIndex == -1)
                     {
-                        comboBox.SelectedIndex = 1; //comboBox.SelectedIndex = comboBox.Items.Count - 1;
+                        comboBox.SelectedIndex = 1; 
                     }
                     e.Handled = true;
                 }

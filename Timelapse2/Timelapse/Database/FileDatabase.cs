@@ -756,7 +756,7 @@ namespace Timelapse.Database
             if (this.ImageSet != null)
             {
                 SortTerm[] sortTerm = new SortTerm[2];
-                string[] term = new string[] { String.Empty, String.Empty}; 
+                string[] term = new string[] { String.Empty, String.Empty }; 
 
                 // Special case for DateTime sorting.
                 // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
@@ -767,7 +767,7 @@ namespace Timelapse.Database
                 // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
                 // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
                 // Given the format of the corrected DateTime
-                for (int i = 0; i<=1; i++)
+                for (int i = 0; i <= 1; i++)
                 {
                     sortTerm[i] = this.ImageSet.GetSortTerm(i);
 
@@ -776,9 +776,9 @@ namespace Timelapse.Database
                     {
                         break;
                     }
-                    // First Check for special cases, where we want to modify how sorting is done
                     else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
                     {
+                        // First Check for special cases, where we want to modify how sorting is done
                         // DateTime:the modified query adds the UTC Offset to it
                         term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
                     }

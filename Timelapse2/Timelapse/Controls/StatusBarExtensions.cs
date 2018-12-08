@@ -73,7 +73,7 @@ namespace Timelapse.Controls
             {
                 // Note that the string format Constants include the position to insert the special character.
                 case Constant.DatabaseColumn.ID:
-                    return String.Format (Constant.SortTermValues.IDStatusBarLabel, specialCharacter);
+                    return String.Format(Constant.SortTermValues.IDStatusBarLabel, specialCharacter);
                 case Constant.DatabaseColumn.DateTime:
                     return String.Format(Constant.SortTermValues.DateStatusBarLabel, specialCharacter);
                 case Constant.DatabaseColumn.File:

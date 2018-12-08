@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.IO;
 
 namespace Timelapse.Dialog
 {
@@ -18,14 +8,14 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DeleteDeleteFolder : Window
     {
-        private int HowManyDeleteFiles = 0;
+        private int howManyDeleteFiles = 0;
 
         public DeleteDeleteFolder(int howManyDeleteFiles)
         {
             InitializeComponent();
 
             // If there are no files, just abort
-            this.HowManyDeleteFiles = howManyDeleteFiles;
+            this.howManyDeleteFiles = howManyDeleteFiles;
         }
 
         // Adjust this dialog window position 
@@ -33,7 +23,7 @@ namespace Timelapse.Dialog
         {
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
-            Message.What = String.Format("Your 'DeletedFiles' sub-folder contains backups of {0} 'deleted' image or video files.", this.HowManyDeleteFiles);
+            Message.What = String.Format("Your 'DeletedFiles' sub-folder contains backups of {0} 'deleted' image or video files.", this.howManyDeleteFiles);
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

@@ -22,8 +22,6 @@ namespace Timelapse.Util
             this.window = window;
         }
 
-      
-
         // Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
         // timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
         public bool TryGetAndParseVersion(bool showNoUpdatesMessage)
