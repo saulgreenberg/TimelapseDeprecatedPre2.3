@@ -239,14 +239,12 @@ namespace Timelapse
             this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
             this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
             this.state.WriteSettingsToRegistry();
-
-
         }
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
         {
             string deletedFolderPath = Path.Combine(this.dataHandler.FileDatabase.FolderPath, Constant.File.DeletedFilesFolder);
-            int howManyDeletedFiles = Directory.Exists(deletedFolderPath) ? Directory.GetFiles(this.dataHandler.FileDatabase.FolderPath).Length : 0;
+            int howManyDeletedFiles = Directory.Exists(deletedFolderPath) ? Directory.GetFiles(deletedFolderPath).Length : 0;
 
             // If there are no files, there is nothing to delete
             if (howManyDeletedFiles <= 0)

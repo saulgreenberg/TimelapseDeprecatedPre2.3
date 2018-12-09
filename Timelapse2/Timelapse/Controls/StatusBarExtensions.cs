@@ -67,7 +67,7 @@ namespace Timelapse.Controls
         private static string SetSortAlterTextAsNeeded(string sortTerm, bool isAscending)
         {
             // Add an up or down arrow to indicate sorting direction
-            string specialCharacter = (isAscending == true) ? Constant.SortTermValues.AscendingCharacter : Constant.SortTermValues.DescendingCharacter;
+            string specialCharacter = (isAscending == true) ? Constant.Unicode.UpArrow : Constant.Unicode.DownArrow;
 
             switch (sortTerm)
             {

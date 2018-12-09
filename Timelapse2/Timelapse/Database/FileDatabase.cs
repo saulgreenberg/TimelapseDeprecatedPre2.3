@@ -316,7 +316,7 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
-                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortCriteria)
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms)
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
@@ -554,7 +554,7 @@ namespace Timelapse.Database
             if (!sortCriteriaColumnExists)
             {
                 // create the sortCriteria column
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortCriteria));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
 
                 // Update the image set
                 this.GetImageSet();

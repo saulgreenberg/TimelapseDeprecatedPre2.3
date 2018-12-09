@@ -199,7 +199,7 @@ namespace Timelapse
             public const int RelativePathPosition = 2;
             public const int RowsPerInsert = 100;
             public const int UtcOffsetPosition = 5;
-            public const string DefaultSortCriteria = Constant.DatabaseColumn.ID;
+            public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Constant.Sqlite.Integer + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
 
             // Special characters
             public const char MarkerBar = '|';              // Separator used to separate marker points in the database i.e. "2.3,5.6 | 7.1, 3.3"
@@ -229,7 +229,7 @@ namespace Timelapse
             public const string TimeZone = "TimeZone";
             public const string WhiteSpaceTrimmed = "WhiteSpaceTrimmed";        // string holding the true/false state of whether the white space has been trimmed from the data.
             public const string VersionCompatabily = "VersionCompatabily";      // The latest version of Timelapse that opened this database. Useful for cases when we want to check for backwards compatability
-            public const string SortTerms = "SortCriteria";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms, and the Secondary 1st and 2nd sort terms
+            public const string SortTerms = "SortTerms";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms and their attribute
 
             // other columns found in Old XML files
             public const string Data = "Data";                 // the data describing the attributes of that control
@@ -495,9 +495,6 @@ namespace Timelapse
             public const string DateStatusBarLabel = "Date/Time{0}";
             public const string FileStatusBarLabel = "File Path{0}";
             public const string IDStatusBarLabel = "Id{0} (the order files were added to Timelapse)";
-
-            public const string AscendingCharacter = "\u2191";
-            public const string DescendingCharacter = "\u2193";
         }
             public static class Sqlite
         {
@@ -615,8 +612,11 @@ namespace Timelapse
 
         public static class Unicode
         {
+            public const string DownArrow = "\u2193";
             public const string Ellipsis = "\u2026";
+            public const string UpArrow = "\u2191";
         }
+
         public static class VersionXml
         {
             public const string Changes = "changes";
