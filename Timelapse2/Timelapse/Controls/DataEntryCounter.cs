@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Database;
 using Xceed.Wpf.Toolkit;
 
@@ -41,6 +42,21 @@ namespace Timelapse.Controls
             this.ContentControl.Width += 18; // to account for the width of the spinner
             this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
             this.ContentControl.PreviewTextInput += ContentControl_PreviewTextInput;
+            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
+        }
+
+        // Highlight the border whenever the control gets the keyboard focus
+        private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+        }
+
+        private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
 
         #region Event Handlers
@@ -84,6 +100,8 @@ namespace Timelapse.Controls
                 this.LabelControl.IsChecked = true;
                 previousControlDataLabel = this.DataLabel;
             }
+            // Also set the keyboard focus to this control 
+            Keyboard.Focus(this.ContentControl);
         }
         #endregion
 

@@ -95,6 +95,13 @@ namespace Timelapse
             // default data labels
             public const string Choice = "Choice";         // Label for a fixed choice
 
+            // highlight / non-hightlight border thicknesses of a control
+        
+            public const double BorderThicknessNormal = 1;
+            public const double BorderThicknessHighlight = 3;
+            public static readonly SolidColorBrush BorderColorNormal = new SolidColorBrush(Colors.LightBlue); 
+            public static readonly SolidColorBrush BorderColorHighlight = new SolidColorBrush(Colors.Blue); 
+
             // a minty green
             public static readonly SolidColorBrush CopyableFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
 

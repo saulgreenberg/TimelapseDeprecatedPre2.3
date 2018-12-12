@@ -44,6 +44,7 @@ namespace Timelapse
         private SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
         public TimelapseState state;                                    // Status information concerning the state of the UI
         private TemplateDatabase templateDatabase;                      // The database that holds the template
+        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
         private DispatcherTimer timerFileNavigator;
@@ -73,6 +74,12 @@ namespace Timelapse
             this.MarkableCanvas.ClickableImagesGrid.SelectionChanged += ClickableImagesGrid_SelectionChanged;
             this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
             this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
+
+            // Save/restore the focus whenever we leave / enter the controls or the file navigator
+            this.ControlsPanel.MouseEnter += SaveFocusOn_MouseEnter;
+            this.ControlsPanel.MouseLeave += SaveFocusOn_MouseLeave;
+            this.FileNavigatorSlider.MouseEnter += SaveFocusOn_MouseEnter;
+            this.FileNavigatorSlider.MouseLeave += SaveFocusOn_MouseLeave;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -119,7 +126,6 @@ namespace Timelapse
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
         }
-
         #endregion
 
         #region Window Loading, Closing, and Disposing
@@ -1374,7 +1380,9 @@ namespace Timelapse
                         {
                             if (Object.ReferenceEquals(focusedControl, control))
                             {
-                                currentControl = index;
+                                // We found it, so no need to look further
+                                currentControl = index; 
+                                break;
                             }
                             ++index;
                         }
@@ -1711,6 +1719,19 @@ namespace Timelapse
             this.ShowFile(this.FileNavigatorSlider);
             this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
 
+        }
+
+        // Create a semi-transparent visible blue border around the slider when it has the focus. Its semi-transparent to mute it somewhat...
+        private void FileNavigatorSlider_GotFocus(object sender, RoutedEventArgs e)
+        {
+            SolidColorBrush brush = Constant.Control.BorderColorHighlight.Clone();
+            brush.Opacity = .5;
+            this.AutoToolTipSliderBorder.BorderBrush = brush;
+        }
+
+        private void FileNavigatorSlider_LostFocus(object sender, RoutedEventArgs e)
+        {
+            this.AutoToolTipSliderBorder.BorderBrush = Brushes.Transparent;
         }
         #endregion
 
@@ -2102,6 +2123,7 @@ namespace Timelapse
             this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
         }
 
+
         // When we move over the canvas and the user isn't in the midst of typing into a text field, reset the top level focus
         private void MarkableCanvas_MouseEnter(object sender, MouseEventArgs eventArgs)
         {
@@ -2110,6 +2132,20 @@ namespace Timelapse
             {
                 this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
             }
+        }
+
+        // Save/restore the focus whenever we leave / enter the controls or the file navigator
+        private void SaveFocusOn_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
+            {
+                Keyboard.Focus(lastControlWithFocus);
+            }
+        }
+
+        private void SaveFocusOn_MouseLeave(object sender, MouseEventArgs e)
+        {
+            lastControlWithFocus = FocusManager.GetFocusedElement(this);
         }
 
         // Actually set the top level keyboard focus to the image control
@@ -3962,7 +3998,7 @@ namespace Timelapse
             else
             {
                 // Flash the text field to indicate no result
-                if (this.FindResource("flashAnimation") is Storyboard sb)
+                if (this.FindResource("ColorAnimationBriefFlash") is Storyboard sb)
                 {
                     Storyboard.SetTarget(sb, this.FindBoxTextBox);
                     sb.Begin();
@@ -4252,5 +4288,7 @@ namespace Timelapse
 
 
         #endregion
+
+
     }
 }

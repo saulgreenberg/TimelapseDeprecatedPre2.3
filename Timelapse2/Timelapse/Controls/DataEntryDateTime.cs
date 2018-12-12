@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 using Xceed.Wpf.Toolkit;
@@ -26,8 +27,23 @@ namespace Timelapse.Controls
         {
             // configure the various elements
             DataEntryHandler.Configure(this.ContentControl, null);
+            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
+        // Highlight the border whenever the control gets the keyboard focus
+        private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+        }
+
+        private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
+        }
+        
         public override void SetContentAndTooltip(string value)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)

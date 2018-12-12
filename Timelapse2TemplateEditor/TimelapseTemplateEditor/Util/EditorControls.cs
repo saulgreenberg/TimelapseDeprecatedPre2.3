@@ -44,6 +44,9 @@ namespace Timelapse.Editor.Util
                         RadioButton counterLabel = this.CreateCounterLabelButton(styleProvider, control);
                         IntegerUpDown counterContent = this.CreateIntegerUpDown(styleProvider, control);
                         stackPanel = this.CreateStackPanel(styleProvider, counterLabel, counterContent);
+                        counterLabel.IsTabStop = false;
+                        counterContent.GotFocus += this.Control_GotFocus;
+                        counterContent.LostFocus += this.Control_LostFocus;
                         break;
                     case Constant.Control.Flag:
                     case Constant.DatabaseColumn.DeleteFlag:
@@ -97,6 +100,8 @@ namespace Timelapse.Editor.Util
                 CultureInfo = System.Globalization.CultureInfo.CreateSpecificCulture("en-US")
             };
             DataEntryHandler.Configure(dateTimePicker, Constant.ControlDefault.DateTimeValue.DateTime);
+            dateTimePicker.GotFocus += this.Control_GotFocus;
+            dateTimePicker.LostFocus += this.Control_LostFocus;
             return dateTimePicker;
         }
 
@@ -122,6 +127,8 @@ namespace Timelapse.Editor.Util
                 Value = Constant.ControlDefault.DateTimeValue.Offset,
                 Width = control.Width
             };
+            utcOffsetPicker.GotFocus += this.Control_GotFocus;
+            utcOffsetPicker.LostFocus += this.Control_LostFocus;
             return utcOffsetPicker;
         }
 
@@ -184,6 +191,8 @@ namespace Timelapse.Editor.Util
                 ToolTip = control.Tooltip,
                 Style = styleProvider.FindResource(ControlContentStyle.FlagCheckBox.ToString()) as Style
             };
+            checkBox.GotFocus += this.Control_GotFocus;
+            checkBox.LostFocus += this.Control_LostFocus;
             return checkBox;
         }
 
@@ -210,6 +219,21 @@ namespace Timelapse.Editor.Util
             }
             comboBox.SelectedIndex = 0;
             return comboBox;
+        }
+
+        // HIghlight control when it gets the focus (simulates aspects of tab control in Timelapse)
+        private void Control_GotFocus(object sender, RoutedEventArgs e)
+        {
+            Control control = sender as Control;
+            control.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
+            control.BorderBrush = Constant.Control.BorderColorHighlight;
+        }
+
+        private void Control_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Control control = sender as Control;
+            control.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
+            control.BorderBrush = Constant.Control.BorderColorNormal;
         }
     }
 }

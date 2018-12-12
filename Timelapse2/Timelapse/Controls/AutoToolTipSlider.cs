@@ -12,6 +12,7 @@ namespace Timelapse.Controls
     {
         // Gets/sets the string displayed in the auto tooltip's content.
         private string autoToolTipContent = string.Empty;
+
         public string AutoToolTipContent
         {
             get
@@ -30,7 +31,7 @@ namespace Timelapse.Controls
         private void FormatAutoToolTipContent()
         {
             if (this.AutoToolTipContent != null && this.AutoToolTip != null)
-            { 
+            {
                 this.AutoToolTip.Content = this.AutoToolTipContent;
             }
         }
