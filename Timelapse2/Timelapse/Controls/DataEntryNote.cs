@@ -31,7 +31,6 @@ namespace Timelapse.Controls
             // Now configure the various elements
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
-
         }
 
         public override void SetContentAndTooltip(string value)

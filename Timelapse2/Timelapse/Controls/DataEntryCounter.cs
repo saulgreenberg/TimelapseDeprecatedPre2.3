@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Database;
 using Xceed.Wpf.Toolkit;
 
@@ -99,6 +100,8 @@ namespace Timelapse.Controls
                 this.LabelControl.IsChecked = true;
                 previousControlDataLabel = this.DataLabel;
             }
+            // Also set the keyboard focus to this control 
+            Keyboard.Focus(this.ContentControl);
         }
         #endregion
 
