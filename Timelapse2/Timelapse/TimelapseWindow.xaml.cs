@@ -1712,6 +1712,19 @@ namespace Timelapse
             this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
 
         }
+
+        // Create a semi-transparent visible blue border around the slider when it has the focus. Its semi-transparent to mute it somewhat...
+        private void FileNavigatorSlider_GotFocus(object sender, RoutedEventArgs e)
+        {
+            SolidColorBrush brush = Constant.Control.BorderColorHighlight.Clone();
+            brush.Opacity = .5;
+            this.AutoToolTipSliderBorder.BorderBrush = brush;
+        }
+
+        private void FileNavigatorSlider_LostFocus(object sender, RoutedEventArgs e)
+        {
+            this.AutoToolTipSliderBorder.BorderBrush = Brushes.Transparent;
+        }
         #endregion
 
         #region DataGridPane activation
@@ -4252,5 +4265,7 @@ namespace Timelapse
 
 
         #endregion
+
+
     }
 }
