@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 
@@ -30,6 +31,7 @@ namespace Timelapse.Controls
             // Now configure the various elements
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
+
         }
 
         public override void SetContentAndTooltip(string value)

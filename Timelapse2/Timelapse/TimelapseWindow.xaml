@@ -368,33 +368,66 @@
                                         </StackPanel>
 
                                         <!-- Copy Previous Button -->
-                                        <Button Name="CopyPreviousValuesButton" Visibility="Collapsed" Margin="0" Padding="5,0,5,0" Grid.Row="0" Grid.Column="1" 
+                                    <Button Name="CopyPreviousValuesButton" Visibility="Collapsed" Margin="0" Padding="5,0,5,0" Grid.Row="0" Grid.Column="1" 
                                             HorizontalAlignment="Right" VerticalAlignment="Stretch"
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
-                                             ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
+                                            ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
                                             Click="TryCopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave" IsTabStop="True" KeyDown="TryCopyPreviousValues_KeyDown">
+                                        
                                             <TextBlock TextWrapping="Wrap" FontWeight="Bold">
                                                 Copy<LineBreak/>Previous<LineBreak/>Values
                                             </TextBlock>
+                                            
                                             <Button.Style>
                                                 <Style TargetType="{x:Type Button}">
                                                     <Setter Property="Template">
                                                         <Setter.Value>
                                                             <ControlTemplate TargetType="{x:Type Button}">
-                                                                <Border Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="DarkGray" BorderThickness="2" >
-                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="5,5,5,5" />
-                                                                </Border>
+                                                                <Border Name="ButtonBorder" 
+                                                                        Background="{TemplateBinding Background}" 
+                                                                        BorderBrush="DarkGray" 
+                                                                        BorderThickness="2" >
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="5,5,5,5"/>
+                                                            </Border>
                                                             </ControlTemplate>
                                                         </Setter.Value>
                                                     </Setter>
+                                                    
                                                     <Style.Triggers>
                                                         <Trigger Property="IsMouseOver" Value="True">
                                                             <Setter Property="Background" Value="{StaticResource HighlitCopyPreviousBrush}"/>
                                                         </Trigger>
-                                                        <Trigger Property="IsEnabled" Value="false">
+                                                    <Trigger Property="IsPressed" Value="True">
+                                                        <Setter Property="FontWeight" Value="Normal"/>
+                                                        <Setter Property="Background"  Value="DarkGreen"/>
+                                                    </Trigger>
+                                                    <MultiTrigger >
+                                                        <MultiTrigger.Conditions>
+                                                            <Condition Property="IsMouseOver" Value="true" />
+                                                            <Condition Property="IsPressed" Value="true" />
+                                                        </MultiTrigger.Conditions>
+                                                        <Setter Property="Background"  Value="DarkGreen"/>
+                                                        <Setter Property="Foreground" Value="Yellow"/>
+                                                    </MultiTrigger>
+                                                    <MultiTrigger >
+                                                        <MultiTrigger.Conditions>
+                                                            <Condition Property="IsMouseOver" Value="true" />
+                                                            <Condition Property="IsPressed" Value="false" />
+
+                                                        </MultiTrigger.Conditions>
+                                                        <Setter Property="Background"   Value="Yellow"/>
+                                                        <Setter Property="Foreground" Value="Red"/>
+                                                        <Setter Property="BorderBrush" Value="Blue"/>
+                                                    </MultiTrigger>
+
+                                                    <Trigger Property="IsEnabled" Value="false">
                                                             <Setter Property="Foreground"  Value="{StaticResource DisabledForegroundBrush}"/>
                                                         </Trigger>
-                                                    </Style.Triggers>
+                                                    <!--<Trigger Property="IsFocused" Value="true">
+                                                        <Setter Property="BorderBrush" TargetName="ButtonBorder" Value="Blue"/>
+                                                        <Setter Property="BorderThickness" TargetName="ButtonBorder" Value="2"/>
+                                                    </Trigger>-->
+                                                </Style.Triggers>
                                                 </Style>
                                             </Button.Style>
                                         </Button>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -21,7 +22,23 @@ namespace Timelapse.Controls
         public DataEntryUtcOffset(ControlRow control, DataEntryControls styleProvider) :
             base(control, styleProvider, ControlContentStyle.UTCOffsetBox, ControlLabelStyle.DefaultLabel)
         {
+            // Callback to change the look of the control whenever it gets the focus
+            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
             // configure the various elements
+        }
+
+        // Highlight the border whenever the control gets the keyboard focus
+        private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+        }
+
+        private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
 
         public override void SetContentAndTooltip(string value)
