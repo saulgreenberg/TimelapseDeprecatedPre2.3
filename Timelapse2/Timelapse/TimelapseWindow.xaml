@@ -10,17 +10,13 @@
     WindowState="Normal" Icon="Icons\Timelapse.ico" LocationChanged="Window_LocationChanged">
 
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <Style x:Key="RadioButtonAsToggleButtonStyle" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type ToggleButton}}" />
-        <Storyboard x:Key="flashAnimation">
-            <ColorAnimation From="PaleGoldenrod" To="Black" 
-                                    Storyboard.TargetProperty="(Background).(SolidColorBrush.Color)" 
-                                    AutoReverse="True"
-                                    Duration="0:0:0.1"
-                                    RepeatBehavior="1x"/>
-        </Storyboard>
-        <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#888" />
-        <SolidColorBrush x:Key="HighlitCopyPreviousBrush" Color="#C8FBC8" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="StyleResources/CommonStyles.xaml"/>
+                <ResourceDictionary Source="StyleResources/CopyPreviousButtonStyle.xaml"/>
+                <ResourceDictionary Source="StyleResources/RadioButtonAsToggleButtonStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
 
     <!-- Bindings to activate the Find box using CTL-F -->
@@ -214,25 +210,25 @@
                 <Separator/>
                 <MenuItem Name="MenuItemSortResort" Header="Sort again (refreshes the sort)" Click="MenuItemSortResort_Click" ToolTip="Re-sorts the files based on the current sort criteria (useful if you update your data)."  />
             </MenuItem>
-            
+
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="True">
 
-                    <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
-                        <MenuItem.Icon>
-                            <Image Source="Icons/LayoutDataEntryOnTop_32x.png" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_Data Entry on Side" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's side" Tag="AvalonLayout_DataEntryOnSide">
-                        <MenuItem.Icon>
+                <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/LayoutDataEntryOnTop_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Name="MenuItemWindowDataEntryOnSide" Header="_Data Entry on Side" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's side" Tag="AvalonLayout_DataEntryOnSide">
+                    <MenuItem.Icon>
                         <Image Source="Icons/LayoutDataEntryOnSide_32x.png" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Name="MenuItemWindowDataEntryFloating" Header="_Data Entry Floating" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears as a floating window" Tag="AvalonLayout_DataEntryFloating">
-                        <MenuItem.Icon>
+                    <MenuItem.Icon>
                         <Image Source="Icons/LayoutDataEntryFloating_32x.png" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                    </MenuItem.Icon>
+                </MenuItem>
                 <!--</MenuItem>-->
                 <Separator/>
                 <MenuItem Name="MenuItemWindowLoadCustom" Header="Restore a Saved Window Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">
@@ -260,7 +256,7 @@
                 </MenuItem>
                 <MenuItem Name="MenuItemWindowLastUsed" Header="_Reset to Initial Layout" Click="MenuItemWindowRestore_Click" ToolTip="Reset to the initial layout" Tag="AvalonLayout_LastUsed"/>
             </MenuItem>
-            
+
             <!-- Help Menu -->
             <MenuItem Name="MenuItemHelp" Header="_Help" IsEnabled="true" IsTabStop="false" SubmenuOpened="Help_SubmenuOpening" >
 
@@ -326,115 +322,68 @@
                         <xcad:LayoutAnchorable x:Name="DataEntryControlPanel" ContentId="ContentIDDataEntryControlPanel"
                                                Title="Data Entry" CanClose="False" CanAutoHide="False" CanHide="False" IsVisible="False" 
                                                PropertyChanging="LayoutAnchorable_PropertyChanging">
-                                <ScrollViewer  Name="DataEntryScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment ="Top" HorizontalAlignment="Left" VerticalContentAlignment="Stretch" MaxHeight="{Binding ElementName=ControlGrid, Path=ActualHeight}">
-                                    <Grid Name="ControlGrid" SizeChanged="ControlGrid_SizeChanged">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
+                            <ScrollViewer  Name="DataEntryScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" VerticalAlignment ="Top" HorizontalAlignment="Left" VerticalContentAlignment="Stretch" MaxHeight="{Binding ElementName=ControlGrid, Path=ActualHeight}">
+                                <Grid Name="ControlGrid" SizeChanged="ControlGrid_SizeChanged">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
 
-                                        <!--Popup Find Box Control -->
-                                        <Popup Name="FindBox" 
+                                    <!--Popup Find Box Control -->
+                                    <Popup Name="FindBox" 
                                                StaysOpen="False"
                                                Placement="Left" 
                                                AllowsTransparency="True"  PopupAnimation="Fade"  
                                                HorizontalOffset="278"
                                                VerticalOffset="-22"
                                                PlacementTarget="{Binding ElementName=ControlsPanel}" >
-                                            <StackPanel Orientation="Horizontal" MinHeight="20"  Background="PaleGoldenrod" >
-                                                <TextBlock Text="Find:" FontSize="14" FontWeight="Bold" Background="PaleGoldenrod" Foreground="Black" VerticalAlignment="Center" Padding="5,0,5,0"
+                                        <StackPanel Orientation="Horizontal" MinHeight="20"  Background="PaleGoldenrod" >
+                                            <TextBlock Text="Find:" FontSize="14" FontWeight="Bold" Background="PaleGoldenrod" Foreground="Black" VerticalAlignment="Center" Padding="5,0,5,0"
                                                            ToolTip="Find the next or previous image whose filename contains this case-insensitive text"/>
-                                                <TextBox Name="FindBoxTextBox" 
+                                            <TextBox Name="FindBoxTextBox" 
                                                          FontSize="12"  Background="PaleGoldenrod"  Foreground="Black" Width="160" VerticalContentAlignment="Center" 
                                                          ToolTip="Find the next image whose filename contains this case-insensitive text" 
                                                          KeyDown="FindBoxTextBox_KeyDown"/>
-                                                <Button Name="FindBackwardsButton" FontSize="12"  FontWeight="Bold" Content=" &lt; " Background="PaleGoldenrod" Padding="5,0,5,0"
+                                            <Button Name="FindBackwardsButton" FontSize="12"  FontWeight="Bold" Content=" &lt; " Background="PaleGoldenrod" Padding="5,0,5,0"
                                                         ToolTip="Find the previous image whose filename contains this case-insensitive text"
                                                          Click="FindBoxButton_Click"/>
-                                                <Button Name="FindForwardButton" FontSize="12"  FontWeight="Bold"  Content=" &gt;" Background="PaleGoldenrod" Padding="5,0,5,0"
+                                            <Button Name="FindForwardButton" FontSize="12"  FontWeight="Bold"  Content=" &gt;" Background="PaleGoldenrod" Padding="5,0,5,0"
                                                         ToolTip="Find the next image whose filename contains this case-insensitive text" 
                                                         Click="FindBoxButton_Click"/>
-                                                <Button Name="FindCloseButton" FontSize="12"  FontWeight="Bold" Content=" x " Padding="5,0,5,0" Background="PaleGoldenrod" Click="FindBoxClose_Click" />
-                                            </StackPanel>
-                                        </Popup>
-
-                                        <!-- Controls Tray panel (to hold controls) -->
-                                        <StackPanel Name="ControlsPanel">
-                                            <controls:DataEntryControls x:Name="DataEntryControls" />
+                                            <Button Name="FindCloseButton" FontSize="12"  FontWeight="Bold" Content=" x " Padding="5,0,5,0" Background="PaleGoldenrod" Click="FindBoxClose_Click" />
                                         </StackPanel>
+                                    </Popup>
 
-                                        <!-- Copy Previous Button -->
-                                    <Button Name="CopyPreviousValuesButton" Visibility="Collapsed" Margin="0" Padding="5,0,5,0" Grid.Row="0" Grid.Column="1" 
+                                    <!-- Controls Tray panel (to hold controls) -->
+                                    <StackPanel Name="ControlsPanel">
+                                        <controls:DataEntryControls x:Name="DataEntryControls" />
+                                    </StackPanel>
+
+                                    <!-- Copy Previous Button -->
+                                    <Button Name="CopyPreviousValuesButton" Visibility="Collapsed"  Margin="0" Padding="5,0,5,0"
+                                            Grid.Row="0" Grid.Column="1" 
+                                            Style="{DynamicResource CopyPreviousButtonStyle}"
                                             HorizontalAlignment="Right" VerticalAlignment="Stretch"
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                             ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
-                                            Click="TryCopyPreviousValues_Click"  MouseEnter="CopyPreviousValues_MouseEnter" MouseLeave="CopyPreviousValues_MouseLeave" IsTabStop="True" KeyDown="TryCopyPreviousValues_KeyDown">
-                                        
-                                            <TextBlock TextWrapping="Wrap" FontWeight="Bold">
-                                                Copy<LineBreak/>Previous<LineBreak/>Values
-                                            </TextBlock>
-                                            
-                                            <Button.Style>
-                                                <Style TargetType="{x:Type Button}">
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="{x:Type Button}">
-                                                                <Border Name="ButtonBorder" 
-                                                                        Background="{TemplateBinding Background}" 
-                                                                        BorderBrush="DarkGray" 
-                                                                        BorderThickness="2" >
-                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"  Margin="5,5,5,5"/>
-                                                            </Border>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                    
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="{StaticResource HighlitCopyPreviousBrush}"/>
-                                                        </Trigger>
-                                                    <Trigger Property="IsPressed" Value="True">
-                                                        <Setter Property="FontWeight" Value="Normal"/>
-                                                        <Setter Property="Background"  Value="DarkGreen"/>
-                                                    </Trigger>
-                                                    <MultiTrigger >
-                                                        <MultiTrigger.Conditions>
-                                                            <Condition Property="IsMouseOver" Value="true" />
-                                                            <Condition Property="IsPressed" Value="true" />
-                                                        </MultiTrigger.Conditions>
-                                                        <Setter Property="Background"  Value="DarkGreen"/>
-                                                        <Setter Property="Foreground" Value="Yellow"/>
-                                                    </MultiTrigger>
-                                                    <MultiTrigger >
-                                                        <MultiTrigger.Conditions>
-                                                            <Condition Property="IsMouseOver" Value="true" />
-                                                            <Condition Property="IsPressed" Value="false" />
-
-                                                        </MultiTrigger.Conditions>
-                                                        <Setter Property="Background"   Value="Yellow"/>
-                                                        <Setter Property="Foreground" Value="Red"/>
-                                                        <Setter Property="BorderBrush" Value="Blue"/>
-                                                    </MultiTrigger>
-
-                                                    <Trigger Property="IsEnabled" Value="false">
-                                                            <Setter Property="Foreground"  Value="{StaticResource DisabledForegroundBrush}"/>
-                                                        </Trigger>
-                                                    <!--<Trigger Property="IsFocused" Value="true">
-                                                        <Setter Property="BorderBrush" TargetName="ButtonBorder" Value="Blue"/>
-                                                        <Setter Property="BorderThickness" TargetName="ButtonBorder" Value="2"/>
-                                                    </Trigger>-->
-                                                </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                        </Button>
-                                    </Grid>
-                                </ScrollViewer>
-                            </xcad:LayoutAnchorable>
-                        </xcad:LayoutAnchorablePane>
+                                            IsTabStop="True" 
+                                            Click="TryCopyPreviousValues_Click"  
+                                            MouseEnter="CopyPreviousValues_MouseEnter" 
+                                            MouseLeave="CopyPreviousValues_MouseLeave" 
+                                            KeyDown="TryCopyPreviousValues_KeyDown">
+                                        <TextBlock 
+                                            TextWrapping="Wrap" 
+                                            FontWeight="Bold">Copy<LineBreak/>Previous<LineBreak/>Values
+                                        </TextBlock>
+                                    </Button>
+                                </Grid>
+                            </ScrollViewer>
+                        </xcad:LayoutAnchorable>
+                    </xcad:LayoutAnchorablePane>
                     <!--</xcad:LayoutAnchorablePaneGroup>-->
 
                     <xcad:LayoutDocumentPaneGroup>
@@ -512,18 +461,30 @@
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" /> <!-- File:-->
-                            <ColumnDefinition Width="Auto" /> <!-- # -->
-                            <ColumnDefinition Width="Auto" /> <!-- of -->
-                            <ColumnDefinition Width="Auto" /> <!-- # -->
-                            <ColumnDefinition Width="Auto" /> <!-- | -->
-                            <ColumnDefinition Width="Auto" /> <!-- Select: -->
-                             <ColumnDefinition Width="Auto" /> <!-- selection type -->
-                            <ColumnDefinition Width="Auto" /> <!-- | -->
-                            <ColumnDefinition Width="Auto" /> <!-- Sort: -->
-                            <ColumnDefinition Width="Auto" /> <!-- sort type -->
-                            <ColumnDefinition Width="Auto" /> <!-- | -->
-                            <ColumnDefinition Width="*" /> <!-- Message: -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- File:-->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- # -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- of -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- # -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- | -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- Select: -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- selection type -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- | -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- Sort: -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- sort type -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- | -->
+                            <ColumnDefinition Width="*" />
+                            <!-- Message: -->
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
@@ -532,19 +493,19 @@
             <StatusBarItem  Grid.Column="1" Content="0" />
             <StatusBarItem  Grid.Column="2" Content="of" />
             <StatusBarItem  Grid.Column="3" Content="none" />
-            
+
             <Separator Grid.Column="4" Margin="5,0,5,0"/>
-            
+
             <StatusBarItem  Grid.Column="5" Content="Select:" FontWeight="Bold" />
             <StatusBarItem  Grid.Column="6" Content="---" />
-            
+
             <Separator Grid.Column="7" Margin="5,0,5,0" />
-            
+
             <StatusBarItem  Grid.Column="8" Content="Sorted by:" FontWeight="Bold" />
             <StatusBarItem  Grid.Column="9" Content="---" />
 
             <Separator Grid.Column="10" Margin="5,0,5,0" />
-            
+
             <StatusBarItem  Grid.Column="11" Content="---" HorizontalAlignment="Right" HorizontalContentAlignment="Stretch"/>
         </StatusBar>
     </Grid>

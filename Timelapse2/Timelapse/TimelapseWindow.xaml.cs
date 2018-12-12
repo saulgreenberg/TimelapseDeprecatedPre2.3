@@ -3962,7 +3962,7 @@ namespace Timelapse
             else
             {
                 // Flash the text field to indicate no result
-                if (this.FindResource("flashAnimation") is Storyboard sb)
+                if (this.FindResource("ColorAnimationBriefFlash") is Storyboard sb)
                 {
                     Storyboard.SetTarget(sb, this.FindBoxTextBox);
                     sb.Begin();
