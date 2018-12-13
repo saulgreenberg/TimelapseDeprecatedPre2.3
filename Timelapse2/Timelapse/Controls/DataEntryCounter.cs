@@ -46,11 +46,15 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
-        // Highlight the border whenever the control gets the keyboard focus
+        // Highlight the border and make the text caret appear whenever the control gets the keyboard focus
         private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            {
+                textBox.IsReadOnlyCaretVisible = true;
+            }
         }
 
         private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
