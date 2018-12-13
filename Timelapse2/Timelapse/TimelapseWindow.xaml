@@ -160,12 +160,13 @@
                 <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Hide or show various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
                 <Separator/>
                 <MenuItem Name="MenuItemClassifyDarkImagesWhenLoading" IsCheckable="False" IsChecked="False" Header="_Classify dark images automatically on initial load..."  ToolTip="Automatically classify dark images when initially loading an image set for the first time." Click="MenuItemClassifyDarkImagesWhenLoading_Click" />
-                <MenuItem Header="Ad_vanced">
+                <!--<MenuItem Header="Ad_vanced">
                     <MenuItem Name="MenuItemAdvancedImageSetOptions" Header="_Image set options..." Click="MenuItemAdvancedImageSetOptions_Click" IsEnabled="False" ToolTip="Image set configuration options that should only be used by advanced users"/>
                     <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="_Timelapse options..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Timelapse configuration options that should only be used by advanced users"/>
 
                     <MenuItem Name="MenuItemAdvancedDeleteDuplicates" Header="_Delete duplicates..." Click="MenuItemDeleteDuplicates_Click" IsEnabled="False" ToolTip="Delete duplicate file records"/>
-                </MenuItem>
+                </MenuItem>-->
+                <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
             </MenuItem>
 
             <!-- View Menu -->

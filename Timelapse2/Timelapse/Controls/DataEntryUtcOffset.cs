@@ -32,7 +32,7 @@ namespace Timelapse.Controls
         private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
-            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
 
         private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)

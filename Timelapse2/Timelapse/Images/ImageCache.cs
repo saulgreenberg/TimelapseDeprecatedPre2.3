@@ -280,16 +280,36 @@ namespace Timelapse.Images
             // calling routines don't check the boolean return value
             try
             {
+                bool prefetched = false;
                 // locate the requested bitmap
                 if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == false)
                 {
                     if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
                     {
                         // bitmap retrieval's already in progress, so wait for it to complete
+                        // While we should always be able to get through this, there have been some crashes around here
+                        // So this is an attempt to try to get around it.
+                        // Previous code was:
+                        // if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
+                        // {
+                        //      // bitmap retrieval's already in progress, so wait for it to complete
+                        //      prefetch.Wait();
+                        //      bitmap = this.unalteredBitmapsByID[fileRow.ID];
+                        // } 
+                        // else
+                        // {
+                        //    // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
+                        //    bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
+                        //    this.CacheBitmap(fileRow.ID, bitmap);
+                        // }
                         prefetch.Wait();
-                        bitmap = this.unalteredBitmapsByID[fileRow.ID];
+                        if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out BitmapSource value) == true)
+                        {
+                            bitmap = value;
+                            prefetched = true;
+                        }
                     }
-                    else
+                    if (prefetched == false)
                     {
                         // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
                         bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
