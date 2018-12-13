@@ -22,7 +22,7 @@
                                       &#10;&#x2022; 'Empty the Folder' to permanently delete those files if you don't need them.
                                       &#10;&#x2022; 'Cancel' to leave those files there."
                             Hint="&#x2022; Restore 'deleted' backups by manually copying files from the DeletedFiles folder to your image set folder.
-                                     &#10;&#x2022; Change how Timelapse manages the DeletedFiles folder via 'Options | Advanced | Timelapse Options'" />
+                                     &#10;&#x2022; Change how Timelapse manages the DeletedFiles folder via the 'Options | Preferences' menu" />
         <Rectangle Fill="#FF868686" Height="1" Grid.Row="1"></Rectangle>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">

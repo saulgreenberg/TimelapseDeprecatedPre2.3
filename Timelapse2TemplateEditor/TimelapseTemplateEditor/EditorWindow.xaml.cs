@@ -402,15 +402,17 @@ namespace Timelapse.Editor
                 MessageBox messageBox = new MessageBox("Confirm Showing UTC Date/Time Settings", this, MessageBoxButton.OKCancel);
                 messageBox.Message.Icon = MessageBoxImage.Information;
 
-                messageBox.Message.What = "Timelapse presents Date and Time conventionally in both its interface and in exported spreadsheet files." + Environment.NewLine;
-                messageBox.Message.What += "Internally, however, Timelapse records Date and Time using the Coordinated Universal Time (UTC) standard." + Environment.NewLine;
-                messageBox.Message.What += "That standard records an absolute Date/Time, plus a separate Time Zone Offset (corrected for daylight saving times if needed)." + Environment.NewLine + Environment.NewLine;
-                messageBox.Message.What += "In rare cases, your users may want to see and manipulate Time Zone information, and include that in the exported spreadsheet.";
-                messageBox.Message.Result = "If you choose to display the UTC Date/Time settings:" + Environment.NewLine +
-                              "\u2022 the Editor wil display a row describing the UtcOffset control, which you can then make visible" + Environment.NewLine + Environment.NewLine +
-                              "Timelapse will, if the UtcOffset control is set to visible,:" + Environment.NewLine +
-                              "\u2022 include a menu option allowing the user to change the Time Zone setting," + Environment.NewLine +
-                              "\u2022 export two extra columns to the spreadsheet: the absolute UTC DateTime, and the UTC offset.";
+                messageBox.Message.What = "Timelapse presents Date and Time conventionally in its interface, and as separate columns in the exported spreadsheet." + Environment.NewLine;
+                messageBox.Message.What += "As an option, Timelapse can also show Date and Time information that follows the Coordinated Universal Time (UTC) standard." + Environment.NewLine;
+                messageBox.Message.What += "That standard records an absolute Date/Time, plus a separate Time Zone Offset to transform that to local time." + Environment.NewLine + Environment.NewLine;
+                messageBox.Message.What += "In rare cases, you may want:" + Environment.NewLine +
+                    "\u2022 to include additional UTC datetime and offset columns in the exported spreadsheet, and" + Environment.NewLine +
+                    "\u2022 to have your analysts to see the UTC Time Zone information within Timelapse";
+                messageBox.Message.Result = "If you select Okay:" + Environment.NewLine +
+                              "\u2022 this Editor will display the UtcOffset control as an additonal row" + Environment.NewLine +
+                              "\u2022 If the UtcOffset control is set to visible, Timelapse will also export two extra columns to the spreadsheet:" + Environment.NewLine +
+                              "    \u25e6 the absolute UTC DateTime, and " + Environment.NewLine +
+                              "    \u25e6 the UTC offset necessary to convert absolute UTC DateTime to local time.";
                 messageBox.Message.Hint = "Avoid showing UTC Date/Time unless you really need it, as your users may find it confusing." + Environment.NewLine;
                 bool? result = messageBox.ShowDialog();
                 if (result != true)

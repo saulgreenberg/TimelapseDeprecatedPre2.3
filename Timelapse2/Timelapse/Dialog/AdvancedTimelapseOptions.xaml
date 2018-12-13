@@ -2,10 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Timelapse.Controls"
-        Title="Advanced Timelapse Options" Height="780" Width="850" MinHeight="780" MinWidth="850" >
+        Title="Preferences" Height="780" Width="850" MinHeight="780" MinWidth="850" >
     <StackPanel Orientation="Vertical" Width="811" Margin="2,0,1,3">
         <controls:StockMessageControl x:Name="Message" Margin="15,0,15,10" Icon="Question"
-                            Title="Advanced Timelapse Options"
+                            Title="Preferences"
                             What="These options should be changed only if you know what you are doing. See the user manual for details. 
                                   &#10;Settings will be remembered and applied every time you run Timelapse on this machine." />
 
@@ -42,7 +42,7 @@
         <GroupBox Header="Image Differencing Threshold" Margin="15,10,15,0" Padding="10,0,10,0" HorizontalAlignment="Left"   VerticalAlignment="Top" FontWeight="Bold" FontSize="12" Height="85" Width="777">
             <DockPanel>
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="This threshold determines how image differences are calculated. View an image's difference to see the results.
+                    <TextBlock Text="This threshold determines how visual differences between images are calculated and displayed.
                                &#10;Low thresholds increases noise, while high thresholds may miss differences." DockPanel.Dock="Top" FontWeight="Normal" FontStyle="Normal" FontSize="12"  Width="660" />
                     <StackPanel Orientation="Horizontal"  Margin="0,10,0,0">
                         <TextBlock Text="Low threshold " Height="27" FontWeight="Normal" Width="128" VerticalAlignment="Top" TextAlignment="Right"/>
