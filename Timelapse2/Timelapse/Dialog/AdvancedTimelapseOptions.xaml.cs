@@ -42,10 +42,15 @@ namespace Timelapse.Dialog
             // Showing Images
             this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.SuppressThrottleWhenLoading ? true : false;
         }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
+        }
 
         #region Delete Folder Management
         // Check the appropriate radio button to match the state
-        private void RadioButtonDeletionManagement_Set(DeleteFolderManagement deleteFolderManagement)
+            private void RadioButtonDeletionManagement_Set(DeleteFolderManagement deleteFolderManagement)
         {
             switch (deleteFolderManagement)
             {
