@@ -3347,7 +3347,6 @@ namespace Timelapse
             this.MenuItemBookmarkDefaultPanZoom.IsEnabled = state;
             this.MenuItemBookmarkSavePanZoom.IsEnabled = state;
             this.MenuItemBookmarkSetPanZoom.IsEnabled = state;
-
         }
 
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
