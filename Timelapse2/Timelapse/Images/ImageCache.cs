@@ -198,10 +198,10 @@ namespace Timelapse.Images
 
         public override bool TryMoveToFile(int fileIndex)
         {
-            return this.TryMoveToFile(fileIndex, out bool ignored);
+            return this.TryMoveToFile(fileIndex, false, out bool ignored);
         }
 
-        public bool TryMoveToFile(int fileIndex, out bool newFileToDisplay)
+        public bool TryMoveToFile(int fileIndex, bool forceUpdate, out bool newFileToDisplay)
         {
             long oldFileID = -1;
             if (this.Current != null)
@@ -215,13 +215,13 @@ namespace Timelapse.Images
                 return false;
             }
 
-            if (this.Current.ID != oldFileID)
+            if (this.Current.ID != oldFileID || forceUpdate == true)
             {
                 // if this is an image load it from cache or disk
                 BitmapSource unalteredImage = null;
                 if (this.Current.IsVideo == false)
                 {
-                    if (this.TryGetBitmap(this.Current, out unalteredImage) == false)
+                    if (this.TryGetBitmap(this.Current, forceUpdate, out unalteredImage) == false)
                     {
                         return false;
                     }
@@ -274,46 +274,52 @@ namespace Timelapse.Images
 
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)
         {
+            return TryGetBitmap(fileRow, false, out bitmap);
+        }
+
+        private bool TryGetBitmap(ImageRow fileRow, bool forceUpdate, out BitmapSource bitmap)
+        {
             // Its in a try/catch because one user was getting a GenericKeyNotFoundException: The given kye was not present in the dictionary", 
             // invoked from 'System.Collections.Concurrent.ConcurrentDictionary;2.get_Item(TKey key) somewhere in here.
             // However, I could not replicate the error. So I am not sure if the catch actually works properly, especially if the
             // calling routines don't check the boolean return value
             try
             {
-                bool prefetched = false;
-                // locate the requested bitmap
-                if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == false)
+                if (forceUpdate)
                 {
+                    // Force update clears the caches, which in turn always forces synchronous loading of the requested bitmap 
+                    // from disk as it cannot cached. This is necessary, in case (for example)  a 'missing' placeholder image was used and the image
+                    // was later restored. If we don't clear the cache, the placeholder image would be used instead.
+                    bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
+                    this.prefetechesByID.Clear();
+                    this.unalteredBitmapsByID.Clear();
+                    this.CacheBitmap(fileRow.ID, bitmap);
+                    // System.Diagnostics.Debug.Print("Loaded as forceUpdate " + fileRow.FileName);
+                }
+
+                else if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == true)
+                {    
+                    // There is a cached bitmap, so we are now using it (in out bitmap)
+                    // System.Diagnostics.Debug.Print("Prefetched immediate " + fileRow.FileName);
+                }
+                else
+                {
+                    // If the prefetched bitmap is still being processed, wait for it
                     if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
                     {
                         // bitmap retrieval's already in progress, so wait for it to complete
-                        // While we should always be able to get through this, there have been some crashes around here
-                        // So this is an attempt to try to get around it.
-                        // Previous code was:
-                        // if (this.prefetechesByID.TryGetValue(fileRow.ID, out Task prefetch))
-                        // {
-                        //      // bitmap retrieval's already in progress, so wait for it to complete
-                        //      prefetch.Wait();
-                        //      bitmap = this.unalteredBitmapsByID[fileRow.ID];
-                        // } 
-                        // else
-                        // {
-                        //    // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
-                        //    bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
-                        //    this.CacheBitmap(fileRow.ID, bitmap);
-                        // }
                         prefetch.Wait();
-                        if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out BitmapSource value) == true)
-                        {
-                            bitmap = value;
-                            prefetched = true;
-                        }
+                        bitmap = this.unalteredBitmapsByID[fileRow.ID];
+                        // System.Diagnostics.Debug.Print("Prefetched wait" + fileRow.FileName);
                     }
-                    if (prefetched == false)
+                    else
                     {
-                        // synchronously load the requested bitmap from disk as it isn't cached, doesn't have a prefetch running, and is needed right now by the caller
+                        // No cached bitmaps are available.
+                        // synchronously load the requested bitmap from disk as it isn't cached, 
+                        // doesn't have a prefetch running, and is needed right now by the caller
                         bitmap = fileRow.LoadBitmap(this.Database.FolderPath);
                         this.CacheBitmap(fileRow.ID, bitmap);
+                        // System.Diagnostics.Debug.Print("Loaded as not prefetched " + fileRow.FileName);
                     }
                 }
 

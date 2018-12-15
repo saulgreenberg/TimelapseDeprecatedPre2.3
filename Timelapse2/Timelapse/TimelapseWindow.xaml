@@ -197,7 +197,7 @@
                 <Separator/>
                 <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" ToolTip="Display statistics of the total number of files and their types"/>
                 <Separator/>
-                <MenuItem Name="MenuItemSelectReselect" Header="Select again (refreshes the selection)" Click="MenuItemSelectReselect_Click" ToolTip="Reselects the files based on the current select criteria (useful if you update your data)."/>
+                <MenuItem Name="MenuItemSelectReselect" Header="Refresh the selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
             </MenuItem>
 
             <!-- Sort Menu -->
@@ -208,7 +208,7 @@
                 <Separator/>
                 <MenuItem Name="MenuItemSortCustom" IsCheckable="True" IsChecked="False" Header="_Custom sort..." Click="MenuItemSortCustom_Click" ToolTip="Customize the sorting order by particular fields."/>
                 <Separator/>
-                <MenuItem Name="MenuItemSortResort" Header="Sort again (refreshes the sort)" Click="MenuItemSortResort_Click" ToolTip="Re-sorts the files based on the current sort criteria (useful if you update your data)."  />
+                <MenuItem Name="MenuItemSortResort" Header="Refresh the sort" Click="MenuItemSortResort_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria." />
             </MenuItem>
 
             <!-- Window Menu -->

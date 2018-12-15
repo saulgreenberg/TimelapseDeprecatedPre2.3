@@ -78,7 +78,7 @@ namespace Timelapse.Controls
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
-        public bool Refresh(double desiredWidth, Size availableSize)
+        public bool Refresh(double desiredWidth, Size availableSize, bool forceUpdate)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
             if (FileTable == null || FileTable.Count() == 0 || desiredWidth == 0)
@@ -122,6 +122,13 @@ namespace Timelapse.Controls
             ClickableImage ci;
             this.clickableImagesList = new List<ClickableImage>();
             List<ClickableImage> clickableImagesRow = new List<ClickableImage>();
+            
+            // If forceUpdate is true, remove the cache so that images have to be regenerated
+            if (forceUpdate && this.cachedImageList != null)
+            {
+                this.cachedImageList.Clear();
+            }
+
             while (true)
             {
                 // For each row: 

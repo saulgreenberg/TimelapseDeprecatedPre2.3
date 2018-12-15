@@ -75,11 +75,11 @@ namespace Timelapse
             this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
             this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
 
-            // Save/restore the focus whenever we leave / enter the controls or the file navigator
-            this.ControlsPanel.MouseEnter += SaveFocusOn_MouseEnter;
-            this.ControlsPanel.MouseLeave += SaveFocusOn_MouseLeave;
-            this.FileNavigatorSlider.MouseEnter += SaveFocusOn_MouseEnter;
-            this.FileNavigatorSlider.MouseLeave += SaveFocusOn_MouseLeave;
+            // Save/restore the focus whenever we leave / enter the control grid (which contains controls pluse the copy previous button, or the file navigator
+            this.ControlGrid.MouseEnter += FocusRestoreOn_MouseEnter;
+            this.ControlGrid.MouseLeave += FocusSaveOn_MouseLeave;
+            this.FileNavigatorSlider.MouseEnter += FocusRestoreOn_MouseEnter;
+            this.FileNavigatorSlider.MouseLeave += FocusSaveOn_MouseLeave;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -1085,6 +1085,14 @@ namespace Timelapse
                 return;
             }
 
+            // SAULXXXX 
+            // We set forceUpdate to true because at least one imagequality status has changed
+            // and we want the correct image to be shown
+            if (CheckAndUpdateImageQualityForMissingFiles())
+            {
+                forceUpdate = true;
+            }
+
             // Select the files according to the given selection
             this.dataHandler.FileDatabase.SelectFiles(selection);
 
@@ -1191,12 +1199,14 @@ namespace Timelapse
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
             }
 
-            // SAULXXX Reset the clickable grid selection after every change in the selectin
+            // SAULXXX Reset the clickable grid selection after every change in the selection
             if (this.IsDisplayingMultipleImagesInOverview())
             {
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
-            this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), forceUpdate);
+            //this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), forceUpdate);
+            // Always force an update after a selection
+            this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 
             // Update the status bar accordingly
             this.StatusBar.SetCurrentFile(this.dataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list
@@ -1816,7 +1826,7 @@ namespace Timelapse
 
 
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
-            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, out bool newFileToDisplay) == false)
+            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
             {
                 if (this.dataHandler != null)
                 { 
@@ -1910,7 +1920,7 @@ namespace Timelapse
             {
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
-            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
         }
 
         private bool TryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)
@@ -2135,17 +2145,33 @@ namespace Timelapse
         }
 
         // Save/restore the focus whenever we leave / enter the controls or the file navigator
-        private void SaveFocusOn_MouseEnter(object sender, MouseEventArgs e)
+        private void FocusSaveOn_MouseLeave(object sender, MouseEventArgs e)
+        {
+            IInputElement focusedElement = FocusManager.GetFocusedElement(this);
+            if (focusedElement == null || 
+                focusedElement is Timelapse.Images.MarkableCanvas ||
+                focusedElement is System.Windows.Controls.TabItem )
+            {
+                // We only want to save the focus on controls
+                //string message = (lastControlWithFocus == null) ? "Leave: No control has focus" : "Leave: " + lastControlWithFocus.GetType().ToString();
+                //Debug.Print(message);
+                //return;
+            }
+            lastControlWithFocus = focusedElement;
+           // Debug.Print("Leave: " + lastControlWithFocus.GetType().ToString());
+        }
+
+        private void FocusRestoreOn_MouseEnter(object sender, MouseEventArgs e)
         {
             if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
             {
                 Keyboard.Focus(lastControlWithFocus);
+                //System.Diagnostics.Debug.Print("Enter: " + lastControlWithFocus.GetType().ToString());
             }
-        }
-
-        private void SaveFocusOn_MouseLeave(object sender, MouseEventArgs e)
-        {
-            lastControlWithFocus = FocusManager.GetFocusedElement(this);
+            //else
+            //{
+            //    System.Diagnostics.Debug.Print("Enter: No control has focus");
+            //}
         }
 
         // Actually set the top level keyboard focus to the image control
@@ -3497,6 +3523,56 @@ namespace Timelapse
         public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
         {
             this.MaybeShowFileCountsDialog(false, this);
+        }
+
+        // SAULXXXX 
+        // Check every file to see if:
+        // - file exists but ImageQuality is Missing, or
+        // - file does not exist but ImageQuality is anything other than missing
+        // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
+        // The downfall is that prior ImageQuality information will be lost if a change is made
+        // Another issue is that the current version only checks the currently selected files vs. all files
+        public bool CheckAndUpdateImageQualityForMissingFiles()
+        {
+            string filepath = String.Empty;
+            string message = String.Empty;
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            ColumnTuplesWithWhere imageUpdate;
+
+            // Get all files, regardless of the selection
+            FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
+            foreach (ImageRow image in allFiles)
+            {
+                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
+                if (File.Exists(filepath) && image.ImageQuality == FileSelection.Missing)
+                {
+                    // The File exists but image quality is set to missing. Reset it to OK
+                    // Note that the file may be corrupt, dark, etc., but we don't check for that.
+                    // SAULXXX Perhaps we should?
+                    image.ImageQuality = FileSelection.Ok; 
+                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
+                    imagesToUpdate.Add(imageUpdate);
+                    System.Diagnostics.Debug.Print("Restored " + filepath);
+                }
+                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelection.Missing)
+                {
+                    // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
+                    // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
+                    // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
+                    message = "Missing " + filepath;
+                    image.ImageQuality = FileSelection.Missing;
+                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
+                    imagesToUpdate.Add(imageUpdate);
+                    System.Diagnostics.Debug.Print("Missing " + filepath);
+                }
+            }
+            if (imagesToUpdate.Count > 0)
+            {
+                this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
+                return true;
+
+            }
+            return false;
         }
         #endregion
 

@@ -45,6 +45,7 @@ namespace Timelapse.Database
         public DataTableBackedList<MarkerRow> Markers { get; private set; }
         #endregion
 
+        #region Create or Open the Database
         private FileDatabase(string filePath)
             : base(filePath)
         {
@@ -86,6 +87,7 @@ namespace Timelapse.Database
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
         }
+        #endregion
 
         public List<object> GetDistinctValuesInColumn(string table, string columnName)
         {
@@ -98,6 +100,7 @@ namespace Timelapse.Database
             get { return this.Files.RowCount; }
         }
 
+        #region Adding Files to the Database
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
             // We need to get a list of which columns are counters vs notes or fixed coices, 
@@ -249,6 +252,7 @@ namespace Timelapse.Database
             // Load / refresh the marker table from the database to keep it in sync - Doing so here will make sure that there is one row for each image.
             this.GetMarkers();
         }
+        #endregion
 
         public void AppendToImageSetLog(StringBuilder logEntry)
         {
@@ -344,6 +348,7 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
         }
 
+        #region Upgrade Databases
         public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // If the file doesn't exist, then no immediate action is needed
@@ -600,6 +605,7 @@ namespace Timelapse.Database
                 this.Database.Update(Constant.DatabaseTable.FileData, updateQuery);
             }
         }
+        #endregion
 
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
         protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
@@ -839,6 +845,13 @@ namespace Timelapse.Database
             return new FileTable(images);
         }
 
+        public FileTable GetAllFiles()
+        {
+            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(images);
+        }
+
         // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
         // Delete duplicate rows from the database, identified by identical File and RelativePath contents.
         public void DeleteDuplicateFiles()
@@ -940,6 +953,7 @@ namespace Timelapse.Database
             }
         }
 
+        #region Update Files
         /// <summary>
         /// Update a column value (identified by its key) in an existing row (identified by its ID) 
         /// By default, if the table parameter is not included, we use the TABLEDATA table
@@ -1042,7 +1056,9 @@ namespace Timelapse.Database
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
         }
+        #endregion
 
+        #region AdjustFileTimes
         public void AdjustFileTimes(TimeSpan adjustment)
         {
             this.AdjustFileTimes(adjustment, 0, this.CurrentlySelectedFileCount - 1);
@@ -1117,7 +1133,9 @@ namespace Timelapse.Database
                 this.AppendToImageSetLog(log);
             }
         }
+        #endregion
 
+        #region ExchangeDayAndMonthInFileDates
         // Update all the date fields by swapping the days and months.
         // This should ONLY be called if such swapping across all dates (excepting corrupt ones) is possible
         // as otherwise it will only swap those dates it can
@@ -1184,6 +1202,7 @@ namespace Timelapse.Database
                 this.AppendToImageSetLog(log);
             }
         }
+        #endregion
 
         // Delete the data (including markers associated with the images identified by the list of IDs.
         public void DeleteFilesAndMarkers(List<long> fileIDs)
@@ -1263,6 +1282,7 @@ namespace Timelapse.Database
             return -1;
         }
 
+        #region FindByFilename variations
         // Find by file name, forwards and backwards with wrapping
         public int FindByFileName(int currentRow, bool isForward, string filename)
         {
@@ -1318,6 +1338,7 @@ namespace Timelapse.Database
             }
             return culture.CompareInfo.IndexOf(this.Files[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
         }
+        #endregion
 
         // Find the image whose ID is closest to the provided ID  in the current image set
         // If the ID does not exist, then return the image row whose ID is just greater than the provided one. 

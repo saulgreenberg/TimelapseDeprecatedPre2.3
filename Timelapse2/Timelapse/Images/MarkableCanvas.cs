@@ -1079,8 +1079,15 @@ namespace Timelapse.Images
             }
         }
 
-        // Refressh the Clickable Images Grid
+        // Refresh the Clickable Images Grid
         private bool RefreshClickableImagesGrid(int state)
+        {
+            // when called without a forceUpdate argument, assume
+            // that we don't need to force the update of all images
+            return RefreshClickableImagesGrid(state, false);
+        }
+
+        private bool RefreshClickableImagesGrid(int state, bool forceUpdate)
         {
             if (this.ClickableImagesGrid == null)
             {
@@ -1089,11 +1096,11 @@ namespace Timelapse.Images
             this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
 
             Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
-            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height));
+            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate);
         }
 
         // If the clickable images grid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
-        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation)
+        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation, bool forceUpdate)
         {
             if (this.IsClickableImagesGridVisible == true)
             {
@@ -1109,7 +1116,7 @@ namespace Timelapse.Images
                 }
                 else
                 {
-                    this.RefreshClickableImagesGrid(this.ClickableImagesState);
+                    this.RefreshClickableImagesGrid(this.ClickableImagesState, forceUpdate);
                 }
             }
         }
