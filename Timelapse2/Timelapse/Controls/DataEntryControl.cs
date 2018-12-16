@@ -25,7 +25,7 @@ namespace Timelapse.Controls
         /// <summary>Gets the data label which corresponds to this control.</summary>
         public string DataLabel { get; private set; }
 
-        public abstract void Focus(DependencyObject focusScope);
+        public abstract IInputElement Focus(DependencyObject focusScope);
 
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
@@ -119,12 +119,13 @@ namespace Timelapse.Controls
             this.Container.Children.Add(this.ContentControl);
         }
 
-        public override void Focus(DependencyObject focusScope)
+        public override IInputElement Focus(DependencyObject focusScope)
         {
             // request the focus manager figure out how to assign focus within the edit control as not all controls are focusable at their top level
             // This is not reliable at small focus scopes, possibly due to interaction with TimelapseWindow's focus management, but seems reasonably
             // well behaved at application scope.
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
+            return (IInputElement)this.ContentControl;
         }
     }
 }

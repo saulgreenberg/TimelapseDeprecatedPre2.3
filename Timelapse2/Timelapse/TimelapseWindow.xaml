@@ -302,6 +302,7 @@
                     </StackPanel>
                 </DataTemplate>
             </xcad:DockingManager.DocumentHeaderTemplate>
+            
             <xcad:DockingManager.AnchorableTitleTemplate>
                 <DataTemplate>
                     <!--This is a hack to get the DataEntryControlPanel tooltip to work, as setting it within the DataEntryControlPanel doesn't seem to work -->
@@ -375,10 +376,20 @@
                                             MouseEnter="CopyPreviousValues_MouseEnter" 
                                             MouseLeave="CopyPreviousValues_MouseLeave" 
                                             KeyDown="TryCopyPreviousValues_KeyDown">
-                                        <TextBlock 
-                                            TextWrapping="Wrap" 
-                                            FontWeight="Bold">Copy<LineBreak/>Previous<LineBreak/>Values
-                                        </TextBlock>
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock 
+                                                TextWrapping="Wrap" 
+                                                FontWeight="Bold">Copy<LineBreak/>previous<LineBreak/>values
+                                            </TextBlock>
+                                            <DockPanel Margin="0,-6,0,-6" Width="Auto">
+                                                <TextBlock 
+                                                FontWeight="Bold" Foreground="SlateGray" FontSize="16" DockPanel.Dock="Left" TextAlignment="Left">&#8592;
+                                                </TextBlock>
+                                                <TextBlock 
+                                                FontWeight="Bold" Foreground="SlateGray" FontSize="16" DockPanel.Dock="Right" TextAlignment="Right">&#8594;
+                                                </TextBlock>
+                                            </DockPanel>
+                                        </StackPanel>
                                     </Button>
                                 </Grid>
                             </ScrollViewer>

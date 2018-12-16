@@ -78,8 +78,9 @@ namespace Timelapse
             // Save/restore the focus whenever we leave / enter the control grid (which contains controls pluse the copy previous button, or the file navigator
             this.ControlGrid.MouseEnter += FocusRestoreOn_MouseEnter;
             this.ControlGrid.MouseLeave += FocusSaveOn_MouseLeave;
-            this.FileNavigatorSlider.MouseEnter += FocusRestoreOn_MouseEnter;
-            this.FileNavigatorSlider.MouseLeave += FocusSaveOn_MouseLeave;
+            // SaulXXXX Restore this if we want the tab list to include the File Navigator
+            // this.FileNavigatorSlider.MouseEnter += FocusRestoreOn_MouseEnter;
+            // this.FileNavigatorSlider.MouseLeave += FocusSaveOn_MouseLeave;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -1356,8 +1357,9 @@ namespace Timelapse
             this.MarkableCanvas_UpdateMarkers();
         }
 
+        //SAULXXXX
         // Move the focus (usually because of tabbing or shift-tab)
-        // It cycles between the data entry controls to the CopyPrevious button to the File Navigator
+        // It cycles between the data entry controls and the CopyPrevious button 
         private void MoveFocusToNextOrPreviousControlOrImageSlider(bool moveToPreviousControl)
         {
             // identify the currently selected control
@@ -1370,16 +1372,19 @@ namespace Timelapse
             {
                 type = focusedElement.GetType();
 
-                if (type == CopyPreviousValuesButton.GetType() && moveToPreviousControl == false)
-                {
-                    this.FileNavigatorSlider.Focus();
-                    return;
-                }
-                else if (type == FileNavigatorSlider.GetType() && moveToPreviousControl == true)
-                {
-                    this.CopyPreviousValuesButton.Focus();
-                    return;
-                }
+                // Commented out sections include the FileNavigatorSlider in the tab list
+                // if (type == CopyPreviousValuesButton.GetType() && moveToPreviousControl == false)
+                // {
+                //    this.FileNavigatorSlider.Focus();
+                //    this.lastControlWithFocus = this.FileNavigatorSlider;
+                //    return;
+                // }
+                // else if (type == FileNavigatorSlider.GetType() && moveToPreviousControl == true)
+                // {
+                //    this.CopyPreviousValuesButton.Focus();
+                //    this.lastControlWithFocus = this.CopyPreviousValuesButton;
+                //    return;
+                // }
 
                 if (Constant.Control.KeyboardInputTypes.Contains(type))
                 {
@@ -1418,7 +1423,7 @@ namespace Timelapse
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
                 if (control.ContentReadOnly == false)
                 {
-                    control.Focus(this);
+                    this.lastControlWithFocus = control.Focus(this); 
                     return;
                 }
             }
@@ -1426,14 +1431,16 @@ namespace Timelapse
             // no control was found so set focus to the CopyPreviousValue button
             // this has also the desirable side effect of binding the controls into both next and previous loops so that keys can be used to cycle
             // continuously through them
-            if (moveToPreviousControl == true)
-            {
-                this.FileNavigatorSlider.Focus();
-            }
-            else
-            {
+            // if (moveToPreviousControl == true)
+            // {
+            //    this.FileNavigatorSlider.Focus();
+            //    this.lastControlWithFocus = this.FileNavigatorSlider;
+            // }
+            // else
+            // {
                 this.CopyPreviousValuesButton.Focus();
-            }
+                this.lastControlWithFocus = this.CopyPreviousValuesButton;
+            // }
         }
 
         /// <summary>
@@ -2828,6 +2835,7 @@ namespace Timelapse
             this.FilePlayer.Visibility = Visibility.Collapsed;
             this.InstructionPane.IsActive = true;
             this.DataGridSelectionsTimer.Stop();
+            this.lastControlWithFocus = null;
         }
 
         /// <summary>
