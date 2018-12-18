@@ -12,10 +12,29 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="ColDef" />
         </Grid.ColumnDefinitions>
+        
         <Viewbox Name="Viewbox" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
         </Viewbox>
-        <Viewbox Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" >
+        
+        <TextBlock Name="TextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16" >  <!--Margin="10,12,0,0"-->
+            <TextBlock.Background>
+                <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
+            </TextBlock.Background>
+        </TextBlock>
+        
+        <Viewbox Height="35" Name="CheckboxViewbox" HorizontalAlignment="Left" VerticalAlignment="Top" > <!--Margin="10,0,0,12"-->
+            <Border BorderThickness="2" BorderBrush="Black">
+                <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
+                       VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="66" >
+                    <TextBlock.Background>
+                        <SolidColorBrush Color="AliceBlue" Opacity="0.35" />
+                    </TextBlock.Background>
+                </TextBlock>
+            </Border>
+        </Viewbox>
+
+        <!--<Viewbox Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" >
             <Border BorderThickness="2" BorderBrush="Black">
                 <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
                        VerticalAlignment="Bottom" Foreground="DarkSlateGray" FontWeight="Bold" FontSize="66" >
@@ -29,6 +48,6 @@
             <TextBlock.Background>
                 <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
             </TextBlock.Background>
-        </TextBlock>
+        </TextBlock>-->
     </Grid>
 </UserControl>

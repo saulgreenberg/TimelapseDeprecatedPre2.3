@@ -78,7 +78,7 @@ namespace Timelapse.Controls
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that when a user navigates, previously selected images that no longer appear in the grid will be unselected
-        public bool Refresh(double desiredWidth, Size availableSize, bool forceUpdate)
+        public bool Refresh(double desiredWidth, Size availableSize, bool forceUpdate, int state)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
             if (FileTable == null || FileTable.Count() == 0 || desiredWidth == 0)
@@ -152,7 +152,7 @@ namespace Timelapse.Controls
                             if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
                                // Re-render the cached image, as its smaller than the resolution width 
-                               imageHeight = ci.Rerender(desiredWidth);
+                               imageHeight = ci.Rerender(desiredWidth, state);
                             }
                             else
                             {
@@ -162,6 +162,7 @@ namespace Timelapse.Controls
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             ci.TextFontSize = desiredWidth / 20;
+                            ci.AdjustMargin(state);
                             clickableImagesRow.Add(ci);
                             inCache = true;
                             cachedImageListIndex++;
@@ -183,9 +184,10 @@ namespace Timelapse.Controls
                             ImageRow = this.FileTable[fileTableIndex],
                             DesiredRenderWidth = desiredWidth
                         };
-                        imageHeight = ci.Rerender(desiredWidth);
+                        imageHeight = ci.Rerender(desiredWidth, state);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
                         ci.TextFontSize = desiredWidth / 20;
+                        ci.AdjustMargin(state);
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)
                         {

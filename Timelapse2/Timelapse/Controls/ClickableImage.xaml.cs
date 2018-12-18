@@ -113,12 +113,16 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public Double Rerender(double width)
+        public Double Rerender(double width, int state)
         {
             this.DesiredRenderWidth = width;
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.Image.Source = bf;
-            this.TextBlock.Text = this.ImageRow.FileName;
+
+            // A descriptive string: the filename without the extention, plu the time in HH:MM
+            // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
+            string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
+            this.TextBlock.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
 
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
@@ -132,6 +136,29 @@ namespace Timelapse.Controls
                 this.Image.Height = bf.PixelHeight;
             }
             return this.Image.Height; 
+        }
+
+        // Most images have a black bar at its bottom and top. We want to aligh 
+        // the checkbox / text label to be just outside that black bar. This is guesswork, 
+        // but the margin should line up within reason most of the time
+        public void AdjustMargin(int state)
+        {
+            int margin = 0;
+            switch (state)
+            {
+                case 2:
+                    margin = 8;
+                    break;
+                case 3:
+                    margin = 6;
+                    break;
+                case 1:
+                default:
+                    margin = 12;
+                    break;
+            }
+            this.TextBlock.Margin = new Thickness(0, margin, margin, 0);
+            this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
         }
     }
 }

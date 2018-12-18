@@ -1096,7 +1096,7 @@ namespace Timelapse.Images
             this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
 
             Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
-            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate);
+            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate, state);
         }
 
         // If the clickable images grid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
