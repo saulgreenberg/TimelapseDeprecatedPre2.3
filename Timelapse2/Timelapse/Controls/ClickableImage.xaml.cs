@@ -118,7 +118,12 @@ namespace Timelapse.Controls
             this.DesiredRenderWidth = width;
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
             this.Image.Source = bf;
-            this.TextBlock.Text = this.ImageRow.FileName;
+            string timeInHHMM = String.Empty;
+            if (this.ImageRow.Time.Length > 3)
+            {
+                timeInHHMM = this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3);
+            }
+            this.TextBlock.Text = this.ImageRow.FileName + " (" + timeInHHMM + ")";
 
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
