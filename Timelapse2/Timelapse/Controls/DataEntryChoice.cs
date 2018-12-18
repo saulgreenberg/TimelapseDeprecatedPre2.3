@@ -51,7 +51,6 @@ namespace Timelapse.Controls
             if (includesEmptyChoice)
             {
                 // put empty choice at the beginning of the control below a separator for visual clarity
-                this.ContentControl.Items.Insert(0, new Separator());
                 cbi = new ComboBoxItem()
                 {
                     Content = String.Empty
