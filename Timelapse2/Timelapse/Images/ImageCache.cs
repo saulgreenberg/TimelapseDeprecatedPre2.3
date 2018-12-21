@@ -296,7 +296,6 @@ namespace Timelapse.Images
                     this.CacheBitmap(fileRow.ID, bitmap);
                     // System.Diagnostics.Debug.Print("Loaded as forceUpdate " + fileRow.FileName);
                 }
-
                 else if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == true)
                 {    
                     // There is a cached bitmap, so we are now using it (in out bitmap)

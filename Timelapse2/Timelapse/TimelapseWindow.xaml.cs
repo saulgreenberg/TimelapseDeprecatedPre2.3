@@ -1086,7 +1086,6 @@ namespace Timelapse
                 return;
             }
 
-            // SAULXXXX 
             // We set forceUpdate to true because at least one imagequality status has changed
             // and we want the correct image to be shown
             if (CheckAndUpdateImageQualityForMissingFiles())
@@ -2327,6 +2326,12 @@ namespace Timelapse
         /// </summary>
         private void MarkableCanvas_AddMarker(DataEntryCounter counter, Marker marker)
         {
+            if (counter == null || marker == null)
+            {
+                // This shouldn't really happen, but just in case...
+                return;
+            }
+
             // Get the Counter Control's contents,  increment its value (as we have added a new marker) 
             // Then update the control's content as well as the database
             // If we can't convert it to an int, assume that someone set the default value to either a non-integer in the template, or that it's a space. In either case, revert it to zero.
@@ -3533,7 +3538,6 @@ namespace Timelapse
             this.MaybeShowFileCountsDialog(false, this);
         }
 
-        // SAULXXXX 
         // Check every file to see if:
         // - file exists but ImageQuality is Missing, or
         // - file does not exist but ImageQuality is anything other than missing
