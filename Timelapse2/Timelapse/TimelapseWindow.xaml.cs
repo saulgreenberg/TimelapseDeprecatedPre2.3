@@ -2172,7 +2172,7 @@ namespace Timelapse
             if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
             {
                 Keyboard.Focus(lastControlWithFocus);
-                //System.Diagnostics.Debug.Print("Enter: " + lastControlWithFocus.GetType().ToString());
+                // System.Diagnostics.Debug.Print("Enter: " + lastControlWithFocus.GetType().ToString());
             }
             //else
             //{
@@ -2328,7 +2328,8 @@ namespace Timelapse
         {
             if (counter == null || marker == null)
             {
-                // This shouldn't really happen, but just in case...
+                // This shouldn't happen, but a user reported a 'null' crash somewhere in this method, so just in case...
+                System.Diagnostics.Debug.Print("In MarkableCanvas_AddMarker. Counter or marker is null (and it shouldn't be");
                 return;
             }
 
