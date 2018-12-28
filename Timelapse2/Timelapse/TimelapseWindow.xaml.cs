@@ -46,6 +46,8 @@ namespace Timelapse
         private TemplateDatabase templateDatabase;                      // The database that holds the template
         private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
+        private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
+
         // Timer for periodically updating images as the ImageNavigator slider is being used
         private DispatcherTimer timerFileNavigator;
 
@@ -78,9 +80,6 @@ namespace Timelapse
             // Save/restore the focus whenever we leave / enter the control grid (which contains controls pluse the copy previous button, or the file navigator
             this.ControlGrid.MouseEnter += FocusRestoreOn_MouseEnter;
             this.ControlGrid.MouseLeave += FocusSaveOn_MouseLeave;
-            // SaulXXXX Restore this if we want the tab list to include the File Navigator
-            // this.FileNavigatorSlider.MouseEnter += FocusRestoreOn_MouseEnter;
-            // this.FileNavigatorSlider.MouseLeave += FocusSaveOn_MouseLeave;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -185,7 +184,7 @@ namespace Timelapse
                     // don't save custom selections, revert to All 
                     this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelection.All;
                 }
-
+                
                 // sync image set properties
                 if (this.MarkableCanvas != null)
                 {
@@ -246,6 +245,9 @@ namespace Timelapse
             this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
             this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
             this.state.WriteSettingsToRegistry();
+
+            // Clear the CustomPasteEntries from the ImageSet table and save its state
+            this.quickPasteEntries = null;
         }
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
@@ -618,7 +620,7 @@ namespace Timelapse
                 // First pass: Examine files to extract their basic properties and build a list of files not already in the database
                 //
                 // Todd found the following. With dark calculations enabled:
-                // Profiling of a 1000 image load on quad core, single 80+MB/s capable SSD shows the following:
+                // Profiling of a 1000 image load on quad core, single 80+MB/s capable SSD shows the following:en
                 // - one thread:   100% normalized execution time, 35% CPU, 16MB/s disk (100% normalized time = 1 minute 58 seconds)
                 // - two threads:   55% normalized execution time, 50% CPU, 17MB/s disk (6.3% normalized time with dark checking skipped)
                 // - three threads: 46% normalized execution time, 70% CPU, 20MB/s disk
@@ -957,6 +959,9 @@ namespace Timelapse
             {
                 DataGridPane_IsActiveChanged(null, null);
             }
+
+            // Load the CustomPasteEntries from the ImageSet table
+            this.quickPasteEntries = new List<QuickPasteEntry>();
         }
         #endregion
 
@@ -984,6 +989,9 @@ namespace Timelapse
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
             // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
+
+            // Paste menu
+            this.MenuItemQuickPaste.IsEnabled = filesSelected;
 
             // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
@@ -1536,6 +1544,119 @@ namespace Timelapse
         }
         #endregion
 
+
+        #region QuickPaste
+        private void QuickPasteWindow_QuickPasteEvent(object sender, QuickPasteEventArgs e)
+        {
+            if (e.EventType == 0)
+            {
+                TryQuickPaste(e.QuickPasteEntry);
+            }
+            else if (e.EventType == 1)
+            {
+                HighlightQuickPaste(e.QuickPasteEntry);
+            }
+            else if (e.EventType == 2)
+            {
+                UnHighlightQuickPaste(e.QuickPasteEntry);
+            }
+        }
+
+        // Highlight the controls affected by the Quickpaste entry
+        public void HighlightQuickPaste(QuickPasteEntry quickPasteEntry)
+        {
+            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
+            int row = this.dataHandler.ImageCache.CurrentRow;
+            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            {
+                return; // This shouldn't happen, but just in case...
+            }
+
+            foreach (QuickPasteItem item in quickPasteEntry.Items)
+            {
+                if (item.Use == false)
+                {
+                    continue;
+                }
+
+                // Find the data entry control that matches the quickPasteItem's DataLael
+                foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
+                {
+                    DataEntryControl control = pair.Value;
+                    if (control.DataLabel == item.DataLabel)
+                    {
+                        control.Container.Background = Constant.Control.CopyableFieldHighlightBrush;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void UnHighlightQuickPaste(QuickPasteEntry quickPasteEntry)
+        {
+            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
+            int row = this.dataHandler.ImageCache.CurrentRow;
+            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            {
+                return; // This shouldn't happen, but just in case...
+            }
+
+            foreach (QuickPasteItem item in quickPasteEntry.Items)
+            {
+                if (item.Use == false)
+                {
+                    continue;
+                }
+
+                // Find the data entry control that matches the quickPasteItem's DataLael
+                foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
+                {
+                    DataEntryControl control = pair.Value;
+                    if (control.DataLabel == item.DataLabel)
+                    {
+                        control.Container.ClearValue(Control.BackgroundProperty);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Quickpast the given entry
+        public void TryQuickPaste(QuickPasteEntry quickPasteEntry)
+        {
+            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
+            int row = this.dataHandler.ImageCache.CurrentRow;
+            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            {
+                return; // This shouldn't happen, but just in case...
+            }
+
+            foreach (QuickPasteItem item in quickPasteEntry.Items)
+            {
+                if (item.Use == false)
+                {
+                    continue;
+                }
+
+                // Find the data entry control that matches the quickPasteItem's DataLael
+                foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
+                {
+                    DataEntryControl control = pair.Value;
+                    if (control.DataLabel == item.DataLabel)
+                    {
+                        control.SetContentAndTooltip(item.Value);
+                        break;
+                    }
+                }
+            }
+        }
+        #endregion
         #region Differencing
         // Cycle through the image differences in the order: current, then previous and next differenced images.
         // Create and cache the differenced images.
@@ -2172,12 +2293,7 @@ namespace Timelapse
             if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
             {
                 Keyboard.Focus(lastControlWithFocus);
-                // System.Diagnostics.Debug.Print("Enter: " + lastControlWithFocus.GetType().ToString());
             }
-            //else
-            //{
-            //    System.Diagnostics.Debug.Print("Enter: No control has focus");
-            //}
         }
 
         // Actually set the top level keyboard focus to the image control
@@ -3119,6 +3235,66 @@ namespace Timelapse
                 this.SelectFilesAndShowFile(forceUpdate);
             }
         }
+        #endregion
+
+        #region Paste Menu Callbacks
+        private void Paste_SubmenuOpening(object sender, RoutedEventArgs e)
+        {
+            // Disable / enable various controls depending if there are any quickpaste items to show
+        }
+
+        // Create a new quick-paste item based on the data shown in the current image
+        // It raises the quick-paste editor
+        private void MenuItemNewQuickPaste_Click(object sender, RoutedEventArgs e)
+        {
+            // This is to test a new quick paste
+            QuickPasteEntry quickPasteEntry = QuickPaste.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, "Based on Row " + this.dataHandler.ImageCache.CurrentRow);
+            if (quickPasteEntry == null)
+            {
+                return;
+            }
+            Dialog.QuickPasteEditor quickPasteConfiguration = new Dialog.QuickPasteEditor(quickPasteEntry)
+            {
+                Owner = this
+            };
+            // SAULXXXX 
+            // Probably should put this somewhere else so we don't have event handlers constantly being created,
+            // or perhaps just create the window once and hide it instead of closing it.
+            if (quickPasteConfiguration.ShowDialog() == true)
+            {
+                quickPasteEntry = quickPasteConfiguration.quickPasteEntry;
+                if (this.quickPasteEntries == null)
+                {
+                    // This shouldn't be necessary, but just in case...
+                    this.quickPasteEntries = new List<QuickPasteEntry>();
+                }
+                this.quickPasteEntries.Add(quickPasteEntry);
+                System.Diagnostics.Debug.Print(quickPasteEntry.Title + " " +  this.quickPasteEntries.Count.ToString());
+                string xml = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
+                QuickPaste.QuickPasteEntriesFromXML(xml);
+
+            }
+        }
+        private void MenuItemShowQuickPasteWindow_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.quickPasteEntries == null)
+            {
+                return;
+            }
+            //foreach (QuickPasteEntry qpe in this.quickPasteEntries)
+            //{
+            //    System.Diagnostics.Debug.Print("Window List: " + qpe.Title + " " + qpe.Items.Count.ToString());
+            //}
+            Dialog.QuickPasteWindow quickPasteWindow = new QuickPasteWindow()
+            {
+                Owner = this,
+                QuickPasteEntries = this.quickPasteEntries
+            };
+            quickPasteWindow.Show();
+            quickPasteWindow.QuickPasteEvent += QuickPasteWindow_QuickPasteEvent;
+        }
+
+
         #endregion
 
         #region Options Menu Callbacks
@@ -4377,8 +4553,9 @@ namespace Timelapse
 
 
 
+
         #endregion
 
-
+ 
     }
 }

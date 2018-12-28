@@ -144,7 +144,12 @@
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
             </MenuItem>
 
-
+            <!-- QuickPaste Menu -->
+            <MenuItem Name="MenuItemQuickPaste" Header="Paste" IsEnabled="False" IsTabStop="false" SubmenuOpened="Paste_SubmenuOpening" >
+                <MenuItem Name="MenuItemNewQuickPaste" IsEnabled="True" Header="_New Paste from current image" Click="MenuItemNewQuickPaste_Click" ToolTip="Create a quick-paste entry based on the data associated with the current image"/>
+                <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemShowQuickPasteWindow_Click" ToolTip="Show a window of all quick-paste items"/>
+            </MenuItem>
+            
             <!-- Options Menu -->
             <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
                 <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>

@@ -196,6 +196,10 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Code\QuickPaste.cs" />
+    <Compile Include="Dialog\QuickPasteEditor.xaml.cs">
+      <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\CustomSort.xaml.cs">
       <DependentUpon>CustomSort.xaml</DependentUpon>
     </Compile>
@@ -232,6 +236,10 @@
     </Compile>
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\QuickPasteEventArgs.cs" />
+    <Compile Include="Dialog\QuickPasteWindow.xaml.cs">
+      <DependentUpon>QuickPasteWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\UpdateRootFolder.xaml.cs">
       <DependentUpon>UpdateRootFolder.xaml</DependentUpon>
@@ -303,6 +311,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\QuickPasteEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\QuickPasteWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
