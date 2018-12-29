@@ -161,13 +161,13 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImagesGridEventArgs.cs" />
+    <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
     <Compile Include="Controls\FilePlayer.xaml.cs">
       <DependentUpon>FilePlayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\FilePlayerEventArgs.cs" />
+    <Compile Include="EventArguments\FilePlayerEventArgs.cs" />
     <Compile Include="Controls\TimeZonePicker.cs" />
     <Compile Include="Controls\AutoToolTipSlider.cs" />
     <Compile Include="Controls\UtcOffsetUpDown.cs" />
@@ -238,7 +238,7 @@
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\QuickPasteEventArgs.cs" />
+    <Compile Include="EventArguments\QuickPasteEventArgs.cs" />
     <Compile Include="Dialog\QuickPasteWindow.xaml.cs">
       <DependentUpon>QuickPasteWindow.xaml</DependentUpon>
     </Compile>
@@ -250,7 +250,7 @@
     </Compile>
     <Compile Include="Enums\FilePlayerDirectionEnum.cs" />
     <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
-    <Compile Include="Enums\QuickPasteEventIdentifier.cs" />
+    <Compile Include="Enums\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
@@ -264,16 +264,16 @@
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Images\BitmapSourceExtensions.cs" />
-    <Compile Include="Enums\ImageDifferenceResult.cs" />
+    <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
     <Compile Include="Database\FileTableEnumerator.cs" />
     <Compile Include="Dialog\DateTimeRereadFeedbackTuple.cs" />
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
-    <Compile Include="Enums\ImageDisplayIntent.cs" />
+    <Compile Include="Enums\ImageDisplayIntentEnum.cs" />
     <Compile Include="Images\ImageQuality.cs" />
     <Compile Include="Images\MagnifyingGlass.cs" />
-    <Compile Include="Images\MarkerEventArgs.cs" />
+    <Compile Include="EventArguments\MarkerEventArgs.cs" />
     <Compile Include="Controls\StockMessageControl.xaml.cs">
       <DependentUpon>StockMessageControl.xaml</DependentUpon>
     </Compile>

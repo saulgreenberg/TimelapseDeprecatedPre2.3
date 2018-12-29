@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Timelapse;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 
 namespace Timelapse.Dialog
 {
@@ -113,7 +114,8 @@ namespace Timelapse.Dialog
                 {
                     Height = GridLength.Auto
                 };
-                this.QuickPasteGrid.RowDefinitions.Add(gridRow); Grid.SetRow(quickPasteControl, gridRowIndex);
+                this.QuickPasteGrid.RowDefinitions.Add(gridRow);
+                Grid.SetRow(quickPasteControl, gridRowIndex);
                 Grid.SetColumn(quickPasteControl, gridRowIndex);
                 this.QuickPasteGrid.Children.Add(quickPasteControl);
                 gridRowIndex++;
@@ -165,6 +167,5 @@ namespace Timelapse.Dialog
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
         }
-
     }
 }

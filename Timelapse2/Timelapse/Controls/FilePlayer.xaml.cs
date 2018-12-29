@@ -13,6 +13,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Timelapse.Controls;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 
 namespace Timelapse.Controls
 {

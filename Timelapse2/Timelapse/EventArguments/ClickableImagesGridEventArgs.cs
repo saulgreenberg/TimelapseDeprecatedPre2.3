@@ -1,7 +1,8 @@
 ﻿using System;
+using Timelapse.Controls;
 using Timelapse.Database;
 
-namespace Timelapse.Controls
+namespace Timelapse.EventArguments
 {
     // Event indicates which image was double clicked on in the ClickableImagesGrid 
     public class ClickableImagesGridEventArgs : EventArgs

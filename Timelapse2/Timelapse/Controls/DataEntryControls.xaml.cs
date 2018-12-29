@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Timelapse.Database;
-using Timelapse.Util;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {

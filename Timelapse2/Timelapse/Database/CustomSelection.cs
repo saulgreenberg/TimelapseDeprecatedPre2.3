@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Timelapse.Util;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {

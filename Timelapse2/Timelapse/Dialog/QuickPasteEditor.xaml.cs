@@ -10,7 +10,7 @@ namespace Timelapse.Dialog
     // Currently, the only thing that is editable is its name and whether a particular item's data should be included when pasted
     public partial class QuickPasteEditor : Window
     {
-        public QuickPasteEntry quickPasteEntry;
+        public QuickPasteEntry QuickPasteEntry { get; set; }
 
         // Columns where fields will be placed in the grid
         private const int UseColumn = 1;
@@ -20,7 +20,7 @@ namespace Timelapse.Dialog
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry)
         {
             InitializeComponent();
-            this.quickPasteEntry = quickPasteEntry;
+            this.QuickPasteEntry = quickPasteEntry;
         }
 
         // When the window is loaded
@@ -31,7 +31,7 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             // Display the title of the QuickPasteEntry
-            this.QuickPasteTitle.Text = this.quickPasteEntry.Title;
+            this.QuickPasteTitle.Text = this.QuickPasteEntry.Title;
             this.QuickPasteTitle.TextChanged += QuickPasteTitle_TextChanged;
             // Build rows, each displaying successive items in the QuickPasteItems list
             BuildRows();
@@ -43,7 +43,7 @@ namespace Timelapse.Dialog
             // We don't start at zero, as the 1st two grid rows are already filled.
             int gridRowIndex = 1;
 
-            foreach (QuickPasteItem quickPasteItem in this.quickPasteEntry.Items)
+            foreach (QuickPasteItem quickPasteItem in this.QuickPasteEntry.Items)
             {
                 ++gridRowIndex;
                 RowDefinition gridRow = new RowDefinition()
@@ -139,7 +139,7 @@ namespace Timelapse.Dialog
 
         private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
         {
-            this.quickPasteEntry.Title = this.QuickPasteTitle.Text;
+            this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
         }
     }
 }

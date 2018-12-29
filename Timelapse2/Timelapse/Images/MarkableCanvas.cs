@@ -10,6 +10,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 using Timelapse.Util;
 
 namespace Timelapse.Images

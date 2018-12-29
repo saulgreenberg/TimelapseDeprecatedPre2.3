@@ -10,25 +10,18 @@ namespace Timelapse.Dialog
 {
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleType", Justification = "Reviewed.")]
 
-    #region Data Structures
-    // Data Structure: QuickPasteItem
-    // Captures the essence of a data control and its value, where:
-    // DataLabel identifies the control
-    // Label is used to identify the control to the user 
-    // Use indicates whether the item should be pasted or not (this can be set be the user) 
-    // Value is the data can be pasted into a single data control 
-
+    #region QuickPaste Data Structures
+    // QuickPasteItem: Captures the essence of a single data control and its value
     public class QuickPasteItem
     {
-        public string DataLabel { get; set; }
-        public string Label { get; set; }
-        public bool Use { get; set; }
-        public string Value { get; set; }
+        public string DataLabel { get; set; }       // identifies the control
+        public string Label { get; set; }           // used to identify the control to the user
+        public bool Use { get; set; }               // indicates whether the item should be used in a quickpaste (this can be set be the user) 
+        public string Value { get; set; }           // the data can be pasted into a single data control 
 
         public QuickPasteItem() : this(String.Empty, String.Empty, String.Empty, false)
         {
         }
-
         public QuickPasteItem(string dataLabel, string label, string value, bool enabled)
         {
             this.DataLabel = dataLabel;
@@ -38,14 +31,11 @@ namespace Timelapse.Dialog
         }
     }
 
-    // Data Structure: QuickPasteEntry 
-    // 
-    // - a user- or system-supplied Title that will be displayed to identify the QuickPaste
-    // - a list of QuickPasteItems, each identifying a potential pastable control
+    // QuickPasteEntry Data Structure: collects all the data controls and their values as a single potential quickpaste entry
     public class QuickPasteEntry
     {
-        public string Title { get; set; }
-        public List<QuickPasteItem> Items { get; set; }
+        public string Title { get; set; }               // a user- or system-supplied Title that will be displayed to identify the QuickPaste Entry
+        public List<QuickPasteItem> Items { get; set; } // a list of QuickPasteItems, each identifying a potential pastable control
 
         public QuickPasteEntry()
         {
@@ -95,6 +85,7 @@ namespace Timelapse.Dialog
             return quickPasteEntry;
         }
 
+        // Transform the QuickPasteEntries data structure into an XML document that can will eventually be saved as a string in the ImageSetTable database
         public static string QuickPasteEntriesToXML(List<QuickPasteEntry> quickPasteEntries)
         {
             XDocument xDocument = new XDocument(new XElement("Entries",
@@ -104,11 +95,11 @@ namespace Timelapse.Dialog
                         new XElement("Label", v.Label),
                         new XElement("DataLabel", v.DataLabel),
                         new XElement("Value", v.Value.ToString()),
-                     new XElement("Use", v.Use.ToString()
-                )))))));
+                     new XElement("Use", v.Use.ToString())))))));
             return xDocument.ToString();
         }
 
+        // Transform the XML string (stroed in the ImageSetTable) into a QuickPasteEntries data structure 
         public static List<QuickPasteEntry> QuickPasteEntriesFromXML(string xml)
         {
             XDocument xDocument = XDocument.Parse(xml);
@@ -125,8 +116,7 @@ namespace Timelapse.Dialog
                                  Label = (string)v.Element("Label"),
                                  Value = (string)v.Element("Value"),
                                  Use = (bool)v.Element("Use"),
-                             }
-                   ).ToList()
+                             }).ToList()
                 };
 
             List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();

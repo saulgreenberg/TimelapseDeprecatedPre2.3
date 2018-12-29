@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls

@@ -5,9 +5,9 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
-
 namespace Timelapse.Database
 {
     public class VideoRow : ImageRow
@@ -31,8 +31,10 @@ namespace Timelapse.Database
                     return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
 
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.Volume = 0.0;
+            MediaPlayer mediaPlayer = new MediaPlayer
+            {
+                Volume = 0.0
+            };
             try
             {
                 mediaPlayer.Open(new Uri(path));

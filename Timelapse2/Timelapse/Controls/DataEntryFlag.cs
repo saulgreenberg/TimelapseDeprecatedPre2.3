@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {

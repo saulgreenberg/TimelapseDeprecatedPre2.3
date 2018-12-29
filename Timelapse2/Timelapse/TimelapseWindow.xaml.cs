@@ -21,6 +21,7 @@ using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 using Timelapse.Images;
 using Timelapse.Util;
 using Xceed.Wpf.AvalonDock.Controls;
@@ -1687,7 +1688,7 @@ namespace Timelapse
 
             if (quickPasteConfiguration.ShowDialog() == true)
             {
-                quickPasteEntry = quickPasteConfiguration.quickPasteEntry;
+                quickPasteEntry = quickPasteConfiguration.QuickPasteEntry;
 
                 // Update the XML and refresh the window
                 this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
@@ -3301,7 +3302,7 @@ namespace Timelapse
             // or perhaps just create the window once and hide it instead of closing it.
             if (quickPasteConfiguration.ShowDialog() == true)
             {
-                quickPasteEntry = quickPasteConfiguration.quickPasteEntry;
+                quickPasteEntry = quickPasteConfiguration.QuickPasteEntry;
                 if (this.quickPasteEntries == null)
                 {
                     // This shouldn't be necessary, but just in case...
