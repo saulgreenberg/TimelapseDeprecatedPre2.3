@@ -13,9 +13,9 @@ namespace Timelapse.Dialog
         public QuickPasteEntry quickPasteEntry;
 
         // Columns where fields will be placed in the grid
-        const int UseColumn = 1;
-        const int LabelColumn = 2;
-        const int ValueColumn = 3;
+        private const int UseColumn = 1;
+        private const int LabelColumn = 2;
+        private const int ValueColumn = 3;
 
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry)
         {
@@ -40,7 +40,6 @@ namespace Timelapse.Dialog
         // Get the QuickPaste items, and build a row displaying each one of them
         private void BuildRows()
         {
-
             // We don't start at zero, as the 1st two grid rows are already filled.
             int gridRowIndex = 1;
 

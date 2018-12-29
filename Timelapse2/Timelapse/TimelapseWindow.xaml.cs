@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
 using Xceed.Wpf.AvalonDock.Controls;
@@ -180,10 +181,10 @@ namespace Timelapse
                 (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0))
             {
                 // save image set properties to the database
-                if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.Custom)
+                if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
                 {
                     // don't save custom selections, revert to All 
-                    this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelection.All;
+                    this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                 }
                 
                 // sync image set properties
@@ -207,7 +208,7 @@ namespace Timelapse
                 // Note that we can only do this if we know where the DeletedFolder is,
                 // i.e. because the datahandler and datahandler.FileDatabae is not null
                 // That is why its in this if statement.
-                if (this.state.DeleteFolderManagement != DeleteFolderManagement.ManualDelete)
+                if (this.state.DeleteFolderManagement != DeleteFolderManagementEnum.ManualDelete)
                 {
                     this.DeleteTheDeletedFilesFolderIfNeeded();
                 }
@@ -264,10 +265,10 @@ namespace Timelapse
 
             // We either have auto deletion, or ask the user. Check both cases.
             // If its auto deletion, then set the flag to delete
-            bool deleteTheDeletedFolder = (this.state.DeleteFolderManagement == DeleteFolderManagement.AutoDeleteOnExit) ? true : false;
+            bool deleteTheDeletedFolder = (this.state.DeleteFolderManagement == DeleteFolderManagementEnum.AutoDeleteOnExit) ? true : false;
 
             // if its ask the user, then set the flag according to the response
-            if (this.state.DeleteFolderManagement == DeleteFolderManagement.AskToDeleteOnExit)
+            if (this.state.DeleteFolderManagement == DeleteFolderManagementEnum.AskToDeleteOnExit)
             {
                 Dialog.DeleteDeleteFolder deleteDeletedFolders = new Dialog.DeleteDeleteFolder(howManyDeletedFiles)
                 {
@@ -677,7 +678,7 @@ namespace Timelapse
                     {
                         if (this.state.ClassifyDarkImagesWhenLoading == false)
                         {
-                            file.ImageQuality = FileSelection.Ok;
+                            file.ImageQuality = FileSelectionEnum.Ok;
                         }
                         else
                         {
@@ -685,12 +686,12 @@ namespace Timelapse
                             // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                             // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
                             // retain the frame and pass its metadata to TryUseImageTaken().
-                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntent.TransientLoading);
+                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
 
                             // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
                             if (bitmapSource == Constant.ImageValues.Corrupt.Value)
                             {
-                                file.ImageQuality = FileSelection.Corrupted;
+                                file.ImageQuality = FileSelectionEnum.Corrupted;
                             }
                             else
                             {
@@ -710,21 +711,21 @@ namespace Timelapse
                                 // We don't check videos for darkness, so set it as ok.
                                 if (file.IsVideo)
                                 {
-                                    file.ImageQuality = FileSelection.Ok;
+                                    file.ImageQuality = FileSelectionEnum.Ok;
                                 }
                                 else
                                 {
-                                    while (file.ImageQuality == FileSelection.Corrupted && retries_attempted < MAX_RETRIES)
+                                    while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                                     {
                                         // See what images were retried
                                         Utilities.PrintFailure("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
                                         retries_attempted++;
                                         file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                     }
-                                    if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelection.Corrupted)
+                                    if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
                                     {
                                         // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                        file.ImageQuality = FileSelection.Ok;
+                                        file.ImageQuality = FileSelectionEnum.Ok;
                                     }
                                 }
                             }
@@ -738,7 +739,7 @@ namespace Timelapse
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
                         Utilities.PrintFailure(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
-                        file.ImageQuality = FileSelection.Corrupted;
+                        file.ImageQuality = FileSelectionEnum.Corrupted;
                     }
 
                     int filesPendingInsert;
@@ -763,7 +764,7 @@ namespace Timelapse
                             }
                             else
                             {
-                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntent.TransientLoading);
+                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
                             }
                             folderLoadProgress.CurrentFile = filesToInsert.Count;
                             folderLoadProgress.CurrentFileName = file.FileName;
@@ -943,7 +944,7 @@ namespace Timelapse
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
-            FileSelection fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            FileSelectionEnum fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
             if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {
                 // if this is completion of an add to an existing image set stay on the image, ideally, shown before the import
@@ -1065,7 +1066,7 @@ namespace Timelapse
             this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
 
-        private void SelectFilesAndShowFile(FileSelection selection, bool forceUpdate)
+        private void SelectFilesAndShowFile(FileSelectionEnum selection, bool forceUpdate)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
@@ -1076,12 +1077,12 @@ namespace Timelapse
         }
 
         // Basic form doesn't force an update
-        private void SelectFilesAndShowFile(long imageID, FileSelection selection)
+        private void SelectFilesAndShowFile(long imageID, FileSelectionEnum selection)
         {
             SelectFilesAndShowFile(imageID, selection, false);
         }
 
-        private void SelectFilesAndShowFile(long imageID, FileSelection selection, bool forceUpdate)
+        private void SelectFilesAndShowFile(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
@@ -1107,7 +1108,7 @@ namespace Timelapse
             this.dataHandler.FileDatabase.SelectFiles(selection);
 
             // explain to user if their selection has gone empty and change to all files
-            if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelection.All))
+            if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
             {
                 // These cases are reached when 
                 // 1) datetime modifications result in no files matching a custom selection
@@ -1118,33 +1119,33 @@ namespace Timelapse
 
                 switch (selection)
                 {
-                    case FileSelection.Corrupted:
+                    case FileSelectionEnum.Corrupted:
                         messageBox.Message.Problem = "Corrupted files were previously selected but no files are currently corrupted, so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Corrupted.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Corrupted', set their 'ImageQuality' field to 'Corrupted' and then reselect corrupted files.";
                         break;
 
-                    case FileSelection.Custom:
+                    case FileSelectionEnum.Custom:
                         messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
                         messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
                         messageBox.Message.Hint = "Create a different custom selection and apply it view the matching files.";
                         break;
-                    case FileSelection.Dark:
+                    case FileSelectionEnum.Dark:
                         messageBox.Message.Problem = "Dark files were previously selected but no files are currently dark so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Dark.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
                         break;
-                    case FileSelection.Missing:
+                    case FileSelectionEnum.Missing:
                         messageBox.Message.Problem = "Missing files were previously selected. However, none of the files are marked as missing, so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Missing.";
                         messageBox.Message.Hint = "If you have files that you think should be marked as 'Missing' (i.e., whose images are no longer available as shown by the displayed graphic), set their 'ImageQuality' field to 'Missing' and then reselect 'Missing' files.";
                         break;
-                    case FileSelection.MarkedForDeletion:
+                    case FileSelectionEnum.MarkedForDeletion:
                         messageBox.Message.Problem = "Files marked for deletion were previously selected but no files are currently marked so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
                         messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
                         break;
-                    case FileSelection.Ok:
+                    case FileSelectionEnum.Ok:
                         messageBox.Message.Problem = "Ok files were previously selected but no files are currently OK so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Ok.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Ok', set their 'ImageQuality' field to 'Ok' and then reselect Ok files.";
@@ -1155,7 +1156,7 @@ namespace Timelapse
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 messageBox.ShowDialog();
 
-                selection = FileSelection.All;
+                selection = FileSelectionEnum.All;
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
 
@@ -1164,25 +1165,25 @@ namespace Timelapse
             string status;
             switch (selection)
             {
-                case FileSelection.All:
+                case FileSelectionEnum.All:
                     status = "All files";
                     break;
-                case FileSelection.Corrupted:
+                case FileSelectionEnum.Corrupted:
                     status = "Corrupted files";
                     break;
-                case FileSelection.Custom:
+                case FileSelectionEnum.Custom:
                     status = "Custom selection";
                     break;
-                case FileSelection.Dark:
+                case FileSelectionEnum.Dark:
                     status = "Dark files";
                     break;
-                case FileSelection.MarkedForDeletion:
+                case FileSelectionEnum.MarkedForDeletion:
                     status = "Files marked for deletion";
                     break;
-                case FileSelection.Missing:
+                case FileSelectionEnum.Missing:
                     status = "Missing files";
                     break;
-                case FileSelection.Ok:
+                case FileSelectionEnum.Ok:
                     status = "Light and Okay files";
                     break;
                 default:
@@ -1546,34 +1547,35 @@ namespace Timelapse
         }
         #endregion
 
-
         #region QuickPaste
+
+        // The QuickPaste controls generate various events, depending on what the user selected.
+        // Depending on the event, perform the action indicated by the event
         private void QuickPasteWindow_QuickPasteEvent(object sender, QuickPasteEventArgs e)
         {
-            if (e.EventType == 0)
+            switch(e.EventType)
             {
-                TryQuickPaste(e.QuickPasteEntry);
-            }
-            else if (e.EventType == 1)
-            {
-                HighlightQuickPaste(e.QuickPasteEntry);
-            }
-            else if (e.EventType == 2)
-            {
-                UnHighlightQuickPaste(e.QuickPasteEntry);
-            }
-            else if (e.EventType == 3)
-            {
-                this.quickPasteEntries.RemoveAll(x => x.Equals(e.QuickPasteEntry));
-                this.quickPasteWindow.Refresh(this.quickPasteEntries);
-            }
-            else if (e.EventType == 4)
-            {
-                this.OpenQuickPasteEditor(e.QuickPasteEntry);
-            }
-            else if (e.EventType == 5)
-            {
-                this.MenuItemNewQuickPaste_Click(null, null);
+                case QuickPasteEventIdentifierEnum.New:
+                    this.MenuItemNewQuickPaste_Click(null, null);
+                    break;
+                case QuickPasteEventIdentifierEnum.Edit:
+                    this.OpenQuickPasteEditor(e.QuickPasteEntry);
+                    break;
+                case QuickPasteEventIdentifierEnum.Delete:
+                    this.quickPasteEntries.RemoveAll(x => x.Equals(e.QuickPasteEntry));
+                    this.quickPasteWindow.Refresh(this.quickPasteEntries);
+                    break;
+                case QuickPasteEventIdentifierEnum.MouseEnter:
+                    HighlightQuickPaste(e.QuickPasteEntry);
+                    break;
+                case QuickPasteEventIdentifierEnum.MouseLeave:
+                    UnHighlightQuickPaste(e.QuickPasteEntry);
+                    break;
+                case QuickPasteEventIdentifierEnum.Paste:
+                    TryQuickPaste(e.QuickPasteEntry);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -1692,8 +1694,9 @@ namespace Timelapse
                 this.quickPasteWindow.Refresh(this.quickPasteEntries);
             }
         }
-            #endregion
-            #region Differencing
+        #endregion
+
+        #region Differencing
             // Cycle through the image differences in the order: current, then previous and next differenced images.
             // Create and cache the differenced images.
             private void TryViewPreviousOrNextDifference()
@@ -1722,7 +1725,7 @@ namespace Timelapse
 
             // If we are supposed to display the unaltered image, do it and get out of here.
             // The unaltered image will always be cached at this point, so there is no need to check.
-            if (this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifference.Unaltered)
+            if (this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered)
             {
                 this.MarkableCanvas.SetDisplayImage(this.dataHandler.ImageCache.GetCurrentImage());
 
@@ -1742,17 +1745,17 @@ namespace Timelapse
             // Generate and cache difference image if needed
             if (this.dataHandler.ImageCache.GetCurrentImage() == null)
             {
-                ImageDifferenceResult result = this.dataHandler.ImageCache.TryCalculateDifference();
+                ImageDifferenceResultEnum result = this.dataHandler.ImageCache.TryCalculateDifference();
                 switch (result)
                 {
-                    case ImageDifferenceResult.CurrentImageNotAvailable:
-                    case ImageDifferenceResult.NextImageNotAvailable:
-                    case ImageDifferenceResult.PreviousImageNotAvailable:
-                    case ImageDifferenceResult.NotCalculable:
-                        this.StatusBar.SetMessage(String.Format("Difference can't be shown: the {0} file is a video, missing, corrupt, or a different size", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifference.Previous ? "previous" : "next"));
+                    case ImageDifferenceResultEnum.CurrentImageNotAvailable:
+                    case ImageDifferenceResultEnum.NextImageNotAvailable:
+                    case ImageDifferenceResultEnum.PreviousImageNotAvailable:
+                    case ImageDifferenceResultEnum.NotCalculable:
+                        this.StatusBar.SetMessage(String.Format("Difference can't be shown: the {0} file is a video, missing, corrupt, or a different size", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Previous ? "previous" : "next"));
                         return;
-                    case ImageDifferenceResult.Success:
-                        this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifference.Previous ? "previous" : "next"));
+                    case ImageDifferenceResultEnum.Success:
+                        this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Previous ? "previous" : "next"));
                         break;
                     default:
                         throw new NotSupportedException(String.Format("Unhandled difference result {0}.", result));
@@ -1763,7 +1766,7 @@ namespace Timelapse
             // the magnifying glass always displays the original non-diferenced image so ImageToDisplay is updated and ImageToMagnify left unchnaged
             // this allows the user to examine any particular differenced area and see what it really looks like in the non-differenced image. 
             this.MarkableCanvas.SetDisplayImage(this.dataHandler.ImageCache.GetCurrentImage());
-            this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifference.Previous ? "previous" : "next"));
+            this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Previous ? "previous" : "next"));
         }
 
         private void TryViewCombinedDifference()
@@ -1785,7 +1788,7 @@ namespace Timelapse
 
             // If we are in any state other than the unaltered state, go to the unaltered state, otherwise the combined diff state
             this.dataHandler.ImageCache.MoveToNextStateInCombinedDifferenceCycle();
-            if (this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifference.Unaltered)
+            if (this.dataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered)
             {
                 this.MarkableCanvas.SetDisplayImage(this.dataHandler.ImageCache.GetCurrentImage());
                 this.StatusBar.ClearMessage();
@@ -1795,18 +1798,18 @@ namespace Timelapse
             // Generate and cache difference image if needed
             if (this.dataHandler.ImageCache.GetCurrentImage() == null)
             {
-                ImageDifferenceResult result = this.dataHandler.ImageCache.TryCalculateCombinedDifference(this.state.DifferenceThreshold);
+                ImageDifferenceResultEnum result = this.dataHandler.ImageCache.TryCalculateCombinedDifference(this.state.DifferenceThreshold);
                 switch (result)
                 {
-                    case ImageDifferenceResult.CurrentImageNotAvailable:
+                    case ImageDifferenceResultEnum.CurrentImageNotAvailable:
                         this.StatusBar.SetMessage("Combined difference can't be shown: the current file is a video, missing, corrupt, or a different size");
                         return;
-                    case ImageDifferenceResult.NextImageNotAvailable:
-                    case ImageDifferenceResult.NotCalculable:
-                    case ImageDifferenceResult.PreviousImageNotAvailable:
+                    case ImageDifferenceResultEnum.NextImageNotAvailable:
+                    case ImageDifferenceResultEnum.NotCalculable:
+                    case ImageDifferenceResultEnum.PreviousImageNotAvailable:
                         this.StatusBar.SetMessage(String.Format("Combined differences can't be shown: surrounding files include a video, missing, corrupt, or a different size file"));
                         return;
-                    case ImageDifferenceResult.Success:
+                    case ImageDifferenceResultEnum.Success:
                         this.StatusBar.SetMessage("Viewing differences from both the next and previous files");
                         break;
                     default:
@@ -2226,7 +2229,7 @@ namespace Timelapse
                 case Key.Up:                // show visual difference to next image
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirection.Backward;
+                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Backward;
                         this.FilePlayer_ScrollRow();
                     }
                     else
@@ -2238,7 +2241,7 @@ namespace Timelapse
                 case Key.Down:              // show visual difference to previous image
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirection.Forward;
+                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Forward;
                         this.FilePlayer_ScrollRow();
                     }
                     else
@@ -2257,14 +2260,14 @@ namespace Timelapse
                 case Key.PageDown:
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirection.Forward;
+                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Forward;
                         this.FilePlayer_ScrollPage();
                     }
                     break;
                 case Key.PageUp:
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirection.Backward;
+                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Backward;
                         this.FilePlayer_ScrollPage();
                     }
                     break;
@@ -2634,7 +2637,7 @@ namespace Timelapse
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.state.SuppressSelectedCsvExportPrompt == false &&
-                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelection.All)
+                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
             {
                 MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
                 messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
@@ -2952,9 +2955,9 @@ namespace Timelapse
                 {
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
-                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.Custom)
+                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
                     {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelection.All;
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                     }
                     if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
                     {
@@ -3094,11 +3097,11 @@ namespace Timelapse
         {
             try
             {
-                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelection.MarkedForDeletion);
+                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable() || this.dataHandler.ImageCache.Current.ImageQuality == FileSelection.Corrupted;
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable() || this.dataHandler.ImageCache.Current.ImageQuality == FileSelectionEnum.Corrupted;
             }
             catch (Exception exception)
             {
@@ -3192,11 +3195,11 @@ namespace Timelapse
                     {
                         // as only the file was deleted, change image quality to FileNoLongerAvailable and clear the delete flag
                         image.DeleteFlag = false;
-                        image.ImageQuality = FileSelection.Missing;
+                        image.ImageQuality = FileSelectionEnum.Missing;
                         List<ColumnTuple> columnTuples = new List<ColumnTuple>()
                         {
                             new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
-                            new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelection.Missing.ToString())
+                            new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelectionEnum.Missing.ToString())
                         };
                         imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
                     }
@@ -3639,47 +3642,47 @@ namespace Timelapse
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
-            Dictionary<FileSelection, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
 
-            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelection.Ok] > 0;
-            this.MenuItemSelectDarkFiles.IsEnabled = counts[FileSelection.Dark] > 0;
-            this.MenuItemSelectCorruptedFiles.IsEnabled = counts[FileSelection.Corrupted] > 0;
-            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = counts[FileSelection.Missing] > 0;
-            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = this.dataHandler.FileDatabase.GetFileCount(FileSelection.MarkedForDeletion) > 0;
+            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelectionEnum.Ok] > 0;
+            this.MenuItemSelectDarkFiles.IsEnabled = counts[FileSelectionEnum.Dark] > 0;
+            this.MenuItemSelectCorruptedFiles.IsEnabled = counts[FileSelectionEnum.Corrupted] > 0;
+            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = counts[FileSelectionEnum.Missing] > 0;
+            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion) > 0;
         }
         /// <summary>Select the appropriate selection and update the view</summary>
         private void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)sender;
-            FileSelection selection;
+            FileSelectionEnum selection;
             // find out which selection was selected
             if (item == this.MenuItemSelectAllFiles)
             {
-                selection = FileSelection.All;
+                selection = FileSelectionEnum.All;
             }
             else if (item == this.MenuItemSelectLightFiles)
             {
-                selection = FileSelection.Ok;
+                selection = FileSelectionEnum.Ok;
             }
             else if (item == this.MenuItemSelectCorruptedFiles)
             {
-                selection = FileSelection.Corrupted;
+                selection = FileSelectionEnum.Corrupted;
             }
             else if (item == this.MenuItemSelectDarkFiles)
             {
-                selection = FileSelection.Dark;
+                selection = FileSelectionEnum.Dark;
             }
             else if (item == this.MenuItemSelectFilesNoLongerAvailable)
             {
-                selection = FileSelection.Missing;
+                selection = FileSelectionEnum.Missing;
             }
             else if (item == this.MenuItemSelectFilesMarkedForDeletion)
             {
-                selection = FileSelection.MarkedForDeletion;
+                selection = FileSelectionEnum.MarkedForDeletion;
             }
             else
             {
-                selection = FileSelection.All;   // Just in case
+                selection = FileSelectionEnum.All;   // Just in case
             }
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
@@ -3687,15 +3690,15 @@ namespace Timelapse
         }
 
         // helper function to put a checkbox on the currently selected menu item i.e., to make it behave like a radiobutton menu
-        private void MenuItemSelectSetSelection(FileSelection selection)
+        private void MenuItemSelectSetSelection(FileSelectionEnum selection)
         {
-            this.MenuItemSelectAllFiles.IsChecked = (selection == FileSelection.All);
-            this.MenuItemSelectCorruptedFiles.IsChecked = (selection == FileSelection.Corrupted);
-            this.MenuItemSelectDarkFiles.IsChecked = (selection == FileSelection.Dark);
-            this.MenuItemSelectLightFiles.IsChecked = (selection == FileSelection.Ok);
-            this.MenuItemSelectFilesNoLongerAvailable.IsChecked = (selection == FileSelection.Missing);
-            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = (selection == FileSelection.MarkedForDeletion);
-            this.MenuItemSelectCustomSelection.IsChecked = (selection == FileSelection.Custom);
+            this.MenuItemSelectAllFiles.IsChecked = (selection == FileSelectionEnum.All);
+            this.MenuItemSelectCorruptedFiles.IsChecked = (selection == FileSelectionEnum.Corrupted);
+            this.MenuItemSelectDarkFiles.IsChecked = (selection == FileSelectionEnum.Dark);
+            this.MenuItemSelectLightFiles.IsChecked = (selection == FileSelectionEnum.Ok);
+            this.MenuItemSelectFilesNoLongerAvailable.IsChecked = (selection == FileSelectionEnum.Missing);
+            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = (selection == FileSelectionEnum.MarkedForDeletion);
+            this.MenuItemSelectCustomSelection.IsChecked = (selection == FileSelectionEnum.Custom);
         }
 
         private void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
@@ -3717,7 +3720,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelection.Custom);
+                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
             }
             else
             {
@@ -3766,23 +3769,23 @@ namespace Timelapse
             foreach (ImageRow image in allFiles)
             {
                 filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
-                if (File.Exists(filepath) && image.ImageQuality == FileSelection.Missing)
+                if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
                 {
                     // The File exists but image quality is set to missing. Reset it to OK
                     // Note that the file may be corrupt, dark, etc., but we don't check for that.
                     // SAULXXX Perhaps we should?
-                    image.ImageQuality = FileSelection.Ok; 
+                    image.ImageQuality = FileSelectionEnum.Ok; 
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
                     System.Diagnostics.Debug.Print("Restored " + filepath);
                 }
-                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelection.Missing)
+                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
                 {
                     // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
                     // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
                     // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
                     message = "Missing " + filepath;
-                    image.ImageQuality = FileSelection.Missing;
+                    image.ImageQuality = FileSelectionEnum.Missing;
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
                     System.Diagnostics.Debug.Print("Missing " + filepath);
@@ -4181,33 +4184,33 @@ namespace Timelapse
         {
             switch (args.Selection)
             {
-                case FilePlayerSelection.First:
+                case FilePlayerSelectionEnum.First:
                     FilePlayer_Stop();
                     FileNavigatorSlider.Value = 1;
                     break;
-                case FilePlayerSelection.Page:
+                case FilePlayerSelectionEnum.Page:
                     this.FilePlayer_ScrollPage();
                     break;
-                case FilePlayerSelection.Row:
+                case FilePlayerSelectionEnum.Row:
                     this.FilePlayer_ScrollRow();
                     break;
-                case FilePlayerSelection.Last:
+                case FilePlayerSelectionEnum.Last:
                     FilePlayer_Stop();
                     FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
                     break;
-                case FilePlayerSelection.Step:
+                case FilePlayerSelectionEnum.Step:
                     FilePlayer_Stop();
                     FilePlayerTimer_Tick(null, null);
                     break;
-                case FilePlayerSelection.PlayFast:
+                case FilePlayerSelectionEnum.PlayFast:
                     //FilePlayer_Play(Constant.FilePlayerValues.PlayFastDefault);
                     FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
                     break;
-                case FilePlayerSelection.PlaySlow:
+                case FilePlayerSelectionEnum.PlaySlow:
                     //FilePlayer_Play(Constant.FilePlayerValues.PlaySlowDefault);
                     FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
                     break;
-                case FilePlayerSelection.Stop:
+                case FilePlayerSelectionEnum.Stop:
                 default:
                     FilePlayer_Stop();
                     break;
@@ -4232,21 +4235,21 @@ namespace Timelapse
         // Scroll a row of images the ClickableImaesGrid
         private void FilePlayer_ScrollRow()
         {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
+            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
             this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow);
         }
 
         // Scroll a page of images the ClickableImaegsGrid
         private void FilePlayer_ScrollPage()
         {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
+            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
             this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowsInGrid);
         }
 
         // On every tick, try to show the next/previous file as indicated by the direction
         private void FilePlayerTimer_Tick(object sender, EventArgs e)
         {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirection.Forward) ? true : false;
+            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
             this.TryShowImageWithoutSliderCallback(direction, ModifierKeys.None);
 
             // Stop the timer if the image reaches the beginning or end of the image set
@@ -4505,7 +4508,7 @@ namespace Timelapse
                 return;
             }
 
-            Dictionary<FileSelection, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
             FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
             if (onFileLoading)
             {
@@ -4549,7 +4552,7 @@ namespace Timelapse
         private bool MaybePromptToApplyOperationIfPartialSelection(bool userOptedOutOfMessage, string operationDescription, Action<bool> persistOptOut)
         {
             // if showing all images then no need for showing the warning message
-            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelection.All)
+            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.All)
             {
                 return true;
             }

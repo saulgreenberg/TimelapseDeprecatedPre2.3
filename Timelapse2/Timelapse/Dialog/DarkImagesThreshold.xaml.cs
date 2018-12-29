@@ -400,7 +400,7 @@ namespace Timelapse.Dialog
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on thate
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntent.TransientLoading).AsWriteable();
+                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading).AsWriteable();
                         imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;

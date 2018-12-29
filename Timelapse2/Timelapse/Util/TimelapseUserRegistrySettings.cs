@@ -2,6 +2,7 @@
 using Timelapse.Database;
 using System;
 using System.Windows;
+using Timelapse.Enums;
 
 namespace Timelapse.Util
 {
@@ -12,10 +13,10 @@ namespace Timelapse.Util
         public bool AudioFeedback { get; set; }
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
-        public CustomSelectionOperator CustomSelectionTermCombiningOperator { get; set; }
+        public CustomSelectionOperatorEnum CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
-        public DeleteFolderManagement DeleteFolderManagement { get; set; }
+        public DeleteFolderManagementEnum DeleteFolderManagement { get; set; }
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
@@ -62,10 +63,10 @@ namespace Timelapse.Util
                 this.BookmarkScale = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationY, 1.0));
                 this.ClassifyDarkImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, false);
-                this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperator>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperator.And);
+                this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperatorEnum>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperatorEnum.And);
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
-                this.DeleteFolderManagement = (DeleteFolderManagement)registryKey.ReadInteger(Constant.Registry.TimelapseKey.DeleteFolderManagementValue, (int)DeleteFolderManagement.ManualDelete);
+                this.DeleteFolderManagement = (DeleteFolderManagementEnum)registryKey.ReadInteger(Constant.Registry.TimelapseKey.DeleteFolderManagementValue, (int)DeleteFolderManagementEnum.ManualDelete);
                 this.FilePlayerSlowValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);

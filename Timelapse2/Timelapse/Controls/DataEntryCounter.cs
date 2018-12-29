@@ -33,7 +33,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryCounter(ControlRow control, DataEntryControls styleProvider) :
-            base(control, styleProvider, ControlContentStyle.CounterTextBox, ControlLabelStyle.CounterButton)
+            base(control, styleProvider, ControlContentStyleEnum.CounterTextBox, ControlLabelStyleEnum.CounterButton)
         {
             // Configure the various elements if needed
             // Assign all counters to a single group so that selecting a new counter deselects any currently selected counter

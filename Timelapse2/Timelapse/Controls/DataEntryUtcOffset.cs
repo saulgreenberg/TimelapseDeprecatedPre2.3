@@ -20,7 +20,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryUtcOffset(ControlRow control, DataEntryControls styleProvider) :
-            base(control, styleProvider, ControlContentStyle.UTCOffsetBox, ControlLabelStyle.DefaultLabel)
+            base(control, styleProvider, ControlContentStyleEnum.UTCOffsetBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // Callback to change the look of the control whenever it gets the focus
             this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;

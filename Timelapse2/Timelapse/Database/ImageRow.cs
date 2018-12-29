@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
 using Directory = System.IO.Directory;
@@ -50,21 +51,21 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.File, value); }
         }
 
-        public FileSelection ImageQuality
+        public FileSelectionEnum ImageQuality
         {
             get
             {
-                return this.Row.GetEnumField<FileSelection>(Constant.DatabaseColumn.ImageQuality);
+                return this.Row.GetEnumField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality);
             }
             set
             {
                 switch (value)
                 {
-                    case FileSelection.Corrupted:
-                    case FileSelection.Dark:
-                    case FileSelection.Missing:
-                    case FileSelection.Ok:
-                        this.Row.SetField<FileSelection>(Constant.DatabaseColumn.ImageQuality, value);
+                    case FileSelectionEnum.Corrupted:
+                    case FileSelectionEnum.Dark:
+                    case FileSelectionEnum.Missing:
+                    case FileSelectionEnum.Ok:
+                        this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:
                         Utilities.PrintFailure(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
@@ -177,7 +178,7 @@ namespace Timelapse.Database
 
         public bool IsDisplayable()
         {
-            if (this.ImageQuality == FileSelection.Corrupted || this.ImageQuality == FileSelection.Missing)
+            if (this.ImageQuality == FileSelectionEnum.Corrupted || this.ImageQuality == FileSelectionEnum.Missing)
             {
                 return false;
             }
@@ -187,19 +188,19 @@ namespace Timelapse.Database
         // Load defaults to full size image, and to Persistent (as its safer)
         public BitmapSource LoadBitmap(string baseFolderPath)
         {
-            return this.LoadBitmap(baseFolderPath, null, ImageDisplayIntent.Persistent);
+            return this.LoadBitmap(baseFolderPath, null, ImageDisplayIntentEnum.Persistent);
         }
 
         // Load defaults to Persistent (as its safer)
         public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth)
         {
-            return this.LoadBitmap(baseFolderPath, desiredWidth, ImageDisplayIntent.Persistent);
+            return this.LoadBitmap(baseFolderPath, desiredWidth, ImageDisplayIntentEnum.Persistent);
         }
 
         // Load defaults to thumbnail size if we are TransientNavigating, else full size
-        public virtual BitmapSource LoadBitmap(string baseFolderPath, ImageDisplayIntent imageExpectedUsage)
+        public virtual BitmapSource LoadBitmap(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
         {
-            if (imageExpectedUsage == ImageDisplayIntent.TransientNavigating)
+            if (imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating)
             { 
                 return this.LoadBitmap(baseFolderPath, Constant.ImageValues.ThumbnailWidth, imageExpectedUsage);
             }
@@ -210,11 +211,11 @@ namespace Timelapse.Database
         }
 
         // Load full form
-        public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntent displayIntent)
+        public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
             // If its a transient image, BitmapCacheOption of None as its faster than OnLoad. 
             // TODOSAUL: why isn't the other case, ImageDisplayIntent.TransientNavigating, also treated as transient?
-            BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntent.TransientLoading) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
+            BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntentEnum.TransientLoading) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
             string path = this.GetFilePath(baseFolderPath);
             if (!File.Exists(path))
             {
@@ -286,7 +287,7 @@ namespace Timelapse.Database
                     this.UtcOffset = DateTimeHandler.ParseDatabaseUtcOffsetString(value);
                     break;
                 case Constant.DatabaseColumn.ImageQuality:
-                    this.ImageQuality = (FileSelection)Enum.Parse(typeof(FileSelection), value);
+                    this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
                     break;
                 default:
                     this.Row.SetField(dataLabel, value);
@@ -340,7 +341,7 @@ namespace Timelapse.Database
             }
         }
 
-        public DateTimeAdjustment TryReadDateTimeOriginalFromMetadata(string folderPath, TimeZoneInfo imageSetTimeZone)
+        public DateTimeAdjustmentEnum TryReadDateTimeOriginalFromMetadata(string folderPath, TimeZoneInfo imageSetTimeZone)
         {
             // SAULXX Fails on reading metadata dates on video files. See ToDo.
             try
@@ -349,14 +350,14 @@ namespace Timelapse.Database
                 ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (exifSubIfd == null)
                 {
-                    return DateTimeAdjustment.MetadataNotUsed;
+                    return DateTimeAdjustmentEnum.MetadataNotUsed;
                 }
                 if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out DateTime dateTimeOriginal) == false)
                 {
                     ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
                     if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false))
                     {
-                        return DateTimeAdjustment.MetadataNotUsed;
+                        return DateTimeAdjustmentEnum.MetadataNotUsed;
                     }
                 }
                 DateTimeOffset exifDateTime = DateTimeHandler.CreateDateTimeOffset(dateTimeOriginal, imageSetTimeZone);
@@ -383,25 +384,25 @@ namespace Timelapse.Database
                 // snap to metadata time and return the extent of the time adjustment
                 if (standardTimeAdjustment)
                 {
-                    return DateTimeAdjustment.MetadataDateAndTimeOneHourLater;
+                    return DateTimeAdjustmentEnum.MetadataDateAndTimeOneHourLater;
                 }
                 if (dateAdjusted && timeAdjusted)
                 {
-                    return DateTimeAdjustment.MetadataDateAndTimeUsed;
+                    return DateTimeAdjustmentEnum.MetadataDateAndTimeUsed;
                 }
                 if (dateAdjusted)
                 {
-                    return DateTimeAdjustment.MetadataDateUsed;
+                    return DateTimeAdjustmentEnum.MetadataDateUsed;
                 }
                 if (timeAdjusted)
                 {
-                    return DateTimeAdjustment.MetadataTimeUsed;
+                    return DateTimeAdjustmentEnum.MetadataTimeUsed;
                 }
-                return DateTimeAdjustment.SameFileAndMetadataTime;
+                return DateTimeAdjustmentEnum.SameFileAndMetadataTime;
             }
             catch
             {
-                return DateTimeAdjustment.MetadataNotUsed;
+                return DateTimeAdjustmentEnum.MetadataNotUsed;
             }
         }
     }

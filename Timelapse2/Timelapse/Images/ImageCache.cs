@@ -4,24 +4,25 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Images
 {
     public class ImageCache : FileTableEnumerator
     {
-        private Dictionary<ImageDifference, BitmapSource> differenceBitmapCache;
+        private Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
         private MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
         private ConcurrentDictionary<long, Task> prefetechesByID;
         private ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
 
-        public ImageDifference CurrentDifferenceState { get; private set; }
+        public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
 
         public ImageCache(FileDatabase fileDatabase) :
             base(fileDatabase)
         {
-            this.CurrentDifferenceState = ImageDifference.Unaltered;
-            this.differenceBitmapCache = new Dictionary<ImageDifference, BitmapSource>();
+            this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
+            this.differenceBitmapCache = new Dictionary<ImageDifferenceEnum, BitmapSource>();
             this.mostRecentlyUsedIDs = new MostRecentlyUsedCollection<long>(Constant.ImageValues.BitmapCacheSize);
             this.prefetechesByID = new ConcurrentDictionary<long, Task>();
             this.unalteredBitmapsByID = new ConcurrentDictionary<long, BitmapSource>();
@@ -36,41 +37,41 @@ namespace Timelapse.Images
         {
             // if this method and MoveToNextStateInPreviousNextDifferenceCycle() returned bool they'd be consistent MoveNext() and MovePrevious()
             // however, there's no way for them to fail and there's not value in always returning true
-            if (this.CurrentDifferenceState == ImageDifference.Next ||
-                this.CurrentDifferenceState == ImageDifference.Previous ||
-                this.CurrentDifferenceState == ImageDifference.Combined)
+            if (this.CurrentDifferenceState == ImageDifferenceEnum.Next ||
+                this.CurrentDifferenceState == ImageDifferenceEnum.Previous ||
+                this.CurrentDifferenceState == ImageDifferenceEnum.Combined)
             {
-                this.CurrentDifferenceState = ImageDifference.Unaltered;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
             }
             else
             {
-                this.CurrentDifferenceState = ImageDifference.Combined;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Combined;
             }
         }
 
         public void MoveToNextStateInPreviousNextDifferenceCycle()
         {
             // If we are looking at the combined differenced image, then always go to the unaltered image.
-            if (this.CurrentDifferenceState == ImageDifference.Combined)
+            if (this.CurrentDifferenceState == ImageDifferenceEnum.Combined)
             {
-                this.CurrentDifferenceState = ImageDifference.Unaltered;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
                 return;
             }
 
             // If the current image is marked as corrupted, we will only show the original (replacement) image
             if (!this.Current.IsDisplayable())
             {
-                this.CurrentDifferenceState = ImageDifference.Unaltered;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
                 return;
             }
             else
             {
                 // We are going around in a cycle, so go back to the beginning if we are at the end of it.
-                this.CurrentDifferenceState = (this.CurrentDifferenceState >= ImageDifference.Next) ? ImageDifference.Previous : ++this.CurrentDifferenceState;
+                this.CurrentDifferenceState = (this.CurrentDifferenceState >= ImageDifferenceEnum.Next) ? ImageDifferenceEnum.Previous : ++this.CurrentDifferenceState;
             }
 
             // Because we can always display the unaltered image, we don't have to do any more tests if that is the current one in the cyle
-            if (this.CurrentDifferenceState == ImageDifference.Unaltered)
+            if (this.CurrentDifferenceState == ImageDifferenceEnum.Unaltered)
             {
                 return;
             }
@@ -78,22 +79,22 @@ namespace Timelapse.Images
             // We can't actually show the previous or next image differencing if we are on the first or last image in the set respectively
             // Nor can we do it if the next image in the sequence is a corrupted one.
             // If that is the case, skip to the next one in the sequence
-            if (this.CurrentDifferenceState == ImageDifference.Previous && this.CurrentRow == 0)
+            if (this.CurrentDifferenceState == ImageDifferenceEnum.Previous && this.CurrentRow == 0)
             {
                 // Already at the beginning
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
             }
-            else if (this.CurrentDifferenceState == ImageDifference.Next && this.CurrentRow == this.Database.CurrentlySelectedFileCount - 1)
+            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Next && this.CurrentRow == this.Database.CurrentlySelectedFileCount - 1)
             {
                 // Already at the end
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
             }
-            else if (this.CurrentDifferenceState == ImageDifference.Next && !this.Database.IsFileDisplayable(this.CurrentRow + 1))
+            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Next && !this.Database.IsFileDisplayable(this.CurrentRow + 1))
             {
                 // Can't use the next image as its corrupted
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
             }
-            else if (this.CurrentDifferenceState == ImageDifference.Previous && !this.Database.IsFileDisplayable(this.CurrentRow - 1))
+            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Previous && !this.Database.IsFileDisplayable(this.CurrentRow - 1))
             {
                 // Can't use the previous image as its corrupted
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
@@ -107,74 +108,74 @@ namespace Timelapse.Images
             this.ResetDifferenceState(null);
         }
 
-        public ImageDifferenceResult TryCalculateDifference()
+        public ImageDifferenceResultEnum TryCalculateDifference()
         {
             if (this.Current == null || this.Current.IsVideo || this.Current.IsDisplayable() == false)
             {
-                this.CurrentDifferenceState = ImageDifference.Unaltered;
-                return ImageDifferenceResult.CurrentImageNotAvailable;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
+                return ImageDifferenceResultEnum.CurrentImageNotAvailable;
             }
 
             // determine which image to use for differencing
             WriteableBitmap comparisonBitmap = null;
-            if (this.CurrentDifferenceState == ImageDifference.Previous)
+            if (this.CurrentDifferenceState == ImageDifferenceEnum.Previous)
             {
                 if (this.TryGetPreviousBitmapAsWriteable(out comparisonBitmap) == false)
                 {
-                    return ImageDifferenceResult.PreviousImageNotAvailable;
+                    return ImageDifferenceResultEnum.PreviousImageNotAvailable;
                 }
             }
-            else if (this.CurrentDifferenceState == ImageDifference.Next)
+            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Next)
             {
                 if (this.TryGetNextBitmapAsWriteable(out comparisonBitmap) == false)
                 {
-                    return ImageDifferenceResult.NextImageNotAvailable;
+                    return ImageDifferenceResultEnum.NextImageNotAvailable;
                 }
             }
             else
             {
-                return ImageDifferenceResult.NotCalculable;
+                return ImageDifferenceResultEnum.NotCalculable;
             }
 
-            WriteableBitmap unalteredBitmap = this.differenceBitmapCache[ImageDifference.Unaltered].AsWriteable();
-            this.differenceBitmapCache[ImageDifference.Unaltered] = unalteredBitmap;
+            WriteableBitmap unalteredBitmap = this.differenceBitmapCache[ImageDifferenceEnum.Unaltered].AsWriteable();
+            this.differenceBitmapCache[ImageDifferenceEnum.Unaltered] = unalteredBitmap;
 
             BitmapSource differenceBitmap = unalteredBitmap.Subtract(comparisonBitmap);
             this.differenceBitmapCache[this.CurrentDifferenceState] = differenceBitmap;
-            return differenceBitmap != null ? ImageDifferenceResult.Success : ImageDifferenceResult.NotCalculable;
+            return differenceBitmap != null ? ImageDifferenceResultEnum.Success : ImageDifferenceResultEnum.NotCalculable;
         }
 
-        public ImageDifferenceResult TryCalculateCombinedDifference(byte differenceThreshold)
+        public ImageDifferenceResultEnum TryCalculateCombinedDifference(byte differenceThreshold)
         {
-            if (this.CurrentDifferenceState != ImageDifference.Combined)
+            if (this.CurrentDifferenceState != ImageDifferenceEnum.Combined)
             {
-                return ImageDifferenceResult.NotCalculable;
+                return ImageDifferenceResultEnum.NotCalculable;
             }
 
             // We need three valid images: the current one, the previous one, and the next one.
             if (this.Current == null || this.Current.IsVideo || this.Current.IsDisplayable() == false)
             {
-                this.CurrentDifferenceState = ImageDifference.Unaltered;
-                return ImageDifferenceResult.CurrentImageNotAvailable;
+                this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
+                return ImageDifferenceResultEnum.CurrentImageNotAvailable;
             }
 
             if (this.TryGetPreviousBitmapAsWriteable(out WriteableBitmap previousBitmap) == false)
             {
-                return ImageDifferenceResult.PreviousImageNotAvailable;
+                return ImageDifferenceResultEnum.PreviousImageNotAvailable;
             }
 
             if (this.TryGetNextBitmapAsWriteable(out WriteableBitmap nextBitmap) == false)
             {
-                return ImageDifferenceResult.NextImageNotAvailable;
+                return ImageDifferenceResultEnum.NextImageNotAvailable;
             }
 
-            WriteableBitmap unalteredBitmap = this.differenceBitmapCache[ImageDifference.Unaltered].AsWriteable();
-            this.differenceBitmapCache[ImageDifference.Unaltered] = unalteredBitmap;
+            WriteableBitmap unalteredBitmap = this.differenceBitmapCache[ImageDifferenceEnum.Unaltered].AsWriteable();
+            this.differenceBitmapCache[ImageDifferenceEnum.Unaltered] = unalteredBitmap;
 
             // all three images are available, so calculate and cache difference
             BitmapSource differenceBitmap = unalteredBitmap.CombinedDifference(previousBitmap, nextBitmap, differenceThreshold);
-            this.differenceBitmapCache[ImageDifference.Combined] = differenceBitmap;
-            return differenceBitmap != null ? ImageDifferenceResult.Success : ImageDifferenceResult.NotCalculable;
+            this.differenceBitmapCache[ImageDifferenceEnum.Combined] = differenceBitmap;
+            return differenceBitmap != null ? ImageDifferenceResultEnum.Success : ImageDifferenceResultEnum.NotCalculable;
         }
 
         public bool TryInvalidate(long id)
@@ -265,11 +266,11 @@ namespace Timelapse.Images
 
         private void ResetDifferenceState(BitmapSource unalteredImage)
         {
-            this.CurrentDifferenceState = ImageDifference.Unaltered;
-            this.differenceBitmapCache[ImageDifference.Unaltered] = unalteredImage;
-            this.differenceBitmapCache[ImageDifference.Previous] = null;
-            this.differenceBitmapCache[ImageDifference.Next] = null;
-            this.differenceBitmapCache[ImageDifference.Combined] = null;
+            this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
+            this.differenceBitmapCache[ImageDifferenceEnum.Unaltered] = unalteredImage;
+            this.differenceBitmapCache[ImageDifferenceEnum.Previous] = null;
+            this.differenceBitmapCache[ImageDifferenceEnum.Next] = null;
+            this.differenceBitmapCache[ImageDifferenceEnum.Combined] = null;
         }
 
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)

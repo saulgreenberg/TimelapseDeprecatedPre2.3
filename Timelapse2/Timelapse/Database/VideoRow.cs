@@ -23,7 +23,7 @@ namespace Timelapse.Database
         }
 
         // displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
-        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntent displayIntent)
+        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
             string path = this.GetFilePath(imageFolderPath);
             if (!File.Exists(path))

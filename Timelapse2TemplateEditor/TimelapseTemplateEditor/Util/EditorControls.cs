@@ -138,7 +138,7 @@ namespace Timelapse.Editor.Util
             {
                 Content = control.Label,
                 ToolTip = control.Tooltip,
-                Style = styleProvider.FindResource(ControlLabelStyle.DefaultLabel.ToString()) as Style
+                Style = styleProvider.FindResource(ControlLabelStyleEnum.DefaultLabel.ToString()) as Style
             };
             return label;
         }
@@ -150,7 +150,7 @@ namespace Timelapse.Editor.Util
                 Text = control.DefaultValue,
                 ToolTip = control.Tooltip,
                 Width = control.Width,
-                Style = styleProvider.FindResource(ControlContentStyle.NoteTextBox.ToString()) as Style
+                Style = styleProvider.FindResource(ControlContentStyleEnum.NoteTextBox.ToString()) as Style
             };
             return textBox;
         }
@@ -166,7 +166,7 @@ namespace Timelapse.Editor.Util
                 DisplayDefaultValueOnEmptyText = true,
                 DefaultValue = null,
                 UpdateValueOnEnterKey = true,
-                Style = styleProvider.FindResource(ControlContentStyle.CounterTextBox.ToString()) as Style
+                Style = styleProvider.FindResource(ControlContentStyleEnum.CounterTextBox.ToString()) as Style
             }; 
             return integerUpDown;
         }
@@ -178,7 +178,7 @@ namespace Timelapse.Editor.Util
                 GroupName = "DataEntryCounter",
                 Content = control.Label,
                 ToolTip = control.Tooltip,
-                Style = styleProvider.FindResource(ControlLabelStyle.CounterButton.ToString()) as Style
+                Style = styleProvider.FindResource(ControlLabelStyleEnum.CounterButton.ToString()) as Style
             };
             return radioButton;
         }
@@ -189,7 +189,7 @@ namespace Timelapse.Editor.Util
             {
                 Visibility = Visibility.Visible,
                 ToolTip = control.Tooltip,
-                Style = styleProvider.FindResource(ControlContentStyle.FlagCheckBox.ToString()) as Style
+                Style = styleProvider.FindResource(ControlContentStyleEnum.FlagCheckBox.ToString()) as Style
             };
             checkBox.GotFocus += this.Control_GotFocus;
             checkBox.LostFocus += this.Control_LostFocus;
@@ -202,7 +202,7 @@ namespace Timelapse.Editor.Util
             {
                 ToolTip = control.Tooltip,
                 Width = control.Width,
-                Style = styleProvider.FindResource(ControlContentStyle.ChoiceComboBox.ToString()) as Style
+                Style = styleProvider.FindResource(ControlContentStyleEnum.ChoiceComboBox.ToString()) as Style
             };
 
             // Add items to the combo box

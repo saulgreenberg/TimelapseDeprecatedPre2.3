@@ -88,8 +88,8 @@ namespace Timelapse.Dialog
                         // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
                         // Note that if the image can't be created, we will just to the catch.
                         bool usingMetadataTimestamp = true;
-                        DateTimeAdjustment dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.database.FolderPath, imageSetTimeZone);
-                        if (dateTimeAdjustment == DateTimeAdjustment.MetadataNotUsed)
+                        DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.database.FolderPath, imageSetTimeZone);
+                        if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
                         {
                             file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);  // We couldn't read the metadata, so get a candidate date/time from the file
                             usingMetadataTimestamp = false;

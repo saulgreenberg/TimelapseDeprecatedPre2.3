@@ -11,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Timelapse;
+using Timelapse.Enums;
 
 namespace Timelapse.Dialog
 {
@@ -32,8 +33,8 @@ namespace Timelapse.Dialog
 
         public List<QuickPasteEntry> QuickPasteEntries
         { 
-            get {return quickPasteEntries;}
-            set {quickPasteEntries = value;}
+            get { return quickPasteEntries; }
+            set { quickPasteEntries = value; }
         }
 
         public QuickPasteWindow()
@@ -103,8 +104,6 @@ namespace Timelapse.Dialog
                 deleteItem.Click += DeleteItem_Click;
                 contextMenu.Items.Add(deleteItem);
 
-
-
                 quickPasteControl.Click += QuickPasteControl_Click;
                 quickPasteControl.MouseEnter += QuickPasteControl_MouseEnter;
                 quickPasteControl.MouseLeave += QuickPasteControl_MouseLeave;
@@ -121,44 +120,51 @@ namespace Timelapse.Dialog
             }
         }
 
+        // Generate Event: New quickpaste emtru
+        private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.New));
+        }
+
+        // Generate Event: Edit the quickpaste emtru
         private void EditItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)menuItem.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 4)); // CHANGE NUMBERS TO ENUM
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Edit));
         }
 
+        // Generate Event: Delete the quickpaste emtru
         private void DeleteItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)menuItem.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 3)); // CHANGE NUMBERS TO ENUM
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Delete)); 
         }
 
+        // Generate Event: MouseEnter on the quickpaste control
         private void QuickPasteControl_MouseEnter(object sender, MouseEventArgs e)
         {
             Button button = sender as Button;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 1)); // CHANGE NUMBERS TO ENUM
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.MouseEnter)); 
         }
 
+        // Generate Event: MouseLeave on the quickpaste control
         private void QuickPasteControl_MouseLeave(object sender, MouseEventArgs e)
         {
             Button button = sender as Button;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 2)); // CHANGE NUMBERS TO ENUM
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.MouseLeave));
         }
 
+        // Generate Event: Select the quickpaste entry (quickpaste control has been activated)
         private void QuickPasteControl_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
-            QuickPasteEntry quickPasteEntry = (QuickPasteEntry) button.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 0)); // CHANGE NUMBERS TO ENUM
+            QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
         }
 
-        private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, 5)); // CHANGE NUMBERS TO ENUM
-        }
     }
 }

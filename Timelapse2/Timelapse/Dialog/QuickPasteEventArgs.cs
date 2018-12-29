@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Timelapse.Enums;
 
 namespace Timelapse.Dialog
 {
@@ -15,13 +16,13 @@ namespace Timelapse.Dialog
         /// Gets or sets the MetaTag
         /// </summary>
         public QuickPasteEntry QuickPasteEntry { get; set; }
-        public int EventType { get; set; }
+        public QuickPasteEventIdentifierEnum EventType { get; set; }
 
         /// <summary>
         /// The QuickPast event argument contains 
         /// - a reference to the QuickPasteEntry
         /// </summary>
-        public QuickPasteEventArgs(QuickPasteEntry quickPasteEntry, int eventType)
+        public QuickPasteEventArgs(QuickPasteEntry quickPasteEntry, QuickPasteEventIdentifierEnum eventType)
         {
             this.QuickPasteEntry = quickPasteEntry;
             this.EventType = eventType;

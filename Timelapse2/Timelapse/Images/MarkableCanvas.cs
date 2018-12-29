@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Timelapse.Controls;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Images
@@ -1029,7 +1030,7 @@ namespace Timelapse.Images
                         // We've gone from the single image to the multi-image view.
                         // By default, select the first item (as we want the data for the first item to remain displayed)
                         this.ClickableImagesGrid.SelectInitialCellOnly();
-                        this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
+                        this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true && this.ClickableImagesState > 1)
@@ -1145,7 +1146,7 @@ namespace Timelapse.Images
             this.ClickableImagesState = 0;
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
         public void SwitchToVideoView()
         {
@@ -1160,7 +1161,7 @@ namespace Timelapse.Images
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.ClickableImagesState = 0;
             this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
 
         public void SwitchToClickableGridView()

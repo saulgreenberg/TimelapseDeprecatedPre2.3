@@ -97,7 +97,6 @@ namespace Timelapse.Dialog
 
         public static string QuickPasteEntriesToXML(List<QuickPasteEntry> quickPasteEntries)
         {
-
             XDocument xDocument = new XDocument(new XElement("Entries",
                 quickPasteEntries.Select(i => new XElement("Entry",
                      new XElement("Title", i.Title),
@@ -112,7 +111,6 @@ namespace Timelapse.Dialog
 
         public static List<QuickPasteEntry> QuickPasteEntriesFromXML(string xml)
         {
-
             XDocument xDocument = XDocument.Parse(xml);
 
             IEnumerable entries =

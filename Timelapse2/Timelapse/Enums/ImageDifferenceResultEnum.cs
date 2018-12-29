@@ -1,6 +1,6 @@
-﻿namespace Timelapse.Images
+﻿namespace Timelapse.Enums
 {
-    public enum ImageDifferenceResult
+    public enum ImageDifferenceResultEnum
     {
         CurrentImageNotAvailable,
         NextImageNotAvailable,

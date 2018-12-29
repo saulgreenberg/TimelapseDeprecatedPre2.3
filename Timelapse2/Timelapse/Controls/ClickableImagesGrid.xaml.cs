@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Timelapse.Database;
+using Timelapse.Enums;
 using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
@@ -636,11 +637,11 @@ namespace Timelapse.Controls
         {
             if (this.Visibility == Visibility.Collapsed)
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+                this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
             }
             else
             {
-                this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.SelectedCount());
+                this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.SelectedCount());
             }
         }
         #endregion

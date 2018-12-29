@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {
@@ -87,7 +88,7 @@ namespace Timelapse.Controls
             }
         }
 
-        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyle> contentStyleName, ControlLabelStyle labelStyleName) : 
+        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) : 
             base(control, styleProvider)
         {
             this.ContentControl = new TContent()

@@ -27,7 +27,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryChoice(ControlRow control, DataEntryControls styleProvider)
-            : base(control, styleProvider, ControlContentStyle.ChoiceComboBox, ControlLabelStyle.DefaultLabel)
+            : base(control, styleProvider, ControlContentStyleEnum.ChoiceComboBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // The behaviour of the combobox
             this.ContentControl.Focusable = true;

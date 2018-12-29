@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
 
@@ -50,17 +51,17 @@ namespace Timelapse.Dialog
 
         #region Delete Folder Management
         // Check the appropriate radio button to match the state
-            private void RadioButtonDeletionManagement_Set(DeleteFolderManagement deleteFolderManagement)
+            private void RadioButtonDeletionManagement_Set(DeleteFolderManagementEnum deleteFolderManagement)
         {
             switch (deleteFolderManagement)
             {
-                case DeleteFolderManagement.ManualDelete:
+                case DeleteFolderManagementEnum.ManualDelete:
                     this.RadioButtonManualDelete.IsChecked = true;
                     break;
-                case DeleteFolderManagement.AskToDeleteOnExit:
+                case DeleteFolderManagementEnum.AskToDeleteOnExit:
                     this.RadioButtonAskToDelete.IsChecked = true;
                     break;
-                case DeleteFolderManagement.AutoDeleteOnExit:
+                case DeleteFolderManagementEnum.AutoDeleteOnExit:
                     this.RadioButtonAutoDeleteOnExit.IsChecked = true;
                     break;
                 default:
@@ -75,13 +76,13 @@ namespace Timelapse.Dialog
             switch (rb.Name)
             {
                 case "RadioButtonManualDelete":
-                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.ManualDelete;
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
                     break;
                 case "RadioButtonAskToDelete":
-                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.AskToDeleteOnExit;
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.AskToDeleteOnExit;
                     break;
                 case "RadioButtonAutoDeleteOnExit":
-                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.AutoDeleteOnExit;
+                    this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.AutoDeleteOnExit;
                     break;
                 default:
                     break;
@@ -92,7 +93,7 @@ namespace Timelapse.Dialog
         private void ResetDeletedFileManagement_Click(object sender, RoutedEventArgs e)
         {
             RadioButtonManualDelete.IsChecked = true;
-            this.timelapseState.DeleteFolderManagement = DeleteFolderManagement.ManualDelete;
+            this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
         }
         #endregion
 

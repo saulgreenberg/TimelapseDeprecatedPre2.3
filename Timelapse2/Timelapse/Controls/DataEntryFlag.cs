@@ -28,7 +28,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryFlag(ControlRow control, DataEntryControls styleProvider)
-            : base(control, styleProvider, ControlContentStyle.FlagCheckBox, ControlLabelStyle.DefaultLabel)
+            : base(control, styleProvider, ControlContentStyleEnum.FlagCheckBox, ControlLabelStyleEnum.DefaultLabel)
         {
         }
 

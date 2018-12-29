@@ -1,6 +1,6 @@
-﻿namespace Timelapse.Database
+﻿namespace Timelapse.Enums
 {
-    public enum FileSelection : int
+    public enum FileSelectionEnum : int
     {
         // file selections also used as image qualities
         Ok = 0,
