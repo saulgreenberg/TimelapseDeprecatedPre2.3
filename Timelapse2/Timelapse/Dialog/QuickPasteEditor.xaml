@@ -26,6 +26,7 @@
         <DockPanel DockPanel.Dock="Bottom">
             <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="CancelButton" Grid.Column="1" IsDefault="False"  VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
                 <Button Name="OkButton" Grid.Column="1" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
             </StackPanel>
         </DockPanel>
@@ -45,7 +46,7 @@
             </Grid.RowDefinitions>
             <!--<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">-->
                 <Label Content="Title:" FontWeight="Bold" Grid.Row="0" Grid.Column="0"/>
-            <TextBox Name="QuickPasteTitle"  Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Give this a meaningful title" VerticalContentAlignment="Center" Width="150"/>
+            <TextBox Name="QuickPasteTitle"  Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Give this a meaningful title" VerticalContentAlignment="Center" Width="150" />
             <!--</StackPanel>-->
             <Label Content="Use"   FontWeight="Bold" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1"/>
             <Label Content="Label" FontWeight="Bold" Grid.Row="1" Grid.Column="2"/>

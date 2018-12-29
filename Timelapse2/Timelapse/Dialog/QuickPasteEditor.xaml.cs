@@ -32,7 +32,7 @@ namespace Timelapse.Dialog
 
             // Display the title of the QuickPasteEntry
             this.QuickPasteTitle.Text = this.quickPasteEntry.Title;
-
+            this.QuickPasteTitle.TextChanged += QuickPasteTitle_TextChanged;
             // Build rows, each displaying successive items in the QuickPasteItems list
             BuildRows();
         }
@@ -83,7 +83,7 @@ namespace Timelapse.Dialog
             {
                 Margin = new Thickness(5),
                 Text = quickPasteItem.Label,
-                Foreground = quickPasteItem.Use ? Brushes.Black : Brushes.Gray
+                Foreground = quickPasteItem.Use ? Brushes.Black : Brushes.Gray,
             };
             Grid.SetRow(controlLabel, gridRowIndex);
             Grid.SetColumn(controlLabel, LabelColumn);
@@ -131,6 +131,16 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs args)
+        {
+            this.DialogResult = false;
+        }
         #endregion
+
+        private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            this.quickPasteEntry.Title = this.QuickPasteTitle.Text;
+        }
     }
 }

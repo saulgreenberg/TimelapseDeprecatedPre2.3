@@ -305,6 +305,7 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
 
@@ -320,7 +321,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
-                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms)
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms),
+                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, Constant.DatabaseValues.DefaultQuickPasteXML)
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
@@ -566,6 +568,19 @@ namespace Timelapse.Database
                 // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
+            // Make sure that the column containing the QuickPasteXML exists in the image set table. 
+            // If not, add it and set it to the default
+            bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            if (!quickPasteXMLColumnExists)
+            {
+                // create the sortCriteria column
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+
+                // Update the image set
+                this.GetImageSet();
+                // This still has to be synchronized, which will occur after we prepare all missing columns
+            }
+
             // Timezone column (if missing) needs to be added to the Imageset Table
             bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone);
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
@@ -579,7 +594,7 @@ namespace Timelapse.Database
             }
 
             // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
-            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists)))
+            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists) || (!quickPasteXMLColumnExists)))
             {
                 this.SyncImageSetToDatabase();
             }

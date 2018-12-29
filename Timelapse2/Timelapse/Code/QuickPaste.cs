@@ -107,7 +107,6 @@ namespace Timelapse.Dialog
                         new XElement("Value", v.Value.ToString()),
                      new XElement("Use", v.Use.ToString()
                 )))))));
-            //System.Diagnostics.Debug.Print(xDocument.ToString());
             return xDocument.ToString();
         }
 
@@ -137,36 +136,6 @@ namespace Timelapse.Dialog
             {
                 quickPasteEntries.Add(quickPasteEntry);
             }
-
-            foreach (QuickPasteEntry quickPasteEntry in quickPasteEntries)
-            { 
-                System.Diagnostics.Debug.Print(">" + quickPasteEntry.Title);
-                foreach(QuickPasteItem item in quickPasteEntry.Items)
-                {
-                    System.Diagnostics.Debug.Print("-->" + item.DataLabel + " " + item.Label + "|" + item.Value + " " + item.Use.ToString());
-                }
-            }
-            
-    
-
-            //List<QuickPasteEntry> quickPasteEntries =
-            //     IEnumerable com = from i in xDocument.Elements("Entries")
-            //         .Elements("Entry")
-            //         select new QuickPasteEntry
-            //          {
-            //             Title = (string) i.Element("Title"),
-            //             from k in .Elements("Item")
-            //             select new QuickPasteItem
-            //          {
-            //                 DataLabel = string(k.Element("DataLabel"))
-            //             Label = string(k.Element("Label"))
-            //             Value = string(k.Element("Value"))
-            //             Use = Boolean(k.Element("Use"))
-            //             }
-            //         };
-
-            //// List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
-
             return quickPasteEntries;
         }
         #endregion

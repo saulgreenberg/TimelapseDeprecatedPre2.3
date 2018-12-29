@@ -47,6 +47,7 @@ namespace Timelapse
         private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
         private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
+        private QuickPasteWindow quickPasteWindow = null;
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
         private DispatcherTimer timerFileNavigator;
@@ -935,6 +936,10 @@ namespace Timelapse
             // Show the File Player
             FilePlayer.Visibility = Visibility.Visible;
 
+            // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
+            string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;
+            this.quickPasteEntries = QuickPaste.QuickPasteEntriesFromXML(xml);
+
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
@@ -959,9 +964,6 @@ namespace Timelapse
             {
                 DataGridPane_IsActiveChanged(null, null);
             }
-
-            // Load the CustomPasteEntries from the ImageSet table
-            this.quickPasteEntries = new List<QuickPasteEntry>();
         }
         #endregion
 
@@ -1560,6 +1562,19 @@ namespace Timelapse
             {
                 UnHighlightQuickPaste(e.QuickPasteEntry);
             }
+            else if (e.EventType == 3)
+            {
+                this.quickPasteEntries.RemoveAll(x => x.Equals(e.QuickPasteEntry));
+                this.quickPasteWindow.Refresh(this.quickPasteEntries);
+            }
+            else if (e.EventType == 4)
+            {
+                this.OpenQuickPasteEditor(e.QuickPasteEntry);
+            }
+            else if (e.EventType == 5)
+            {
+                this.MenuItemNewQuickPaste_Click(null, null);
+            }
         }
 
         // Highlight the controls affected by the Quickpaste entry
@@ -1656,11 +1671,32 @@ namespace Timelapse
                 }
             }
         }
-        #endregion
-        #region Differencing
-        // Cycle through the image differences in the order: current, then previous and next differenced images.
-        // Create and cache the differenced images.
-        private void TryViewPreviousOrNextDifference()
+
+        private void OpenQuickPasteEditor(QuickPasteEntry quickPasteEntry)
+        {
+            if (quickPasteEntry == null)
+            {
+                return;
+            }
+            Dialog.QuickPasteEditor quickPasteConfiguration = new Dialog.QuickPasteEditor(quickPasteEntry)
+            {
+                Owner = this
+            };
+
+            if (quickPasteConfiguration.ShowDialog() == true)
+            {
+                quickPasteEntry = quickPasteConfiguration.quickPasteEntry;
+
+                // Update the XML and refresh the window
+                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
+                this.quickPasteWindow.Refresh(this.quickPasteEntries);
+            }
+        }
+            #endregion
+            #region Differencing
+            // Cycle through the image differences in the order: current, then previous and next differenced images.
+            // Create and cache the differenced images.
+            private void TryViewPreviousOrNextDifference()
         {
             // Only allow differencing in single image mode.
             if (!this.IsDisplayingActiveSingleImage())
@@ -3269,10 +3305,8 @@ namespace Timelapse
                     this.quickPasteEntries = new List<QuickPasteEntry>();
                 }
                 this.quickPasteEntries.Add(quickPasteEntry);
-                System.Diagnostics.Debug.Print(quickPasteEntry.Title + " " +  this.quickPasteEntries.Count.ToString());
-                string xml = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
-                QuickPaste.QuickPasteEntriesFromXML(xml);
-
+                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
+                this.quickPasteWindow.Refresh(this.quickPasteEntries);
             }
         }
         private void MenuItemShowQuickPasteWindow_Click(object sender, RoutedEventArgs e)
@@ -3281,20 +3315,19 @@ namespace Timelapse
             {
                 return;
             }
-            //foreach (QuickPasteEntry qpe in this.quickPasteEntries)
-            //{
-            //    System.Diagnostics.Debug.Print("Window List: " + qpe.Title + " " + qpe.Items.Count.ToString());
-            //}
-            Dialog.QuickPasteWindow quickPasteWindow = new QuickPasteWindow()
+
+            if (this.quickPasteWindow == null || (!this.quickPasteWindow.IsLoaded))
             {
-                Owner = this,
-                QuickPasteEntries = this.quickPasteEntries
-            };
-            quickPasteWindow.Show();
-            quickPasteWindow.QuickPasteEvent += QuickPasteWindow_QuickPasteEvent;
+                // The quickPasteWindow hasn't been created yet, so do so.
+                this.quickPasteWindow = new QuickPasteWindow()
+                {
+                    Owner = this,
+                    QuickPasteEntries = this.quickPasteEntries
+                };
+                quickPasteWindow.QuickPasteEvent += QuickPasteWindow_QuickPasteEvent;
+            }
+            this.quickPasteWindow.Show();
         }
-
-
         #endregion
 
         #region Options Menu Callbacks

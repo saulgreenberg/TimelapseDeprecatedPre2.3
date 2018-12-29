@@ -48,6 +48,15 @@ namespace Timelapse.Dialog
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
+            // Build the window contents
+            Refresh(this.quickPasteEntries);
+        }
+
+        public void Refresh(List<QuickPasteEntry> quickPasteEntries)
+        {
+            // Update the quickPasteEntries
+            this.quickPasteEntries = quickPasteEntries;
+
             this.QuickPasteGrid.RowDefinitions.Clear();
             int gridRowIndex = 0;
 
@@ -64,7 +73,6 @@ namespace Timelapse.Dialog
                 }
 
                 // Create and configure the QuickPaste control, and add its callbacks
-                
                 Button quickPasteControl = new Button()
                 {
                     Style = this.Owner.FindResource("CopyPreviousButtonStyle") as Style,
@@ -73,6 +81,30 @@ namespace Timelapse.Dialog
                     ToolTip = tooltipText,
                     Tag = quickPasteEntry
                 };
+
+                // Create a Context Menu for each button that allows the user to
+                // - Delete the item
+                ContextMenu contextMenu = new ContextMenu();
+                quickPasteControl.ContextMenu = contextMenu;
+
+                MenuItem editItem = new MenuItem()
+                {
+                    Header = "Edit",
+                    Tag = quickPasteEntry
+                };
+                editItem.Click += EditItem_Click;
+                contextMenu.Items.Add(editItem);
+
+                MenuItem deleteItem = new MenuItem()
+                {
+                    Header = "Delete",
+                    Tag = quickPasteEntry
+                };
+                deleteItem.Click += DeleteItem_Click;
+                contextMenu.Items.Add(deleteItem);
+
+
+
                 quickPasteControl.Click += QuickPasteControl_Click;
                 quickPasteControl.MouseEnter += QuickPasteControl_MouseEnter;
                 quickPasteControl.MouseLeave += QuickPasteControl_MouseLeave;
@@ -82,10 +114,25 @@ namespace Timelapse.Dialog
                 {
                     Height = GridLength.Auto
                 };
-                this.QuickPasteGrid.RowDefinitions.Add(gridRow); Grid.SetRow(quickPasteControl, gridRowIndex++);
-                Grid.SetColumn(quickPasteControl, gridRowIndex++);
+                this.QuickPasteGrid.RowDefinitions.Add(gridRow); Grid.SetRow(quickPasteControl, gridRowIndex);
+                Grid.SetColumn(quickPasteControl, gridRowIndex);
                 this.QuickPasteGrid.Children.Add(quickPasteControl);
+                gridRowIndex++;
             }
+        }
+
+        private void EditItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            QuickPasteEntry quickPasteEntry = (QuickPasteEntry)menuItem.Tag;
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 4)); // CHANGE NUMBERS TO ENUM
+        }
+
+        private void DeleteItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            QuickPasteEntry quickPasteEntry = (QuickPasteEntry)menuItem.Tag;
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 3)); // CHANGE NUMBERS TO ENUM
         }
 
         private void QuickPasteControl_MouseEnter(object sender, MouseEventArgs e)
@@ -107,6 +154,11 @@ namespace Timelapse.Dialog
             Button button = sender as Button;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry) button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, 0)); // CHANGE NUMBERS TO ENUM
+        }
+
+        private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, 5)); // CHANGE NUMBERS TO ENUM
         }
     }
 }
