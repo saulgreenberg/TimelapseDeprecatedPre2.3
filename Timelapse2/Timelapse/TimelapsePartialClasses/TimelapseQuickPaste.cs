@@ -6,14 +6,49 @@ using Timelapse.Controls;
 using Timelapse.QuickPaste;
 
 // A Partial class collecting the QuickPaste methods. 
-// Essentially, after a quickpaste event is received, 
-//  the appropriate method is invoked depending on the event type
 namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
+        // Show the QickPaste window
+        private void ShowQuickPasteWindow()
+        {
+            if (this.quickPasteEntries == null)
+            {
+                return;
+            }
+
+            // If the quickpast window doesn't exist create it, and
+            // add an event handler to it thatis used to generate events that identify the user action taken in that window
+            if (this.quickPasteWindow == null || (!this.quickPasteWindow.IsLoaded))
+            {
+                // The quickPasteWindow hasn't been created yet, so do so.
+                this.quickPasteWindow = new QuickPasteWindow()
+                {
+                    Owner = this,
+                    QuickPasteEntries = this.quickPasteEntries
+                };
+
+                quickPasteWindow.QuickPasteEvent += this.QuickPasteWindow_QuickPasteEvent;
+            }
+
+            // Show the window
+            this.quickPasteWindow.Show();
+        }
+
+        // Hide the QickPaste window
+        private void HideQuickPasteWindow()
+        {
+            // If the quickpast window doesn't exist create it, and
+            // add an event handler to it thatis used to generate events that identify the user action taken in that window
+            if (this.quickPasteWindow != null && this.quickPasteWindow.IsLoaded)
+            {
+                this.quickPasteWindow.Hide();
+            }
+        }
+
         // The QuickPaste controls generate various events, depending on what the user selected.
-        // Depending on the event received, perform the action indicated by the event
+        // Depending on the event received, perform the action indicated by the event by calling the appropriate method below
         private void QuickPasteWindow_QuickPasteEvent(object sender, QuickPasteEventArgs e)
         {
             switch (e.EventType)

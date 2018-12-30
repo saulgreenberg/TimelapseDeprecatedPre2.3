@@ -162,5 +162,6 @@ namespace Timelapse.QuickPaste
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
         }
+
     }
 }

@@ -110,14 +110,21 @@
 
                 <!-- Find image -->
                 <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image whose filename contains your case-insensitive search term" InputGestureText="control-F"/>
+
                 <Separator />
 
+                <!-- QuickPaste Window-->
+                <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemShowQuickPasteWindow_Click" InputGestureText="Q" ToolTip="Display the Quickpaste window, which lets you create, selected, edit and delete QuickPaste items"/>
                 <!-- Copy previous values -->
                 <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="TryCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
 
+                <Separator/>
+                
                 <!-- Populate a field with _metadata... -->
                 <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
+                
 
+                
                 <!-- Delete submenu-->
                 <MenuItem Header="D_elete"  SubmenuOpened="Delete_SubmenuOpening"  >
                     <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
@@ -144,11 +151,6 @@
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
             </MenuItem>
 
-            <!-- QuickPaste Menu -->
-            <MenuItem Name="MenuItemQuickPaste" Header="Paste" IsEnabled="False" IsTabStop="false" SubmenuOpened="Paste_SubmenuOpening" >
-                <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemShowQuickPasteWindow_Click" ToolTip="Show a window of all quick-paste items"/>
-            </MenuItem>
-            
             <!-- Options Menu -->
             <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
                 <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
