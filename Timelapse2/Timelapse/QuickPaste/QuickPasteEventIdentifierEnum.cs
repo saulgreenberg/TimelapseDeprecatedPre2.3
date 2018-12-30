@@ -1,4 +1,4 @@
-﻿namespace Timelapse.Enums
+﻿namespace Timelapse.QuickPaste
 {
     public enum QuickPasteEventIdentifierEnum
     {

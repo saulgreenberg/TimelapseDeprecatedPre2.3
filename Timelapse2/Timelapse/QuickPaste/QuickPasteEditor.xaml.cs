@@ -2,8 +2,9 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Timelapse.Dialog;
 
-namespace Timelapse.Dialog
+namespace Timelapse.QuickPaste
 {
     // Given a QuickPasteEntry (a name and a list of QuickPasteItems),
     // allow the user to edit it.

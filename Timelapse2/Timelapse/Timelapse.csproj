@@ -197,8 +197,8 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Code\QuickPaste.cs" />
-    <Compile Include="Dialog\QuickPasteEditor.xaml.cs">
+    <Compile Include="QuickPaste\QuickPaste.cs" />
+    <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\CustomSort.xaml.cs">
@@ -238,8 +238,10 @@
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EventArguments\QuickPasteEventArgs.cs" />
-    <Compile Include="Dialog\QuickPasteWindow.xaml.cs">
+    <Compile Include="QuickPaste\QuickPasteEntry.cs" />
+    <Compile Include="QuickPaste\QuickPasteEventArgs.cs" />
+    <Compile Include="QuickPaste\QuickPasteItem.cs" />
+    <Compile Include="QuickPaste\QuickPasteWindow.xaml.cs">
       <DependentUpon>QuickPasteWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\UpdateRootFolder.xaml.cs">
@@ -250,7 +252,7 @@
     </Compile>
     <Compile Include="Enums\FilePlayerDirectionEnum.cs" />
     <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
-    <Compile Include="Enums\QuickPasteEventIdentifierEnum.cs" />
+    <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
@@ -318,11 +320,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\QuickPasteEditor.xaml">
+    <Page Include="QuickPaste\QuickPasteEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\QuickPasteWindow.xaml">
+    <Page Include="QuickPaste\QuickPasteWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

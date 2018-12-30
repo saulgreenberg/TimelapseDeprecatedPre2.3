@@ -23,6 +23,7 @@ using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
 using Timelapse.Images;
+using Timelapse.QuickPaste;
 using Timelapse.Util;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
@@ -940,7 +941,7 @@ namespace Timelapse
 
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;
-            this.quickPasteEntries = QuickPaste.QuickPasteEntriesFromXML(xml);
+            this.quickPasteEntries = QuickPasteOperations.QuickPasteEntriesFromXML(this.dataHandler.FileDatabase, xml);
 
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
@@ -1549,7 +1550,6 @@ namespace Timelapse
         #endregion
 
         #region QuickPaste
-
         // The QuickPaste controls generate various events, depending on what the user selected.
         // Depending on the event, perform the action indicated by the event
         private void QuickPasteWindow_QuickPasteEvent(object sender, QuickPasteEventArgs e)
@@ -1563,8 +1563,7 @@ namespace Timelapse
                     this.OpenQuickPasteEditor(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Delete:
-                    this.quickPasteEntries.RemoveAll(x => x.Equals(e.QuickPasteEntry));
-                    this.quickPasteWindow.Refresh(this.quickPasteEntries);
+                    this.DeleteQuickPasteEntry(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.MouseEnter:
                     HighlightQuickPaste(e.QuickPasteEntry);
@@ -1681,7 +1680,7 @@ namespace Timelapse
             {
                 return;
             }
-            Dialog.QuickPasteEditor quickPasteConfiguration = new Dialog.QuickPasteEditor(quickPasteEntry)
+            QuickPasteEditor quickPasteConfiguration = new QuickPasteEditor(quickPasteEntry)
             {
                 Owner = this
             };
@@ -1689,18 +1688,28 @@ namespace Timelapse
             if (quickPasteConfiguration.ShowDialog() == true)
             {
                 quickPasteEntry = quickPasteConfiguration.QuickPasteEntry;
-
-                // Update the XML and refresh the window
-                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
-                this.quickPasteWindow.Refresh(this.quickPasteEntries);
+                QuickPasteUpdateAll();
             }
+        }
+
+        private void DeleteQuickPasteEntry(QuickPasteEntry quickPasteEntry)
+        {
+            this.quickPasteEntries = QuickPasteOperations.DeleteQuickPasteEntry(quickPasteEntries, quickPasteEntry);
+            this.QuickPasteUpdateAll();
+        }
+
+        // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
+        private void QuickPasteUpdateAll()
+        {
+            this.quickPasteWindow.Refresh(this.quickPasteEntries);
+            this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
         }
         #endregion
 
         #region Differencing
-            // Cycle through the image differences in the order: current, then previous and next differenced images.
-            // Create and cache the differenced images.
-            private void TryViewPreviousOrNextDifference()
+        // Cycle through the image differences in the order: current, then previous and next differenced images.
+        // Create and cache the differenced images.
+        private void TryViewPreviousOrNextDifference()
         {
             // Only allow differencing in single image mode.
             if (!this.IsDisplayingActiveSingleImage())
@@ -3288,12 +3297,12 @@ namespace Timelapse
         private void MenuItemNewQuickPaste_Click(object sender, RoutedEventArgs e)
         {
             // This is to test a new quick paste
-            QuickPasteEntry quickPasteEntry = QuickPaste.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, "Based on Row " + this.dataHandler.ImageCache.CurrentRow);
+            QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, "Based on Row " + this.dataHandler.ImageCache.CurrentRow);
             if (quickPasteEntry == null)
             {
                 return;
             }
-            Dialog.QuickPasteEditor quickPasteConfiguration = new Dialog.QuickPasteEditor(quickPasteEntry)
+            QuickPasteEditor quickPasteConfiguration = new QuickPasteEditor(quickPasteEntry)
             {
                 Owner = this
             };
@@ -3309,7 +3318,7 @@ namespace Timelapse
                     this.quickPasteEntries = new List<QuickPasteEntry>();
                 }
                 this.quickPasteEntries.Add(quickPasteEntry);
-                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPaste.QuickPasteEntriesToXML(this.quickPasteEntries);
+                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
                 this.quickPasteWindow.Refresh(this.quickPasteEntries);
             }
         }

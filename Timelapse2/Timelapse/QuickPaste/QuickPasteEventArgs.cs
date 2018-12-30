@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Timelapse.Dialog;
-using Timelapse.Enums;
-
-namespace Timelapse.EventArguments
+namespace Timelapse.QuickPaste
 {
     /// <summary>
     /// The QuickPaste event argument contains 
