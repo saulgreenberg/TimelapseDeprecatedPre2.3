@@ -41,7 +41,8 @@ namespace Timelapse.QuickPaste
                             row.DataLabel, 
                             row.Label, 
                             fileDatabase.Files[rowIndex].GetValueDisplayString(row.DataLabel), 
-                            row.Copyable));
+                            row.Copyable,
+                            row.Type));
                         break;
                     default:
                         // Standard controls are not used in quick pastes, as it is unlikely the user will want to alter their contents
@@ -66,10 +67,11 @@ namespace Timelapse.QuickPaste
                 quickPasteEntries.Select(i => new XElement("Entry",
                      new XElement("Title", i.Title),
                         i.Items.Select(v => new XElement("Item",
-                        new XElement("Label", v.Label),
-                        new XElement("DataLabel", v.DataLabel),
-                        new XElement("Value", v.Value.ToString()),
-                     new XElement("Use", v.Use.ToString())))))));
+                            new XElement("Label", v.Label),
+                            new XElement("DataLabel", v.DataLabel),
+                            new XElement("Value", v.Value.ToString()),
+                            new XElement("Use", v.Use.ToString()),
+                     new XElement("ControlType", v.ControlType.ToString())))))));
             return xDocument.ToString();
         }
 
@@ -91,6 +93,7 @@ namespace Timelapse.QuickPaste
                                  Label = (string)v.Element("Label"),
                                  Value = (string)v.Element("Value"),
                                  Use = (bool)v.Element("Use"),
+                                 ControlType = (string)v.Element("ControlType")
                              }).ToList()
                 };
 
@@ -139,7 +142,7 @@ namespace Timelapse.QuickPaste
                                 if (row.DataLabel == oldItem.DataLabel)
                                 {
                                     // We have a valid quickPasteItem, as it matches a control. So copy that item to the new list
-                                    newQuickPasteEntry.Items.Add(new QuickPasteItem(oldItem.DataLabel, oldItem.Label, oldItem.Value, oldItem.Use));
+                                    newQuickPasteEntry.Items.Add(new QuickPasteItem(oldItem.DataLabel, oldItem.Label, oldItem.Value, oldItem.Use, row.Type));
                                     noItemsMatch = false;
                                     oneOrMoreItemsCopied = true;
                                     break;
@@ -149,7 +152,7 @@ namespace Timelapse.QuickPaste
                             if (noItemsMatch)
                             {
                                 string value = (row.Type == Constant.Control.Flag) ? "False" : String.Empty;
-                                newQuickPasteEntry.Items.Add(new QuickPasteItem(row.DataLabel, row.Label, value, false));
+                                newQuickPasteEntry.Items.Add(new QuickPasteItem(row.DataLabel, row.Label, value, false, row.Type));
                             }
                             break;
                         default:

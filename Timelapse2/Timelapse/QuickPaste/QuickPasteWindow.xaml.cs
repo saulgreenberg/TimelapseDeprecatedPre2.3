@@ -48,7 +48,9 @@ namespace Timelapse.QuickPaste
             // Update the quickPasteEntries
             this.quickPasteEntries = quickPasteEntries;
 
+            // Clear the QuickPasteGrid, so we can start afresh
             this.QuickPasteGrid.RowDefinitions.Clear();
+            this.QuickPasteGrid.Children.Clear();
             int gridRowIndex = 0;
 
             foreach (QuickPasteEntry quickPasteEntry in this.QuickPasteEntries)
@@ -63,7 +65,7 @@ namespace Timelapse.QuickPaste
                         {
                             tooltipText += Environment.NewLine;
                         }
-                        tooltipText += item.Label + ": " + item.Value.ToString() ;
+                        tooltipText += item.Label + ": " + item.Value.ToString();
                     }
                 }
 

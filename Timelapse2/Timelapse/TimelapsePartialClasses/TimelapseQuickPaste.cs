@@ -57,7 +57,7 @@ namespace Timelapse
             {
                 this.quickPasteWindow.Topmost = false;
             }
-            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry)
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.dataHandler.FileDatabase)
             {
                 Owner = this
             };
@@ -94,7 +94,7 @@ namespace Timelapse
                 this.quickPasteWindow.Topmost = false;
             }
 
-            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry)
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.dataHandler.FileDatabase)
             {
                 Owner = this
             };

@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Title="Quick Paste"
         MinWidth="200"
-        MinHeight="200"
+        MinHeight="210"
 		Height="313.487" Width="200"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
@@ -14,7 +14,7 @@
         Topmost="True"
         WindowStyle="ToolWindow"
 		WindowStartupLocation="CenterOwner"  Loaded="Window_Loaded" >
-    <Grid>
+    <Grid Margin="0,0,0,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
