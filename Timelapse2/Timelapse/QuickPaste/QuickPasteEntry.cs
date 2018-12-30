@@ -10,8 +10,8 @@ namespace Timelapse.QuickPaste
 
         public QuickPasteEntry()
         {
-            Title = String.Empty;
-            Items = new List<QuickPasteItem>();
+            this.Title = String.Empty;
+            this.Items = new List<QuickPasteItem>();
         }
     }
 }

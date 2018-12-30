@@ -14,9 +14,13 @@ namespace Timelapse.QuickPaste
         public QuickPasteEntry QuickPasteEntry { get; set; }
 
         // Columns where fields will be placed in the grid
-        private const int UseColumn = 1;
-        private const int LabelColumn = 2;
-        private const int ValueColumn = 3;
+        private const int GridColumnUse = 1;
+        private const int GridColumnLabel = 2;
+        private const int GridColumnValue = 3;
+
+        // The initial grid row. We start adding rows after this one.
+        // the 1st two grid rows are already filled.
+        private const int GridRowInitialRow = 1;
 
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry)
         {
@@ -34,15 +38,16 @@ namespace Timelapse.QuickPaste
             // Display the title of the QuickPasteEntry
             this.QuickPasteTitle.Text = this.QuickPasteEntry.Title;
             this.QuickPasteTitle.TextChanged += QuickPasteTitle_TextChanged;
-            // Build rows, each displaying successive items in the QuickPasteItems list
+
+            // Build the grid rows, each displaying successive items in the QuickPasteItems list
             BuildRows();
         }
 
-        // Get the QuickPaste items, and build a row displaying each one of them
+        // Build a row displaying each QuickPaste item
         private void BuildRows()
         {
-            // We don't start at zero, as the 1st two grid rows are already filled.
-            int gridRowIndex = 1;
+            // We start after the GridRowInitialRow
+            int gridRowIndex = GridRowInitialRow;
 
             foreach (QuickPasteItem quickPasteItem in this.QuickPasteEntry.Items)
             {
@@ -57,8 +62,8 @@ namespace Timelapse.QuickPaste
         }
 
         // Given a quickPasteItem (essential the information representing a single data control and its value),
-        // add a row to the grid with controls that display that information,
-        // and a checkbox that can be selected to indicate whether that information should be included in a paste operation
+        // - add a row to the grid with controls that display that information,
+        // - add a checkbox that can be selected to indicate whether that information should be included in a paste operation
         private void BuildRow(QuickPasteItem quickPasteItem, RowDefinition gridRow, int gridRowIndex)
         {
             // USE Column: A checkbox to indicate whether the current search row should be used as part of the search
@@ -75,7 +80,7 @@ namespace Timelapse.QuickPaste
             useCurrentRow.Unchecked += UseCurrentRow_CheckChanged;
 
             Grid.SetRow(useCurrentRow, gridRowIndex);
-            Grid.SetColumn(useCurrentRow, UseColumn);
+            Grid.SetColumn(useCurrentRow, GridColumnUse);
             this.QuickPasteGridRows.Children.Add(useCurrentRow);
 
             // LABEL column: The label associated with the control (Note: not the data label)
@@ -86,7 +91,7 @@ namespace Timelapse.QuickPaste
                 Foreground = quickPasteItem.Use ? Brushes.Black : Brushes.Gray,
             };
             Grid.SetRow(controlLabel, gridRowIndex);
-            Grid.SetColumn(controlLabel, LabelColumn);
+            Grid.SetColumn(controlLabel, GridColumnLabel);
             this.QuickPasteGridRows.Children.Add(controlLabel);
 
             // Vaue column: The label associated with the control (Note: not the data label)
@@ -97,7 +102,7 @@ namespace Timelapse.QuickPaste
                 Foreground = quickPasteItem.Use ? Brushes.Black : Brushes.Gray
             };
             Grid.SetRow(controlValue, gridRowIndex);
-            Grid.SetColumn(controlValue, ValueColumn);
+            Grid.SetColumn(controlValue, GridColumnValue);
             this.QuickPasteGridRows.Children.Add(controlValue);
         }
 
@@ -109,14 +114,20 @@ namespace Timelapse.QuickPaste
             // Enable or disable the controls on that row to reflect whether the checkbox is checked or unchecked
             int row = Grid.GetRow(cbox);
 
-            TextBlock label = this.GetGridElement<TextBlock>(LabelColumn, row);
-            TextBlock value = this.GetGridElement<TextBlock>(ValueColumn, row);
+            TextBlock label = this.GetGridElement<TextBlock>(GridColumnLabel, row);
+            TextBlock value = this.GetGridElement<TextBlock>(GridColumnValue, row);
             label.Foreground = cbox.IsChecked == true ? Brushes.Black : Brushes.Gray;
             value.Foreground = cbox.IsChecked == true ? Brushes.Black : Brushes.Gray;
 
             // Update the QuickPaste row data structure to reflect the current checkbox state
             QuickPasteItem quickPasteRow = (QuickPasteItem)cbox.Tag;
             quickPasteRow.Use = cbox.IsChecked == true;
+        }
+
+        // Update the QuickPasteEntry's title
+        private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
         }
 
         // Get the corresponding grid element from a given column, row, 
@@ -137,10 +148,5 @@ namespace Timelapse.QuickPaste
             this.DialogResult = false;
         }
         #endregion
-
-        private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
-        }
     }
 }

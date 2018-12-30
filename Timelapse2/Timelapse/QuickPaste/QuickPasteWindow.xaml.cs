@@ -7,13 +7,9 @@ using Timelapse.Dialog;
 
 namespace Timelapse.QuickPaste
 {
-    /// <summary>
-    /// Interaction logic for QuickPasteWindow.xaml
-    /// </summary>
+    // A set of buttons including context menus that lets the user create and use quick paste controls
     public partial class QuickPasteWindow : Window
     {
-        private List<QuickPasteEntry> quickPasteEntries;
-
         #region Events
         public event EventHandler<QuickPasteEventArgs> QuickPasteEvent;
 
@@ -28,6 +24,8 @@ namespace Timelapse.QuickPaste
             get { return quickPasteEntries; }
             set { quickPasteEntries = value; }
         }
+
+        private List<QuickPasteEntry> quickPasteEntries;
 
         public QuickPasteWindow()
         {
@@ -61,7 +59,11 @@ namespace Timelapse.QuickPaste
                 {
                     if (item.Use)
                     {
-                        tooltipText += item.Label + ": " + item.Value.ToString() + Environment.NewLine;
+                        if (tooltipText != String.Empty)
+                        {
+                            tooltipText += Environment.NewLine;
+                        }
+                        tooltipText += item.Label + ": " + item.Value.ToString() ;
                     }
                 }
 

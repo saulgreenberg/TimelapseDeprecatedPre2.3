@@ -146,7 +146,6 @@
 
             <!-- QuickPaste Menu -->
             <MenuItem Name="MenuItemQuickPaste" Header="Paste" IsEnabled="False" IsTabStop="false" SubmenuOpened="Paste_SubmenuOpening" >
-                <MenuItem Name="MenuItemNewQuickPaste" IsEnabled="True" Header="_New Paste from current image" Click="MenuItemNewQuickPaste_Click" ToolTip="Create a quick-paste entry based on the data associated with the current image"/>
                 <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemShowQuickPasteWindow_Click" ToolTip="Show a window of all quick-paste items"/>
             </MenuItem>
             

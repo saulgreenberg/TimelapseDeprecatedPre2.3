@@ -6,8 +6,8 @@ using Timelapse.Controls;
 using Timelapse.QuickPaste;
 
 // A Partial class collecting the QuickPaste methods. 
-// Essentially, a quickpaste event is received, 
-// where the appropriate method listed afterwards is invoked depending on the event type
+// Essentially, after a quickpaste event is received, 
+//  the appropriate method is invoked depending on the event type
 namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
@@ -19,32 +19,106 @@ namespace Timelapse
             switch (e.EventType)
             {
                 case QuickPasteEventIdentifierEnum.New:
-                    this.MenuItemNewQuickPaste_Click(null, null);
+                    this.NewQuickPasteEntry();
                     break;
                 case QuickPasteEventIdentifierEnum.Edit:
-                    this.OpenQuickPasteEditor(e.QuickPasteEntry);
+                    this.EditQuickPasteEntry(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Delete:
                     this.DeleteQuickPasteEntry(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.MouseEnter:
-                    HighlightQuickPaste(e.QuickPasteEntry);
+                    HighlightQuickPasteDataControls(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.MouseLeave:
-                    UnHighlightQuickPaste(e.QuickPasteEntry);
+                    UnHighlightQuickPasteDataControls(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Paste:
-                    TryQuickPaste(e.QuickPasteEntry);
+                    PasteQuickPasteEntryIntoDataControls(e.QuickPasteEntry);
                     break;
                 default:
                     break;
             }
         }
-        
-        // Highlight the controls affected by the Quickpaste entry
-        private void HighlightQuickPaste(QuickPasteEntry quickPasteEntry)
+
+        // Create a quickpaste entry from the current data controls,
+        // add it to the quickpaste entries, and update the display and the ImageSetTable database as needed
+        private void NewQuickPasteEntry()
         {
-            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+            string title = "QuickPaste #" + (this.quickPasteEntries.Count + 1).ToString();
+            QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, title);
+            if (quickPasteEntry == null)
+            {
+                return;
+            }
+
+            // Make sure the quickPasteWindow is not topmost, as it may otherwise occlude part of the QuickPaste Editor
+            if (this.quickPasteWindow.IsLoaded)
+            {
+                this.quickPasteWindow.Topmost = false;
+            }
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry)
+            {
+                Owner = this
+            };
+            if (quickPasteEditor.ShowDialog() == true)
+            {
+                quickPasteEntry = quickPasteEditor.QuickPasteEntry;
+                if (this.quickPasteEntries == null)
+                {
+                    // This shouldn't be necessary, but just in case...
+                    this.quickPasteEntries = new List<QuickPasteEntry>();
+                }
+                this.quickPasteEntries.Add(quickPasteEntry);
+                this.QuickPasteUpdateAll();
+            }
+
+            // Restore the quickPaste window back to its topmost state
+            if (this.quickPasteWindow.IsLoaded)
+            {
+                this.quickPasteWindow.Topmost = true;
+            }
+        }
+
+        // Open the quickPaste Editor window
+        private void EditQuickPasteEntry(QuickPasteEntry quickPasteEntry)
+        {
+            if (quickPasteEntry == null)
+            {
+                return;
+            }
+
+            // Make sure the quickPasteWindow is not topmost, as it may otherwise occlude part of the QuickPaste Editor
+            if (this.quickPasteWindow.IsLoaded)
+            {
+                this.quickPasteWindow.Topmost = false;
+            }
+
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry)
+            {
+                Owner = this
+            };
+
+            if (quickPasteEditor.ShowDialog() == true)
+            {
+                quickPasteEntry = quickPasteEditor.QuickPasteEntry;
+                QuickPasteUpdateAll();
+            }
+
+            // Restore the quickPaste window back to its topmost state
+            if (this.quickPasteWindow.IsLoaded)
+            {
+                this.quickPasteWindow.Topmost = true;
+            }
+        }
+
+        // Highlight the data controls affected by the Quickpaste entry
+        private void HighlightQuickPasteDataControls(QuickPasteEntry quickPasteEntry)
+        {
+            if (!this.IsDisplayingSingleImage())
+            {
+                return; // only allow copying in single image mode
+            }
 
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
@@ -73,9 +147,13 @@ namespace Timelapse
             }
         }
 
-        private void UnHighlightQuickPaste(QuickPasteEntry quickPasteEntry)
+        // Unhighlight the data controls affected by the Quickpaste entry
+        private void UnHighlightQuickPasteDataControls(QuickPasteEntry quickPasteEntry)
         {
-            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+            if (!this.IsDisplayingSingleImage())
+            {
+                return; // only allow copying in single image mode
+            }
 
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
@@ -86,6 +164,7 @@ namespace Timelapse
 
             foreach (QuickPasteItem item in quickPasteEntry.Items)
             {
+                // If the item wasn't used, then it wasn't highlit.
                 if (item.Use == false)
                 {
                     continue;
@@ -104,10 +183,13 @@ namespace Timelapse
             }
         }
 
-        // Quickpast the given entry
-        private void TryQuickPaste(QuickPasteEntry quickPasteEntry)
+        // Quickpast the given entry into the data control
+        private void PasteQuickPasteEntryIntoDataControls(QuickPasteEntry quickPasteEntry)
         {
-            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
+            if (!this.IsDisplayingSingleImage())
+            {
+                return; // only allow copying in single image mode
+            }
 
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
@@ -133,25 +215,6 @@ namespace Timelapse
                         break;
                     }
                 }
-            }
-        }
-
-        // Opent the quickPaste Editor window
-        private void OpenQuickPasteEditor(QuickPasteEntry quickPasteEntry)
-        {
-            if (quickPasteEntry == null)
-            {
-                return;
-            }
-            QuickPasteEditor quickPasteConfiguration = new QuickPasteEditor(quickPasteEntry)
-            {
-                Owner = this
-            };
-
-            if (quickPasteConfiguration.ShowDialog() == true)
-            {
-                quickPasteEntry = quickPasteConfiguration.QuickPasteEntry;
-                QuickPasteUpdateAll();
             }
         }
 

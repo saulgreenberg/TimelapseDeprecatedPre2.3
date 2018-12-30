@@ -4,23 +4,21 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Timelapse.Controls"
-        xmlns:local="clr-namespace:Timelapse.Dialog"
         mc:Ignorable="d"
           Title="Quick Paste Editor"
-        MinHeight="425" MinWidth="600"
-		Height="590.503" Width="596.225"
+        MinHeight="600" MinWidth="300"
+		Height="700" Width="500"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner"  Loaded="Window_Loaded" >
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
-                            Title="Quick Paste"
-                            What="Customizize how you can paste particular data into your data fields "
-                            Solution="Enter the data you want.
-                                      &#10;1. do a.
-                                      &#10;2. do b."
-                            Result="one or more quick paste buttons"
-                            Hint="Use copy previous"
+                            Title="QuickPaste Editor" 
+                            What="The checked items below form a quickpaste entry.  
+                                      &#10;You will be able to paste these values into the corresponding data controls with a single button click."
+                             Hint="&#x2022;  create a meaningful title
+                                      &#10;&#x2022;  check 'Use' to select items to be quick-pasted into data controls"
+                            Result="A new quick paste button will be added to the QuickPaste window"
                             ShowExplanationVisibility="False"/>
 
         <DockPanel DockPanel.Dock="Bottom">
@@ -32,27 +30,28 @@
         </DockPanel>
 
         <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top" Margin="0,0,0,10"/>
-        
-        <Grid Name="QuickPasteGridRows" DockPanel.Dock="Top" Margin="5,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <!--<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">-->
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Grid Name="QuickPasteGridRows" DockPanel.Dock="Top" Margin="5,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
                 <Label Content="Title:" FontWeight="Bold" Grid.Row="0" Grid.Column="0"/>
-            <TextBox Name="QuickPasteTitle"  Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Give this a meaningful title" VerticalContentAlignment="Center" Width="150" />
-            <!--</StackPanel>-->
-            <Label Content="Use"   FontWeight="Bold" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1"/>
-            <Label Content="Label" FontWeight="Bold" Grid.Row="1" Grid.Column="2"/>
-            <Label Content="Value" FontWeight="Bold" Grid.Row="1" Grid.Column="3"/>
-        </Grid>
-       
+                <TextBox Name="QuickPasteTitle"  Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Give this a meaningful title" VerticalContentAlignment="Center" Width="150" />
+
+                <Label Content="Use"   FontWeight="Bold" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1"/>
+                <Label Content="Label" FontWeight="Bold" Grid.Row="1" Grid.Column="2"/>
+                <Label Content="Value" FontWeight="Bold" Grid.Row="1" Grid.Column="3"/>
+            </Grid>
+        </ScrollViewer>
     </DockPanel>
 </Window>
 

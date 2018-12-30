@@ -3292,36 +3292,6 @@ namespace Timelapse
             // Disable / enable various controls depending if there are any quickpaste items to show
         }
 
-        // Create a new quick-paste item based on the data shown in the current image
-        // It raises the quick-paste editor
-        private void MenuItemNewQuickPaste_Click(object sender, RoutedEventArgs e)
-        {
-            // This is to test a new quick paste
-            QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, "Based on Row " + this.dataHandler.ImageCache.CurrentRow);
-            if (quickPasteEntry == null)
-            {
-                return;
-            }
-            QuickPasteEditor quickPasteConfiguration = new QuickPasteEditor(quickPasteEntry)
-            {
-                Owner = this
-            };
-            // SAULXXXX 
-            // Probably should put this somewhere else so we don't have event handlers constantly being created,
-            // or perhaps just create the window once and hide it instead of closing it.
-            if (quickPasteConfiguration.ShowDialog() == true)
-            {
-                quickPasteEntry = quickPasteConfiguration.QuickPasteEntry;
-                if (this.quickPasteEntries == null)
-                {
-                    // This shouldn't be necessary, but just in case...
-                    this.quickPasteEntries = new List<QuickPasteEntry>();
-                }
-                this.quickPasteEntries.Add(quickPasteEntry);
-                this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
-                this.quickPasteWindow.Refresh(this.quickPasteEntries);
-            }
-        }
         private void MenuItemShowQuickPasteWindow_Click(object sender, RoutedEventArgs e)
         {
             if (this.quickPasteEntries == null)
@@ -3329,6 +3299,8 @@ namespace Timelapse
                 return;
             }
 
+            // If the quickpast window doesn't exist create it, and
+            // add an event handler to it thatis used to generate events that identify the user action taken in that window
             if (this.quickPasteWindow == null || (!this.quickPasteWindow.IsLoaded))
             {
                 // The quickPasteWindow hasn't been created yet, so do so.
@@ -3337,8 +3309,11 @@ namespace Timelapse
                     Owner = this,
                     QuickPasteEntries = this.quickPasteEntries
                 };
+                
                 quickPasteWindow.QuickPasteEvent += QuickPasteWindow_QuickPasteEvent;
             }
+
+            // Show the window
             this.quickPasteWindow.Show();
         }
         #endregion

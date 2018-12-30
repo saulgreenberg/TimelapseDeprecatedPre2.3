@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Quick Paste"
-		Height="313.487" Width="158.294"
+        MinWidth="200"
+        MinHeight="200"
+		Height="313.487" Width="200"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
         SizeToContent="WidthAndHeight"
@@ -17,11 +19,20 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <Grid Name="QuickPasteGrid" Grid.Row="0">
-        </Grid>
-        <Separator Margin="0,5,0,5" Grid.Row="1"/>
-        <Button Name="NewQuickPasteEntryButton" Content="New QuickPaste..." FontWeight="DemiBold" Grid.Row="2" Height="40" ToolTip="Create a new QuickPaste entry based on the data displayed in the current image" Click="NewQuickPasteEntryButton_Click"/>
+        <TextBlock Margin="5" FontSize="10">
+            <Run FontWeight="DemiBold" Text="New QuickPaste:"/> creates a  new entry<LineBreak/>
+            <Run FontWeight="DemiBold" Text="Click:"/> pastes the entry<LineBreak/>
+            <Run FontWeight="DemiBold" Text="Right click:"/> edits or deletes the entry
+        </TextBlock>
+        
+        <Button Name="NewQuickPasteEntryButton" Content="New QuickPaste..." FontWeight="DemiBold" Grid.Row="1" Height="40" Margin="0,0,0,5" Padding="5,0,5,0" ToolTip="Create a new QuickPaste entry based on the data displayed in the current image" Click="NewQuickPasteEntryButton_Click"/>
+
+        <Separator Margin="0,5,0,5" Grid.Row="2"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="3">
+            <Grid Name="QuickPasteGrid" />
+        </ScrollViewer>
     </Grid>
 </Window>
