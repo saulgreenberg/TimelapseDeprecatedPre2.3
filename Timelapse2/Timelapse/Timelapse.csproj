@@ -255,6 +255,7 @@
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
