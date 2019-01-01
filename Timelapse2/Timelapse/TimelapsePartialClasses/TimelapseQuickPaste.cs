@@ -152,7 +152,7 @@ namespace Timelapse
         {
             if (!this.IsDisplayingSingleImage())
             {
-                return; // only allow copying in single image mode
+                return; // only allow highightng in single image mode
             }
 
             this.FilePlayer_Stop(); // In case the FilePlayer is going
@@ -176,6 +176,7 @@ namespace Timelapse
                     if (control.DataLabel == item.DataLabel)
                     {
                         control.Container.Background = Constant.Control.CopyableFieldHighlightBrush;
+                        control.ShowPreviewControlValue(item.Value);
                         break;
                     }
                 }
@@ -212,6 +213,7 @@ namespace Timelapse
                     if (control.DataLabel == item.DataLabel)
                     {
                         control.Container.ClearValue(Control.BackgroundProperty);
+                        control.HidePreviewControlValue();
                         break;
                     }
                 }
@@ -233,6 +235,8 @@ namespace Timelapse
                 return; // This shouldn't happen, but just in case...
             }
 
+            UnHighlightQuickPasteDataControls(quickPasteEntry);
+
             foreach (QuickPasteItem item in quickPasteEntry.Items)
             {
                 if (item.Use == false)
@@ -251,6 +255,7 @@ namespace Timelapse
                     }
                 }
             }
+            this.MarkableCanvas.Focus();
         }
 
         // Delete the quickPaste Entry from the quickPasteEntries

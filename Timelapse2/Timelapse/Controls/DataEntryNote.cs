@@ -34,6 +34,27 @@ namespace Timelapse.Controls
             this.ContentChanged = false;
         }
 
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // No adjustment is needed as the popup is directly over the entire note control
+                double horizontalOffset = 0;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(7, 5.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, this.ContentControl.Width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+        public override void HidePreviewControlValue()
+        {
+            this.HidePopupPreview();
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
@@ -44,11 +65,13 @@ namespace Timelapse.Controls
                 this.ContentControl.ToolTip = "Edit to change the " + this.Label + " for all selected images";
                 return;
             }
+
             // Otherwise, the note will be set to the provided value 
             // If the value to be empty, we just make it the same as the tooltip so something meaningful is displayed..
             this.ContentChanged = this.ContentControl.Text != value;
             this.ContentControl.Text = value;
             this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
+            // this.useSavedValue = false;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
@@ -28,6 +29,10 @@ namespace Timelapse.Controls
 
         public abstract IInputElement Focus(DependencyObject focusScope);
 
+        // used to remember and restore state when
+        // displayTemporaryContents and RestoreTemporaryContents are used
+        protected Popup PopupPreview { get; set; }
+
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
             // populate properties from database definition of control
@@ -45,6 +50,14 @@ namespace Timelapse.Controls
             this.Container.Tag = this;
         }
         public abstract void SetContentAndTooltip(string value);
+
+        // These two methods allow us to temporarily display an arbitrary string value into the data field
+        // This should alwasy be followed by restoring the original contents.
+        // An example of its use is to show the user what will be placed in the data control if the user continues their action
+        // e.g., moving the mouse over a quickpaste or copyprevious buttons will display potential values,
+        //       while moving the mouse out of those buttons will restore those values.
+        public abstract void ShowPreviewControlValue(string value);
+        public abstract void HidePreviewControlValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -127,6 +140,61 @@ namespace Timelapse.Controls
             // well behaved at application scope.
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
             return (IInputElement)this.ContentControl;
+        }
+        protected Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
+        {
+            // Creatre a textblock and align it so the text is exactly at the same position as the control's text
+            TextBlock popupText = new TextBlock
+            {
+                Text = String.Empty,
+                Width = width,
+                Height = control.Height,
+                Padding = padding,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Background = Constant.Control.CopyableFieldHighlightBrush,
+                Foreground = Brushes.Green,
+                FontStyle = FontStyles.Italic,
+            };
+
+            Border border = new Border
+            {
+                BorderBrush = Brushes.Green,
+                BorderThickness = new Thickness(1),
+                Child = popupText,
+            };
+
+            Popup popup = new Popup
+            {
+                Width = width,
+                Height = control.Height,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Placement = PlacementMode.Center,
+                VerticalOffset = 0,
+                HorizontalOffset = horizontalOffset,
+                PlacementTarget = control,
+                IsOpen = false,
+                Child = border,
+            };
+           
+            return popup;
+        }
+
+        protected void ShowPopupPreview(string value)
+        {
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+            popupText.Text = value;
+            PopupPreview.IsOpen = true;
+        }
+
+        protected void HidePopupPreview()
+        {
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+            popupText.Text = String.Empty;
+            PopupPreview.IsOpen = false;
         }
     }
 }

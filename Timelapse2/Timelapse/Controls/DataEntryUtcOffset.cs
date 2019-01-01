@@ -42,6 +42,15 @@ namespace Timelapse.Controls
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
 
+        public override void ShowPreviewControlValue(string value)
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        public override void HidePreviewControlValue()
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             if (value == null)

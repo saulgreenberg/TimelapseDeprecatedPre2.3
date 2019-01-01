@@ -85,8 +85,10 @@ namespace Timelapse.Controls
                 }
                 else if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
-                    DataEntryUtcOffset utcOffsetControl = new DataEntryUtcOffset(control, this);
-                    utcOffsetControl.ContentReadOnly = true;
+                    DataEntryUtcOffset utcOffsetControl = new DataEntryUtcOffset(control, this)
+                    {
+                        ContentReadOnly = true
+                    };
                     controlToAdd = utcOffsetControl;
                 }
                 else

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Dialog;
 
 namespace Timelapse.QuickPaste
@@ -72,9 +73,8 @@ namespace Timelapse.QuickPaste
                 // Create and configure the QuickPaste control, and add its callbacks
                 Button quickPasteControl = new Button()
                 {
-                    Style = this.Owner.FindResource("CopyPreviousButtonStyle") as Style,
+                    Style = this.Owner.FindResource("QuickPasteButtonStyle") as Style,
                     Content = quickPasteEntry.Title,
-                    HorizontalContentAlignment = HorizontalAlignment.Left,
                     ToolTip = tooltipText,
                     Tag = quickPasteEntry
                 };
@@ -112,8 +112,8 @@ namespace Timelapse.QuickPaste
                 this.QuickPasteGrid.RowDefinitions.Add(gridRow);
                 Grid.SetRow(quickPasteControl, gridRowIndex);
                 Grid.SetColumn(quickPasteControl, gridRowIndex);
-                this.QuickPasteGrid.Children.Add(quickPasteControl);
-                gridRowIndex++;
+                this.QuickPasteGrid.Children.Add(quickPasteControl); 
+                 gridRowIndex++;
             }
         }
 
@@ -162,6 +162,5 @@ namespace Timelapse.QuickPaste
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
         }
-
     }
 }

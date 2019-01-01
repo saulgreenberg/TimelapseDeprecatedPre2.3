@@ -44,7 +44,16 @@ namespace Timelapse.Controls
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
-        
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        public override void HidePreviewControlValue()
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)

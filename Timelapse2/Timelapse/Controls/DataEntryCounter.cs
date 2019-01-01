@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Xceed.Wpf.Toolkit;
@@ -109,6 +110,32 @@ namespace Timelapse.Controls
             Keyboard.Focus(this.ContentControl);
         }
         #endregion
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to expose the up/down controls, so subtract its width and move the horizontal offset over
+                double integerUpDownWidth = 16;
+                double width = this.ContentControl.Width - integerUpDownWidth;
+                double horizontalOffset = -integerUpDownWidth / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(7, 5.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+        public override void HidePreviewControlValue()
+        {
+            if (this.PopupPreview != null)
+            { 
+                this.HidePopupPreview();
+            }
+        }
 
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)

@@ -115,6 +115,29 @@ namespace Timelapse.Controls
             }
         }
 
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to expose the arrow on the choice menu, so subtract its width and move the horizontal offset over
+                double arrowWidth = 20;
+                double width = this.ContentControl.Width - arrowWidth;
+                double horizontalOffset = -arrowWidth / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(5.5, 6.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+        public override void HidePreviewControlValue()
+        {
+            this.HidePopupPreview();
+        }
+
         // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {
