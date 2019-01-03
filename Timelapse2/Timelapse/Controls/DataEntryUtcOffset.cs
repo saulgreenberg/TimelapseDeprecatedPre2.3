@@ -51,6 +51,11 @@ namespace Timelapse.Controls
             // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
         }
 
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             if (value == null)

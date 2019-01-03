@@ -104,6 +104,7 @@ namespace Timelapse
 
             // a minty green
             public static readonly SolidColorBrush CopyableFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
+            public static readonly SolidColorBrush QuickPasteFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
 
             public static readonly ReadOnlyCollection<Type> KeyboardInputTypes = new List<Type>()
             {

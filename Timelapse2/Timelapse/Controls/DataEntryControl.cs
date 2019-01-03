@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -58,6 +60,7 @@ namespace Timelapse.Controls
         //       while moving the mouse out of those buttons will restore those values.
         public abstract void ShowPreviewControlValue(string value);
         public abstract void HidePreviewControlValue();
+        public abstract void FlashPreviewControlValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -152,7 +155,7 @@ namespace Timelapse.Controls
                 Padding = padding,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Background = Constant.Control.CopyableFieldHighlightBrush,
+                Background = Constant.Control.QuickPasteFieldHighlightBrush,
                 Foreground = Brushes.Green,
                 FontStyle = FontStyles.Italic,
             };
@@ -191,10 +194,63 @@ namespace Timelapse.Controls
 
         protected void HidePopupPreview()
         {
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                // There is no popupPreview being displayed, so there is nothing to hide.
+                return;
+            }
             Border border = (Border)this.PopupPreview.Child;
             TextBlock popupText = (TextBlock)border.Child;
             popupText.Text = String.Empty;
             PopupPreview.IsOpen = false;
+        }
+
+        // Create a flash effect for the popup. We use this to signal that the 
+        // preview text has been selected
+        protected void FlashPopupPreview()
+        {
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                // There is no popupPreview being displayed, so there is nothing to hide.
+                return;
+            }
+
+            // Get the TextBlock
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+
+            // Revert to normal fontstyle, and set up a
+            // timer to change it back to italics after a short duration
+            popupText.FontStyle = FontStyles.Normal;
+            DispatcherTimer timer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(.4),
+                Tag = popupText,
+            };
+            timer.Tick += FlashFontTimer_Tick;
+
+            //Animate the color from white back to its current color
+            ColorAnimation animation;
+            animation = new ColorAnimation()
+            { 
+                From = Colors.White,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode=EasingMode.EaseIn
+                },  
+            };
+
+            // Get it all going
+            popupText.Background.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+            timer.Start();
+        }
+        private void FlashFontTimer_Tick(object sender, EventArgs e)
+        {
+            DispatcherTimer timer = sender as DispatcherTimer;
+            ((TextBlock)timer.Tag).FontStyle = FontStyles.Italic;
+            timer.Stop();
         }
     }
 }

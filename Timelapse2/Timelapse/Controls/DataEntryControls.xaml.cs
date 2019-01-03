@@ -17,8 +17,8 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
-        public Button CopyPreviousValuesButton { get; set; }
         private DataEntryHandler dataEntryHandler = null;
+
         public DataEntryControls()
         {
             this.InitializeComponent();
@@ -110,13 +110,7 @@ namespace Timelapse.Controls
         // when the markable canvas is zoomed out to display multiple images
         public void SetEnableState(ControlsEnableStateEnum controlsToEnable, int imagesSelected)
         {
-            // Enable the Copy Previous button only when in the single image view, otherwise disable
-            if (this.CopyPreviousValuesButton != null)
-            {
-                this.CopyPreviousValuesButton.IsEnabled = (controlsToEnable == ControlsEnableStateEnum.SingleImageView) ? true : false;
-            }
-
-            if (this.dataEntryHandler.ImageCache.Current == null)
+             if (this.dataEntryHandler.ImageCache.Current == null)
             {
                 return;
             }

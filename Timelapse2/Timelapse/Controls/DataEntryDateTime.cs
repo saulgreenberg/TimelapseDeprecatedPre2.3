@@ -54,6 +54,11 @@ namespace Timelapse.Controls
             // DateTime is never copyable or a candidate for quickpaste, so we do nothing
         }
 
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)

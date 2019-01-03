@@ -175,7 +175,7 @@ namespace Timelapse
                     DataEntryControl control = pair.Value;
                     if (control.DataLabel == item.DataLabel)
                     {
-                        control.Container.Background = Constant.Control.CopyableFieldHighlightBrush;
+                        control.Container.Background = Constant.Control.QuickPasteFieldHighlightBrush;
                         control.ShowPreviewControlValue(item.Value);
                         break;
                     }
@@ -235,8 +235,6 @@ namespace Timelapse
                 return; // This shouldn't happen, but just in case...
             }
 
-            UnHighlightQuickPasteDataControls(quickPasteEntry);
-
             foreach (QuickPasteItem item in quickPasteEntry.Items)
             {
                 if (item.Use == false)
@@ -251,6 +249,7 @@ namespace Timelapse
                     if (control.DataLabel == item.DataLabel)
                     {
                         control.SetContentAndTooltip(item.Value);
+                        control.FlashPreviewControlValue();
                         break;
                     }
                 }

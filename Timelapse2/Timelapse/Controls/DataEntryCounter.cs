@@ -137,6 +137,11 @@ namespace Timelapse.Controls
             }
         }
 
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {

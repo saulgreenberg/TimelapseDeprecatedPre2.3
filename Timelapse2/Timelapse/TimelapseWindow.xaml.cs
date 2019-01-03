@@ -931,10 +931,9 @@ namespace Timelapse
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
             this.MarkableCanvas.Focus(); // We start with this having the focus so it can interpret keyboard shortcuts if needed. 
 
-            // Adjust the visibility and enable CopyPreviousValuesButton callbacks, where copyable controls will highlight as one enters the CopyPreviousValuesButton
+            // Adjust the visibility of the CopyPreviousValuesButton. Copyable controls will preview/highlight as one enters the CopyPreviousValuesButton
             this.CopyPreviousValuesButton.Visibility = Visibility.Visible;
             this.DataEntryControlPanel.IsVisible = true;
-            this.DataEntryControls.CopyPreviousValuesButton = this.CopyPreviousValuesButton; // so we can disable / enable it as needed
 
             // Show the File Player
             FilePlayer.Visibility = Visibility.Visible;
@@ -1019,7 +1018,6 @@ namespace Timelapse
 
             // Enablement state of the various other UI components.
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
-            this.CopyPreviousValuesButton.IsEnabled = filesSelected;
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.MarkableCanvas.IsEnabled = filesSelected;
             this.MarkableCanvas.MagnifyingGlassEnabled = filesSelected && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
@@ -1366,10 +1364,9 @@ namespace Timelapse
             this.MarkableCanvas_UpdateMarkers();
         }
 
-        //SAULXXXX
         // Move the focus (usually because of tabbing or shift-tab)
         // It cycles between the data entry controls and the CopyPrevious button 
-        private void MoveFocusToNextOrPreviousControlOrImageSlider(bool moveToPreviousControl)
+        private void MoveFocusToNextOrPreviousControlOrCopyPreviousButton(bool moveToPreviousControl)
         {
             // identify the currently selected control
             // if focus is currently set to the canvas this defaults to the first or last control, as appropriate
@@ -1381,20 +1378,6 @@ namespace Timelapse
             {
                 type = focusedElement.GetType();
 
-                // Commented out sections include the FileNavigatorSlider in the tab list
-                // if (type == CopyPreviousValuesButton.GetType() && moveToPreviousControl == false)
-                // {
-                //    this.FileNavigatorSlider.Focus();
-                //    this.lastControlWithFocus = this.FileNavigatorSlider;
-                //    return;
-                // }
-                // else if (type == FileNavigatorSlider.GetType() && moveToPreviousControl == true)
-                // {
-                //    this.CopyPreviousValuesButton.Focus();
-                //    this.lastControlWithFocus = this.CopyPreviousValuesButton;
-                //    return;
-                // }
-
                 if (Constant.Control.KeyboardInputTypes.Contains(type))
                 {
                     if (DataEntryHandler.TryFindFocusedControl(focusedElement, out DataEntryControl focusedControl))
@@ -1405,7 +1388,7 @@ namespace Timelapse
                             if (Object.ReferenceEquals(focusedControl, control))
                             {
                                 // We found it, so no need to look further
-                                currentControl = index; 
+                                currentControl = index;
                                 break;
                             }
                             ++index;
@@ -1432,92 +1415,48 @@ namespace Timelapse
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
                 if (control.ContentReadOnly == false)
                 {
-                    this.lastControlWithFocus = control.Focus(this); 
+                    this.lastControlWithFocus = control.Focus(this);
                     return;
                 }
             }
-
-            // no control was found so set focus to the CopyPreviousValue button
-            // this has also the desirable side effect of binding the controls into both next and previous loops so that keys can be used to cycle
-            // continuously through them
-            // if (moveToPreviousControl == true)
-            // {
-            //    this.FileNavigatorSlider.Focus();
-            //    this.lastControlWithFocus = this.FileNavigatorSlider;
-            // }
-            // else
-            // {
+            // if we've gone thorugh all the controls and couldn't set the focus, then we must be at the beginning or at the end.
+            if (this.CopyPreviousValuesButton.IsEnabled)
+            {
+                // So set the focus to the Copy PreviousValuesButton, unless it is disabled.
                 this.CopyPreviousValuesButton.Focus();
                 this.lastControlWithFocus = this.CopyPreviousValuesButton;
-            // }
-        }
-
-        /// <summary>
-        /// When the mouse enters / leaves the copy button, the controls that are copyable will be highlighted. 
-        /// </summary>
-        private void CopyPreviousValues_MouseEnter(object sender, MouseEventArgs e)
-        {
-            this.CopyPreviousValuesButton.Background = Constant.Control.CopyableFieldHighlightBrush;
-            foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
+                this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            }
+            else
             {
-                DataEntryControl control = (DataEntryControl)pair.Value;
-                if (control.Copyable)
+                // Skip the CopyPreviousValuesButton, as it is disabled.
+                DataEntryControl candidateControl = (moveToPreviousControl) ? this.DataEntryControls.Controls.Last() : this.DataEntryControls.Controls.First();
+                if (moveToPreviousControl)
                 {
-                    control.Container.Background = Constant.Control.CopyableFieldHighlightBrush;
+                    // Find the LAST control
+                    foreach (DataEntryControl control in this.DataEntryControls.Controls)
+                    {
+                        if (control.ContentReadOnly == false)
+                        {
+                            candidateControl = control;
+                        }
+                    }
                 }
-            }
-        }
-
-        /// <summary>
-        ///  When the mouse enters / leaves the copy button, the controls that are copyable will be highlighted. 
-        /// </summary>
-        private void CopyPreviousValues_MouseLeave(object sender, MouseEventArgs e)
-        {
-            this.CopyPreviousValuesButton.ClearValue(Control.BackgroundProperty);
-            foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
-            {
-                DataEntryControl control = (DataEntryControl)pair.Value;
-                control.Container.ClearValue(Control.BackgroundProperty);
-            }
-        }
-
-        // <summary>
-        ///  When a space is entered on the focused copy button, copy the previous data values
-        /// </summary>
-        private void TryCopyPreviousValues_KeyDown(object sender, KeyEventArgs eventArgs)
-        {
-            if (eventArgs.Key == Key.Space)
-            {
-                TryCopyPreviousValues();
-            }
-        }
-
-        // <summary>
-        ///  When the CopyPreviousValues button is pressed, copy the previous data values  
-        /// </summary>
-        private void TryCopyPreviousValues_Click(object sender, RoutedEventArgs e)
-        {
-            TryCopyPreviousValues();
-        }
-
-        // Actually copy the previous data values
-        private void TryCopyPreviousValues()
-        {
-            if (!this.IsDisplayingSingleImage()) return; // only allow copying in single image mode
-
-            this.FilePlayer_Stop(); // In case the FilePlayer is going
-            int previousRow = this.dataHandler.ImageCache.CurrentRow - 1;
-            if (previousRow < 0)
-            {
-                return; // We are already on the first image, so there is nothing to copy
-            }
-
-            foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
-            {
-                DataEntryControl control = pair.Value;
-                if (this.dataHandler.FileDatabase.IsControlCopyable(control.DataLabel))
+                else
                 {
-                    control.SetContentAndTooltip(this.dataHandler.FileDatabase.Files[previousRow].GetValueDisplayString(control.DataLabel));
+                    // Find the FIRST control
+                    foreach (DataEntryControl control in this.DataEntryControls.Controls)
+                    {
+                        if (control.ContentReadOnly == false)
+                        {
+                            candidateControl = control;
+                            break;
+                        }
+                    }
+                }
+                if (candidateControl != null)
+                {
+                    this.lastControlWithFocus = candidateControl.Focus(this);
                 }
             }
         }
@@ -1902,7 +1841,6 @@ namespace Timelapse
                     this.MarkableCanvas_UpdateMarkers();
                     this.EnableImageManipulationMenus(true);
                 }
-
             }
             else if (this.IsDisplayingSingleImage())
             {
@@ -1936,6 +1874,10 @@ namespace Timelapse
             {
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
+
+            // Refresh the CopyPreviousButton and its Previews as needed
+            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
         }
 
@@ -1958,6 +1900,7 @@ namespace Timelapse
             }
             return TryShowImageWithoutSliderCallback(forward, increment);
         }
+
         private bool TryShowImageWithoutSliderCallback(bool forward, int increment)
         {
             // Check to see if there are any images to show, 
@@ -2116,7 +2059,7 @@ namespace Timelapse
                     break;
                 case Key.Tab:
                     FilePlayer_Stop(); // In case the FilePlayer is going
-                    this.MoveFocusToNextOrPreviousControlOrImageSlider(Keyboard.Modifiers == ModifierKeys.Shift);
+                    this.MoveFocusToNextOrPreviousControlOrCopyPreviousButton(Keyboard.Modifiers == ModifierKeys.Shift);
                     break;
                 case Key.PageDown:
                     if (IsDisplayingMultipleImagesInOverview())
@@ -2193,6 +2136,7 @@ namespace Timelapse
             if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
             {
                 Keyboard.Focus(lastControlWithFocus);
+                this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
             }
         }
 
@@ -4198,12 +4142,26 @@ namespace Timelapse
         {
             this.FilePlayer_Stop();
             this.FilePlayer.SwitchFileMode(false);
+
+            // Refresh the CopyPreviousButton and its Previews as needed
+            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            if (this.quickPasteWindow != null)
+            {
+                this.quickPasteWindow.IsEnabled = false;
+            }
         }
 
         private void SwitchedToSingleImagesView()
         {
             this.FilePlayer.SwitchFileMode(true);
             this.DataGridSelectionsTimer_Reset();
+
+            // Refresh the CopyPreviousButton and its Previews as needed
+            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            if (this.quickPasteWindow != null)
+            {
+                this.quickPasteWindow.IsEnabled = true;
+            }
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
@@ -4437,12 +4395,6 @@ namespace Timelapse
             }
             return proceedWithOperation;
         }
-
-
-
-
         #endregion
-
- 
     }
 }

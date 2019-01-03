@@ -138,6 +138,11 @@ namespace Timelapse.Controls
             this.HidePopupPreview();
         }
 
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {

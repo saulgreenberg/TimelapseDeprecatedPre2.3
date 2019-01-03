@@ -1172,8 +1172,8 @@ namespace Timelapse.Images
             {
                 return;
             }
-            this.SwitchedToClickableImagesGridEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
+            this.SwitchedToClickableImagesGridEventAction();
             // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
             // this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;

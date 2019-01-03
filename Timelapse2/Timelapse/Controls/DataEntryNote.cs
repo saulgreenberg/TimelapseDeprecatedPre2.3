@@ -55,6 +55,11 @@ namespace Timelapse.Controls
             this.HidePopupPreview();
         }
 
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         public override void SetContentAndTooltip(string value)
         {
             // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
