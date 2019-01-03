@@ -117,6 +117,25 @@ namespace Timelapse.QuickPaste
             }
         }
 
+        // Check if the mouse is over any of the quickPasteControl buttons
+        // If so, we should refresh the preview with that button's quickpaste entry
+        public void RefreshQuickPasteWindowPreviewAsNeeded()
+        { 
+            // If the quickPaste Window is visible
+            if (this.IsEnabled == false && this.IsLoaded == false)
+            {
+                return ;
+            }
+            foreach (Button quickPasteControl in this.QuickPasteGrid.Children)
+            {
+                if (quickPasteControl.IsMouseOver)
+                {
+                    this.SendQuickPasteEvent(new QuickPasteEventArgs((QuickPasteEntry) quickPasteControl.Tag, QuickPasteEventIdentifierEnum.MouseEnter));
+                    return;
+                }
+            }
+        }
+
         // Generate Event: New quickpaste emtru
         private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
         {

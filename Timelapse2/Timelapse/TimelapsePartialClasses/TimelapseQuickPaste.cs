@@ -10,7 +10,7 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Show the QickPaste window
+        // Show the QuickPaste window
         private void ShowQuickPasteWindow()
         {
             if (this.quickPasteEntries == null)
@@ -177,7 +177,6 @@ namespace Timelapse
                     {
                         control.Container.Background = Constant.Control.QuickPasteFieldHighlightBrush;
                         control.ShowPreviewControlValue(item.Value);
-                        break;
                     }
                 }
             }

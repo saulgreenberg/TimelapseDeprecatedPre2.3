@@ -1878,6 +1878,13 @@ namespace Timelapse
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
 
+            // Refresh the QuickPasteEntry previews if needed
+            if (this.IsDisplayingSingleImage() && this.quickPasteWindow != null)
+            { 
+                this.quickPasteWindow.RefreshQuickPasteWindowPreviewAsNeeded();
+            }
+
+            // Refresh the markable canvas if needed
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
         }
 
@@ -2871,42 +2878,7 @@ namespace Timelapse
             ShowQuickPasteWindow();
         }
 
-        //private void ShowQuickPasteWindow(QuickPasteWindow quickPasteWindow, List<QuickPasteEntry> quickPasteEntry)
-        //{
-        //    if (this.quickPasteEntries == null)
-        //    {
-        //        return;
-        //    }
-
-        //    // If the quickpast window doesn't exist create it, and
-        //    // add an event handler to it thatis used to generate events that identify the user action taken in that window
-        //    if (this.quickPasteWindow == null || (!this.quickPasteWindow.IsLoaded))
-        //    {
-        //        // The quickPasteWindow hasn't been created yet, so do so.
-        //        this.quickPasteWindow = new QuickPasteWindow()
-        //        {
-        //            Owner = this,
-        //            QuickPasteEntries = this.quickPasteEntries
-        //        };
-
-        //        quickPasteWindow.QuickPasteEvent += QuickPasteWindow_QuickPasteEvent;
-        //    }
-
-        //    // Show the window
-        //    this.quickPasteWindow.Show();
-        //}
-        //private void HideQuickPasteWindow(QuickPasteWindow quickPasteWindow)
-        //{
-        //    // If the quickpast window doesn't exist create it, and
-        //    // add an event handler to it thatis used to generate events that identify the user action taken in that window
-        //    if (quickPasteWindow != null && quickPasteWindow.IsLoaded)
-        //    {
-        //        quickPasteWindow.Hide();
-        //    }
-        //}
-
-
-        // Populate a data field from metadata (example metadata displayed from the currently selected image)
+         // Populate a data field from metadata (example metadata displayed from the currently selected image)
         private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
@@ -4158,6 +4130,8 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+
+            // Enable the quickPasteWindow if it exists
             if (this.quickPasteWindow != null)
             {
                 this.quickPasteWindow.IsEnabled = true;
