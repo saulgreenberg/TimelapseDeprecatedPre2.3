@@ -11,7 +11,7 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // Show the QuickPaste window
-        private void ShowQuickPasteWindow()
+        private void QuickPasteWindowShow()
         {
             if (this.quickPasteEntries == null)
             {
@@ -26,24 +26,38 @@ namespace Timelapse
                 this.quickPasteWindow = new QuickPasteWindow()
                 {
                     Owner = this,
-                    QuickPasteEntries = this.quickPasteEntries
+                    QuickPasteEntries = this.quickPasteEntries,
+                    Topmost = false
                 };
 
                 quickPasteWindow.QuickPasteEvent += this.QuickPasteWindow_QuickPasteEvent;
             }
 
-            // Show the window
-            this.quickPasteWindow.Show();
+            // Show the window if it makes sense to do soo
+            if (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+            { 
+                this.quickPasteWindow.Show();
+            }
         }
 
-        // Hide the QickPaste window
-        private void HideQuickPasteWindow()
+        // Terminate the QickPaste window
+        private void QuickPasteWindowHide()
         {
             // If the quickpast window doesn't exist create it, and
             // add an event handler to it thatis used to generate events that identify the user action taken in that window
             if (this.quickPasteWindow != null && this.quickPasteWindow.IsLoaded)
             {
                 this.quickPasteWindow.Hide();
+                this.quickPasteWindow.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void QuickPasteWindowTerminate()
+        {
+            if (this.quickPasteWindow != null)
+            {
+                this.quickPasteWindow.Close();
+                this.quickPasteWindow = null;
             }
         }
 
@@ -54,22 +68,22 @@ namespace Timelapse
             switch (e.EventType)
             {
                 case QuickPasteEventIdentifierEnum.New:
-                    this.NewQuickPasteEntry();
+                    this.QuickPasteEntryNew();
                     break;
                 case QuickPasteEventIdentifierEnum.Edit:
-                    this.EditQuickPasteEntry(e.QuickPasteEntry);
+                    this.QuickPasteEntryEdit(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Delete:
-                    this.DeleteQuickPasteEntry(e.QuickPasteEntry);
+                    this.QuickPasteEntryDelete(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.MouseEnter:
-                    HighlightQuickPasteDataControls(e.QuickPasteEntry);
+                    QuickPasteDataControlsHighlight(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.MouseLeave:
-                    UnHighlightQuickPasteDataControls(e.QuickPasteEntry);
+                    QuickPasteDataControlsUnHighlight(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Paste:
-                    PasteQuickPasteEntryIntoDataControls(e.QuickPasteEntry);
+                    QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry);
                     break;
                 default:
                     break;
@@ -78,7 +92,7 @@ namespace Timelapse
 
         // Create a quickpaste entry from the current data controls,
         // add it to the quickpaste entries, and update the display and the ImageSetTable database as needed
-        private void NewQuickPasteEntry()
+        private void QuickPasteEntryNew()
         {
             string title = "QuickPaste #" + (this.quickPasteEntries.Count + 1).ToString();
             QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, title);
@@ -105,7 +119,7 @@ namespace Timelapse
                     this.quickPasteEntries = new List<QuickPasteEntry>();
                 }
                 this.quickPasteEntries.Add(quickPasteEntry);
-                this.QuickPasteUpdateAll();
+                this.QuickPasteRefreshWindowAndXML();
             }
 
             // Restore the quickPaste window back to its topmost state
@@ -115,8 +129,15 @@ namespace Timelapse
             }
         }
 
+        // Delete the quickPaste Entry from the quickPasteEntries
+        private void QuickPasteEntryDelete(QuickPasteEntry quickPasteEntry)
+        {
+            this.quickPasteEntries = QuickPasteOperations.DeleteQuickPasteEntry(quickPasteEntries, quickPasteEntry);
+            this.QuickPasteRefreshWindowAndXML();
+        }
+
         // Open the quickPaste Editor window
-        private void EditQuickPasteEntry(QuickPasteEntry quickPasteEntry)
+        private void QuickPasteEntryEdit(QuickPasteEntry quickPasteEntry)
         {
             if (quickPasteEntry == null)
             {
@@ -137,7 +158,7 @@ namespace Timelapse
             if (quickPasteEditor.ShowDialog() == true)
             {
                 quickPasteEntry = quickPasteEditor.QuickPasteEntry;
-                QuickPasteUpdateAll();
+                QuickPasteRefreshWindowAndXML();
             }
 
             // Restore the quickPaste window back to its topmost state
@@ -148,7 +169,7 @@ namespace Timelapse
         }
 
         // Highlight the data controls affected by the Quickpaste entry
-        private void HighlightQuickPasteDataControls(QuickPasteEntry quickPasteEntry)
+        private void QuickPasteDataControlsHighlight(QuickPasteEntry quickPasteEntry)
         {
             if (!this.IsDisplayingSingleImage())
             {
@@ -183,7 +204,7 @@ namespace Timelapse
         }
 
         // Unhighlight the data controls affected by the Quickpaste entry
-        private void UnHighlightQuickPasteDataControls(QuickPasteEntry quickPasteEntry)
+        private void QuickPasteDataControlsUnHighlight(QuickPasteEntry quickPasteEntry)
         {
             if (!this.IsDisplayingSingleImage())
             {
@@ -220,7 +241,7 @@ namespace Timelapse
         }
 
         // Quickpast the given entry into the data control
-        private void PasteQuickPasteEntryIntoDataControls(QuickPasteEntry quickPasteEntry)
+        private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry)
         {
             if (!this.IsDisplayingSingleImage())
             {
@@ -256,15 +277,8 @@ namespace Timelapse
             this.MarkableCanvas.Focus();
         }
 
-        // Delete the quickPaste Entry from the quickPasteEntries
-        private void DeleteQuickPasteEntry(QuickPasteEntry quickPasteEntry)
-        {
-            this.quickPasteEntries = QuickPasteOperations.DeleteQuickPasteEntry(quickPasteEntries, quickPasteEntry);
-            this.QuickPasteUpdateAll();
-        }
-
         // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
-        private void QuickPasteUpdateAll()
+        private void QuickPasteRefreshWindowAndXML()
         {
             this.quickPasteWindow.Refresh(this.quickPasteEntries);
             this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);

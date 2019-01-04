@@ -1763,6 +1763,9 @@ namespace Timelapse
                 {
                     this.dataHandler.IsProgrammaticControlUpdate = false;
                 }
+
+                // We also need to do a bit of cleanup of UI elements that make no sense when there are no images to show.
+                this.QuickPasteWindowHide();
                 return;
             }
 
@@ -2051,17 +2054,17 @@ namespace Timelapse
                     }
                     break;
                 case Key.C:
-                    this.TryCopyPreviousValues_Click(null, null);
+                    this.CopyPreviousValues_Click(null, null);
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window
                     if (this.quickPasteWindow == null || (this.quickPasteWindow.Visibility != Visibility.Visible))
                     {
-                        this.ShowQuickPasteWindow();
+                        this.QuickPasteWindowShow();
                     }
                     else
                     {
-                        this.HideQuickPasteWindow();
+                        this.QuickPasteWindowHide();
                     }
                     break;
                 case Key.Tab:
@@ -2809,6 +2812,7 @@ namespace Timelapse
             this.InstructionPane.IsActive = true;
             this.DataGridSelectionsTimer.Stop();
             this.lastControlWithFocus = null;
+            this.QuickPasteWindowTerminate();
         }
 
         /// <summary>
@@ -2875,7 +2879,7 @@ namespace Timelapse
         // Display the QuickPaste window
         private void MenuItemShowQuickPasteWindow_Click(object sender, RoutedEventArgs e)
         {
-            ShowQuickPasteWindow();
+            this.QuickPasteWindowShow();
         }
 
          // Populate a data field from metadata (example metadata displayed from the currently selected image)

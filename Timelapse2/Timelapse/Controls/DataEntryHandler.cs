@@ -607,6 +607,7 @@ namespace Timelapse.Controls
                 return;
             }
             ComboBox comboBox = (ComboBox)sender;
+
             if (comboBox.SelectedItem == null)
             {
                 // no item selected (probably the user cancelled)

@@ -66,7 +66,7 @@ namespace Timelapse.Controls
             };
             this.ContentControl.Items.Insert(0, cbi);
             ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;     
-            this.ContentControl.SelectedIndex = 0;
+            this.ContentControl.SelectedIndex = 1;
         }
 
         // Users may want to use the text search facility on the combobox, where they type the first letter and then enter
@@ -154,8 +154,15 @@ namespace Timelapse.Controls
                 this.ContentControl.ToolTip = "Select an item to change the " + this.Label + " for all selected images";
                 return;
             }
+            // For some reason, the empty item was not setting the selected index to the item with the blank entry. 
+            // This is needed to set it explicitly.
+            if (value == String.Empty)
+            {
+                this.ContentControl.SelectedIndex = 1;
+            }
+
             this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
+            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? "Blank entry" : value;
         }
     }
 }

@@ -117,7 +117,7 @@
                 <!-- QuickPaste Window-->
                 <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemShowQuickPasteWindow_Click" InputGestureText="Q" ToolTip="Display the Quickpaste window, which lets you create, selected, edit and delete QuickPaste items"/>
                 <!-- Copy previous values -->
-                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="TryCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
+                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="CopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
 
                 <Separator/>
                 
@@ -379,11 +379,11 @@
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                             ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
                                             IsTabStop="True" 
-                                            Click="TryCopyPreviousValues_Click"  
+                                            Click="CopyPreviousValues_Click"  
                                             MouseEnter="CopyPreviousValues_MouseEnterOrLeave" 
                                             MouseLeave="CopyPreviousValues_MouseEnterOrLeave" 
                                             LostFocus="CopyPreviousValues_LostFocus"
-                                            KeyDown="TryCopyPreviousValues_KeyDown">
+                                            KeyDown="CopyPreviousValues_KeyDown">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock 
                                                 TextWrapping="Wrap" 

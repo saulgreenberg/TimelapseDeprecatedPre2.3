@@ -178,9 +178,8 @@ namespace Timelapse.Controls
                 HorizontalOffset = horizontalOffset,
                 PlacementTarget = control,
                 IsOpen = false,
-                Child = border,
+                Child = border
             };
-           
             return popup;
         }
 
@@ -189,7 +188,7 @@ namespace Timelapse.Controls
             Border border = (Border)this.PopupPreview.Child;
             TextBlock popupText = (TextBlock)border.Child;
             popupText.Text = value;
-            PopupPreview.IsOpen = true;
+            this.PopupPreview.IsOpen = true;
         }
 
         protected void HidePopupPreview()
@@ -202,7 +201,7 @@ namespace Timelapse.Controls
             Border border = (Border)this.PopupPreview.Child;
             TextBlock popupText = (TextBlock)border.Child;
             popupText.Text = String.Empty;
-            PopupPreview.IsOpen = false;
+            this.PopupPreview.IsOpen = false;
         }
 
         // Create a flash effect for the popup. We use this to signal that the 

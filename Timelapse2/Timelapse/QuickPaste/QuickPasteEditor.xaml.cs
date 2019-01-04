@@ -144,7 +144,7 @@ namespace Timelapse.QuickPaste
                     Height = ValuesHeight,
                     Width = ValuesWidth,
                     // Create the dropdown menu 
-                    ItemsSource = controlRow.GetChoices(out bool includesEmptyChoice, false),
+                    ItemsSource = controlRow.GetChoicesForQuickPasteMenu(),
                     SelectedItem = quickPasteItem.Value,
                     IsEnabled = quickPasteItem.Use,
                     Tag = quickPasteItem
