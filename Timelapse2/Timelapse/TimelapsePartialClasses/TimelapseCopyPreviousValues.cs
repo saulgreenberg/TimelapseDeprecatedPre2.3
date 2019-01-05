@@ -10,11 +10,9 @@ using Timelapse.Enums;
 
 namespace Timelapse
 {
-
     public partial class TimelapseWindow : Window, IDisposable
     {
         // The methods below all relate to the CopyPreviousValues button
-
         #region Callbacks
         // When the the mouse enters or leaves the CopyPreviousValues button 
         // determine if the copyable control should glow, have highlighted previews of the values to be copied, or just be left in its orignal state     
@@ -60,7 +58,7 @@ namespace Timelapse
         public void CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded()
         {
             int previousRow = (this.dataHandler == null || this.dataHandler.ImageCache == null) ? -1 : this.dataHandler.ImageCache.CurrentRow - 1;
-            this.CopyPreviousValuesButton.IsEnabled = (previousRow >= 0 && this.IsDisplayingSingleImage());
+            this.CopyPreviousValuesButton.IsEnabled = previousRow >= 0 && this.IsDisplayingSingleImage();
             this.CopyPreviousValueSetPreviewsAsNeeded(previousRow);
             this.CopyPreviousValuesSetGlowAsNeeded();
         }
@@ -147,7 +145,7 @@ namespace Timelapse
             int previousRow = this.dataHandler.ImageCache.CurrentRow - 1;
 
             // This is an unneeded test as the CopyPreviousButton should be disabled if these conditions are met
-            if ( this.IsDisplayingSingleImage() == false || previousRow < 0)
+            if (this.IsDisplayingSingleImage() == false || previousRow < 0)
             {
                 return;
             }

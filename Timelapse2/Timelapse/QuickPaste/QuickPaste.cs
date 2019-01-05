@@ -11,6 +11,21 @@ namespace Timelapse.QuickPaste
     // The QuickPasteOperations  class provides static utility functions for creating and altering quick paste entries.
     public static class QuickPasteOperations
     {
+        public static List<QuickPasteEntry> QuickPasteImportFromDB(FileDatabase fileDatabase, string ddbFile)
+        {
+            List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
+            System.Diagnostics.Debug.Print(ddbFile);
+            string xml = FileDatabase.TryGetQuickPasteXMLFromDatabase(ddbFile);
+            if (xml.Trim() == String.Empty)
+            {
+                return new List<QuickPasteEntry>();
+            }
+            else
+            {
+                return QuickPasteOperations.QuickPasteEntriesFromXML(fileDatabase, xml);
+            }
+        }
+
         // Return a QuickPaste Entry, where its title and each of its items represents a potential pastable control 
         // If there is no valid row to make the entry from, return null
         public static QuickPasteEntry TryGetQuickPasteItemFromDataFields(FileDatabase fileDatabase, int rowIndex, string title)

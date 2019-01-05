@@ -282,6 +282,7 @@ namespace Timelapse
         {
             this.quickPasteWindow.Refresh(this.quickPasteEntries);
             this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
+            this.dataHandler.FileDatabase.SyncImageSetToDatabase();
         }
     }
 }

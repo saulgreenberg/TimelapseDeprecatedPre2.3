@@ -325,12 +325,11 @@ namespace Timelapse
         // Prompt user to select a template.
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
-
             // Default the template selection dialog to the most recently opened database
             this.state.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
             if (Utilities.TryGetFileFromUser("Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
-                                             String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension),
+                                             String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension), Constant.File.TemplateDatabaseFileExtension,
                                              out templateDatabasePath) == false)
             {
                 return false;
@@ -2637,7 +2636,7 @@ namespace Timelapse
             string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
             if (Utilities.TryGetFileFromUser("Select a .csv file to merge into the current image set",
                                  Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
-                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
+                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension), Constant.File.CsvFileExtension,
                                  out string csvFilePath) == false)
             {
                 return;
@@ -2877,12 +2876,45 @@ namespace Timelapse
         }
 
         // Display the QuickPaste window
-        private void MenuItemShowQuickPasteWindow_Click(object sender, RoutedEventArgs e)
+        private void MenuItemQuickPasteWindowShow_Click(object sender, RoutedEventArgs e)
         {
+            this.QuickPasteRefreshWindowAndXML();
             this.QuickPasteWindowShow();
         }
 
-         // Populate a data field from metadata (example metadata displayed from the currently selected image)
+        private void MenuItemQuickPasteImportFromDB_Click(object sender, RoutedEventArgs e)
+        {
+            if (Utilities.TryGetFileFromUser("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
+                                             Path.Combine(this.dataHandler.FileDatabase.FolderPath, Constant.File.DefaultFileDatabaseFileName),
+                                             String.Format("Database files (*{0})|*{0}", Constant.File.FileDatabaseFileExtension),
+                                              Constant.File.FileDatabaseFileExtension,
+                                              out string ddbFile) == true)
+            {
+                List<QuickPasteEntry> qpe = QuickPasteOperations.QuickPasteImportFromDB(this.dataHandler.FileDatabase, ddbFile);
+                if (qpe.Count == 0)
+                {
+                    MessageBox messageBox = new MessageBox("Could not import QuickPaste entries", this);
+                    messageBox.Message.Problem = "Timelapse could not find any QuickPaste entries in the selected database";
+                    messageBox.Message.Reason = "When an analyst creates QuickPaste entries, those entries are stored in the database file " + Environment.NewLine;
+                    messageBox.Message.Reason += "associated with the image set being analyzed. Since none where found, " + Environment.NewLine ;
+                    messageBox.Message.Reason += "its likely that no one had created any quickpaste entries when analyzing that image set.";
+                    messageBox.Message.Hint = "Perhaps they are in a different database?";
+                    messageBox.Message.Icon = MessageBoxImage.Information;
+                    messageBox.ShowDialog();
+                    return;
+                }
+                else
+                {
+                    this.quickPasteEntries = qpe;
+                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                    QuickPasteRefreshWindowAndXML();
+                    QuickPasteWindowShow();
+                }
+            }
+   
+        }
+
+        // Populate a data field from metadata (example metadata displayed from the currently selected image)
         private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
@@ -4374,5 +4406,6 @@ namespace Timelapse
             return proceedWithOperation;
         }
         #endregion
+
     }
 }

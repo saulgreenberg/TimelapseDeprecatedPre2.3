@@ -88,6 +88,24 @@ namespace Timelapse.Database
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
         }
+
+        public static string TryGetQuickPasteXMLFromDatabase(string filePath)
+        {
+            // Open the database if it exists
+            SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
+            if (sqliteWrapper.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
+            {
+                // The column isn't in the table, so give up
+                return String.Empty;
+            }
+
+            List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            if (listOfObjects.Count == 1)
+            {
+                return (string)listOfObjects[0];
+            }
+            return String.Empty;
+        }
         #endregion
 
         public List<object> GetDistinctValuesInColumn(string table, string columnName)

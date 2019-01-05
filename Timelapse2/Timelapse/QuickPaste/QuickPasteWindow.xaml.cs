@@ -124,13 +124,13 @@ namespace Timelapse.QuickPaste
             // If the quickPaste Window is visible
             if (this.IsEnabled == false && this.IsLoaded == false)
             {
-                return ;
+                return;
             }
             foreach (Button quickPasteControl in this.QuickPasteGrid.Children)
             {
                 if (quickPasteControl.IsMouseOver)
                 {
-                    this.SendQuickPasteEvent(new QuickPasteEventArgs((QuickPasteEntry) quickPasteControl.Tag, QuickPasteEventIdentifierEnum.MouseEnter));
+                    this.SendQuickPasteEvent(new QuickPasteEventArgs((QuickPasteEntry)quickPasteControl.Tag, QuickPasteEventIdentifierEnum.MouseEnter));
                     return;
                 }
             }
@@ -180,6 +180,12 @@ namespace Timelapse.QuickPaste
             Button button = sender as Button;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            // To overcome a wpf bug where Visibility stayed at Visibility.Visible.
+            this.Visibility = Visibility.Collapsed;
         }
     }
 }

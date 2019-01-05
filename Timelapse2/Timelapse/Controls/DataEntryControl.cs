@@ -228,7 +228,7 @@ namespace Timelapse.Controls
             };
             timer.Tick += FlashFontTimer_Tick;
 
-            //Animate the color from white back to its current color
+            // Animate the color from white back to its current color
             ColorAnimation animation;
             animation = new ColorAnimation()
             { 
@@ -237,7 +237,7 @@ namespace Timelapse.Controls
                 Duration = new Duration(TimeSpan.FromSeconds(.6)),
                 EasingFunction = new ExponentialEase()
                 {
-                    EasingMode=EasingMode.EaseIn
+                    EasingMode = EasingMode.EaseIn
                 },  
             };
 
