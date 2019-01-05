@@ -104,6 +104,7 @@ namespace Timelapse
 
             // a minty green
             public static readonly SolidColorBrush CopyableFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
+            public static readonly SolidColorBrush QuickPasteFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
 
             public static readonly ReadOnlyCollection<Type> KeyboardInputTypes = new List<Type>()
             {
@@ -207,6 +208,7 @@ namespace Timelapse
             public const int RowsPerInsert = 100;
             public const int UtcOffsetPosition = 5;
             public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Constant.Sqlite.Integer + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
+            public const string DefaultQuickPasteXML = "<Entries></Entries>";
 
             // Special characters
             public const char MarkerBar = '|';              // Separator used to separate marker points in the database i.e. "2.3,5.6 | 7.1, 3.3"
@@ -237,6 +239,7 @@ namespace Timelapse
             public const string WhiteSpaceTrimmed = "WhiteSpaceTrimmed";        // string holding the true/false state of whether the white space has been trimmed from the data.
             public const string VersionCompatabily = "VersionCompatabily";      // The latest version of Timelapse that opened this database. Useful for cases when we want to check for backwards compatability
             public const string SortTerms = "SortTerms";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms and their attribute
+            public const string QuickPasteXML = "QuickPasteXML";              // an XML description that specifies the user's quickpaste entries and values.
 
             // other columns found in Old XML files
             public const string Data = "Data";                 // the data describing the attributes of that control

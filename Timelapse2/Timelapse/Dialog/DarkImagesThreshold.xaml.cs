@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Enums;
 
 namespace Timelapse.Dialog
 {
@@ -388,7 +389,7 @@ namespace Timelapse.Dialog
 
                     // If its not a valid image, say so and go onto the next one.
                     ImageQuality imageQuality = new ImageQuality(file);
-                    if ((imageQuality.OldImageQuality != FileSelection.Ok) && (imageQuality.OldImageQuality != FileSelection.Dark))
+                    if ((imageQuality.OldImageQuality != FileSelectionEnum.Ok) && (imageQuality.OldImageQuality != FileSelectionEnum.Dark))
                     {
                         imageQuality.NewImageQuality = null;
                         backgroundWorker.ReportProgress(0, imageQuality);
@@ -400,7 +401,7 @@ namespace Timelapse.Dialog
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on thate
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntent.TransientLoading).AsWriteable();
+                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading).AsWriteable();
                         imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;

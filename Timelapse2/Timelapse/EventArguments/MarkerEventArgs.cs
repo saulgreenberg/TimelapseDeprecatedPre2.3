@@ -1,6 +1,7 @@
 ﻿using System;
+using Timelapse.Images;
 
-namespace Timelapse.Images
+namespace Timelapse.EventArguments
 {
     /// <summary>
     /// The Marker event argument contains 
@@ -16,7 +17,7 @@ namespace Timelapse.Images
 
         /// <summary>
         /// Gets or sets the MetaTag
-        /// </summary>
+        /// </summary>E:\@Timelapse\GithubTimelapse\Timelapse2\Timelapse\Dialog\QuickPasteEventArgs.cs
         public Marker Marker { get; set; }
 
         /// <summary>

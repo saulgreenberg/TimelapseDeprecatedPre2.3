@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Controls
@@ -20,7 +21,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryUtcOffset(ControlRow control, DataEntryControls styleProvider) :
-            base(control, styleProvider, ControlContentStyle.UTCOffsetBox, ControlLabelStyle.DefaultLabel)
+            base(control, styleProvider, ControlContentStyleEnum.UTCOffsetBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // Callback to change the look of the control whenever it gets the focus
             this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
@@ -39,6 +40,20 @@ namespace Timelapse.Controls
         {
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        public override void HidePreviewControlValue()
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
         }
 
         public override void SetContentAndTooltip(string value)

@@ -213,7 +213,7 @@ namespace Timelapse.Util
         }
 
         // get a location for the template database from the user
-        public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, out string selectedFilePath)
+        public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
         {
             // Get the template file, which should be located where the images reside
             OpenFileDialog openFileDialog = new OpenFileDialog()
@@ -225,7 +225,7 @@ namespace Timelapse.Util
                 AutoUpgradeEnabled = true,
 
                 // Set filter for file extension and default file extension 
-                DefaultExt = Constant.File.TemplateDatabaseFileExtension,
+                DefaultExt = defaultExtension,
                 Filter = filter
             };
             if (String.IsNullOrWhiteSpace(defaultFilePath))

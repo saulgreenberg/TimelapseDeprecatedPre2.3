@@ -5,9 +5,9 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
-
 namespace Timelapse.Database
 {
     public class VideoRow : ImageRow
@@ -23,7 +23,7 @@ namespace Timelapse.Database
         }
 
         // displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
-        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntent displayIntent)
+        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
             string path = this.GetFilePath(imageFolderPath);
             if (!File.Exists(path))
@@ -31,8 +31,10 @@ namespace Timelapse.Database
                     return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
 
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.Volume = 0.0;
+            MediaPlayer mediaPlayer = new MediaPlayer
+            {
+                Volume = 0.0
+            };
             try
             {
                 mediaPlayer.Open(new Uri(path));

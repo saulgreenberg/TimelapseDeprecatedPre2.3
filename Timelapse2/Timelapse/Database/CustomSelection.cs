@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -12,13 +13,13 @@ namespace Timelapse.Database
     public class CustomSelection
     {
         public List<SearchTerm> SearchTerms { get; private set; }
-        public CustomSelectionOperator TermCombiningOperator { get; set; }
+        public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
 
         /// <summary>
         /// Create a CustomSelection, where we build a list of potential search terms based on the controls found in the sorted template table
         /// The search term will be used only if its 'UseForSearching' field is true
         /// </summary>
-        public CustomSelection(DataTableBackedList<ControlRow> templateTable, CustomSelectionOperator termCombiningOperator)
+        public CustomSelection(DataTableBackedList<ControlRow> templateTable, CustomSelectionOperatorEnum termCombiningOperator)
         {
             this.SearchTerms = new List<SearchTerm>();
             this.TermCombiningOperator = termCombiningOperator;
@@ -132,10 +133,10 @@ namespace Timelapse.Database
                     { 
                         switch (this.TermCombiningOperator)
                         {
-                            case CustomSelectionOperator.And:
+                            case CustomSelectionOperatorEnum.And:
                                 where += Constant.Sqlite.And;
                                 break;
-                            case CustomSelectionOperator.Or:
+                            case CustomSelectionOperatorEnum.Or:
                                 where += Constant.Sqlite.Or;
                                 break;
                             default:

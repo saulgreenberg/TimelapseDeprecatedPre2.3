@@ -92,7 +92,7 @@ namespace Timelapse.Editor.Dialog
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             string filter = String.Format("Images and videos (*{0};*{1};*{2})|*{0};*{1};*{2}", Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension);
-            if (Utilities.TryGetFileFromUser("Select a typical file to inspect", ".", filter, out this.imageFilePath) == true)
+            if (Utilities.TryGetFileFromUser("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.imageFilePath) == true)
             {
                 this.ImageName.Content = Path.GetFileName(this.imageFilePath);
                 this.ImageName.ToolTip = this.ImageName.Content;

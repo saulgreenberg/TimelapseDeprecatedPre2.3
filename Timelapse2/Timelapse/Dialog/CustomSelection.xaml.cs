@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
 
@@ -46,11 +47,11 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Adjust this dialog window position 
-           Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             // And vs Or conditional
-            if (this.database.CustomSelection.TermCombiningOperator == CustomSelectionOperator.And)
+            if (this.database.CustomSelection.TermCombiningOperator == CustomSelectionOperatorEnum.And)
             {
                 this.TermCombiningAnd.IsChecked = true;
                 this.TermCombiningOr.IsChecked = false;
@@ -306,7 +307,7 @@ namespace Timelapse.Dialog
         private void AndOrRadioButton_Checked(object sender, RoutedEventArgs args)
         {
             RadioButton radioButton = sender as RadioButton;
-            this.database.CustomSelection.TermCombiningOperator = (radioButton == this.TermCombiningAnd) ? CustomSelectionOperator.And : CustomSelectionOperator.Or;
+            this.database.CustomSelection.TermCombiningOperator = (radioButton == this.TermCombiningAnd) ? CustomSelectionOperatorEnum.And : CustomSelectionOperatorEnum.Or;
             this.UpdateSearchCriteriaFeedback();
         }
 
@@ -488,7 +489,7 @@ namespace Timelapse.Dialog
                     // If there are two DateTime search terms selected, they are always  and'ed
                     if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime && numberOfDateTimesSearchTerms == 2)
                     {
-                        searchCriteriaText += " " + CustomSelectionOperator.And;
+                        searchCriteriaText += " " + CustomSelectionOperatorEnum.And;
                     }
                     else
                     { 
@@ -499,7 +500,7 @@ namespace Timelapse.Dialog
                 lastExpression = false;
             }
 
-            int count = this.database.GetFileCount(FileSelection.Custom);
+            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
             // if count == -1 Means no search terms selected
             this.OkButton.IsEnabled = count > 0 ? true : false;
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
@@ -512,7 +513,7 @@ namespace Timelapse.Dialog
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
-            this.database.SelectFiles(FileSelection.Custom);
+            this.database.SelectFiles(FileSelectionEnum.Custom);
             this.DialogResult = true;
         }
 

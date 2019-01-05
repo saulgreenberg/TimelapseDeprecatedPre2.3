@@ -1,6 +1,6 @@
-﻿namespace Timelapse.Database
+﻿namespace Timelapse.Enums
 {
-    public enum DateTimeAdjustment
+    public enum DateTimeAdjustmentEnum
     {
         MetadataDateAndTimeOneHourLater,
         MetadataDateAndTimeUsed,

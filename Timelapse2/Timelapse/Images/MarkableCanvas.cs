@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Timelapse.Controls;
+using Timelapse.Enums;
+using Timelapse.EventArguments;
 using Timelapse.Util;
 
 namespace Timelapse.Images
@@ -1029,7 +1031,7 @@ namespace Timelapse.Images
                         // We've gone from the single image to the multi-image view.
                         // By default, select the first item (as we want the data for the first item to remain displayed)
                         this.ClickableImagesGrid.SelectInitialCellOnly();
-                        this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
+                        this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true && this.ClickableImagesState > 1)
@@ -1145,7 +1147,7 @@ namespace Timelapse.Images
             this.ClickableImagesState = 0;
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
         public void SwitchToVideoView()
         {
@@ -1160,7 +1162,7 @@ namespace Timelapse.Images
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.ClickableImagesState = 0;
             this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.SingleImageView, -1);
+            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
 
         public void SwitchToClickableGridView()
@@ -1170,8 +1172,8 @@ namespace Timelapse.Images
             {
                 return;
             }
-            this.SwitchedToClickableImagesGridEventAction();
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
+            this.SwitchedToClickableImagesGridEventAction();
             // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
             // this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
             this.ImageToDisplay.Visibility = Visibility.Collapsed;

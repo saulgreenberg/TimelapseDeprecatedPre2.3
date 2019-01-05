@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Dialog;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
 
@@ -56,7 +57,7 @@ namespace Timelapse.Database
             this.FileTableColumnsByDataLabel = new Dictionary<string, FileTableColumn>();
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperator customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -86,6 +87,24 @@ namespace Timelapse.Database
             fileDatabase.CustomSelection = new CustomSelection(fileDatabase.Controls, customSelectionTermCombiningOperator);
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
+        }
+
+        public static string TryGetQuickPasteXMLFromDatabase(string filePath)
+        {
+            // Open the database if it exists
+            SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
+            if (sqliteWrapper.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
+            {
+                // The column isn't in the table, so give up
+                return String.Empty;
+            }
+
+            List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            if (listOfObjects.Count == 1)
+            {
+                return (string)listOfObjects[0];
+            }
+            return String.Empty;
         }
         #endregion
 
@@ -299,12 +318,13 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));       
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
-            int allImages = (int)FileSelection.All;
+            int allImages = (int)FileSelectionEnum.All;
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
 
@@ -320,7 +340,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
-                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms)
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms),
+                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, Constant.DatabaseValues.DefaultQuickPasteXML)
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {
@@ -333,7 +354,7 @@ namespace Timelapse.Database
             // create the Files table
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
-            this.SelectFiles(FileSelection.All);
+            this.SelectFiles(FileSelectionEnum.All);
 
             // Create the MarkersTable and initialize it from the template table
             columnDefinitions.Clear();
@@ -453,7 +474,7 @@ namespace Timelapse.Database
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
         private void UpgradeDatabasesForBackwardsCompatability()
         {
-            this.SelectFiles(FileSelection.All);
+            this.SelectFiles(FileSelectionEnum.All);
             bool refreshImageDataTable = false;
 
             // RelativePath column (if missing) needs to be added 
@@ -516,7 +537,7 @@ namespace Timelapse.Database
             if (refreshImageDataTable)
             {
                 // update image data table to current schema
-                this.SelectFiles(FileSelection.All);
+                this.SelectFiles(FileSelectionEnum.All);
             }
 
             // Make sure that all the string data in the datatable has white space trimmed from its beginning and end
@@ -566,6 +587,19 @@ namespace Timelapse.Database
                 // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
+            // Make sure that the column containing the QuickPasteXML exists in the image set table. 
+            // If not, add it and set it to the default
+            bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            if (!quickPasteXMLColumnExists)
+            {
+                // create the sortCriteria column
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+
+                // Update the image set
+                this.GetImageSet();
+                // This still has to be synchronized, which will occur after we prepare all missing columns
+            }
+
             // Timezone column (if missing) needs to be added to the Imageset Table
             bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone);
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
@@ -579,7 +613,7 @@ namespace Timelapse.Database
             }
 
             // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
-            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists)))
+            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists) || (!quickPasteXMLColumnExists)))
             {
                 this.SyncImageSetToDatabase();
             }
@@ -697,7 +731,7 @@ namespace Timelapse.Database
                     }
                 }
             }
-            this.SelectFiles(FileSelection.All);
+            this.SelectFiles(FileSelectionEnum.All);
         }
 
         /// <summary>
@@ -749,7 +783,7 @@ namespace Timelapse.Database
         /// <summary> 
         /// Rebuild the file table with all files in the database table which match the specified selection.
         /// </summary>
-        public void SelectFiles(FileSelection selection)
+        public void SelectFiles(FileSelectionEnum selection)
         {
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(selection);
@@ -894,25 +928,25 @@ namespace Timelapse.Database
             }
         }
 
-        public Dictionary<FileSelection, int> GetFileCountsBySelection()
+        public Dictionary<FileSelectionEnum, int> GetFileCountsBySelection()
         {
-            Dictionary<FileSelection, int> counts = new Dictionary<FileSelection, int>
+            Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
-                [FileSelection.Dark] = this.GetFileCount(FileSelection.Dark),
-                [FileSelection.Corrupted] = this.GetFileCount(FileSelection.Corrupted),
-                [FileSelection.Missing] = this.GetFileCount(FileSelection.Missing),
-                [FileSelection.Ok] = this.GetFileCount(FileSelection.Ok)
+                [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
+                [FileSelectionEnum.Corrupted] = this.GetFileCount(FileSelectionEnum.Corrupted),
+                [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
+                [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
             };
             return counts;
         }
 
-        public int GetFileCount(FileSelection fileSelection)
+        public int GetFileCount(FileSelectionEnum fileSelection)
         {
             string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(fileSelection);
             if (String.IsNullOrEmpty(where))
             {
-                if (fileSelection == FileSelection.Custom)
+                if (fileSelection == FileSelectionEnum.Custom)
                 {
                     // if no search terms are active the image count is undefined as no filtering is in operation
                     return -1;
@@ -933,20 +967,20 @@ namespace Timelapse.Database
             this.Database.Insert(table, insertionStatements);
         }
 
-        private string GetFilesWhere(FileSelection selection)
+        private string GetFilesWhere(FileSelectionEnum selection)
         {
             switch (selection)
             {
-                case FileSelection.All:
+                case FileSelectionEnum.All:
                     return String.Empty;
-                case FileSelection.Corrupted:
-                case FileSelection.Dark:
-                case FileSelection.Missing:
-                case FileSelection.Ok:
+                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Dark:
+                case FileSelectionEnum.Missing:
+                case FileSelectionEnum.Ok:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
-                case FileSelection.MarkedForDeletion:
+                case FileSelectionEnum.MarkedForDeletion:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); 
-                case FileSelection.Custom:
+                case FileSelectionEnum.Custom:
                     return this.CustomSelection.GetFilesWhere();
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));

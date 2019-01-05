@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {
@@ -27,7 +28,7 @@ namespace Timelapse.Controls
         }
 
         public DataEntryChoice(ControlRow control, DataEntryControls styleProvider)
-            : base(control, styleProvider, ControlContentStyle.ChoiceComboBox, ControlLabelStyle.DefaultLabel)
+            : base(control, styleProvider, ControlContentStyleEnum.ChoiceComboBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // The behaviour of the combobox
             this.ContentControl.Focusable = true;
@@ -65,7 +66,7 @@ namespace Timelapse.Controls
             };
             this.ContentControl.Items.Insert(0, cbi);
             ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;     
-            this.ContentControl.SelectedIndex = 0;
+            this.ContentControl.SelectedIndex = 1;
         }
 
         // Users may want to use the text search facility on the combobox, where they type the first letter and then enter
@@ -114,6 +115,34 @@ namespace Timelapse.Controls
             }
         }
 
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to expose the arrow on the choice menu, so subtract its width and move the horizontal offset over
+                double arrowWidth = 20;
+                double width = this.ContentControl.Width - arrowWidth;
+                double horizontalOffset = -arrowWidth / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(5.5, 6.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+        public override void HidePreviewControlValue()
+        {
+            this.HidePopupPreview();
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+
         // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {
@@ -125,8 +154,15 @@ namespace Timelapse.Controls
                 this.ContentControl.ToolTip = "Select an item to change the " + this.Label + " for all selected images";
                 return;
             }
+            // For some reason, the empty item was not setting the selected index to the item with the blank entry. 
+            // This is needed to set it explicitly.
+            if (value == String.Empty)
+            {
+                this.ContentControl.SelectedIndex = 1;
+            }
+
             this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
+            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? "Blank entry" : value;
         }
     }
 }

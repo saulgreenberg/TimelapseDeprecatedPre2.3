@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {
@@ -28,8 +29,36 @@ namespace Timelapse.Controls
         }
 
         public DataEntryFlag(ControlRow control, DataEntryControls styleProvider)
-            : base(control, styleProvider, ControlContentStyle.FlagCheckBox, ControlLabelStyle.DefaultLabel)
+            : base(control, styleProvider, ControlContentStyleEnum.FlagCheckBox, ControlLabelStyleEnum.DefaultLabel)
         {
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to shring the width a bit, as its otherwise a bit wide
+                double widthCorrection = 2;
+                double width = this.ContentControl.Width - widthCorrection;
+                double horizontalOffset = -widthCorrection / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(2.5, 3, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Convert the true/false to a checkmark or none, then show the Popup
+            string check = (value.ToLower() == Constant.BooleanValue.True) ? "\u2713" : String.Empty;
+            this.ShowPopupPreview(check);
+        }
+        public override void HidePreviewControlValue()
+        {
+            this.HidePopupPreview();
+        }
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
         }
 
         public override void SetContentAndTooltip(string value)

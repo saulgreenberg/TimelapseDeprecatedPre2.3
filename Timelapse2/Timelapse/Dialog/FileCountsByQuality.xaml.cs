@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
@@ -14,19 +15,19 @@ namespace Timelapse.Dialog
         /// <summary>
         /// Show the user some statistics about the images in a dialog box
         /// </summary>
-        public FileCountsByQuality(Dictionary<FileSelection, int> counts, Window owner)
+        public FileCountsByQuality(Dictionary<FileSelectionEnum, int> counts, Window owner)
         {
             this.InitializeComponent();
             this.Owner = owner;
 
             // Fill in the counts
-            int light = counts[FileSelection.Ok];
+            int light = counts[FileSelectionEnum.Ok];
             this.Light.Text = String.Format("{0,5}", light);
-            int fileNoLongerAvailable = counts[FileSelection.Missing];
+            int fileNoLongerAvailable = counts[FileSelectionEnum.Missing];
             this.FileNoLongerAvailable.Text = String.Format("{0,5}", fileNoLongerAvailable);
-            int dark = counts[FileSelection.Dark];
+            int dark = counts[FileSelectionEnum.Dark];
             this.Dark.Text = String.Format("{0,5}", dark);
-            int corrupted = counts[FileSelection.Corrupted];
+            int corrupted = counts[FileSelectionEnum.Corrupted];
             this.Corrupted.Text = String.Format("{0,5}", corrupted);
 
             int total = light + dark + corrupted + fileNoLongerAvailable;

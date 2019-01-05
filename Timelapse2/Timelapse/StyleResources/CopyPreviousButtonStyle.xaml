@@ -1,8 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--Colors-->
+
     <SolidColorBrush x:Key="DisabledForegroundBrush" Color="#888" />
-    <SolidColorBrush x:Key="HighlightCopyPreviousBrush" Color="#C8FBC8" /> 
+    <SolidColorBrush x:Key="HighlightCopyPreviousBrush" Color="#adeeaa"/>
+    <SolidColorBrush x:Key="GlowCopyPreviousBrush" Color="#C8FBC8" /> 
     <SolidColorBrush x:Key="ButtonPressedBrush" Color="LightGreen" />
 
     <!-- CopyPreviousButtonStyle -->
@@ -54,25 +56,51 @@
                             <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                         </Trigger>
 
-                        <!-- IsFocused: Highlight border thickness -->
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="border" Value="{StaticResource HighlightCopyPreviousBrush}"/>
-                            <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
-                        </Trigger>
+                        <!-- IsFocused without Mouseover-->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="True" />
+                                <Condition Property="IsMouseOver" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter Property="Background" TargetName="border" Value="{DynamicResource GlowCopyPreviousBrush}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource BorderBrushCommonHighlight}"/>
+                                <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
 
-                        <!-- IsFocused: Highlight Border color and thickness -->
-                        <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource BorderBrushCommonHighlight}"/>
-                            <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
-                        </Trigger>
+                        <!-- Mouseover without focus-->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="False" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter Property="Background" TargetName="border" Value="{StaticResource HighlightCopyPreviousBrush}"/>
+                                <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
 
-                        <!-- Is Pressed: Change border to Highlight color -->
+                        <!-- IsFocused and Mouseover-->
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsFocused" Value="True" />
+                                <Condition Property="IsMouseOver" Value="True" />
+                            </MultiTrigger.Conditions>
+                            <MultiTrigger.Setters>
+                                <Setter Property="Background" TargetName="border" Value="{StaticResource HighlightCopyPreviousBrush}"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource BorderBrushCommonHighlight}"/>
+                                <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
+                            </MultiTrigger.Setters>
+                        </MultiTrigger>
+
+                        <!-- IsPressed -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter Property="Background" TargetName="border" Value="{StaticResource ButtonPressedBrush}"/>
                             <Setter Property="BorderThickness" TargetName="border" Value="{DynamicResource BorderThicknessCommonHighlight}"/>
                         </Trigger>
 
-                        <!--Is Enabled - standard button color with light blue border-->
+                        <!-- Disabled -->
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Background" TargetName="border" Value="#FFF4F4F4"/>
                             <Setter Property="Foreground" Value="#FF838383"/>

@@ -1,6 +1,6 @@
-﻿namespace Timelapse.Controls
+﻿namespace Timelapse.Enums
 {
-    public enum ControlContentStyle
+    public enum ControlContentStyleEnum
     {
         ChoiceComboBox,
         FlagCheckBox,

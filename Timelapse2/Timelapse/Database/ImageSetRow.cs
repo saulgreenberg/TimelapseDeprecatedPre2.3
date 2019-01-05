@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using Timelapse.Enums;
 
 namespace Timelapse.Database
 {
@@ -13,9 +14,9 @@ namespace Timelapse.Database
         {
         }
 
-        public FileSelection FileSelection
+        public FileSelectionEnum FileSelection
         {
-            get { return (FileSelection)this.Row.GetIntegerField(Constant.DatabaseColumn.Selection); }
+            get { return (FileSelectionEnum)this.Row.GetIntegerField(Constant.DatabaseColumn.Selection); }
             set { this.Row.SetField(Constant.DatabaseColumn.Selection, (int)value); }
         }
 
@@ -66,7 +67,15 @@ namespace Timelapse.Database
             get { return this.Row.GetStringField(Constant.DatabaseColumn.SortTerms); }
             set { this.Row.SetField(Constant.DatabaseColumn.SortTerms, value); }
         }
-       
+
+        // QuickPasteXML is an XML description of the QuickPasteEntries. It is updated whenever those entries are changed,
+        // which means its state is saved.
+        public string QuickPasteXML
+        {
+            get { return this.Row.GetStringField(Constant.DatabaseColumn.QuickPasteXML); }
+            set { this.Row.SetField(Constant.DatabaseColumn.QuickPasteXML, value); }
+        }
+
         public override ColumnTuplesWithWhere GetColumnTuples()
         {
             List<ColumnTuple> columnTuples = new List<ColumnTuple>
@@ -78,7 +87,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, this.TimeZone),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, this.VersionCompatability),
-                new ColumnTuple(Constant.DatabaseColumn.SortTerms, this.SortTerms)
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, this.SortTerms),
+                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, this.QuickPasteXML)
             };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }

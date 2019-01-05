@@ -12,27 +12,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Timelapse.Controls;
+using Timelapse.Enums;
+using Timelapse.EventArguments;
 
 namespace Timelapse.Controls
 {
-    public enum FilePlayerDirection
-    {
-        Forward,
-        Backward
-    }
-
-    public enum FilePlayerSelection
-    {
-        Step,
-        First,
-        Last,
-        PlaySlow,
-        PlayFast,
-        Page,
-        Row,
-        Stop
-    }
-
     /// <summary>
     /// FilePlayer contains a set of media controls representing how one can navigate through files by:
     /// - going to the first and last file
@@ -42,8 +26,8 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class FilePlayer : UserControl
     {
-        public FilePlayerDirection Direction { get; set; }
-        public FilePlayerSelection Selection { get; set; }
+        public FilePlayerDirectionEnum Direction { get; set; }
+        public FilePlayerSelectionEnum Selection { get; set; }
 
         public delegate void FilePlayerChangedHandler(object sender, FilePlayerEventArgs e);
         public event FilePlayerChangedHandler FilePlayerChange;
@@ -105,58 +89,58 @@ namespace Timelapse.Controls
             switch ((string)button.Tag)
             {
                 case "First":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.First;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.First;
                     break;
                 case "PageUp":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.Page;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.Page;
                     break;
                 case "RowUp":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.Row;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.Row;
                     break;
                 case "PlayBackwardsFast":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.PlayFast;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.PlayFast;
                     break;
                 case "PlayBackwardsSlow":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.PlaySlow;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.PlaySlow;
                     break;
                 case "StepBackwards":
-                    this.Direction = FilePlayerDirection.Backward;
-                    this.Selection = FilePlayerSelection.Step;
+                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Selection = FilePlayerSelectionEnum.Step;
                     break;
                 case "Stop":
-                    this.Selection = FilePlayerSelection.Stop;
+                    this.Selection = FilePlayerSelectionEnum.Stop;
                     break;
                 case "StepForward":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.Step;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.Step;
                     break;
                 case "PlayForwardSlow":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.PlaySlow;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.PlaySlow;
                     break;
                 case "PlayForwardFast":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.PlayFast;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.PlayFast;
                     break;
                 case "PageDown":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.Page;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.Page;
                     break;
                 case "RowDown":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.Row;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.Row;
                     break;
                 case "Last":
-                    this.Direction = FilePlayerDirection.Forward;
-                    this.Selection = FilePlayerSelection.Last;
+                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Selection = FilePlayerSelectionEnum.Last;
                     break;
                 default:
-                    this.Selection = FilePlayerSelection.Stop;
+                    this.Selection = FilePlayerSelectionEnum.Stop;
                     break;
             }
             // Raise the event
@@ -167,7 +151,7 @@ namespace Timelapse.Controls
         {
             if (e.Key == Key.Space)
             {
-                this.Selection = FilePlayerSelection.Stop;
+                this.Selection = FilePlayerSelectionEnum.Stop;
                 this.OnFilePlayerChange(this, new FilePlayerEventArgs(this.Direction, this.Selection));
                 e.Handled = true;
             }

@@ -4,16 +4,11 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
-    public enum ControlsEnableState
-    {
-        MultipleImageView,
-        SingleImageView,
-    }
-
     /// <summary>
     /// This class generates controls based upon the information passed into it from the data grid templateTable
     /// </summary>
@@ -22,8 +17,8 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
-        public Button CopyPreviousValuesButton { get; set; }
         private DataEntryHandler dataEntryHandler = null;
+
         public DataEntryControls()
         {
             this.InitializeComponent();
@@ -90,8 +85,10 @@ namespace Timelapse.Controls
                 }
                 else if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
-                    DataEntryUtcOffset utcOffsetControl = new DataEntryUtcOffset(control, this);
-                    utcOffsetControl.ContentReadOnly = true;
+                    DataEntryUtcOffset utcOffsetControl = new DataEntryUtcOffset(control, this)
+                    {
+                        ContentReadOnly = true
+                    };
                     controlToAdd = utcOffsetControl;
                 }
                 else
@@ -111,15 +108,9 @@ namespace Timelapse.Controls
         //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality
         // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
         // when the markable canvas is zoomed out to display multiple images
-        public void SetEnableState(ControlsEnableState controlsToEnable, int imagesSelected)
+        public void SetEnableState(ControlsEnableStateEnum controlsToEnable, int imagesSelected)
         {
-            // Enable the Copy Previous button only when in the single image view, otherwise disable
-            if (this.CopyPreviousValuesButton != null)
-            {
-                this.CopyPreviousValuesButton.IsEnabled = (controlsToEnable == ControlsEnableState.SingleImageView) ? true : false;
-            }
-
-            if (this.dataEntryHandler.ImageCache.Current == null)
+             if (this.dataEntryHandler.ImageCache.Current == null)
             {
                 return;
             }
@@ -129,7 +120,7 @@ namespace Timelapse.Controls
                 if (control is DataEntryDateTime datetime)
                 {
                     // DateTime
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         datetime.IsEnabled = true;
@@ -148,7 +139,7 @@ namespace Timelapse.Controls
                 else if (control is DataEntryUtcOffset utcOffset)
                 {
                     // UTC Offset
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         utcOffset.IsEnabled = false; // Keep it always disabled, until we fix the bug within it.
@@ -168,7 +159,7 @@ namespace Timelapse.Controls
                 else if (control is DataEntryNote note)
                 {
                     // Notes, File, Folder and Relative Path
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         note.IsEnabled = true;
@@ -198,7 +189,7 @@ namespace Timelapse.Controls
                 else if (control is DataEntryChoice choice)
                 {
                     // Choices, Image Quality
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         choice.IsEnabled = true;
@@ -217,7 +208,7 @@ namespace Timelapse.Controls
                 else if (control is DataEntryCounter counter)
                 {
                     // Counters
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         counter.IsEnabled = true;
@@ -236,7 +227,7 @@ namespace Timelapse.Controls
                 else if (control is DataEntryFlag flag)
                 {
                     // Flag, Delete Flag
-                    if (controlsToEnable == ControlsEnableState.SingleImageView)
+                    if (controlsToEnable == ControlsEnableStateEnum.SingleImageView)
                     {
                         // Single images view - Enable and show its contents
                         flag.IsEnabled = true;

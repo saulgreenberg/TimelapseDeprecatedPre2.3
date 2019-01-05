@@ -2,9 +2,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {
@@ -27,6 +31,10 @@ namespace Timelapse.Controls
 
         public abstract IInputElement Focus(DependencyObject focusScope);
 
+        // used to remember and restore state when
+        // displayTemporaryContents and RestoreTemporaryContents are used
+        protected Popup PopupPreview { get; set; }
+
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
             // populate properties from database definition of control
@@ -44,6 +52,15 @@ namespace Timelapse.Controls
             this.Container.Tag = this;
         }
         public abstract void SetContentAndTooltip(string value);
+
+        // These two methods allow us to temporarily display an arbitrary string value into the data field
+        // This should alwasy be followed by restoring the original contents.
+        // An example of its use is to show the user what will be placed in the data control if the user continues their action
+        // e.g., moving the mouse over a quickpaste or copyprevious buttons will display potential values,
+        //       while moving the mouse out of those buttons will restore those values.
+        public abstract void ShowPreviewControlValue(string value);
+        public abstract void HidePreviewControlValue();
+        public abstract void FlashPreviewControlValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -87,7 +104,7 @@ namespace Timelapse.Controls
             }
         }
 
-        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyle> contentStyleName, ControlLabelStyle labelStyleName) : 
+        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) : 
             base(control, styleProvider)
         {
             this.ContentControl = new TContent()
@@ -126,6 +143,113 @@ namespace Timelapse.Controls
             // well behaved at application scope.
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
             return (IInputElement)this.ContentControl;
+        }
+        protected Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
+        {
+            // Creatre a textblock and align it so the text is exactly at the same position as the control's text
+            TextBlock popupText = new TextBlock
+            {
+                Text = String.Empty,
+                Width = width,
+                Height = control.Height,
+                Padding = padding,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Background = Constant.Control.QuickPasteFieldHighlightBrush,
+                Foreground = Brushes.Green,
+                FontStyle = FontStyles.Italic,
+            };
+
+            Border border = new Border
+            {
+                BorderBrush = Brushes.Green,
+                BorderThickness = new Thickness(1),
+                Child = popupText,
+            };
+
+            Popup popup = new Popup
+            {
+                Width = width,
+                Height = control.Height,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Placement = PlacementMode.Center,
+                VerticalOffset = 0,
+                HorizontalOffset = horizontalOffset,
+                PlacementTarget = control,
+                IsOpen = false,
+                Child = border
+            };
+            return popup;
+        }
+
+        protected void ShowPopupPreview(string value)
+        {
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+            popupText.Text = value;
+            this.PopupPreview.IsOpen = true;
+        }
+
+        protected void HidePopupPreview()
+        {
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                // There is no popupPreview being displayed, so there is nothing to hide.
+                return;
+            }
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+            popupText.Text = String.Empty;
+            this.PopupPreview.IsOpen = false;
+        }
+
+        // Create a flash effect for the popup. We use this to signal that the 
+        // preview text has been selected
+        protected void FlashPopupPreview()
+        {
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                // There is no popupPreview being displayed, so there is nothing to hide.
+                return;
+            }
+
+            // Get the TextBlock
+            Border border = (Border)this.PopupPreview.Child;
+            TextBlock popupText = (TextBlock)border.Child;
+
+            // Revert to normal fontstyle, and set up a
+            // timer to change it back to italics after a short duration
+            popupText.FontStyle = FontStyles.Normal;
+            DispatcherTimer timer = new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(.4),
+                Tag = popupText,
+            };
+            timer.Tick += FlashFontTimer_Tick;
+
+            // Animate the color from white back to its current color
+            ColorAnimation animation;
+            animation = new ColorAnimation()
+            { 
+                From = Colors.White,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode = EasingMode.EaseIn
+                },  
+            };
+
+            // Get it all going
+            popupText.Background.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+            timer.Start();
+        }
+        private void FlashFontTimer_Tick(object sender, EventArgs e)
+        {
+            DispatcherTimer timer = sender as DispatcherTimer;
+            ((TextBlock)timer.Tag).FontStyle = FontStyles.Italic;
+            timer.Stop();
         }
     }
 }

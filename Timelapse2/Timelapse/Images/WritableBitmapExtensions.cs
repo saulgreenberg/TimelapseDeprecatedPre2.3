@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Images
 {
@@ -67,7 +68,7 @@ namespace Timelapse.Images
         // at or higher than the given darkPercent.
         // We also check to see if the image is predominantly color. We do this by checking to see if pixels are grey scale
         // (where r=g=b, with a bit of slop added) and then check that against a threshold.
-        public static FileSelection GetImageQuality(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio)
+        public static FileSelectionEnum GetImageQuality(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio)
         {
             return image.IsDark(darkPixelThreshold, darkPixelRatio, out double ignored1, out bool ignored2);
         }
@@ -80,7 +81,7 @@ namespace Timelapse.Images
         // Return the type of ImageSelection. Note that the ImageSelection is set to ImageSelection.Corrupted when this routing throws and exception,
         // which notifies its callers that there was an error.
         [HandleProcessCorruptedStateExceptions] // Necessary for unsafe code to implement try/catch
-        public static unsafe FileSelection IsDark(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio, out double darkPixelFraction, out bool isColor)
+        public static unsafe FileSelectionEnum IsDark(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio, out double darkPixelFraction, out bool isColor)
         {
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
             WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
@@ -142,7 +143,7 @@ namespace Timelapse.Images
                 {
                     darkPixelFraction = 1 - uncoloredPixelFraction;
                     isColor = true;
-                    return FileSelection.Ok;
+                    return FileSelectionEnum.Ok;
                 }
 
                 // It is a grey scale image. If the fraction of dark pixels are higher than the threshold, it is dark.
@@ -150,9 +151,9 @@ namespace Timelapse.Images
                 isColor = false;
                 if (darkPixelFraction >= darkPixelRatio)
                 {
-                    return FileSelection.Dark;
+                    return FileSelectionEnum.Dark;
                 }
-                return FileSelection.Ok;
+                return FileSelectionEnum.Ok;
             }
             catch
             {
@@ -162,7 +163,7 @@ namespace Timelapse.Images
                 // Returning a Corrupted state informs the caller that the check for dark has not completed successfully.
                 isColor = true;
                 darkPixelFraction = 0;
-                return FileSelection.Corrupted;
+                return FileSelectionEnum.Corrupted;
             }
         }
 

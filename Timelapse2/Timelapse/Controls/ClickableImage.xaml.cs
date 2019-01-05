@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Controls
 {
@@ -116,7 +117,7 @@ namespace Timelapse.Controls
         public Double Rerender(double width, int state)
         {
             this.DesiredRenderWidth = width;
-            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), Images.ImageDisplayIntent.Persistent);
+            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent);
             this.Image.Source = bf;
 
             // A descriptive string: the filename without the extention, plu the time in HH:MM

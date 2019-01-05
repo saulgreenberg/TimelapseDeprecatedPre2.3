@@ -87,7 +87,7 @@ namespace Timelapse.Database
             return this.GetChoices(out bool includesEmptyChoice, removeEmptyChoiceItem);
         }
         // Overload: the caller is interested in knowing if there are any empty items in the list, 
-        // and wants the empty item removed (usually because they will add it themselves to a menue
+        // and wants the empty item removed (usually because they will add it themselves to a menu
 
         public List<string> GetChoices(out bool includesEmptyChoice)
         {
@@ -112,6 +112,20 @@ namespace Timelapse.Database
             else
             {
                 includesEmptyChoice = false;
+            }
+            return list;
+        }
+
+        // Parce the choice string into a list of items. 
+        // If it includes an empty choice item, remove the abstract <Empty> 
+        // and insert an empty string as the first menu item
+        public List<string> GetChoicesForQuickPasteMenu()
+        {
+            List<string> list = this.List.Split(ControlRow.BarDelimiter).ToList();
+            if (list.Contains(Constant.ControlMiscellaneous.EmptyChoiceItem))
+            {
+                list.Remove(Constant.ControlMiscellaneous.EmptyChoiceItem);
+                list.Insert(0, String.Empty);
             }
             return list;
         }

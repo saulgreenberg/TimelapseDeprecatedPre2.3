@@ -161,13 +161,13 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImagesGridEventArgs.cs" />
+    <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
     <Compile Include="Controls\FilePlayer.xaml.cs">
       <DependentUpon>FilePlayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\FilePlayerEventArgs.cs" />
+    <Compile Include="EventArguments\FilePlayerEventArgs.cs" />
     <Compile Include="Controls\TimeZonePicker.cs" />
     <Compile Include="Controls\AutoToolTipSlider.cs" />
     <Compile Include="Controls\UtcOffsetUpDown.cs" />
@@ -176,7 +176,8 @@
     </Compile>
     <Compile Include="Database\ColumnDefinition.cs" />
     <Compile Include="Database\ControlRow.cs" />
-    <Compile Include="Database\CustomSelectionOperator.cs" />
+    <Compile Include="Enums\ControlsEnableStateEnum.cs" />
+    <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
     <Compile Include="Database\SortTerm.cs" />
     <Compile Include="Database\SortTerms.cs" />
     <Compile Include="Database\DataTableBackedList.cs" />
@@ -195,6 +196,10 @@
     <Compile Include="Database\VideoRow.cs" />
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="QuickPaste\QuickPaste.cs" />
+    <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
+      <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\CustomSort.xaml.cs">
       <DependentUpon>CustomSort.xaml</DependentUpon>
@@ -233,18 +238,29 @@
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
     </Compile>
+    <Compile Include="QuickPaste\QuickPasteEntry.cs" />
+    <Compile Include="QuickPaste\QuickPasteEventArgs.cs" />
+    <Compile Include="QuickPaste\QuickPasteItem.cs" />
+    <Compile Include="QuickPaste\QuickPasteWindow.xaml.cs">
+      <DependentUpon>QuickPasteWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\UpdateRootFolder.xaml.cs">
       <DependentUpon>UpdateRootFolder.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\TemplateChangedAndUpdate.xaml.cs">
       <DependentUpon>TemplateChangedAndUpdate.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Enums\FilePlayerDirectionEnum.cs" />
+    <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
+    <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
-    <Compile Include="Util\DeletiionManagement.cs" />
+    <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="Util\ImageMetadata.cs" />
     <Compile Include="Util\ImageMetadataDictionary.cs" />
     <Compile Include="Util\RegistryKeyExtensions.cs" />
@@ -252,16 +268,16 @@
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Images\BitmapSourceExtensions.cs" />
-    <Compile Include="Images\ImageDifferenceResult.cs" />
+    <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
     <Compile Include="Database\FileTableEnumerator.cs" />
     <Compile Include="Dialog\DateTimeRereadFeedbackTuple.cs" />
-    <Compile Include="Database\DateTimeAdjustment.cs" />
-    <Compile Include="Images\ImageDifference.cs" />
-    <Compile Include="Images\ImageDisplayIntent.cs" />
+    <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
+    <Compile Include="Enums\ImageDifferenceEnum.cs" />
+    <Compile Include="Enums\ImageDisplayIntentEnum.cs" />
     <Compile Include="Images\ImageQuality.cs" />
     <Compile Include="Images\MagnifyingGlass.cs" />
-    <Compile Include="Images\MarkerEventArgs.cs" />
+    <Compile Include="EventArguments\MarkerEventArgs.cs" />
     <Compile Include="Controls\StockMessageControl.xaml.cs">
       <DependentUpon>StockMessageControl.xaml</DependentUpon>
     </Compile>
@@ -303,6 +319,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="QuickPaste\QuickPasteEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="QuickPaste\QuickPasteWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -454,6 +478,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="StyleResources\QuickPasteButtonStyle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TimelapseWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -490,10 +518,10 @@
     <Compile Include="Database\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />
     <Compile Include="Database\ImageRow.cs" />
-    <Compile Include="Database\FileSelection.cs" />
+    <Compile Include="Enums\FileSelectionEnum.cs" />
     <Compile Include="Images\MarkersForCounter.cs" />
-    <Compile Include="Controls\ControlLabelStyle.cs" />
-    <Compile Include="Controls\ControlContentStyle.cs" />
+    <Compile Include="Enums\ControlLabelStyleEnum.cs" />
+    <Compile Include="Enums\ControlContentStyleEnum.cs" />
     <Compile Include="Util\MostRecentlyUsedCollection.cs" />
     <Compile Include="Controls\DataEntryControl.cs" />
     <Compile Include="Controls\DataEntryCounter.cs" />
