@@ -2878,6 +2878,11 @@ namespace Timelapse
         // Display the QuickPaste window
         private void MenuItemQuickPasteWindowShow_Click(object sender, RoutedEventArgs e)
         {
+            if (this.quickPasteWindow == null)
+            {
+                // create the quickpaste window if it doesn't already exist.
+                this.QuickPasteWindowShow();
+            }
             this.QuickPasteRefreshWindowAndXML();
             this.QuickPasteWindowShow();
         }
