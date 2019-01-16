@@ -160,7 +160,7 @@ namespace Timelapse
 
         private void Window_LocationChanged(object sender, EventArgs e)
         {
-            this.FindBoxVisibility(false);
+            this.FindBoxSetVisibility(false);
         }
 
         // On exiting, save various attributes so we can use recover them later
@@ -1374,66 +1374,6 @@ namespace Timelapse
         }
         #endregion
 
-        #region Find Callbacks and Methods
-
-        // Find forward on enter 
-        private void FindBoxTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                FindBox_FindImage(true);
-            }
-        }
-
-        // Depending upon which buttion was pressed, invoked a forwards or backwards find operation 
-        private void FindBoxButton_Click(object sender, RoutedEventArgs e)
-        {
-            Button findButton = sender as Button;
-            bool isForward = (findButton == this.FindForwardButton) ? true : false;
-            this.FindBox_FindImage(isForward);
-        }
-
-        // Close the find box
-        private void FindBoxClose_Click(object sender, RoutedEventArgs e)
-        {
-            FindBoxVisibility(false);
-        }
-
-        // Search either forwards or backwards for the image file name specified in the text box
-        private void FindBox_FindImage(bool isForward)
-        {
-            string searchTerm = this.FindBoxTextBox.Text;
-            ImageRow row = this.dataHandler.ImageCache.Current;
-
-            int currentIndex = this.dataHandler.FileDatabase.Files.IndexOf(row);
-            int foundIndex = this.dataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
-            if (foundIndex != -1)
-            {
-                this.ShowFile(foundIndex);
-            }
-            else
-            {
-                // Flash the text field to indicate no result
-                if (this.FindResource("ColorAnimationBriefFlash") is Storyboard sb)
-                {
-                    Storyboard.SetTarget(sb, this.FindBoxTextBox);
-                    sb.Begin();
-                }
-            }
-        }
-
-        // Make the find box visible on the display
-        private void FindBoxVisibility(bool isVisible)
-        {
-            // Only make the find box visible if there are files to view
-            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
-            {
-                this.FindBox.IsOpen = isVisible;
-                this.FindBoxTextBox.Focus();
-            }
-        }
-        #endregion
-
         #region Single vs Multiple Image View
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()
@@ -1603,7 +1543,6 @@ namespace Timelapse
         {
             Utilities.OnHelpDocumentPreviewDrag(dragEvent);
         }
-
 
         private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {

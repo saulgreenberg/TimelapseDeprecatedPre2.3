@@ -16,7 +16,7 @@ namespace Timelapse
             {
                 DockingManager_FloatingDataEntryWindowLimitSize();
             }
-            this.FindBoxVisibility(false);
+            this.FindBoxSetVisibility(false);
         }
 
         // Layout Updated 

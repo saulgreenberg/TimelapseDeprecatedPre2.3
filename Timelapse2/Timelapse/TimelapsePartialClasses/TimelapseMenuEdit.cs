@@ -33,7 +33,7 @@ namespace Timelapse
         // Find image 
         private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
         {
-            this.FindBoxVisibility(true);
+            this.FindBoxSetVisibility(true);
         }
 
         // Show QuickPaste Window 
