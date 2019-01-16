@@ -10,7 +10,6 @@ using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -1291,89 +1290,7 @@ namespace Timelapse
             return false;
         }
         #endregion
-       
-        #region FilePlayer and FilePlayerTimer
-        // The user has clicked on the file player. Take action onwhat was requested
-        private void FilePlayer_FilePlayerChange(object sender, FilePlayerEventArgs args)
-        {
-            switch (args.Selection)
-            {
-                case FilePlayerSelectionEnum.First:
-                    FilePlayer_Stop();
-                    FileNavigatorSlider.Value = 1;
-                    break;
-                case FilePlayerSelectionEnum.Page:
-                    this.FilePlayer_ScrollPage();
-                    break;
-                case FilePlayerSelectionEnum.Row:
-                    this.FilePlayer_ScrollRow();
-                    break;
-                case FilePlayerSelectionEnum.Last:
-                    FilePlayer_Stop();
-                    FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
-                    break;
-                case FilePlayerSelectionEnum.Step:
-                    FilePlayer_Stop();
-                    FilePlayerTimer_Tick(null, null);
-                    break;
-                case FilePlayerSelectionEnum.PlayFast:
-                    //FilePlayer_Play(Constant.FilePlayerValues.PlayFastDefault);
-                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
-                    break;
-                case FilePlayerSelectionEnum.PlaySlow:
-                    //FilePlayer_Play(Constant.FilePlayerValues.PlaySlowDefault);
-                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
-                    break;
-                case FilePlayerSelectionEnum.Stop:
-                default:
-                    FilePlayer_Stop();
-                    break;
-            }
-        }
-
-        //Stop the timer, reset the timer interval, and then restart the timer 
-        private void FilePlayer_Play(TimeSpan timespan)
-        {
-            this.FilePlayerTimer.Stop();
-            this.FilePlayerTimer.Interval = timespan;
-            this.FilePlayerTimer.Start();
-        }
-
-        // Stop both the file player and the timer
-        private void FilePlayer_Stop()
-        {
-            this.FilePlayerTimer.Stop();
-            this.FilePlayer.Stop();
-        }
-
-        // Scroll a row of images the ClickableImaesGrid
-        private void FilePlayer_ScrollRow()
-        {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow);
-        }
-
-        // Scroll a page of images the ClickableImaegsGrid
-        private void FilePlayer_ScrollPage()
-        {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowsInGrid);
-        }
-
-        // On every tick, try to show the next/previous file as indicated by the direction
-        private void FilePlayerTimer_Tick(object sender, EventArgs e)
-        {
-            bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, ModifierKeys.None);
-
-            // Stop the timer if the image reaches the beginning or end of the image set
-            if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))
-            {
-                FilePlayer_Stop();
-            }
-        }
-        #endregion
-
+      
         #region Single vs Multiple Image View
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()
