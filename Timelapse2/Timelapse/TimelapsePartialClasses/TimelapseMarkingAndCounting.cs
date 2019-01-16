@@ -68,7 +68,7 @@ namespace Timelapse
                 }
 
                 // There are no markers associated with this counter
-                //if (markers.Markers[0].DataLabel == markers.DataLabel)
+                // if (markers.Markers[0].DataLabel == markers.DataLabel)
                 if (markers.Markers[0].DataLabel == e.Marker.DataLabel)
                 {
                     // We found the marker counter associated with that control

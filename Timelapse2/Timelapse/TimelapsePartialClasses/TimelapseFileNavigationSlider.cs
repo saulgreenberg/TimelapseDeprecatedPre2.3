@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
@@ -52,6 +51,20 @@ namespace Timelapse
             }
         }
 
+        // Got Focus: Create a semi-transparent visible blue border around the slider when it has the focus. Its semi-transparent to mute it somewhat...
+        private void FileNavigatorSlider_GotFocus(object sender, RoutedEventArgs e)
+        {
+            SolidColorBrush brush = Constant.Control.BorderColorHighlight.Clone();
+            brush.Opacity = .5;
+            this.AutoToolTipSliderBorder.BorderBrush = brush;
+        }
+
+        // Lost Focus: revert border color to its default state
+        private void FileNavigatorSlider_LostFocus(object sender, RoutedEventArgs e)
+        {
+            this.AutoToolTipSliderBorder.BorderBrush = Brushes.Transparent;
+        }
+
         // Timer callback that forces image update to the current slider position. Invoked as the user pauses dragging the image slider 
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
@@ -82,20 +95,5 @@ namespace Timelapse
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.FileNavigatorSlider.Maximum = filesSelected ? this.dataHandler.FileDatabase.CurrentlySelectedFileCount : 0;
         }
-
-        #region Depracated
-        //// Create a semi-transparent visible blue border around the slider when it has the focus. Its semi-transparent to mute it somewhat...
-        //private void FileNavigatorSlider_GotFocus(object sender, RoutedEventArgs e)
-        //{
-        //    SolidColorBrush brush = Constant.Control.BorderColorHighlight.Clone();
-        //    brush.Opacity = .5;
-        //    this.AutoToolTipSliderBorder.BorderBrush = brush;
-        //}
-
-        //private void FileNavigatorSlider_LostFocus(object sender, RoutedEventArgs e)
-        //{
-        //    this.AutoToolTipSliderBorder.BorderBrush = Brushes.Transparent;
-        //}
-        #endregion Depracated
     }
 }

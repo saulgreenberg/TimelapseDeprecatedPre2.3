@@ -255,7 +255,12 @@
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseAvalonDock.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseFileNavigationSlider.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseImageDifferencing.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseImageSetLoading.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMarkingAndCounting.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuEdit.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuFile.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuHelp.cs" />
