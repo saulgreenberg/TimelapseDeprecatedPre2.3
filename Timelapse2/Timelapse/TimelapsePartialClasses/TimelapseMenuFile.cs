@@ -252,7 +252,7 @@ namespace Timelapse
                 messageBox.ShowDialog();
             }
             // Reload the data table
-            this.SelectFilesAndShowFile();
+            this.SelectFilesAndShowFile(false);
             this.StatusBar.SetMessage(".csv file imported.");
         }
 
