@@ -28,7 +28,7 @@ namespace Timelapse
 
         // When the CopyPreviousValues button is clicked, or when a space is entered while it is focused,
         // copy the data values from the previous control to the current one
-        private void CopyPreviousValues_Click(object sender, RoutedEventArgs e)
+        private void CopyPreviousValues_Click()
         {
             CopyPreviousValuesPasteValues();
             foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)

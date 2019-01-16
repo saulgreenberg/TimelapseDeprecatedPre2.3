@@ -48,6 +48,7 @@
 
                 <!-- Load a recently used image set -->
                 <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
+ 
                 <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                     <MenuItem.Icon>
                         <Image Source="Icons/NewFile_40x.png" />
@@ -120,17 +121,15 @@
                 <Separator />
                 
                 <!-- Copy previous values -->
-                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="CopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
+                <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="MenuItemCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
 
                 <Separator/>
                 
                 <!-- Populate a field with _metadata... -->
                 <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
-                
 
-                
                 <!-- Delete submenu-->
-                <MenuItem Header="D_elete"  SubmenuOpened="Delete_SubmenuOpening"  >
+                <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
                     <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
                     <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the file, as well as the data entered for that file"/>
                     <Separator/>
@@ -139,7 +138,7 @@
                 </MenuItem>
 
                 <!-- Date correction submenu-->
-                <MenuItem Header="_Date correction" SubmenuOpened="MenuItem_SubmenuOpened" >
+                <MenuItem Header="_Date correction" SubmenuOpened="MenuItemDateCorrection_SubmenuOpened" >
                     <MenuItem Name="MenuItemRereadDatesfromImages" Header="_Re-read dates and times from files..." Click="MenuItemRereadDateTimesfromFiles_Click"  ToolTip="Re-read the dates and times from files" IsEnabled="True" />
                     <MenuItem Name="MenuItemDaylightSavingsTimeCorrection" Header="Correct for standard and _daylight savings time changes..." Click="MenuItemDaylightSavingsTimeCorrection_Click"  ToolTip="Correct daylight saving time issues" IsEnabled="True" />
                     <MenuItem Name="MenuItemDateTimeFixedCorrection" Header="Correct for cameras not set to the right date and time..." Click="MenuItemDateTimeFixedCorrection_Click"  ToolTip="Correct for cameras  not initially set to the right date and/or time." IsEnabled="True" />
@@ -149,7 +148,7 @@
                 </MenuItem>
 
                 <!-- Identify or reclassify dark files...-->
-                <MenuItem Name="MenuItemOptionsDarkImages" Header="Identify or reclassify dar_k files..." IsEnabled="True" Click="MenuItemOptionsDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
+                <MenuItem Name="MenuItemOptionsDarkImages" Header="Identify or reclassify dar_k files..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
 
                 <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
@@ -158,25 +157,34 @@
             <!-- Options Menu -->
             <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
                 <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
+ 
                 <Separator/>
+                
                 <MenuItem Name="MenuItemMagnifyingGlass" Header="_Magnifying Glass" IsEnabled="False">
                     <MenuItem Name="MenuItemDisplayMagnifyingGlass" IsCheckable="True" IsChecked="False" InputGestureText="M" Header="Display _magnifier" Click="MenuItemDisplayMagnifyingGlass_Click" ToolTip="Toggles the presence of the magnifying glass"/>
                     <MenuItem Name="MenuItemMagnifyingGlassIncrease" InputGestureText="U" Header="_Increase magnification" Click="MenuItemMagnifyingGlassIncrease_Click" ToolTip="Increase the magnification of the magnifying glass"/>
                     <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                 </MenuItem>
+                
                 <Separator/>
+                
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
+
                 <Separator/>
+
                 <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Hide or show various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
+
                 <Separator/>
+ 
                 <MenuItem Name="MenuItemClassifyDarkImagesWhenLoading" IsCheckable="False" IsChecked="False" Header="_Classify dark images automatically on initial load..."  ToolTip="Automatically classify dark images when initially loading an image set for the first time." Click="MenuItemClassifyDarkImagesWhenLoading_Click" />
-                <!--<MenuItem Header="Ad_vanced">
+
+                <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
+                <!-- DEPRACATED
+                <MenuItem Header="Ad_vanced">
                     <MenuItem Name="MenuItemAdvancedImageSetOptions" Header="_Image set options..." Click="MenuItemAdvancedImageSetOptions_Click" IsEnabled="False" ToolTip="Image set configuration options that should only be used by advanced users"/>
                     <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="_Timelapse options..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Timelapse configuration options that should only be used by advanced users"/>
-
                     <MenuItem Name="MenuItemAdvancedDeleteDuplicates" Header="_Delete duplicates..." Click="MenuItemDeleteDuplicates_Click" IsEnabled="False" ToolTip="Delete duplicate file records"/>
                 </MenuItem>-->
-                <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
             </MenuItem>
 
             <!-- View Menu -->
@@ -215,15 +223,20 @@
                 <MenuItem Name="MenuItemSortByDateTime" IsCheckable="True" IsChecked="False" Header="By Date/Time &#8593;" Click="MenuItemSort_Click" ToolTip="Sort files by their date/time." />
                 <MenuItem Name="MenuItemSortByFileName" IsCheckable="True" IsChecked="False" Header="By File Path &#8593; (relative path + file name) " Click="MenuItemSort_Click" ToolTip="Sort files by their relative path and file name."  />
                 <MenuItem Name="MenuItemSortById" IsCheckable="True" IsChecked="False" Header="By Id &#8593; (the order files were added to Timelapse)" Click="MenuItemSort_Click" ToolTip="Sort files by the order they were added into Timelapse."/>
+ 
                 <Separator/>
+  
                 <MenuItem Name="MenuItemSortCustom" IsCheckable="True" IsChecked="False" Header="_Custom sort..." Click="MenuItemSortCustom_Click" ToolTip="Customize the sorting order by particular fields."/>
+   
                 <Separator/>
+ 
                 <MenuItem Name="MenuItemSortResort" Header="Refresh the sort" Click="MenuItemSortResort_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria." />
             </MenuItem>
 
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="True">
-
+                
+                <!--Standard configurations-->
                 <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutDataEntryOnTop_32x.png" />
@@ -239,7 +252,8 @@
                         <Image Source="Icons/LayoutDataEntryFloating_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <!--</MenuItem>-->
+                
+                <!--Custom congiurations: Restore -->
                 <Separator/>
                 <MenuItem Name="MenuItemWindowLoadCustom" Header="Restore a Saved Window Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">
                     <MenuItem.Icon>
@@ -249,6 +263,8 @@
                     <MenuItem Name="MenuItemWindowCustom2Load" Header="Layout _2" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom2"/>
                     <MenuItem Name="MenuItemWindowCustom3Load" Header="Layout _3" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom3"/>
                 </MenuItem>
+
+                <!--Custom congiurations: Save -->
                 <MenuItem Name="MenuItemWindowSaveCustom" Header="Save the Current Window Layout">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutCustomSave_32x.png" />
@@ -259,6 +275,8 @@
                 </MenuItem>
 
                 <Separator/>
+
+                <!--Restore to default and initial configurations -->
                 <MenuItem Name="MenuItemWindowReset" Header="_Reset to default" Click="MenuItemWindowRestore_Click" ToolTip="Reset the layout to the default " Tag="AvalonLayout_DataEntryOnTop">
                     <MenuItem.Icon>
                         <Image Source="Icons/LayoutDefault_32x.png" />
@@ -382,7 +400,7 @@
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                             ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
                                             IsTabStop="True" 
-                                            Click="CopyPreviousValues_Click"  
+                                            Click="MenuItemCopyPreviousValues_Click"  
                                             MouseEnter="CopyPreviousValues_MouseEnterOrLeave" 
                                             MouseLeave="CopyPreviousValues_MouseEnterOrLeave" 
                                             LostFocus="CopyPreviousValues_LostFocus"

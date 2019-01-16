@@ -256,6 +256,14 @@
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuEdit.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuFile.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuHelp.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuOptions.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuSelection.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuSort.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuView.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseMenuWindow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
     <Compile Include="Util\DateTimeExtensions.cs" />

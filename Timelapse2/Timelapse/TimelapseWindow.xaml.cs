@@ -27,9 +27,7 @@ using Timelapse.QuickPaste;
 using Timelapse.Util;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
-using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = Timelapse.Dialog.MessageBox;
-using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
 namespace Timelapse
 {
@@ -100,7 +98,7 @@ namespace Timelapse
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
 
             // Populate the most recent image set list
-            this.MenuItemRecentFileSets_Refresh();
+            this.RecentFileSets_Refresh();
 
             // Timer to force the image to update to the current slider position when the user pauses while dragging the  slider 
             this.timerFileNavigator = new DispatcherTimer()
@@ -459,7 +457,7 @@ namespace Timelapse
 
             this.Title = Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
             this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);
-            this.MenuItemRecentFileSets_Refresh();
+            this.RecentFileSets_Refresh();
 
             // Record the version number of the currently executing version of Timelapse only if its greater than the one already stored in the ImageSet Table.
             // This will indicate the latest timelapse version that is compatable with the database structure. 
@@ -1188,7 +1186,6 @@ namespace Timelapse
             // Show feedback of the status description in both the status bar and the data entry control panel title
             this.StatusBar.SetView(status);
             this.DataEntryControlPanel.Title = "Data entry for " + status;
-            this.MenuItemSelectSetSelection(selection);
 
             // Display the specified file or, if it's no longer selected, the next closest one
             // Showfile() handles empty image sets, so those don't need to be checked for here.
@@ -1220,6 +1217,54 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
+        }
+
+        // Check every file to see if:
+        // - file exists but ImageQuality is Missing, or
+        // - file does not exist but ImageQuality is anything other than missing
+        // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
+        // The downfall is that prior ImageQuality information will be lost if a change is made
+        // Another issue is that the current version only checks the currently selected files vs. all files
+        public bool CheckAndUpdateImageQualityForMissingFiles()
+        {
+            string filepath = String.Empty;
+            string message = String.Empty;
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            ColumnTuplesWithWhere imageUpdate;
+
+            // Get all files, regardless of the selection
+            FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
+            foreach (ImageRow image in allFiles)
+            {
+                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
+                if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
+                {
+                    // The File exists but image quality is set to missing. Reset it to OK
+                    // Note that the file may be corrupt, dark, etc., but we don't check for that.
+                    // SAULXXX Perhaps we should?
+                    image.ImageQuality = FileSelectionEnum.Ok;
+                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
+                    imagesToUpdate.Add(imageUpdate);
+                    System.Diagnostics.Debug.Print("Restored " + filepath);
+                }
+                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
+                {
+                    // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
+                    // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
+                    // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
+                    message = "Missing " + filepath;
+                    image.ImageQuality = FileSelectionEnum.Missing;
+                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
+                    imagesToUpdate.Add(imageUpdate);
+                    System.Diagnostics.Debug.Print("Missing " + filepath);
+                }
+            }
+            if (imagesToUpdate.Count > 0)
+            {
+                this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
+                return true;
+            }
+            return false;
         }
         #endregion
 
@@ -1608,6 +1653,90 @@ namespace Timelapse
             // display differenced image
             this.MarkableCanvas.SetDisplayImage(this.dataHandler.ImageCache.GetCurrentImage());
             this.StatusBar.SetMessage("Viewing differences from both the next and previous files");
+        }
+        #endregion
+
+        #region Recent File Sets
+        /// <summary>
+        /// Update the list of recent databases displayed under File -> Recent Databases.
+        /// </summary>
+        private void RecentFileSets_Refresh()
+        {
+            // remove image sets which are no longer present from the most recently used list
+            // probably overkill to perform this check on every refresh rather than once at application launch, but it's not particularly expensive
+            List<string> invalidPaths = new List<string>();
+            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
+            {
+                if (File.Exists(recentImageSetPath) == false)
+                {
+                    invalidPaths.Add(recentImageSetPath);
+                }
+            }
+
+            foreach (string path in invalidPaths)
+            {
+                bool result = this.state.MostRecentImageSets.TryRemove(path);
+                if (!result)
+                {
+                    Utilities.PrintFailure(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
+                }
+            }
+
+            // Enable the menu only when there are items in it and only if the load menu is also enabled (i.e., that we haven't loaded anything yet)
+            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
+            this.MenuItemRecentImageSets.Items.Clear();
+
+            // add menu items most recently used image sets
+            int index = 1;
+            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
+            {
+                // Create a menu item for each path
+                MenuItem recentImageSetItem = new MenuItem();
+                recentImageSetItem.Click += this.MenuItemRecentImageSet_Click;
+                recentImageSetItem.Header = String.Format("_{0} {1}", index++, recentImageSetPath);
+                recentImageSetItem.ToolTip = recentImageSetPath;
+                this.MenuItemRecentImageSets.Items.Add(recentImageSetItem);
+            }
+        }
+        #endregion
+
+        #region Folder Selection Dialogs
+        // Open a dialog where the user selects one or more folders that contain the image set(s)
+        private bool ShowFolderSelectionDialog(out IEnumerable<string> folderPaths)
+        {
+            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            {
+                Title = "Select one or more folders ...",
+                DefaultDirectory = this.mostRecentFileAddFolderPath ?? this.FolderPath,
+                IsFolderPicker = true,
+                Multiselect = true
+            };
+            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
+            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                folderPaths = folderSelectionDialog.FileNames;
+
+                // remember the parent of the selected folder path to save the user clicks and scrolling in case images from additional 
+                // directories are added
+                this.mostRecentFileAddFolderPath = Path.GetDirectoryName(folderPaths.First());
+                return true;
+            }
+
+            folderPaths = null;
+            return false;
+        }
+
+        /// <summary>
+        /// File menu helper function:
+        /// </summary>
+        private void FolderSelectionDialog_FolderChanging(object sender, CommonFileDialogFolderChangeEventArgs e)
+        {
+            // require folders to be loaded be either the same folder as the .tdb and .ddb or subfolders of it
+            if (e.Folder.StartsWith(this.FolderPath, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                e.Cancel = true;
+            }
         }
         #endregion
 
@@ -2053,7 +2182,7 @@ namespace Timelapse
                     }
                     break;
                 case Key.C:
-                    this.CopyPreviousValues_Click(null, null);
+                    this.CopyPreviousValues_Click();
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window
@@ -2409,1435 +2538,6 @@ namespace Timelapse
         }
         #endregion
 
-        #region All Menu Callbacks
-        private void MenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
-        {
-            if (this.IsUTCOffsetControlHidden())
-            {
-                this.MenuItemSetTimeZone.IsEnabled = false;
-            }
-        }
-
-        #endregion
-
-        #region File Menu Callbacks and Support Functions
-        private void File_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-            this.MenuItemRecentFileSets_Refresh();
-
-            // Enable / disable various menu items depending on whether we are looking at the single image view or overview
-            MenuItemExportThisImage.IsEnabled = this.IsDisplayingSingleImage();
-        }
-
-        private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
-            {
-                this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
-            }
-        }
-
-        /// <summary>Load the images from a folder.</summary>
-        private void MenuItemLoadImages_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.TryGetTemplatePath(out string templateDatabasePath))
-            {
-                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath, out BackgroundWorker backgroundWorker);
-            }
-        }
-
-        /// <summary>Write the .csv file and preview it in excel.</summary>
-        private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.state.SuppressSelectedCsvExportPrompt == false &&
-                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
-            {
-                MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
-                messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
-                messageBox.Message.Reason = "As your selection (in the Selection menu) is not set to view 'All', ";
-                messageBox.Message.Reason += "only data for these selected files will be exported. ";
-                messageBox.Message.Solution = "If you want to export just this subset, then " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 click Okay" + Environment.NewLine + Environment.NewLine;
-                messageBox.Message.Solution += "If you want to export data for all your files, then " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 click Cancel," + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 select 'All Files' in the Selection menu, " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 retry exporting your data as a .csv file.";
-                messageBox.Message.Hint = "If you check don't show this message this dialog can be turned back on via the Options menu.";
-                messageBox.Message.Icon = MessageBoxImage.Warning;
-                messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? exportCsv = messageBox.ShowDialog();
-                if (exportCsv != true)
-                {
-                    return;
-                }
-
-                if (messageBox.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.state.SuppressSelectedCsvExportPrompt = messageBox.DontShowAgain.IsChecked.Value;
-                }
-            }
-
-            // Generate the file names/path
-            string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + ".csv";
-            string csvFilePath = Path.Combine(this.FolderPath, csvFileName);
-
-            // Backup the csv file if it exists, as the export will overwrite it. 
-            if (FileBackup.TryCreateBackup(this.FolderPath, csvFileName))
-            {
-                this.StatusBar.SetMessage("Backup of csv file made.");
-            }
-            else
-            {
-                this.StatusBar.SetMessage("No csv file backup was made.");
-            }
-
-            CsvReaderWriter csvWriter = new CsvReaderWriter();
-            try
-            {
-                CsvReaderWriter.ExportToCsv(this.dataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
-            }
-            catch (IOException exception)
-            {
-                // Can't write the spreadsheet file
-                MessageBox messageBox = new MessageBox("Can't write the spreadsheet file.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = "The following file can't be written: " + csvFilePath;
-                messageBox.Message.Reason = "You may already have it open in Excel or another application.";
-                messageBox.Message.Solution = "If the file is open in another application, close it and try again.";
-                messageBox.Message.Hint = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
-                messageBox.ShowDialog();
-                return;
-            }
-
-            MenuItem mi = (MenuItem)sender;
-            if (mi == this.MenuItemExportAsCsvAndPreview)
-            {
-                // Show the file in excel
-                // Create a process that will try to show the file
-                Process process = new Process();
-
-                process.StartInfo.UseShellExecute = true;
-                process.StartInfo.RedirectStandardOutput = false;
-                process.StartInfo.FileName = csvFilePath;
-                process.Start();
-            }
-            else if (this.state.SuppressCsvExportDialog == false)
-            {
-                // since the exported file isn't shown give the user some feedback about the export operation
-                MessageBox csvExportInformation = new MessageBox("Data exported.", this);
-                csvExportInformation.Message.What = "The selected files were exported to " + csvFileName;
-                csvExportInformation.Message.Result = String.Format("This file is overwritten every time you export it (backups can be found in the {0} folder).", Constant.File.BackupFolder);
-                csvExportInformation.Message.Hint = "\u2022 You can open this file with most spreadsheet programs, such as Excel." + Environment.NewLine;
-                csvExportInformation.Message.Hint += "\u2022 If you make changes in the spreadsheet file, you will need to import it to see those changes." + Environment.NewLine;
-                csvExportInformation.Message.Hint += "\u2022 If you check don't show this message again you can still see the name of the .csv file in the status bar at the lower right corner of the main Carnassial window.  This dialog can also be turned back on through the Options menu.";
-                csvExportInformation.Message.Icon = MessageBoxImage.Information;
-                csvExportInformation.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? result = csvExportInformation.ShowDialog();
-                if (result.HasValue && result.Value && csvExportInformation.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.state.SuppressCsvExportDialog = csvExportInformation.DontShowAgain.IsChecked.Value;
-                }
-            }
-            this.StatusBar.SetMessage("Data exported to " + csvFileName);
-        }
-
-        /// <summary>
-        /// Export the current image to the folder selected by the user via a folder browser dialog.
-        /// and provide feedback in the status bar if done.
-        /// </summary>
-        private void MenuItemExportThisImage_Click(object sender, RoutedEventArgs e)
-        {
-            if (!this.dataHandler.ImageCache.Current.IsDisplayable())
-            {
-                MessageBox messageBox = new MessageBox("Can't export this file!", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = "Timelapse can't export the currently displayed file.";
-                messageBox.Message.Reason = "It is likely a corrupted or missing file.";
-                messageBox.Message.Solution = "Make sure you have navigated to, and are displaying, a valid file before you try to export it.";
-                messageBox.ShowDialog();
-                return;
-            }
-            // Get the file name of the current image 
-            string sourceFile = this.dataHandler.ImageCache.Current.FileName;
-
-            // Set up a Folder Browser with some instructions
-            SaveFileDialog dialog = new SaveFileDialog()
-            {
-                Title = "Export a copy of the currently displayed file",
-                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.FileName)),
-                FileName = sourceFile,
-                OverwritePrompt = true
-            };
-
-            // Display the Folder Browser dialog
-            DialogResult result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
-            {
-                // Set the source and destination file names, including the complete path
-                string sourcePath = this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath);
-                string destFileName = dialog.FileName;
-
-                // Try to copy the source file to the destination, overwriting the destination file if it already exists.
-                // And giving some feedback about its success (or failure) 
-                try
-                {
-                    File.Copy(sourcePath, destFileName, true);
-                    this.StatusBar.SetMessage(sourceFile + " copied to " + destFileName);
-                }
-                catch (Exception exception)
-                {
-                    Utilities.PrintFailure(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
-                    this.StatusBar.SetMessage(String.Format("Copy failed with {0} in MenuItemExportThisImage_Click.", exception.GetType().Name));
-                }
-            }
-        }
-
-        private void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.state.SuppressCsvImportPrompt == false)
-            {
-                MessageBox messageBox = new MessageBox("How importing .csv data works", this, MessageBoxButton.OKCancel);
-                messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below." + Environment.NewLine;
-                messageBox.Message.What += "Otherwise your Timelapse data may become corrupted.";
-                messageBox.Message.Reason = "Timelapse requires the .csv file follow a specific format and processes  its data a specific way.";
-                messageBox.Message.Solution = "\u2022 Only modify and import a .csv file previously exported by Timelapse." + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change Folder, RelativePath, or File as those fields uniquely identify a file" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change Date or Time as those columns are ignored (change DateTime instead, if it exists)" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change column names" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not add or delete rows (those changes will be ignored)" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Restrict modifications as follows:" + Environment.NewLine;
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, DateTime must be in '{0}' format{1}", Constant.Time.DateTimeDatabaseFormat, Environment.NewLine);
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, UtcOffset must be a floating point number between {0} and {1}, inclusive{2}", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), Environment.NewLine);
-                messageBox.Message.Solution += "    \u2022 Counter data must be zero or a positive integer" + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 Flag data must be 'true' or 'false'" + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 FixedChoice data must be a string that exactly matches one of the FixedChoice menu options, or empty." + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 Note data to any string, including empty.";
-                messageBox.Message.Result = "Timelapse will create a backup .ddb file in the Backups folder, and will then try its best.";
-                messageBox.Message.Hint = "\u2022 After you import, check your data. If it is not what you expect, restore your data by using that backup file." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 If you check don't show this message this dialog can be turned back on via the Options menu.";
-                messageBox.Message.Icon = MessageBoxImage.Warning;
-                messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? proceeed = messageBox.ShowDialog();
-                if (proceeed != true)
-                {
-                    return;
-                }
-
-                if (messageBox.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.state.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
-                }
-            }
-
-            string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
-            if (Utilities.TryGetFileFromUser("Select a .csv file to merge into the current image set",
-                                 Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
-                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension), Constant.File.CsvFileExtension,
-                                 out string csvFilePath) == false)
-            {
-                return;
-            }
-
-
-            // Create a backup database file
-            if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))
-            {
-                this.StatusBar.SetMessage("Backup of data file made.");
-            }
-            else
-            {
-                this.StatusBar.SetMessage("No data file backup was made.");
-            }
-
-            CsvReaderWriter csvReader = new CsvReaderWriter();
-            try
-            {
-                if (CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
-                {
-                    MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.Message.Problem = String.Format("The file {0} could not be read.", csvFilePath);
-                    messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
-                    messageBox.Message.Solution = "Check that:" + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Choice values use the correct case." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Counter values are numbers." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Flag values are either 'true' or 'false'.";
-                    messageBox.Message.Result = "Either no data was imported or invalid parts of the .csv were skipped.";
-                    messageBox.Message.Hint = "The errors encountered were:";
-                    foreach (string importError in importErrors)
-                    {
-                        messageBox.Message.Hint += "\u2022 " + importError;
-                    }
-                    messageBox.ShowDialog();
-                }
-            }
-            catch (Exception exception)
-            {
-                MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = String.Format("The file {0} could not be opened.", csvFilePath);
-                messageBox.Message.Reason = "Most likely the file is open in another program.";
-                messageBox.Message.Solution = "If the file is open in another program, close it.";
-                messageBox.Message.Result = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
-                messageBox.Message.Hint = "Is the file open in Excel?";
-                messageBox.ShowDialog();
-            }
-            // Reload the data table
-            this.SelectFilesAndShowFile();
-            this.StatusBar.SetMessage(".csv file imported.");
-        }
-
-        private void MenuItemRecentImageSet_Click(object sender, RoutedEventArgs e)
-        {
-            string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
-            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath, out BackgroundWorker backgroundWorker) == false)
-            {
-                this.state.MostRecentImageSets.TryRemove(recentDatabasePath);
-                this.MenuItemRecentFileSets_Refresh();
-            }
-        }
-
-        /// <summary>
-        /// Update the list of recent databases displayed under File -> Recent Databases.
-        /// </summary>
-        private void MenuItemRecentFileSets_Refresh()
-        {
-            // remove image sets which are no longer present from the most recently used list
-            // probably overkill to perform this check on every refresh rather than once at application launch, but it's not particularly expensive
-            List<string> invalidPaths = new List<string>();
-            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
-            {
-                if (File.Exists(recentImageSetPath) == false)
-                {
-                    invalidPaths.Add(recentImageSetPath);
-                }
-            }
-
-            foreach (string path in invalidPaths)
-            {
-                bool result = this.state.MostRecentImageSets.TryRemove(path);
-                if (!result)
-                {
-                    Utilities.PrintFailure(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
-                }
-            }
-
-            // Enable the menu only when there are items in it and only if the load menu is also enabled (i.e., that we haven't loaded anything yet)
-            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
-            this.MenuItemRecentImageSets.Items.Clear();
-
-            // add menu items most recently used image sets
-            int index = 1;
-            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
-            {
-                // Create a menu item for each path
-                MenuItem recentImageSetItem = new MenuItem();
-                recentImageSetItem.Click += this.MenuItemRecentImageSet_Click;
-                recentImageSetItem.Header = String.Format("_{0} {1}", index++, recentImageSetPath);
-                recentImageSetItem.ToolTip = recentImageSetPath;
-                this.MenuItemRecentImageSets.Items.Add(recentImageSetItem);
-            }
-        }
-
-        private void MenuItemRenameFileDatabaseFile_Click(object sender, RoutedEventArgs e)
-        {
-            RenameFileDatabaseFile renameFileDatabase = new RenameFileDatabaseFile(this.dataHandler.FileDatabase.FileName, this)
-            {
-                Owner = this
-            };
-            bool? result = renameFileDatabase.ShowDialog();
-            if (result == true)
-            {
-                this.dataHandler.FileDatabase.RenameFile(renameFileDatabase.NewFilename);
-            }
-        }
-
-        // Close the current image set and return to state allowing other image sets to be opened.
-        private void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
-        {
-            // if we are actually viewing any files
-            if (this.IsFileDatabaseAvailable())
-            {
-                // persist image set properties if an image set has been opened
-                if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
-                {
-                    this.Window_Closing(null, null);
-                    // revert to custom selections to all 
-                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
-                    {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                    }
-                    if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
-                    {
-                        this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
-                    }
-
-                    // write image set properties to the database
-                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
-
-                    // ensure custom filter operator is synchronized in state for writing to user's registry
-                    this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
-                }
-                // discard the image set 
-                if (this.dataHandler.ImageCache != null)
-                {
-                    this.dataHandler.ImageCache.Dispose();
-                }
-                if (this.dataHandler != null)
-                {
-                    this.dataHandler.Dispose();
-                }
-                this.dataHandler = null;
-                this.templateDatabase = null;
-                this.DataEntryControlPanel.IsVisible = false;
-            }
-            // Clear the data grid
-            this.DataGrid.ItemsSource = null;
-
-            // Reset the UX 
-            this.state.Reset();
-            this.MarkableCanvas.ZoomOutAllTheWay();
-            this.FileNavigatorSliderReset();
-            this.EnableOrDisableMenusAndControls();
-            this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
-            this.DataEntryControlPanel.IsVisible = false;
-            this.FilePlayer.Visibility = Visibility.Collapsed;
-            this.InstructionPane.IsActive = true;
-            this.DataGridSelectionsTimer.Stop();
-            this.lastControlWithFocus = null;
-            this.QuickPasteWindowTerminate();
-        }
-
-        /// <summary>
-        /// Exit Timelapse
-        /// </summary>
-        private void MenuItemExit_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-            Application.Current.Shutdown();
-        }
-
-        private bool ShowFolderSelectionDialog(out IEnumerable<string> folderPaths)
-        {
-            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
-            {
-                Title = "Select one or more folders ...",
-                DefaultDirectory = this.mostRecentFileAddFolderPath ?? this.FolderPath,
-                IsFolderPicker = true,
-                Multiselect = true
-            };
-            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
-            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
-            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                folderPaths = folderSelectionDialog.FileNames;
-
-                // remember the parent of the selected folder path to save the user clicks and scrolling in case images from additional 
-                // directories are added
-                this.mostRecentFileAddFolderPath = Path.GetDirectoryName(folderPaths.First());
-                return true;
-            }
-
-            folderPaths = null;
-            return false;
-        }
-
-        private void FolderSelectionDialog_FolderChanging(object sender, CommonFileDialogFolderChangeEventArgs e)
-        {
-            // require folders to be loaded be either the same folder as the .tdb and .ddb or subfolders of it
-            if (e.Folder.StartsWith(this.FolderPath, StringComparison.OrdinalIgnoreCase) == false)
-            {
-                e.Cancel = true;
-            }
-        }
-        #endregion
-
-        #region Edit Menu Callbacks
-        private void Edit_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-
-            // Enable / disable various menu items depending on whether we are looking at the single image view or overview
-            bool state = this.IsDisplayingSingleImage();
-            this.MenuItemCopyPreviousValues.IsEnabled = state;
-            this.MenuItemDeleteCurrentFile.IsEnabled = state;
-            this.MenuItemDeleteCurrentFileAndData.IsEnabled = state;
-        }
-
-        private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
-        {
-            this.FindBoxVisibility(true);
-        }
-
-        // Display the QuickPaste window
-        private void MenuItemQuickPasteWindowShow_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.quickPasteWindow == null)
-            {
-                // create the quickpaste window if it doesn't already exist.
-                this.QuickPasteWindowShow();
-            }
-            this.QuickPasteRefreshWindowAndXML();
-            this.QuickPasteWindowShow();
-        }
-
-        private void MenuItemQuickPasteImportFromDB_Click(object sender, RoutedEventArgs e)
-        {
-            if (Utilities.TryGetFileFromUser("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
-                                             Path.Combine(this.dataHandler.FileDatabase.FolderPath, Constant.File.DefaultFileDatabaseFileName),
-                                             String.Format("Database files (*{0})|*{0}", Constant.File.FileDatabaseFileExtension),
-                                              Constant.File.FileDatabaseFileExtension,
-                                              out string ddbFile) == true)
-            {
-                List<QuickPasteEntry> qpe = QuickPasteOperations.QuickPasteImportFromDB(this.dataHandler.FileDatabase, ddbFile);
-                if (qpe.Count == 0)
-                {
-                    MessageBox messageBox = new MessageBox("Could not import QuickPaste entries", this);
-                    messageBox.Message.Problem = "Timelapse could not find any QuickPaste entries in the selected database";
-                    messageBox.Message.Reason = "When an analyst creates QuickPaste entries, those entries are stored in the database file " + Environment.NewLine;
-                    messageBox.Message.Reason += "associated with the image set being analyzed. Since none where found, " + Environment.NewLine ;
-                    messageBox.Message.Reason += "its likely that no one had created any quickpaste entries when analyzing that image set.";
-                    messageBox.Message.Hint = "Perhaps they are in a different database?";
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.ShowDialog();
-                    return;
-                }
-                else
-                {
-                    this.quickPasteEntries = qpe;
-                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
-                    QuickPasteRefreshWindowAndXML();
-                    QuickPasteWindowShow();
-                }
-            }
-   
-        }
-
-        // Populate a data field from metadata (example metadata displayed from the currently selected image)
-        private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
-        {
-            // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
-            // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
-            {
-                int firstFileDisplayable = this.dataHandler.FileDatabase.GetCurrentOrNextDisplayableFile(this.dataHandler.ImageCache.CurrentRow);
-                if (firstFileDisplayable == -1)
-                {
-                    // There are no displayable images, and thus no metadata to choose from, so abort
-                    MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
-                    messageBox.Message.Problem = "Timelapse can't extract any metadata, as there are no valid displayable file." + Environment.NewLine;
-                    messageBox.Message.Reason += "Timelapse must have at least one valid file in order to get its metadata. However, the image files are either missing (not available) or corrupted.";
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.ShowDialog();
-                    return;
-                }
-            }
-
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt,
-                                                               "'Populate a data field with image metadata...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
-                                                               }))
-            {
-                PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath), this);
-                this.ShowBulkImageEditDialog(populateField);
-            }
-        }
-
-        /// <summary>Delete the current image by replacing it with a placeholder image, while still making a backup of it</summary>
-        private void Delete_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
-                this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
-                this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
-                this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable() || this.dataHandler.ImageCache.Current.ImageQuality == FileSelectionEnum.Corrupted;
-            }
-            catch (Exception exception)
-            {
-                Utilities.PrintFailure(String.Format("Delete submenu failed to open in Delete_SubmenuOpening. {0}", exception.ToString()));
-
-                // This function was blowing up on one user's machine, but not others.
-                // I couldn't figure out why, so I just put this fallback in here to catch that unusual case.
-                this.MenuItemDeleteFiles.IsEnabled = true;
-                this.MenuItemDeleteFilesAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = true;
-                this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-            }
-        }
-
-        /// <summary>Delete all images marked for deletion, and optionally the data associated with those images.
-        /// Deleted images are actually moved to a backup folder.</summary>
-        private void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem menuItem = sender as MenuItem;
-
-            // This callback is invoked by DeleteImage (which deletes the current image) and DeleteImages (which deletes the images marked by the deletion flag)
-            // Thus we need to use two different methods to construct a table containing all the images marked for deletion
-            List<ImageRow> imagesToDelete;
-            bool deleteCurrentImageOnly;
-            bool deleteFilesAndData;
-            if (menuItem.Name.Equals(this.MenuItemDeleteFiles.Name) || menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name))
-            {
-                deleteCurrentImageOnly = false;
-                deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name);
-                // get list of all images marked for deletion in the current seletion
-                imagesToDelete = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion().ToList();
-                for (int index = imagesToDelete.Count - 1; index >= 0; index--)
-                {
-                    if (this.dataHandler.FileDatabase.Files.Find(imagesToDelete[index].ID) == null)
-                    {
-                        imagesToDelete.Remove(imagesToDelete[index]);
-                    }
-                }
-            }
-            else
-            {
-                // Delete current image case. Get the ID of the current image and construct a datatable that contains that image's datarow
-                deleteCurrentImageOnly = true;
-                deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteCurrentFileAndData.Name);
-                imagesToDelete = new List<ImageRow>();
-                if (this.dataHandler.ImageCache.Current != null)
-                {
-                    imagesToDelete.Add(this.dataHandler.ImageCache.Current);
-                }
-            }
-
-            // If no images are selected for deletion. Warn the user.
-            // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
-            // if there aren't any images to delete. Still,...
-            if (imagesToDelete == null || imagesToDelete.Count < 1)
-            {
-                MessageBox messageBox = new MessageBox("No files are marked for deletion", this);
-                messageBox.Message.Problem = "You are trying to delete files marked for deletion, but no files have their 'Delete?' field checked.";
-                messageBox.Message.Hint = "If you have files that you think should be deleted, check their Delete? field.";
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                messageBox.ShowDialog();
-                return;
-            }
-
-            DeleteImages deleteImagesDialog = new DeleteImages(this.dataHandler.FileDatabase, imagesToDelete, deleteFilesAndData, deleteCurrentImageOnly, this);
-            bool? result = deleteImagesDialog.ShowDialog();
-            if (result == true)
-            {
-                // cache the current ID as the current image may be invalidated
-                long currentFileID = this.dataHandler.ImageCache.Current.ID;
-
-                Mouse.OverrideCursor = Cursors.Wait;
-                List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                List<long> imageIDsToDropFromDatabase = new List<long>();
-                foreach (ImageRow image in imagesToDelete)
-                {
-                    // invalidate cache so Missing placeholder will be displayed
-                    // release any handle open on the file so it can be moved
-                    this.dataHandler.ImageCache.TryInvalidate(image.ID);
-                    // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
-                    // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlage and ImageQuality values. 
-                    // SAULXXX A good way is to put an 'image.ImageFileExists' field in, and then do various tests on that.
-                    image.TryMoveFileToDeletedFilesFolder(this.dataHandler.FileDatabase.FolderPath);
-
-                    if (deleteFilesAndData)
-                    {
-                        // mark the image row for dropping
-                        imageIDsToDropFromDatabase.Add(image.ID);
-                    }
-                    else
-                    {
-                        // as only the file was deleted, change image quality to FileNoLongerAvailable and clear the delete flag
-                        image.DeleteFlag = false;
-                        image.ImageQuality = FileSelectionEnum.Missing;
-                        List<ColumnTuple> columnTuples = new List<ColumnTuple>()
-                        {
-                            new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
-                            new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelectionEnum.Missing.ToString())
-                        };
-                        imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
-                    }
-                }
-
-                // Invalidate the overview cache as well, so Missing placeholder will be displayed.
-                this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
-
-                if (deleteFilesAndData)
-                {
-                    // drop images
-                    this.dataHandler.FileDatabase.DeleteFilesAndMarkers(imageIDsToDropFromDatabase);
-
-                    // Reload the file datatable. Then find and show the image closest to the last one shown
-                    this.SelectFilesAndShowFile(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-                    if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
-                    {
-                        int nextImageRow = this.dataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID);
-                        this.ShowFile(nextImageRow);
-                    }
-                    else
-                    {
-                        this.EnableOrDisableMenusAndControls();
-                    }
-                }
-                else
-                {
-                    // update image properties
-                    this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                    // SAULXXX: Todd's verson didn't have this next line, which updates the data table. It meant the display wasn't updating to show the missing image quality / unchecked delete flag.
-                    // SAULXXX: There is likely a more efficient way to do this - need to check.
-                    // SAULXXX: I notice in later versions he has a new way of doing this, so this fix will likely happen then
-                    this.SelectFilesAndShowFile(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-                    // display the updated properties on the current image
-                    int nextImageRow = this.dataHandler.FileDatabase.FindClosestImageRow(currentFileID);
-                    this.ShowFile(nextImageRow);
-                }
-                Mouse.OverrideCursor = null;
-            }
-        }
-
-        /// <summary>Add some text to the image set log</summary>
-        private void MenuItemLog_Click(object sender, RoutedEventArgs e)
-        {
-            EditLog editImageSetLog = new EditLog(this.dataHandler.FileDatabase.ImageSet.Log, this)
-            {
-                Owner = this
-            };
-            bool? result = editImageSetLog.ShowDialog();
-            if (result == true)
-            {
-                this.dataHandler.FileDatabase.ImageSet.Log = editImageSetLog.Log.Text;
-                this.dataHandler.FileDatabase.SyncImageSetToDatabase();
-            }
-        }
-
-        private void ShowBulkImageEditDialog(Window dialog)
-        {
-            ShowBulkImageEditDialog(dialog, false);
-        }
-
-        // Various dialogs perform a bulk edit, after which various states have to be refreshed
-        // This method shows the dialog and (if a bulk edit is done) refreshes those states.
-        private void ShowBulkImageEditDialog(Window dialog, bool forceUpdate)
-        {
-            dialog.Owner = this;
-            long currentFileID = this.dataHandler.ImageCache.Current.ID;
-            bool? result = dialog.ShowDialog();
-            if (result == true)
-            {
-                this.SelectFilesAndShowFile(forceUpdate);
-            }
-        }
-        #endregion
-
-        #region Paste Menu Callbacks
-
-
-
-        #endregion
-
-        #region Options Menu Callbacks
-        private void Options_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-        }
-
-        private void MenuItemClassifyDarkImagesWhenLoading_Click(object sender, RoutedEventArgs e)
-        {
-            DarkImagesClassifyAutomatically darkImagesOptions = new DarkImagesClassifyAutomatically(this.state, this);
-            darkImagesOptions.ShowDialog();
-            this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
-        }
-
-        // Depracated
-        //private void MenuItemAdvancedImageSetOptions_Click(object sender, RoutedEventArgs e)
-        //{
-        //    AdvancedImageSetOptions advancedImageSetOptions = new AdvancedImageSetOptions(this.dataHandler.FileDatabase, this);
-        //    advancedImageSetOptions.ShowDialog();
-        //}
-
-        private void MenuItemFilePlayerOptions_Click(object sender, RoutedEventArgs e)
-        {
-            FilePlayerOptions filePlayerOptions = new FilePlayerOptions(this.state, this);
-            filePlayerOptions.ShowDialog();
-        }
-        /// <summary>Show advanced Timelapse options</summary>
-        private void MenuItemAdvancedTimelapseOptions_Click(object sender, RoutedEventArgs e)
-        {
-            AdvancedTimelapseOptions advancedTimelapseOptions = new AdvancedTimelapseOptions(this.state, this.MarkableCanvas, this);
-            advancedTimelapseOptions.ShowDialog();
-        }
-
-        // Depracated
-        // SaulXXX This is a temporary function to allow a user to check for and to delete any duplicate records.
-        //private void MenuItemDeleteDuplicates_Click(object sender, RoutedEventArgs e)
-        //{
-        //    // Warn user that they are in a selected view, and verify that they want to continue
-        //    if (this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelection.All)
-        //    {
-        //        // Need to be viewing all files
-        //        MessageBox messageBox = new MessageBox("You need to select All Files before deleting duplicates", this);
-        //        messageBox.Message.Problem = "Delete Duplicates should be applied to All Files, but you only have a subset selected";
-        //        messageBox.Message.Solution = "On the Select menu, choose 'All Files' and try again";
-        //        messageBox.Message.Icon = MessageBoxImage.Exclamation;
-        //        messageBox.ShowDialog();
-        //        return;
-        //    }
-        //    else
-        //    {
-        //        // Generate a list of duplicate rows showing their filenames (including relative path) 
-        //        List<string> filenames = new List<string>();
-        //        FileTable table = this.dataHandler.FileDatabase.GetDuplicateFiles();
-        //        if (table != null && table.Count() != 0)
-        //        {
-        //            // populate the list
-        //            foreach (ImageRow image in table)
-        //            {
-        //                string separator = String.IsNullOrEmpty(image.RelativePath) ? "" : "/";
-        //                filenames.Add(image.RelativePath + separator + image.FileName);
-        //            }
-        //        }
-
-        //        // Raise a dialog box that shows the duplicate files (if any), where the user needs to confirm their deletion
-        //        DeleteDuplicates deleteDuplicates = new DeleteDuplicates(this, filenames);
-        //        bool? result = deleteDuplicates.ShowDialog();
-        //        if (result == true)
-        //        {
-        //            // Delete the duplicate files
-        //            this.dataHandler.FileDatabase.DeleteDuplicateFiles();
-        //            // Reselect on the current select settings, which updates the view to remove the deleted files
-        //            this.SelectFilesAndShowFile();
-        //        }
-        //    }
-        //}
-
-        /// <summary>Toggle the magnifier on and off</summary>
-        private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)
-        {
-            this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = !this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MarkableCanvas.MagnifyingGlassEnabled = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-        }
-
-        /// <summary>Increase the magnification of the magnifying glass. We do this several times to make
-        /// the increase effect more visible through a menu option versus the keyboard equivalent</summary>
-        private void MenuItemMagnifyingGlassIncrease_Click(object sender, RoutedEventArgs e)
-        {
-            for (int i = 0; i < 6; i++)
-            {
-                this.MarkableCanvas.MagnifierZoomIn();
-            }
-        }
-
-        /// <summary> Decrease the magnification of the magnifying glass. We do this several times to make
-        /// the increase effect more visible through a menu option versus the keyboard equivalent</summary>
-        private void MenuItemMagnifyingGlassDecrease_Click(object sender, RoutedEventArgs e)
-        {
-            for (int i = 0; i < 6; i++)
-            {
-                this.MarkableCanvas.MagnifierZoomOut();
-            }
-        }
-
-        private void MenuItemOptionsDarkImages_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDarkThresholdPrompt,
-                                                               "'(Re-) classify dark files...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedDarkThresholdPrompt = optOut; // SG TODO
-                                                               }))
-            {
-                using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, this.state, this))
-                {
-                    darkThreshold.Owner = this;
-                    darkThreshold.ShowDialog();
-                }
-            }
-        }
-
-        /// <summary>Correct the date by specifying an offset</summary>
-        private void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeFixedCorrectionPrompt,
-                                                               "'Add a fixed correction value to every date/time...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
-                                                               }))
-            {
-                DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                this.ShowBulkImageEditDialog(fixedDateCorrection, true);
-            }
-        }
-
-        /// <summary>Correct for drifting clock times. Correction applied only to images in the selected view.</summary>
-        private void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeLinearCorrectionPrompt,
-                                                               "'Correct for camera clock drift'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
-                                                               }))
-            {
-                DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(linearDateCorrection, true);
-            }
-        }
-
-        /// <summary>Correct for daylight savings time</summary>
-        private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
-        {
-            // If we are not in the selection All view, or if its a corrupt image, tell the person. Selecting ok will shift the views..
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
-            {
-                // Just a corrupted image
-                MessageBox messageBox = new MessageBox("Can't correct for daylight savings time.", this);
-                messageBox.Message.Problem = "This is a corrupted file.";
-                messageBox.Message.Solution = "To correct for daylight savings time, you need to:" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 be displaying a file with a valid date ";
-                messageBox.Message.Solution += "\u2022 where that file should be the one at the daylight savings time threshold.";
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.ShowDialog();
-                return;
-            }
-
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDaylightSavingsCorrectionPrompt,
-                                                               "'Correct for daylight savings time...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
-                                                               }))
-            {
-                DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
-                this.ShowBulkImageEditDialog(dateTimeChange, true);
-            }
-        }
-
-        // Correct ambiguous dates dialog (i.e. dates that could be read as either month/day or day/month
-        private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn user that they are in a selection view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedAmbiguousDatesPrompt,
-                                                               "'Correct ambiguous dates...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedAmbiguousDatesPrompt = optOut;
-                                                               }))
-            {
-                DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this.dataHandler.FileDatabase, this);
-                if (dateCorrection.Abort)
-                {
-                    MessageBox messageBox = new MessageBox("No ambiguous dates found", this);
-                    messageBox.Message.What = "No ambiguous dates found.";
-                    messageBox.Message.Reason = "All of the images in this selected view have unambguous date fields." + Environment.NewLine;
-                    messageBox.Message.Result = "No corrections needed, and no changes have been made." + Environment.NewLine;
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.ShowDialog();
-                    messageBox.Close();
-                    return;
-                }
-                this.ShowBulkImageEditDialog(dateCorrection, true);
-            }
-        }
-
-        private void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn user that they are in a selecction view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedSetTimeZonePrompt,
-                                                               "'Set the time zone of every date/time...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedSetTimeZonePrompt = optOut;
-                                                               }))
-            {
-                DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                this.ShowBulkImageEditDialog(fixedDateCorrection);
-            }
-        }
-
-        private void MenuItemDialogsOnOrOff_Click(object sender, RoutedEventArgs e)
-        {
-            DialogsHideOrShow dialog = new DialogsHideOrShow(this.state, this);
-            dialog.ShowDialog();
-        }
-
-        private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
-        {
-            // If we are not in the selection All view, or if its a corrupt file, tell the person. Selecting ok will shift the views..
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedRereadDatesFromFilesPrompt,
-                                                               "'Reread dates from files...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.state.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
-                                                               }))
-            {
-                DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(rereadDates, true);
-            }
-        }
-
-        /// <summary> Toggle the audio feedback on and off</summary>
-        private void MenuItemAudioFeedback_Click(object sender, RoutedEventArgs e)
-        {
-            // We don't have to do anything here...
-            this.state.AudioFeedback = !this.state.AudioFeedback;
-            this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
-        }
-        #endregion
-
-        #region View Menu Callbacks
-        private void View_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-
-            bool state = this.IsDisplayingActiveSingleImage();
-            this.MenuItemViewDifferencesCycleThrough.IsEnabled = state;
-            this.MenuItemViewDifferencesCombined.IsEnabled = state;
-            this.MenuItemZoomIn.IsEnabled = state;
-            this.MenuItemZoomOut.IsEnabled = state;
-            this.MenuItemBookmarkDefaultPanZoom.IsEnabled = state;
-            this.MenuItemBookmarkSavePanZoom.IsEnabled = state;
-            this.MenuItemBookmarkSetPanZoom.IsEnabled = state;
-        }
-
-        private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
-        {
-            Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.TryZoomInOrOut(true, mousePosition);
-        }
-
-        private void MenuItemZoomOut_Click(object sender, RoutedEventArgs e)
-        {
-            Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.TryZoomInOrOut(false, mousePosition);
-        }
-
-        /// <summary>Navigate to the next file in this image set</summary>
-        private void MenuItemShowNextFile_Click(object sender, RoutedEventArgs e)
-        {
-            this.TryShowImageWithoutSliderCallback(true, ModifierKeys.None);
-        }
-
-        /// <summary>Navigate to the previous file in this image set</summary>
-        private void MenuItemShowPreviousFile_Click(object sender, RoutedEventArgs e)
-        {
-            this.TryShowImageWithoutSliderCallback(false, ModifierKeys.None);
-        }
-
-        /// <summary>Cycle through the image differences</summary>
-        private void MenuItemViewDifferencesCycleThrough_Click(object sender, RoutedEventArgs e)
-        {
-            this.TryViewPreviousOrNextDifference();
-        }
-
-        /// <summary>View the combined image differences</summary>
-        private void MenuItemViewDifferencesCombined_Click(object sender, RoutedEventArgs e)
-        {
-            this.TryViewCombinedDifference();
-        }
-        #endregion
-
-        #region Selection Menu Callbacks
-        private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
-
-            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelectionEnum.Ok] > 0;
-            this.MenuItemSelectDarkFiles.IsEnabled = counts[FileSelectionEnum.Dark] > 0;
-            this.MenuItemSelectCorruptedFiles.IsEnabled = counts[FileSelectionEnum.Corrupted] > 0;
-            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = counts[FileSelectionEnum.Missing] > 0;
-            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion) > 0;
-        }
-        /// <summary>Select the appropriate selection and update the view</summary>
-        private void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem item = (MenuItem)sender;
-            FileSelectionEnum selection;
-            // find out which selection was selected
-            if (item == this.MenuItemSelectAllFiles)
-            {
-                selection = FileSelectionEnum.All;
-            }
-            else if (item == this.MenuItemSelectLightFiles)
-            {
-                selection = FileSelectionEnum.Ok;
-            }
-            else if (item == this.MenuItemSelectCorruptedFiles)
-            {
-                selection = FileSelectionEnum.Corrupted;
-            }
-            else if (item == this.MenuItemSelectDarkFiles)
-            {
-                selection = FileSelectionEnum.Dark;
-            }
-            else if (item == this.MenuItemSelectFilesNoLongerAvailable)
-            {
-                selection = FileSelectionEnum.Missing;
-            }
-            else if (item == this.MenuItemSelectFilesMarkedForDeletion)
-            {
-                selection = FileSelectionEnum.MarkedForDeletion;
-            }
-            else
-            {
-                selection = FileSelectionEnum.All;   // Just in case
-            }
-
-            // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
-        }
-
-        // helper function to put a checkbox on the currently selected menu item i.e., to make it behave like a radiobutton menu
-        private void MenuItemSelectSetSelection(FileSelectionEnum selection)
-        {
-            this.MenuItemSelectAllFiles.IsChecked = (selection == FileSelectionEnum.All);
-            this.MenuItemSelectCorruptedFiles.IsChecked = (selection == FileSelectionEnum.Corrupted);
-            this.MenuItemSelectDarkFiles.IsChecked = (selection == FileSelectionEnum.Dark);
-            this.MenuItemSelectLightFiles.IsChecked = (selection == FileSelectionEnum.Ok);
-            this.MenuItemSelectFilesNoLongerAvailable.IsChecked = (selection == FileSelectionEnum.Missing);
-            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = (selection == FileSelectionEnum.MarkedForDeletion);
-            this.MenuItemSelectCustomSelection.IsChecked = (selection == FileSelectionEnum.Custom);
-        }
-
-        private void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
-        {
-            // the first time the custom selection dialog is launched update the DateTime and UtcOffset search terms to the time of the current image
-            SearchTerm firstDateTimeSearchTerm = this.dataHandler.FileDatabase.CustomSelection.SearchTerms.First(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
-            if (firstDateTimeSearchTerm.GetDateTime() == Constant.ControlDefault.DateTimeValue.DateTime)
-            {
-                DateTimeOffset defaultDate = this.dataHandler.ImageCache.Current.GetDateTime();
-                this.dataHandler.FileDatabase.CustomSelection.SetDateTimesAndOffset(defaultDate);
-            }
-
-            // show the dialog and process the resuls
-            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.dataHandler.FileDatabase, this, this.IsUTCOffsetControlHidden())
-            {
-                Owner = this
-            };
-            bool? changeToCustomSelection = customSelection.ShowDialog();
-            // Set the selection to show all images and a valid image
-            if (changeToCustomSelection == true)
-            {
-                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
-            }
-            else
-            {
-                // Since we canceled the custom selection, uncheck the item (but only if another menu item is shown checked)
-
-                bool otherMenuItemIsChecked =
-                    (this.MenuItemSelectAllFiles.IsChecked ||
-                    this.MenuItemSelectCorruptedFiles.IsChecked ||
-                    this.MenuItemSelectDarkFiles.IsChecked ||
-                    this.MenuItemSelectLightFiles.IsChecked ||
-                    this.MenuItemSelectFilesNoLongerAvailable.IsChecked ||
-                    this.MenuItemSelectFilesMarkedForDeletion.IsChecked);
-                this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
-            }
-        }
-
-        // Re-do the selection, based on the current select criteria. This is useful when, for example, the user has selected a view, 
-        // but then changed some data values where items no longer match the current selection.
-        private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
-        {
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
-        }
-
-        /// <summary>Show a dialog box telling the user how many images were loaded, etc.</summary>
-        public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        {
-            this.MaybeShowFileCountsDialog(false, this);
-        }
-
-        // Check every file to see if:
-        // - file exists but ImageQuality is Missing, or
-        // - file does not exist but ImageQuality is anything other than missing
-        // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
-        // The downfall is that prior ImageQuality information will be lost if a change is made
-        // Another issue is that the current version only checks the currently selected files vs. all files
-        public bool CheckAndUpdateImageQualityForMissingFiles()
-        {
-            string filepath = String.Empty;
-            string message = String.Empty;
-            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            ColumnTuplesWithWhere imageUpdate;
-
-            // Get all files, regardless of the selection
-            FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
-            foreach (ImageRow image in allFiles)
-            {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
-                if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
-                {
-                    // The File exists but image quality is set to missing. Reset it to OK
-                    // Note that the file may be corrupt, dark, etc., but we don't check for that.
-                    // SAULXXX Perhaps we should?
-                    image.ImageQuality = FileSelectionEnum.Ok; 
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Restored " + filepath);
-                }
-                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
-                {
-                    // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
-                    // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
-                    // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
-                    message = "Missing " + filepath;
-                    image.ImageQuality = FileSelectionEnum.Missing;
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Missing " + filepath);
-                }
-            }
-            if (imagesToUpdate.Count > 0)
-            {
-                this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                return true;
-
-            }
-            return false;
-        }
-        #endregion
-
-        #region Sort Menu Callbacks
-        private void Sort_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-        }
-
-        private void MenuItemSort_Click(object sender, RoutedEventArgs e)
-        {
-            // While this should never happen, don't do anything if we don's have any data
-            if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
-            {
-                return;
-            }
-
-            MenuItem mi = (MenuItem)sender;
-            SortTerm sortTerm1 = new SortTerm();
-            SortTerm sortTerm2 = new SortTerm();
-            switch (mi.Name)
-            {
-                case "MenuItemSortByDateTime":
-                    sortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
-                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.DateTime;
-                    sortTerm1.ControlType = Constant.DatabaseColumn.DateTime;
-                    sortTerm1.IsAscending = Constant.BooleanValue.True;
-                    break;
-                case "MenuItemSortByFileName":
-                    sortTerm1.DataLabel = Constant.DatabaseColumn.File;
-                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.File;
-                    sortTerm1.ControlType = Constant.DatabaseColumn.File;
-                    sortTerm1.IsAscending = Constant.BooleanValue.True;
-                    break;
-                case "MenuItemSortById":
-                    sortTerm1.DataLabel = Constant.DatabaseColumn.ID;
-                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.ID;
-                    sortTerm1.ControlType = Constant.DatabaseColumn.ID;
-                    sortTerm1.IsAscending = Constant.BooleanValue.True;
-                    break;
-                default:
-                    break;
-            }
-            // Record the sort terms in the image set
-            this.dataHandler.FileDatabase.ImageSet.SetSortTerm(sortTerm1, sortTerm2);
-
-            // Do the sort, showing feedback in the status bar and by checking the appropriate menu item
-            this.DoSortAnShowSortFeedback(true);
-        }
-
-        private void MenuItemSortCustom_Click(object sender, RoutedEventArgs e)
-        {
-            // Raise a dialog where user can specify the sorting criteria
-            Dialog.CustomSort customSort = new Dialog.CustomSort(this.dataHandler.FileDatabase)
-            {
-                Owner = this
-            };
-            if (customSort.ShowDialog() == true)
-            {
-                if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
-                {
-                    //this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
-                    this.dataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
-                }
-                this.DoSortAnShowSortFeedback(true);
-            }
-            else
-            {
-                // Ensure the checkmark appears next to the correct menu item 
-                ShowSortFeedback(true);
-            }
-        }
-
-        // Resort the files based on the current criteria. This is useful when, for example, the user has sorted things, 
-        // but then changed some data values where items are no longer in the correct sort order.
-        private void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
-        {
-            this.DoSortAnShowSortFeedback(false);
-        }
-
-        // Do the sort and show feedback of 
-        private void DoSortAnShowSortFeedback(bool updateMenuChecks)
-        {
-            // Sync the current sort settings into the actual database. While this is done
-            // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
-            this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
-
-            // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-            // sets up various status indicators in the UI
-            this.ShowSortFeedback(updateMenuChecks);
-        }
-
-        // Show feedback in the UI based on the sort selection 
-        // Also, record the sort state
-        private void ShowSortFeedback(bool updateMenuChecks)
-        {
-            // Get the two sort terms
-            SortTerm[] sortTerm = new SortTerm[2];
-            string[] statusbar_feedback = new string[] { String.Empty, String.Empty };
-
-            for (int i = 0; i <= 1; i++)
-            {
-                sortTerm[i] = this.dataHandler.FileDatabase.ImageSet.GetSortTerm(i);
-            }
-
-            // If instructed to do so, Reset menu item checkboxes based on the current sort terms.
-            if (updateMenuChecks == false)
-            {
-                return;
-            }
-
-            this.MenuItemSortByDateTime.IsChecked = false;
-            this.MenuItemSortByFileName.IsChecked = false;
-            this.MenuItemSortById.IsChecked = false;
-            this.MenuItemSortCustom.IsChecked = false;
-
-            // Determine which selection best fits the sort terms (e.g., a custom selection on just ID will be ID rather than Custom)
-            if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
-            {
-                this.MenuItemSortByDateTime.IsChecked = true;
-            }
-            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
-            {
-                this.MenuItemSortById.IsChecked = true;
-            }
-            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.File && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
-            {
-                this.MenuItemSortByFileName.IsChecked = true;
-            }
-            else
-            {
-                this.MenuItemSortCustom.IsChecked = true;
-            }
-            // Provide feedback in the status bar of what sort terms are being used
-            this.StatusBar.SetSort(sortTerm[0].DataLabel, sortTerm[0].IsAscending == Constant.BooleanValue.True, sortTerm[1].DataLabel, sortTerm[1].IsAscending == Constant.BooleanValue.True);
-        }
-        #endregion
-
-        #region Window Menu Callbacks
-        private void MenuItemWindowLoadCustom_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            this.MenuItemWindowCustom1Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
-            this.MenuItemWindowCustom2Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
-            this.MenuItemWindowCustom3Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
-        }
-
-        // Restore a particular window layout as identified in the menu's tag
-        private void MenuItemWindowRestore_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem mi = sender as MenuItem;
-            string layout = mi.Tag.ToString();
-            this.AvalonLayout_TryLoad(layout);
-
-            // If an image set is currently loaded, make the image set pane the active pane
-            if (this.IsFileDatabaseAvailable())
-            {
-                this.ImageSetPane.IsActive = true;
-            }
-            else
-            {
-                this.InstructionPane.IsActive = true;
-            }
-        }
-
-        // Save a particular window layout, where the layout name is identified in the menu's tag
-        private void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
-        {
-            // Save the window layout to the registry, where the registry key name is found in the menu tag
-            // Note that the data entry control panel must be visible in order to save its location.
-            // So if its not visible, temporarily make it visible.
-            MenuItem mi = sender as MenuItem;
-            bool visibilityState = this.DataEntryControlPanel.IsVisible;
-            this.DataEntryControlPanel.IsVisible = true;
-            this.AvalonLayout_TrySave(mi.Tag.ToString());
-            this.DataEntryControlPanel.IsVisible = visibilityState;
-        }
-        #endregion
-
-        #region Help Menu Callbacks
-        private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            FilePlayer_Stop(); // In case the FilePlayer is going
-        }
-
-        /// <summary> Display a message describing the version, etc.</summary> 
-        private void MenuItemAbout_Click(object sender, RoutedEventArgs e)
-        {
-            AboutTimelapse about = new AboutTimelapse(this);
-            if ((about.ShowDialog() == true) && about.MostRecentCheckForUpdate.HasValue)
-            {
-                this.state.MostRecentCheckForUpdates = about.MostRecentCheckForUpdate.Value;
-            }
-        }
-
-        /// <summary> Display the Timelapse home page</summary> 
-        private void MenuTimelapseWebPage_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.Version2HomePage");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
-        }
-
-        /// <summary>  Display the manual in a web browser</summary> 
-        private void MenuTutorialManual_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
-        }
-
-        /// <summary> Display the page in the web browser that lets you join the timelapse mailing list </summary> 
-        private void MenuJoinTimelapseMailingList_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("http://mailman.ucalgary.ca/mailman/listinfo/timelapse-l");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
-        }
-
-        /// <summary> Download the sample images from a web browser </summary> 
-        private void MenuDownloadSampleImages_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Main/TutorialImageSet2.zip");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
-        }
-
-        /// <summary>Send mail to the timelapse mailing list</summary> 
-        private void MenuMailToTimelapseMailingList_Click(object sender, RoutedEventArgs e)
-        {
-            Uri uri = new Uri("mailto:timelapse-l@mailman.ucalgary.ca");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
-        }
-        #endregion
-
         #region UTC control
         private bool IsUTCOffsetControlHidden()
         {
@@ -3879,26 +2579,6 @@ namespace Timelapse
                 }
             }
             return false;
-        }
-        #endregion
-
-        #region Bookmarking pan/zoom levels
-        // Bookmark (Save) the current pan / zoom level of the image
-        private void MenuItem_BookmarkSavePanZoom(object sender, RoutedEventArgs e)
-        {
-            this.MarkableCanvas.SetBookmark();
-        }
-
-        // Restore the zoom level / pan coordinates of the bookmark
-        private void MenuItem_BookmarkSetPanZoom(object sender, RoutedEventArgs e)
-        {
-            this.MarkableCanvas.ApplyBookmark();
-        }
-
-        // Restore the zoomed out / pan coordinates 
-        private void MenuItem_BookmarkDefaultPanZoom(object sender, RoutedEventArgs e)
-        {
-            this.MarkableCanvas.ZoomOutAllTheWay();
         }
         #endregion
 
@@ -4306,7 +2986,7 @@ namespace Timelapse
                 if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out BackgroundWorker backgroundWorker) == false)
                 {
                     this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
-                    this.MenuItemRecentFileSets_Refresh();
+                    this.RecentFileSets_Refresh();
                 }
                 dropEvent.Handled = true;
             }
@@ -4411,6 +3091,5 @@ namespace Timelapse
             return proceedWithOperation;
         }
         #endregion
-
     }
 }
