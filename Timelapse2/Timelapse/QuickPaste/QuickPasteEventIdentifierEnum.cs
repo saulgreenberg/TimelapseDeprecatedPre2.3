@@ -7,6 +7,7 @@
         Delete,
         MouseEnter,
         MouseLeave,
-        Paste
+        Paste,
+        PositionChanged
     }
 }

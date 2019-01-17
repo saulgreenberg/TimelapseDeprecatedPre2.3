@@ -173,7 +173,7 @@ namespace Timelapse.Util
                 // Find the screen (if any) that contains the window
                 PresentationSource source = PresentationSource.FromVisual(timelapse);
 
-                // The screem contiaing the window
+                // The screen contiaing the window
                 Screen screenContainingWindow = null;
 
                 // WPF Coordinates of the screen that contains the window

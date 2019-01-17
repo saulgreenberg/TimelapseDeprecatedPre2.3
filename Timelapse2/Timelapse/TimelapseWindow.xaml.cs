@@ -238,10 +238,16 @@ namespace Timelapse
             // note that we have to set the bookmark scale and transform in the state, as it is not done elsewhere
             this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
             this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
-            this.state.WriteSettingsToRegistry();
 
-            // Clear the CustomPasteEntries from the ImageSet table and save its state
+            // Clear the QuickPasteEntries from the ImageSet table and save its state, including the QuickPaste window position
             this.quickPasteEntries = null;
+            if (this.quickPasteWindow != null)
+            {
+                this.state.QuickPasteWindowPosition = this.quickPasteWindow.Position;
+            }
+
+            // Save the state by writing it to the registry
+            this.state.WriteSettingsToRegistry();
         }
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
