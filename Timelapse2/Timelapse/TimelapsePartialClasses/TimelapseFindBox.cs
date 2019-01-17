@@ -45,7 +45,7 @@ namespace Timelapse
             int foundIndex = this.dataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
             if (foundIndex != -1)
             {
-                this.ShowFile(foundIndex);
+                this.FileShow(foundIndex);
             }
             else
             {

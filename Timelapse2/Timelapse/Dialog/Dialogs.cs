@@ -1,19 +1,9 @@
-﻿using Microsoft.Win32;
+﻿
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using Clipboard = System.Windows.Clipboard;
-using DataFormats = System.Windows.DataFormats;
-using DragDropEffects = System.Windows.DragDropEffects;
-using DragEventArgs = System.Windows.DragEventArgs;
-using MessageBox = Timelapse.Dialog.MessageBox;
-using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Timelapse.Dialog
@@ -103,8 +93,8 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Message Boxes: Path too long warngings
-        public static void ShowFilePathTooLongDialog(UnhandledExceptionEventArgs e, Window owner)
+        #region Dialog Messages: Path too long warnings
+        public static void FilePathTooLongDialog(UnhandledExceptionEventArgs e, Window owner)
         {
             string title = "Your File Path Names are Too Long to Handle";
             MessageBox messageBox = new MessageBox(title, owner);
@@ -123,7 +113,7 @@ namespace Timelapse.Dialog
         }
 
         // notify the user when the path is too long
-        public static void ShowTemplatePathTooLongDialog(string templateDatabasePath, Window owner)
+        public static void TemplatePathTooLongDialog(string templateDatabasePath, Window owner)
         {
             MessageBox messageBox = new MessageBox("Timelapse could not open the template ", owner);
             messageBox.Message.Problem = "Timelapse could not open the Template File as its name is too long:" + Environment.NewLine;
@@ -136,7 +126,7 @@ namespace Timelapse.Dialog
         }
 
         // notify the user the template couldn't be loaded because its path is too long
-        public static void ShowDatabasePathTooLongDialog(string databasePath, Window owner)
+        public static void DatabasePathTooLongDialog(string databasePath, Window owner)
         {
             MessageBox messageBox = new MessageBox("Timelapse could not load the database ", owner);
             messageBox.Message.Problem = "Timelapse could not load the Template File as its name is too long:" + Environment.NewLine;
@@ -149,7 +139,7 @@ namespace Timelapse.Dialog
         }
 
         // Warn the user if backups may not be made
-        public static void ShowBackupPathTooLongDialog(Window owner)
+        public static void BackupPathTooLongDialog(Window owner)
         {
             MessageBox messageBox = new MessageBox("Timelapse may not be able to backup your files", owner);
             messageBox.Message.Problem = "Timelapse may not be able to backup your files as your file names are very long.";
@@ -166,7 +156,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Dialog Message: Problem loading the template
-        public static void ShowTemplateCouldNotBeLoaded(string templateDatabasePath, Window owner)
+        public static void TemplateCouldNotBeLoadedDialog(string templateDatabasePath, Window owner)
         {
             // notify the user the template couldn't be loaded rather than silently doing nothing
             MessageBox messageBox = new MessageBox("Timelapse could not load the template.", owner);

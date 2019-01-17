@@ -165,7 +165,7 @@ namespace Timelapse.Editor
                 // so we test for that too as it also indicates a too longpath name
                 if (Utilities.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName)))
                 {
-                    Dialogs.ShowTemplatePathTooLongDialog(templateFileName, this);
+                    Dialogs.TemplatePathTooLongDialog(templateFileName, this);
                     return;
                 }
 
@@ -203,7 +203,7 @@ namespace Timelapse.Editor
             // This likely isn't needed as the OpenFileDialog won't let us do that anyways. But just in case...
             if (Utilities.IsPathLengthTooLong(openFileDialog.FileName))
             {
-                Dialogs.ShowTemplatePathTooLongDialog(openFileDialog.FileName, this);
+                Dialogs.TemplatePathTooLongDialog(openFileDialog.FileName, this);
                 return;
             }
 

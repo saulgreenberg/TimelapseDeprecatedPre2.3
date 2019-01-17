@@ -64,21 +64,21 @@ namespace Timelapse
         private void FilePlayer_ScrollRow()
         {
             bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow);
+            this.TryFileShowWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow);
         }
 
         // ScrollPage: a page of images the ClickableImaegsGrid
         private void FilePlayer_ScrollPage()
         {
             bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowsInGrid);
+            this.TryFileShowWithoutSliderCallback(direction, this.MarkableCanvas.ClickableImagesGrid.ImagesInRow * this.MarkableCanvas.ClickableImagesGrid.RowsInGrid);
         }
 
         // TimerTick: On every tick, try to show the next/previous file as indicated by the direction
         private void FilePlayerTimer_Tick(object sender, EventArgs e)
         {
             bool direction = (this.FilePlayer.Direction == FilePlayerDirectionEnum.Forward) ? true : false;
-            this.TryShowImageWithoutSliderCallback(direction, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(direction, ModifierKeys.None);
 
             // Stop the timer if the image reaches the beginning or end of the image set
             if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))

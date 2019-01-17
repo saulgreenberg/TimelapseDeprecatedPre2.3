@@ -242,11 +242,11 @@ namespace Timelapse
                     this.dataHandler.FileDatabase.DeleteFilesAndMarkers(imageIDsToDropFromDatabase);
 
                     // Reload the file datatable. Then find and show the image closest to the last one shown
-                    this.SelectFilesAndShowFile(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+                    this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
                     if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
                     {
                         int nextImageRow = this.dataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID);
-                        this.ShowFile(nextImageRow);
+                        this.FileShow(nextImageRow);
                     }
                     else
                     {
@@ -257,11 +257,11 @@ namespace Timelapse
                 {
                     // update image properties
                     this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                    this.SelectFilesAndShowFile(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+                    this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
                     // display the updated properties on the current image
                     int nextImageRow = this.dataHandler.FileDatabase.FindClosestImageRow(currentFileID);
-                    this.ShowFile(nextImageRow);
+                    this.FileShow(nextImageRow);
                 }
                 Mouse.OverrideCursor = null;
             }
@@ -440,7 +440,7 @@ namespace Timelapse
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
-                this.SelectFilesAndShowFile(forceUpdate);
+                this.FilesSelectAndShow(forceUpdate);
             }
         }
     }

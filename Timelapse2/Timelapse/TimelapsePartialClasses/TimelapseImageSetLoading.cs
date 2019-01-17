@@ -54,14 +54,14 @@ namespace Timelapse
             // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
             if (Utilities.IsPathLengthTooLong(templateDatabasePath))
             {
-                Dialogs.ShowTemplatePathTooLongDialog(templateDatabasePath, this);
+                Dialogs.TemplatePathTooLongDialog(templateDatabasePath, this);
                 return false;
             }
             // Second, check to see if we can actually open it.
             if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
             {
                 // notify the user the template couldn't be loaded rather than silently doing nothing
-                Dialogs.ShowTemplateCouldNotBeLoaded(templateDatabasePath, this);
+                Dialogs.TemplateCouldNotBeLoadedDialog(templateDatabasePath, this);
                 return false;
             }
 
@@ -77,14 +77,14 @@ namespace Timelapse
             // Check the file path length of the .ddb file and notify the user the ddb couldn't be loaded because its path is too long
             if (Utilities.IsPathLengthTooLong(fileDatabaseFilePath))
             {
-                Dialogs.ShowDatabasePathTooLongDialog(fileDatabaseFilePath, this);
+                Dialogs.DatabasePathTooLongDialog(fileDatabaseFilePath, this);
                 return false;
             }
 
             // Check the expected file path length of the backup files, and warn the user if backups may not be made because thier path is too long
             if (Utilities.IsBackupPathLengthTooLong(templateDatabasePath) || Utilities.IsBackupPathLengthTooLong(fileDatabaseFilePath))
             {
-                Dialogs.ShowBackupPathTooLongDialog(this);
+                Dialogs.BackupPathTooLongDialog(this);
             }
 
             // Before fully loading an existing image database, 
@@ -530,7 +530,7 @@ namespace Timelapse
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
                 bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
                 this.MarkableCanvas.MagnifyingGlassEnabled = false;
-                this.MaybeShowFileCountsDialog(true, this);
+                this.MaybeFileShowCountsDialog(true, this);
                 this.MarkableCanvas.MagnifyingGlassEnabled = saveMagnifierState;
 
                 // If we want to import old data from the ImageData.xml file, we can do it here...
@@ -543,7 +543,7 @@ namespace Timelapse
                     if (dialogResult == true)
                     {
                         ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
-                        this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
+                        this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
                     }
                 }
             };
@@ -651,7 +651,7 @@ namespace Timelapse
                 // This is heavier weight than desirable, but it's a one off.
                 this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
-            this.SelectFilesAndShowFile(mostRecentFileID, fileSelection);
+            this.FilesSelectAndShow(mostRecentFileID, fileSelection);
 
             // match UX availability to file availability
             this.EnableOrDisableMenusAndControls();

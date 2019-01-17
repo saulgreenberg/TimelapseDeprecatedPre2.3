@@ -73,7 +73,7 @@ namespace Timelapse
             }
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
         }
 
         // Custom Selection: raises a dialog letting the user specify their selection criteria
@@ -96,7 +96,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
             }
             else
             {
@@ -116,7 +116,7 @@ namespace Timelapse
         // Show file counts: how many images were loaded, types in categories, etc.
         public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
         {
-            this.MaybeShowFileCountsDialog(false, this);
+            this.MaybeFileShowCountsDialog(false, this);
         }
 
         // Refresh the selection: based on the current select criteria. 
@@ -124,7 +124,7 @@ namespace Timelapse
         private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
         {
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
+            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
         }
     }
 }

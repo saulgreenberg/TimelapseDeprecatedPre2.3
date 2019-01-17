@@ -302,90 +302,12 @@ namespace Timelapse
         {
             if (e.ExceptionObject.ToString().Contains("System.IO.PathTooLongException"))
             {
-                Dialogs.ShowFilePathTooLongDialog(e, this);
+                Dialogs.FilePathTooLongDialog(e, this);
             }
             else
             {
                 Utilities.ShowExceptionReportingDialog("Timelapse", e, this);
             }
-        }
-        #endregion
-
-        #region Enabling or Disabling Menus and Controls
-        private void EnableOrDisableMenusAndControls()
-        {
-            bool imageSetAvailable = this.IsFileDatabaseAvailable();
-            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
-
-            // Depending upon whether images exist in the data set,
-            // enable / disable menus and menu items as needed
-
-            // File menu
-            this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
-            this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
-            this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
-            this.MenuItemExportThisImage.IsEnabled = filesSelected;
-            this.MenuItemExportAsCsvAndPreview.IsEnabled = filesSelected;
-            this.MenuItemExportAsCsv.IsEnabled = filesSelected;
-            this.MenuItemImportFromCsv.IsEnabled = filesSelected;
-            this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
-            this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
-
-            // Edit menu
-            this.MenuItemEdit.IsEnabled = filesSelected;
-            this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
-            // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
-
-            // Options menu
-            // always enable at top level when an image set exists so that image set advanced options are accessible
-            this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;
-            //this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected; // DEPRACATED
-            this.MenuItemAudioFeedback.IsEnabled = filesSelected;
-            this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MenuItemImageCounts.IsEnabled = filesSelected;
-            this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
-            this.MenuItemAdvancedTimelapseOptions.IsEnabled = filesSelected;
-
-            // View menu
-            this.MenuItemView.IsEnabled = filesSelected;
-
-            // Select menu
-            this.MenuItemSelect.IsEnabled = filesSelected;
-
-            // Sort menu
-            this.MenuItemSort.IsEnabled = filesSelected;
-
-            // Windows menu is always enabled
-
-            // Enablement state of the various other UI components.
-            this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
-            this.FileNavigatorSlider.IsEnabled = filesSelected;
-            this.MarkableCanvas.IsEnabled = filesSelected;
-            this.MarkableCanvas.MagnifyingGlassEnabled = filesSelected && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-
-            if (filesSelected == false)
-            {
-                this.ShowFile(Constant.DatabaseValues.InvalidRow);
-                this.StatusBar.SetMessage("Image set is empty.");
-                this.StatusBar.SetCurrentFile(0);
-                this.StatusBar.SetCount(0);
-            }
-        }
-
-        // Enable or disable the various menu items that allow images to be manipulated
-        private void EnableImageManipulationMenus(bool enable)
-        {
-            this.MenuItemZoomIn.IsEnabled = enable;
-            this.MenuItemZoomOut.IsEnabled = enable;
-            this.MenuItemViewDifferencesCycleThrough.IsEnabled = enable;
-            this.MenuItemViewDifferencesCombined.IsEnabled = enable;
-            this.MenuItemDisplayMagnifyingGlass.IsEnabled = enable;
-            this.MenuItemMagnifyingGlassIncrease.IsEnabled = enable;
-            this.MenuItemMagnifyingGlassDecrease.IsEnabled = enable;
-            this.MenuItemBookmarkSavePanZoom.IsEnabled = enable;
-            this.MenuItemBookmarkSetPanZoom.IsEnabled = enable;
-            this.MenuItemBookmarkDefaultPanZoom.IsEnabled = enable;
         }
         #endregion
 
@@ -759,226 +681,6 @@ namespace Timelapse
         }
         #endregion
 
-        #region Showing images
-        // ShowFile is invoked here from a 1-based slider, so we need to correct it to the 0-base index
-        // By default, don't force the update
-        private void ShowFile(Slider fileNavigatorSlider)
-        {
-            this.ShowFile((int)fileNavigatorSlider.Value - 1, true, false);
-        }
-
-        // ShowFile is invoked from elsewhere than from the slider. 
-        // By default, don't force the update
-        private void ShowFile(int fileIndex)
-        {
-            this.ShowFile(fileIndex, false, false);
-        }
-
-        // ShowFile is invoked from elsewhere than from the slider. 
-        // The argument specifies whether we should force the update
-        private void ShowFile(int fileIndex, bool forceUpdate)
-        {
-            this.ShowFile(fileIndex, false, forceUpdate);
-        }
-
-        // Show the image in the specified row, but only if its a different image.
-        private void ShowFile(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
-        {
-            // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
-            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
-            {
-                this.MarkableCanvas.SetNewImage(Constant.ImageValues.NoFilesAvailable.Value, null);
-                this.markersOnCurrentFile = null;
-                this.MarkableCanvas_UpdateMarkers();
-                this.MarkableCanvas.SwitchToImageView();
-
-                // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
-                if (this.dataHandler != null)
-                {
-                    this.dataHandler.IsProgrammaticControlUpdate = false;
-                }
-
-                // We also need to do a bit of cleanup of UI elements that make no sense when there are no images to show.
-                this.QuickPasteWindowHide();
-                return;
-            }
-
-            // If we are already showing the desired file, and if we are not forcing an update, 
-            // then abort as there is no need to redisplay the image.
-            if (this.dataHandler.ImageCache.CurrentRow == fileIndex && forceUpdate == false)
-            {
-                return;
-            }
-
-            // Reset the Clickable Images Grid to the current image
-            // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
-            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
-            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
-
-
-            // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
-            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
-            {
-                if (this.dataHandler != null)
-                { 
-                    this.dataHandler.IsProgrammaticControlUpdate = false;
-                }
-                throw new Exception(String.Format("in ShowFile: possible problem with fileIndex, where its not a valid row index in the image table.", fileIndex));
-            }
-
-            // Update each control with the data for the now current image
-            // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
-            // the call to TryMoveToImage() above refreshes the data stored under this.dataHandler.ImageCache.Current.
-            this.dataHandler.IsProgrammaticControlUpdate = true;
-            foreach (KeyValuePair<string, DataEntryControl> control in this.DataEntryControls.ControlsByDataLabel)
-            {
-                // update value
-                string controlType = this.dataHandler.FileDatabase.FileTableColumnsByDataLabel[control.Key].ControlType;
-                control.Value.SetContentAndTooltip(this.dataHandler.ImageCache.Current.GetValueDisplayString(control.Value.DataLabel));
-
-                // for note controls, update the autocomplete list if an edit occurred
-                if (controlType == Constant.Control.Note)
-                {
-                    DataEntryNote noteControl = (DataEntryNote)control.Value;
-                    if (noteControl.ContentChanged)
-                    {
-                        noteControl.ContentControl.Autocompletions = this.dataHandler.FileDatabase.GetDistinctValuesInFileDataColumn(control.Value.DataLabel);
-                        noteControl.ContentChanged = false;
-                    }
-                }
-            }
-            this.dataHandler.IsProgrammaticControlUpdate = false;
-
-            // update the status bar to show which image we are on out of the total displayed under the current selection
-            // the total is always refreshed as it's not known if ShowFile() is being called due to a change in the selection
-            this.StatusBar.SetCurrentFile(fileIndex + 1); // Add one because indexes are 0-based
-            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
-            this.StatusBar.ClearMessage();
-
-            this.FileNavigatorSlider.Value = fileIndex + 1;
-
-            // display new file if the file changed
-            // this avoids unnecessary image reloads and refreshes in cases where ShowFile() is just being called to refresh controls
-            this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
-            List<Marker> displayMarkers = this.GetDisplayMarkers();
-
-            if (newFileToDisplay)
-            {
-                if (this.dataHandler.ImageCache.Current.IsVideo)
-                {
-                    this.MarkableCanvas.SetNewVideo(this.dataHandler.ImageCache.Current.GetFileInfo(this.dataHandler.FileDatabase.FolderPath), displayMarkers);
-                    this.EnableImageManipulationMenus(false);
-
-                }
-                else
-                {
-                    this.MarkableCanvas.SetNewImage(this.dataHandler.ImageCache.GetCurrentImage(), displayMarkers);
-                    // Draw markers for this file
-                    this.MarkableCanvas_UpdateMarkers();
-                    this.EnableImageManipulationMenus(true);
-                }
-            }
-            else if (this.IsDisplayingSingleImage())
-            {
-                if (this.dataHandler.ImageCache.Current.IsVideo)
-                {
-                    this.MarkableCanvas.SwitchToVideoView();
-                }
-                else
-                {
-                    this.MarkableCanvas.SwitchToImageView();
-                    this.MarkableCanvas_UpdateMarkers();
-                }
-            }
-            this.DataGridSelectionsTimer_Reset();
-
-            // Set the file player status
-            if (this.dataHandler.ImageCache.CurrentRow == 0)
-            {
-                this.FilePlayer.BackwardsControlsEnabled(false);
-            }
-            else
-            {
-                this.FilePlayer.BackwardsControlsEnabled(true);
-            }
-
-            if (this.dataHandler.ImageCache.CurrentRow == this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1)
-            {
-                this.FilePlayer.ForwardsControlsEnabled(false);
-            }
-            else
-            {
-                this.FilePlayer.ForwardsControlsEnabled(true);
-            }
-
-            // Refresh the CopyPreviousButton and its Previews as needed
-            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-
-            // Refresh the QuickPasteEntry previews if needed
-            if (this.IsDisplayingSingleImage() && this.quickPasteWindow != null)
-            { 
-                this.quickPasteWindow.RefreshQuickPasteWindowPreviewAsNeeded();
-            }
-
-            // Refresh the markable canvas if needed
-            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
-        }
-
-        private bool TryShowImageWithoutSliderCallback(bool forward, ModifierKeys modifiers)
-        {
-            // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
-            {
-                return false;
-            }
-            // determine how far to move and in which direction
-            int increment = 1;
-            if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
-            {
-                increment *= 5;
-            }
-            if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-            {
-                increment *= 10;
-            }
-            return TryShowImageWithoutSliderCallback(forward, increment);
-        }
-
-        private bool TryShowImageWithoutSliderCallback(bool forward, int increment)
-        {
-            // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
-            {
-                return false;
-            }
-
-            int desiredRow = forward
-                ? this.dataHandler.ImageCache.CurrentRow + increment
-                : this.dataHandler.ImageCache.CurrentRow - increment;
-
-            // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
-            if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
-            {
-                desiredRow = this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1;
-            }
-            else if (desiredRow < 0)
-            {
-                desiredRow = 0;
-            }
-
-            // If the desired row is the same as the current row, the image is already being displayed
-            if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
-            {
-                // Move to the desired row
-                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.ShowFile(desiredRow);
-                this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
-            }
-            return true;
-        }
-        #endregion
-
         #region Keyboard shortcuts
         // If its an arrow key and the textbox doesn't have the focus,
         // navigate left/right image or up/down to look at differenced image
@@ -1053,14 +755,14 @@ namespace Timelapse
                     FilePlayer_Stop();      // In case the FilePlayer is going
                     if (keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0)
                     {
-                        this.TryShowImageWithoutSliderCallback(true, Keyboard.Modifiers);
+                        this.TryFileShowWithoutSliderCallback(true, Keyboard.Modifiers);
                     }
                     break;
                 case Key.Left:              // previous image
                     FilePlayer_Stop();      // In case the FilePlayer is going
                     if (keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0)
                     {
-                        this.TryShowImageWithoutSliderCallback(false, Keyboard.Modifiers);
+                        this.TryFileShowWithoutSliderCallback(false, Keyboard.Modifiers);
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
@@ -1357,11 +1059,10 @@ namespace Timelapse
                     this.MarkableCanvas.SwitchToImageView();
                 }
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
+                this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
         }
-
         #endregion
 
         #region DataGrid events
@@ -1376,7 +1077,7 @@ namespace Timelapse
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
                     DataRowView rowView = row.Item as DataRowView;
                     long fileID = (long)rowView.Row.ItemArray[0];
-                    this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
+                    this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
 
                     // The datagrid isn't floating: Switch from the dataGridPane view to the ImagesetPane view
@@ -1487,7 +1188,7 @@ namespace Timelapse
             return true;
         }
 
-        public void MaybeShowFileCountsDialog(bool onFileLoading, Window owner)
+        public void MaybeFileShowCountsDialog(bool onFileLoading, Window owner)
         {
             if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
             {

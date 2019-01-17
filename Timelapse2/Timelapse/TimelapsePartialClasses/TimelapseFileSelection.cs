@@ -10,48 +10,48 @@ using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse
 {
-    // File Selection
+    // File Selection which includes showing the current file
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // SelectFilesAndShowFile: various forms
-        private void SelectFilesAndShowFile(bool forceUpdate)
+        // FilesSelectAndShow: various forms
+        private void FilesSelectAndShow(bool forceUpdate)
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
-                Utilities.PrintFailure("SelectFilesAndShowFile: Expected a file database to be available.");
+                Utilities.PrintFailure("FilesSelectAndShow: Expected a file database to be available.");
             }
-            this.SelectFilesAndShowFile(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
+            this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
 
-        private void SelectFilesAndShowFile(FileSelectionEnum selection, bool forceUpdate)
+        private void FilesSelectAndShow(FileSelectionEnum selection, bool forceUpdate)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            this.SelectFilesAndShowFile(fileID, selection, forceUpdate);
+            this.FilesSelectAndShow(fileID, selection, forceUpdate);
         }
 
-        // SelectFilesAndShowFile: Basic form doesn't force an update
-        private void SelectFilesAndShowFile(long imageID, FileSelectionEnum selection)
+        // FilesSelectAndShow: Basic form doesn't force an update
+        private void FilesSelectAndShow(long imageID, FileSelectionEnum selection)
         {
-            SelectFilesAndShowFile(imageID, selection, false);
+            FilesSelectAndShow(imageID, selection, false);
         }
 
-        // SelectFilesAndShowFile: Full version
-        private void SelectFilesAndShowFile(long imageID, FileSelectionEnum selection, bool forceUpdate)
+        // FilesSelectAndShow: Full version
+        private void FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
             {
-                Utilities.PrintFailure("SelectFilesAndShowFile() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
+                Utilities.PrintFailure("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
                 return;
             }
             if (this.dataHandler.FileDatabase == null)
             {
-                Utilities.PrintFailure("SelectFilesAndShowFile() should not be reachable with a null database.  Is a menu item wrongly enabled?");
+                Utilities.PrintFailure("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
                 return;
             }
 
@@ -152,7 +152,7 @@ namespace Timelapse
             this.DataEntryControlPanel.Title = "Data entry for " + status;
 
             // Display the specified file or, if it's no longer selected, the next closest one
-            // Showfile() handles empty image sets, so those don't need to be checked for here.
+            // FileShow() handles empty image sets, so those don't need to be checked for here.
             // After a selection changes, set the slider to represent the index and the count of the current selection
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
             this.FileNavigatorSlider.Maximum = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;  // Reset the slider to the size of images in this set
@@ -174,7 +174,7 @@ namespace Timelapse
             }
 
             // Always force an update after a selection
-            this.ShowFile(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
+            this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 
             // Update the status bar accordingly
             this.StatusBar.SetCurrentFile(this.dataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list

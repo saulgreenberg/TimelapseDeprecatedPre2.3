@@ -21,7 +21,7 @@ namespace Timelapse
         {
             FilePlayer_Stop(); // In case the FilePlayer is going
             this.state.FileNavigatorSliderDragging = false;
-            this.ShowFile(this.FileNavigatorSlider);
+            this.FileShow(this.FileNavigatorSlider);
             this.timerFileNavigator.Stop();
         }
 
@@ -45,7 +45,7 @@ namespace Timelapse
             DateTime utcNow = DateTime.UtcNow;
             if ((this.state.FileNavigatorSliderDragging == false) || (utcNow - this.state.MostRecentDragEvent > this.timerFileNavigator.Interval))
             {
-                this.ShowFile(this.FileNavigatorSlider);
+                this.FileShow(this.FileNavigatorSlider);
                 this.state.MostRecentDragEvent = utcNow;
                 this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
             }
@@ -69,7 +69,7 @@ namespace Timelapse
         private void TimerFileNavigator_Tick(object sender, EventArgs e)
         {
             this.timerFileNavigator.Stop();
-            this.ShowFile(this.FileNavigatorSlider);
+            this.FileShow(this.FileNavigatorSlider);
             this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
         }
 

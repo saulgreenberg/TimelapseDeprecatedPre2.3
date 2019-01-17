@@ -98,7 +98,7 @@ namespace Timelapse
             this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
 
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.SelectFilesAndShowFile(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
             // sets up various status indicators in the UI
             this.ShowSortFeedback(updateMenuChecks);

@@ -25,13 +25,13 @@ namespace Timelapse
         // View next filein this image set
         private void MenuItemShowNextFile_Click(object sender, RoutedEventArgs e)
         {
-            this.TryShowImageWithoutSliderCallback(true, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(true, ModifierKeys.None);
         }
 
         // View previous file in this image set
         private void MenuItemShowPreviousFile_Click(object sender, RoutedEventArgs e)
         {
-            this.TryShowImageWithoutSliderCallback(false, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(false, ModifierKeys.None);
         }
 
         // Zoom in
