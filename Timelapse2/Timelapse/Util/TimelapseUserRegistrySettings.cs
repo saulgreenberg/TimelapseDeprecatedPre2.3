@@ -94,7 +94,7 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return String.IsNullOrEmpty(registryKey.ReadString(key, String.Empty));
+                return String.IsNullOrEmpty(registryKey.ReadString(key, String.Empty)) ? false : true;
             }
         }
         // Read a single registry entry
