@@ -95,7 +95,7 @@ namespace Timelapse.Controls
                 
                 if ((e.Key == Key.Up || e.Key == Key.Left) && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1))
                 {
-                    // If the user tries to navigate to the ellisis at the beginning of the list, keep it on the first valid item
+                    // If the user tries to navigate to the ellipsis at the beginning of the list, keep it on the first valid item
                     if (comboBox.SelectedIndex == -1)
                     {
                         comboBox.SelectedIndex = 1;

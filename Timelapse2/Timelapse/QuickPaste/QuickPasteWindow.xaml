@@ -25,8 +25,8 @@
 
         <TextBlock Margin="5" FontSize="10">
             <Run FontWeight="DemiBold" Text="New QuickPaste:"/> creates a new entry<LineBreak/>
-            <Run FontWeight="DemiBold" Text="Click:"/> pastes the entry into the data fields<LineBreak/>
-            <Run FontWeight="DemiBold" Text="Right click:"/> edits or deletes the entry
+            <Run FontWeight="DemiBold" Text="Click or shortcut key:"/> paste entry into data fields<LineBreak/>
+            <Run FontWeight="DemiBold" Text="Right click:"/> edit or delete the entry
         </TextBlock>
 
         <Button Name="NewQuickPasteEntryButton" Content="New QuickPaste..." HorizontalContentAlignment="Left" FontWeight="DemiBold" Grid.Row="1" Height="40" Margin="0,0,0,5" Padding="10,0,5,0" ToolTip="Create a new QuickPaste entry based on the data displayed in the current image" Click="NewQuickPasteEntryButton_Click"/>

@@ -70,6 +70,7 @@ namespace Timelapse.QuickPaste
             this.QuickPasteGrid.Children.Clear();
             int gridRowIndex = 0;
 
+            int shortcutKey = 1;
             foreach (QuickPasteEntry quickPasteEntry in this.QuickPasteEntries)
             {
                 // Create the tooltip text for the QuickPaste control
@@ -86,11 +87,33 @@ namespace Timelapse.QuickPaste
                     }
                 }
 
+                // Compose the button content: a title and shortcut key
+                TextBlock textblockTitle = new TextBlock()
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,    
+                };
+                textblockTitle.Inlines.Add(quickPasteEntry.Title);
+
+                TextBlock textblockShortcut = new TextBlock
+                {
+                    Padding = new Thickness(5, 0, 5, 0),
+                    HorizontalAlignment = HorizontalAlignment.Right
+                };
+                textblockShortcut.Inlines.Add("ctrl-" + shortcutKey++);
+
+                DockPanel dockPanel = new DockPanel();
+                DockPanel.SetDock(textblockTitle, Dock.Left);
+                DockPanel.SetDock(textblockShortcut, Dock.Right);
+                dockPanel.Children.Add(textblockTitle);
+                dockPanel.Children.Add(textblockShortcut);
+
                 // Create and configure the QuickPaste control, and add its callbacks
                 Button quickPasteControl = new Button()
                 {
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch,
                     Style = this.Owner.FindResource("QuickPasteButtonStyle") as Style,
-                    Content = quickPasteEntry.Title,
+                    //Content = quickPasteEntry.Title + " <ctrl>-" + shortcutKey++ ,
+                    Content = dockPanel,
                     ToolTip = tooltipText,
                     Tag = quickPasteEntry
                 };
@@ -152,7 +175,16 @@ namespace Timelapse.QuickPaste
             }
         }
 
-        // Generate Event: New quickpaste emtru
+        public void TryQuickPasteShortcut(int shortcutIndex)
+        {
+            if (shortcutIndex <= this.QuickPasteEntries.Count)
+            {
+                QuickPasteEntry quickPasteEntry = this.QuickPasteEntries[shortcutIndex - 1];
+                this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
+            }
+        }
+
+        // Generate Event: New quickpaste entry
         private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
         {
             this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.New));
