@@ -106,17 +106,22 @@ namespace Timelapse
                     break;
                 case Key.Right:             // next image
                     FilePlayer_Stop();      // In case the FilePlayer is going
-                    if (keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0)
-                    {
+                    // There appears to be a bug associated with avalondock, where a floating window will always have the IsRepeat set to true. No idea why...
+                    // I suspect as well that the repeat count may be wrong - to test.
+                    // So I disabled throttling as otherwise it throttles when it shouldn't
+                    //System.Diagnostics.Debug.Print("keyRepeatCount: " + keyRepeatCount.ToString() + " " + currentKey.IsRepeat);
+                    //if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    //{
+                    //    System.Diagnostics.Debug.Print("In KeyboardShortcuts If");
                         this.TryFileShowWithoutSliderCallback(true, Keyboard.Modifiers);
-                    }
+                    //}
                     break;
                 case Key.Left:              // previous image
                     FilePlayer_Stop();      // In case the FilePlayer is going
-                    if (keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0)
-                    {
+                    //if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    //{
                         this.TryFileShowWithoutSliderCallback(false, Keyboard.Modifiers);
-                    }
+                    //}
                     break;
                 case Key.Up:                // show visual difference to next image
                     if (IsDisplayingMultipleImagesInOverview())
