@@ -423,11 +423,14 @@ namespace Timelapse
                 // whether audio feedback is enabled
                 public const string AudioFeedback = "AudioFeedback";
 
-                // key containing the top leftlocation of the Timelapse Window, as a point
+                // key containing the top left location of the Timelapse Window, as a point
                 public const string TimelapseWindowLocation = "TimelapseWindowLocation";
                 // key containing the size of the Timelapse Window, as a Height
                 public const string TimelapseWindowSize = "TimelapseWindowSize";
                 public const string TimelapseWindowPosition = "TimelapseWindowPosition";
+
+                // key containing the position of the QuickPaste window, as a rect
+                public const string QuickPasteWindowPosition = "QuickPasteWindowPosition";
 
                 // most recently used operator for custom selections
                 public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";

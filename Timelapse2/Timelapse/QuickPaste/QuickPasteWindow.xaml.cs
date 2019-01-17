@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Dialog;
+using Timelapse.Util;
 
 namespace Timelapse.QuickPaste
 {
@@ -26,7 +27,12 @@ namespace Timelapse.QuickPaste
             set { quickPasteEntries = value; }
         }
 
+        // Position of the window, so we can save/restore it between sessions
+        // (note that while I save the width and height, I only use the top left to position the window)
+        public Rect Position {get; set;}
+
         private List<QuickPasteEntry> quickPasteEntries;
+
 
         public QuickPasteWindow()
         {
@@ -36,9 +42,19 @@ namespace Timelapse.QuickPaste
         // When the window is loaded
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Adjust this dialog window position 
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            // Adjust this dialog window position, and add an event handler to signal when the position has changed 
+            if (this.Position.Left == 0 && this.Position.Top == 0)
+            { 
+                // 0,0 signals that there is no saved window position
+                Dialogs.SetDefaultDialogPosition(this);
+            }
+            else
+            {
+                this.Top = this.Position.Top;
+                this.Left = this.Position.Left;
+            }
+            this.SetPosition();
+            this.LocationChanged += QuickPasteWindow_LocationChanged;
 
             // Build the window contents
             Refresh(this.quickPasteEntries);
@@ -186,6 +202,22 @@ namespace Timelapse.QuickPaste
         {
             // To overcome a wpf bug where Visibility stayed at Visibility.Visible.
             this.Visibility = Visibility.Collapsed;
+        }
+
+        private void QuickPasteWindow_LocationChanged(object sender, EventArgs e)
+        {
+            this.SetPosition();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.SetPosition();
+        }
+
+        private void SetPosition()
+        {
+            this.Position = new Rect(this.Left, this.Top, this.Width, this.Height);
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.PositionChanged));
         }
     }
 }

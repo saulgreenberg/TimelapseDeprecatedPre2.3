@@ -13,7 +13,7 @@
         SizeToContent="WidthAndHeight"
         Topmost="True"
         WindowStyle="ToolWindow"
-		WindowStartupLocation="CenterOwner"  Loaded="Window_Loaded" Closed="Window_Closed" >
+		WindowStartupLocation="CenterOwner"  Loaded="Window_Loaded" Closed="Window_Closed" Closing="Window_Closing">
  
     <Grid Margin="0,0,0,5">
         <Grid.RowDefinitions>
