@@ -30,7 +30,7 @@ namespace Timelapse.Controls
         public DataEntryChoice(ControlRow control, DataEntryControls styleProvider)
             : base(control, styleProvider, ControlContentStyleEnum.ChoiceComboBox, ControlLabelStyleEnum.DefaultLabel)
         {
-            // The behaviour of the combobox
+            // The behaviour of the combo box
             this.ContentControl.Focusable = true;
             this.ContentControl.IsEditable = false;
             this.ContentControl.IsTextSearchEnabled = true;

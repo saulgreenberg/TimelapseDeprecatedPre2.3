@@ -210,7 +210,6 @@ namespace Timelapse.Controls
         {
             if (this.PopupPreview == null || this.PopupPreview.Child == null)
             {
-                // There is no popupPreview being displayed, so there is nothing to hide.
                 return;
             }
 

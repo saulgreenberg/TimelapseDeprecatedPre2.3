@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -31,6 +32,18 @@ namespace Timelapse.Controls
         public DataEntryFlag(ControlRow control, DataEntryControls styleProvider)
             : base(control, styleProvider, ControlContentStyleEnum.FlagCheckBox, ControlLabelStyleEnum.DefaultLabel)
         {
+            // Callback used to allow Enter to select the highlit item
+            this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
+        }
+
+        // Ignore these navigation key events, as otherwise they act as tabs which does not conform to how we navigate
+        // between other control types
+        private void ContentControl_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Right || e.Key == Key.Left)
+            {
+                e.Handled = true;
+            }
         }
 
         public override void ShowPreviewControlValue(string value)
