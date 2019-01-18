@@ -12,6 +12,12 @@ namespace Timelapse.Controls
     // - checkbox (the content) at the given width
     public class DataEntryFlag : DataEntryControl<CheckBox, Label>
     {
+        // Return the TopLeft corner of the content control as a point
+        public override Point TopLeft
+        {
+            get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
+        }
+
         /// <summary>Gets or sets the Content of the Note</summary>
         public override string Content
         {

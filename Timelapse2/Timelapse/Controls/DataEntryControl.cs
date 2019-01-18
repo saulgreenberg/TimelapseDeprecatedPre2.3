@@ -35,6 +35,9 @@ namespace Timelapse.Controls
         // displayTemporaryContents and RestoreTemporaryContents are used
         protected Popup PopupPreview { get; set; }
 
+        /// <summary>Gets the position of the content control</summary>
+        public abstract Point TopLeft { get; }
+
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
             // populate properties from database definition of control

@@ -509,10 +509,12 @@ namespace Timelapse
                 if (control.ContentReadOnly == false)
                 {
                     //SAULXXXX WE NEED TO CHANGE THIS SO IT WORKS WITH A FLOATING DATAENTRY PANE
-                    //this.lastControlWithFocus = control.Focus(this);
-                    this.DataEntryControlPanel.IsActive = true;
                     this.lastControlWithFocus = control.Focus(this);
 
+                    System.Drawing.Point originalPosition = System.Windows.Forms.Cursor.Position;
+                    System.Drawing.Point p = new System.Drawing.Point(System.Convert.ToInt32(control.TopLeft.X+2), System.Convert.ToInt32(control.TopLeft.Y+2));
+                    System.Windows.Forms.Cursor.Position = p;
+                    System.Windows.Forms.Cursor.Position = originalPosition;
                     return;
                 }
             }
@@ -734,8 +736,16 @@ namespace Timelapse
         {
             if (lastControlWithFocus != null && lastControlWithFocus.IsEnabled == true)
             {
-                Keyboard.Focus(lastControlWithFocus);
-                this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+                if (lastControlWithFocus == this.MarkableCanvas)
+                {
+                    this.MoveFocusToNextOrPreviousControlOrCopyPreviousButton(Keyboard.Modifiers == ModifierKeys.Shift);
+                    this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+                }
+                else
+                { 
+                    Keyboard.Focus(lastControlWithFocus);
+                    this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+                }
             }
         }
 

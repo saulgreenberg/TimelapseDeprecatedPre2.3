@@ -15,6 +15,12 @@ namespace Timelapse.Controls
     // - a combobox (containing the content) at the given width
     public class DataEntryChoice : DataEntryControl<ComboBox, Label>
     {
+        // Return the TopLeft corner of the content control as a point
+        public override Point TopLeft
+        {
+            get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
+        }
+
         /// <summary>Gets or sets the content of the choice.</summary>
         public override string Content
         {

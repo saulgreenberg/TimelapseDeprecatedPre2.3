@@ -9,6 +9,12 @@ namespace Timelapse.Controls
 {
     public class DataEntryDateTime : DataEntryControl<DateTimePicker, Label>
     {
+        // Return the TopLeft corner of the content control as a point
+        public override Point TopLeft
+        {
+            get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
+        }
+
         public override string Content
         {
             get { return this.ContentControl.Text; }

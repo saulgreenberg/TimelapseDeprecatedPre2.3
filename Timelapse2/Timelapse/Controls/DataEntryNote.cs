@@ -12,6 +12,12 @@ namespace Timelapse.Controls
     // - an editable textbox (containing the content) at the given width
     public class DataEntryNote : DataEntryControl<AutocompleteTextBox, Label>
     {
+        // Return the TopLeft corner of the content control as a point
+        public override Point TopLeft
+        {
+            get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
+        }
+
         /// <summary>Gets  the content of the note</summary>
         public override string Content
         {

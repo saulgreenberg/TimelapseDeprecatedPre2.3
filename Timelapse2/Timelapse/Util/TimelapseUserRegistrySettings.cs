@@ -89,7 +89,6 @@ namespace Timelapse.Util
                 this.SuppressThrottleWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, false);
                 this.Throttles.SetDesiredImageRendersPerSecond(registryKey.ReadDouble(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault));
                 this.TimelapseWindowPosition = registryKey.ReadRect(Constant.Registry.TimelapseKey.TimelapseWindowPosition, new Rect(0.0, 0.0, 1350.0, 900.0));
-
             }
         }
 
@@ -162,7 +161,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedRereadDatesFromFilesPrompt, this.SuppressSelectedRereadDatesFromFilesPrompt);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, this.SuppressThrottleWhenLoading);
                 registryKey.Write(Constant.Registry.TimelapseKey.TimelapseWindowPosition, this.TimelapseWindowPosition);
-
             }
         }
 

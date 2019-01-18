@@ -9,8 +9,6 @@ namespace Timelapse
     // Keyboard shortcuts
     public partial class TimelapseWindow : Window, IDisposable
     {
-
-
         // If its an arrow key and the textbox doesn't have the focus,
         // navigate left/right image or up/down to look at differenced image
         private void Window_PreviewKeyDown(object sender, KeyEventArgs currentKey)
@@ -32,10 +30,10 @@ namespace Timelapse
                         this.DataGridPane.IsSelected = true;
                         // SAULXXX: If its floating, we should really be making it topmost
                         // To do that, we would have to iterate through the floating windows and set it.
-                        //if (this.DataGridPane.IsFloating)
-                        //{
+                        // if (this.DataGridPane.IsFloating)
+                        // {
 
-                        //}
+                        // }
                         break;
                     default:
                         break;
@@ -109,19 +107,19 @@ namespace Timelapse
                     // There appears to be a bug associated with avalondock, where a floating window will always have the IsRepeat set to true. No idea why...
                     // I suspect as well that the repeat count may be wrong - to test.
                     // So I disabled throttling as otherwise it throttles when it shouldn't
-                    //System.Diagnostics.Debug.Print("keyRepeatCount: " + keyRepeatCount.ToString() + " " + currentKey.IsRepeat);
-                    //if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
-                    //{
+                    // System.Diagnostics.Debug.Print("keyRepeatCount: " + keyRepeatCount.ToString() + " " + currentKey.IsRepeat);
+                    // if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    // {
                     //    System.Diagnostics.Debug.Print("In KeyboardShortcuts If");
                         this.TryFileShowWithoutSliderCallback(true, Keyboard.Modifiers);
-                    //}
+                    // }
                     break;
                 case Key.Left:              // previous image
                     FilePlayer_Stop();      // In case the FilePlayer is going
-                    //if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
-                    //{
+                    // if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    // {
                         this.TryFileShowWithoutSliderCallback(false, Keyboard.Modifiers);
-                    //}
+                    // }
                     break;
                 case Key.Up:                // show visual difference to next image
                     if (IsDisplayingMultipleImagesInOverview())

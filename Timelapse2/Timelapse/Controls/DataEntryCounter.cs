@@ -14,6 +14,12 @@ namespace Timelapse.Controls
     // - an editable textbox (containing the content) at the given width
     public class DataEntryCounter : DataEntryControl<IntegerUpDown, RadioButton>
     {
+        // Return the TopLeft corner of the content control as a point
+        public override Point TopLeft
+        {
+            get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
+        }
+
         // Holds the DataLabel of the previously clicked counter control across all counters
         private static string previousControlDataLabel = String.Empty;
 

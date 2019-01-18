@@ -29,10 +29,9 @@ namespace Timelapse.QuickPaste
 
         // Position of the window, so we can save/restore it between sessions
         // (note that while I save the width and height, I only use the top left to position the window)
-        public Rect Position {get; set;}
+        public Rect Position { get; set; }
 
         private List<QuickPasteEntry> quickPasteEntries;
-
 
         public QuickPasteWindow()
         {
@@ -112,7 +111,6 @@ namespace Timelapse.QuickPaste
                 {
                     HorizontalContentAlignment = HorizontalAlignment.Stretch,
                     Style = this.Owner.FindResource("QuickPasteButtonStyle") as Style,
-                    //Content = quickPasteEntry.Title + " <ctrl>-" + shortcutKey++ ,
                     Content = dockPanel,
                     ToolTip = tooltipText,
                     Tag = quickPasteEntry
