@@ -23,7 +23,8 @@ namespace Timelapse
 
         private void CopyPreviousValues_LostFocus(object sender, RoutedEventArgs e)
         {
-            this.CopyPreviousValuesSetGlowAsNeeded();
+            int previousRow = (this.dataHandler == null || this.dataHandler.ImageCache == null) ? -1 : this.dataHandler.ImageCache.CurrentRow - 1;
+            this.CopyPreviousValuesSetGlowAsNeeded(previousRow);
         }
 
         // When the CopyPreviousValues button is clicked, or when a space is entered while it is focused,
@@ -58,22 +59,24 @@ namespace Timelapse
         public void CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded()
         {
             int previousRow = (this.dataHandler == null || this.dataHandler.ImageCache == null) ? -1 : this.dataHandler.ImageCache.CurrentRow - 1;
-            this.CopyPreviousValuesButton.IsEnabled = previousRow >= 0 && this.IsDisplayingSingleImage();
+            // Simulate enabled / disabled by changing the foreground color. 
+            // We do this instead of disabling, as we still want the CopyPreviousValuseButton to obtain the focus so it can respond to the arrow keys.
+            this.CopyPreviousValuesButton.Foreground = previousRow >= 0 && this.IsDisplayingSingleImage() ? Brushes.Black : Brushes.Gray;
             this.CopyPreviousValueSetPreviewsAsNeeded(previousRow);
-            this.CopyPreviousValuesSetGlowAsNeeded();
+            this.CopyPreviousValuesSetGlowAsNeeded(previousRow);
         }
         #endregion
 
         #region These methods are only accessed from within this file
         // Set the glow highlight on the copyable fields if various conditions are met
-        private void CopyPreviousValuesSetGlowAsNeeded()
+        private void CopyPreviousValuesSetGlowAsNeeded(int previousRow)
         {
             if (this.IsDisplayingSingleImage() &&
                 this.CopyPreviousValuesButton != null && 
                 this.CopyPreviousValuesButton.IsFocused &&
                 this.CopyPreviousValuesButton.IsEnabled == true &&
-                this.CopyPreviousValuesButton.IsFocused && 
-                this.CopyPreviousValuesButton.IsMouseOver == false)
+                this.CopyPreviousValuesButton.IsMouseOver == false &&
+                previousRow >= 0)
             {
                 // Add the glow around the copyable controls
                 DropShadowEffect effect = new DropShadowEffect()

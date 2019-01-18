@@ -508,7 +508,11 @@ namespace Timelapse
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
                 if (control.ContentReadOnly == false)
                 {
+                    //SAULXXXX WE NEED TO CHANGE THIS SO IT WORKS WITH A FLOATING DATAENTRY PANE
+                    //this.lastControlWithFocus = control.Focus(this);
+                    this.DataEntryControlPanel.IsActive = true;
                     this.lastControlWithFocus = control.Focus(this);
+
                     return;
                 }
             }
