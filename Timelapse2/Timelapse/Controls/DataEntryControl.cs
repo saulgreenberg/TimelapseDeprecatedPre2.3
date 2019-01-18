@@ -14,6 +14,11 @@ namespace Timelapse.Controls
 {
     public abstract class DataEntryControl
     {
+        /// <summary>Gets the position of the content control</summary>
+        public abstract Point TopLeft { get; }
+
+        public abstract bool IsContentControlEnabled { get; }
+        
         /// <summary>Gets the value of the control</summary>
         public abstract string Content { get; }
 
@@ -34,9 +39,6 @@ namespace Timelapse.Controls
         // used to remember and restore state when
         // displayTemporaryContents and RestoreTemporaryContents are used
         protected Popup PopupPreview { get; set; }
-
-        /// <summary>Gets the position of the content control</summary>
-        public abstract Point TopLeft { get; }
 
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {

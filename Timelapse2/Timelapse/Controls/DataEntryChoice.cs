@@ -21,6 +21,11 @@ namespace Timelapse.Controls
             get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
         }
 
+        public override bool IsContentControlEnabled
+        {
+            get { return this.ContentControl.IsEnabled; }
+        }
+
         /// <summary>Gets or sets the content of the choice.</summary>
         public override string Content
         {

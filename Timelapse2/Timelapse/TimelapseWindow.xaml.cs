@@ -506,15 +506,15 @@ namespace Timelapse
                  currentControl = incrementOrDecrement(currentControl))
             {
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
-                if (control.ContentReadOnly == false)
+                if (control.ContentReadOnly == false && control.IsContentControlEnabled == true)
                 {
                     //SAULXXXX WE NEED TO CHANGE THIS SO IT WORKS WITH A FLOATING DATAENTRY PANE
                     this.lastControlWithFocus = control.Focus(this);
 
-                    System.Drawing.Point originalPosition = System.Windows.Forms.Cursor.Position;
-                    System.Drawing.Point p = new System.Drawing.Point(System.Convert.ToInt32(control.TopLeft.X+2), System.Convert.ToInt32(control.TopLeft.Y+2));
-                    System.Windows.Forms.Cursor.Position = p;
-                    System.Windows.Forms.Cursor.Position = originalPosition;
+                    //System.Drawing.Point originalPosition = System.Windows.Forms.Cursor.Position;
+                    //System.Drawing.Point p = new System.Drawing.Point(System.Convert.ToInt32(control.TopLeft.X+2), System.Convert.ToInt32(control.TopLeft.Y+2));
+                    //System.Windows.Forms.Cursor.Position = p;
+                    //System.Windows.Forms.Cursor.Position = originalPosition;
                     return;
                 }
             }

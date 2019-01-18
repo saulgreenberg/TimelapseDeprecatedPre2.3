@@ -20,6 +20,11 @@ namespace Timelapse.Controls
             get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
         }
 
+        public override bool IsContentControlEnabled
+        {
+            get { return this.ContentControl.IsEnabled; }
+        }
+
         // Holds the DataLabel of the previously clicked counter control across all counters
         private static string previousControlDataLabel = String.Empty;
 
