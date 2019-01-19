@@ -48,7 +48,7 @@ namespace Timelapse
                     }
                     else
                     { 
-                        control.FlashContentValue();
+                        control.FlashContentControlValue();
                     }
                 }
             }
