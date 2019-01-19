@@ -69,6 +69,7 @@ namespace Timelapse.Controls
         public abstract void ShowPreviewControlValue(string value);
         public abstract void HidePreviewControlValue();
         public abstract void FlashPreviewControlValue();
+        public abstract void FlashContentValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -210,6 +211,23 @@ namespace Timelapse.Controls
             TextBlock popupText = (TextBlock)border.Child;
             popupText.Text = String.Empty;
             this.PopupPreview.IsOpen = false;
+        }
+
+        protected void FlashContent()
+        {
+            ColorAnimation foregroundAnimation;
+            foregroundAnimation = new ColorAnimation()
+            {
+                From = Colors.LightGreen,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode = EasingMode.EaseIn
+                },
+            };
+            this.ContentControl.Foreground = new SolidColorBrush(Colors.Black);
+            this.ContentControl.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, foregroundAnimation);
         }
 
         // Create a flash effect for the popup. We use this to signal that the 

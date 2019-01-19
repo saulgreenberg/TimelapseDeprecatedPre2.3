@@ -70,6 +70,11 @@ namespace Timelapse.Controls
             // DateTime is never copyable or a candidate for quickpaste, so we do nothing
         }
 
+        public override void FlashContentValue()
+        {
+            this.FlashContent();
+        }
+
         public override void FlashPreviewControlValue()
         {
             this.FlashPopupPreview();

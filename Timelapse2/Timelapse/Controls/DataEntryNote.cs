@@ -70,6 +70,11 @@ namespace Timelapse.Controls
             this.HidePopupPreview();
         }
 
+        public override void FlashContentValue()
+        {
+            this.FlashContent();
+        }
+
         public override void FlashPreviewControlValue()
         {
             this.FlashPopupPreview();

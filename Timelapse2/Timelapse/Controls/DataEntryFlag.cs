@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -84,6 +88,30 @@ namespace Timelapse.Controls
         {
             this.HidePopupPreview();
         }
+
+        public override void FlashContentValue()
+        {
+            // Flash the checkmark.
+            // It would be better if we could flash the background, but it doesn't seem to work.
+            ColorAnimation strokAnimation;
+            strokAnimation = new ColorAnimation()
+            {
+                From = Colors.LightGreen,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode = EasingMode.EaseIn
+                },
+            };
+
+            Path path = (Path)this.ContentControl.Template.FindName("CheckMark", this.ContentControl);
+            if (path != null)
+            {
+                path.Stroke.BeginAnimation(SolidColorBrush.ColorProperty, strokAnimation);
+            }
+        }
+
         public override void FlashPreviewControlValue()
         {
             this.FlashPopupPreview();

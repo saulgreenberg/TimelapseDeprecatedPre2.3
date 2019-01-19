@@ -31,13 +31,25 @@ namespace Timelapse
         // copy the data values from the previous control to the current one
         private void CopyPreviousValues_Click()
         {
-            CopyPreviousValuesPasteValues();
+            if (this.TryCopyPreviousValuesPasteValues() == false)
+            {
+                return;
+            }
+
+            bool isMouseOver = this.CopyPreviousValuesButton.IsMouseOver;
             foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
             {
                 DataEntryControl control = pair.Value;
                 if (control.Copyable)
                 {
-                    control.FlashPreviewControlValue();
+                    if (isMouseOver)
+                    {
+                        control.FlashPreviewControlValue();
+                    }
+                    else
+                    { 
+                        control.FlashContentValue();
+                    }
                 }
             }
         }
@@ -48,7 +60,7 @@ namespace Timelapse
         {
             if (eventArgs.Key == Key.Space)
             {
-                CopyPreviousValuesPasteValues();
+                this.TryCopyPreviousValuesPasteValues();
             }
         }
         #endregion
@@ -143,14 +155,14 @@ namespace Timelapse
         }
 
         // Paste the data values from the previous copyable controls to the currently displayed controls
-        private void CopyPreviousValuesPasteValues()
+        private bool TryCopyPreviousValuesPasteValues()
         {
             int previousRow = this.dataHandler.ImageCache.CurrentRow - 1;
 
             // This is an unneeded test as the CopyPreviousButton should be disabled if these conditions are met
             if (this.IsDisplayingSingleImage() == false || previousRow < 0)
             {
-                return;
+                return false;
             }
 
             this.FilePlayer_Stop(); // In case the FilePlayer is going
@@ -162,6 +174,7 @@ namespace Timelapse
                     control.SetContentAndTooltip(this.dataHandler.FileDatabase.Files[previousRow].GetValueDisplayString(control.DataLabel));
                 }
             }
+            return true;
         }
         #endregion
     }

@@ -83,7 +83,7 @@ namespace Timelapse
         // Copy Previous Values
         private void MenuItemCopyPreviousValues_Click(object sender, RoutedEventArgs e)
         {
-            CopyPreviousValues_Click();
+            this.CopyPreviousValues_Click();
         }
 
         // Populate a data field from metadata (example metadata displayed from the currently selected image)

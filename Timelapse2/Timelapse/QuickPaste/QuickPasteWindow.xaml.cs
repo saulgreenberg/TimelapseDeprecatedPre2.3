@@ -98,8 +98,12 @@ namespace Timelapse.QuickPaste
                     Padding = new Thickness(5, 0, 5, 0),
                     HorizontalAlignment = HorizontalAlignment.Right
                 };
-                textblockShortcut.Inlines.Add("ctrl-" + shortcutKey++);
 
+                // We can't have more than 9 shortcut keys... one for each digit (except 0)
+                if (shortcutKey < 10)
+                { 
+                    textblockShortcut.Inlines.Add("ctrl-" + shortcutKey++);
+                }
                 DockPanel dockPanel = new DockPanel();
                 DockPanel.SetDock(textblockTitle, Dock.Left);
                 DockPanel.SetDock(textblockShortcut, Dock.Right);

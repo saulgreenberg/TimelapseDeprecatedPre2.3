@@ -408,7 +408,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <BulletDecorator Background="Transparent">
+                        <BulletDecorator Background="Transparent" >
                             <BulletDecorator.Bullet>
                                 <Border x:Name="Border"  
                                   Width="17" 
