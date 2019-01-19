@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -48,6 +49,40 @@ namespace Timelapse.Controls
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
         }
+        public override void SetContentAndTooltip(string value)
+        {
+            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
+            // Used to signify the indeterminate state in no or multiple selections in the overview.
+            if (value == null)
+            {
+                this.ContentControl.Text = Constant.Unicode.Ellipsis;
+                this.ContentControl.ToolTip = "Edit to change the " + this.Label + " for all selected images";
+                return;
+            }
+
+            // Otherwise, the note will be set to the provided value 
+            // If the value to be empty, we just make it the same as the tooltip so something meaningful is displayed..
+            this.ContentChanged = this.ContentControl.Text != value;
+            this.ContentControl.Text = value;
+            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
+        }
+
+        #region Visual Effects and Popup Previews
+        // Flash the ContentControl background
+        public override void FlashContentControlValue()
+        {
+            //base.FlashContentControl();
+            //Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
+            //if (border != null)
+            //{
+                this.ContentControl.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
+            //}
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
 
         public override void ShowPreviewControlValue(string value)
         {
@@ -70,32 +105,8 @@ namespace Timelapse.Controls
             this.HidePopupPreview();
         }
 
-        public override void FlashContentValue()
-        {
-            this.FlashContent();
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
-        }
-
-        public override void SetContentAndTooltip(string value)
-        {
-            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
-            // Used to signify the indeterminate state in no or multiple selections in the overview.
-            if (value == null)
-            {
-                this.ContentControl.Text = Constant.Unicode.Ellipsis;
-                this.ContentControl.ToolTip = "Edit to change the " + this.Label + " for all selected images";
-                return;
-            }
-
-            // Otherwise, the note will be set to the provided value 
-            // If the value to be empty, we just make it the same as the tooltip so something meaningful is displayed..
-            this.ContentChanged = this.ContentControl.Text != value;
-            this.ContentControl.Text = value;
-            this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
-        }
+ 
+        #endregion
+  
     }
 }

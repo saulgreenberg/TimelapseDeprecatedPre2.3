@@ -69,7 +69,7 @@ namespace Timelapse.Controls
         public abstract void ShowPreviewControlValue(string value);
         public abstract void HidePreviewControlValue();
         public abstract void FlashPreviewControlValue();
-        public abstract void FlashContentValue();
+        public abstract void FlashContentControlValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -213,7 +213,7 @@ namespace Timelapse.Controls
             this.PopupPreview.IsOpen = false;
         }
 
-        protected void FlashContent()
+        protected void FlashContentControl()
         {
             ColorAnimation foregroundAnimation;
             foregroundAnimation = new ColorAnimation()
@@ -275,6 +275,21 @@ namespace Timelapse.Controls
             DispatcherTimer timer = sender as DispatcherTimer;
             ((TextBlock)timer.Tag).FontStyle = FontStyles.Italic;
             timer.Stop();
+        }
+
+        // This is a standard color animation scheme that can be accessed by the other controls
+        protected ColorAnimation GetColorAnimation()
+        {
+            return new ColorAnimation()
+            {
+                From = Colors.LightGreen,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode = EasingMode.EaseIn
+                },
+            };
         }
     }
 }

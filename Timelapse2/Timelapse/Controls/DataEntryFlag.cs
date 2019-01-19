@@ -65,6 +65,35 @@ namespace Timelapse.Controls
             }
         }
 
+        public override void SetContentAndTooltip(string value)
+        {
+            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
+            // Used to signify the indeterminate state in no or multiple selections in the overview.
+            if (value == null)
+            {
+                this.ContentControl.IsChecked = null;
+                this.ContentControl.ToolTip = "Click to change the " + this.Label + " for all selected images";
+                return;
+            }
+
+            // Otherwise, the checkbox will be checked depending on whether the value is true or false,
+            // and the tooltip will be set to true or false. 
+            value = value.ToLower();
+            this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
+            this.ContentControl.ToolTip = this.LabelControl.ToolTip;
+        }
+
+        #region Visual Effects and Popup Previews
+        // Flash the ContentControl
+        public override void FlashContentControlValue()
+        {
+            Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
+            if (border != null)
+            {
+                border.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
+            }
+        }
+
         public override void ShowPreviewControlValue(string value)
         {
             // Create the popup overlay
@@ -89,50 +118,10 @@ namespace Timelapse.Controls
             this.HidePopupPreview();
         }
 
-        public override void FlashContentValue()
-        {
-            // Flash the checkmark.
-            // It would be better if we could flash the background, but it doesn't seem to work.
-            ColorAnimation strokAnimation;
-            strokAnimation = new ColorAnimation()
-            {
-                From = Colors.LightGreen,
-                AutoReverse = false,
-                Duration = new Duration(TimeSpan.FromSeconds(.6)),
-                EasingFunction = new ExponentialEase()
-                {
-                    EasingMode = EasingMode.EaseIn
-                },
-            };
-
-            Path path = (Path)this.ContentControl.Template.FindName("CheckMark", this.ContentControl);
-            if (path != null)
-            {
-                path.Stroke.BeginAnimation(SolidColorBrush.ColorProperty, strokAnimation);
-            }
-        }
-
         public override void FlashPreviewControlValue()
         {
             this.FlashPopupPreview();
         }
-
-        public override void SetContentAndTooltip(string value)
-        {
-            // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
-            // Used to signify the indeterminate state in no or multiple selections in the overview.
-            if (value == null)
-            {
-                this.ContentControl.IsChecked = null;
-                this.ContentControl.ToolTip = "Click to change the " + this.Label + " for all selected images";
-                return;
-            }
-
-            // Otherwise, the checkbox will be checked depending on whether the value is true or false,
-            // and the tooltip will be set to true or false. 
-            value = value.ToLower();
-            this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
-            this.ContentControl.ToolTip = this.LabelControl.ToolTip;
-        }
+        #endregion
     }
 }
