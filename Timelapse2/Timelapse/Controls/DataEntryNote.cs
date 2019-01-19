@@ -72,10 +72,13 @@ namespace Timelapse.Controls
         public override void FlashContentControlValue()
         {
             //base.FlashContentControl();
-            //Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
+            Border border = (Border)this.ContentControl.Template.FindName("Border", this.ContentControl);
             //if (border != null)
             //{
-                this.ContentControl.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
+            border.Background = Brushes.Red;
+            //this.ContentControl.Background = new SolidColorBrush(Colors.White);
+            //this.ContentControl.Background = new SolidColorBrush(Colors.Red);
+            //this.ContentControl.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
             //}
         }
 

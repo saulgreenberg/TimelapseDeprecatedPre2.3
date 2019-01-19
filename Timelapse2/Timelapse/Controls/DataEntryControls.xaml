@@ -11,7 +11,7 @@
         <!--Highlit Border Color Blue      #0000FF	0, 0, 255       Value="{StaticResource BorderBrushCommonHighlight}"-->
         <SolidColorBrush x:Key="BorderBrushCommonNormal" Color="LightBlue" />
         <SolidColorBrush x:Key="BorderBrushCommonHighlight" Color="Blue" />
-        
+
         <!--Normal  Border Thickness  1 "{StaticResource BorderThicknessCommonNormal}" -->
         <!--Highlit Border Thickness  2 "{StaticResource BorderThicknessCommonHighlight}" -->
         <Thickness  x:Key="BorderThicknessCommonNormal">1</Thickness>
@@ -26,8 +26,7 @@
             <Setter Property="Height" Value="25" />
         </Style>
 
-       
-        <!--NoteTextBox Style: Properties--> 
+        <!--NoteTextBox Style: Properties-->
         <Style x:Key="NoteTextBox" TargetType="TextBox">
             <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -65,10 +64,10 @@
                                 <Setter Property="BorderThickness" TargetName="border" Value="{StaticResource BorderThicknessCommonHighlight}" />
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
-            </ControlTemplate>
-            </Setter.Value>
+                    </ControlTemplate>
+                </Setter.Value>
             </Setter>
-    
+
         </Style>
 
         <!-- CounterTextBox Style: Properties -->
@@ -89,8 +88,8 @@
             <Setter Property="DefaultValue" Value="{x:Null}" />
             <Setter Property="AllowTextInput" Value="true" />
         </Style>
-        
-        
+
+
 
         <!-- DateTimeBox Style: Properties -->
         <Style x:Key="DateTimeBox" TargetType="xctk:DateTimePicker">
@@ -117,7 +116,7 @@
             <Setter Property="Focusable" Value="True" />
             <Setter Property="IsReadOnly" Value="False" />
         </Style>
-        
+
         <!-- ChoiceComboBox Style - implements a Flat Choice style -->
         <SolidColorBrush x:Key="ComboBoxNormalBackgroundBrush" Color="#fff" />
         <SolidColorBrush x:Key="ComboBoxDisabledForegroundBrush" Color="#888" />
@@ -131,7 +130,7 @@
                     <ColumnDefinition />
                     <ColumnDefinition Width="20" />
                 </Grid.ColumnDefinitions>
-                
+
                 <!-- ComboBox Toggle Button Border  -->
                 <Border Grid.ColumnSpan="2" Name="Border"
                     BorderBrush="{StaticResource BorderBrushCommonNormal}" 
@@ -142,7 +141,7 @@
                 <Border Grid.Column="1" Margin="1, 1, 1, 1" BorderBrush="#444" Name="ButtonBorder"
                     CornerRadius="0, 0, 0, 0" BorderThickness="0, 0, 0, 0" 
                     Background="{StaticResource ComboBoxNormalBackgroundBrush}" />
-                
+
                 <!-- ComboBox Toggle Button Arrow  -->
                 <Path Name="Arrow" Grid.Column="1" 
                     Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
@@ -164,7 +163,7 @@
                     <Setter Property="TextElement.Foreground" Value="{StaticResource ComboBoxDisabledForegroundBrush}"/>
                     <Setter Property="Shape.Fill" TargetName="Arrow" Value="#999"/>
                 </Trigger>
-                
+
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
@@ -243,12 +242,12 @@
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
-                             <!--When we tab to the control, accentuate the outline. -->
+                            <!--When we tab to the control, accentuate the outline. -->
                             <Trigger Property="ComboBox.IsFocused" Value="True">
                                 <Setter TargetName="PART_Border" Property="BorderThickness" Value="{StaticResource BorderThicknessCommonHighlight}" />
                                 <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BorderBrushCommonHighlight}" />
                             </Trigger>
-                            
+
                             <Trigger Property="ComboBox.IsDropDownOpen" Value="True">
                                 <Setter TargetName="PART_Border" Property="BorderThickness" Value="{StaticResource BorderThicknessCommonHighlight}" />
                                 <Setter TargetName="PART_Border" Property="BorderBrush" Value="{StaticResource BorderBrushCommonHighlight}" />
@@ -346,62 +345,61 @@
             </Setter>
         </Style>
 
+            <!-- Flag Checkbox Style: Fill brushes  -->
+            <SolidColorBrush x:Key="FlagBrushNormal" Color="#FFF"/>
+            <SolidColorBrush x:Key="FlagBrushDark" Color="#AAA"/>
+            <SolidColorBrush x:Key="FlagBrushDisabledForeground" Color="#888" />
+            <SolidColorBrush x:Key="FlagBrushDisabledBackground" Color="#EEE" />
 
-        <!-- Flag Checkbox Style: Fill brushes  -->
-        <SolidColorBrush x:Key="FlagBrushNormal" Color="#FFF"/>
-        <SolidColorBrush x:Key="FlagBrushDark" Color="#AAA"/>
-        <SolidColorBrush x:Key="FlagBrushDisabledForeground" Color="#888" />
-        <SolidColorBrush x:Key="FlagBrushDisabledBackground" Color="#EEE" />
+            <!-- Flag Checkbox Style: Border brushes -->
+            <SolidColorBrush x:Key="FlagBrushDisabledBorder" Color="#AAA" />
+            <SolidColorBrush x:Key="FlagBrushHighlightBorder" Color="#FF707070" />
+            <LinearGradientBrush x:Key="FlagBrushNormalBorder" StartPoint="0,0" EndPoint="0,1">
+                <GradientBrush.GradientStops>
+                    <GradientStopCollection>
+                        <GradientStop Color="#CCC" Offset="0.0"/>
+                        <GradientStop Color="#444" Offset="1.0"/>
+                    </GradientStopCollection>
+                </GradientBrush.GradientStops>
+            </LinearGradientBrush>
 
-        <!-- Flag Checkbox Style: Border brushes -->
-        <SolidColorBrush x:Key="FlagBrushDisabledBorder" Color="#AAA" />
-        <SolidColorBrush x:Key="FlagBrushHighlightBorder" Color="#FF707070" />
-        <LinearGradientBrush x:Key="FlagBrushNormalBorder" StartPoint="0,0" EndPoint="0,1">
-            <GradientBrush.GradientStops>
-                <GradientStopCollection>
-                    <GradientStop Color="#CCC" Offset="0.0"/>
-                    <GradientStop Color="#444" Offset="1.0"/>
-                </GradientStopCollection>
-            </GradientBrush.GradientStops>
-        </LinearGradientBrush>
+            <!-- Flag Checkbox Style: Glyph brushes -->
+            <SolidColorBrush x:Key="FlagBrushGlyph" Color="#444" />
+            <SolidColorBrush x:Key="FlagBrushGlyphLight" Color="Silver" />
 
-        <!-- Flag Checkbox Style: Glyph brushes -->
-        <SolidColorBrush x:Key="FlagBrushGlyph" Color="#444" />
-        <SolidColorBrush x:Key="FlagBrushGlyphLight" Color="Silver" />
-        
-        <Style x:Key="FlagCheckBox" TargetType="{x:Type CheckBox}">
-            <Setter Property="FocusVisualStyle">
-                <Setter.Value>
-                    <Style>
-                        <Setter Property="Control.Template">
-                            <Setter.Value>
-                                <ControlTemplate>
-                                    <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Background" Value="#FFF"/> 
-            <Setter Property="BorderBrush" Value="{StaticResource FlagBrushHighlightBorder}"/>
-            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="Height" Value="20" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type CheckBox}">
-                        <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border x:Name="checkBoxBorder" 
+            <Style x:Key="FlagCheckBox" TargetType="{x:Type CheckBox}">
+                <Setter Property="FocusVisualStyle">
+                    <Setter.Value>
+                        <Style>
+                            <Setter Property="Control.Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <Rectangle Margin="2" SnapsToDevicePixels="True" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Background" Value="#FFF"/>
+                <Setter Property="BorderBrush" Value="{StaticResource FlagBrushHighlightBorder}"/>
+                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Margin" Value="0,0,0,0"/>
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type CheckBox}">
+                            <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border x:Name="checkBoxBorder" 
                                     BorderBrush="{StaticResource FlagBrushNormalBorder}" 
                                     BorderThickness="{StaticResource BorderThicknessCommonNormal}" 
                                     Background="{StaticResource FlagBrushNormal}" 
@@ -411,123 +409,123 @@
                                     Height="17" 
                                     CornerRadius="2" 
                                     Margin="1" >
-                                <Grid x:Name="markGrid">
-                                    <Path x:Name="optionMark" 
+                                    <Grid x:Name="markGrid">
+                                        <Path x:Name="optionMark" 
                                           Width="11" 
                                           Height="11" 
                                           SnapsToDevicePixels="False" 
                                           Stroke="{StaticResource FlagBrushGlyph}"
                                           StrokeThickness="2"
                                           Data="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                        <ControlTemplate.Triggers>
- 
-                            <!-- IsMouseOver True: Highlight -->
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource FlagBrushDark}"/>
-                                <Setter Property="Background" TargetName="checkBoxBorder" Value="#FFF3F9FF"/>
-                            </Trigger>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
 
-                            <!-- IsEnabled False: Mute the colors  -->
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="checkBoxBorder" Property="Background" Value="{StaticResource FlagBrushDisabledBackground}" />
-                                <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{StaticResource FlagBrushDisabledBorder}" />
-                                <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushDisabledBorder}" />
-                                <Setter Property="Foreground" Value="{StaticResource FlagBrushDisabledForeground}"/>
-                                <!--<Setter Property="Background" TargetName="checkBoxBorder" Value="Red"/>-->
-                            </Trigger>
+                                <!-- IsMouseOver True: Highlight -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="BorderBrush" TargetName="checkBoxBorder" Value="{StaticResource FlagBrushDark}"/>
+                                    <Setter Property="Background" TargetName="checkBoxBorder" Value="#FFF3F9FF"/>
+                                </Trigger>
 
-                            <!-- Various conditions for IsPressed and IsChecked.
+                                <!-- IsEnabled False: Mute the colors  -->
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="checkBoxBorder" Property="Background" Value="{StaticResource FlagBrushDisabledBackground}" />
+                                    <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{StaticResource FlagBrushDisabledBorder}" />
+                                    <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushDisabledBorder}" />
+                                    <Setter Property="Foreground" Value="{StaticResource FlagBrushDisabledForeground}"/>
+                                    <!--<Setter Property="Background" TargetName="checkBoxBorder" Value="Red"/>-->
+                                </Trigger>
+
+                                <!-- Various conditions for IsPressed and IsChecked.
                                  The idea is that we preview a light checkmark (or ellipsis) when the button is pressed. -->
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="True" />
-                                    <Condition Property="IsChecked" Value="True" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="True" />
+                                        <Condition Property="IsChecked" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="True" />
-                                    <Condition Property="IsChecked" Value="False" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="True" />
+                                        <Condition Property="IsChecked" Value="False" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="False" />
-                                    <Condition Property="IsChecked" Value="False" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Collapsed"/>
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="False" />
+                                        <Condition Property="IsChecked" Value="False" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Collapsed"/>
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="False" />
-                                    <Condition Property="IsChecked" Value="True" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="False" />
+                                        <Condition Property="IsChecked" Value="True" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2,4 C 2,4 3,5 5,13 C 5,13 5,3 12,0"/>
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="True" />
-                                    <Condition Property="IsChecked" Value="{x:Null}" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2 8 L 3 8 M 5 8 L 6 8  M 8 8 L 9 8" />
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="True" />
+                                        <Condition Property="IsChecked" Value="{x:Null}" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="optionMark" Property="Stroke" Value="{StaticResource FlagBrushGlyphLight}" />
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2 8 L 3 8 M 5 8 L 6 8  M 8 8 L 9 8" />
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <MultiTrigger>
-                                <MultiTrigger.Conditions>
-                                    <Condition Property="IsPressed" Value="False" />
-                                    <Condition Property="IsChecked" Value="{x:Null}" />
-                                </MultiTrigger.Conditions>
-                                <MultiTrigger.Setters>
-                                    <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
-                                    <Setter TargetName="optionMark" Property="Data" Value="M 2 8 L 3 8 M 5 8 L 6 8  M 8 8 L 9 8" />
-                                </MultiTrigger.Setters>
-                            </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsPressed" Value="False" />
+                                        <Condition Property="IsChecked" Value="{x:Null}" />
+                                    </MultiTrigger.Conditions>
+                                    <MultiTrigger.Setters>
+                                        <Setter TargetName="optionMark" Property="Visibility" Value="Visible"/>
+                                        <Setter TargetName="optionMark" Property="Data" Value="M 2 8 L 3 8 M 5 8 L 6 8  M 8 8 L 9 8" />
+                                    </MultiTrigger.Setters>
+                                </MultiTrigger>
 
-                            <!-- IsKeyboardFocused: Highlight the Flag with a blue thick border -->
-                            <Trigger Property="IsKeyboardFocused" Value="true">
-                                <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{StaticResource BorderBrushCommonHighlight}"/>
-                                <Setter TargetName="checkBoxBorder" Property="BorderThickness" Value="{StaticResource BorderThicknessCommonHighlight}" />
-                            </Trigger>
+                                <!-- IsKeyboardFocused: Highlight the Flag with a blue thick border -->
+                                <Trigger Property="IsKeyboardFocused" Value="true">
+                                    <Setter TargetName="checkBoxBorder" Property="BorderBrush" Value="{StaticResource BorderBrushCommonHighlight}"/>
+                                    <Setter TargetName="checkBoxBorder" Property="BorderThickness" Value="{StaticResource BorderThicknessCommonHighlight}" />
+                                </Trigger>
 
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Container Style Properities -->
-        <Style x:Key="ContainerStyle" TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal"/>
-            <Setter Property="Margin" Value="0,0,10,0" />
-            <Setter Property="Height" Value="35"/>
-        </Style>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            <!-- Container Style Properities -->
+            <Style x:Key="ContainerStyle" TargetType="StackPanel">
+                <Setter Property="Orientation" Value="Horizontal"/>
+                <Setter Property="Margin" Value="0,0,10,0" />
+                <Setter Property="Height" Value="35"/>
+            </Style>
     </Control.Resources>
     <RichTextBox IsEnabled="True" IsDocumentEnabled="True" IsReadOnly="True">
 
