@@ -258,6 +258,7 @@
     <Compile Include="TimelapsePartialClasses\TimelapseFileShow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseAvalonDock.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseFocus.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseKeyboardShortcuts.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenusControlsEnableDisable.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileNavigationSlider.cs" />
