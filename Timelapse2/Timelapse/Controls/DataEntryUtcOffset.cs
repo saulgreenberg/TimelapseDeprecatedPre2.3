@@ -14,6 +14,11 @@ namespace Timelapse.Controls
         {
             get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
         }
+        public override UIElement GetContentControl
+        {
+            // We return the textbox part of the content control, as otherwise focus does not work properly when we try to set it on the content control
+            get { return (UIElement)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl); }
+        }
 
         public override bool IsContentControlEnabled
         {

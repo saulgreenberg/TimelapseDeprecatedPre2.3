@@ -17,6 +17,9 @@ namespace Timelapse.Controls
         /// <summary>Gets the position of the content control</summary>
         public abstract Point TopLeft { get; }
 
+        /// <summary>Gets the position of the content control</summary>
+        public abstract UIElement GetContentControl { get; }
+
         public abstract bool IsContentControlEnabled { get; }
         
         /// <summary>Gets the value of the control</summary>

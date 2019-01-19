@@ -470,7 +470,6 @@ namespace Timelapse
             if (focusedElement != null)
             {
                 type = focusedElement.GetType();
-
                 if (Constant.Control.KeyboardInputTypes.Contains(type))
                 {
                     if (DataEntryHandler.TryFindFocusedControl(focusedElement, out DataEntryControl focusedControl))
@@ -508,13 +507,11 @@ namespace Timelapse
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
                 if (control.ContentReadOnly == false && control.IsContentControlEnabled == true)
                 {
-                    //SAULXXXX WE NEED TO CHANGE THIS SO IT WORKS WITH A FLOATING DATAENTRY PANE
                     this.lastControlWithFocus = control.Focus(this);
-
-                    //System.Drawing.Point originalPosition = System.Windows.Forms.Cursor.Position;
-                    //System.Drawing.Point p = new System.Drawing.Point(System.Convert.ToInt32(control.TopLeft.X+2), System.Convert.ToInt32(control.TopLeft.Y+2));
-                    //System.Windows.Forms.Cursor.Position = p;
-                    //System.Windows.Forms.Cursor.Position = originalPosition;
+                    // There is a bug with Avalon: when the data control pane is floating the focus does not go to it via the above call
+                    // (although it does when its docked).
+                    // Setting the focus to the actual content control seems to fix it.
+                    control.GetContentControl.Focus();
                     return;
                 }
             }
@@ -560,8 +557,8 @@ namespace Timelapse
             }
         }
 
-        // When the Control Grid size changes, reposition the CopyPrevious Button depending on the width/height ratio
-        private void ControlGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+    // When the Control Grid size changes, reposition the CopyPrevious Button depending on the width/height ratio
+    private void ControlGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (e.NewSize.Height + 150 > e.NewSize.Width) // We include 150, as otherwise it will bounce around as repositioning the button changes the size
             {
@@ -753,7 +750,7 @@ namespace Timelapse
         private void TrySetKeyboardFocusToMarkableCanvas(bool checkForControlFocus, InputEventArgs eventArgs)
         {
             // Ensures that a floating window does not go behind the main window 
-            this.DockingManager_FloatingDataEntryWindowWindowTopmost(true);
+            this.DockingManager_FloatingDataEntryWindowTopmost(true);
 
             // If the text box or combobox has the focus, we usually don't want to reset the focus. 
             // However, there are a few instances (e.g., after enter has been pressed) where we no longer want it 

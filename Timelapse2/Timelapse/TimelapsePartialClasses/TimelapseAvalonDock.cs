@@ -16,7 +16,9 @@ namespace Timelapse
             {
                 DockingManager_FloatingDataEntryWindowLimitSize();
             }
-            this.FindBoxSetVisibility(false);
+            // SAULXXX NOT SURE WHY I ADDED THIS HERE< BUT IT SEEMS TO HIDE THE FINDBOX WHEN THE USER FIRST INVOKES IT
+            // IF IT BEHAVES OK< DELETE THIS COMMENTED OUT LINE
+            // this.FindBoxSetVisibility(false);
         }
 
         // Layout Updated 
@@ -24,13 +26,13 @@ namespace Timelapse
         {
             if (this.DockingManager.FloatingWindows.Count() > 0)
             {
-                this.DockingManager_FloatingDataEntryWindowWindowTopmost(false);
+                this.DockingManager_FloatingDataEntryWindowTopmost(false);
             }
         }
 
         // Enable or disable floating windows normally always being on top. 
         // Also shows floating windows in the task bar if it can be hidden
-        private void DockingManager_FloatingDataEntryWindowWindowTopmost(bool topMost)
+        private void DockingManager_FloatingDataEntryWindowTopmost(bool topMost)
         {
             foreach (LayoutFloatingWindowControl floatingWindow in this.DockingManager.FloatingWindows)
             {

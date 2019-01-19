@@ -19,6 +19,10 @@ namespace Timelapse.Controls
         {
             get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
         }
+        public override UIElement GetContentControl
+        {
+            get { return this.ContentControl; }
+        }
 
         public override bool IsContentControlEnabled
         {
