@@ -8,6 +8,7 @@
         MouseEnter,
         MouseLeave,
         Paste,
+        ShortcutPaste,
         PositionChanged
     }
 }

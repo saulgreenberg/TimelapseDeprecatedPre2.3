@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Controls;
+using Timelapse.Enums;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 
@@ -96,7 +97,10 @@ namespace Timelapse
                     QuickPasteDataControlsUnHighlight(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Paste:
-                    QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry);
+                    QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnums.FlashPreview);
+                    break;
+                case QuickPasteEventIdentifierEnum.ShortcutPaste:
+                    QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnums.FlashBackground);
                     break;
                 case QuickPasteEventIdentifierEnum.PositionChanged:
                     this.state.QuickPasteWindowPosition = this.quickPasteWindow.Position;
@@ -257,7 +261,7 @@ namespace Timelapse
         }
 
         // Quickpast the given entry into the data control
-        private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry)
+        private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnums flash)
         {
             if (!this.IsDisplayingSingleImage())
             {
@@ -278,14 +282,21 @@ namespace Timelapse
                     continue;
                 }
 
-                // Find the data entry control that matches the quickPasteItem's DataLael
+                // Find the data entry control that matches the quickPasteItem's DataLabel
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
                     DataEntryControl control = pair.Value;
                     if (control.DataLabel == item.DataLabel)
                     {
                         control.SetContentAndTooltip(item.Value);
-                        control.FlashPreviewControlValue();
+                        if (flash == FlashEnums.FlashPreview)
+                        { 
+                            control.FlashPreviewControlValue();
+                        }
+                        else
+                        {
+                            control.FlashContentControlValue();
+                        }
                         break;
                     }
                 }

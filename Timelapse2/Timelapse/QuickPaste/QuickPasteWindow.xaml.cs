@@ -182,7 +182,7 @@ namespace Timelapse.QuickPaste
             if (shortcutIndex <= this.QuickPasteEntries.Count)
             {
                 QuickPasteEntry quickPasteEntry = this.QuickPasteEntries[shortcutIndex - 1];
-                this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
+                this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.ShortcutPaste));
             }
         }
 
