@@ -75,7 +75,11 @@ namespace Timelapse
                 {
                     this.dataHandler.IsProgrammaticControlUpdate = false;
                 }
-                throw new Exception(String.Format("in FileShow: possible problem with fileIndex, where its not a valid row index in the image table.", fileIndex));
+                // We used to throw a new exception, but lets see what happens if we just return instead.
+                // i.e., lets just abort.
+                // throw new Exception(String.Format("in FileShow: possible problem with fileIndex value is {0}, where its not a valid row index in the image table.", fileIndex));
+                System.Diagnostics.Debug.Print(String.Format("in FileShow: possible problem with fileIndex (value is {0}, where its not a valid row index in the image table.", fileIndex));
+                return;
             }
 
             // Update each control with the data for the now current image
