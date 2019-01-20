@@ -404,7 +404,7 @@
                                             MouseEnter="CopyPreviousValues_MouseEnterOrLeave" 
                                             MouseLeave="CopyPreviousValues_MouseEnterOrLeave" 
                                             LostFocus="CopyPreviousValues_LostFocus"
-                                            KeyDown="CopyPreviousValues_KeyDown">
+                                            PreviewKeyDown="CopyPreviousValues_KeyDown">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock 
                                                 TextWrapping="Wrap" 

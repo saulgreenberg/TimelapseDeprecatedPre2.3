@@ -55,12 +55,12 @@ namespace Timelapse
         }
 
         // When the CopyPreviousValues button gets a space entered while it is focused,
-        // copy the data values from the previous control to the current one
-        private void CopyPreviousValues_KeyDown(object sender, KeyEventArgs eventArgs)
+        // make it do nothing - as otherwise it will activate it.
+        private void CopyPreviousValues_PreviewKeyDown(object sender, KeyEventArgs eventArgs)
         {
             if (eventArgs.Key == Key.Space)
             {
-                this.TryCopyPreviousValuesPasteValues();
+                eventArgs.Handled = true;
             }
         }
         #endregion
