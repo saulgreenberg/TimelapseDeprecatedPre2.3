@@ -15,7 +15,6 @@ using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
 using MessageBox = Timelapse.Dialog.MessageBox;
 using OpenFileDialog = System.Windows.Forms.OpenFileDialog;
-using Rectangle = System.Drawing.Rectangle;
 
 namespace Timelapse.Util
 {

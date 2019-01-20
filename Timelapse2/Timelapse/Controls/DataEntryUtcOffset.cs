@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
