@@ -60,7 +60,7 @@ namespace Timelapse
         {
             if (eventArgs.Key == Key.Space)
             {
-                eventArgs.Handled = true;
+               eventArgs.Handled = true;
             }
         }
         #endregion

@@ -400,11 +400,12 @@
                                             Width="Auto" Height="Auto" MinHeight="60" MinWidth="60" 
                                             ToolTip="Copy selected data as recorded on the previous image. Applies only to data marked 'Copyable' in the code template."
                                             IsTabStop="True" 
+                                            IsDefault="False"
                                             Click="MenuItemCopyPreviousValues_Click"  
                                             MouseEnter="CopyPreviousValues_MouseEnterOrLeave" 
                                             MouseLeave="CopyPreviousValues_MouseEnterOrLeave" 
                                             LostFocus="CopyPreviousValues_LostFocus"
-                                            PreviewKeyDown="CopyPreviousValues_KeyDown">
+                                            PreviewKeyDown="CopyPreviousValues_PreviewKeyDown">
                                         <StackPanel Orientation="Vertical">
                                             <TextBlock 
                                                 TextWrapping="Wrap" 
@@ -413,6 +414,9 @@
                                             <DockPanel Margin="0,-6,0,-6" Width="Auto">
                                                 <TextBlock 
                                                 FontWeight="Bold" Foreground="SlateGray" FontSize="16" DockPanel.Dock="Left" TextAlignment="Left">&#8592;
+                                                </TextBlock>
+                                                <TextBlock 
+                                                FontWeight="Normal" Foreground="SlateGray" FontSize="16" DockPanel.Dock="Left" TextAlignment="Center" HorizontalAlignment="Center" Padding="6,0,0,0">c
                                                 </TextBlock>
                                                 <TextBlock 
                                                 FontWeight="Bold" Foreground="SlateGray" FontSize="16" DockPanel.Dock="Right" TextAlignment="Right">&#8594;
