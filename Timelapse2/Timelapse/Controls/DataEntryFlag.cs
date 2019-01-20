@@ -93,6 +93,7 @@ namespace Timelapse.Controls
             Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
             if (border != null)
             {
+                border.Background = new SolidColorBrush(Colors.White);
                 border.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
             }
         }

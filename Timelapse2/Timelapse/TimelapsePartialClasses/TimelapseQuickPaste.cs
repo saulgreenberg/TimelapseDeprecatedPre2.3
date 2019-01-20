@@ -216,7 +216,6 @@ namespace Timelapse
                     DataEntryControl control = pair.Value;
                     if (control.DataLabel == item.DataLabel)
                     {
-                        control.Container.Background = Constant.Control.QuickPasteFieldHighlightBrush;
                         control.ShowPreviewControlValue(item.Value);
                     }
                 }
@@ -301,7 +300,6 @@ namespace Timelapse
                     }
                 }
             }
-            this.MarkableCanvas.Focus();
         }
 
         // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
