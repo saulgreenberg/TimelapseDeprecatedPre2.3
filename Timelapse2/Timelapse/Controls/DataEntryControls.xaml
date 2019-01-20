@@ -42,8 +42,8 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Border x:Name="border" BorderBrush="{StaticResource BorderBrushCommonNormal}" BorderThickness="{StaticResource BorderThicknessCommonNormal}" >
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        <Border x:Name="border" BorderBrush="{StaticResource BorderBrushCommonNormal}" BorderThickness="{StaticResource BorderThicknessCommonNormal}" Background="White">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" Background="White"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <!-- If its Focuses, make the border thicker AND if its not Readonly (i.e., editable, also change the border color -->
@@ -88,8 +88,6 @@
             <Setter Property="DefaultValue" Value="{x:Null}" />
             <Setter Property="AllowTextInput" Value="true" />
         </Style>
-
-
 
         <!-- DateTimeBox Style: Properties -->
         <Style x:Key="DateTimeBox" TargetType="xctk:DateTimePicker">
@@ -194,6 +192,7 @@
                     <ControlTemplate TargetType="ComboBox">
                         <Border Name="PART_Border" BorderBrush="{StaticResource BorderBrushCommonNormal}" BorderThickness="{StaticResource BorderThicknessCommonNormal}">
                             <Grid>
+                                
                                 <!-- Toggle button  -->
                                 <ToggleButton Name="ToggleButton" Grid.Column="2"
                                 ClickMode="Press" 
@@ -201,12 +200,15 @@
                                 IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                 Template="{StaticResource ComboBoxToggleButtonTemplate}"/>
 
-                                <ContentPresenter Name="ContentSite" Margin="5, 3, 23, 3" IsHitTestVisible="False"
-                              HorizontalAlignment="Left" VerticalAlignment="Center"                              
-                              Content="{TemplateBinding ComboBox.SelectionBoxItem}" 
-                              ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}"
-                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
+                                <!--Content Presenter-->
+                                <ContentPresenter Name="ContentSite" 
+                                    Margin="5, 3, 23, 3" IsHitTestVisible="False"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"                              
+                                    Content="{TemplateBinding ComboBox.SelectionBoxItem}" 
+                                    ContentTemplate="{TemplateBinding ComboBox.SelectionBoxItemTemplate}"
+                                    ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
 
+                                <!--PART_EditableTextBox-->                                
                                 <TextBox Name="PART_EditableTextBox" Margin="3, 3, 23, 3"                     
                                 IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Visibility="Hidden" Background="Transparent"

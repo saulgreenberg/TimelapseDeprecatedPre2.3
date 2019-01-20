@@ -48,6 +48,7 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
+        #region Event Handlers
         // Highlight the border whenever the control gets the keyboard focus
         private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
@@ -60,26 +61,9 @@ namespace Timelapse.Controls
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
+        #endregion
 
-        public override void ShowPreviewControlValue(string value)
-        {
-            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
-        }
-        public override void HidePreviewControlValue()
-        {
-            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
-        }
-
-        public override void FlashContentControlValue()
-        {
-            base.FlashContentControl();
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
-        }
-
+        #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
@@ -92,5 +76,28 @@ namespace Timelapse.Controls
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for the selected image";
         }
+        #endregion
+
+        #region Visual Effects and Popup Previews
+        // Flash the content area of the control
+        public override void FlashContentControlValue()
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        public override void HidePreviewControlValue()
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            // DateTime is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        #endregion
     }
 }

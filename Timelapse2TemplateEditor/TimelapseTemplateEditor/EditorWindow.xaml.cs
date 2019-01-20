@@ -897,7 +897,7 @@ namespace Timelapse.Editor
 
                 // grid cells are editable by default
                 // disable cells which should not be editable
-                DataGridCellsPresenter presenter = GetVisualChild<DataGridCellsPresenter>(row);
+                DataGridCellsPresenter presenter = Utilities.GetVisualChild<DataGridCellsPresenter>(row);
                 for (int column = 0; column < this.TemplateDataGrid.Columns.Count; column++)
                 {
                     DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(column);
@@ -1038,34 +1038,9 @@ namespace Timelapse.Editor
             }
 
             currentRow = (DataGridRow)this.TemplateDataGrid.ItemContainerGenerator.ContainerFromIndex(this.TemplateDataGrid.SelectedIndex);
-            DataGridCellsPresenter presenter = EditorWindow.GetVisualChild<DataGridCellsPresenter>(currentRow);
+            DataGridCellsPresenter presenter = Utilities.GetVisualChild<DataGridCellsPresenter>(currentRow);
             currentCell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(this.TemplateDataGrid.CurrentColumn.DisplayIndex);
             return currentCell != null;
-        }
-
-        /// <summary>
-        /// Used in this code to get the child of a DataGridRows, DataGridCellsPresenter. This can be used to get the DataGridCell.
-        /// WPF does not make it easy to get to the actual cells.
-        /// </summary>
-        // Code from: http://techiethings.blogspot.com/2010/05/get-wpf-datagrid-row-and-cell.html
-        private static T GetVisualChild<T>(Visual parent) where T : Visual
-        {
-            T child = default(T);
-            int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < numVisuals; i++)
-            {
-                Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
-                child = v as T;
-                if (child == null)
-                {
-                    child = GetVisualChild<T>(v);
-                }
-                if (child != null)
-                {
-                    break;
-                }
-            }
-            return child;
         }
         #endregion
 

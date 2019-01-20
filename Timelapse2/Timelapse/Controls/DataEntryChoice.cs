@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -85,6 +87,7 @@ namespace Timelapse.Controls
             this.ContentControl.SelectedIndex = 1;
         }
 
+        #region Event Handlers
         // Users may want to use the text search facility on the combobox, where they type the first letter and then enter
         // For some reason, it wasn't working on pressing 'enter' so this handler does that.
         // Whenever a return or enter is detected on the combobox, it finds the highlight item (i.e., that is highlit from the text search)
@@ -130,40 +133,9 @@ namespace Timelapse.Controls
                 }
             }
         }
+        #endregion
 
-        public override void ShowPreviewControlValue(string value)
-        {
-            // Create the popup overlay
-            if (this.PopupPreview == null)
-            {
-                // We want to expose the arrow on the choice menu, so subtract its width and move the horizontal offset over
-                double arrowWidth = 20;
-                double width = this.ContentControl.Width - arrowWidth;
-                double horizontalOffset = -arrowWidth / 2;
-
-                // Padding is used to align the text so it begins at the same spot as the control's text
-                Thickness padding = new Thickness(5.5, 6.5, 0, 0);
-
-                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
-            }
-            // Show the popup
-            this.ShowPopupPreview(value);
-        }
-        public override void HidePreviewControlValue()
-        {
-            this.HidePopupPreview();
-        }
-
-        public override void FlashContentControlValue()
-        {
-            base.FlashContentControl();
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
-        }
-
+        #region Setting Content and Tooltip
         // Set the Control's Content and Tooltip to the provided value
         public override void SetContentAndTooltip(string value)
         {
@@ -185,5 +157,52 @@ namespace Timelapse.Controls
             this.ContentControl.Text = value;
             this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? "Blank entry" : value;
         }
+        #endregion
+
+        #region Visual Effects and Popup Previews
+        // Flash the content area of the control
+        public override void FlashContentControlValue()
+        {
+            Border contentHost = (Border)this.ContentControl.Template.FindName("PART_Border", this.ContentControl);
+            if (contentHost != null)
+            {
+                TextBlock tb = Utilities.GetVisualChild<TextBlock>(contentHost);
+                if (tb != null)
+                {
+                    tb.Background = new SolidColorBrush(Colors.White);
+                    tb.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
+                }
+            }
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to expose the arrow on the choice menu, so subtract its width and move the horizontal offset over
+                double arrowWidth = 20;
+                double width = this.ContentControl.Width - arrowWidth;
+                double horizontalOffset = -arrowWidth / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(5.5, 6.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+
+        public override void HidePreviewControlValue()
+        {
+            this.HidePopupPreview();
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+        #endregion
     }
 }

@@ -55,6 +55,7 @@ namespace Timelapse.Controls
             this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
         }
 
+        #region Event Handlers
         // Ignore these navigation key events, as otherwise they act as tabs which does not conform to how we navigate
         // between other control types
         private void ContentControl_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -64,7 +65,9 @@ namespace Timelapse.Controls
                 e.Handled = true;
             }
         }
+        #endregion
 
+        #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {
             // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
@@ -82,15 +85,16 @@ namespace Timelapse.Controls
             this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
             this.ContentControl.ToolTip = this.LabelControl.ToolTip;
         }
+        #endregion
 
         #region Visual Effects and Popup Previews
-        // Flash the ContentControl
+        // Flash the content area of the control
         public override void FlashContentControlValue()
         {
             Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
             if (border != null)
             {
-                border.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
+                border.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
             }
         }
 

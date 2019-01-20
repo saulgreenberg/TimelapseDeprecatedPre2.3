@@ -49,6 +49,8 @@ namespace Timelapse.Controls
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
         }
+
+        #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {
             // If the value is null, an ellipsis will be drawn in the checkbox (see Checkbox style)
@@ -66,20 +68,18 @@ namespace Timelapse.Controls
             this.ContentControl.Text = value;
             this.ContentControl.ToolTip = String.IsNullOrEmpty(value) ? value : this.LabelControl.ToolTip;
         }
+        #endregion
 
         #region Visual Effects and Popup Previews
-        // Flash the ContentControl background
+        // Flash the content area of the control
         public override void FlashContentControlValue()
         {
-            //base.FlashContentControl();
-            Border border = (Border)this.ContentControl.Template.FindName("Border", this.ContentControl);
-            //if (border != null)
-            //{
-            border.Background = Brushes.Red;
-            //this.ContentControl.Background = new SolidColorBrush(Colors.White);
-            //this.ContentControl.Background = new SolidColorBrush(Colors.Red);
-            //this.ContentControl.Background.BeginAnimation(SolidColorBrush.ColorProperty, base.GetColorAnimation());
-            //}
+            ScrollViewer contentHost = (ScrollViewer)this.ContentControl.Template.FindName("PART_ContentHost", this.ContentControl);
+            if (contentHost != null)
+            {
+                contentHost.Background = new SolidColorBrush(Colors.White);
+                contentHost.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
+            }
         }
 
         public override void FlashPreviewControlValue()
@@ -107,9 +107,6 @@ namespace Timelapse.Controls
         {
             this.HidePopupPreview();
         }
-
- 
         #endregion
-  
     }
 }

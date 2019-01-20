@@ -63,23 +63,6 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
-        // Highlight the border and make the text caret appear whenever the control gets the keyboard focus
-        private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
-        {
-            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
-            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
-            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
-            {
-                textBox.IsReadOnlyCaretVisible = true;
-            }
-        }
-
-        private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
-        {
-            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
-            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
-        }
-
         #region Event Handlers
         // Behaviour: enable the counter textbox for editing
         // SAULXX The textbox in the IntegerUpDown is, for some unknown reason, disabled and thus disallows text input.
@@ -124,44 +107,27 @@ namespace Timelapse.Controls
             // Also set the keyboard focus to this control 
             Keyboard.Focus(this.ContentControl);
         }
+
+        // Behaviour: Highlight the border and make the text caret appear whenever the control gets the keyboard focus
+        private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessHighlight);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorHighlight;
+            if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
+            {
+                textBox.IsReadOnlyCaretVisible = true;
+            }
+        }
+
+        // Behaviour: Revert the border whenever the control loses the keyboard focus
+        private void ContentControl_LostKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
+            this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
+        }
         #endregion
 
-        public override void ShowPreviewControlValue(string value)
-        {
-            // Create the popup overlay
-            if (this.PopupPreview == null)
-            {
-                // We want to expose the up/down controls, so subtract its width and move the horizontal offset over
-                double integerUpDownWidth = 16;
-                double width = this.ContentControl.Width - integerUpDownWidth;
-                double horizontalOffset = -integerUpDownWidth / 2;
-
-                // Padding is used to align the text so it begins at the same spot as the control's text
-                Thickness padding = new Thickness(7, 5.5, 0, 0);
-
-                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
-            }
-            // Show the popup
-            this.ShowPopupPreview(value);
-        }
-        public override void HidePreviewControlValue()
-        {
-            if (this.PopupPreview != null)
-            { 
-                this.HidePopupPreview();
-            }
-        }
-
-        public override void FlashContentControlValue()
-        {
-            base.FlashContentControl();
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
-        }
-
+        #region Setting Content and Tooltip
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {
@@ -214,5 +180,50 @@ namespace Timelapse.Controls
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for all selected images";
         }
+        #endregion
+
+        #region Visual Effects and Popup Previews
+        // Flash the content area of the control
+        public override void FlashContentControlValue()
+        {
+            TextBox contentHost = (TextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
+            if (contentHost != null)
+            {
+                contentHost.Background = new SolidColorBrush(Colors.White);
+                contentHost.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
+            }
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to expose the up/down controls, so subtract its width and move the horizontal offset over
+                double integerUpDownWidth = 16;
+                double width = this.ContentControl.Width - integerUpDownWidth;
+                double horizontalOffset = -integerUpDownWidth / 2;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(7, 5.5, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Show the popup
+            this.ShowPopupPreview(value);
+        }
+        public override void HidePreviewControlValue()
+        {
+            if (this.PopupPreview != null)
+            { 
+                this.HidePopupPreview();
+            }
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
+        }
+        #endregion
     }
 }

@@ -45,6 +45,7 @@ namespace Timelapse.Controls
             // configure the various elements
         }
 
+        #region Event Handlers
         // Highlight the border whenever the control gets the keyboard focus
         private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {
@@ -57,33 +58,16 @@ namespace Timelapse.Controls
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
         }
+        #endregion
 
-        public override void ShowPreviewControlValue(string value)
-        {
-            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
-        }
-        public override void HidePreviewControlValue()
-        {
-            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
-        }
-
-        public override void FlashContentControlValue()
-        {
-            base.FlashContentControl();
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
-        }
-
+        #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {
             if (value == null)
             {
                 if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
                 {
-                   textBox.Text = (value != null) ? value : Constant.Unicode.Ellipsis;
+                    textBox.Text = (value != null) ? value : Constant.Unicode.Ellipsis;
                 }
             }
             else
@@ -95,9 +79,32 @@ namespace Timelapse.Controls
                 // desired value ot actually display it
                 double hours = double.Parse(value);
                 this.ContentControl.Value = TimeSpan.FromHours(hours + 1);
-                this.ContentControl.Value = TimeSpan.FromHours(hours); 
+                this.ContentControl.Value = TimeSpan.FromHours(hours);
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for the selected image";
         }
+        #endregion
+
+        #region Visual Effects and Popup Previews
+        // Flash the content area of the control
+        public override void FlashContentControlValue()
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
+        public override void ShowPreviewControlValue(string value)
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        public override void HidePreviewControlValue()
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+
+        public override void FlashPreviewControlValue()
+        {
+            // UtcOffset is never copyable or a candidate for quickpaste, so we do nothing
+        }
+        #endregion
     }
 }
