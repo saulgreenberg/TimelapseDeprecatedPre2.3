@@ -195,7 +195,6 @@ namespace Timelapse
             {
                 return; // only allow highightng in single image mode
             }
-
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
             if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
