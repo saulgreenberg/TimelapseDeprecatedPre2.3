@@ -122,7 +122,6 @@ namespace Timelapse
                 FilePlayer_Stop(); // In case the FilePlayer is going
                 return eventData.Key != Key.Escape && eventData.Key != Key.Tab;
             }
-
             return false;
         }
 

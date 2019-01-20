@@ -184,7 +184,7 @@ namespace Timelapse.Controls
 
         #region Visual Effects and Popup Previews
         // Flash the content area of the control
-        public override void FlashContentControlValue()
+        public override void FlashContentControl()
         {
             TextBox contentHost = (TextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
             if (contentHost != null)

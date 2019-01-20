@@ -59,9 +59,13 @@ namespace Timelapse.Controls
             // this is needed by callbacks such as DataEntryHandler.Container_PreviewMouseRightButtonDown() and TimelapseWindow.CounterControl_MouseLeave()
             this.Container.Tag = this;
         }
+
         public abstract void SetContentAndTooltip(string value);
 
-        // These two methods allow us to temporarily display an arbitrary string value into the data field
+        // Flash the background of the content control area
+        public abstract void FlashContentControl();
+
+        // These methods allow us to temporarily display an arbitrary string value into the data field
         // This should alwasy be followed by restoring the original contents.
         // An example of its use is to show the user what will be placed in the data control if the user continues their action
         // e.g., moving the mouse over a quickpaste or copyprevious buttons will display potential values,
@@ -69,7 +73,6 @@ namespace Timelapse.Controls
         public abstract void ShowPreviewControlValue(string value);
         public abstract void HidePreviewControlValue();
         public abstract void FlashPreviewControlValue();
-        public abstract void FlashContentControlValue();
     }
 
     // A generic control comprises a stack panel containing 
@@ -153,7 +156,10 @@ namespace Timelapse.Controls
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
             return (IInputElement)this.ContentControl;
         }
-        protected Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
+
+        #region Visual Effects and Popup Previews
+
+        protected virtual Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
         {
             // Creatre a textblock and align it so the text is exactly at the same position as the control's text
             TextBlock popupText = new TextBlock
@@ -192,7 +198,7 @@ namespace Timelapse.Controls
             return popup;
         }
 
-        protected void ShowPopupPreview(string value)
+        protected virtual void ShowPopupPreview(string value)
         {
             Border border = (Border)this.PopupPreview.Child;
             TextBlock popupText = (TextBlock)border.Child;
@@ -213,26 +219,9 @@ namespace Timelapse.Controls
             this.PopupPreview.IsOpen = false;
         }
 
-        protected void FlashContentControl()
-        {
-            ColorAnimation foregroundAnimation;
-            foregroundAnimation = new ColorAnimation()
-            {
-                From = Colors.LightGreen,
-                AutoReverse = false,
-                Duration = new Duration(TimeSpan.FromSeconds(.6)),
-                EasingFunction = new ExponentialEase()
-                {
-                    EasingMode = EasingMode.EaseIn
-                },
-            };
-            this.ContentControl.Foreground = new SolidColorBrush(Colors.Black);
-            this.ContentControl.Foreground.BeginAnimation(SolidColorBrush.ColorProperty, foregroundAnimation);
-        }
-
         // Create a flash effect for the popup. We use this to signal that the 
         // preview text has been selected
-        protected void FlashPopupPreview()
+        protected virtual void FlashPopupPreview()
         {
             if (this.PopupPreview == null || this.PopupPreview.Child == null)
             {
@@ -291,5 +280,6 @@ namespace Timelapse.Controls
                 },
             };
         }
+        #endregion
     }
 }

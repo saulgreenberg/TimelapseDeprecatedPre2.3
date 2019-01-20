@@ -41,20 +41,8 @@ namespace Timelapse
                 return; // No images are loaded, so don't try to interpret any keys
             }
 
-            // Don't interpret keyboard shortcuts if the focus is on a control in the control grid, as the text entered may be directed
-            // to the controls within it. That is, if a textbox or combo box has the focus, then take no as this is normal text input
-            // and NOT a shortcut key.  Similarly, if a menu is displayed keys should be directed to the menu rather than interpreted as
-            // shortcuts.
-            if (this.SendKeyToDataEntryControlOrMenu(currentKey))
-            {
-                return;
-            }
-
-            // Interpret key as a possible shortcut key. 
-            // Depending on the key, take the appropriate action
-
-            // First, lets see if its a valid quickpaste shortcut key (Control-number).
-            // If so, send it to the Quickpaste window.
+            // First, try to interpret key as a possible valid quickpaste shortcut key. 
+            // If so, send it to the Quickpaste window and mark the event as handled.
             if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) &&
                  ((currentKey.Key >= Key.D0 && currentKey.Key <= Key.D9) || (currentKey.Key >= Key.NumPad0 && currentKey.Key <= Key.NumPad9)))
             {
@@ -69,13 +57,22 @@ namespace Timelapse
                     if (Int32.TryParse(key, out int shortcutIndex) && shortcutIndex != 0)
                     {
                         this.quickPasteWindow.TryQuickPasteShortcut(shortcutIndex);
+                        currentKey.Handled = true;
                     }
-                }
-                currentKey.Handled = true;
+                } 
                 return;
             }
 
-            // Its not, so test for other shortcut keys
+            // Next, don't interpret keyboard shortcuts if the focus is on a control in the control grid, as the text entered may be directed
+            // to the controls within it. That is, if a textbox or combo box has the focus, then take no as this is normal text input
+            // and NOT a shortcut key.  Similarly, if a menu is displayed keys should be directed to the menu rather than interpreted as
+            // shortcuts.
+            if (this.SendKeyToDataEntryControlOrMenu(currentKey))
+            {
+                return;
+            }
+
+            // Finally, test for other shortcut keys and take the appropriate action as needed
             int keyRepeatCount = this.state.GetKeyRepeatCount(currentKey);
             switch (currentKey.Key)
             {

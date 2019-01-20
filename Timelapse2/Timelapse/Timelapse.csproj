@@ -161,6 +161,7 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Enums\FlashEnums.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
