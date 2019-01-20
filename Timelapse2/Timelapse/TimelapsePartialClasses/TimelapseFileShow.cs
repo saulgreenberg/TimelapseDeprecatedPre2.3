@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Timelapse.Controls;
+using Timelapse.Enums;
 using Timelapse.Images;
 
 namespace Timelapse
@@ -174,7 +175,7 @@ namespace Timelapse
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
         }
 
-        private bool TryFileShowWithoutSliderCallback(bool forward, ModifierKeys modifiers)
+        private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
         {
             // Check to see if there are any images to show, 
             if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
@@ -191,10 +192,10 @@ namespace Timelapse
             {
                 increment *= 10;
             }
-            return TryFileShowWithoutSliderCallback(forward, increment);
+            return TryFileShowWithoutSliderCallback(direction, increment);
         }
 
-        private bool TryFileShowWithoutSliderCallback(bool forward, int increment)
+        private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, int increment)
         {
             // Check to see if there are any images to show, 
             if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
@@ -202,7 +203,7 @@ namespace Timelapse
                 return false;
             }
 
-            int desiredRow = forward
+            int desiredRow = (direction == DirectionEnum.Next)
                 ? this.dataHandler.ImageCache.CurrentRow + increment
                 : this.dataHandler.ImageCache.CurrentRow - increment;
 

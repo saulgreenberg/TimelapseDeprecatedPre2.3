@@ -251,7 +251,7 @@
     <Compile Include="Dialog\TemplateChangedAndUpdate.xaml.cs">
       <DependentUpon>TemplateChangedAndUpdate.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Enums\FilePlayerDirectionEnum.cs" />
+    <Compile Include="Enums\DirectionEnum.cs" />
     <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />

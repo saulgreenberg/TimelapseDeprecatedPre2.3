@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Enums;
 
 namespace Timelapse
 {
@@ -25,13 +26,13 @@ namespace Timelapse
         // View next filein this image set
         private void MenuItemShowNextFile_Click(object sender, RoutedEventArgs e)
         {
-            this.TryFileShowWithoutSliderCallback(true, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(DirectionEnum.Next, ModifierKeys.None);
         }
 
         // View previous file in this image set
         private void MenuItemShowPreviousFile_Click(object sender, RoutedEventArgs e)
         {
-            this.TryFileShowWithoutSliderCallback(false, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(DirectionEnum.Previous, ModifierKeys.None);
         }
 
         // Zoom in

@@ -106,21 +106,20 @@ namespace Timelapse
                     // So I disabled throttling as otherwise it throttles when it shouldn't
                     if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
-                        System.Diagnostics.Debug.Print("keyRepeatCount: " + keyRepeatCount.ToString() + " " + currentKey.IsRepeat + " | " + this.state.Throttles.RepeatedKeyAcceptanceInterval.ToString());
-                        this.TryFileShowWithoutSliderCallback(true, Keyboard.Modifiers);
+                        this.TryFileShowWithoutSliderCallback(DirectionEnum.Next, Keyboard.Modifiers);
                     }
                     break;
                 case Key.Left:              // previous image
                     FilePlayer_Stop();      // In case the FilePlayer is going
-                    // if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
-                    // {
-                        this.TryFileShowWithoutSliderCallback(false, Keyboard.Modifiers);
-                    // }
+                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    {
+                        this.TryFileShowWithoutSliderCallback(DirectionEnum.Previous, Keyboard.Modifiers);
+                    }
                     break;
                 case Key.Up:                // show visual difference to next image
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Backward;
+                        this.FilePlayer.Direction = DirectionEnum.Previous;
                         this.FilePlayer_ScrollRow();
                     }
                     else
@@ -132,7 +131,7 @@ namespace Timelapse
                 case Key.Down:              // show visual difference to previous image
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Forward;
+                        this.FilePlayer.Direction = DirectionEnum.Next;
                         this.FilePlayer_ScrollRow();
                     }
                     else
@@ -162,14 +161,14 @@ namespace Timelapse
                 case Key.PageDown:
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Forward;
+                        this.FilePlayer.Direction = DirectionEnum.Next;
                         this.FilePlayer_ScrollPage();
                     }
                     break;
                 case Key.PageUp:
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = FilePlayerDirectionEnum.Backward;
+                        this.FilePlayer.Direction = DirectionEnum.Previous;
                         this.FilePlayer_ScrollPage();
                     }
                     break;

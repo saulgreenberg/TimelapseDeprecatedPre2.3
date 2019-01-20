@@ -26,7 +26,7 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class FilePlayer : UserControl
     {
-        public FilePlayerDirectionEnum Direction { get; set; }
+        public DirectionEnum Direction { get; set; }
         public FilePlayerSelectionEnum Selection { get; set; }
 
         public delegate void FilePlayerChangedHandler(object sender, FilePlayerEventArgs e);
@@ -89,54 +89,54 @@ namespace Timelapse.Controls
             switch ((string)button.Tag)
             {
                 case "First":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.First;
                     break;
                 case "PageUp":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.Page;
                     break;
                 case "RowUp":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.Row;
                     break;
                 case "PlayBackwardsFast":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.PlayFast;
                     break;
                 case "PlayBackwardsSlow":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.PlaySlow;
                     break;
                 case "StepBackwards":
-                    this.Direction = FilePlayerDirectionEnum.Backward;
+                    this.Direction = DirectionEnum.Previous;
                     this.Selection = FilePlayerSelectionEnum.Step;
                     break;
                 case "Stop":
                     this.Selection = FilePlayerSelectionEnum.Stop;
                     break;
                 case "StepForward":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.Step;
                     break;
                 case "PlayForwardSlow":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.PlaySlow;
                     break;
                 case "PlayForwardFast":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.PlayFast;
                     break;
                 case "PageDown":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.Page;
                     break;
                 case "RowDown":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.Row;
                     break;
                 case "Last":
-                    this.Direction = FilePlayerDirectionEnum.Forward;
+                    this.Direction = DirectionEnum.Next;
                     this.Selection = FilePlayerSelectionEnum.Last;
                     break;
                 default:
