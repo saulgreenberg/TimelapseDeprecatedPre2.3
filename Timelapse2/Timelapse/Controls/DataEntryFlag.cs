@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -100,28 +102,125 @@ namespace Timelapse.Controls
             // Create the popup overlay
             if (this.PopupPreview == null)
             {
-                // We want to shring the width a bit, as its otherwise a bit wide
-                double widthCorrection = 2;
+                // We want to shrink the width a bit, as its otherwise a bit wide
+                double widthCorrection = 0;
                 double width = this.ContentControl.Width - widthCorrection;
-                double horizontalOffset = -widthCorrection / 2;
+                double horizontalOffset = 0;// -widthCorrection / 2;
 
                 // Padding is used to align the text so it begins at the same spot as the control's text
-                Thickness padding = new Thickness(2.5, 3, 0, 0);
+                Thickness padding = new Thickness(0, 0, 0, 0);
 
                 this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
             }
             // Convert the true/false to a checkmark or none, then show the Popup
-            string check = (value.ToLower() == Constant.BooleanValue.True) ? "\u2713" : String.Empty;
+            bool check = value.ToLower() == Constant.BooleanValue.True ;
             this.ShowPopupPreview(check);
+        }
+        protected void ShowPopupPreview(bool value)
+        {
+            Border border = (Border)this.PopupPreview.Child;
+            CheckBox popupText = (CheckBox)border.Child;
+            popupText.IsChecked = value;
+            this.PopupPreview.IsOpen = true;
+            Border cbborder = (Border)popupText.Template.FindName("checkBoxBorder", popupText);
+            if (cbborder != null)
+            {
+                cbborder.Background = Constant.Control.QuickPasteFieldHighlightBrush;
+            }
+        }
+
+        protected override Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
+        {
+            Style style = (Style)this.ContentControl.FindResource(ControlContentStyleEnum.FlagCheckBox.ToString());
+
+            // Creatre a textblock and align it so the text is exactly at the same position as the control's text
+            CheckBox popupText = new CheckBox
+            {
+                Width = width,
+                Height = control.Height,
+                Padding = padding,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Background = Constant.Control.QuickPasteFieldHighlightBrush,
+                Foreground = Brushes.Green,
+                FontStyle = FontStyles.Italic,
+                Style = style
+            };
+
+            Border border = new Border
+            {
+                BorderBrush = Brushes.Green,
+                BorderThickness = new Thickness(0),
+                Child = popupText,
+                Width = 17,
+                Height = 17,
+                CornerRadius = new CornerRadius(2),
+            };
+
+            Popup popup = new Popup
+            {
+                Width = width,
+                Height = control.Height,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Placement = PlacementMode.Center,
+                VerticalOffset = 0,
+                HorizontalOffset = horizontalOffset,
+                PlacementTarget = control,
+                IsOpen = false,
+                Child = border,
+                AllowsTransparency=true,
+                Opacity=0
+            };
+
+
+            return popup;
         }
         public override void HidePreviewControlValue()
         {
-            this.HidePopupPreview();
+            //this.HidePopupPreview();
+                if (this.PopupPreview == null || this.PopupPreview.Child == null)
+                {
+                    // There is no popupPreview being displayed, so there is nothing to hide.
+                    return;
+                }
+                Border border = (Border)this.PopupPreview.Child;
+                CheckBox popupText = (CheckBox)border.Child;
+                popupText.IsChecked = false;
+                this.PopupPreview.IsOpen = false;
         }
 
         public override void FlashPreviewControlValue()
         {
             this.FlashPopupPreview();
+        }
+
+        protected override void FlashPopupPreview()
+        {
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                return;
+            }
+
+            // Get the TextBlock
+            Border border = (Border)this.PopupPreview.Child;
+            CheckBox popupText = (CheckBox)border.Child;
+
+            // Animate the color from white back to its current color
+            ColorAnimation animation;
+            animation = new ColorAnimation()
+            {
+                From = Colors.White,
+                AutoReverse = false,
+                Duration = new Duration(TimeSpan.FromSeconds(.6)),
+                EasingFunction = new ExponentialEase()
+                {
+                    EasingMode = EasingMode.EaseIn
+                },
+            };
+
+            // Get it all going
+            popupText.Background.BeginAnimation(SolidColorBrush.ColorProperty, animation);
         }
         #endregion
     }

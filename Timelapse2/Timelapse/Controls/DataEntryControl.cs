@@ -153,7 +153,7 @@ namespace Timelapse.Controls
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
             return (IInputElement)this.ContentControl;
         }
-        protected Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
+        protected virtual Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
         {
             // Creatre a textblock and align it so the text is exactly at the same position as the control's text
             TextBlock popupText = new TextBlock
@@ -192,7 +192,7 @@ namespace Timelapse.Controls
             return popup;
         }
 
-        protected void ShowPopupPreview(string value)
+        protected virtual void ShowPopupPreview(string value)
         {
             Border border = (Border)this.PopupPreview.Child;
             TextBlock popupText = (TextBlock)border.Child;
@@ -232,7 +232,7 @@ namespace Timelapse.Controls
 
         // Create a flash effect for the popup. We use this to signal that the 
         // preview text has been selected
-        protected void FlashPopupPreview()
+        protected virtual void FlashPopupPreview()
         {
             if (this.PopupPreview == null || this.PopupPreview.Child == null)
             {
