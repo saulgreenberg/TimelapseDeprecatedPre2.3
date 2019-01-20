@@ -62,11 +62,7 @@ namespace Timelapse
                 return;
             }
 
-            // Reset the Clickable Images Grid to the current image
-            // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
-            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
-            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
+ 
 
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
@@ -81,6 +77,13 @@ namespace Timelapse
                 System.Diagnostics.Debug.Print(String.Format("in FileShow: possible problem with fileIndex (value is {0}, where its not a valid row index in the image table.", fileIndex));
                 return;
             }
+
+            // Reset the Clickable Images Grid to the current image
+            // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
+            // SAULXX: Note that this used to be before the above if statement. Not sure if it would be a problem having it here (in case of failur)
+            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
+            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
 
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
