@@ -79,7 +79,7 @@ namespace Timelapse.Controls
 
         #region Visual Effects and Popup Previews
         // Flash the content area of the control
-        public override void FlashContentControlValue()
+        public override void FlashContentControl()
         {
             // DateTime is never copyable or a candidate for quickpaste, so we do nothing
         }

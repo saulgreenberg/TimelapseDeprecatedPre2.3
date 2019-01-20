@@ -72,7 +72,7 @@ namespace Timelapse.Controls
 
         #region Visual Effects and Popup Previews
         // Flash the content area of the control
-        public override void FlashContentControlValue()
+        public override void FlashContentControl()
         {
             ScrollViewer contentHost = (ScrollViewer)this.ContentControl.Template.FindName("PART_ContentHost", this.ContentControl);
             if (contentHost != null)
@@ -80,11 +80,6 @@ namespace Timelapse.Controls
                 contentHost.Background = new SolidColorBrush(Colors.White);
                 contentHost.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
             }
-        }
-
-        public override void FlashPreviewControlValue()
-        {
-            this.FlashPopupPreview();
         }
 
         public override void ShowPreviewControlValue(string value)
@@ -106,6 +101,10 @@ namespace Timelapse.Controls
         public override void HidePreviewControlValue()
         {
             this.HidePopupPreview();
+        }
+        public override void FlashPreviewControlValue()
+        {
+            this.FlashPopupPreview();
         }
         #endregion
     }

@@ -88,44 +88,12 @@ namespace Timelapse.Controls
 
         #region Visual Effects and Popup Previews
         // Flash the content area of the control
-        public override void FlashContentControlValue()
+        public override void FlashContentControl()
         {
             Border border = (Border)this.ContentControl.Template.FindName("checkBoxBorder", this.ContentControl);
             if (border != null)
             {
                 border.Background.BeginAnimation(SolidColorBrush.ColorProperty, this.GetColorAnimation());
-            }
-        }
-
-        public override void ShowPreviewControlValue(string value)
-        {
-            // Create the popup overlay
-            if (this.PopupPreview == null)
-            {
-                // We want to shrink the width a bit, as its otherwise a bit wide
-                double widthCorrection = 0;
-                double width = this.ContentControl.Width - widthCorrection;
-                double horizontalOffset = 0;// -widthCorrection / 2;
-
-                // Padding is used to align the text so it begins at the same spot as the control's text
-                Thickness padding = new Thickness(0, 0, 0, 0);
-
-                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
-            }
-            // Convert the true/false to a checkmark or none, then show the Popup
-            bool check = value.ToLower() == Constant.BooleanValue.True ;
-            this.ShowPopupPreview(check);
-        }
-        protected void ShowPopupPreview(bool value)
-        {
-            Border border = (Border)this.PopupPreview.Child;
-            CheckBox popupText = (CheckBox)border.Child;
-            popupText.IsChecked = value;
-            this.PopupPreview.IsOpen = true;
-            Border cbborder = (Border)popupText.Template.FindName("checkBoxBorder", popupText);
-            if (cbborder != null)
-            {
-                cbborder.Background = Constant.Control.QuickPasteFieldHighlightBrush;
             }
         }
 
@@ -169,25 +137,54 @@ namespace Timelapse.Controls
                 PlacementTarget = control,
                 IsOpen = false,
                 Child = border,
-                AllowsTransparency=true,
-                Opacity=0
+                AllowsTransparency = true,
+                Opacity = 0
             };
-
-
             return popup;
         }
+        public override void ShowPreviewControlValue(string value)
+        {
+            // Create the popup overlay
+            if (this.PopupPreview == null)
+            {
+                // We want to shrink the width a bit, as its otherwise a bit wide
+                double widthCorrection = 0;
+                double width = this.ContentControl.Width - widthCorrection;
+                double horizontalOffset = 0;
+
+                // Padding is used to align the text so it begins at the same spot as the control's text
+                Thickness padding = new Thickness(0, 0, 0, 0);
+
+                this.PopupPreview = this.CreatePopupPreview(this.ContentControl, padding, width, horizontalOffset);
+            }
+            // Convert the true/false to a checkmark or none, then show the Popup
+            bool check = value.ToLower() == Constant.BooleanValue.True;
+            this.ShowPopupPreview(check);
+        }
+        protected void ShowPopupPreview(bool value)
+        {
+            Border border = (Border)this.PopupPreview.Child;
+            CheckBox popupText = (CheckBox)border.Child;
+            popupText.IsChecked = value;
+            this.PopupPreview.IsOpen = true;
+            Border cbborder = (Border)popupText.Template.FindName("checkBoxBorder", popupText);
+            if (cbborder != null)
+            {
+                cbborder.Background = Constant.Control.QuickPasteFieldHighlightBrush;
+            }
+        }
+
         public override void HidePreviewControlValue()
         {
-            //this.HidePopupPreview();
-                if (this.PopupPreview == null || this.PopupPreview.Child == null)
-                {
-                    // There is no popupPreview being displayed, so there is nothing to hide.
-                    return;
-                }
-                Border border = (Border)this.PopupPreview.Child;
-                CheckBox popupText = (CheckBox)border.Child;
-                popupText.IsChecked = false;
-                this.PopupPreview.IsOpen = false;
+            if (this.PopupPreview == null || this.PopupPreview.Child == null)
+            {
+                // There is no popupPreview being displayed, so there is nothing to hide.
+                return;
+            }
+            Border border = (Border)this.PopupPreview.Child;
+            CheckBox popupText = (CheckBox)border.Child;
+            popupText.IsChecked = false;
+            this.PopupPreview.IsOpen = false;
         }
 
         public override void FlashPreviewControlValue()

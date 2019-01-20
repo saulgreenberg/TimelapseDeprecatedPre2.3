@@ -159,7 +159,7 @@ namespace Timelapse.Controls
 
         #region Visual Effects and Popup Previews
         // Flash the content area of the control
-        public override void FlashContentControlValue()
+        public override void FlashContentControl()
         {
             Border contentHost = (Border)this.ContentControl.Template.FindName("PART_Border", this.ContentControl);
             if (contentHost != null)

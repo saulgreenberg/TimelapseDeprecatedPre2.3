@@ -295,7 +295,7 @@ namespace Timelapse
                         }
                         else
                         {
-                            control.FlashContentControlValue();
+                            control.FlashContentControl();
                         }
                         break;
                     }
