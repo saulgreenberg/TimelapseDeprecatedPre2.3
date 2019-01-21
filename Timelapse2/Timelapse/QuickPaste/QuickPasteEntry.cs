@@ -13,5 +13,18 @@ namespace Timelapse.QuickPaste
             this.Title = String.Empty;
             this.Items = new List<QuickPasteItem>();
         }
+
+        // A test to see if at lease one item is marked as 'Use', i.e., if at least one item is pastable
+        public bool IsAtLeastOneItemPastable()
+        {
+            foreach (QuickPasteItem item in this.Items)
+            {
+                if (item.Use)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

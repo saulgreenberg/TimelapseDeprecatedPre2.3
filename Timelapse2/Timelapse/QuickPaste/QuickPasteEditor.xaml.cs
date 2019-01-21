@@ -16,6 +16,8 @@ namespace Timelapse.QuickPaste
     // Currently, the only thing that is editable is its name and whether a particular item's data should be included when pasted
     public partial class QuickPasteEditor : Window
     {
+        public QuickPasteEntry QuickPasteEntry { get; set; }
+        
         // Columns where fields will be placed in the grid
         private const int GridColumnUse = 1;
         private const int GridColumnLabel = 2;
@@ -28,8 +30,6 @@ namespace Timelapse.QuickPaste
         // UI Constants
         private const double ValuesWidth = 80;
         private const double ValuesHeight = 22;
-
-        public QuickPasteEntry QuickPasteEntry { get; set; }
         private FileDatabase fileDatabase;
 
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase)
@@ -177,7 +177,7 @@ namespace Timelapse.QuickPaste
                 // We should never get here
                 throw new NotSupportedException(String.Format("Unhandled control type in QuickPasteEditor '{0}'.", quickPasteItem.ControlType));
             }
-            this.Note.Visibility = AreAnyItemsInUse() ? Visibility.Collapsed : Visibility.Visible;
+            this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
         }
 
         #region UI Callbacks
@@ -203,7 +203,7 @@ namespace Timelapse.QuickPaste
             // Update the QuickPaste row data structure to reflect the current checkbox state
             QuickPasteItem quickPasteRow = (QuickPasteItem)cbox.Tag;
             quickPasteRow.Use = cbox.IsChecked == true;
-            this.Note.Visibility = AreAnyItemsInUse() ? Visibility.Collapsed : Visibility.Visible;
+            this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
         }
 
         // Value (Counters and Notes): The user has selected a new value
@@ -250,18 +250,6 @@ namespace Timelapse.QuickPaste
         {
             Regex regex = new Regex("[^0-9.-]+"); // regex that matches allowed text
             return regex.IsMatch(text);
-        }
-
-        private bool AreAnyItemsInUse()
-        {
-            foreach(QuickPasteItem item in this.QuickPasteEntry.Items)
-            {
-                if (item.Use)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         // CANDIDATE FOR UTILITIES

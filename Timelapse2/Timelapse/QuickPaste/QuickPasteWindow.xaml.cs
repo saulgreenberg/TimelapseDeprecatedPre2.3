@@ -119,6 +119,9 @@ namespace Timelapse.QuickPaste
                     ToolTip = tooltipText,
                     Tag = quickPasteEntry
                 };
+                // Mimic an inactive button if there are no items marked as Used
+                textblockTitle.FontStyle = quickPasteEntry.IsAtLeastOneItemPastable() ? FontStyles.Normal : FontStyles.Italic;
+                textblockShortcut.FontStyle = textblockTitle.FontStyle;
 
                 // Create a Context Menu for each button that allows the user to
                 // - Delete the item
