@@ -298,9 +298,9 @@ namespace Timelapse
         // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
         private void QuickPasteRefreshWindowAndXML()
         {
-            this.quickPasteWindow.Refresh(this.quickPasteEntries);
             this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
             this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+            this.quickPasteWindow.Refresh(this.quickPasteEntries);
         }
     }
 }
