@@ -754,7 +754,8 @@ namespace Timelapse.Database
                                 }
                                 break;
                             case 4:  // dflt_value (Column has a default value)
-                                if (String.IsNullOrEmpty(reader[field].ToString()))
+                                string s = reader[field].ToString();
+                                if (!String.IsNullOrEmpty(s))
                                 {
                                     existingColumnDefinition += Constant.Sqlite.Default + reader[field].ToString() + " ";
                                 }
@@ -765,9 +766,13 @@ namespace Timelapse.Database
                                     existingColumnDefinition += Constant.Sqlite.PrimaryKey;
                                 }
                                 break;
-                        }
+                            default:
+                                // This should never happen
+                                // But if it does, we just ignore it
+                                System.Diagnostics.Debug.Print("Unknown Field: " + field.ToString());
+                                break;
+                        }  
                     }
-
                     existingColumnDefinition = existingColumnDefinition.TrimEnd(' ');
                     columnDefinitions.Add(existingColumnDefinition);
                 }

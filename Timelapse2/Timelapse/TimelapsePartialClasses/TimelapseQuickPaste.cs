@@ -191,10 +191,6 @@ namespace Timelapse
         // Highlight the data controls affected by the Quickpaste entry
         private void QuickPasteDataControlsHighlight(QuickPasteEntry quickPasteEntry)
         {
-            if (!this.IsDisplayingSingleImage())
-            {
-                return; // only allow highightng in single image mode
-            }
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
             if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
@@ -224,11 +220,6 @@ namespace Timelapse
         // Unhighlight the data controls affected by the Quickpaste entry
         private void QuickPasteDataControlsUnHighlight(QuickPasteEntry quickPasteEntry)
         {
-            if (!this.IsDisplayingSingleImage())
-            {
-                return; // only allow copying in single image mode
-            }
-
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
             if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
@@ -261,11 +252,6 @@ namespace Timelapse
         // Quickpast the given entry into the data control
         private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnums flash)
         {
-            if (!this.IsDisplayingSingleImage())
-            {
-                return; // only allow copying in single image mode
-            }
-
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
             if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
@@ -286,6 +272,14 @@ namespace Timelapse
                     DataEntryControl control = pair.Value;
                     if (control.DataLabel == item.DataLabel)
                     {
+                        // Changing a counter value does not trigger a ValueChanged event if the values are the same.
+                        // which means multiple images may not be updated even if other images have the same value.
+                        // To get around this, we set a bogus value and then the real value, which means that the
+                        // ValueChanged event will be triggered. Inefficient, but seems to work.
+                        if (this.IsDisplayingMultipleImagesInOverview() && control is DataEntryCounter counter)
+                        {
+                            counter.SetBogusCounterContentAndTooltip();
+                        }
                         control.SetContentAndTooltip(item.Value);
                         if (flash == FlashEnums.FlashPreview)
                         { 

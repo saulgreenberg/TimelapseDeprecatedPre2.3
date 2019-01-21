@@ -128,6 +128,15 @@ namespace Timelapse.Controls
         #endregion
 
         #region Setting Content and Tooltip
+        // Changing a counter value does not trigger a ValueChanged event if the values are the same.
+        // which means multiple images may not be updated even if other images have the same value.
+        // To get around this, we set a bogus value and then the real value, which means that the
+        // ValueChanged event will be triggered. Inefficient, but seems to work.
+        public void SetBogusCounterContentAndTooltip()
+        {
+            SetContentAndTooltip(int.MaxValue.ToString());
+        }
+
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {

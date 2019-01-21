@@ -666,10 +666,10 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-            if (this.quickPasteWindow != null)
-            {
-                this.quickPasteWindow.IsEnabled = false;
-            }
+            //if (this.quickPasteWindow != null)
+            //{
+            //    this.quickPasteWindow.IsEnabled = false;
+            //}
         }
 
         private void SwitchedToSingleImagesView()
@@ -681,10 +681,10 @@ namespace Timelapse
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
 
             // Enable the quickPasteWindow if it exists
-            if (this.quickPasteWindow != null)
-            {
-                this.quickPasteWindow.IsEnabled = true;
-            }
+            //if (this.quickPasteWindow != null)
+            //{
+            //    this.quickPasteWindow.IsEnabled = true;
+            //}
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.

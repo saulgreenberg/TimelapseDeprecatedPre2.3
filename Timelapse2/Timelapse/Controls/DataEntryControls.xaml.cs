@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -221,6 +219,11 @@ namespace Timelapse.Controls
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel);
                         counter.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        // Changing a counter value does not trigger a ValueChanged event if the values are the same.
+                        // which means multiple images may not be updated even if other images have the same value.
+                        // To get around this, we set a bogus value and then the real value, which means that the
+                        // ValueChanged event will be triggered. Inefficient, but seems to work.
+                        counter.SetBogusCounterContentAndTooltip();
                         counter.SetContentAndTooltip(contentAndTooltip);
                     }
                 }

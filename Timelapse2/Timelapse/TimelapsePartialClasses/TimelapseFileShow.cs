@@ -62,8 +62,6 @@ namespace Timelapse
                 return;
             }
 
- 
-
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
             {
