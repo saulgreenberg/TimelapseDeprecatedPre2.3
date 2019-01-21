@@ -135,6 +135,8 @@ namespace Timelapse.QuickPaste
             foreach (QuickPasteEntry oldQuickPasteEntry in originalQuickPasteEntries)
             {
                 bool oneOrMoreItemsCopied = false;
+                bool isUsed = false; // 
+
                 // Create a new entry with the same title as the old entry, and with an empty Items list
                 QuickPasteEntry newQuickPasteEntry = new QuickPasteEntry()
                 {
@@ -160,6 +162,11 @@ namespace Timelapse.QuickPaste
                                     newQuickPasteEntry.Items.Add(new QuickPasteItem(oldItem.DataLabel, oldItem.Label, oldItem.Value, oldItem.Use, row.Type));
                                     noItemsMatch = false;
                                     oneOrMoreItemsCopied = true;
+                                    if (oldItem.Use)
+                                    {
+                                        // At least one item should be used if we are going to copy it over
+                                        isUsed = true;
+                                    }
                                     break;
                                 }
                             }
@@ -175,10 +182,10 @@ namespace Timelapse.QuickPaste
                      }
                 }
 
-                // Add the entry if there is at least one item copied from the old entry to the new entry.
-                // This avoids importing quickpastes with no user-specified settings. Yes, its a heuristic, but it should work
+                // Add the entry if there is at least one item copied from the old entry to the new entry, and if at least one attribute is marked as 'Used'
+                // This avoids importing quickpastes with no user-specified settings or that do nothing. Yes, its a heuristic, but it should work
                 // for all but the worst mismatches
-                if (oneOrMoreItemsCopied == true)
+                if (oneOrMoreItemsCopied && isUsed)
                 {
                     // Add the entry if it has any items in it. 
                     adjustedQuickPasteEntries.Add(newQuickPasteEntry);

@@ -177,6 +177,7 @@ namespace Timelapse.QuickPaste
                 // We should never get here
                 throw new NotSupportedException(String.Format("Unhandled control type in QuickPasteEditor '{0}'.", quickPasteItem.ControlType));
             }
+            this.Note.Visibility = AreAnyItemsInUse() ? Visibility.Collapsed : Visibility.Visible;
         }
 
         #region UI Callbacks
@@ -202,6 +203,7 @@ namespace Timelapse.QuickPaste
             // Update the QuickPaste row data structure to reflect the current checkbox state
             QuickPasteItem quickPasteRow = (QuickPasteItem)cbox.Tag;
             quickPasteRow.Use = cbox.IsChecked == true;
+            this.Note.Visibility = AreAnyItemsInUse() ? Visibility.Collapsed : Visibility.Visible;
         }
 
         // Value (Counters and Notes): The user has selected a new value
@@ -248,6 +250,18 @@ namespace Timelapse.QuickPaste
         {
             Regex regex = new Regex("[^0-9.-]+"); // regex that matches allowed text
             return regex.IsMatch(text);
+        }
+
+        private bool AreAnyItemsInUse()
+        {
+            foreach(QuickPasteItem item in this.QuickPasteEntry.Items)
+            {
+                if (item.Use)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         // CANDIDATE FOR UTILITIES
