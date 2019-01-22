@@ -188,6 +188,12 @@ namespace Timelapse
             }
         }
 
+        // Refresh the image
+        private bool TryFileShowWithoutSliderCallback()
+        {
+            return TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
+        }
+
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
         {
             // Check to see if there are any images to show, 
@@ -210,16 +216,26 @@ namespace Timelapse
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, int increment)
         {
+            int desiredRow = 0;
             // Check to see if there are any images to show, 
             if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
             {
                 return false;
             }
 
-            int desiredRow = (direction == DirectionEnum.Next)
-                ? this.dataHandler.ImageCache.CurrentRow + increment
-                : this.dataHandler.ImageCache.CurrentRow - increment;
-
+            switch (direction)
+            {
+                case DirectionEnum.Next:
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
+                    break;
+                case DirectionEnum.Previous:
+                    desiredRow =  this.dataHandler.ImageCache.CurrentRow - increment;
+                    break;
+                case DirectionEnum.None:
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow;
+                    break;
+            }
+           
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
             if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
             {
@@ -231,11 +247,11 @@ namespace Timelapse
             }
 
             // If the desired row is the same as the current row, the image is already being displayed
-            if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
+            if (desiredRow != this.dataHandler.ImageCache.CurrentRow || direction == DirectionEnum.None)
             {
-                // Move to the desired row
+                // Move to the desired row, forcing an update if there is no change in direction
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.FileShow(desiredRow);
+                this.FileShow(desiredRow, direction == DirectionEnum.None);
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
             return true;

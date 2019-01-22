@@ -1,9 +1,10 @@
 ﻿namespace Timelapse.Enums
 {
-    // Whether the FilePlayer Control play direction is Forward or Backwards
+    // Move to a given direction
     public enum DirectionEnum
     {
         Next,
-        Previous
+        Previous,
+        None
     }
 }

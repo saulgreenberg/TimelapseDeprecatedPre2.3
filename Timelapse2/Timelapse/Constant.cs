@@ -258,6 +258,11 @@ namespace Timelapse
             public const string Markers = "MarkersTable";         // the table containing the marker data
         }
 
+        public static class EpisodeDefaults
+        {
+            public static readonly TimeSpan TimeDifferenceThreshold = TimeSpan.FromMinutes(5);
+        }
+
         public static class ExceptionTypes
         {
             public const string TemplateReadWriteException = "TemplateReadWriteException";

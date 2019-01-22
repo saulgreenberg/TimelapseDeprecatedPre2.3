@@ -145,7 +145,8 @@ namespace Timelapse
                     this.CopyPreviousValues_Click();
                     break;
                 case Key.Z:
-                    episodes = this.EpisodeGenerate();
+                    this.episodes =Episodes.GetEpisodesFromFileTable(this.dataHandler.FileDatabase.Files);
+                    TryFileShowWithoutSliderCallback();
                     foreach (KeyValuePair<int, Tuple<int, int>> episode in episodes)
                     {
                         System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", episode.Key, episode.Value.Item1, episode.Value.Item1));
