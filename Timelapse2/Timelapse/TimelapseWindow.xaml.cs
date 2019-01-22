@@ -28,6 +28,9 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
+        // SAULXXX TESTING EPISODES
+        List<KeyValuePair<int, Tuple<int, int>>> episodes = new List<KeyValuePair<int, Tuple<int, int>>>();
+
         #region Variables and Properties
         private DataEntryHandler dataHandler;
         private bool disposed;
@@ -679,12 +682,6 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-
-            // Enable the quickPasteWindow if it exists
-            //if (this.quickPasteWindow != null)
-            //{
-            //    this.quickPasteWindow.IsEnabled = true;
-            //}
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.

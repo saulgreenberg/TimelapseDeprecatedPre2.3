@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Enums;
@@ -142,6 +143,13 @@ namespace Timelapse
                     break;
                 case Key.C:
                     this.CopyPreviousValues_Click();
+                    break;
+                case Key.Z:
+                    episodes = this.EpisodeGenerate();
+                    foreach (KeyValuePair<int, Tuple<int, int>> episode in episodes)
+                    {
+                        System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", episode.Key, episode.Value.Item1, episode.Value.Item1));
+                    }
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window

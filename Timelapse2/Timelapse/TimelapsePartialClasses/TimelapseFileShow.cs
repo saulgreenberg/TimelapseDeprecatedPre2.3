@@ -178,6 +178,14 @@ namespace Timelapse
 
             // Refresh the markable canvas if needed
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
+
+            // SAULXXX EPISODES TEST
+            if (fileIndex < this.episodes.Count)
+            { 
+                KeyValuePair<int, Tuple<int, int>> episode = this.episodes[fileIndex];
+                System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", episode.Key, episode.Value.Item1, episode.Value.Item2));
+                this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Value.Item1, episode.Value.Item2);
+            }
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)

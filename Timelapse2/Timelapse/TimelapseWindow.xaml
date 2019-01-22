@@ -471,6 +471,11 @@
                                         <controls:FilePlayer x:Name="FilePlayer" Grid.Row="0" Grid.Column="1" FilePlayerChange="FilePlayer_FilePlayerChange" Visibility="Collapsed"/>
                                     </Grid>
                                     <images:MarkableCanvas x:Name="MarkableCanvas" Grid.Row="2" HorizontalAlignment="Stretch"/>
+                                    <TextBlock Name="EpisodeText" Grid.Row="2"  HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="Black" FontSize="40" Margin="0,0,0,30">  <!--Margin="10,12,0,0"-->
+                                        <TextBlock.Background>
+                                            <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
+                                        </TextBlock.Background>
+                                    </TextBlock>
                                 </Grid>
                             </xcad:LayoutDocument>
 
