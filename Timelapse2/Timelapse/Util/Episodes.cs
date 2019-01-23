@@ -10,6 +10,9 @@ namespace Timelapse
     // Episodes
     public static class Episodes
     {
+        static public Dictionary<int, Tuple<int, int>> EpisodesList = new Dictionary<int, Tuple<int, int>>();
+        static public bool ShowEpisodes = false;
+
         // Get a list defining all episodes across all files in the file table. Note that it assumes :
         // - files are sorted to give meaningful results, e.g., by date or by RelativePath/date
         // - if the file table is the result of a selection (i.e. as subset of all files), the episode definition is still meaningful
@@ -18,9 +21,9 @@ namespace Timelapse
         // - 0,(1,2) (0th file, 1 out of 2 images in the episode) 
         // - 1,(2,2) (1st file, 2 out of 2 images in the episode) 
         // - 2,(1,1) (2nd file, 1 out of 1 images in the episode) etc
-        static public List<KeyValuePair<int, Tuple<int, int>>> GetEpisodesFromFileTable(FileTable fileTable)
+        static public void SetEpisodesFromFileTable(FileTable fileTable)
         {
-            List<KeyValuePair<int, Tuple<int, int>>> episodes = new List<KeyValuePair<int, Tuple<int, int>>>();
+            Episodes.EpisodesList = new Dictionary<int, Tuple<int, int>>();
 
             int index = 0;
             int numberOfFiles = 0;
@@ -28,7 +31,7 @@ namespace Timelapse
             // Ensure the argument is valid
             if (fileTable == null)
             {
-                return episodes;
+                return;
             }
 
             while (index < fileTable.Count())
@@ -38,13 +41,12 @@ namespace Timelapse
                 numberOfFiles = EpisodeGetNumberOfFilesInEpisodeFrom(fileTable, index);
                 for (int i = 0; i < numberOfFiles; i++)
                 {
-                    episodes.Add(new KeyValuePair<int, Tuple<int, int>>(index + i, new Tuple<int, int>(i + 1, numberOfFiles))); 
+                    EpisodesList.Add(index + i, new Tuple<int, int>(i + 1, numberOfFiles)); 
                     row++;
                     numberInSequence++;
                 }
                 index += numberOfFiles;
             }
-            return episodes;
         }
 
         // Determine the number of files (including the start index file)
@@ -72,7 +74,7 @@ namespace Timelapse
                 file = files[index];
                 date2 = file.DateTime;
                 TimeSpan difference = date2 - date1;
-                bool aboveThreshold = (difference > timeDifferenceThreshold);
+                bool aboveThreshold = (difference.Duration() > timeDifferenceThreshold);
                 if (aboveThreshold)
                 {
                     break;

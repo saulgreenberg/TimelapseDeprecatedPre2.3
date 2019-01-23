@@ -49,30 +49,11 @@ namespace Timelapse.Controls
             }
         }
 
-        public double TextFontSize
-        {
-            set
-            {
-                this.ImageNameText.FontSize = value;
-                this.EpisodeText.FontSize = value;
-            }
-        }
-        public ImageRow ImageRow { get; set; }
-
-        public string RootFolder { get; set; }
-
         public int FileTableIndex { get; set; }
 
-        // Path is the RelativePath/FileName of the image file
-        public string Path
-        {
-            get
-            {
-                return (this.ImageRow == null) ? String.Empty : System.IO.Path.Combine(this.ImageRow.RelativePath, this.ImageRow.FileName);
-            }
-        }
-
+        public ImageRow ImageRow { get; set; }
         // Whether the Checkbox is checked
+
         private bool isSelected = false;
         public bool IsSelected
         {
@@ -98,6 +79,26 @@ namespace Timelapse.Controls
                 }
             }
         }
+
+        // Path is the RelativePath/FileName of the image file
+        public string Path
+        {
+            get
+            {
+                return (this.ImageRow == null) ? String.Empty : System.IO.Path.Combine(this.ImageRow.RelativePath, this.ImageRow.FileName);
+            }
+        }
+
+        public string RootFolder { get; set; }
+
+        public double TextFontSize
+        {
+            set
+            {
+                this.ImageNameText.FontSize = value;
+                this.EpisodeText.FontSize = value;
+            }
+        }
         #endregion
 
         #region Private Variables
@@ -115,7 +116,7 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public Double Rerender(double width, int state)
+        public Double Rerender(double width, int state, int fileIndex)
         {
             this.DesiredRenderWidth = width;
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent);
@@ -124,9 +125,22 @@ namespace Timelapse.Controls
             // A descriptive string: the filename without the extention, plu the time in HH:MM
             // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
             string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
+            
             this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
-            this.EpisodeText.Text = this.ImageRow.EpisodeDescription.Item1 + "/" + this.ImageRow.EpisodeDescription.Item2;
 
+            if (Episodes.ShowEpisodes && Episodes.EpisodesList.ContainsKey(fileIndex))
+            {
+                this.EpisodeText.Visibility = Visibility.Visible;
+                Tuple<int, int> episode = Episodes.EpisodesList[fileIndex];
+                this.EpisodeText.Text = episode.Item1 + "/" + episode.Item2;
+                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
+                this.EpisodeText.FontWeight = (episode.Item1 == 1) ? FontWeights.Bold : FontWeights.Normal;
+            }
+            else
+            {
+                this.EpisodeText.Visibility = Visibility.Hidden;
+            }
+            
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
             // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.

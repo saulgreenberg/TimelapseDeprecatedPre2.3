@@ -389,7 +389,7 @@ namespace Timelapse.Images
                 return false;
             }
 
-            file = this.Database.Files[fileRow];
+            file = this.Database.FileTable[fileRow];
             return file.IsDisplayable();
         }
 
@@ -410,7 +410,7 @@ namespace Timelapse.Images
                 return false;
             }
 
-            ImageRow nextFile = this.Database.Files[fileIndex];
+            ImageRow nextFile = this.Database.FileTable[fileIndex];
             if (this.unalteredBitmapsByID.ContainsKey(nextFile.ID) || this.prefetechesByID.ContainsKey(nextFile.ID))
             {
                 return false;

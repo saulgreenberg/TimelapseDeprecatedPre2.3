@@ -41,7 +41,7 @@ namespace Timelapse.Database
                 for (int row = 0; row < database.CurrentlySelectedFileCount; row++)
                 {
                     StringBuilder csvRow = new StringBuilder();
-                    ImageRow image = database.Files[row];
+                    ImageRow image = database.FileTable[row];
                     foreach (string dataLabel in dataLabels)
                     {
                         // Skip the DateTime and Utc offset data

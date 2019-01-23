@@ -53,7 +53,7 @@ namespace Timelapse.Dialog
 
             // Preview the changes
 
-            foreach (ImageRow image in this.fileDatabase.Files)
+            foreach (ImageRow image in this.fileDatabase.FileTable)
             {
                 string newDateTime = String.Empty;
                 string status = "Skipped: invalid date/time";

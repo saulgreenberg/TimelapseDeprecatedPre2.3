@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
 
@@ -146,21 +147,15 @@ namespace Timelapse
                     break;
                 case Key.Z:
                     // NOTE: WE SHOULD DO THE GETEPISODES IN A SELECT CALLBACK, NOT HERE. THIS IS JUST FOR TESTING.
-                    this.ShowEpisodes = !this.ShowEpisodes;
-                    if (this.ShowEpisodes)
+                    Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
+                    if (Episodes.ShowEpisodes)
                     {
-                        this.episodes = Episodes.GetEpisodesFromFileTable(this.dataHandler.FileDatabase.Files);
-                        foreach (KeyValuePair<int, Tuple<int, int>> episode in episodes)
-                        {
-                            // Store the info in each image row
-                            this.dataHandler.FileDatabase.Files[episode.Key].EpisodeDescription = episode.Value;
-                            System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", episode.Key, episode.Value.Item1, episode.Value.Item1));
-                        }
+                        Episodes.SetEpisodesFromFileTable(this.dataHandler.FileDatabase.FileTable);
                     }
                     else
                     {
                         // may not be needed
-                        this.episodes = new List<KeyValuePair<int, Tuple<int, int>>>(); 
+                        // Episodes.EpisodesList = new Dictionary<int, Tuple<int, int>>(); 
                     }
                     this.TryFileShowWithoutSliderCallback(); // force the display of the episode number
                     break;

@@ -29,8 +29,7 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // SAULXXX TESTING EPISODES
-        List<KeyValuePair<int, Tuple<int, int>>> episodes = new List<KeyValuePair<int, Tuple<int, int>>>();
-        bool ShowEpisodes = false;
+        
 
         #region Variables and Properties
         private DataEntryHandler dataHandler;
@@ -670,10 +669,7 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-            //if (this.quickPasteWindow != null)
-            //{
-            //    this.quickPasteWindow.IsEnabled = false;
-            //}
+            this.EpisodeText.Visibility = Visibility.Hidden;
         }
 
         private void SwitchedToSingleImagesView()
@@ -683,6 +679,10 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            if (Episodes.ShowEpisodes)
+            {
+                this.EpisodeText.Visibility = (Episodes.ShowEpisodes) ? Visibility.Visible: Visibility.Hidden;
+            }
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
@@ -757,14 +757,14 @@ namespace Timelapse
             {
                 // Only the current row is  selected in the single images view, so just use that.
                 int currentRowIndex = this.dataHandler.ImageCache.CurrentRow;
-                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[currentRowIndex].ID, currentRowIndex));
+                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
             }
             else
             {
                 // multiple selections are possible in the 
                 foreach (int rowIndex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
                 {
-                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[rowIndex].ID, rowIndex));
+                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
                 }
             }
             if (this.DataGrid.Items.Count > 0)

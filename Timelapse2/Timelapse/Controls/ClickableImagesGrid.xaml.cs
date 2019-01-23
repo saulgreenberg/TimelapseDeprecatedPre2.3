@@ -150,11 +150,10 @@ namespace Timelapse.Controls
                         {
                             // The image is in the cache.
                             ci = this.cachedImageList[cachedImageListIndex];
-
                             if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
-                               // Re-render the cached image, as its smaller than the resolution width 
-                               imageHeight = ci.Rerender(desiredWidth, state);
+                                // Re-render the cached image, as its smaller than the resolution width 
+                                imageHeight = ci.Rerender(desiredWidth, state, cachedImageListIndex);
                             }
                             else
                             {
@@ -186,7 +185,7 @@ namespace Timelapse.Controls
                             ImageRow = this.FileTable[fileTableIndex],
                             DesiredRenderWidth = desiredWidth
                         };
-                        imageHeight = ci.Rerender(desiredWidth, state);
+                        imageHeight = ci.Rerender(desiredWidth, state, fileTableIndex);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
                         ci.TextFontSize = desiredWidth / 20;
                         ci.AdjustMargin(state);

@@ -81,7 +81,7 @@ namespace Timelapse
             // SAULXX: Note that this used to be before the above if statement. Not sure if it would be a problem having it here (in case of failur)
             this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
             this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.FileTable;
 
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
@@ -180,14 +180,13 @@ namespace Timelapse
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
 
             // SAULXXX EPISODES TEST
-            if (fileIndex < this.episodes.Count)
+            if (fileIndex < Episodes.EpisodesList.Count)
             { 
-                if (this.ShowEpisodes)
+                if (Episodes.ShowEpisodes && this.IsDisplayingActiveSingleImage())
                 {
-
-                    KeyValuePair<int, Tuple<int, int>> episode = this.episodes[fileIndex];
+                    Tuple<int, int> episode = Episodes.EpisodesList[fileIndex];
                     this.EpisodeText.Visibility = Visibility.Visible;
-                    this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Value.Item1, episode.Value.Item2);
+                    this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
                 }
                 else
                 {

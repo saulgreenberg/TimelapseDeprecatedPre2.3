@@ -41,7 +41,7 @@ namespace Timelapse
             string searchTerm = this.FindBoxTextBox.Text;
             ImageRow row = this.dataHandler.ImageCache.Current;
 
-            int currentIndex = this.dataHandler.FileDatabase.Files.IndexOf(row);
+            int currentIndex = this.dataHandler.FileDatabase.FileTable.IndexOf(row);
             int foundIndex = this.dataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
             if (foundIndex != -1)
             {

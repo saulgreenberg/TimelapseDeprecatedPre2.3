@@ -81,7 +81,7 @@ namespace Timelapse.Dialog
                 for (int fileIndex = 0; fileIndex < count; ++fileIndex)
                 {
                     // We will store the various times here
-                    ImageRow file = this.database.Files[fileIndex];
+                    ImageRow file = this.database.FileTable[fileIndex];
                     DateTimeOffset originalDateTime = file.GetDateTime();
                     string feedbackMessage = String.Empty;
                     try

@@ -80,7 +80,7 @@ namespace Timelapse.Dialog
         {
             for (int index = startIndex; index < this.database.CurrentlySelectedFileCount; index++)
             {
-                ImageRow image = this.database.Files[index];
+                ImageRow image = this.database.FileTable[index];
                 DateTimeOffset imageDateTime = image.GetDateTime();
                 if (imageDateTime.Day <= Constant.Time.MonthsInYear)
                 {
@@ -106,14 +106,14 @@ namespace Timelapse.Dialog
             }
 
             // Parse the provided starting date. Return -1 if it cannot.
-            ImageRow image = this.database.Files[startIndex];
+            ImageRow image = this.database.FileTable[startIndex];
             DateTimeOffset desiredDateTime = image.GetDateTime();
 
             lastMatchingDate = startIndex;
             for (int index = startIndex + 1; index < this.database.CurrentlySelectedFileCount; index++)
             {
                 // Parse the date for the given row.
-                image = this.database.Files[index];
+                image = this.database.FileTable[index];
                 DateTimeOffset imageDateTime = image.GetDateTime();
                
                 if (desiredDateTime.Date == imageDateTime.Date)
@@ -166,7 +166,7 @@ namespace Timelapse.Dialog
             this.ambiguousDatesListIndex = index;
 
             // We found an ambiguous date; provide appropriate feedback
-            image = this.database.Files[this.ambiguousDatesList[index].StartRange];
+            image = this.database.FileTable[this.ambiguousDatesList[index].StartRange];
             this.OriginalDateLabel.Content = image.GetDateTime().Date;
 
             // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
@@ -194,7 +194,7 @@ namespace Timelapse.Dialog
             if (isAmbiguousDate)
             {
                 ImageRow image;
-                image = this.database.Files[this.ambiguousDatesList[this.ambiguousDatesListIndex].StartRange];
+                image = this.database.FileTable[this.ambiguousDatesList[this.ambiguousDatesListIndex].StartRange];
                 this.OriginalDateLabel.Content = DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
 
                 // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
@@ -240,7 +240,7 @@ namespace Timelapse.Dialog
             foreach (AmbiguousDate ambiguousDate in this.ambiguousDatesList)
             {
                 ImageRow image;
-                image = this.database.Files[ambiguousDate.StartRange];
+                image = this.database.FileTable[ambiguousDate.StartRange];
                 string newDate = String.Empty;
                 if (ambiguousDate.Swapped)
                 {

@@ -55,7 +55,7 @@ namespace Timelapse.QuickPaste
                         quickPasteEntry.Items.Add(new QuickPasteItem(
                             row.DataLabel, 
                             row.Label, 
-                            fileDatabase.Files[rowIndex].GetValueDisplayString(row.DataLabel), 
+                            fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel), 
                             row.Copyable,
                             row.Type));
                         break;
