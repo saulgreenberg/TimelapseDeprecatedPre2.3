@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -179,14 +180,23 @@ namespace Timelapse
             // Refresh the markable canvas if needed
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
 
-            // SAULXXX EPISODES TEST
-            if (fileIndex < Episodes.EpisodesList.Count)
-            { 
+            // Display the episode text as needed
+            this.DisplayEpisodeTextIfWarranted(fileIndex);
+        }
+
+        // Get and display the episode text if various conditions are met
+        private void DisplayEpisodeTextIfWarranted(int fileIndex)
+        {
+            System.Diagnostics.Debug.Print("Single fileIndex:" + this.dataHandler.ImageCache.CurrentRow);
+
+            if (fileIndex < Episodes.EpisodesDictionary.Count)
+            {
                 if (Episodes.ShowEpisodes && this.IsDisplayingActiveSingleImage())
                 {
-                    Tuple<int, int> episode = Episodes.EpisodesList[fileIndex];
+                    Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
+                    this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
+                    this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
                     this.EpisodeText.Visibility = Visibility.Visible;
-                    this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
                 }
                 else
                 {
@@ -195,7 +205,7 @@ namespace Timelapse
             }
             else
             {
-                this.EpisodeText.Visibility = Visibility.Hidden;
+                this.EpisodeText.Visibility = Episodes.VisibilityState;
             }
         }
 

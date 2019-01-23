@@ -128,18 +128,8 @@ namespace Timelapse.Controls
             
             this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
 
-            if (Episodes.ShowEpisodes && Episodes.EpisodesList.ContainsKey(fileIndex))
-            {
-                this.EpisodeText.Visibility = Visibility.Visible;
-                Tuple<int, int> episode = Episodes.EpisodesList[fileIndex];
-                this.EpisodeText.Text = episode.Item1 + "/" + episode.Item2;
-                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
-                this.EpisodeText.FontWeight = (episode.Item1 == 1) ? FontWeights.Bold : FontWeights.Normal;
-            }
-            else
-            {
-                this.EpisodeText.Visibility = Visibility.Hidden;
-            }
+            // Render the episode text if needed
+            this.DisplayEpisodeTextIfWarranted(fileIndex);
             
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
@@ -153,6 +143,19 @@ namespace Timelapse.Controls
                 this.Image.Height = bf.PixelHeight;
             }
             return this.Image.Height; 
+        }
+
+        // Get and display the episode text if various conditions are met
+        public void DisplayEpisodeTextIfWarranted(int fileIndex)
+        {
+            if (Episodes.ShowEpisodes && Episodes.EpisodesDictionary.ContainsKey(fileIndex))
+            {  
+                Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
+                this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
+                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
+                this.EpisodeText.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
+            }
+            this.EpisodeText.Visibility = Episodes.VisibilityState;
         }
 
         // Most images have a black bar at its bottom and top. We want to aligh 

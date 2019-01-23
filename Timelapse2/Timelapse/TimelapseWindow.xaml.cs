@@ -669,6 +669,8 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+
+            // Hide the episode text
             this.EpisodeText.Visibility = Visibility.Hidden;
         }
 
@@ -679,10 +681,8 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-            if (Episodes.ShowEpisodes)
-            {
-                this.EpisodeText.Visibility = (Episodes.ShowEpisodes) ? Visibility.Visible: Visibility.Hidden;
-            }
+           // this.EpisodeText.Visibility = (Episodes.ShowEpisodes) ? Visibility.Visible : Visibility.Hidden;
+            this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.

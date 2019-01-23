@@ -145,19 +145,21 @@ namespace Timelapse
                 case Key.C:
                     this.CopyPreviousValues_Click();
                     break;
-                case Key.Z:
-                    // NOTE: WE SHOULD DO THE GETEPISODES IN A SELECT CALLBACK, NOT HERE. THIS IS JUST FOR TESTING.
+                case Key.E:
                     Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
                     if (Episodes.ShowEpisodes)
                     {
                         Episodes.SetEpisodesFromFileTable(this.dataHandler.FileDatabase.FileTable);
                     }
+
+                    if (this.IsDisplayingMultipleImagesInOverview())
+                    { 
+                        this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+                    }
                     else
                     {
-                        // may not be needed
-                        // Episodes.EpisodesList = new Dictionary<int, Tuple<int, int>>(); 
+                        this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
                     }
-                    this.TryFileShowWithoutSliderCallback(); // force the display of the episode number
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window
