@@ -182,9 +182,21 @@ namespace Timelapse
             // SAULXXX EPISODES TEST
             if (fileIndex < this.episodes.Count)
             { 
-                KeyValuePair<int, Tuple<int, int>> episode = this.episodes[fileIndex];
-                System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", episode.Key, episode.Value.Item1, episode.Value.Item2));
-                this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Value.Item1, episode.Value.Item2);
+                if (this.ShowEpisodes)
+                {
+
+                    KeyValuePair<int, Tuple<int, int>> episode = this.episodes[fileIndex];
+                    this.EpisodeText.Visibility = Visibility.Visible;
+                    this.EpisodeText.Text = String.Format("Episode {0}/{1}", episode.Value.Item1, episode.Value.Item2);
+                }
+                else
+                {
+                    this.EpisodeText.Visibility = Visibility.Hidden;
+                }
+            }
+            else
+            {
+                this.EpisodeText.Visibility = Visibility.Hidden;
             }
         }
 

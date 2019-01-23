@@ -8,7 +8,7 @@ using Timelapse.Database;
 namespace Timelapse
 {
     // Episodes
-    partial class Episodes
+    public static class Episodes
     {
         // Get a list defining all episodes across all files in the file table. Note that it assumes :
         // - files are sorted to give meaningful results, e.g., by date or by RelativePath/date
@@ -38,7 +38,7 @@ namespace Timelapse
                 numberOfFiles = EpisodeGetNumberOfFilesInEpisodeFrom(fileTable, index);
                 for (int i = 0; i < numberOfFiles; i++)
                 {
-                    episodes.Add(new KeyValuePair<int, Tuple<int, int>>(index, new Tuple<int, int>(i + 1, numberOfFiles))); 
+                    episodes.Add(new KeyValuePair<int, Tuple<int, int>>(index + i, new Tuple<int, int>(i + 1, numberOfFiles))); 
                     row++;
                     numberInSequence++;
                 }

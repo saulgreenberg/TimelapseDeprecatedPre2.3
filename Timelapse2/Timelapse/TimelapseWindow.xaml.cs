@@ -30,6 +30,7 @@ namespace Timelapse
     {
         // SAULXXX TESTING EPISODES
         List<KeyValuePair<int, Tuple<int, int>>> episodes = new List<KeyValuePair<int, Tuple<int, int>>>();
+        bool ShowEpisodes = false;
 
         #region Variables and Properties
         private DataEntryHandler dataHandler;

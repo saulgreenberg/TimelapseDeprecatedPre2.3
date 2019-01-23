@@ -53,7 +53,8 @@ namespace Timelapse.Controls
         {
             set
             {
-                this.TextBlock.FontSize = value;
+                this.ImageNameText.FontSize = value;
+                this.EpisodeText.FontSize = value;
             }
         }
         public ImageRow ImageRow { get; set; }
@@ -123,7 +124,8 @@ namespace Timelapse.Controls
             // A descriptive string: the filename without the extention, plu the time in HH:MM
             // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
             string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
-            this.TextBlock.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
+            this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
+            this.EpisodeText.Text = this.ImageRow.EpisodeDescription.Item1 + "/" + this.ImageRow.EpisodeDescription.Item2;
 
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
@@ -158,7 +160,8 @@ namespace Timelapse.Controls
                     margin = 12;
                     break;
             }
-            this.TextBlock.Margin = new Thickness(0, margin, margin, 0);
+            this.ImageNameText.Margin = new Thickness(0, margin, margin, 0);
+            this.EpisodeText.Margin = this.ImageNameText.Margin;
             this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
         }
     }

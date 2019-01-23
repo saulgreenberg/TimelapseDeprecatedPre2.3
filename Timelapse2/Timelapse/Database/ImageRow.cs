@@ -25,6 +25,7 @@ namespace Timelapse.Database
         public ImageRow(DataRow row)
             : base(row)
         {
+            this.EpisodeDescription = new Tuple<int, int>(0, 0);
         }
 
         public string Date  
@@ -44,6 +45,8 @@ namespace Timelapse.Database
             get { return this.Row.GetBooleanField(Constant.DatabaseColumn.DeleteFlag); }
             set { this.Row.SetField(Constant.DatabaseColumn.DeleteFlag, value); }
         }
+
+        public Tuple<int,int> EpisodeDescription { get; set; }
 
         public string FileName
         {
