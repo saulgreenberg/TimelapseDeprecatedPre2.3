@@ -20,6 +20,8 @@ namespace Timelapse
         // Sets the state of whether we should show episodes or not
         static public bool ShowEpisodes = false;
 
+        static public TimeSpan TimeDifferenceThreshold = Constant.EpisodeDefaults.TimeThreshold;
+
         // Returns the appropriate visibility state, which depends on the state ShowEpisodes
         static public Visibility VisibilityState
         {
@@ -61,8 +63,6 @@ namespace Timelapse
         // that comprise an episode starting with the start index file
         static private int EpisodeGetNumberOfFilesInEpisodeFrom(FileTable files, int index)
         {
-            TimeSpan timeDifferenceThreshold = Constant.EpisodeDefaults.TimeDifferenceThreshold;
-
             DateTime date1;
             DateTime date2;
             ImageRow file;
@@ -82,7 +82,7 @@ namespace Timelapse
                 file = files[index];
                 date2 = file.DateTime;
                 TimeSpan difference = date2 - date1;
-                bool aboveThreshold = (difference.Duration() > timeDifferenceThreshold);
+                bool aboveThreshold = (difference.Duration() > Episodes.TimeDifferenceThreshold);
                 if (aboveThreshold)
                 {
                     break;

@@ -169,7 +169,8 @@
                 <Separator/>
                 
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
-
+                <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust Episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="True" ToolTip="Adjust the time threshold for determining how files are grouped into episode"/>
+ 
                 <Separator/>
 
                 <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Hide or show various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>

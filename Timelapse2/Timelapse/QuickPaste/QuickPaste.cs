@@ -14,7 +14,6 @@ namespace Timelapse.QuickPaste
         public static List<QuickPasteEntry> QuickPasteImportFromDB(FileDatabase fileDatabase, string ddbFile)
         {
             List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
-            System.Diagnostics.Debug.Print(ddbFile);
             string xml = FileDatabase.TryGetQuickPasteXMLFromDatabase(ddbFile);
             if (xml.Trim() == String.Empty)
             {
@@ -44,6 +43,11 @@ namespace Timelapse.QuickPaste
             };
             foreach (ControlRow row in fileDatabase.Controls)
             {
+                string value = fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel); 
+                if (value == null)
+                {
+                    value = "";
+                }
                 switch (row.Type)
                 {
                     // User defined control types are the potential items to paste
@@ -55,7 +59,7 @@ namespace Timelapse.QuickPaste
                         quickPasteEntry.Items.Add(new QuickPasteItem(
                             row.DataLabel, 
                             row.Label, 
-                            fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel), 
+                            value,
                             row.Copyable,
                             row.Type));
                         break;
@@ -84,9 +88,10 @@ namespace Timelapse.QuickPaste
                         i.Items.Select(v => new XElement("Item",
                             new XElement("Label", v.Label),
                             new XElement("DataLabel", v.DataLabel),
-                            new XElement("Value", v.Value.ToString()),
+                            new XElement("Value", (v.Value == null) ? "" : v.Value.ToString()),
                             new XElement("Use", v.Use.ToString()),
-                     new XElement("ControlType", v.ControlType.ToString())))))));
+                            new XElement("ControlType", v.ControlType.ToString())
+                     ))))));
             return xDocument.ToString();
         }
 

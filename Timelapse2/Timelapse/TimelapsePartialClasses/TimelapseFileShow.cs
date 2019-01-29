@@ -187,8 +187,6 @@ namespace Timelapse
         // Get and display the episode text if various conditions are met
         private void DisplayEpisodeTextIfWarranted(int fileIndex)
         {
-            System.Diagnostics.Debug.Print("Single fileIndex:" + this.dataHandler.ImageCache.CurrentRow);
-
             if (fileIndex < Episodes.EpisodesDictionary.Count)
             {
                 if (Episodes.ShowEpisodes && this.IsDisplayingActiveSingleImage())

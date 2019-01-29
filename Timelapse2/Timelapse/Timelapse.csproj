@@ -161,6 +161,9 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\EpisodeOptions.xaml.cs">
+      <DependentUpon>EpisodeOptions.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Enums\FlashEnums.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
@@ -341,6 +344,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\EpisodeOptions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

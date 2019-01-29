@@ -58,6 +58,25 @@ namespace Timelapse
             filePlayerOptions.ShowDialog();
         }
 
+        private void MenuItemEpisodeOptions_Click(object sender, RoutedEventArgs e)
+        {
+            EpisodeOptions episodeOptions = new EpisodeOptions(Episodes.TimeDifferenceThreshold, this);
+            episodeOptions.ShowDialog();
+            if (Episodes.ShowEpisodes)
+            {
+                Episodes.SetEpisodesFromFileTable(this.dataHandler.FileDatabase.FileTable);
+            }
+
+            if (this.IsDisplayingMultipleImagesInOverview())
+            {
+                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+            }
+            else
+            {
+                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+            }
+        }
+
         // Hide or show various informational dialogs"
         private void MenuItemDialogsOnOrOff_Click(object sender, RoutedEventArgs e)
         {

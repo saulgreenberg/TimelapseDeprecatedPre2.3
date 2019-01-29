@@ -214,7 +214,6 @@ namespace Timelapse
                     image.ImageQuality = FileSelectionEnum.Ok;
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Restored " + filepath);
                 }
                 else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
                 {
@@ -225,7 +224,6 @@ namespace Timelapse
                     image.ImageQuality = FileSelectionEnum.Missing;
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Missing " + filepath);
                 }
             }
             if (imagesToUpdate.Count > 0)

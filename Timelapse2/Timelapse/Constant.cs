@@ -260,7 +260,10 @@ namespace Timelapse
 
         public static class EpisodeDefaults
         {
-            public static readonly TimeSpan TimeDifferenceThreshold = TimeSpan.FromMinutes(5);
+            public static readonly double TimeThresholdDefault = 5;
+            public static readonly double TimeThresholdMinimum = .25;
+            public static readonly double TimeThresholdMaximum = 5;
+            public static readonly TimeSpan TimeThreshold = TimeSpan.FromMinutes(TimeThresholdDefault);
         }
 
         public static class ExceptionTypes
