@@ -293,6 +293,20 @@ namespace Timelapse.Database
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
 
+        // Convert all nulls in the list of column_names in table_name
+        // Note: this is needed as a prior version did not always set the defaults for the data, which meant that they may have introduced null values. 
+        // As I don't handle nulls well, its possible that this could introduce crashes.
+        public void ChangeNullToEmptyString(string tableName, List<string> columnNames)
+        {
+            List<string> queries = new List<string>();
+            foreach (string columnName in columnNames)
+            {
+                string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + " = '' " + Constant.Sqlite.Where + columnName + Constant.Sqlite.IsNull + Constant.Sqlite.Semicolon; // Form: UPDATE tablename SET columname = '' WHERE columnname IS NULL;
+                queries.Add(query);
+            }
+            this.ExecuteNonQueryWrappedInBeginEnd(queries);
+        }
+
         public void Update(string tableName, List<ColumnTuplesWithWhere> updateQueryList)
         {
             List<string> queries = new List<string>();

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -943,7 +940,7 @@ namespace Timelapse.Database
         public int GetFileCount(FileSelectionEnum fileSelection)
         {
             string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
-            string where = this.GetFilesWhere(fileSelection);
+            string where = this.GetFilesWhere(fileSelection) ;
             if (String.IsNullOrEmpty(where))
             {
                 if (fileSelection == FileSelectionEnum.Custom)

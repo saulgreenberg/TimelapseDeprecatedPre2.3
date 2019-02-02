@@ -119,6 +119,10 @@ namespace Timelapse.Database
                     // The where expression constructed should look something like DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue)); 
                     whereForTerm = searchTerm.DataLabel + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    if (searchTerm.ControlType == Constant.Control.Flag)
+                    {
+                        whereForTerm += Constant.Sqlite.CollateNocase; // so that true and false comparisons are case-insensitive
+                    }
                 }
 
                 // if there is already a term in the query add either and 'And' or an 'Or' to it 
