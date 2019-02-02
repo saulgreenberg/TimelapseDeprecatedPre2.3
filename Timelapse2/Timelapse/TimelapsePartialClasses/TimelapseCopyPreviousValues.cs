@@ -135,7 +135,7 @@ namespace Timelapse
                     DataEntryControl control = (DataEntryControl)pair.Value;
                     if (control.Copyable)
                     {
-                        string previewValue = this.dataHandler.FileDatabase.Files[previousRow].GetValueDisplayString(control.DataLabel);
+                        string previewValue = this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel);
                         control.ShowPreviewControlValue(previewValue);
                     }
                 }
@@ -171,7 +171,7 @@ namespace Timelapse
                 DataEntryControl control = pair.Value;
                 if (control.Copyable)
                 {
-                    control.SetContentAndTooltip(this.dataHandler.FileDatabase.Files[previousRow].GetValueDisplayString(control.DataLabel));
+                    control.SetContentAndTooltip(this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel));
                 }
             }
             return true;

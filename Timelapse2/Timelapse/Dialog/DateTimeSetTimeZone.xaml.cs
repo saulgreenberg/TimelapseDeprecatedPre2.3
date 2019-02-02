@@ -48,7 +48,7 @@ namespace Timelapse.Dialog
 
             // Preview the changes
             TimeZoneInfo newTimeZone = this.TimeZones.TimeZonesByDisplayName[(string)this.TimeZones.SelectedItem];
-            foreach (ImageRow image in this.fileDatabase.Files)
+            foreach (ImageRow image in this.fileDatabase.FileTable)
             {
                 string newDateTime = String.Empty;
                 string status = "Skipped: invalid date/time";

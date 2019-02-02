@@ -28,6 +28,9 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
+        // SAULXXX TESTING EPISODES
+        
+
         #region Variables and Properties
         private DataEntryHandler dataHandler;
         private bool disposed;
@@ -84,6 +87,7 @@ namespace Timelapse
             // Recall user's state from prior sessions
             this.state = new TimelapseState();
             this.state.ReadSettingsFromRegistry();
+            Episodes.TimeThreshold = this.state.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
 
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
@@ -666,10 +670,9 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-            //if (this.quickPasteWindow != null)
-            //{
-            //    this.quickPasteWindow.IsEnabled = false;
-            //}
+
+            // Hide the episode text
+            this.EpisodeText.Visibility = Visibility.Hidden;
         }
 
         private void SwitchedToSingleImagesView()
@@ -679,12 +682,8 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-
-            // Enable the quickPasteWindow if it exists
-            //if (this.quickPasteWindow != null)
-            //{
-            //    this.quickPasteWindow.IsEnabled = true;
-            //}
+           // this.EpisodeText.Visibility = (Episodes.ShowEpisodes) ? Visibility.Visible : Visibility.Hidden;
+            this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
@@ -759,14 +758,14 @@ namespace Timelapse
             {
                 // Only the current row is  selected in the single images view, so just use that.
                 int currentRowIndex = this.dataHandler.ImageCache.CurrentRow;
-                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[currentRowIndex].ID, currentRowIndex));
+                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
             }
             else
             {
                 // multiple selections are possible in the 
                 foreach (int rowIndex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
                 {
-                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.Files[rowIndex].ID, rowIndex));
+                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
                 }
             }
             if (this.DataGrid.Items.Count > 0)
@@ -918,5 +917,6 @@ namespace Timelapse
         }
         #endregion
 
+ 
     }
 }

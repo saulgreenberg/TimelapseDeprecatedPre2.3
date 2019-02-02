@@ -255,7 +255,7 @@ namespace Timelapse.Controls
                 return;
             }
 
-            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.Files[this.ClickableImagesGrid.GetSelected()[0]];
+            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
             int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
             string valueToCopy = imageRow.GetValueDisplayString(dataLabel);
             if (ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
@@ -282,7 +282,7 @@ namespace Timelapse.Controls
             for (int previousIndex = currentRowIndex - 1; previousIndex >= 0; previousIndex--)
             {
                 // Search for the row with some value in it, starting from the previous row
-                ImageRow file = this.FileDatabase.Files[previousIndex];
+                ImageRow file = this.FileDatabase.FileTable[previousIndex];
                 valueToCopy = file.GetValueDatabaseString(control.DataLabel);
                 if (valueToCopy == null)
                 {
@@ -310,13 +310,13 @@ namespace Timelapse.Controls
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.Message.Reason = "All the earlier files have nothing in this field, so there are no values to propagate.";
                 messageBox.ShowDialog();
-                return this.FileDatabase.Files[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                return this.FileDatabase.FileTable[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
             int filesAffected = currentRowIndex - indexToCopyFrom;
             if (ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
             {
-                return this.FileDatabase.Files[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                return this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
             // Update. Note that we start on the next row, as we are copying from the current row.
@@ -341,7 +341,7 @@ namespace Timelapse.Controls
             // BUT WE NEED TO DIFFERENTIATE BETWEEN BLANKS AND DISABLED.
 
             // Get the currently selected image row
-            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.Files[this.ClickableImagesGrid.GetSelected()[0]];
+            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
             this.FileDatabase.UpdateFiles(imageRow, control.DataLabel);
         }
 
@@ -364,7 +364,7 @@ namespace Timelapse.Controls
             for (int fileIndex = this.ImageCache.CurrentRow - 1; fileIndex >= 0; fileIndex--)
             {
                 // Search for the row with some value in it, starting from the previous row
-                string valueToCopy = this.FileDatabase.Files[fileIndex].GetValueDatabaseString(control.DataLabel);
+                string valueToCopy = this.FileDatabase.FileTable[fileIndex].GetValueDatabaseString(control.DataLabel);
                 if (String.IsNullOrWhiteSpace(valueToCopy) == false)
                 {
                     if ((checkForZero && !valueToCopy.Equals("0")) || !checkForZero)
@@ -741,7 +741,7 @@ namespace Timelapse.Controls
                 }
 
                 // This can cause the crash, when the id in fileIds[0] doesn't exist
-                ImageRow imageRow = this.FileDatabase.Files[fileIds[0]];
+                ImageRow imageRow = this.FileDatabase.FileTable[fileIds[0]];
 
                 // The above line is what causes the crash, when the id in fileIds[0] doesn't exist
                 // System.Diagnostics.Debug.Print("Success: " + dataLabel + ": " + fileIds[0]);
@@ -753,7 +753,7 @@ namespace Timelapse.Controls
                 // then return that as they all have a common value. Otherwise return an empty string.
                 for (int i = 1; i < fileIds.Count(); i++)
                 {
-                    imageRow = this.FileDatabase.Files[fileIds[i]];
+                    imageRow = this.FileDatabase.FileTable[fileIds[i]];
                     string new_contents = imageRow.GetValueDisplayString(dataLabel);
                     new_contents = new_contents.Trim();
                     if (new_contents != contents)

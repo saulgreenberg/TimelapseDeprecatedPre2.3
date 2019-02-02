@@ -16,6 +16,7 @@ namespace Timelapse.Util
         public CustomSelectionOperatorEnum CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
+        public TimeSpan EpisodeTimeThreshold { get; set; }
         public DeleteFolderManagementEnum DeleteFolderManagement { get; set; }
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
@@ -68,6 +69,7 @@ namespace Timelapse.Util
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
                 this.DeleteFolderManagement = (DeleteFolderManagementEnum)registryKey.ReadInteger(Constant.Registry.TimelapseKey.DeleteFolderManagementValue, (int)DeleteFolderManagementEnum.ManualDelete);
+                this.EpisodeTimeThreshold = registryKey.ReadTimeSpan(Constant.Registry.TimelapseKey.EpisodeTimeThreshold, TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault));
                 this.FilePlayerSlowValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.ReadDouble(Constant.Registry.TimelapseKey.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
@@ -107,6 +109,7 @@ namespace Timelapse.Util
                 return registryKey.ReadString(key, String.Empty);
             }
         }
+
         public Rect ReadTimelapseWindowPositionAndSizeFromRegistryRect(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
@@ -140,6 +143,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelRatio, this.DarkPixelRatioThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelThreshold, this.DarkPixelThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.DeleteFolderManagementValue, (int)this.DeleteFolderManagement);
+                registryKey.Write(Constant.Registry.TimelapseKey.EpisodeTimeThreshold, this.EpisodeTimeThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.FilePlayerSlowValue, this.FilePlayerSlowValue);
                 registryKey.Write(Constant.Registry.TimelapseKey.FilePlayerFastValue, this.FilePlayerFastValue);
                 registryKey.Write(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, this.Throttles.DesiredImageRendersPerSecond);

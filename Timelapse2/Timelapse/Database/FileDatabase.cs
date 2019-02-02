@@ -38,7 +38,7 @@ namespace Timelapse.Database
         public Dictionary<string, FileTableColumn> FileTableColumnsByDataLabel { get; private set; }
 
         // contains the results of the data query
-        public FileTable Files { get; private set; }
+        public FileTable FileTable { get; private set; }
 
         public ImageSetRow ImageSet { get; private set; }
 
@@ -116,7 +116,7 @@ namespace Timelapse.Database
         /// <summary>Gets the number of files currently in the file table.</summary>
         public int CurrentlySelectedFileCount
         {
-            get { return this.Files.RowCount; }
+            get { return this.FileTable.RowCount; }
         }
 
         #region Adding Files to the Database
@@ -127,7 +127,7 @@ namespace Timelapse.Database
             List<string> counterList = new List<string>();
             List<string> notesAndFixedChoicesList = new List<string>();
             List<string> flagsList = new List<string>();
-            foreach (string columnName in this.Files.ColumnNames)
+            foreach (string columnName in this.FileTable.ColumnNames)
             {
                 if (columnName == Constant.DatabaseColumn.ID)
                 {
@@ -162,7 +162,7 @@ namespace Timelapse.Database
                 {
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
-                    foreach (string columnName in this.Files.ColumnNames)
+                    foreach (string columnName in this.FileTable.ColumnNames)
                     {
                         // Fill up each column in order
                         if (columnName == Constant.DatabaseColumn.ID)
@@ -283,7 +283,7 @@ namespace Timelapse.Database
         {
             this.boundGrid = dataGrid;
             this.onFileDataTableRowChanged = onRowChanged;
-            this.Files.BindDataGrid(dataGrid, onRowChanged);
+            this.FileTable.BindDataGrid(dataGrid, onRowChanged);
         }
 
         /// <summary>
@@ -478,7 +478,7 @@ namespace Timelapse.Database
             bool refreshImageDataTable = false;
 
             // RelativePath column (if missing) needs to be added 
-            if (this.Files.ColumnNames.Contains(Constant.DatabaseColumn.RelativePath) == false)
+            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.RelativePath) == false)
             {
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
@@ -488,7 +488,7 @@ namespace Timelapse.Database
             }
 
             // DateTime column (if missing) needs to be added 
-            if (this.Files.ColumnNames.Contains(Constant.DatabaseColumn.DateTime) == false)
+            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.DateTime) == false)
             {
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
@@ -498,7 +498,7 @@ namespace Timelapse.Database
             }
 
             // UTCOffset column (if missing) needs to be added 
-            if (this.Files.ColumnNames.Contains(Constant.DatabaseColumn.UtcOffset) == false)
+            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.UtcOffset) == false)
             {
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
@@ -624,7 +624,7 @@ namespace Timelapse.Database
                 TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
                 List<ColumnTuplesWithWhere> updateQuery = new List<ColumnTuplesWithWhere>();
 
-                foreach (ImageRow image in this.Files)
+                foreach (ImageRow image in this.FileTable)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
                     bool result = DateTimeHandler.TryParseLegacyDateTime(image.Date, image.Time, imageSetTimeZone, out DateTimeOffset imageDateTime);
@@ -857,8 +857,8 @@ namespace Timelapse.Database
                 }
             }
             DataTable images = this.Database.GetDataTableFromSelect(query);
-            this.Files = new FileTable(images);
-            this.Files.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            this.FileTable = new FileTable(images);
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
 
         public FileTable GetFilesMarkedForDeletion()
@@ -920,7 +920,7 @@ namespace Timelapse.Database
             }
             else
             {
-                file = this.Files.NewRow(fileInfo);
+                file = this.FileTable.NewRow(fileInfo);
                 file.InitialRootFolderName = initialRootFolderName;
                 file.RelativePath = relativePath;
                 file.SetDateTimeOffsetFromFileInfo(this.FolderPath);
@@ -995,7 +995,7 @@ namespace Timelapse.Database
         public void UpdateFile(long fileID, string dataLabel, string value)
         {
             // update the data table
-            ImageRow image = this.Files.Find(fileID);
+            ImageRow image = this.FileTable.Find(fileID);
             image.SetValueFromDatabaseString(dataLabel, value);
 
             // update the row in the database
@@ -1052,7 +1052,7 @@ namespace Timelapse.Database
             for (int index = fromIndex; index <= toIndex; index++)
             {
                 // update data table
-                ImageRow image = this.Files[index];
+                ImageRow image = this.FileTable[index];
                 image.SetValueFromDatabaseString(dataLabel, value);
 
                 // update database
@@ -1079,7 +1079,7 @@ namespace Timelapse.Database
             foreach (int fileIndex in fileIndexes)
             {
                 // update data table
-                ImageRow image = this.Files[fileIndex];
+                ImageRow image = this.FileTable[fileIndex];
                 image.SetValueFromDatabaseString(dataLabel, value);
 
                 // update database
@@ -1134,7 +1134,7 @@ namespace Timelapse.Database
             TimeSpan mostRecentAdjustment = TimeSpan.Zero;
             for (int row = startRow; row <= endRow; ++row)
             { 
-                ImageRow image = this.Files[row];
+                ImageRow image = this.FileTable[row];
                 DateTimeOffset currentImageDateTime = image.GetDateTime();
 
                 // adjust the date/time
@@ -1201,14 +1201,14 @@ namespace Timelapse.Database
 
             // Get the original date value of each. If we can swap the date order, do so. 
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            ImageRow firstImage = this.Files[startRow];
+            ImageRow firstImage = this.FileTable[startRow];
             ImageRow lastImage = null;
             TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
             DateTimeOffset mostRecentOriginalDateTime = DateTime.MinValue;
             DateTimeOffset mostRecentReversedDateTime = DateTime.MinValue;
             for (int row = startRow; row <= endRow; row++)
             {
-                ImageRow image = this.Files[row];
+                ImageRow image = this.FileTable[row];
                 DateTimeOffset originalDateTime = image.GetDateTime();
 
                 if (DateTimeHandler.TrySwapDayMonth(originalDateTime, out DateTimeOffset reversedDateTime) == false)
@@ -1266,7 +1266,7 @@ namespace Timelapse.Database
                 return false;
             }
 
-            return this.Files[rowIndex].IsDisplayable();
+            return this.FileTable[rowIndex].IsDisplayable();
         }
 
         // Find the next displayable file at or after the provided row in the current image set.
@@ -1370,7 +1370,7 @@ namespace Timelapse.Database
             {
                 return -1;
             }
-            return culture.CompareInfo.IndexOf(this.Files[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
+            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
         }
         #endregion
 
@@ -1381,7 +1381,7 @@ namespace Timelapse.Database
         {
             for (int rowIndex = 0; rowIndex < this.CurrentlySelectedFileCount; ++rowIndex)
             {
-                if (this.Files[rowIndex].ID >= fileID)
+                if (this.FileTable[rowIndex].ID >= fileID)
                 {
                     return rowIndex;
                 }
@@ -1403,10 +1403,10 @@ namespace Timelapse.Database
         {
             // try primary key lookup first as typically the requested ID will be present in the data table
             // (ideally the caller could use the ImageRow found directly, but this doesn't compose with index based navigation)
-            ImageRow file = this.Files.Find(fileID);
+            ImageRow file = this.FileTable.Find(fileID);
             if (file != null)
             {
-                return this.Files.IndexOf(file);
+                return this.FileTable.IndexOf(file);
             }
 
             // when sorted by ID ascending so an inexact binary search works
@@ -1418,7 +1418,7 @@ namespace Timelapse.Database
             while (firstIndex <= lastIndex)
             {
                 int midpointIndex = (firstIndex + lastIndex) / 2;
-                file = this.Files[midpointIndex];
+                file = this.FileTable[midpointIndex];
                 long midpointID = file.ID;
 
                 if (fileID > midpointID)
@@ -1560,9 +1560,9 @@ namespace Timelapse.Database
 
             if (disposing)
             {
-                if (this.Files != null)
+                if (this.FileTable != null)
                 {
-                    this.Files.Dispose();
+                    this.FileTable.Dispose();
                 }
                 if (this.Markers != null)
                 {

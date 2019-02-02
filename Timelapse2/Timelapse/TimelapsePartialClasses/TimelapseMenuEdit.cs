@@ -163,7 +163,7 @@ namespace Timelapse
                 imagesToDelete = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion().ToList();
                 for (int index = imagesToDelete.Count - 1; index >= 0; index--)
                 {
-                    if (this.dataHandler.FileDatabase.Files.Find(imagesToDelete[index].ID) == null)
+                    if (this.dataHandler.FileDatabase.FileTable.Find(imagesToDelete[index].ID) == null)
                     {
                         imagesToDelete.Remove(imagesToDelete[index]);
                     }

@@ -33,6 +33,17 @@ namespace Timelapse.Util
             return DateTime.ParseExact(value, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         }
 
+        // Read TimeSpan as seconds
+        public static TimeSpan ReadTimeSpan(this RegistryKey registryKey, string subKeyPath, TimeSpan defaultValue)
+        {
+            string value = registryKey.ReadString(subKeyPath);
+            if (value == null)
+            {
+                return defaultValue;
+            }
+            return int.TryParse(value, out int seconds) ? TimeSpan.FromSeconds(seconds) : defaultValue;
+        }
+
         public static double ReadDouble(this RegistryKey registryKey, string subKeyPath, double defaultValue)
         {
             string valueAsString = registryKey.ReadString(subKeyPath);
@@ -209,6 +220,12 @@ namespace Timelapse.Util
         public static void Write(this RegistryKey registryKey, string subKeyPath, string value)
         {
             registryKey.SetValue(subKeyPath, value, RegistryValueKind.String);
+        }
+
+        // Save Timespan as seconds
+        public static void Write(this RegistryKey registryKey, string subKeyPath, TimeSpan value)
+        {
+            registryKey.SetValue(subKeyPath, value.TotalSeconds.ToString(), RegistryValueKind.String);
         }
     }
 }

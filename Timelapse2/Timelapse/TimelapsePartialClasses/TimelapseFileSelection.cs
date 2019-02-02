@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
@@ -151,6 +152,9 @@ namespace Timelapse
             this.StatusBar.SetView(status);
             this.DataEntryControlPanel.Title = "Data entry for " + status;
 
+            // Reset the Episodes, as it may change based on the current selection
+            Episodes.Reset();
+
             // Display the specified file or, if it's no longer selected, the next closest one
             // FileShow() handles empty image sets, so those don't need to be checked for here.
             // After a selection changes, set the slider to represent the index and the count of the current selection
@@ -211,7 +215,6 @@ namespace Timelapse
                     image.ImageQuality = FileSelectionEnum.Ok;
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Restored " + filepath);
                 }
                 else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
                 {
@@ -222,7 +225,6 @@ namespace Timelapse
                     image.ImageQuality = FileSelectionEnum.Missing;
                     imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
                     imagesToUpdate.Add(imageUpdate);
-                    System.Diagnostics.Debug.Print("Missing " + filepath);
                 }
             }
             if (imagesToUpdate.Count > 0)

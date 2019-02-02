@@ -157,7 +157,7 @@ namespace Timelapse.QuickPaste
                 Grid.SetRow(quickPasteControl, gridRowIndex);
                 Grid.SetColumn(quickPasteControl, gridRowIndex);
                 this.QuickPasteGrid.Children.Add(quickPasteControl); 
-                 gridRowIndex++;
+                gridRowIndex++;
             }
         }
 

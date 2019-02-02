@@ -33,7 +33,7 @@ namespace Timelapse
             // Skip images with bad dates
             ImageRow latestImageRow = null;
             ImageRow earliestImageRow = null;
-            foreach (ImageRow image in this.fileDatabase.Files)
+            foreach (ImageRow image in this.fileDatabase.FileTable)
             {
                 DateTimeOffset currentImageDateTime = image.GetDateTime();
 
@@ -78,7 +78,7 @@ namespace Timelapse
             // Preview the changes
             TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
             TimeSpan intervalFromOldestToNewestImage = this.latestImageDateTime - this.earliestImageDateTime;
-            foreach (ImageRow image in this.fileDatabase.Files)
+            foreach (ImageRow image in this.fileDatabase.FileTable)
             {
                 string oldDT = image.Date + " " + image.Time;
                 string newDT = String.Empty;

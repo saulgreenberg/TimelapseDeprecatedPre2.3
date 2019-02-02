@@ -69,7 +69,7 @@ namespace Timelapse.Database
             {
                 this.CurrentRow = imageRowIndex;
                 // rebuild ImageProperties regardless of whether the row changed or not as this seek may be a refresh after a database change
-                this.Current = this.Database.Files[imageRowIndex];
+                this.Current = this.Database.FileTable[imageRowIndex];
                 return true;
             }
 

@@ -258,6 +258,13 @@ namespace Timelapse
             public const string Markers = "MarkersTable";         // the table containing the marker data
         }
 
+        public static class EpisodeDefaults
+        {
+            public static readonly double TimeThresholdDefault = 2; // 2 Minutes
+            public static readonly double TimeThresholdMinimum = 0.25; // 15 seconds
+            public static readonly double TimeThresholdMaximum = 10; // 10 minutes
+        }
+
         public static class ExceptionTypes
         {
             public const string TemplateReadWriteException = "TemplateReadWriteException";
@@ -441,6 +448,8 @@ namespace Timelapse
 
                 // How the DeleteFolder is managed (e.g.,manual, by asking, or automatic deletion)
                 public const string DeleteFolderManagementValue = "DeleteFolderManagement";
+
+                public const string EpisodeTimeThreshold = "EpisodeTimeThreshold";
 
                 // File Player play speeds (slow and fast)
                 public const string FilePlayerSlowValue = "FilePlayerSlowValue";

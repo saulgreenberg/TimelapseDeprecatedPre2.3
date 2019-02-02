@@ -16,14 +16,35 @@
         <Viewbox Name="Viewbox" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
         </Viewbox>
-        
-        <TextBlock Name="TextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16" >  <!--Margin="10,12,0,0"-->
+
+        <TextBlock Name="ImageNameText" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16" >  <!--Margin="10,12,0,0"-->
             <TextBlock.Background>
                 <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
             </TextBlock.Background>
         </TextBlock>
-        
-        <Viewbox Height="35" Name="CheckboxViewbox" HorizontalAlignment="Left" VerticalAlignment="Top" > <!--Margin="10,0,0,12"-->
+
+        <StackPanel Orientation="Horizontal">
+            <Viewbox Height="35" Name="CheckboxViewbox" HorizontalAlignment="Left" VerticalAlignment="Top" >
+                <Border BorderThickness="2" BorderBrush="Black">
+
+                    <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
+                       VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="66" >
+                        <TextBlock.Background>
+                            <SolidColorBrush Color="AliceBlue" Opacity="0.35" />
+                        </TextBlock.Background>
+                    </TextBlock>
+                </Border>
+            </Viewbox>
+            
+            <TextBlock Name="EpisodeText" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" FontSize="16" Margin="5,0,0,0">
+                <TextBlock.Background>
+                    <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
+                </TextBlock.Background>
+                             Hello
+            </TextBlock>
+        </StackPanel>
+
+        <!--<Viewbox Height="35" Name="CheckboxViewbox" HorizontalAlignment="Left" VerticalAlignment="Top" > --><!--Margin="10,0,0,12"--><!--
             <Border BorderThickness="2" BorderBrush="Black">
                 <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
                        VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="66" >
@@ -32,22 +53,7 @@
                     </TextBlock.Background>
                 </TextBlock>
             </Border>
-        </Viewbox>
+        </Viewbox>-->
 
-        <!--<Viewbox Height="35" HorizontalAlignment="Left" VerticalAlignment="Top" >
-            <Border BorderThickness="2" BorderBrush="Black">
-                <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
-                       VerticalAlignment="Bottom" Foreground="DarkSlateGray" FontWeight="Bold" FontSize="66" >
-                    <TextBlock.Background>
-                        <SolidColorBrush Color="AliceBlue" Opacity="0.35" />
-                    </TextBlock.Background>
-                </TextBlock>
-            </Border>
-        </Viewbox>
-        <TextBlock Name="TextBlock" Grid.Row="0" Grid.Column="0" Margin="10,0,0,10" HorizontalAlignment="Left" VerticalAlignment="Bottom" Foreground="Black" FontSize="16" >
-            <TextBlock.Background>
-                <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
-            </TextBlock.Background>
-        </TextBlock>-->
     </Grid>
 </UserControl>

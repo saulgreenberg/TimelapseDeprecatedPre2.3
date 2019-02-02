@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
 
@@ -142,6 +144,9 @@ namespace Timelapse
                     break;
                 case Key.C:
                     this.CopyPreviousValues_Click();
+                    break;
+                case Key.E:
+                    MenuItemEpisodeShowHide_Click(null, null);
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window

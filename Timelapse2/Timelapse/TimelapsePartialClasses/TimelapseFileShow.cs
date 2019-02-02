@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -81,7 +82,7 @@ namespace Timelapse
             // SAULXX: Note that this used to be before the above if statement. Not sure if it would be a problem having it here (in case of failur)
             this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
             this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.Files;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.FileTable;
 
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
@@ -178,6 +179,35 @@ namespace Timelapse
 
             // Refresh the markable canvas if needed
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
+
+            // Display the episode text as needed
+            this.DisplayEpisodeTextIfWarranted(fileIndex);
+        }
+
+        // Get and display the episode text if various conditions are met
+        private void DisplayEpisodeTextIfWarranted(int fileIndex)
+        {
+            if (Episodes.ShowEpisodes && IsDisplayingSingleImage())
+            {
+                if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
+                {
+                    Episodes.EpisodeGetEpisodesInRange(this.dataHandler.FileDatabase.FileTable, this.dataHandler.ImageCache.CurrentRow);
+                }
+                Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
+                this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
+                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
+                this.EpisodeText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.EpisodeText.Visibility = Visibility.Hidden;
+            }
+        }
+
+        // Refresh the image
+        private bool TryFileShowWithoutSliderCallback()
+        {
+            return TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
@@ -202,16 +232,26 @@ namespace Timelapse
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, int increment)
         {
+            int desiredRow = 0;
             // Check to see if there are any images to show, 
             if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
             {
                 return false;
             }
 
-            int desiredRow = (direction == DirectionEnum.Next)
-                ? this.dataHandler.ImageCache.CurrentRow + increment
-                : this.dataHandler.ImageCache.CurrentRow - increment;
-
+            switch (direction)
+            {
+                case DirectionEnum.Next:
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
+                    break;
+                case DirectionEnum.Previous:
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow - increment;
+                    break;
+                case DirectionEnum.None:
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow;
+                    break;
+            }
+           
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
             if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
             {
@@ -223,11 +263,11 @@ namespace Timelapse
             }
 
             // If the desired row is the same as the current row, the image is already being displayed
-            if (desiredRow != this.dataHandler.ImageCache.CurrentRow)
+            if (desiredRow != this.dataHandler.ImageCache.CurrentRow || direction == DirectionEnum.None)
             {
-                // Move to the desired row
+                // Move to the desired row, forcing an update if there is no change in direction
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.FileShow(desiredRow);
+                this.FileShow(desiredRow, direction == DirectionEnum.None);
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
             return true;

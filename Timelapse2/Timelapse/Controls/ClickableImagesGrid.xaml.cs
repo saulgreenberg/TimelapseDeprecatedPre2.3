@@ -150,20 +150,22 @@ namespace Timelapse.Controls
                         {
                             // The image is in the cache.
                             ci = this.cachedImageList[cachedImageListIndex];
-
                             if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
                             {
-                               // Re-render the cached image, as its smaller than the resolution width 
-                               imageHeight = ci.Rerender(desiredWidth, state);
+                                // Re-render the cached image, as its smaller than the resolution width 
+                                imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, cachedImageListIndex);
                             }
                             else
                             {
                                 // Reuse the cached image, as its at least of the same or greater resolution width. 
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
+                                // Rerender the episode text in case it has changed
+                                ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex); 
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
-                            ci.TextFontSize = desiredWidth / 20;
+                            int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
+                            ci.TextFontSize = desiredWidth / fontSizeCorrectionFactor;
                             ci.AdjustMargin(state);
                             clickableImagesRow.Add(ci);
                             inCache = true;
@@ -186,9 +188,10 @@ namespace Timelapse.Controls
                             ImageRow = this.FileTable[fileTableIndex],
                             DesiredRenderWidth = desiredWidth
                         };
-                        imageHeight = ci.Rerender(desiredWidth, state);
+                        imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, fileTableIndex);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
-                        ci.TextFontSize = desiredWidth / 20;
+                        int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
+                        ci.TextFontSize = desiredWidth / fontSizeCorrectionFactor;
                         ci.AdjustMargin(state);
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)

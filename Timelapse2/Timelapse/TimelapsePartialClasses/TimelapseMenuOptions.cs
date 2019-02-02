@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Input;
 using Timelapse.Dialog;
 
 namespace Timelapse
@@ -56,6 +57,43 @@ namespace Timelapse
         {
             FilePlayerOptions filePlayerOptions = new FilePlayerOptions(this.state, this);
             filePlayerOptions.ShowDialog();
+        }
+
+        private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
+        {
+            Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
+            MenuItemEpisodeShowHide.IsChecked = Episodes.ShowEpisodes;
+
+            if (this.IsDisplayingMultipleImagesInOverview())
+            {
+                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+            }
+            else
+            {
+                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+            }
+        }
+
+        private void MenuItemEpisodeOptions_Click(object sender, RoutedEventArgs e)
+        {
+            EpisodeOptions episodeOptions = new EpisodeOptions(this.state.EpisodeTimeThreshold, this);
+            bool? result = episodeOptions.ShowDialog();
+            if (result == true)
+            {
+                // the time threshold has changed, so save its new state
+                this.state.EpisodeTimeThreshold = episodeOptions.EpisodeTimeThreshold;
+                Episodes.TimeThreshold = this.state.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
+                Episodes.Reset();
+            }
+
+            if (this.IsDisplayingMultipleImagesInOverview())
+            {
+                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+            }
+            else
+            {
+                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+            }
         }
 
         // Hide or show various informational dialogs"

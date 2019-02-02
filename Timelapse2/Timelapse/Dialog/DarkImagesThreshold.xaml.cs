@@ -356,7 +356,7 @@ namespace Timelapse.Dialog
 
         private void BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
-            List<ImageRow> selectedFiles = this.database.Files.ToList();
+            List<ImageRow> selectedFiles = this.database.FileTable.ToList();
             this.ApplyButton.Content = "_Done";
             this.ApplyButton.IsEnabled = false;
             this.DarkPixelRatioThumb.IsEnabled = false;

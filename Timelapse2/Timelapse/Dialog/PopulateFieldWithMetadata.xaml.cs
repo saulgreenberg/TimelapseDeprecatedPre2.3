@@ -185,7 +185,7 @@ namespace Timelapse.Dialog
                 TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
                 for (int imageIndex = 0; imageIndex < database.CurrentlySelectedFileCount; ++imageIndex)
                 {
-                    ImageRow image = database.Files[imageIndex];
+                    ImageRow image = database.FileTable[imageIndex];
                     Dictionary<string, ImageMetadata> metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(database.FolderPath));
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
