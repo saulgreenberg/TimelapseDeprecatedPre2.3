@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
@@ -116,20 +115,14 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public Double Rerender(double width, int state, int fileIndex)
+        public Double Rerender(FileTable fileTable, double width, int state, int fileIndex)
         {
             this.DesiredRenderWidth = width;
             BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent);
             this.Image.Source = bf;
 
-            // A descriptive string: the filename without the extention, plu the time in HH:MM
-            // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
-            string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
-            
-            this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
-
             // Render the episode text if needed
-            this.DisplayEpisodeTextIfWarranted(fileIndex);
+            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
             
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
@@ -146,16 +139,27 @@ namespace Timelapse.Controls
         }
 
         // Get and display the episode text if various conditions are met
-        public void DisplayEpisodeTextIfWarranted(int fileIndex)
+        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
         {
-            if (Episodes.ShowEpisodes && Episodes.EpisodesDictionary.ContainsKey(fileIndex))
-            {  
+            if (Episodes.ShowEpisodes)
+            {
+                // A descriptive string: the filename without the extention, plu the time in HH:MM
+                // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
+                string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
+
+                this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
+
+                if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
+                {
+                    Episodes.EpisodeGetEpisodesInRange(fileTable, fileIndex);
+                }
                 Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
                 this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
                 this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
                 this.EpisodeText.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
             }
-            this.EpisodeText.Visibility = Episodes.VisibilityState;
+            this.EpisodeText.Visibility = Episodes.ShowEpisodes ? Visibility.Visible : Visibility.Hidden;
+            this.ImageNameText.Visibility = this.EpisodeText.Visibility;
         }
 
         // Most images have a black bar at its bottom and top. We want to aligh 

@@ -146,20 +146,7 @@ namespace Timelapse
                     this.CopyPreviousValues_Click();
                     break;
                 case Key.E:
-                    Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
-                    if (Episodes.ShowEpisodes)
-                    {
-                        Episodes.SetEpisodesFromFileTable(this.dataHandler.FileDatabase.FileTable);
-                    }
-
-                    if (this.IsDisplayingMultipleImagesInOverview())
-                    { 
-                        this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
-                    }
-                    else
-                    {
-                        this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
-                    }
+                    MenuItemEpisodeShowHide_Click(null, null);
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window

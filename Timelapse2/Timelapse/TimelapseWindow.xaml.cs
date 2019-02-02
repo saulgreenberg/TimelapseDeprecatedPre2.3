@@ -87,6 +87,7 @@ namespace Timelapse
             // Recall user's state from prior sessions
             this.state = new TimelapseState();
             this.state.ReadSettingsFromRegistry();
+            Episodes.TimeThreshold = this.state.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
 
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
@@ -916,5 +917,6 @@ namespace Timelapse
         }
         #endregion
 
+ 
     }
 }

@@ -36,6 +36,8 @@ namespace Timelapse
             this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;
             // this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected; // DEPRACATED
             this.MenuItemAudioFeedback.IsEnabled = filesSelected;
+            this.MenuItemEpisodeOptions.IsEnabled = filesSelected;
+            this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemImageCounts.IsEnabled = filesSelected;

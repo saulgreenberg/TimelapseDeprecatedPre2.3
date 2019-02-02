@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
@@ -19,13 +9,13 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class EpisodeOptions : Window
     {
-        private TimeSpan timeDifferenceThreshold;
+        public TimeSpan EpisodeTimeThreshold { get; set; }
 
         public EpisodeOptions(TimeSpan timeDifferenceThreshold, Window owner)
         {
             InitializeComponent();
             this.Owner = owner;
-            this.timeDifferenceThreshold = timeDifferenceThreshold;
+            this.EpisodeTimeThreshold = timeDifferenceThreshold;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -36,7 +26,7 @@ namespace Timelapse.Dialog
             this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum;
             this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum; 
             this.TimeThresholdSlider.ValueChanged += TimeThresholdSlider_ValueChanged;
-            this.TimeThresholdSlider.Value = this.timeDifferenceThreshold.TotalMinutes;
+            this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalMinutes;
             DisplayFeedback();
         }
 
@@ -44,23 +34,24 @@ namespace Timelapse.Dialog
         {
             // this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
             DisplayFeedback();
-            this.timeDifferenceThreshold = TimeSpan.FromMinutes(TimeThresholdSlider.Value);
+            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(TimeThresholdSlider.Value);
         }
 
         private void DisplayFeedback()
         {
-            this.TimeThresholdText.Text = String.Format("{0:m\\:ss} minutes", TimeSpan.FromMinutes(this.TimeThresholdSlider.Value));
+            TimeSpan duration = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
+            string label = (duration >= TimeSpan.FromMinutes(1)) ? "minutes" : "seconds";
+            this.TimeThresholdText.Text = String.Format("{0:m\\:ss} {1}", duration, label);
         }
 
         private void ResetTimeThresholdSlider_Click(object sender, RoutedEventArgs e)
         {
-            this.TimeThresholdSlider.Value = 2; //Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds;
+            this.TimeThresholdSlider.Value = Constant.EpisodeDefaults.TimeThresholdDefault;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
-            Episodes.TimeDifferenceThreshold = this.timeDifferenceThreshold;
         }
     }
 }

@@ -187,23 +187,20 @@ namespace Timelapse
         // Get and display the episode text if various conditions are met
         private void DisplayEpisodeTextIfWarranted(int fileIndex)
         {
-            if (fileIndex < Episodes.EpisodesDictionary.Count)
+            if (Episodes.ShowEpisodes && IsDisplayingSingleImage())
             {
-                if (Episodes.ShowEpisodes && this.IsDisplayingActiveSingleImage())
+                if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
-                    Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
-                    this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
-                    this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
-                    this.EpisodeText.Visibility = Visibility.Visible;
+                    Episodes.EpisodeGetEpisodesInRange(this.dataHandler.FileDatabase.FileTable, this.dataHandler.ImageCache.CurrentRow);
                 }
-                else
-                {
-                    this.EpisodeText.Visibility = Visibility.Hidden;
-                }
+                Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
+                this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
+                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
+                this.EpisodeText.Visibility = Visibility.Visible;
             }
             else
             {
-                this.EpisodeText.Visibility = Episodes.VisibilityState;
+                this.EpisodeText.Visibility = Visibility.Hidden;
             }
         }
 
@@ -248,7 +245,7 @@ namespace Timelapse
                     desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
                     break;
                 case DirectionEnum.Previous:
-                    desiredRow =  this.dataHandler.ImageCache.CurrentRow - increment;
+                    desiredRow = this.dataHandler.ImageCache.CurrentRow - increment;
                     break;
                 case DirectionEnum.None:
                     desiredRow = this.dataHandler.ImageCache.CurrentRow;

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -34,7 +35,9 @@ namespace Timelapse
         {
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
+                Mouse.OverrideCursor = Cursors.Wait;
                 this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath, out BackgroundWorker backgroundWorker);
+                Mouse.OverrideCursor = null;
             }
         }
 
@@ -42,11 +45,13 @@ namespace Timelapse
         private void MenuItemRecentImageSet_Click(object sender, RoutedEventArgs e)
         {
             string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
+            Mouse.OverrideCursor = Cursors.Wait;
             if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath, out BackgroundWorker backgroundWorker) == false)
             {
                 this.state.MostRecentImageSets.TryRemove(recentDatabasePath);
                 this.RecentFileSets_Refresh();
             }
+            Mouse.OverrideCursor = null;
         }
 
         // Add Images to Image Set 
@@ -54,7 +59,9 @@ namespace Timelapse
         {
             if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
             {
+                Mouse.OverrideCursor = Cursors.Wait;
                 this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
+                Mouse.OverrideCursor = null;
             }
         }
 

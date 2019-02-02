@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
@@ -151,8 +152,8 @@ namespace Timelapse
             this.StatusBar.SetView(status);
             this.DataEntryControlPanel.Title = "Data entry for " + status;
 
-            // Set the Episodes based on the current selection
-            Episodes.SetEpisodesFromFileTable(this.dataHandler.FileDatabase.FileTable);
+            // Reset the Episodes, as it may change based on the current selection
+            Episodes.Reset();
 
             // Display the specified file or, if it's no longer selected, the next closest one
             // FileShow() handles empty image sets, so those don't need to be checked for here.

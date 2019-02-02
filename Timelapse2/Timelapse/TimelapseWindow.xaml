@@ -48,7 +48,7 @@
 
                 <!-- Load a recently used image set -->
                 <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
- 
+
                 <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                     <MenuItem.Icon>
                         <Image Source="Icons/NewFile_40x.png" />
@@ -119,12 +119,12 @@
                 <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemQuickPasteWindowShow_Click" InputGestureText="Q" ToolTip="Display the Quickpaste window, which lets you create, selected, edit and delete QuickPaste items"/>
                 <MenuItem Name="MenuItemImportQuickPasteFromDB" IsEnabled="True" Header="Import QuickPaste Items from .ddb file..." Click="MenuItemQuickPasteImportFromDB_Click" ToolTip="Import Quickpaste items that were created in another timelapse database (.ddb) file"/>
                 <Separator />
-                
+
                 <!-- Copy previous values -->
                 <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="MenuItemCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
 
                 <Separator/>
-                
+
                 <!-- Populate a field with _metadata... -->
                 <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
 
@@ -157,26 +157,29 @@
             <!-- Options Menu -->
             <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
                 <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
- 
+
                 <Separator/>
-                
+
                 <MenuItem Name="MenuItemMagnifyingGlass" Header="_Magnifying Glass" IsEnabled="False">
                     <MenuItem Name="MenuItemDisplayMagnifyingGlass" IsCheckable="True" IsChecked="False" InputGestureText="M" Header="Display _magnifier" Click="MenuItemDisplayMagnifyingGlass_Click" ToolTip="Toggles the presence of the magnifying glass"/>
                     <MenuItem Name="MenuItemMagnifyingGlassIncrease" InputGestureText="U" Header="_Increase magnification" Click="MenuItemMagnifyingGlassIncrease_Click" ToolTip="Increase the magnification of the magnifying glass"/>
                     <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                 </MenuItem>
-                
-                <Separator/>
-                
+
+
+
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
-                <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust Episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="True" ToolTip="Adjust the time threshold for determining how files are grouped into episode"/>
- 
-                <Separator/>
-
-                <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Hide or show various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
 
                 <Separator/>
- 
+                <MenuItem Name="MenuItemEpisodeShowHide" Header="_Show episode information" IsCheckable="True" Click="MenuItemEpisodeShowHide_Click" IsEnabled="False" ToolTip="Show or hide information that groups files spearated by brief time periods into episodes"/>
+                <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="False" ToolTip="Adjust the time threshold for determining how files are grouped into episode"/>
+
+                <Separator/>
+
+                <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Show or hide various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
+
+                <Separator/>
+
                 <MenuItem Name="MenuItemClassifyDarkImagesWhenLoading" IsCheckable="False" IsChecked="False" Header="_Classify dark images automatically on initial load..."  ToolTip="Automatically classify dark images when initially loading an image set for the first time." Click="MenuItemClassifyDarkImagesWhenLoading_Click" />
 
                 <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
@@ -224,19 +227,19 @@
                 <MenuItem Name="MenuItemSortByDateTime" IsCheckable="True" IsChecked="False" Header="By Date/Time &#8593;" Click="MenuItemSort_Click" ToolTip="Sort files by their date/time." />
                 <MenuItem Name="MenuItemSortByFileName" IsCheckable="True" IsChecked="False" Header="By File Path &#8593; (relative path + file name) " Click="MenuItemSort_Click" ToolTip="Sort files by their relative path and file name."  />
                 <MenuItem Name="MenuItemSortById" IsCheckable="True" IsChecked="False" Header="By Id &#8593; (the order files were added to Timelapse)" Click="MenuItemSort_Click" ToolTip="Sort files by the order they were added into Timelapse."/>
- 
+
                 <Separator/>
-  
+
                 <MenuItem Name="MenuItemSortCustom" IsCheckable="True" IsChecked="False" Header="_Custom sort..." Click="MenuItemSortCustom_Click" ToolTip="Customize the sorting order by particular fields."/>
-   
+
                 <Separator/>
- 
+
                 <MenuItem Name="MenuItemSortResort" Header="Refresh the sort" Click="MenuItemSortResort_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria." />
             </MenuItem>
 
             <!-- Window Menu -->
             <MenuItem Name="MenuItemWindow" Header="_Window" IsTabStop="false" ToolTip="Save or Apply various window layouts" IsEnabled="True">
-                
+
                 <!--Standard configurations-->
                 <MenuItem Name="MenuItemWindowDataEntryOnTop" Header="_Data Entry on Top (default)" Click="MenuItemWindowRestore_Click" ToolTip="Data entry panel appears at the window's top (Default layout)" Tag="AvalonLayout_DataEntryOnTop">
                     <MenuItem.Icon>
@@ -253,7 +256,7 @@
                         <Image Source="Icons/LayoutDataEntryFloating_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                
+
                 <!--Custom congiurations: Restore -->
                 <Separator/>
                 <MenuItem Name="MenuItemWindowLoadCustom" Header="Restore a Saved Window Layout" SubmenuOpened="MenuItemWindowLoadCustom_SubmenuOpening">

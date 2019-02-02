@@ -260,10 +260,9 @@ namespace Timelapse
 
         public static class EpisodeDefaults
         {
-            public static readonly double TimeThresholdDefault = 5;
-            public static readonly double TimeThresholdMinimum = .25;
-            public static readonly double TimeThresholdMaximum = 5;
-            public static readonly TimeSpan TimeThreshold = TimeSpan.FromMinutes(TimeThresholdDefault);
+            public static readonly double TimeThresholdDefault = 2; // 2 Minutes
+            public static readonly double TimeThresholdMinimum = 0.25; // 15 seconds
+            public static readonly double TimeThresholdMaximum = 10; // 10 minutes
         }
 
         public static class ExceptionTypes
@@ -449,6 +448,8 @@ namespace Timelapse
 
                 // How the DeleteFolder is managed (e.g.,manual, by asking, or automatic deletion)
                 public const string DeleteFolderManagementValue = "DeleteFolderManagement";
+
+                public const string EpisodeTimeThreshold = "EpisodeTimeThreshold";
 
                 // File Player play speeds (slow and fast)
                 public const string FilePlayerSlowValue = "FilePlayerSlowValue";

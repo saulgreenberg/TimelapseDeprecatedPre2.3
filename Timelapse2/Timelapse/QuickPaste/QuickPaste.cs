@@ -46,7 +46,7 @@ namespace Timelapse.QuickPaste
                 string value = fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel); 
                 if (value == null)
                 {
-                    value = "";
+                    value = String.Empty;
                 }
                 switch (row.Type)
                 {
@@ -88,10 +88,9 @@ namespace Timelapse.QuickPaste
                         i.Items.Select(v => new XElement("Item",
                             new XElement("Label", v.Label),
                             new XElement("DataLabel", v.DataLabel),
-                            new XElement("Value", (v.Value == null) ? "" : v.Value.ToString()),
+                            new XElement("Value", (v.Value == null) ? String.Empty : v.Value.ToString()),
                             new XElement("Use", v.Use.ToString()),
-                            new XElement("ControlType", v.ControlType.ToString())
-                     ))))));
+                            new XElement("ControlType", v.ControlType.ToString())))))));
             return xDocument.ToString();
         }
 
@@ -140,7 +139,7 @@ namespace Timelapse.QuickPaste
             foreach (QuickPasteEntry oldQuickPasteEntry in originalQuickPasteEntries)
             {
                 bool oneOrMoreItemsCopied = false;
-                bool isUsed = false; // 
+                bool isUsed = false; 
 
                 // Create a new entry with the same title as the old entry, and with an empty Items list
                 QuickPasteEntry newQuickPasteEntry = new QuickPasteEntry()
