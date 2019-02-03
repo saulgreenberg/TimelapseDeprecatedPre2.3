@@ -448,6 +448,7 @@ namespace Timelapse.Controls
         // the values correctly. 
         private void DateTime_MouseLeave(object sender, MouseEventArgs e)
         {
+            // System.Diagnostics.Debug.Print("DateTimeControl_MouseLeave triggered");
             DateTimePicker dateTimePicker = sender as DateTimePicker;
             if (dateTimePicker.Value == null)
             {
@@ -467,7 +468,7 @@ namespace Timelapse.Controls
 
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            // System.Diagnostics.Debug.Print("ValueChanged triggered");
+            // System.Diagnostics.Debug.Print("DateTimeControl_ValueChanged triggered");
             if (this.IsProgrammaticControlUpdate)
             {
                 return;

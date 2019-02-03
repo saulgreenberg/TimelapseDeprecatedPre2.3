@@ -58,6 +58,30 @@ namespace Timelapse.Database
             this.ExecuteNonQuery(query);
         }
 
+        // Return a dictionary comprising each column in the schema and its default values (if any)
+        public Dictionary<string, string> GetColumnsAndDefaultValuesFromSchema(string tableName)
+        {
+            try
+            {
+                // Open the connection
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    SQLiteDataReader reader = GetSchema(connection, tableName);
+                    Dictionary<string, string> columndefaultsDict = new Dictionary<string, string>();
+                    while (reader.Read())
+                    {
+                        columndefaultsDict.Add(reader[1].ToString(), reader[4] != null ? reader[4].ToString() : String.Empty);
+                    }
+                    return columndefaultsDict;
+                }
+            }
+            catch (Exception exception)
+            {
+                Utilities.PrintFailure(String.Format("Failure executing getschema in GetColumnAndDefaultValue. {0}", exception.ToString()));
+                return null;
+            }
+        }
         private void DataTableColumns_Changed(object sender, CollectionChangeEventArgs columnChange)
         {
             // DateTime columns default to DataSetDateTime.UnspecifiedLocal, which converts fully qualified DateTimes returned from SQLite to DateTimeKind.Unspecified
@@ -293,6 +317,20 @@ namespace Timelapse.Database
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
 
+        // Convert all nulls in the list of column_names in table_name
+        // Note: this is needed as a prior version did not always set the defaults for the data, which meant that they may have introduced null values. 
+        // As I don't handle nulls well, its possible that this could introduce crashes.
+        public void ChangeNullToEmptyString(string tableName, List<string> columnNames)
+        {
+            List<string> queries = new List<string>();
+            foreach (string columnName in columnNames)
+            {
+                string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + " = '' " + Constant.Sqlite.Where + columnName + Constant.Sqlite.IsNull + Constant.Sqlite.Semicolon; // Form: UPDATE tablename SET columname = '' WHERE columnname IS NULL;
+                queries.Add(query);
+            }
+            this.ExecuteNonQueryWrappedInBeginEnd(queries);
+        }
+
         public void Update(string tableName, List<ColumnTuplesWithWhere> updateQueryList)
         {
             List<string> queries = new List<string>();
@@ -454,6 +492,32 @@ namespace Timelapse.Database
             }
         }
 
+        public void ReplaceTableSchemaWithNewColumnDefinitionsSchema(string sourceTable, List<ColumnDefinition> columnDefinitions)
+        {
+            string destTable = "TempTable";
+            try
+            {
+                // Create an empty table with the schema based on columnDefinitions
+                this.CreateTable(destTable, columnDefinitions);
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+
+                    // copy the contents from the source table to the destination table
+                    CopyAllValuesFromTable(connection, destTable, sourceTable, destTable);
+
+                    // delete the source table, and rename the destination table so it is the same as the source table
+                    DropTable(connection, sourceTable);
+                    RenameTable(connection, destTable, sourceTable);
+                }
+            }
+            catch (Exception exception)
+            {
+                Utilities.PrintFailure(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
+                throw;
+            }
+        }
+
         /// <summary>
         /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
         /// The value in columnDefinition is assumed to be the desired default value
@@ -462,7 +526,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
@@ -519,7 +583,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     // Some basic error checking to make sure we can do the operation
@@ -567,7 +631,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
@@ -594,7 +658,7 @@ namespace Timelapse.Database
 
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
@@ -722,7 +786,7 @@ namespace Timelapse.Database
 
         public void DropTable(string tableName)
         {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
             {
                 connection.Open();
                 DropTable(connection, tableName);
@@ -771,7 +835,7 @@ namespace Timelapse.Database
                                 // But if it does, we just ignore it
                                 System.Diagnostics.Debug.Print("Unknown Field: " + field.ToString());
                                 break;
-                        }  
+                        }
                     }
                     existingColumnDefinition = existingColumnDefinition.TrimEnd(' ');
                     columnDefinitions.Add(existingColumnDefinition);

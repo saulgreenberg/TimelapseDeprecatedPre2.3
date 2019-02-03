@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows;
 using System.Windows.Controls;
-using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -316,7 +313,7 @@ namespace Timelapse.Database
             columnDefinitions.Clear();
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));       
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
             int allImages = (int)FileSelectionEnum.All;
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
@@ -379,8 +376,13 @@ namespace Timelapse.Database
             }
 
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, templateSyncResults); 
+            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, templateSyncResults);
             return fileDatabase;
+        }
+
+        public Dictionary<string, string> GetColumnsAndDefaultValuesFromSchema(string tableName)
+        {
+            return this.Database.GetColumnsAndDefaultValuesFromSchema(tableName);
         }
 
         protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
@@ -469,6 +471,25 @@ namespace Timelapse.Database
                     templateSyncResults.ControlSynchronizationWarnings.Add(warning);
                 }
             }
+        }
+
+        // Only invoke this when we know the templateDBs are in sync, and the templateDB matches the FileDB (i.e., same control rows/columns) except for one or more defaults.
+        public void UpgradeFileDBSchemaDefaultsFromTemplate()
+        {
+            // Initialize a schema 
+            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
+            {
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+            };
+
+            // Add the schema for the columns from the FileDB table
+            foreach (ControlRow control in this.Controls)
+            {
+                columnDefinitions.Add(CreateFileDataColumnDefinition(control));
+            }
+
+            // Replace the schema in the FildDB table with the schema defined by the column definitions.
+            this.Database.ReplaceTableSchemaWithNewColumnDefinitionsSchema(Constant.DatabaseTable.FileData, columnDefinitions);
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 

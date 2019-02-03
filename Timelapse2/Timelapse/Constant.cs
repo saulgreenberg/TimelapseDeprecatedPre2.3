@@ -530,6 +530,7 @@ namespace Timelapse
             public const string CreateTable = "CREATE TABLE ";
             public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";
             public const string CloseParenthesis = " ) ";
+            public const string CollateNocase = " COLLATE NOCASE ";
             public const string Comma = ", ";
             public const string DataSource = "Data Source=";
             public const string Default = " DEFAULT ";
@@ -539,12 +540,13 @@ namespace Timelapse
             public const string EqualsCaseID = " = CASE Id";
             public const string From = " FROM ";
             public const string GroupBy = " GROUP BY ";
-            public const string InsertInto = "INSERT INTO ";
-            public const string Integer = "INTEGER";
+            public const string InsertInto = " INSERT INTO ";
+            public const string Integer = " INTEGER ";
+            public const string IsNull = " IS NULL ";
             public const string Name = " NAME ";
             public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
             public const string NotNull = " NOT NULL ";
-            public const string Null = "NULL";
+            public const string Null = " NULL ";
             public const string NullAs = Null + " " + As;
             public const string OpenParenthesis = " ( ";
             public const string Or = " OR ";

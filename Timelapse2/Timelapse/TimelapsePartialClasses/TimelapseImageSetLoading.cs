@@ -122,8 +122,7 @@ namespace Timelapse
                         // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
                         // - update the template and image data columns in the image database 
                         // - use the old template
-                        TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(
-                            templateSyncResults, this);
+                        TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(templateSyncResults, this);
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
                         templateSyncResults.UseTemplateDBTemplate = (result1 == true) ? true : false;
                     }
@@ -141,6 +140,21 @@ namespace Timelapse
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+
+            // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
+            Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DatabaseTable.FileData);
+            char[] quote = { '\'' };
+           
+            foreach (KeyValuePair<string, string> pair in columndefaultdict)
+            {
+                ControlRow row = this.templateDatabase.GetControlFromTemplateTable(pair.Key);
+                if (row != null && pair.Value.Trim(quote) != row.DefaultValue)
+                {
+                    // If even one default is different between the schema default and the template default, update the entire file table.
+                    fileDatabase.UpgradeFileDBSchemaDefaultsFromTemplate();
+                    break;
+                }
+            }
 
             // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
             this.CheckAndCorrectRootFolder(fileDatabase);
