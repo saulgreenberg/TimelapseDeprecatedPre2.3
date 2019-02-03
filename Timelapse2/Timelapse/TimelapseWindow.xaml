@@ -171,8 +171,8 @@
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
 
                 <Separator/>
-                <MenuItem Name="MenuItemEpisodeShowHide" Header="_Show episode information" IsCheckable="True" Click="MenuItemEpisodeShowHide_Click" IsEnabled="False" ToolTip="Show or hide information that groups files spearated by brief time periods into episodes"/>
-                <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="False" ToolTip="Adjust the time threshold for determining how files are grouped into episode"/>
+                <MenuItem Name="MenuItemEpisodeShowHide" Header="_Show episode information" IsCheckable="True" Click="MenuItemEpisodeShowHide_Click" IsEnabled="False" ToolTip="Show or hide information that groups files separated by brief time periods into episodes"/>
+                <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="False" ToolTip="Adjust the time threshold for determining how files are grouped into episodes"/>
 
                 <Separator/>
 
