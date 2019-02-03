@@ -122,7 +122,7 @@ namespace Timelapse.Controls
             this.Image.Source = bf;
 
             // Render the episode text if needed
-            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
+            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex, state);
             
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
@@ -139,15 +139,22 @@ namespace Timelapse.Controls
         }
 
         // Get and display the episode text if various conditions are met
-        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
+        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex, int state)
         {
             if (Episodes.ShowEpisodes)
             {
-                // A descriptive string: the filename without the extention, plu the time in HH:MM
+                // A descriptive string: the filename without the extention, plus the time in HH:MM
                 // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
-                this.ImageNameText.Text = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName) + " (" + timeInHHMM + ")";
+                string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName);
+                filename = this.ShortenFileNameIfNeeded(filename, state);
+                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("123456789012", 2));
+                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("12345678901", 2));
+                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("1234567890", 2));
+                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("123456789", 2));
+                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("12345678", 2));
+                this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
@@ -165,6 +172,7 @@ namespace Timelapse.Controls
         // Most images have a black bar at its bottom and top. We want to aligh 
         // the checkbox / text label to be just outside that black bar. This is guesswork, 
         // but the margin should line up within reason most of the time
+        // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
         public void AdjustMargin(int state)
         {
             int margin = 0;
@@ -184,6 +192,23 @@ namespace Timelapse.Controls
             this.ImageNameText.Margin = new Thickness(0, margin, margin, 0);
             this.EpisodeText.Margin = this.ImageNameText.Margin;
             this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
+        }
+
+        // Return a shortened version of the file name so that it fits in the available space 
+        // Note that we left trim it, and we show an ellipsis on the left side if it doesn't fit.
+        // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
+        public string ShortenFileNameIfNeeded(string filename, int state)
+        {
+            string ellipsis = "\u2026";
+            switch (state)
+            {
+                case 2:
+                case 3:
+                    return filename.Length <= 10 ? filename : ellipsis + filename.Remove(0,filename.Length - 10);
+                case 1:
+                default:
+                    return filename.Length <= 20 ? filename : ellipsis + filename.Remove(0, filename.Length - 20);
+            }
         }
     }
 }

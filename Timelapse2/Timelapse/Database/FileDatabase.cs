@@ -581,13 +581,27 @@ namespace Timelapse.Database
                 // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
+            // Checks against version numbers
+            string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+
+            // SAULXXX ITS POSSIBLE THAT SOME ENTRIES ARE SET TO NULL
+            // WE CAN  PUT A TEST IN HERE TO TURN THEM ALL TO EMPTY STRINGS
+            // NOTE THAT COMMENTED CODE BELOW FAILS
+            //if (versionCompatabilityColumnExists == true && VersionClient.IsVersion1GreaterThanVersion2("2.2.2.4", this.ImageSet.VersionCompatability))
+            //{
+            //    System.Diagnostics.Debug.Print("Dont Check for null ");
+            //}
+            //else
+            //{
+            //    System.Diagnostics.Debug.Print("Check for null should be done");
+            //}
+
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
             // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
-            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
             if (!versionCompatabilityColumnExists)
             {
                 // create the versioncompatability column
-                string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, currentVersionNumberAsString));
 
                 // Update the image set
@@ -1619,7 +1633,7 @@ namespace Timelapse.Database
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
             { 
-                 return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text);
+                 return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, "");
             }
             return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
         }

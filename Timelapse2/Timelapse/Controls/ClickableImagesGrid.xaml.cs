@@ -161,7 +161,7 @@ namespace Timelapse.Controls
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
                                 // Rerender the episode text in case it has changed
-                                ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex); 
+                                ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex, state); 
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
