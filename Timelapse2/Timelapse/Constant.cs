@@ -491,6 +491,10 @@ namespace Timelapse
                 public const string SuppressSelectedRereadDatesFromFilesPrompt = "SuppressSelectedRereadDatesFromFilesPrompt";
                 public const string SuppressSelectedSetTimeZonePrompt = "SuppressSelectedSetTimeZonePrompt";
 
+                // TabOrderInclude
+                public const string TabOrderIncludeDateTime = "TabOrderIncludeDateTime";
+                public const string TabOrderIncludeDeleteFlag = "TabOrderIncludeDeleteFlag";
+                public const string TabOrderIncludeImageQuality = "TabOrderIncludeImageQuality";
                 // Avalon doc state
                 public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
             }

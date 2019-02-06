@@ -38,6 +38,10 @@ namespace Timelapse.Util
         public bool SuppressSelectedSetTimeZonePrompt { get; set; }
         public Throttles Throttles { get; private set; }
         public bool SuppressThrottleWhenLoading { get; set; }
+        public bool TabOrderIncludeDateTime { get; set; }
+        public bool TabOrderIncludeDeleteFlag { get; set; }
+        public bool TabOrderIncludeImageQuality { get; set; }
+
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
         public bool ClassifyDarkImagesWhenLoading { get; set; }
@@ -89,6 +93,9 @@ namespace Timelapse.Util
                 this.SuppressSelectedRereadDatesFromFilesPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressSelectedRereadDatesFromFilesPrompt, false);
                 this.SuppressSelectedSetTimeZonePrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressSelectedSetTimeZonePrompt, false);
                 this.SuppressThrottleWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, false);
+                this.TabOrderIncludeDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeDateTime, false);
+                this.TabOrderIncludeDeleteFlag = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeDeleteFlag, false);
+                this.TabOrderIncludeImageQuality = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, false);
                 this.Throttles.SetDesiredImageRendersPerSecond(registryKey.ReadDouble(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault));
                 this.TimelapseWindowPosition = registryKey.ReadRect(Constant.Registry.TimelapseKey.TimelapseWindowPosition, new Rect(0.0, 0.0, 1350.0, 900.0));
             }
@@ -164,6 +171,9 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedSetTimeZonePrompt, this.SuppressSelectedSetTimeZonePrompt);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedRereadDatesFromFilesPrompt, this.SuppressSelectedRereadDatesFromFilesPrompt);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, this.SuppressThrottleWhenLoading);
+                registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeDateTime, this.TabOrderIncludeDateTime);
+                registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeDeleteFlag, this.TabOrderIncludeDeleteFlag);
+                registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, this.TabOrderIncludeImageQuality);
                 registryKey.Write(Constant.Registry.TimelapseKey.TimelapseWindowPosition, this.TimelapseWindowPosition);
             }
         }

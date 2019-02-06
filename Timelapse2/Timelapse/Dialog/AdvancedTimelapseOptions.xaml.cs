@@ -18,6 +18,11 @@ namespace Timelapse.Dialog
             this.markableCanvas = markableCanvas;
             this.timelapseState = timelapseState;
 
+            // Tab Order - set to current state.
+            this.CheckBoxTabOrderDateTime.IsChecked = this.timelapseState.TabOrderIncludeDateTime;
+            this.CheckBoxTabOrderDeleteFlag.IsChecked = this.timelapseState.TabOrderIncludeDeleteFlag;
+            this.CheckBoxTabOrderImageQuality.IsChecked = this.timelapseState.TabOrderIncludeImageQuality;
+
             // Deletion Management
             this.RadioButtonDeletionManagement_Set(this.timelapseState.DeleteFolderManagement);
 
@@ -96,7 +101,28 @@ namespace Timelapse.Dialog
             this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
         }
         #endregion
+        #region Tab Controls to Include / Exclude
+        private void CheckBoxTabOrder_Click(object sender, RoutedEventArgs e)
+        {
+            SetTabOrder();
+        }
 
+        private void ResetTabOrder_Click(object sender, RoutedEventArgs e)
+        {
+            this.CheckBoxTabOrderDateTime.IsChecked = false;
+            this.CheckBoxTabOrderImageQuality.IsChecked = false;
+            this.CheckBoxTabOrderDeleteFlag.IsChecked = false;
+            SetTabOrder();
+        }
+
+        private void SetTabOrder()
+        {
+            this.timelapseState.TabOrderIncludeDateTime = this.CheckBoxTabOrderDateTime.IsChecked == true ? true : false;
+            this.timelapseState.TabOrderIncludeDeleteFlag = this.CheckBoxTabOrderDeleteFlag.IsChecked == true ? true : false;
+            this.timelapseState.TabOrderIncludeImageQuality = this.CheckBoxTabOrderImageQuality.IsChecked == true ? true : false;
+        }
+
+        #endregion
         private void ImageRendersPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.timelapseState.Throttles.SetDesiredImageRendersPerSecond(this.ImageRendersPerSecond.Value);

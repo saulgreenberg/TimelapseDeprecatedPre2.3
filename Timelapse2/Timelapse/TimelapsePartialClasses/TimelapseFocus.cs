@@ -187,7 +187,7 @@ namespace Timelapse
                  currentControl = incrementOrDecrement(currentControl))
             {
                 DataEntryControl control = this.DataEntryControls.Controls[currentControl];
-                if (control.ContentReadOnly == false && control.IsContentControlEnabled == true)
+                if (control.ContentReadOnly == false && control.IsContentControlEnabled == true && this.IsControlIncludedInTabOrder(control))
                 {
                     this.lastControlWithFocus = control.Focus(this);
                     // There is a bug with Avalon: when the data control pane is floating the focus does not go to it via the above call
@@ -238,6 +238,24 @@ namespace Timelapse
                     this.lastControlWithFocus = candidateControl.Focus(this);
                 }
             }
+        }
+
+        // Determine whether system-supplied fields should be skipped over or not.
+        private bool IsControlIncludedInTabOrder(DataEntryControl control)
+        {
+            if (control.DataLabel == Constant.DatabaseColumn.DateTime && this.state.TabOrderIncludeDateTime == false)
+            {
+                return false;
+            }
+            else if (control.DataLabel == Constant.DatabaseColumn.DeleteFlag && this.state.TabOrderIncludeDeleteFlag == false)
+            {
+                return false;
+            }
+            else if (control.DataLabel == Constant.DatabaseColumn.ImageQuality && this.state.TabOrderIncludeImageQuality == false)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
