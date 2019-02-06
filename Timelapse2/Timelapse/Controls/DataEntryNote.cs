@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
@@ -48,8 +49,26 @@ namespace Timelapse.Controls
             // Now configure the various elements
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
+
+            // Callback used to allow key handling 
+            this.ContentControl.PreviewKeyDown += ContentCtl_PreviewKeyDown;
         }
 
+        #region Event Handlers
+        // Use the right/left pageUp/PageDownkey to go to the next/previous image for read-only (aka disabled) notes
+        private void ContentCtl_PreviewKeyDown(object sender, KeyEventArgs keyEvent)
+        {
+            // the right/left arrow keys normally navigate through text characters when the text is enabled.
+            // For read-only notes, they don't do that. Instead,  we retain the arrow keys for cycling through the image.
+            // Note that redirecting the event to the main window, while prefered, won't work
+            // as the main window ignores the arrow keys if the focus is set to a control.
+            if (keyEvent.Key == Key.Right || keyEvent.Key == Key.Left || keyEvent.Key == Key.PageUp || keyEvent.Key == Key.PageDown)
+            {
+                keyEvent.Handled = true;
+                Util.GlobalReferences.MainWindow.Handle_PreviewKeyDown(keyEvent, true);
+            }
+        }
+        #endregion
         #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {

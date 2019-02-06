@@ -90,9 +90,19 @@ namespace Timelapse.Controls
         // For some reason, it wasn't working on pressing 'enter' so this handler does that.
         // Whenever a return or enter is detected on the combobox, it finds the highlight item (i.e., that is highlit from the text search)
         // and sets the combobox to that value.
-        private void ContentCtl_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void ContentCtl_PreviewKeyDown(object sender, KeyEventArgs keyEvent)
         {
-            if (e.Key == Key.Return || e.Key == Key.Enter)
+            if (keyEvent.Key == Key.Right || keyEvent.Key == Key.Left || keyEvent.Key == Key.PageUp || keyEvent.Key == Key.PageDown)
+            {
+                // the right/left arrow keys normally cycle through the menu items.
+                // However, we want to retain the arrow keys - as well as the PageUp/Down keys - for cycling through the image.
+                // So we mark the event as handled, and we cycle through the images anyways.
+                // Note that redirecting the event to the main window, while prefered, won't work
+                // as the main window ignores the arrow keys if the focus is set to a control.
+                keyEvent.Handled = true;
+                GlobalReferences.MainWindow.Handle_PreviewKeyDown(keyEvent, true);
+            }
+            else if (keyEvent.Key == Key.Return || keyEvent.Key == Key.Enter)
             {
                 ComboBox comboBox = sender as ComboBox;
                 for (int i = 0; i < comboBox.Items.Count; i++)
@@ -104,30 +114,36 @@ namespace Timelapse.Controls
                     }
                 }
             }
-            else if (e.Key == Key.Up || e.Key == Key.Right || e.Key == Key.Down  || e.Key == Key.Left)
+            else if (keyEvent.Key == Key.Up  || keyEvent.Key == Key.Down  || keyEvent.Key == Key.Home)
             {
                 // Because we have inserted an invisible ellipses into the list, we have to skip over it when a 
                 // user navigates the combobox with the keyboard using the arrow keys
                 ComboBox comboBox = sender as ComboBox;
-                
-                if ((e.Key == Key.Up || e.Key == Key.Left) && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1))
+
+                if (keyEvent.Key == Key.Up && (comboBox.SelectedIndex == 1 || comboBox.SelectedIndex == -1))
                 {
                     // If the user tries to navigate to the ellipsis at the beginning of the list, keep it on the first valid item
                     if (comboBox.SelectedIndex == -1)
                     {
                         comboBox.SelectedIndex = 1;
                     }
-                    e.Handled = true;
-                } 
-                else if ((e.Key == Key.Down || e.Key == Key.Right) && (comboBox.SelectedIndex == comboBox.Items.Count - 1 || comboBox.SelectedIndex == -1))
+                    keyEvent.Handled = true;
+                }
+                else if (keyEvent.Key == Key.Down && (comboBox.SelectedIndex == comboBox.Items.Count - 1 || comboBox.SelectedIndex == -1))
                 {
                     // If the user tries to navigate beyond the end of the list, keep it on the last valid item
                     // But the -1 should only be triggered to go back to the beginning
                     if (comboBox.SelectedIndex == -1)
                     {
-                        comboBox.SelectedIndex = 1; 
+                        comboBox.SelectedIndex = 1;
                     }
-                    e.Handled = true;
+                    keyEvent.Handled = true;
+                }
+                else if (keyEvent.Key == Key.Home)
+                {
+                    // Key.Home - go to the first item.
+                    comboBox.SelectedIndex = 1;
+                    keyEvent.Handled = true;
                 }
             }
         }

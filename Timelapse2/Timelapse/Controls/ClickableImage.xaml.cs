@@ -204,7 +204,7 @@ namespace Timelapse.Controls
             {
                 case 2:
                 case 3:
-                    return filename.Length <= 10 ? filename : ellipsis + filename.Remove(0,filename.Length - 10);
+                    return filename.Length <= 10 ? filename : ellipsis + filename.Remove(0, filename.Length - 10);
                 case 1:
                 default:
                     return filename.Length <= 20 ? filename : ellipsis + filename.Remove(0, filename.Length - 20);

@@ -42,7 +42,19 @@ namespace Timelapse
                 }
                 return; // No images are loaded, so don't try to interpret any keys
             }
+            this.Handle_PreviewKeyDown(currentKey, false);
+        }
 
+        // There is a bug in avalondock, where a floating window will always have the IsRepeat set to true. 
+        // Thus we have to implement our own version of it
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs currentKey)
+        {
+            // Force the end of a key repeat cycle
+            this.state.ResetKeyRepeat();
+        }
+
+        public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
+        { 
             // First, try to interpret key as a possible valid quickpaste shortcut key. 
             // If so, send it to the Quickpaste window and mark the event as handled.
             if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) &&
@@ -65,16 +77,18 @@ namespace Timelapse
                 return;
             }
 
-            // Next, don't interpret keyboard shortcuts if the focus is on a control in the control grid, as the text entered may be directed
+            // Next, - but only if forceSendToMainWindow is true,
+            // don't interpret keyboard shortcuts if the focus is on a control in the control grid, as the text entered may be directed
             // to the controls within it. That is, if a textbox or combo box has the focus, then take no as this is normal text input
             // and NOT a shortcut key.  Similarly, if a menu is displayed keys should be directed to the menu rather than interpreted as
             // shortcuts.
-            if (this.SendKeyToDataEntryControlOrMenu(currentKey))
+            if (forceSendToMainWindow == false && this.SendKeyToDataEntryControlOrMenu(currentKey))
             {
                 return;
             }
 
             // Finally, test for other shortcut keys and take the appropriate action as needed
+            DirectionEnum direction;
             int keyRepeatCount = this.state.GetKeyRepeatCount(currentKey);
             switch (currentKey.Key)
             {
@@ -94,28 +108,20 @@ namespace Timelapse
                     this.MenuItemDisplayMagnifyingGlass_Click(this, null);
                     break;
                 case Key.U:                 // Increase the magnifing glass zoom level
-                    FilePlayer_Stop();      // In case the FilePlayer is going
+                    this.FilePlayer_Stop();      // In case the FilePlayer is going
                     this.MarkableCanvas.MagnifierZoomIn();
                     break;
                 case Key.D:                 // Decrease the magnifing glass zoom level
-                    FilePlayer_Stop();      // In case the FilePlayer is going
+                    this.FilePlayer_Stop();      // In case the FilePlayer is going
                     this.MarkableCanvas.MagnifierZoomOut();
                     break;
-                case Key.Right:             // next image
-                    FilePlayer_Stop();      // In case the FilePlayer is going
-                    // There appears to be a bug associated with avalondock, where a floating window will always have the IsRepeat set to true. No idea why...
-                    // I suspect as well that the repeat count may be wrong - to test.
-                    // So I disabled throttling as otherwise it throttles when it shouldn't
-                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
-                    {
-                        this.TryFileShowWithoutSliderCallback(DirectionEnum.Next, Keyboard.Modifiers);
-                    }
-                    break;
+                case Key.Right:             // next /previous image
                 case Key.Left:              // previous image
-                    FilePlayer_Stop();      // In case the FilePlayer is going
-                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    this.FilePlayer_Stop();      // In case the FilePlayer is going
+                    direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
+                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount  % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
-                        this.TryFileShowWithoutSliderCallback(DirectionEnum.Previous, Keyboard.Modifiers);
+                        this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
@@ -126,7 +132,7 @@ namespace Timelapse
                     }
                     else
                     {
-                        FilePlayer_Stop(); // In case the FilePlayer is going
+                        this.FilePlayer_Stop(); // In case the FilePlayer is going
                         this.TryViewPreviousOrNextDifference();
                     }
                     break;
@@ -138,7 +144,7 @@ namespace Timelapse
                     }
                     else
                     {
-                        FilePlayer_Stop(); // In case the FilePlayer is going
+                        this.FilePlayer_Stop(); // In case the FilePlayer is going
                         this.TryViewCombinedDifference();
                     }
                     break;
@@ -146,7 +152,7 @@ namespace Timelapse
                     this.CopyPreviousValues_Click();
                     break;
                 case Key.E:
-                    MenuItemEpisodeShowHide_Click(null, null);
+                    this.MenuItemEpisodeShowHide_Click(null, null);
                     break;
                 case Key.Q:
                     // Toggle the QuickPaste window
@@ -160,28 +166,27 @@ namespace Timelapse
                     }
                     break;
                 case Key.Tab:
-                    FilePlayer_Stop(); // In case the FilePlayer is going
+                    this.FilePlayer_Stop(); // In case the FilePlayer is going
                     this.MoveFocusToNextOrPreviousControlOrCopyPreviousButton(Keyboard.Modifiers == ModifierKeys.Shift);
                     break;
                 case Key.PageDown:
+                case Key.PageUp:
+                    direction = currentKey.Key == Key.PageDown ? DirectionEnum.Next : DirectionEnum.Previous;
                     if (IsDisplayingMultipleImagesInOverview())
                     {
-                        this.FilePlayer.Direction = DirectionEnum.Next;
+                        this.FilePlayer.Direction = direction;
                         this.FilePlayer_ScrollPage();
                     }
-                    break;
-                case Key.PageUp:
-                    if (IsDisplayingMultipleImagesInOverview())
+                    else
                     {
-                        this.FilePlayer.Direction = DirectionEnum.Previous;
-                        this.FilePlayer_ScrollPage();
+                        this.FilePlayer_Stop();      // In case the FilePlayer is going
+                        if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                        {
+                            this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
+                        }
                     }
                     break;
                 case Key.Home:
-                    {
-                        this.ImageSetPane.IsActive = true;
-                        break;
-                    }
                 case Key.End:
                     {
                         this.DataGridPane.IsActive = true;

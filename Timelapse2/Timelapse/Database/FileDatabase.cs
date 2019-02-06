@@ -585,17 +585,18 @@ namespace Timelapse.Database
             string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
             bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
 
-            // SAULXXX ITS POSSIBLE THAT SOME ENTRIES ARE SET TO NULL
+            // SAULXXX CHECK FOR NULL TEST
+            // ITS POSSIBLE THAT SOME ENTRIES ARE SET TO NULL, AND WE COULD CHECK AND REPAIR THAT
             // WE CAN  PUT A TEST IN HERE TO TURN THEM ALL TO EMPTY STRINGS
             // NOTE THAT COMMENTED CODE BELOW FAILS
-            //if (versionCompatabilityColumnExists == true && VersionClient.IsVersion1GreaterThanVersion2("2.2.2.4", this.ImageSet.VersionCompatability))
-            //{
+            // if (versionCompatabilityColumnExists == true && VersionClient.IsVersion1GreaterThanVersion2("2.2.2.4", this.ImageSet.VersionCompatability))
+            // {
             //    System.Diagnostics.Debug.Print("Dont Check for null ");
-            //}
-            //else
-            //{
+            // }
+            // else
+            // {
             //    System.Diagnostics.Debug.Print("Check for null should be done");
-            //}
+            // }
 
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
             // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
@@ -1633,7 +1634,7 @@ namespace Timelapse.Database
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
             { 
-                 return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, "");
+                 return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty);
             }
             return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
         }
