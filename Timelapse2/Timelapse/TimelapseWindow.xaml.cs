@@ -462,12 +462,10 @@ namespace Timelapse
             this.MarkableCanvas_UpdateMarkers();
         }
 
-
-
-    // When the Control Grid size changes, reposition the CopyPrevious Button depending on the width/height ratio
-    private void ControlGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        // When the Control Grid size changes, reposition the CopyPrevious Button depending on the width/height ratio
+        private void ControlGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (e.NewSize.Height + 150 > e.NewSize.Width) // We include 150, as otherwise it will bounce around as repositioning the button changes the size
+            if (e.NewSize.Height + 212 > e.NewSize.Width) // We include 250, as otherwise it will bounce around as repositioning the button changes the size
             {
                 // Place the button at the bottom right of the grid
                 Grid.SetRow(this.CopyPreviousValuesButton, 1);

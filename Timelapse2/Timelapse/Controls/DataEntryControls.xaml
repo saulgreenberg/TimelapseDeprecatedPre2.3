@@ -529,16 +529,17 @@
                 <Setter Property="Height" Value="35"/>
             </Style>
     </Control.Resources>
-    <RichTextBox IsEnabled="True" IsDocumentEnabled="True" IsReadOnly="True">
-
-    <FlowDocument>
-        <Paragraph  Name="ControlGrid" TextAlignment="Left">
-            <Floater  HorizontalAlignment="Right" Width="75" Margin="0" Padding="0">
-                <BlockUIContainer Name="ButtonLocation" Margin="0" Padding="0">
-                    <!-- The actual controls will be inserted dynamically through Code Behind -->
-                </BlockUIContainer>
-            </Floater>
-        </Paragraph>
-    </FlowDocument>
+    
+    <RichTextBox IsEnabled="True" IsDocumentEnabled="True" IsReadOnly="True" >
+        <FlowDocument  >
+            <Paragraph  Name="ControlGrid" TextAlignment="Left" >
+                <Floater  HorizontalAlignment="Right" Width="75" Margin="0" Padding="0" >
+                    <BlockUIContainer Name="ButtonLocation" Margin="0" Padding="0"> 
+                        <!-- The actual controls will be inserted dynamically through Code Behind -->
+                    </BlockUIContainer>
+                </Floater>
+            </Paragraph>
+        </FlowDocument>
     </RichTextBox>
+    
 </UserControl>
