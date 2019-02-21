@@ -9,6 +9,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
@@ -146,6 +147,34 @@ namespace Timelapse.Controls
             // add the label and content to the stack panel
             this.Container.Children.Add(this.LabelControl);
             this.Container.Children.Add(this.ContentControl);
+            this.Container.PreviewKeyDown += Container_PreviewKeyDown;
+        }
+
+        // We want to capture the Shift/Arrow key presses so we can navigate images. However, both the UTCOffset and the DateTime picker consume 
+        // those PreviewKeyDown event. As a workaround, we attach a preview keydown to the container and take action on that.
+        private void Container_PreviewKeyDown(object sender, KeyEventArgs keyEvent)
+        {
+            // We are only interested in interpretting the Shift/Arrow key for the following controls
+            // The DataEntryChoice and DataEntryFlags do their own previewKeyDown processing to acheive a similar effect
+            if (this.ContentControl is DateTimePicker ||
+                this.ContentControl is UtcOffsetUpDown ||
+                this.ContentControl is IntegerUpDown ||
+                this.ContentControl is AutocompleteTextBox)
+            {
+                // Use the SHIFT right/left pageUp/PageDownkey to go to the next/previous image for datetimepicker
+                // The right/left arrow keys normally navigate through text characters when the text is enabled.
+                // which restricts the use the arrow keys to cycle through images.
+                // As a work-around, we use the arrow keys for cycling through the image when:
+                // - it is a read-only note (as we don't have to navigate text)
+                // - the SHIFT key is held down when its not a read only note
+                // Note that redirecting the event to the main window, while prefered, won't work
+                // as the main window ignores the arrow keys if the focus is set to a control.
+                if ((this.ContentReadOnly || Keyboard.Modifiers == ModifierKeys.Shift) && (keyEvent.Key == Key.Right || keyEvent.Key == Key.Left || keyEvent.Key == Key.PageUp || keyEvent.Key == Key.PageDown))
+                {
+                    keyEvent.Handled = true;
+                    Util.GlobalReferences.MainWindow.Handle_PreviewKeyDown(keyEvent, true);
+                }
+            }
         }
 
         public override IInputElement Focus(DependencyObject focusScope)

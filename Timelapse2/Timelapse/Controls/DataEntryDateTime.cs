@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Xceed.Wpf.Toolkit;
@@ -47,7 +48,10 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
+
+
         #region Event Handlers
+
         // Highlight the border whenever the control gets the keyboard focus
         private void ContentControl_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
         {

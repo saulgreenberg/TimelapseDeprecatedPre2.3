@@ -68,7 +68,7 @@ namespace Timelapse.Controls
         // SAULXX The textbox in the IntegerUpDown is, for some unknown reason, disabled and thus disallows text input.
         // This hack seems to fix it. 
         //  A better solution is to find out where it is being disabled and fix it there.
-        private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void ContentControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs keyEvent)
         {
             if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
             {
