@@ -222,14 +222,14 @@ namespace Timelapse
             // DEPRACATED: Timelapse used to skip images when the Shift or Control key was pressed.
             // This has been removed as we want to use SHIFT-L/R Arrow to always move between images even when 
             // we are in a data control
-            //if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
-            //{
+            // if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+            // {
             //    increment *= 5;
-            //}
-            //if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-            //{
+            // }
+            // if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            // {
             //    increment *= 10;
-            //}
+            // }
             return TryFileShowWithoutSliderCallback(direction, increment);
         }
 

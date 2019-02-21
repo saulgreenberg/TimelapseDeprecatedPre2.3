@@ -125,5 +125,12 @@ namespace Timelapse.Util
             Version version2 = new Version(versionNumber2);
             return version1 > version2;
         }
+
+        public static bool IsVersion1GreaterOrEqualToVersion2(string versionNumber1, string versionNumber2)
+        {
+            Version version1 = new Version(versionNumber1);
+            Version version2 = new Version(versionNumber2);
+            return version1 >= version2;
+        }
     }
 }

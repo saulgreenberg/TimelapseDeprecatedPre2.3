@@ -48,8 +48,6 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
         }
 
-
-
         #region Event Handlers
 
         // Highlight the border whenever the control gets the keyboard focus

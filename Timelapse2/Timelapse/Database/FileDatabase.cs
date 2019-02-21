@@ -495,7 +495,11 @@ namespace Timelapse.Database
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
         private void UpgradeDatabasesForBackwardsCompatability()
         {
+            // Select all files
             this.SelectFiles(FileSelectionEnum.All);
+
+            // Get the image set, as we will be checking some of its values
+            this.GetImageSet();
             bool refreshImageDataTable = false;
 
             // RelativePath column (if missing) needs to be added 
@@ -576,38 +580,30 @@ namespace Timelapse.Database
                 this.Database.TrimWhitespace(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
 
                 // mark image set as whitespace trimmed
-                this.GetImageSet();
                 this.ImageSet.WhitespaceTrimmed = true;
                 // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
-            // Checks against version numbers
+            // Null test check against the version number
+            // Versions prior to 2.2.2.4 may have set nulls as default values, which don't interact well with some aspects of Timelapse. 
+            // Repair by turning all nulls in FileTable, if any, into empty strings
+            // SAULXX Note that we could likely remove the WhiteSpaceTrimmed column and use the version number instead but we need to check if that is backwards compatable before doing so.
             string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
             bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
-
-            // SAULXXX CHECK FOR NULL TEST
-            // ITS POSSIBLE THAT SOME ENTRIES ARE SET TO NULL, AND WE COULD CHECK AND REPAIR THAT
-            // WE CAN  PUT A TEST IN HERE TO TURN THEM ALL TO EMPTY STRINGS
-            // NOTE THAT COMMENTED CODE BELOW FAILS
-            // if (versionCompatabilityColumnExists == true && VersionClient.IsVersion1GreaterThanVersion2("2.2.2.4", this.ImageSet.VersionCompatability))
-            // {
-            //    System.Diagnostics.Debug.Print("Dont Check for null ");
-            // }
-            // else
-            // {
-            //    System.Diagnostics.Debug.Print("Check for null should be done");
-            // }
-
+            string firstVersionWithNullCheck = "2.2.2.4";
+            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, this.ImageSet.VersionCompatability))
+            {
+                this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
+            }
+    
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
             // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
+            // Note that we do this after the version compatability tests as otherwise we would just get the current version number
             if (!versionCompatabilityColumnExists)
             {
-                // create the versioncompatability column
+                // Create the versioncompatability column and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, currentVersionNumberAsString));
-
-                // Update the image set
                 this.GetImageSet();
-                // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
             // Make sure that the column containing the SortCriteria exists in the image set table. 
@@ -615,12 +611,9 @@ namespace Timelapse.Database
             bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SortTerms);
             if (!sortCriteriaColumnExists)
             {
-                // create the sortCriteria column
+                // create the sortCriteria column and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
-
-                // Update the image set
                 this.GetImageSet();
-                // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
@@ -628,12 +621,9 @@ namespace Timelapse.Database
             bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
             if (!quickPasteXMLColumnExists)
             {
-                // create the sortCriteria column
+                // create the QuickPaste column and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
-
-                // Update the image set
                 this.GetImageSet();
-                // This still has to be synchronized, which will occur after we prepare all missing columns
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
@@ -641,11 +631,10 @@ namespace Timelapse.Database
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
             if (!timeZoneColumnExists)
             {
-                // create default time zone entry
+                // create default time zone entry and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
                 this.GetImageSet();
                 this.ImageSet.TimeZone = TimeZoneInfo.Local.Id;
-                // This still has to be synchronized, which will occur until after we prepare all missing columns
             }
 
             // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
