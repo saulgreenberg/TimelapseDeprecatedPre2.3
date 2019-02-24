@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Timelapse.Dialog;
-using Timelapse.Util;
 
 namespace Timelapse.QuickPaste
 {
@@ -255,6 +253,16 @@ namespace Timelapse.QuickPaste
         {
             this.Position = new Rect(this.Left, this.Top, this.Width, this.Height);
             this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.PositionChanged));
+        }
+
+        // Use the arrow and page up/down keys to navigate images
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs keyEvent)
+        {
+            if (keyEvent.Key == Key.Right || keyEvent.Key == Key.Left || keyEvent.Key == Key.PageUp || keyEvent.Key == Key.PageDown)
+            {
+                keyEvent.Handled = true;
+                Util.GlobalReferences.MainWindow.Handle_PreviewKeyDown(keyEvent, true);
+            }
         }
     }
 }
