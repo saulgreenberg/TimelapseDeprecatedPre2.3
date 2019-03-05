@@ -93,7 +93,7 @@ namespace Timelapse.Database
                     if (writeableBitmap.IsBlack() == false)
                     {
                         // if the media player is closed before Render() only black is rendered
-                        Utilities.PrintFailure(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
+                        TraceDebug.PrintMessage(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
                         mediaPlayer.Close();
                         return writeableBitmap;
                     }
@@ -110,7 +110,7 @@ namespace Timelapse.Database
             catch 
             {
                 // We don't print the exception // (Exception exception)
-                Utilities.PrintFailure(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
+                TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
                 return Constant.ImageValues.BlankVideo.Value;
             }
         }

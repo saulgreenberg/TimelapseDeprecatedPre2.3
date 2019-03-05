@@ -65,7 +65,7 @@ namespace Timelapse.Dialog
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Adjustment of image times failed in DateDaylightSavings-OkButton_Click {0}.", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Adjustment of image times failed in DateDaylightSavings-OkButton_Click {0}.", exception.ToString()));
                 this.DialogResult = false;
             }
         }

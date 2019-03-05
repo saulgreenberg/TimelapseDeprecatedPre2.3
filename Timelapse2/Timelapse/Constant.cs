@@ -290,6 +290,8 @@ namespace Timelapse
             public const int MaxAdditionalLengthOfBackupFiles = 28;
 
             public static readonly TimeSpan BackupInterval = TimeSpan.FromMinutes(10);
+
+            public const string TraceFile = "Trace.txt"; // FIle name for file containing debug information. Usually written in the same folder containing the template.
         }
 
         // Default settings for the FilePlayer

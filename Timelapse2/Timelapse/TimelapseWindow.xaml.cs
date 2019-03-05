@@ -387,7 +387,7 @@ namespace Timelapse
                         utcOffset.ContentControl.PreviewKeyDown += this.ContentCtl_PreviewKeyDown;
                         break;
                     default:
-                        Utilities.PrintFailure(String.Format("Unhandled control type '{0}' in SetUserInterfaceCallbacks.", controlType));
+                        TraceDebug.PrintMessage(String.Format("Unhandled control type '{0}' in SetUserInterfaceCallbacks.", controlType));
                         break;
                 }
             }
@@ -508,7 +508,7 @@ namespace Timelapse
                 bool result = this.state.MostRecentImageSets.TryRemove(path);
                 if (!result)
                 {
-                    Utilities.PrintFailure(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
+                    TraceDebug.PrintMessage(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
                 }
             }
 

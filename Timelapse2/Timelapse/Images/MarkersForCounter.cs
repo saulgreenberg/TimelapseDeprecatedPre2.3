@@ -75,7 +75,7 @@ namespace Timelapse.Images
             int index = this.Markers.IndexOf(marker);
             if (index == -1)
             { 
-                Utilities.PrintFailure("RemoveMarker: Expected marker to be present in list, but its not there.");
+                TraceDebug.PrintMessage("RemoveMarker: Expected marker to be present in list, but its not there.");
                 return;
             }
             this.Markers.RemoveAt(index);

@@ -305,7 +305,7 @@ namespace Timelapse
                 }
                 catch (Exception exception)
                 {
-                    Utilities.PrintFailure(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
+                    TraceDebug.PrintMessage(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
                     this.StatusBar.SetMessage(String.Format("Copy failed with {0} in MenuItemExportThisImage_Click.", exception.GetType().Name));
                 }
             }

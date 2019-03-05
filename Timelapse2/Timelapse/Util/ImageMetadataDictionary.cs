@@ -30,7 +30,7 @@ namespace Timelapse.Util
                         }
                         else
                         {
-                            Utilities.PrintFailure(String.Format("ImageMetadata Dictionary: Duplicate metadata key: {0}", metadata.Key));
+                            TraceDebug.PrintMessage(String.Format("ImageMetadata Dictionary: Duplicate metadata key: {0}", metadata.Key));
                         }
                     }
                 }

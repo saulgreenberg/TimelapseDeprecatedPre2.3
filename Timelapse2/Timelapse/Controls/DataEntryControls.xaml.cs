@@ -91,7 +91,7 @@ namespace Timelapse.Controls
                 }
                 else
                 {
-                    Utilities.PrintFailure(String.Format("Unhandled control type {0} in CreateControls.", control.Type));
+                    TraceDebug.PrintMessage(String.Format("Unhandled control type {0} in CreateControls.", control.Type));
                     continue;
                 }
                 this.ControlGrid.Inlines.Add(controlToAdd.Container);

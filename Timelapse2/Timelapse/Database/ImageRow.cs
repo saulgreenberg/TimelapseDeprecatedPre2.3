@@ -68,7 +68,7 @@ namespace Timelapse.Database
                         this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:
-                        Utilities.PrintFailure(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
+                        TraceDebug.PrintMessage(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
                         throw new ArgumentOutOfRangeException("value", String.Format("{0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
                 }
             }
@@ -253,12 +253,11 @@ namespace Timelapse.Database
                 // Optional messages for eventual debugging of catch errors, 
                 if (exception is InsufficientMemoryException)
                 {
-
-                    Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
+                    TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
                 }
                 else
                 { 
-                    Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
+                    TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
                 }
                 return Constant.ImageValues.Corrupt.Value;
             }
@@ -334,7 +333,7 @@ namespace Timelapse.Database
                 }
                 catch (UnauthorizedAccessException exception)
                 {
-                    Utilities.PrintFailure("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
+                    TraceDebug.PrintMessage("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                     return false;
                 }
             }
@@ -345,7 +344,7 @@ namespace Timelapse.Database
             }
             catch (UnauthorizedAccessException exception)
             {
-                Utilities.PrintFailure("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
+                TraceDebug.PrintMessage("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                 return false;
             }
         }

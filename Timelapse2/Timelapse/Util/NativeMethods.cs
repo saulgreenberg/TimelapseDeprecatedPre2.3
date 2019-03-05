@@ -123,7 +123,7 @@ namespace Timelapse.Util
         //        // it will not crash the program and at least maintains the correct aspect ration
         //        widthInPixels = Convert.ToInt32(widthInDeviceIndependentPixels);
         //        heightInPixels = Convert.ToInt32(heightInDeviceIndependentPixels);
-        //        Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
+        //        TraceDebug.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
         //    }
         // }
 
@@ -151,7 +151,7 @@ namespace Timelapse.Util
                 // it will not crash the program and at least maintains the correct aspect ration
                 widthInDeviceIndependentPixels = widthInPixels;
                 heightInDeviceIndependentPixels = heightInPixels;
-                Utilities.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
+                TraceDebug.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
             }
         }
     }

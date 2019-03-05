@@ -115,7 +115,7 @@ namespace Timelapse.Dialog
                     }
                     catch (Exception exception)
                     {
-                        Utilities.PrintFailure(String.Format("Unexpected exception processing '{0}' in DateReread - StartDoneButton_Click. {1}", file.FileName, exception.ToString()));
+                        TraceDebug.PrintMessage(String.Format("Unexpected exception processing '{0}' in DateReread - StartDoneButton_Click. {1}", file.FileName, exception.ToString()));
                         feedbackMessage += String.Format("\x2716 skipping: {0}", exception.Message);
                     }
 

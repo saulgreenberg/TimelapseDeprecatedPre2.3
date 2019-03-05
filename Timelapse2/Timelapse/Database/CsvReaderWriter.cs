@@ -100,7 +100,7 @@ namespace Timelapse.Database
                         }
                         else if (row.Count != dataLabels.Count)
                         {
-                            Utilities.PrintFailure(String.Format("Expected {0} fields in line {1} but found {2}.", dataLabels.Count, String.Join(",", row), row.Count));
+                            TraceDebug.PrintMessage(String.Format("Expected {0} fields in line {1} but found {2}.", dataLabels.Count, String.Join(",", row), row.Count));
                         }
 
                         // assemble set of column values to update

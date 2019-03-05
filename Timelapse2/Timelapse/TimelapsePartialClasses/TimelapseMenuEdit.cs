@@ -131,7 +131,7 @@ namespace Timelapse
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Delete submenu failed to open in Delete_SubmenuOpening. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Delete submenu failed to open in Delete_SubmenuOpening. {0}", exception.ToString()));
 
                 // This function was blowing up on one user's machine, but not others.
                 // I couldn't figure out why, so I just put this fallback in here to catch that unusual case.

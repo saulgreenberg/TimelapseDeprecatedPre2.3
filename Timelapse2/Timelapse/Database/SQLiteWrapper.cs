@@ -78,7 +78,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure executing getschema in GetColumnAndDefaultValue. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure executing getschema in GetColumnAndDefaultValue. {0}", exception.ToString()));
                 return null;
             }
         }
@@ -164,7 +164,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure executing query '{0}' in GetDataTableFromSelect. {1}", query, exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure executing query '{0}' in GetDataTableFromSelect. {1}", query, exception.ToString()));
                 return null;
             }
         }
@@ -211,7 +211,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure executing query '{0}' in GetObjectFromSelect: {1}", query, exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure executing query '{0}' in GetObjectFromSelect: {1}", query, exception.ToString()));
                 return null;
             }
         }
@@ -236,7 +236,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", statement, exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", statement, exception.ToString()));
             }
         }
 
@@ -300,7 +300,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
             }
         }
 
@@ -513,7 +513,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -574,7 +574,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure in AddColumn. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure in AddColumn. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -622,7 +622,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -640,7 +640,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
                 return false;
             }
         }
@@ -693,7 +693,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                Utilities.PrintFailure(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
                 throw;
             }
         }

@@ -330,14 +330,14 @@ namespace Timelapse.Images
             catch (ArgumentException e)
             {
                 bitmap = null;
-                Utilities.PrintFailure(String.Format("TryGetBitmap ArgumentException failure in ImageCache: " + e.Message));
+                TraceDebug.PrintMessage(String.Format("TryGetBitmap ArgumentException failure in ImageCache: " + e.Message));
                 // System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show (e.Message);
                 return false;
             }
             catch (KeyNotFoundException e)
             {
                 bitmap = null;
-                Utilities.PrintFailure(String.Format("TryGetBitmap KeyNotFound Exception failure in ImageCache: " + e.Message));
+                TraceDebug.PrintMessage(String.Format("TryGetBitmap KeyNotFound Exception failure in ImageCache: " + e.Message));
                 // System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show (e.Message);
                 return false;
             }

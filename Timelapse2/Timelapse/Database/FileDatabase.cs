@@ -243,7 +243,7 @@ namespace Timelapse.Database
                                 break;
 
                             default:
-                                Utilities.PrintFailure(String.Format("Unhandled control type '{0}' in AddImages.", controlType));
+                                TraceDebug.PrintMessage(String.Format("Unhandled control type '{0}' in AddImages.", controlType));
                                 break;
                         }
                     }
@@ -1518,7 +1518,7 @@ namespace Timelapse.Database
                 }
                 catch (Exception exception)
                 {
-                    Utilities.PrintFailure(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
+                    TraceDebug.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
                     pointList = String.Empty;
                 }
                 markersForCounter.Parse(pointList);
@@ -1542,7 +1542,7 @@ namespace Timelapse.Database
             MarkerRow marker = this.Markers.Find(imageID);
             if (marker == null)
             {
-                Utilities.PrintFailure(String.Format("Image ID {0} missing in markers table.", imageID));
+                TraceDebug.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
                 return;
             }
 

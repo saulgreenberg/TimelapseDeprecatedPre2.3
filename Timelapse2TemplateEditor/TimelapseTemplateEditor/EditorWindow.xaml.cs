@@ -655,7 +655,7 @@ namespace Timelapse.Editor
             ControlRow choiceControl = this.templateDatabase.Controls.FirstOrDefault(control => control.ControlOrder.ToString().Equals(button.Tag.ToString()));
             if (choiceControl == null)
             {
-                Utilities.PrintFailure(String.Format("Control named {0} not found.", button.Tag));
+                TraceDebug.PrintMessage(String.Format("Control named {0} not found.", button.Tag));
                 return;
             }
 
@@ -1307,7 +1307,7 @@ namespace Timelapse.Editor
                 string dataLabel = control.DataLabel;
                 if (String.IsNullOrEmpty(dataLabel))
                 {
-                    Utilities.PrintFailure("GenerateSpreadsheet: Database constructors should guarantee data labels are not null.");
+                    TraceDebug.PrintMessage("GenerateSpreadsheet: Database constructors should guarantee data labels are not null.");
                 }
                 else
                 {

@@ -434,7 +434,7 @@ namespace Timelapse
                                     while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                                     {
                                         // See what images were retried
-                                        Utilities.PrintFailure("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
+                                        TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
                                         retries_attempted++;
                                         file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                     }
@@ -453,7 +453,7 @@ namespace Timelapse
                     catch (Exception exception)
                     {
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
-                        Utilities.PrintFailure(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
+                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
                         file.ImageQuality = FileSelectionEnum.Corrupted;
                     }

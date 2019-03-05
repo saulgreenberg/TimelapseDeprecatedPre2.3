@@ -19,7 +19,7 @@ namespace Timelapse
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
-                Utilities.PrintFailure("FilesSelectAndShow: Expected a file database to be available.");
+                TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
             }
             this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
@@ -47,12 +47,12 @@ namespace Timelapse
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
             {
-                Utilities.PrintFailure("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
+                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
                 return;
             }
             if (this.dataHandler.FileDatabase == null)
             {
-                Utilities.PrintFailure("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
+                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
                 return;
             }
 
