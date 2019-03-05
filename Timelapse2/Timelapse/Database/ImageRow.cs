@@ -230,7 +230,8 @@ namespace Timelapse.Database
                 // However, using BitmapCacheOption.None locks the file as it is being accessed (rather than a memory copy being created when using a cache)
                 // This means we cannot do any file operations on it as it will produce an access violation.
                 // For now, we use the (slower) form of BitmapCacheOption.OnLoad.
-                // SAULXXX ADDS: To CHECK OUT AND MAYBE TRY https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
+                // SAULXXX ADD: To CHECK OUT AND MAYBE TRY https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
+                // SAULXXX ALSO CHECK http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
                 if (desiredWidth.HasValue == false)
                 {
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
@@ -247,10 +248,18 @@ namespace Timelapse.Database
                 bitmap.Freeze();
                 return bitmap;
             }
-            catch 
+            catch (Exception exception)
             {
-                // We don't show the exception (Exception exception)
-                Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: Loading of {0} failed in LoadBitmap - Images.Corrupt returned.", this.FileName));
+                // Optional messages for eventual debugging of catch errors, 
+                if (exception is InsufficientMemoryException)
+                {
+
+                    Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
+                }
+                else
+                { 
+                    Utilities.PrintFailure(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
+                }
                 return Constant.ImageValues.Corrupt.Value;
             }
         }

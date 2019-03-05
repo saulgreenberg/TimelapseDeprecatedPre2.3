@@ -286,6 +286,16 @@ namespace Timelapse.Util
             return "'" + value.Replace("'", "''") + "'";
         }
 
+        // Print a message to a file
+        public static void PrintFailureToFile(string message)
+        {
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Path.Combine(Util.GlobalReferences.MainWindow.FolderPath, "Trace.txt"), true))
+            {
+                file.WriteLine(PrintMethodName(message, 5));
+                file.WriteLine("----");
+            }
+        }
+
         [Conditional("TRACE")]
         // Option to print various failure messagesfor debugging
         public static void PrintFailure(string message)
@@ -297,22 +307,23 @@ namespace Timelapse.Util
         // Option to print various failure messagesfor debugging
         public static void PrintMethodName(int level)
         {
-            PrintMethodName(String.Empty, level);
-        }
-        [Conditional("TRACE")]
-        public static void PrintMethodName(string message)
-        {
-            PrintMethodName(message, 1);
+            Debug.Print(PrintMethodName(String.Empty, level));
         }
 
         [Conditional("TRACE")]
+        public static void PrintMethodName(string message)
+        {
+            Debug.Print(PrintMethodName(message, 1));
+        }
+
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        // Insert this call into the beginning oa method name with the TRACE flag set in properties
+        // Insert this call into the beginning of a method name with the TRACE flag set in properties
         // Helpful to see the order and number of calls on a method.
         // The optional message string can be anything you want included in the output.
         // The optional level is the depth of the stack that should be printed 
         // (1 just prints the current method name; 2 adds the caller name of that method, etc.)
-        public static void PrintMethodName(string description = "", int level = 1)
+        public static string PrintMethodName(string description = "", int level = 1)
         {
             StackTrace st = new StackTrace(true);
             StackFrame sf;
@@ -328,7 +339,7 @@ namespace Timelapse.Util
                 }
             }
             message += ": " + description;
-            Debug.Print(message);
+            return message;
         }
     }
 }

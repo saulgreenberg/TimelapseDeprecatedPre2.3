@@ -337,8 +337,8 @@ namespace Timelapse
             // The number of images that are considered large enough to deserve special treatment on deletion
             public const int LargeNumberOfDeletedImages = 30;
 
-            // Thumbnail sizes
-            public const int ThumnnailWithWhenNavigating = 300;
+            // Image sizes
+            public const int ThumnnailWidthWhenNavigating = 300;
             public const int ThumbnailWidth = 128;
 
             public static readonly Lazy<BitmapImage> Corrupt = ImageValues.Load("Corrupted.jpg");

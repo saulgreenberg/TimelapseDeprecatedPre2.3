@@ -53,7 +53,7 @@ namespace Timelapse
 
         DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
 
-        private string FolderPath
+        public string FolderPath
         {
             get { return this.dataHandler.FileDatabase.FolderPath; }
         }
