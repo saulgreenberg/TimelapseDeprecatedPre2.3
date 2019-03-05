@@ -1266,7 +1266,6 @@ namespace Timelapse.Editor
         // Generate the spreadsheet, adjusting the DateTime and UTCOffset visibility as needed
         private void GenerateSpreadsheet()
         {
-            Utilities.PrintMethodName();
             List<ControlRow> controlsInSpreadsheetOrder = this.templateDatabase.Controls.OrderBy(control => control.SpreadsheetOrder).ToList();
             this.SpreadsheetPreview.Columns.Clear();
 
@@ -1320,7 +1319,6 @@ namespace Timelapse.Editor
         // When the spreadsheet order is changd, update the database
         private void OnSpreadsheetOrderChanged(object sender, DataGridColumnEventArgs e)
         {
-            Utilities.PrintMethodName();
             DataGrid dataGrid = (DataGrid)sender;
             Dictionary<string, long> spreadsheetOrderByDataLabel = new Dictionary<string, long>();
             for (int control = 0; control < dataGrid.Columns.Count; control++)
@@ -1455,7 +1453,6 @@ namespace Timelapse.Editor
 
         private void OnControlOrderChanged()
         {
-            Utilities.PrintMethodName();
             Dictionary<string, long> newControlOrderByDataLabel = new Dictionary<string, long>();
             long controlOrder = 1;
             foreach (UIElement element in this.ControlsPanel.Children)
