@@ -141,12 +141,14 @@ namespace Timelapse.Editor
             this.ApplyPendingEdits();
 
             // Configure save file dialog box
-            SaveFileDialog newTemplateFilePathDialog = new SaveFileDialog();
-            newTemplateFilePathDialog.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name without the extension
-            newTemplateFilePathDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension; // Default file extension
-            newTemplateFilePathDialog.Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension; // Filter files by extension 
-            newTemplateFilePathDialog.AddExtension = true;
-            newTemplateFilePathDialog.Title = "Select Location to Save New Template File";
+            SaveFileDialog newTemplateFilePathDialog = new SaveFileDialog
+            {
+                FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName), // Default file name without the extension
+                DefaultExt = Constant.File.TemplateDatabaseFileExtension, // Default file extension
+                Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension, // Filter files by extension 
+                AddExtension = true,
+                Title = "Select Location to Save New Template File"
+            };
 
             // Show save file dialog box
             Nullable<bool> result = newTemplateFilePathDialog.ShowDialog();
@@ -191,11 +193,13 @@ namespace Timelapse.Editor
             this.ApplyPendingEdits();
 
             // Note that if we try to open a file with a too long path, the open file dialog will just say that it doesn't exist (which is a bad error message, but nothing we can do about it)
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name without the extension
-            openFileDialog.DefaultExt = Constant.File.TemplateDatabaseFileExtension; // Default file extension
-            openFileDialog.Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension; // Filter files by extension 
-            openFileDialog.Title = "Select an Existing Template File to Open";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName), // Default file name without the extension
+                DefaultExt = Constant.File.TemplateDatabaseFileExtension, // Default file extension
+                Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension, // Filter files by extension 
+                Title = "Select an Existing Template File to Open"
+            };
 
             // Show open file dialog box
             Nullable<bool> result = openFileDialog.ShowDialog();
@@ -243,8 +247,10 @@ namespace Timelapse.Editor
             this.ApplyPendingEdits();
 
             // Get the name of the Code Template file to open
-            OpenFileDialog codeTemplateFile = new OpenFileDialog();
-            codeTemplateFile.FileName = Path.GetFileName(Constant.File.XmlDataFileName); // Default file name
+            OpenFileDialog codeTemplateFile = new OpenFileDialog
+            {
+                FileName = Path.GetFileName(Constant.File.XmlDataFileName) // Default file name
+            };
             string xmlDataFileExtension = Path.GetExtension(Constant.File.XmlDataFileName);
             codeTemplateFile.DefaultExt = xmlDataFileExtension; // Default file extension
             codeTemplateFile.Filter = "Code Template Files (" + xmlDataFileExtension + ")|*" + xmlDataFileExtension; // Filter files by extension 
@@ -261,11 +267,13 @@ namespace Timelapse.Editor
             }
 
             // Get the name of the new database template file to create (over-writes it if it exists)
-            SaveFileDialog templateDatabaseFile = new SaveFileDialog();
-            templateDatabaseFile.Title = "Select Location to Save the Converted Template File";
-            templateDatabaseFile.FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName); // Default file name
-            templateDatabaseFile.DefaultExt = Constant.File.TemplateDatabaseFileExtension; // Default file extension
-            templateDatabaseFile.Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension; // Filter files by extension 
+            SaveFileDialog templateDatabaseFile = new SaveFileDialog
+            {
+                Title = "Select Location to Save the Converted Template File",
+                FileName = Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName), // Default file name
+                DefaultExt = Constant.File.TemplateDatabaseFileExtension, // Default file extension
+                Filter = "Database Files (" + Constant.File.TemplateDatabaseFileExtension + ")|*" + Constant.File.TemplateDatabaseFileExtension // Filter files by extension 
+            };
             result = templateDatabaseFile.ShowDialog(); // Show open file dialog box
 
             // Process open file dialog box results 
@@ -290,9 +298,8 @@ namespace Timelapse.Editor
             Mouse.OverrideCursor = Cursors.Wait;
             this.dataGridBeingUpdatedByCode = true;
 
-            List<string> conversionErrors;
             CodeTemplateImporter importer = new CodeTemplateImporter();
-            importer.Import(codeTemplateFileName, this.templateDatabase, out conversionErrors);
+            importer.Import(codeTemplateFileName, this.templateDatabase, out List<string> conversionErrors);
 
             // Now that we have new contents of the datatable, update the user interface to match that
             this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
@@ -659,8 +666,7 @@ namespace Timelapse.Editor
                 return;
             }
 
-            bool includesEmptyChoice;
-            List<string> choiceList = choiceControl.GetChoices(out includesEmptyChoice);
+            List<string> choiceList = choiceControl.GetChoices(out bool includesEmptyChoice);
             Dialog.EditChoiceList choiceListDialog = new Dialog.EditChoiceList(button, choiceList, includesEmptyChoice, this);
             bool? result = choiceListDialog.ShowDialog();
             if (result == true)
@@ -681,9 +687,7 @@ namespace Timelapse.Editor
         // Cell editing: Preview character by character entry to disallow spaces in particular fields (DataLabels, Width, Counters
         private void TemplateDataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            DataGridCell currentCell;
-            DataGridRow currentRow;
-            if ((this.TryGetCurrentCell(out currentCell, out currentRow) == false) || currentCell.Background.Equals(EditorConstant.NotEditableCellColor))
+            if ((this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false) || currentCell.Background.Equals(EditorConstant.NotEditableCellColor))
             {
                 e.Handled = true;
                 return;
@@ -725,9 +729,7 @@ namespace Timelapse.Editor
         // Accept only numbers in counters and widths, t and f in flags (translated to true and false), and alphanumeric or _ in datalabels
         private void TemplateDataGrid_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            DataGridCell currentCell;
-            DataGridRow currentRow;
-            if ((this.TryGetCurrentCell(out currentCell, out currentRow) == false) || currentCell.Background.Equals(EditorConstant.NotEditableCellColor))
+            if ((this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false) || currentCell.Background.Equals(EditorConstant.NotEditableCellColor))
             {
                 e.Handled = true;
                 return;
@@ -794,9 +796,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
-            DataGridCell currentCell;
-            DataGridRow currentRow;
-            if (this.TryGetCurrentCell(out currentCell, out currentRow) == false)
+            if (this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false)
             {
                 return;
             }
@@ -814,9 +814,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataGrid_CurrentCellChanged(object sender, EventArgs e)
         {
-            DataGridCell currentCell;
-            DataGridRow currentRow;
-            if (this.TryGetCurrentCell(out currentCell, out currentRow) == false)
+            if (this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false)
             {
                 return;
             }
@@ -956,8 +954,7 @@ namespace Timelapse.Editor
                         // if cell has a checkbox, also disable it.
                         if (cellContent != null)
                         {
-                            CheckBox checkbox = cellContent.ContentTemplate.FindName("CheckBox", cellContent) as CheckBox;
-                            if (checkbox != null)
+                            if (cellContent.ContentTemplate.FindName("CheckBox", cellContent) is CheckBox checkbox)
                             {
                                 checkbox.IsEnabled = false;
                             }
@@ -974,8 +971,7 @@ namespace Timelapse.Editor
                         // if cell has a checkbox, enable it.
                         if (cellContent != null)
                         {
-                            CheckBox checkbox = cellContent.ContentTemplate.FindName("CheckBox", cellContent) as CheckBox;
-                            if (checkbox != null)
+                            if (cellContent.ContentTemplate.FindName("CheckBox", cellContent) is CheckBox checkbox)
                             {
                                 checkbox.IsEnabled = true;
                             }
@@ -1401,8 +1397,7 @@ namespace Timelapse.Editor
                     else
                     {
                         // Check if its a stack panel, and if so check to see if its children are the drop target
-                        StackPanel stackPanel = element as StackPanel;
-                        if (stackPanel != null)
+                        if (element is StackPanel stackPanel)
                         {
                             // Check the children...
                             foreach (UIElement subelement in stackPanel.Children)
@@ -1441,8 +1436,7 @@ namespace Timelapse.Editor
             UIElement parent = element;
             while (parent != null)
             {
-                T correctlyTyped = parent as T;
-                if (correctlyTyped != null)
+                if (parent is T correctlyTyped)
                 {
                     return correctlyTyped;
                 }
@@ -1477,8 +1471,7 @@ namespace Timelapse.Editor
         // SAULXXX Seems esoteric - maybe delete this function. Likely not useful after Avalon dock added.
         private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
-            string templateDatabaseFilePath;
-            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out templateDatabaseFilePath))
+            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
                 this.InitializeDataGrid(templateDatabaseFilePath);
             }

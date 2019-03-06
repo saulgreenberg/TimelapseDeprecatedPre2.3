@@ -393,56 +393,47 @@ namespace Timelapse
                     BitmapSource bitmapSource = null;
                     try
                     {
-                        if (this.state.ClassifyDarkImagesWhenLoading == false)
-                        {
-                            file.ImageQuality = FileSelectionEnum.Ok;
-                        }
-                        else
-                        {
-                            // Create the bitmap and determine its quality
-                            // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
-                            // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
-                            // retain the frame and pass its metadata to TryUseImageTaken().
-                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
 
-                            // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                            if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+                        // Create the bitmap and determine its quality
+                        // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
+                        // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
+                        // retain the frame and pass its metadata to TryUseImageTaken().
+                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
+                        file.ImageQuality = (bitmapSource == Constant.ImageValues.Corrupt.Value) ? FileSelectionEnum.Corrupted : file.ImageQuality = FileSelectionEnum.Ok;
+
+                        if (this.state.ClassifyDarkImagesWhenLoading == false && file.ImageQuality != FileSelectionEnum.Corrupted)
+                        {
+                            // Dark Image Classification during loading
+                            // One Timelapse option is to have it automatically classify dark images when loading 
+                            // If its set, check to see if its a Dark or Okay image.
+                            // However, invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
+                            // likley due to some threading issue that I can't debug.
+                            // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
+                            // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
+                            // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
+                            // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
+                            const int MAX_RETRIES = 3;
+                            int retries_attempted = 0;
+                            file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+                            // We don't check videos for darkness, so set it as ok.
+                            if (file.IsVideo)
                             {
-                                file.ImageQuality = FileSelectionEnum.Corrupted;
+                                file.ImageQuality = FileSelectionEnum.Ok;
                             }
                             else
                             {
-                                // Dark Image Classification during loading
-                                // One Timelapse option is to have it automatically classify dark images when loading 
-                                // If its set, check to see if its a Dark or Okay image.
-                                // However, invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
-                                // likley due to some threading issue that I can't debug.
-                                // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
-                                // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
-                                // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
-                                // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
-                                const int MAX_RETRIES = 3;
-                                int retries_attempted = 0;
-                                file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                                // We don't check videos for darkness, so set it as ok.
-                                if (file.IsVideo)
+                                while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                                 {
-                                    file.ImageQuality = FileSelectionEnum.Ok;
+                                    // See what images were retried
+                                    TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
+                                    retries_attempted++;
+                                    file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                 }
-                                else
+                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
                                 {
-                                    while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
-                                    {
-                                        // See what images were retried
-                                        TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
-                                        retries_attempted++;
-                                        file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                                    }
-                                    if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
-                                    {
-                                        // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                        file.ImageQuality = FileSelectionEnum.Ok;
-                                    }
+                                    // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
+                                    file.ImageQuality = FileSelectionEnum.Ok;
                                 }
                             }
                         }
