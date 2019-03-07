@@ -402,7 +402,7 @@ namespace Timelapse
                         // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
                         file.ImageQuality = (bitmapSource == Constant.ImageValues.Corrupt.Value) ? FileSelectionEnum.Corrupted : file.ImageQuality = FileSelectionEnum.Ok;
 
-                        if (this.state.ClassifyDarkImagesWhenLoading == false && file.ImageQuality != FileSelectionEnum.Corrupted)
+                        if (this.state.ClassifyDarkImagesWhenLoading == true && file.ImageQuality != FileSelectionEnum.Corrupted)
                         {
                             // Dark Image Classification during loading
                             // One Timelapse option is to have it automatically classify dark images when loading 
