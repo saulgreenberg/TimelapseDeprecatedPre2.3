@@ -71,8 +71,8 @@ namespace Timelapse.Controls
             }
             else
             {
-                // Hack: The content control doesn't update if the value hasn't changed.
-                // However, this means that if we are displaying the ellipses in the textbox, it won't 
+                // This hack is done so that the content control updates if the value hasn't changed.
+                // This means that if we are displaying the ellipses in the textbox, it won't 
                 // redisplay the old value on selection or navigation if it hasn't actually changed
                 // So we set it twice: the first time with a different value to guarantee that it has changed, and the second time with the
                 // desired value ot actually display it

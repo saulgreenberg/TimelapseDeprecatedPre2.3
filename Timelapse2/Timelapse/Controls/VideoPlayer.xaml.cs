@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Util;
 
@@ -17,14 +18,22 @@ namespace Timelapse.Controls
         {
             this.InitializeComponent();
             this.isProgrammaticUpdate = false;
-            this.positionUpdateTimer = new DispatcherTimer();
-            this.positionUpdateTimer.Interval = TimeSpan.FromMilliseconds(250.0);
+            this.positionUpdateTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(250.0)
+            };
             this.positionUpdateTimer.Tick += this.Timer_Tick;
 
             // Timer used to automatically start playing the videos after a modest interval
-            this.autoPlayDelayTimer = new DispatcherTimer();
-            this.autoPlayDelayTimer.Interval = TimeSpan.FromMilliseconds(300.0);
+            this.autoPlayDelayTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(300.0)
+            };
             this.autoPlayDelayTimer.Tick += this.AutoPlayDelayTimer_Tick;
+
+            // TODO ASAP Maybe redo all magnification lenses - its currently hidden, but we want to enable it.
+            TranslateTransform tt = new TranslateTransform(100, -100);
+            this._magnifier.RenderTransform = tt;
 
             this.IsEnabled = false;
         }

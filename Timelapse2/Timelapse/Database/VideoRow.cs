@@ -43,7 +43,11 @@ namespace Timelapse.Database
                 // MediaPlayer is not actually synchronous despite exposing synchronous APIs, so wait for it get the video loaded.  Otherwise
                 // the width and height properties are zero and only black pixels are drawn.  The properties will populate with just a call to
                 // Open() call but without also Play() only black is rendered
-                int timesTried = 1000;
+                // TODO ASAP The solution for rapidly showing videos needs further work. 
+                // ONLOAD It currently loads a blank video image when scouring thorugh the videos 
+                // Rapid navigation: loads a blank video image in the background, then the video on pause
+                // Multiview: very slow as only loads the  video.
+                int timesTried = (displayIntent== ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
                 while ((mediaPlayer.NaturalVideoWidth < 1) || (mediaPlayer.NaturalVideoHeight < 1))
                 {
                     // back off briefly to let MediaPlayer do its loading, which typically takes perhaps 75ms
@@ -51,7 +55,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return Constant.ImageValues.BlankVideo.Value;
+                        return GetBlankVideo(desiredWidth);
                     }
                 }
 
@@ -111,8 +115,28 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
+                return GetBlankVideo(desiredWidth);
+            }
+        }
+
+        private BitmapImage GetBlankVideo(Nullable<int> desiredWidth)
+        {
+            if (desiredWidth == null )
+            {
+                System.Diagnostics.Debug.Print("Null");
                 return Constant.ImageValues.BlankVideo.Value;
             }
+
+            var uri = new Uri("pack://application:,,,/Resources/BlankVideo.jpg");
+
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.DecodePixelWidth = desiredWidth.Value;
+            //bitmap.CacheOption = bitmapCacheOption;
+            bitmap.UriSource = uri;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
         }
     }
 }

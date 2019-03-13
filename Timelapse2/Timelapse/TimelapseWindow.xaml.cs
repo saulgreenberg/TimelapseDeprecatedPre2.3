@@ -28,9 +28,6 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // SAULXXX TESTING EPISODES
-        
-
         #region Variables and Properties
         private DataEntryHandler dataHandler;
         private bool disposed;
@@ -916,6 +913,5 @@ namespace Timelapse
         }
         #endregion
 
- 
     }
 }

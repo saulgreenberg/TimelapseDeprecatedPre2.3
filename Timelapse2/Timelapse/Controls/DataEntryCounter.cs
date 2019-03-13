@@ -145,7 +145,7 @@ namespace Timelapse.Controls
             // As we want it to also show both ellipsis and blanks, we have to coerce it to show those.
             // Ideally, we should modify the IntegerUpDown control to allow ellipsis and blanks instead of these hacks.
 
-            // Hack: Access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
+            // We access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
             WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
 
             // A null value indicates we should show the ellipsis symbol in the textbox. 

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Timelapse.Controls"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -47,7 +48,23 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+        <Image Source="pack://application:,,/Resources/BlankVideo.jpg"/>
+        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <xctk:MagnifierManager.Magnifier>
+                <xctk:Magnifier x:Name="_magnifier"
+                               Background="White"
+                               Radius="120"
+                               ZoomFactor="0.4"
+                               FrameType="Circle"
+                               BorderBrush="#FFC72035"
+                               BorderThickness="2"
+                               Width="180"
+                               Height="280"
+                               IsUsingZoomOnMouseWheel="True"
+                               ZoomFactorOnMouseWheel="0.1"
+                               Visibility="Collapsed"/>
+            </xctk:MagnifierManager.Magnifier>
+        </MediaElement>
         <StackPanel Grid.Row="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                 <Slider Name="VideoPosition"  ValueChanged="VideoPosition_ValueChanged" PreviewMouseDown="VideoPosition_PreviewMouseDown" AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="3" IsMoveToPointEnabled="True" MinWidth="400" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" TickPlacement="BottomRight" />
