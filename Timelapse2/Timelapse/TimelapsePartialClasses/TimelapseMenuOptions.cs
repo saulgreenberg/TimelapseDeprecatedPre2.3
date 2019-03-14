@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Dialog;
+using Timelapse.Images;
 
 namespace Timelapse
 {
@@ -109,6 +110,17 @@ namespace Timelapse
             DarkImagesClassifyAutomatically darkImagesOptions = new DarkImagesClassifyAutomatically(this.state, this);
             darkImagesOptions.ShowDialog();
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
+        }
+
+        private void MenuItemGenerateVideoThumbnails_Click(object sender, RoutedEventArgs e)
+        {
+            string[] videoFileExtensions = { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension };
+            VideoThumbnailer.GenerateVideoThumbnailsInAllFolders(this.FolderPath, "vThumbs", videoFileExtensions);
+        }
+
+        private void MenuItemDeleteVideoThumbnails_Click(object sender, RoutedEventArgs e)
+        {
+            VideoThumbnailer.DeleteVideoThumbnailsInAllFolders(this.FolderPath, "vThumbs");
         }
 
         /// <summary>Show advanced Timelapse options</summary>
