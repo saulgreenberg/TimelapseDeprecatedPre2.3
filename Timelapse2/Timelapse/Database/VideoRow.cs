@@ -40,7 +40,7 @@ namespace Timelapse.Database
                 string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
                 if (File.Exists(thumbnailpath))
                 {
-                    return GetBitmapFromFile(thumbnailpath, desiredWidth);
+                    return BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath, desiredWidth);
                 }
                 mediaPlayer.Open(new Uri(path));
                 mediaPlayer.Play();
@@ -60,7 +60,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return GetBitmapFromFile("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
+                        return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
                     }
                 }
 
@@ -120,24 +120,8 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                return GetBitmapFromFile("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
+                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
-        }
-
-        private BitmapImage GetBitmapFromFile(string path, Nullable<int> desiredWidth)
-        {
-            Uri uri = new Uri(path);
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            // bitmap.CacheOption = bitmapCacheOption;
-            if (desiredWidth != null)
-            {
-                bitmap.DecodePixelWidth = desiredWidth.Value;
-            }
-            bitmap.UriSource = uri;
-            bitmap.EndInit();
-            bitmap.Freeze();
-            return bitmap;
         }
     }
 }
