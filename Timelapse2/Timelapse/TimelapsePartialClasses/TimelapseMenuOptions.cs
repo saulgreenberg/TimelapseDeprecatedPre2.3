@@ -115,12 +115,12 @@ namespace Timelapse
         private void MenuItemGenerateVideoThumbnails_Click(object sender, RoutedEventArgs e)
         {
             string[] videoFileExtensions = { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension };
-            VideoThumbnailer.GenerateVideoThumbnailsInAllFolders(this.FolderPath, "vThumbs", videoFileExtensions);
+            VideoThumbnailer.GenerateVideoThumbnailsInAllFolders(this.FolderPath, Constant.File.VideoThumbnailFolderName, videoFileExtensions);
         }
 
         private void MenuItemDeleteVideoThumbnails_Click(object sender, RoutedEventArgs e)
         {
-            VideoThumbnailer.DeleteVideoThumbnailsInAllFolders(this.FolderPath, "vThumbs");
+            VideoThumbnailer.DeleteVideoThumbnailsInAllFolders(this.FolderPath, Constant.File.VideoThumbnailFolderName);
         }
 
         /// <summary>Show advanced Timelapse options</summary>

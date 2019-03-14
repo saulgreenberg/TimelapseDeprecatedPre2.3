@@ -48,7 +48,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Image Source="pack://application:,,/Resources/BlankVideo.jpg"/>
+        <!--<Image Source="pack://application:,,/Resources/BlankVideoWithoutLargePlayButton.jpg"/>-->
         <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <xctk:MagnifierManager.Magnifier>
                 <xctk:Magnifier x:Name="_magnifier"

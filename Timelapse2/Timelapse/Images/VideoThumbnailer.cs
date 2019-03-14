@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Media.Imaging;
 
 namespace Timelapse.Images
 {
@@ -158,7 +157,7 @@ namespace Timelapse.Images
         // Compose the FFmpeg command string to be used generates a thumbnail file at thumbnailFullPath from the video at videoFullPath 
         private static string FfmpegComposeThumbnailCommand(string videoFullPath, string thumbnailFullPath)
         {
-            // TODO ASAP Put in check to make sure file exists. Maybe put it in the section of code that checks dll?
+            // TODO Maybe put it in the section of code that checks dll?
             string ffmpegFullPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase), "ffmpeg.exe");
             ffmpegFullPath = ffmpegFullPath.Replace("file:\\", String.Empty);
             string path = ffmpegFullPath + " -i " + '"' + videoFullPath + '"' + " -frames:v 1 " + '"' + thumbnailFullPath + '"';

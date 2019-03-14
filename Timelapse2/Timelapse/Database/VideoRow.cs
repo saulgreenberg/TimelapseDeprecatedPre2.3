@@ -37,6 +37,11 @@ namespace Timelapse.Database
             };
             try
             {
+                string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
+                if (File.Exists(thumbnailpath))
+                {
+                    return GetBitmapFromFile(thumbnailpath, desiredWidth);
+                }
                 mediaPlayer.Open(new Uri(path));
                 mediaPlayer.Play();
 
@@ -55,7 +60,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return GetBlankVideo(desiredWidth);
+                        return GetBitmapFromFile("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
                     }
                 }
 
@@ -115,24 +120,20 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                return GetBlankVideo(desiredWidth);
+                return GetBitmapFromFile("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
         }
 
-        private BitmapImage GetBlankVideo(Nullable<int> desiredWidth)
+        private BitmapImage GetBitmapFromFile(string path, Nullable<int> desiredWidth)
         {
-            if (desiredWidth == null)
-            {
-                System.Diagnostics.Debug.Print("Null");
-                return Constant.ImageValues.BlankVideo.Value;
-            }
-
-            var uri = new Uri("pack://application:,,,/Resources/BlankVideo.jpg");
-
+            Uri uri = new Uri(path);
             BitmapImage bitmap = new BitmapImage();
             bitmap.BeginInit();
-            bitmap.DecodePixelWidth = desiredWidth.Value;
             // bitmap.CacheOption = bitmapCacheOption;
+            if (desiredWidth != null)
+            {
+                bitmap.DecodePixelWidth = desiredWidth.Value;
+            }
             bitmap.UriSource = uri;
             bitmap.EndInit();
             bitmap.Freeze();
