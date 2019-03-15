@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,7 +14,7 @@ namespace Timelapse.Controls
         private bool isProgrammaticUpdate;
         private DispatcherTimer positionUpdateTimer;
         private DispatcherTimer autoPlayDelayTimer;
-
+        // TODO ASAP: Setu up video so a mouse click starts and stops it, i.e., as does the space bar.
         public VideoPlayer()
         {
             this.InitializeComponent();
@@ -81,19 +82,27 @@ namespace Timelapse.Controls
 
         public void SetSource(Uri source)
         {
-            this.Video.Source = source;
+            // If the thumbnail exists, show that as the background. This avoids the annoying black frames that otherwise appear for a few moments.
+            string thumbnailpath = Path.Combine(Path.GetDirectoryName(source.LocalPath), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(source.LocalPath) + Constant.File.JpgFileExtension);
+            if (File.Exists(thumbnailpath))
+            {
+                this.ThumbnailImage.Source = Images.BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath);
+            }
 
             // MediaElement seems only deterministic about displaying the first frame when LoadedBehaviour is set to Pause, which isn't helpful as calls to
             // Play() then have no effect.  This is a well known issue with various folks getting results.  The below combination of Play(), Pause() and Position
             // seems to work, though neither Pause() or Position is sufficent on its own and black frames still get rendered if Position is set to zero or
             // an especially small value.
+            this.Video.Source = source;
             this.IsEnabled = true;
             double originalVolume = this.Video.Volume;
             this.Video.Volume = 0.0;
             this.Video.Play();
             this.Video.Pause();
             this.PlayOrPause.IsChecked = false;
-            this.Video.Position = TimeSpan.FromMilliseconds(1.0);
+            // TODO NOTE - THIS WAS THE ORIGINAL. CHECK FOR SIDE EFFECTS
+            //this.Video.Position = TimeSpan.FromMilliseconds(1.0);
+            this.Video.Position = TimeSpan.FromMilliseconds(0.0);
             this.Video.Volume = originalVolume;
             // position updated through the media opened event
         }
@@ -105,7 +114,7 @@ namespace Timelapse.Controls
             if (this.Video.NaturalDuration.HasTimeSpan)
             {
                 this.VideoPosition.Maximum = this.Video.NaturalDuration.TimeSpan.TotalSeconds;
-                // SAULXX: The line below will show the end time as a delta rather than absolut time. I decided that is undesirable, as the start time already shows the delta
+                // SAULXX: The line below will show the end time as a delta rather than absolute time. I decided that is undesirable, as the start time already shows the delta
                 // this.TimeDuration.Text = (this.Video.NaturalDuration.TimeSpan - this.Video.Position).ToString(Constant.Time.VideoPositionFormat);
                 this.TimeDuration.Text = this.Video.NaturalDuration.TimeSpan.ToString(Constant.Time.VideoPositionFormat);
                 this.VideoPosition.TickFrequency = this.VideoPosition.Maximum / 10.0;

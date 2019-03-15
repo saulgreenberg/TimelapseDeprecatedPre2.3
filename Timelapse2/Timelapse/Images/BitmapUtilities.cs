@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-//using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Timelapse.Images
 {
-    static class BitmapUtilities
+    public static class BitmapUtilities
     {
-        static public BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
         {
             Uri uri = new Uri(path);
             BitmapImage bitmap = new BitmapImage();
@@ -38,7 +34,7 @@ namespace Timelapse.Images
                 float radius = 20;
 
                 // We will draw based on the center of the bitmap
-                Point center = new Point(bmp.Width/2, bmp.Height/2);
+                Point center = new Point(bmp.Width / 2, bmp.Height / 2);
                 PointCollection trianglePoints = GetTriangleVerticesInscribedInCircle(center, radius);
 
                 // Construct the triangle
@@ -55,10 +51,15 @@ namespace Timelapse.Images
                 }
 
                 // Define the translucent bruches for the triangle an circle
-                SolidColorBrush triangleBrush = new SolidColorBrush(Colors.LightBlue);
-                triangleBrush.Opacity = 0.5;
-                SolidColorBrush circleBrush = new SolidColorBrush(Colors.White);
-                circleBrush.Opacity = 0.5;
+                SolidColorBrush triangleBrush = new SolidColorBrush(Colors.LightBlue)
+                {
+                    Opacity = 0.5
+                };
+
+                SolidColorBrush circleBrush = new SolidColorBrush(Colors.White)
+                {
+                    Opacity = 0.5
+                };
 
                 // Draw everything
                 r.DrawImage(bmp, new Rect(0, 0, bmp.Width, bmp.Height));
@@ -75,9 +76,11 @@ namespace Timelapse.Images
             PointCollection points = new PointCollection();
             for (int i = 0; i < 3; i++)
             {
-                Point v = new Point();
-                v.X = center.X + radius * (float)Math.Cos(i * 2 * Math.PI / 3);
-                v.Y = center.Y + radius * (float)Math.Sin(i * 2 * Math.PI / 3);
+                Point v = new Point
+                {
+                    X = center.X + radius * (float)Math.Cos(i * 2 * Math.PI / 3),
+                    Y = center.Y + radius * (float)Math.Sin(i * 2 * Math.PI / 3)
+                };
                 points.Add(v);
             }
             return points;

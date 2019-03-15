@@ -678,8 +678,11 @@ namespace Timelapse
 
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
-           // this.EpisodeText.Visibility = (Episodes.ShowEpisodes) ? Visibility.Visible : Visibility.Hidden;
-            this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+
+            if (this.dataHandler != null)
+            {
+                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+            }
         }
 
         // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.

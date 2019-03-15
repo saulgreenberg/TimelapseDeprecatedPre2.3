@@ -160,8 +160,8 @@ namespace Timelapse.Images
             // TODO Maybe put it in the section of code that checks dll?
             string ffmpegFullPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase), "ffmpeg.exe");
             ffmpegFullPath = ffmpegFullPath.Replace("file:\\", String.Empty);
-            string path = ffmpegFullPath + " -i " + '"' + videoFullPath + '"' + " -frames:v 1 " + '"' + thumbnailFullPath + '"';
-            return File.Exists(ffmpegFullPath) ? path : String.Empty;
+            string ffmpegCommand = String.Format("{0} -i \"{1}\" -frames:V 1 \"{2}\"", ffmpegFullPath, videoFullPath, thumbnailFullPath);
+            return File.Exists(ffmpegFullPath) ? ffmpegCommand : String.Empty;
         }
         #endregion
     }

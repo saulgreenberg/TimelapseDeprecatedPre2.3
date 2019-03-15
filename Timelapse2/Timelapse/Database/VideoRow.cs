@@ -37,11 +37,15 @@ namespace Timelapse.Database
             };
             try
             {
+                // If the thumbnail exists, show that.
                 string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
                 if (File.Exists(thumbnailpath))
                 {
                     return BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath, desiredWidth);
                 }
+
+                // As there isn't any thumbnail to show, we hae to open the mediaplayer and play it until we actually get a video frame.
+                // Unfortunately, its very time inefficient...
                 mediaPlayer.Open(new Uri(path));
                 mediaPlayer.Play();
 
