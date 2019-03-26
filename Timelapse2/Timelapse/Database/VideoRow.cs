@@ -37,6 +37,15 @@ namespace Timelapse.Database
             };
             try
             {
+                // If the thumbnail exists, show that.
+                string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
+                if (File.Exists(thumbnailpath))
+                {
+                    return BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath, desiredWidth);
+                }
+
+                // As there isn't any thumbnail to show, we hae to open the mediaplayer and play it until we actually get a video frame.
+                // Unfortunately, its very time inefficient...
                 mediaPlayer.Open(new Uri(path));
                 mediaPlayer.Play();
 
@@ -47,7 +56,7 @@ namespace Timelapse.Database
                 // ONLOAD It currently loads a blank video image when scouring thorugh the videos 
                 // Rapid navigation: loads a blank video image in the background, then the video on pause
                 // Multiview: very slow as only loads the  video.
-                int timesTried = (displayIntent== ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
+                int timesTried = (displayIntent == ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
                 while ((mediaPlayer.NaturalVideoWidth < 1) || (mediaPlayer.NaturalVideoHeight < 1))
                 {
                     // back off briefly to let MediaPlayer do its loading, which typically takes perhaps 75ms
@@ -55,7 +64,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
-                        return GetBlankVideo(desiredWidth);
+                        return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
                     }
                 }
 
@@ -115,28 +124,8 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                return GetBlankVideo(desiredWidth);
+                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
-        }
-
-        private BitmapImage GetBlankVideo(Nullable<int> desiredWidth)
-        {
-            if (desiredWidth == null )
-            {
-                System.Diagnostics.Debug.Print("Null");
-                return Constant.ImageValues.BlankVideo.Value;
-            }
-
-            var uri = new Uri("pack://application:,,,/Resources/BlankVideo.jpg");
-
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.DecodePixelWidth = desiredWidth.Value;
-            //bitmap.CacheOption = bitmapCacheOption;
-            bitmap.UriSource = uri;
-            bitmap.EndInit();
-            bitmap.Freeze();
-            return bitmap;
         }
     }
 }

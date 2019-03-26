@@ -393,7 +393,6 @@ namespace Timelapse
                     BitmapSource bitmapSource = null;
                     try
                     {
-
                         // Create the bitmap and determine its quality
                         // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                         // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 

@@ -285,7 +285,5 @@ namespace Timelapse.Util
             // for an input of "foo's bar" the output is "'foo''s bar'"
             return "'" + value.Replace("'", "''") + "'";
         }
-
-
     }
 }

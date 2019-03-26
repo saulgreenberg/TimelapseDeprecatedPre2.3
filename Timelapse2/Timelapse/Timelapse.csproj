@@ -204,6 +204,8 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Images\BitmapUtilities.cs" />
+    <Compile Include="Images\VideoThumbnailer.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
@@ -745,6 +747,9 @@
     <Resource Include="Resources\BlankVideo128.jpg" />
     <Resource Include="Resources\BlankVideo256.jpg" />
     <Resource Include="Resources\BlankVideo512.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\BlankVideoWIthoutLargePlayButton.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.110.0\build\net40\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.110.0\build\net40\System.Data.SQLite.Core.targets')" />

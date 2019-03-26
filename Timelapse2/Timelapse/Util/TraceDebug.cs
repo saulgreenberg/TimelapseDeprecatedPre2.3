@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Timelapse.Util
 {
-    //  Various forms for printing out trace infromation containing a message and a stack trace of the method names 
+    // Various forms for printing out trace infromation containing a message and a stack trace of the method names 
     public static class TraceDebug
     {
         // Print a message and stack trace to a file
