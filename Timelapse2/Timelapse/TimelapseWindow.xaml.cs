@@ -19,6 +19,7 @@ using Timelapse.EventArguments;
 using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
+using Xceed.Wpf.Toolkit;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse
@@ -415,6 +416,16 @@ namespace Timelapse
         /// <param name="eventArgs">event information</param>
         private void ContentCtl_PreviewKeyDown(object sender, KeyEventArgs eventArgs)
         {
+            IntegerUpDown counter = sender as IntegerUpDown;
+            if (counter != null)
+            {
+                // A hack to make the counter control work - see DateEntryCounter.cs
+                if (counter.Value == int.MaxValue)
+                {
+                    counter.Value = null;
+                }
+            }
+
             if (eventArgs.Key == Key.Enter)
             {
                 this.TrySetKeyboardFocusToMarkableCanvas(false, eventArgs);

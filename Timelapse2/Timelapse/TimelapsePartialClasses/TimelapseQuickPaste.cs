@@ -280,6 +280,7 @@ namespace Timelapse
                         {
                             counter.SetBogusCounterContentAndTooltip();
                         }
+       
                         control.SetContentAndTooltip(item.Value);
                         if (flash == FlashEnums.FlashPreview)
                         { 

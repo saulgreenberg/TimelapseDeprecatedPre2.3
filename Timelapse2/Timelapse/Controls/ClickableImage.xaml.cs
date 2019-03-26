@@ -149,11 +149,6 @@ namespace Timelapse.Controls
 
                 string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName);
                 filename = this.ShortenFileNameIfNeeded(filename, state);
-                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("123456789012", 2));
-                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("12345678901", 2));
-                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("1234567890", 2));
-                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("123456789", 2));
-                System.Diagnostics.Debug.Print(this.ShortenFileNameIfNeeded("12345678", 2));
                 this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)

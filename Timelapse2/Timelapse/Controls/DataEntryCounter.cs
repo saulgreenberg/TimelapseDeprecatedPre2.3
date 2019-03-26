@@ -124,6 +124,16 @@ namespace Timelapse.Controls
         {
             this.ContentControl.BorderThickness = new Thickness(Constant.Control.BorderThicknessNormal);
             this.ContentControl.BorderBrush = Constant.Control.BorderColorNormal;
+
+            // This is a hack to ensure the ellipsis appears as needed. 
+            WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
+            if (textBox != null)
+            {
+                if ((string) textBox.Watermark == Constant.Unicode.Ellipsis)
+                {
+                    textBox.Text = String.Empty;
+                }
+            }
         }
         #endregion
 
@@ -140,32 +150,34 @@ namespace Timelapse.Controls
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {
-            // This is a hacky approach, but it works.
+            // TODO Cleanup this hack for counters.
+            // This is a hack, but it works (sort of).
             // To explain, the IntegerUpDown control supplied with the WPFToolkit only allows numbers. 
             // As we want it to also show both ellipsis and blanks, we have to coerce it to show those.
             // Ideally, we should modify the IntegerUpDown control to allow ellipsis and blanks instead of these hacks.
+            // Its further complicated by the the way we have to set the bogus counter... 
 
             // We access the textbox portion of the IntegerUpDown, so we can write directly into it if needed.
             WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
-
-            // A null value indicates we should show the ellipsis symbol in the textbox. 
-            // Note that this will not work if we have a null value and a null textbox, but I don't think that case will arise as
-            // null textboxes would ever only happen on startup, which is never in an overview mode.
+            // When we get a null value, just show the ellipsis symbol in the textbox. 
             if (value == null)
             {
+                this.ContentControl.AllowSpin = false;
                 if (textBox != null)
                 {
-                    textBox.Text = Constant.Unicode.Ellipsis;
+                    textBox.Watermark = textBox.Text != String.Empty ? Constant.Unicode.Ellipsis : String.Empty;
+                    textBox.Text = String.Empty;
                 }
-                // We really need an else statement to somehow coerce it to put in an ellipsis later (if its null), 
-                // but I can't do it without changing the IntegerUpDown class
-                // else
-                // {
-                //   System.Diagnostics.Debug.Print("1 Value null, Textbox1 null ");
-                // }
             }
             else
-            {
+                {
+                // We have a valid value, so reset the control and watermark
+                this.ContentControl.AllowSpin = true;
+                if (textBox != null)
+                {
+                    textBox.Watermark = String.Empty;
+                }
+
                 value = value.Trim();
                 // The value is non-null, so its either a number or blank.
                 // If its a number, just set it to that number

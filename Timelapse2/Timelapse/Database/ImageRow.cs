@@ -257,7 +257,7 @@ namespace Timelapse.Database
                 }
                 else
                 { 
-                    TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
+                    // TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
                 }
                 return Constant.ImageValues.Corrupt.Value;
             }
