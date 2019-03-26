@@ -181,8 +181,8 @@
                 <Separator/>
 
                 <MenuItem Name="MenuItemClassifyDarkImagesWhenLoading" IsCheckable="False" IsChecked="False" Header="_Classify dark images automatically on initial load..."  ToolTip="Automatically classify dark images when initially loading an image set for the first time." Click="MenuItemClassifyDarkImagesWhenLoading_Click" />
-                <MenuItem Name="MenuItemGenerateVideoThumbnails" Header="Generate video thumbnails..." Click="MenuItemGenerateVideoThumbnails_Click" IsEnabled="True" ToolTip="Generate image thumbnails for all the videos"/>
-                <MenuItem Name="MenuItemDeleteVideoThumbnails" Header="Delete video thumbnails..." Click="MenuItemDeleteVideoThumbnails_Click" IsEnabled="True" ToolTip="Delete image thumbnails for all the videos"/>
+                <!--<MenuItem Name="MenuItemGenerateVideoThumbnails" Header="Generate video thumbnails..." Click="MenuItemGenerateVideoThumbnails_Click" IsEnabled="True" ToolTip="Generate image thumbnails for all the videos"/>
+                <MenuItem Name="MenuItemDeleteVideoThumbnails" Header="Delete video thumbnails..." Click="MenuItemDeleteVideoThumbnails_Click" IsEnabled="True" ToolTip="Delete image thumbnails for all the videos"/>-->
 
                 <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
 
