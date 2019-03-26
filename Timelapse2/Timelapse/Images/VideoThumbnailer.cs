@@ -41,16 +41,7 @@ namespace Timelapse.Images
             try
             {
                 string thumbnailPath = Path.Combine(root, thumbnailFolderName);
-                // If there is no thumbnail folder, we are done
-                if (!Directory.Exists(thumbnailPath))
-                {
-                    return;
-                }
-                else
-                {
-                    DeleteFilesInFolder(thumbnailPath);
-                    Directory.Delete(thumbnailPath);
-                }
+
 
                 // Recursively descend subfolders to delete thumbnails in those folders
                 DirectoryInfo dirInfo = new DirectoryInfo(root);
@@ -63,6 +54,16 @@ namespace Timelapse.Images
                         continue;
                     }
                     DeleteVideoThumbnailsInAllFolders(subDir.FullName, thumbnailFolderName);
+                }
+                // If there is no thumbnail folder, we are done
+                if (!Directory.Exists(thumbnailPath))
+                {
+                    return;
+                }
+                else
+                {
+                    DeleteFilesInFolder(thumbnailPath);
+                    Directory.Delete(thumbnailPath);
                 }
             }
             catch
