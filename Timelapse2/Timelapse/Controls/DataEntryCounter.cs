@@ -129,7 +129,7 @@ namespace Timelapse.Controls
             WatermarkTextBox textBox = (WatermarkTextBox)this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl);
             if (textBox != null)
             {
-                if ((string) textBox.Watermark == Constant.Unicode.Ellipsis)
+                if ((string)textBox.Watermark == Constant.Unicode.Ellipsis)
                 {
                     textBox.Text = String.Empty;
                 }

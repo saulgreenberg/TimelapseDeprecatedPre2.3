@@ -101,7 +101,7 @@ namespace Timelapse.Controls
             this.Video.Pause();
             this.PlayOrPause.IsChecked = false;
             // TODO NOTE - THIS WAS THE ORIGINAL. CHECK FOR SIDE EFFECTS
-            //this.Video.Position = TimeSpan.FromMilliseconds(1.0);
+            // this.Video.Position = TimeSpan.FromMilliseconds(1.0);
             this.Video.Position = TimeSpan.FromMilliseconds(0.0);
             this.Video.Volume = originalVolume;
             // position updated through the media opened event

@@ -42,7 +42,6 @@ namespace Timelapse.Images
             {
                 string thumbnailPath = Path.Combine(root, thumbnailFolderName);
 
-
                 // Recursively descend subfolders to delete thumbnails in those folders
                 DirectoryInfo dirInfo = new DirectoryInfo(root);
                 System.IO.DirectoryInfo[] subDirs = dirInfo.GetDirectories();
