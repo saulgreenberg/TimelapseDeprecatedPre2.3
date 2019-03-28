@@ -282,6 +282,7 @@ namespace Timelapse
             public const string FileDatabaseFileExtension = ".ddb";
             public const string JpgFileExtension = ".jpg";
             public const string Mp4FileExtension = ".mp4";
+            public const string MacOSXHiddenFilePrefix = "._";
             public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep
             public const string TemplateDatabaseFileExtension = ".tdb";
             public const string VideoThumbnailFolderName = ".vthumb";

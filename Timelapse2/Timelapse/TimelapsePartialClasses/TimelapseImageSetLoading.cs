@@ -295,8 +295,21 @@ namespace Timelapse
                     filesToAdd.AddRange(imageFolder.GetFiles("*" + extension));
                 }
             }
-            filesToAdd = filesToAdd.OrderBy(file => file.FullName).ToList();
 
+            // Check if there are any Mac OSX hidden files captured . 
+            // e.g., if there is an image called image01.jpg, MacOSX may make a file called ._image01.jpg
+            // If so, warn the user and ask them if they want to skip those files.
+            if (filesToAdd.Any(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0))
+            {
+                SkipHiddenFiles messageBox = new SkipHiddenFiles(this);
+                if (messageBox.ShowDialog() == true)
+                {
+                    filesToAdd.RemoveAll(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
+                }
+            }
+
+            // Reorder the files
+            filesToAdd = filesToAdd.OrderBy(file => file.FullName).ToList();
             if (filesToAdd.Count == 0)
             {
                 externallyVisibleWorker = null;
