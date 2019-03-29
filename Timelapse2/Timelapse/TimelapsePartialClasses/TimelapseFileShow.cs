@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Controls;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
 
@@ -120,6 +121,7 @@ namespace Timelapse
             this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers();
 
+
             if (newFileToDisplay)
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
@@ -182,6 +184,35 @@ namespace Timelapse
 
             // Display the episode text as needed
             this.DisplayEpisodeTextIfWarranted(fileIndex);
+
+
+            //----------------------------
+            // BOUNDING BOXES
+            // ADD TEST FOR MULTIPLE CLICKABLE IMAGE GRID AND FOR VIDEO
+            ImageRow imageRow = this.dataHandler.ImageCache.Current;
+            BoundingBoxes bboxes = new BoundingBoxes();
+            if (imageRow.Contains(Constant.Recognition.DataLabelBoundingBoxes))
+            {
+                string bboxesAsString = imageRow.GetValueDisplayString(Constant.Recognition.DataLabelBoundingBoxes);
+                if (bboxesAsString == null)
+                {
+                    System.Diagnostics.Debug.Print("NULL");
+                }
+                else
+                { 
+                    bboxes.CreatefromRecognitionData(bboxesAsString);
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.Print("bbox datalabel not present");
+            }
+            if (bboxes.Boxes.Count > 0)
+            { 
+                this.MarkableCanvas.DrawBoundingBox(bboxes, this.MarkableCanvas.ImageToDisplay.RenderSize);
+            }
+
+            //----------------------------
         }
 
         // Get and display the episode text if various conditions are met

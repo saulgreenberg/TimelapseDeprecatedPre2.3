@@ -176,6 +176,12 @@ namespace Timelapse.Database
             }
         }
 
+        // Check if a datalabel is present in the ImageRow
+        public bool Contains(string dataLabel)
+        {
+            return (this.Row.Table.Columns.Contains(dataLabel));
+        }
+
         public bool IsDisplayable()
         {
             if (this.ImageQuality == FileSelectionEnum.Corrupted || this.ImageQuality == FileSelectionEnum.Missing)

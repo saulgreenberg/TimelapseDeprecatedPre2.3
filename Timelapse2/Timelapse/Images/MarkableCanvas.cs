@@ -962,6 +962,50 @@ namespace Timelapse.Images
         }
         #endregion
 
+        private Canvas bboxCanvas = new Canvas();
+        #region Draw Bounding Box
+        public void DrawBoundingBox(BoundingBoxes bboxes, Size canvasRenderSize)
+        {
+            bboxCanvas.Children.Clear();
+            this.Children.Remove(bboxCanvas);
+            bboxCanvas.Width = canvasRenderSize.Width;
+            bboxCanvas.Height = canvasRenderSize.Height;
+            foreach (BoundingBox bbox in bboxes.Boxes)
+            {
+                if (bbox.Confidence < 0.85)
+                {
+                    continue;
+                }
+                // Create a bounding box
+                Rectangle rect = new Rectangle();
+                byte transparency = (byte) (Math.Round(255 * bbox.Confidence));
+
+                SolidColorBrush brush = new SolidColorBrush(Color.FromArgb(255, 0, 0, transparency));
+                rect.Stroke = brush;
+                rect.StrokeThickness = 5;
+                rect.Width = bbox.Rectangle.Width * canvasRenderSize.Width;
+                rect.Height = bbox.Rectangle.Height * canvasRenderSize.Height;
+                double left = bbox.Rectangle.Left * canvasRenderSize.Width;
+                double top = bbox.Rectangle.Top * canvasRenderSize.Height;
+                Canvas.SetLeft(rect, left);
+                Canvas.SetTop(rect, top);
+                bboxCanvas.Children.Add(rect);
+            }
+
+            //  // Get the point from the marker, and convert it so that the marker will be in the right place
+            //Point screenPosition = Marker.ConvertRatioToPoint(marker.Position, canvasRenderSize.Width, canvasRenderSize.Height);
+            //if (doTransform)
+            //{
+            //    screenPosition = this.transformGroup.Transform(screenPosition);
+            //}
+
+            Canvas.SetLeft(bboxCanvas, 0);
+            Canvas.SetTop(bboxCanvas, 0);
+            Canvas.SetZIndex(bboxCanvas, 0);
+            this.Children.Add(bboxCanvas);
+        }
+        #endregion
+
         #region Magnifier Drawing and Zooming
         /// <summary>
         /// Zoom in the magnifying glass image  by the amount defined by the property MagnifierZoomDelta

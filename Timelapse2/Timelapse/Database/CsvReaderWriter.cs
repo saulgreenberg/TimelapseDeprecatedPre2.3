@@ -189,13 +189,13 @@ namespace Timelapse.Database
             {
                 // Check if the data labels contain the required data fields to hold the recognition data, i.e., the MaxConfidence and the Bounding boxes
                 List<string> dataLabels = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                bool useSpeciesPresent = dataLabels.Contains("SpeciesPresent");
                 string errorMessage = dataLabels.Contains(Constant.Recognition.DataLabelMaxConfidence) ? String.Empty : " " + Constant.Recognition.DataLabelMaxConfidence;
                 errorMessage += dataLabels.Contains(Constant.Recognition.DataLabelBoundingBoxes) ? String.Empty : " " + Constant.Recognition.DataLabelBoundingBoxes;
                 if (errorMessage != String.Empty)
                 {
                     importErrors.Add(String.Format("The template is missing these data fields: {0}.", errorMessage));
                 }
-
 
                 using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
@@ -267,18 +267,27 @@ namespace Timelapse.Database
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelMaxConfidence)
                                 {
+
                                     maxConfidence = value;
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelMaxConfidence, maxConfidence));
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelBoundingBoxes)
                                 {
-                                    boundingBoxes = value;
+                                    // For some reason, the bounding box list can include a trailing quote ("), so we remove it if its there. 
+                                    // Not sure why its read in as part of the CSV row...
+                                    boundingBoxes = value.Replace("\"", String.Empty);
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelBoundingBoxes, boundingBoxes));
                                 }
                                 else
                                 {
                                     System.Diagnostics.Debug.Print("Something went wrong...");
                                 }
+                            }
+
+                            if (useSpeciesPresent)
+                            {
+                                bool predicted = maxConfidence != String.Empty && float.Parse(maxConfidence) > 0.8;
+                                imageToUpdate.Columns.Add(new ColumnTuple("SpeciesPresent", predicted));
                             }
                             // update those column values in the image
                             imageToUpdate.SetWhere(folder, relativePath, fileName);
