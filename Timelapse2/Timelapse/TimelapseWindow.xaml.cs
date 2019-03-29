@@ -925,8 +925,8 @@ namespace Timelapse
             }
             return proceedWithOperation;
         }
-        #endregion
 
+        #endregion
 
     }
 }

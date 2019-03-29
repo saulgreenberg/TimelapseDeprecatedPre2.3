@@ -181,6 +181,137 @@ namespace Timelapse.Database
             }
         }
 
+        public static bool TryImportRecognitionDataFromCsv(string filePath, FileDatabase fileDatabase, out List<string> importErrors)
+        {
+            int expectedCSVColumns = 3;
+            importErrors = new List<string>();
+            try
+            {
+                // Check if the data labels contain the required data fields to hold the recognition data, i.e., the MaxConfidence and the Bounding boxes
+                List<string> dataLabels = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                string errorMessage = dataLabels.Contains(Constant.Recognition.DataLabelMaxConfidence) ? String.Empty : " " + Constant.Recognition.DataLabelMaxConfidence;
+                errorMessage += dataLabels.Contains(Constant.Recognition.DataLabelBoundingBoxes) ? String.Empty : " " + Constant.Recognition.DataLabelBoundingBoxes;
+                if (errorMessage != String.Empty)
+                {
+                    importErrors.Add(String.Format("The template is missing these data fields: {0}.", errorMessage));
+                }
+
+
+                using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (StreamReader csvReader = new StreamReader(stream))
+                    {
+                        // validate the presence of the required headers in the .csv file 
+                        List<string> csvLabelsFromHeader = ReadAndParseLine(csvReader);
+                        if (csvLabelsFromHeader.Count != expectedCSVColumns)
+                        {
+                            importErrors.Add(String.Format("CSV file: should contain only {0} columns.", expectedCSVColumns));
+                        }
+                        if (csvLabelsFromHeader.Contains(Constant.Recognition.CSVLabelImagePath) == false)
+                        {
+                            importErrors.Add(String.Format("CSV file: missing a column named '{0}'.", Constant.Recognition.CSVLabelImagePath));
+                        }
+                        if (csvLabelsFromHeader.Contains(Constant.Recognition.CSVLabelMaxConfidence) == false)
+                        {
+                            importErrors.Add(String.Format("CSV file: missing a column named '{0}'.", Constant.Recognition.CSVLabelMaxConfidence));
+                        }
+                        if (csvLabelsFromHeader.Contains(Constant.Recognition.CSVLabelBoundingBoxes) == false)
+                        {
+                            importErrors.Add(String.Format("CSV file: missing a column named '{0}'.", Constant.Recognition.CSVLabelBoundingBoxes));
+                        }
+                        if (importErrors.Count > 0)
+                        {
+                            return false;
+                        }
+
+                        // At this point, we know that we have matching required datalabels and column headers in the template and csv file
+                        // Get each row from the csv file
+                        List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+                        for (List<string> row = ReadAndParseLine(csvReader); row != null; row = ReadAndParseLine(csvReader))
+                        {
+                            if (row.Count == expectedCSVColumns - 1)
+                            {
+                                // .csv files are ambiguous in the sense a trailing comma may or may not be present at the end of the line
+                                // if the final field has a value this case isn't a concern, but if the final field has no value then there's
+                                // no way for the parser to know the exact number of fields in the line
+                                row.Add(String.Empty);
+                            }
+                            else if (row.Count != expectedCSVColumns)
+                            {
+                                importErrors.Add(String.Format("CSV file: expected {0} fields in line {1} but found {2}.", expectedCSVColumns, String.Join(",", row), row.Count));
+                                break;
+                            }
+
+                            // for each column in each row, assemble the column values to update
+                            string fileName = String.Empty;
+                            string relativePath = String.Empty;
+                            string folder = String.Empty;
+                            string maxConfidence = String.Empty;
+                            string boundingBoxes = String.Empty;
+                            ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
+                            for (int field = 0; field < row.Count; ++field)
+                            {
+                                string dataLabel = csvLabelsFromHeader[field];
+                                string value = row[field];
+
+                                if (dataLabel == Constant.Recognition.CSVLabelImagePath)
+                                {
+                                    int index = value.IndexOf("/");
+                                    if (index > 0)
+                                    {
+                                        folder = value.Substring(0, index);
+                                        relativePath = Path.GetDirectoryName(value.Substring(index + 1));
+                                    }
+                                    fileName = Path.GetFileName(value);
+                                    System.Diagnostics.Debug.Print(folder + "|" + relativePath + "|" + fileName);
+                                }
+                                else if (dataLabel == Constant.Recognition.CSVLabelMaxConfidence)
+                                {
+                                    maxConfidence = value;
+                                    imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelMaxConfidence, maxConfidence));
+                                }
+                                else if (dataLabel == Constant.Recognition.CSVLabelBoundingBoxes)
+                                {
+                                    boundingBoxes = value;
+                                    imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelBoundingBoxes, boundingBoxes));
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.Print("Something went wrong...");
+                                }
+                            }
+                            // update those column values in the image
+                            imageToUpdate.SetWhere(folder, relativePath, fileName);
+                            imagesToUpdate.Add(imageToUpdate);
+
+                            // write current batch of updates to database
+                            if (imagesToUpdate.Count >= 100)
+                            {
+                                fileDatabase.UpdateFiles(imagesToUpdate);
+                                imagesToUpdate.Clear();
+                            }
+                            if (importErrors.Count > 0)
+                            {
+                                return false;
+                            }
+                        }
+                        // perform any remaining updates
+                        if (imagesToUpdate.Count > 0)
+                        {
+                            fileDatabase.UpdateFiles(imagesToUpdate);
+                        }
+                        return (importErrors.Count == 0);
+                    }
+                }
+            }
+            catch
+            {
+                importErrors.Add(String.Format("In catch: Something went wrong."));
+                return false;
+            }
+        }
+
+
         private static string AddColumnValue(string value)
         {
             if (value == null)

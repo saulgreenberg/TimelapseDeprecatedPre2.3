@@ -25,6 +25,7 @@ namespace Timelapse
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
+            this.MenuItemImportRecognitionData.IsEnabled = imageSetAvailable;
 
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;

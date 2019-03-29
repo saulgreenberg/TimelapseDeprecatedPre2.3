@@ -429,6 +429,14 @@ namespace Timelapse
             public static readonly double MarkingVsPanningDistanceThreshold = 2.0;
         }
 
+        public static class Recognition
+        {
+            public const string DataLabelMaxConfidence = "Confidence";
+            public const string DataLabelBoundingBoxes = "BoundingBoxes";
+            public const string CSVLabelImagePath = "image_path";
+            public const string CSVLabelMaxConfidence = "max_confidence";
+            public const string CSVLabelBoundingBoxes = "predicted_boxes";
+        }
         public static class Registry
         {
             // Various keys used to save state in the Windows Registry

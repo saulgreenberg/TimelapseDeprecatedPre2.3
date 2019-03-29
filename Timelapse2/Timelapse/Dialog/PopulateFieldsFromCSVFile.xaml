@@ -1,0 +1,17 @@
+﻿<Window x:Class="Timelapse.Dialog.PopulateFieldsFromCSVFile"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Timelapse.Dialog"
+        mc:Ignorable="d"
+        Title="Populate data fields with values from a csv (comma-separated value) file" 
+		MinHeight="600" MinWidth="768"
+		Height="856" Width="840"
+		ResizeMode="CanResizeWithGrip"
+		ShowInTaskbar="False"
+		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
+    <Grid>
+        
+    </Grid>
+</Window>

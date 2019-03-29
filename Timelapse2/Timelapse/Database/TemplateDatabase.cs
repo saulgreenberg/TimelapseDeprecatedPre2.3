@@ -168,7 +168,7 @@ namespace Timelapse.Database
                 string dataLabel = control.DataLabel;
                 if (String.IsNullOrEmpty(dataLabel))
                 {
-                    dataLabel = control.Label;
+                    dataLabel = control.DataLabel;
                 }
                 Debug.Assert(String.IsNullOrWhiteSpace(dataLabel) == false, String.Format("Encountered empty data label and label at ID {0} in template table.", control.ID));
 

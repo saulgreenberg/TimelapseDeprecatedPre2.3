@@ -76,6 +76,12 @@
                         <Image Source="Icons/CSVImport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+
+                <MenuItem Name="MenuItemImportRecognitionData" Header="I_mport recognition data from a .csv file..." IsEnabled="false" Click="MenuItemImportRecognitionData_Click" ToolTip="Import image recognition data for the image set from a CSV (comma separated value) file">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/CSVImport_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
 
                 <!-- Export the current image or video _file...-->
