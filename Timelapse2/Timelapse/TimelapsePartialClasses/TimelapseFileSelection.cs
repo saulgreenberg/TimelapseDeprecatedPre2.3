@@ -58,12 +58,14 @@ namespace Timelapse
 
             // We set forceUpdate to true because at least one imagequality status has changed
             // and we want the correct image to be shown
+            // IMMEDIATE: THIS IS AN EXTREMELY SLOW OPERATION 13 secs, and its repeated on every selection
             if (CheckAndUpdateImageQualityForMissingFiles())
             {
                 forceUpdate = true;
             }
 
             // Select the files according to the given selection
+            // IMMEDIATE: THIS IS A SOMEWHAT SLOW OPERATION 4.1 seconds
             this.dataHandler.FileDatabase.SelectFiles(selection);
 
             // explain to user if their selection has gone empty and change to all files
@@ -177,6 +179,7 @@ namespace Timelapse
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
 
+            this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.dataHandler.FileDatabase);
             // Always force an update after a selection
             this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 
@@ -185,6 +188,7 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
+
         }
 
         // Helper methods - used only by above
@@ -195,6 +199,7 @@ namespace Timelapse
         // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
         // The downfall is that prior ImageQuality information will be lost if a change is made
         // Another issue is that the current version only checks the currently selected files vs. all files
+       
         public bool CheckAndUpdateImageQualityForMissingFiles()
         {
             string filepath = String.Empty;
@@ -203,6 +208,7 @@ namespace Timelapse
             ColumnTuplesWithWhere imageUpdate;
 
             // Get all files, regardless of the selection
+            // IMMEDIATE: Next line 4.2 secs
             FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
             foreach (ImageRow image in allFiles)
             {

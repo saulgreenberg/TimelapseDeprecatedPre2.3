@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -63,6 +64,7 @@ namespace Timelapse
                 return;
             }
 
+            this.DataEntryControls.AutocompletionUpdateWithCurrentRowValues();
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
             if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
             {
@@ -100,7 +102,6 @@ namespace Timelapse
                     DataEntryNote noteControl = (DataEntryNote)control.Value;
                     if (noteControl.ContentChanged)
                     {
-                        noteControl.ContentControl.Autocompletions = this.dataHandler.FileDatabase.GetDistinctValuesInFileDataColumn(control.Value.DataLabel);
                         noteControl.ContentChanged = false;
                     }
                 }

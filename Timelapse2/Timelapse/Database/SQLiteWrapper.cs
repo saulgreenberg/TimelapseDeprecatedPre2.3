@@ -171,7 +171,7 @@ namespace Timelapse.Database
 
         public List<object> GetDistinctValuesInColumn(string tableName, string columnName)
         {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand(connection))

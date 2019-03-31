@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -441,7 +442,7 @@ namespace Timelapse.Database
                     imageDatabaseControl.Width != templateControl.Width ||
                     imageDatabaseControl.Copyable != templateControl.Copyable ||
                     imageDatabaseControl.Visible != templateControl.Visible ||
-                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0) 
+                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0)
                 {
                     templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
                 }
@@ -462,7 +463,7 @@ namespace Timelapse.Database
                 }
                 if (areDeletedColumnsInTemplate)
                 {
-                   string warning = "- ";
+                    string warning = "- ";
                     warning += templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count.ToString();
                     warning += (templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count == 1)
                         ? " data field in your.ddb data file has no corresponding control in your.tdb template file: "
@@ -595,7 +596,7 @@ namespace Timelapse.Database
             {
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
-    
+
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
             // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
@@ -732,7 +733,7 @@ namespace Timelapse.Database
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
                     if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
-                    { 
+                    {
                         this.Database.RenameColumn(Constant.DatabaseTable.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
                 }
@@ -821,7 +822,7 @@ namespace Timelapse.Database
             if (this.ImageSet != null)
             {
                 SortTerm[] sortTerm = new SortTerm[2];
-                string[] term = new string[] { String.Empty, String.Empty }; 
+                string[] term = new string[] { String.Empty, String.Empty };
 
                 // Special case for DateTime sorting.
                 // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
@@ -1004,7 +1005,7 @@ namespace Timelapse.Database
                 case FileSelectionEnum.Ok:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); 
+                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                     return this.CustomSelection.GetFilesWhere();
                 default:
@@ -1158,7 +1159,7 @@ namespace Timelapse.Database
             List<ImageRow> filesToAdjust = new List<ImageRow>();
             TimeSpan mostRecentAdjustment = TimeSpan.Zero;
             for (int row = startRow; row <= endRow; ++row)
-            { 
+            {
                 ImageRow image = this.FileTable[row];
                 DateTimeOffset currentImageDateTime = image.GetDateTime();
 
@@ -1276,7 +1277,7 @@ namespace Timelapse.Database
             foreach (long fileID in fileIDs)
             {
                 idClauses.Add(Constant.DatabaseColumn.ID + " = " + fileID.ToString());
-            }           
+            }
             // Delete the data and markers associated with that image
             this.CreateBackupIfNeeded();
             this.Database.Delete(Constant.DatabaseTable.FileData, idClauses);
@@ -1319,7 +1320,7 @@ namespace Timelapse.Database
         {
             return (imageRowIndex >= 0) && (imageRowIndex < this.CurrentlySelectedFileCount) ? true : false;
         }
-       
+
         // Find the next displayable image after the provided row in the current image set
         // If there is no next displayable image, then find the first previous image before the provided row that is dispay
         public int FindFirstDisplayableImage(int firstRowInSearch)
@@ -1473,12 +1474,40 @@ namespace Timelapse.Database
             return firstIndex;
         }
 
-        public List<string> GetDistinctValuesInFileDataColumn(string dataLabel)
+        // Return all distinct values from a column in the file database
+        // We used to use this for autocomplete, but its now depracated as 
+        // we scan the file table instead. However, this is a bit of a limitation, as it means autocomplete
+        // only works on the Selected File row vs. every entry.
+        public List<string> GetDistinctValuesInFileDataBaseTableColumn(string dataLabel)
         {
             List<string> distinctValues = new List<string>();
             foreach (object value in this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, dataLabel))
             {
                 distinctValues.Add(value.ToString());
+            }
+            return distinctValues;
+        }
+
+        // Return all distinct values from a column in the file table
+        // Note that this returns distinct values only in the SELECTED files
+        // See comments above in GetDistinctValuesInFileDataBaseTableColumn
+        // Perhaps - GetDistinctValuesInSelectedFileTableColumn 
+        // - maybe check substrings before adding, to avoid having too many entries?
+        // - or, only store the longest version of a string. But this would involve more work when adding entries, so likely not worth it.
+        public Dictionary<string,string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
+        {
+            Dictionary<string,string> distinctValues = new Dictionary<string,string>();
+            foreach (ImageRow row in this.FileTable) 
+            {
+                string value = row.GetValueDatabaseString(dataLabel);
+                if (value.Length < minimumNumberOfRequiredCharacters)
+                {
+                    continue;
+                }
+                if (distinctValues.ContainsKey(value) == false)
+                {
+                    distinctValues.Add(value, String.Empty);
+                }
             }
             return distinctValues;
         }

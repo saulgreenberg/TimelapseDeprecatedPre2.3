@@ -91,6 +91,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
+            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
             using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
             {
                 // A file database was available to open
@@ -139,6 +140,8 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
+
+            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
@@ -186,13 +189,42 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
+                List<string> folderPaths = new List<string>();
+                // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
+                GetImageSetFoldersRecursively(this.FolderPath, folderPaths);
+                this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
+                //this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
             }
             else
             {
                 this.OnFolderLoadingComplete(false);
             }
             return true;
+        }
+
+        private static void GetImageSetFoldersRecursively(string root, List<string> folderPaths)
+        {
+            if (!Directory.Exists(root))
+            {
+                return;
+            }
+            folderPaths.Add(root);
+            // Recursively descend subfolders, collecting directory info on the way
+            // IMMEDIATE: NOTE THAT IT ALSO COLLECTS FOLDERS WITHOUT IMAGES IN IT.
+            // THIS MAY NOT BE AN ISSUE AS THAT WILL BE SORTED OUT WHEN THE DIRECTORY IS SCANNED FOR IMAGES.
+            // IF NONE ARE IN THERE, IT IS SKIPPED OVER
+            DirectoryInfo dirInfo = new DirectoryInfo(root);
+            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            foreach (DirectoryInfo subDir in subDirs)
+            {
+                // Skip the following folders
+                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
+                {
+                    continue;
+                }
+                GetImageSetFoldersRecursively(subDir.FullName, folderPaths);
+            }
+
         }
 
         // Get the root folder name from the database, and check to see if its the same as the actual root folder.
