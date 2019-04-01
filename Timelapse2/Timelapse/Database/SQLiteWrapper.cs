@@ -317,6 +317,13 @@ namespace Timelapse.Database
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
 
+        // Set all rows in a given column to a single value
+        public void SetColumnToACommonValue(string tableName, string columnName, string value)
+        {
+            string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + Constant.Sqlite.Equal + Utilities.QuoteForSql(value);
+            this.ExecuteNonQuery(query);
+        }
+
         // Convert all nulls in the list of column_names in table_name
         // Note: this is needed as a prior version did not always set the defaults for the data, which meant that they may have introduced null values. 
         // As I don't handle nulls well, its possible that this could introduce crashes.

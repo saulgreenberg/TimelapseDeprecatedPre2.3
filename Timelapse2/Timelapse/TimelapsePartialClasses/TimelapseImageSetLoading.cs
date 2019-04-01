@@ -444,9 +444,11 @@ namespace Timelapse
                         // retain the frame and pass its metadata to TryUseImageTaken().
                         bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
                         // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                        file.ImageQuality = (bitmapSource == Constant.ImageValues.Corrupt.Value) ? FileSelectionEnum.Corrupted : file.ImageQuality = FileSelectionEnum.Ok;
-
-                        if (this.state.ClassifyDarkImagesWhenLoading == true && file.ImageQuality != FileSelectionEnum.Corrupted)
+                        if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+                        {
+                            file.ImageQuality = FileSelectionEnum.Unknown;
+                        }
+                        if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
                             // Dark Image Classification during loading
                             // One Timelapse option is to have it automatically classify dark images when loading 
@@ -460,24 +462,24 @@ namespace Timelapse
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
                             file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                            // We don't check videos for darkness, so set it as ok.
+                            // We don't check videos for darkness, so set it as Unknown.
                             if (file.IsVideo)
                             {
-                                file.ImageQuality = FileSelectionEnum.Ok;
+                                file.ImageQuality = FileSelectionEnum.Unknown;
                             }
                             else
                             {
-                                while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
+                                while (file.ImageQuality == FileSelectionEnum.Unknown && retries_attempted < MAX_RETRIES)
                                 {
                                     // See what images were retried
                                     TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
                                     retries_attempted++;
                                     file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                 }
-                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
+                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Unknown)
                                 {
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Ok;
+                                    file.ImageQuality = FileSelectionEnum.Light;
                                 }
                             }
                         }
@@ -490,7 +492,7 @@ namespace Timelapse
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
                         TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
-                        file.ImageQuality = FileSelectionEnum.Corrupted;
+                        file.ImageQuality = FileSelectionEnum.Unknown;
                     }
 
                     int filesPendingInsert;

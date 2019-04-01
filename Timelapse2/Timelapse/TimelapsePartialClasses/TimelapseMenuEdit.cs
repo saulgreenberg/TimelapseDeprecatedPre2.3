@@ -127,7 +127,8 @@ namespace Timelapse
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable() || this.dataHandler.ImageCache.Current.ImageQuality == FileSelectionEnum.Corrupted;
+                // IMMEDIATE: THIS NEEDS A CHECK TO ENSURE THE FILE IS NOT MISSING
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable();
             }
             catch (Exception exception)
             {
@@ -221,13 +222,11 @@ namespace Timelapse
                     }
                     else
                     {
-                        // as only the file was deleted, change image quality to FileNoLongerAvailable and clear the delete flag
+                        // as only the file was deleted, clear the delete flag
                         image.DeleteFlag = false;
-                        image.ImageQuality = FileSelectionEnum.Missing;
                         List<ColumnTuple> columnTuples = new List<ColumnTuple>()
                         {
                             new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
-                            new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelectionEnum.Missing.ToString())
                         };
                         imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
                     }

@@ -27,45 +27,37 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Grid.Column="0">
                     <Run FontWeight="Bold" FontSize="14" Text="Counts:" />
                 </TextBlock>
                 <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="Light" Text="0000" />
+                    <Run x:Name="Light" Text="0000000" />
                 </TextBlock>
                 <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="Dark" Text="000" />
+                    <Run x:Name="Dark" Text="0000000" />
                 </TextBlock>
                 <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="Corrupted" Text="00" />
+                    <Run x:Name="Unknown" Text="0000000" />
                 </TextBlock>
-                <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="FileNoLongerAvailable" Text="0" />
-                </TextBlock>
-                <TextBlock Grid.Row="5" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="Total" Text="0000" />
+                <TextBlock Grid.Row="4" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
+                    <Run x:Name="Total" Text="0000000" />
                 </TextBlock>
                 <TextBlock Grid.Row="0" Grid.Column="2">
                     <Run FontWeight="Bold" Text="Light" />
-                    <Run Text="images and videos that can be displayed, likely daytime shots" />
+                    <Run Text="images, likely daytime shots" />
                 </TextBlock>
                 <TextBlock Grid.Row="1" Grid.Column="2">
                     <Run FontWeight="Bold" Text="Dark" />
-                    <Run Text="images and videos that can be displayed, likely nighttime shots" />
+                    <Run Text="images, likely nighttime shots" />
                 </TextBlock>
-                <TextBlock Grid.Row="2" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Corrupted" />
-                    <Run Text="images and videos that cannot be displayed" />
+                 <TextBlock Grid.Row="2" Grid.Column="2">
+                    <Run FontWeight="Bold" Text="Unknown" />
+                    <Run Text="images, likely because the dark classification has not been done" />
                 </TextBlock>
-                <TextBlock Grid.Row="3" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Missing" />
-                    <Run Text="images and videos that were likely deleted" />
-                </TextBlock>
-                <Rectangle Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Width="80" Height="2" Fill="Gray" Margin="0,5,0,5" HorizontalAlignment="Left">
+                <Rectangle Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Width="80" Height="2" Fill="Gray" Margin="0,5,0,5" HorizontalAlignment="Left">
                 </Rectangle>
-                <TextBlock Grid.Row="5" Grid.Column="2">
+                <TextBlock Grid.Row="4" Grid.Column="2">
                     <Run FontWeight="Bold" Text="Files total" />
                 </TextBlock>
             </Grid>

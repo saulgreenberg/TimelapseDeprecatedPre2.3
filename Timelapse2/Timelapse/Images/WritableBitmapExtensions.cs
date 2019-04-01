@@ -143,7 +143,7 @@ namespace Timelapse.Images
                 {
                     darkPixelFraction = 1 - uncoloredPixelFraction;
                     isColor = true;
-                    return FileSelectionEnum.Ok;
+                    return FileSelectionEnum.Light;
                 }
 
                 // It is a grey scale image. If the fraction of dark pixels are higher than the threshold, it is dark.
@@ -153,7 +153,7 @@ namespace Timelapse.Images
                 {
                     return FileSelectionEnum.Dark;
                 }
-                return FileSelectionEnum.Ok;
+                return FileSelectionEnum.Dark;
             }
             catch
             {
@@ -163,7 +163,7 @@ namespace Timelapse.Images
                 // Returning a Corrupted state informs the caller that the check for dark has not completed successfully.
                 isColor = true;
                 darkPixelFraction = 0;
-                return FileSelectionEnum.Corrupted;
+                return FileSelectionEnum.Unknown;
             }
         }
 

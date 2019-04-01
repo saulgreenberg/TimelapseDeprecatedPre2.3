@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,18 +20,16 @@ namespace Timelapse
             Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
 
             // Enable only the menu items that can select at least one potential image 
-            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelectionEnum.Ok] > 0;
+            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelectionEnum.Light] > 0;
             this.MenuItemSelectDarkFiles.IsEnabled = counts[FileSelectionEnum.Dark] > 0;
-            this.MenuItemSelectCorruptedFiles.IsEnabled = counts[FileSelectionEnum.Corrupted] > 0;
-            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = counts[FileSelectionEnum.Missing] > 0;
+            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = true;
             this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion) > 0;
 
             // Put a checkmark next to the menu item that matches the stored selection criteria
             FileSelectionEnum selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
             this.MenuItemSelectAllFiles.IsChecked = selection == FileSelectionEnum.All;
-            this.MenuItemSelectCorruptedFiles.IsChecked = selection == FileSelectionEnum.Corrupted;
             this.MenuItemSelectDarkFiles.IsChecked = selection == FileSelectionEnum.Dark;
-            this.MenuItemSelectLightFiles.IsChecked = selection == FileSelectionEnum.Ok;
+            this.MenuItemSelectLightFiles.IsChecked = selection == FileSelectionEnum.Light;
             this.MenuItemSelectFilesNoLongerAvailable.IsChecked = selection == FileSelectionEnum.Missing;
             this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionEnum.MarkedForDeletion;
             this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
@@ -49,19 +48,15 @@ namespace Timelapse
             }
             else if (item == this.MenuItemSelectLightFiles)
             {
-                selection = FileSelectionEnum.Ok;
+                selection = FileSelectionEnum.Light;
             }
-            else if (item == this.MenuItemSelectCorruptedFiles)
+            else if (item == this.MenuItemSelectUnknownFiles)
             {
-                selection = FileSelectionEnum.Corrupted;
+                selection = FileSelectionEnum.Unknown;
             }
             else if (item == this.MenuItemSelectDarkFiles)
             {
                 selection = FileSelectionEnum.Dark;
-            }
-            else if (item == this.MenuItemSelectFilesNoLongerAvailable)
-            {
-                selection = FileSelectionEnum.Missing;
             }
             else if (item == this.MenuItemSelectFilesMarkedForDeletion)
             {
@@ -104,7 +99,7 @@ namespace Timelapse
 
                 bool otherMenuItemIsChecked =
                     this.MenuItemSelectAllFiles.IsChecked ||
-                    this.MenuItemSelectCorruptedFiles.IsChecked ||
+                    this.MenuItemSelectUnknownFiles.IsChecked ||
                     this.MenuItemSelectDarkFiles.IsChecked ||
                     this.MenuItemSelectLightFiles.IsChecked ||
                     this.MenuItemSelectFilesNoLongerAvailable.IsChecked ||

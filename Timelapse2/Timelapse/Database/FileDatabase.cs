@@ -392,7 +392,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatability();
+            this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -494,7 +494,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability()
+        private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
         {
             // Select all files
             this.SelectFiles(FileSelectionEnum.All);
@@ -595,6 +595,30 @@ namespace Timelapse.Database
             if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, this.ImageSet.VersionCompatability))
             {
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
+            }
+
+            // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
+            // IMMEDIATE CHange to 2.2.2.6
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
+            if (versionCompatabilityColumnExists == false ||  VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
+            {
+                // Alter the template in the .ddb file
+                ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
+                if (templateControl != null)
+                {
+                    templateControl.List = Constant.ImageQuality.ListOfValues;
+                    this.SyncControlToDatabase(templateControl);
+                }
+                // Alter the template in the .tdb file
+
+                templateControl = templateDatabase.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
+                if (templateControl != null)
+                {
+                    templateControl.List = Constant.ImageQuality.ListOfValues;
+                    templateDatabase.SyncControlToDatabase(templateControl);
+                }
+                // Update the Image Quality to ensure that only Light, Dark and Unknown alues are there
+                this.Database.SetColumnToACommonValue(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
             }
 
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
@@ -887,12 +911,47 @@ namespace Timelapse.Database
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
 
+        public bool SelectMissingFilesFromCurrentlySelectedFiles()
+        {
+            string filepath = String.Empty;
+            string message = String.Empty;
+            string commaSeparatedListOfIDs = String.Empty;
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+
+            // Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
+            foreach (ImageRow image in this.FileTable)
+            {
+                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
+                if (!File.Exists(filepath))
+                {
+                    commaSeparatedListOfIDs += image.ID + ",";
+                }
+            }
+            // remove the trailing comma
+            commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
+            if (commaSeparatedListOfIDs == String.Empty)
+            {
+                return false;
+            }
+            this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            return true;
+        }
+
         public FileTable GetFilesMarkedForDeletion()
         {
             string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
+        }
+
+        // Select * From DataTable Where  Id IN(1,2,4 )
+        public FileTable GetFilesInDataTableById(string listOfIds)
+        {
+            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.WhereIDIn + Constant.Sqlite.OpenParenthesis + listOfIds + Constant.Sqlite.CloseParenthesis;
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(images); ;
         }
 
         // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
@@ -959,9 +1018,8 @@ namespace Timelapse.Database
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
-                [FileSelectionEnum.Corrupted] = this.GetFileCount(FileSelectionEnum.Corrupted),
-                [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
-                [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
+                [FileSelectionEnum.Unknown] = this.GetFileCount(FileSelectionEnum.Unknown),
+                [FileSelectionEnum.Light] = this.GetFileCount(FileSelectionEnum.Light)
             };
             return counts;
         }
@@ -999,10 +1057,9 @@ namespace Timelapse.Database
             {
                 case FileSelectionEnum.All:
                     return String.Empty;
-                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Unknown:
                 case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Missing:
-                case FileSelectionEnum.Ok:
+                case FileSelectionEnum.Light:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
@@ -1012,6 +1069,7 @@ namespace Timelapse.Database
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
             }
         }
+
 
         #region Update Files
         /// <summary>
@@ -1285,6 +1343,7 @@ namespace Timelapse.Database
         }
 
         /// <summary>A convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)</summary>
+        /// IMMEDIATE: THIS NO LONGER DEALS WITH MISSING FILES - NEED TO ADD A CHECK FOR THAT
         public bool IsFileDisplayable(int rowIndex)
         {
             if (this.IsFileRowInRange(rowIndex) == false)

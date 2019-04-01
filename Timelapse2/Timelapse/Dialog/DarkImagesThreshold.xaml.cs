@@ -130,7 +130,7 @@ namespace Timelapse.Dialog
             this.RatioFound.Content = String.Format("{0,3:##0}", 100 * this.darkPixelRatioFound);
 
             //// We don't want to update labels if the image is not valid 
-            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Ok || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
+            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Light || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
             {
                 if (this.isColor)
                 {
@@ -147,7 +147,7 @@ namespace Timelapse.Dialog
 
                 if (this.isColor)
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Ok;       // Color image
+                    this.NewClassification.Content = Constant.ImageQuality.Light;       // Color image
                 }
                 else if (this.darkPixelRatio <= this.darkPixelRatioFound)
                 {
@@ -155,7 +155,7 @@ namespace Timelapse.Dialog
                 }
                 else
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Ok;   // Light grey scale image
+                    this.NewClassification.Content = Constant.ImageQuality.Light;   // Light grey scale image
                 }
             }
             else
@@ -387,21 +387,28 @@ namespace Timelapse.Dialog
                         loopState.Break();
                     }
 
-                    // If its not a valid image, say so and go onto the next one.
+                    //// If its not a valid image, say so and go onto the next one.
                     ImageQuality imageQuality = new ImageQuality(file);
-                    if ((imageQuality.OldImageQuality != FileSelectionEnum.Ok) && (imageQuality.OldImageQuality != FileSelectionEnum.Dark))
-                    {
-                        imageQuality.NewImageQuality = null;
-                        backgroundWorker.ReportProgress(0, imageQuality);
-                        return;
-                    }
+                    //if ((imageQuality.OldImageQuality != FileSelectionEnum.Light) && (imageQuality.OldImageQuality != FileSelectionEnum.Dark))
+                    //{
+                    //    imageQuality.NewImageQuality = null;
+                    //    backgroundWorker.ReportProgress(0, imageQuality);
+                    //    return;
+                    //}
 
                     try
                     {
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
-                        // We also use a TransientLoading, as the estimate of darkness will work just fine on thate
+                        // We also use a TransientLoading, as the estimate of darkness will work just fine on that
                         imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading).AsWriteable();
+                        // IMMEDIATE NEED TO CHECK IF ITS A DISPLAYABLE IMAGE i.e., CORRUPT, MISSING, VIDEO
+                        if (imageQuality.Bitmap == (BitmapSource) Constant.ImageValues.FileNoLongerAvailable.Value || imageQuality.Bitmap == (BitmapSource)Constant.ImageValues.Corrupt.Value)
+                        {
+                            imageQuality.NewImageQuality = null;
+                            backgroundWorker.ReportProgress(0, imageQuality);
+                            return;
+                        }
                         imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;

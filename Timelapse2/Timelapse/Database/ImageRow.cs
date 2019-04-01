@@ -4,13 +4,10 @@ using MetadataExtractor.Formats.Exif.Makernotes;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
-using Timelapse.Images;
 using Timelapse.Util;
 using Directory = System.IO.Directory;
 using MetadataDirectory = MetadataExtractor.Directory;
@@ -61,10 +58,9 @@ namespace Timelapse.Database
             {
                 switch (value)
                 {
-                    case FileSelectionEnum.Corrupted:
+                    case FileSelectionEnum.Unknown:
                     case FileSelectionEnum.Dark:
-                    case FileSelectionEnum.Missing:
-                    case FileSelectionEnum.Ok:
+                    case FileSelectionEnum.Light:
                         this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:
@@ -143,11 +139,9 @@ namespace Timelapse.Database
         public string GetFilePath(string rootFolderPath)
         {
             // see RelativePath remarks in constructor
-            if (String.IsNullOrEmpty(this.RelativePath))
-            {
-                return Path.Combine(rootFolderPath, this.FileName);
-            }
-            return Path.Combine(rootFolderPath, this.RelativePath, this.FileName);
+            return (String.IsNullOrEmpty(this.RelativePath)) 
+                ? Path.Combine(rootFolderPath, this.FileName) 
+                : Path.Combine(rootFolderPath, this.RelativePath, this.FileName);
         }
 
         public string GetValueDatabaseString(string dataLabel)
@@ -176,13 +170,22 @@ namespace Timelapse.Database
             }
         }
 
+        // IMMEDIATE. PUT IN CHECK TO SEE IF FILE EXISTS TO REPLACE IS MISSING ISSUE
         public bool IsDisplayable()
         {
-            if (this.ImageQuality == FileSelectionEnum.Corrupted || this.ImageQuality == FileSelectionEnum.Missing)
-            {
-                return false;
-            }
             return true;
+            return (File.Exists(Path.Combine(this.RelativePath, this.FileName)));
+        }
+
+        static bool HasJpegHeader(string filename)
+        {
+            using (BinaryReader br = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
+            {
+                UInt16 soi = br.ReadUInt16();  // Start of Image (SOI) marker (FFD8)
+                UInt16 marker = br.ReadUInt16(); // JFIF marker (FFE0) or EXIF marker(FFE1)
+
+                return soi == 0xd8ff && (marker & 0xe0ff) == 0xe0ff;
+            }
         }
 
         // Load defaults to full size image, and to Persistent (as its safer)
@@ -211,12 +214,12 @@ namespace Timelapse.Database
         }
 
         // Load full form
-        public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
+        public virtual BitmapSource LoadBitmap(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
             // If its a transient image, BitmapCacheOption of None as its faster than OnLoad. 
             // TODOSAUL: why isn't the other case, ImageDisplayIntent.TransientNavigating, also treated as transient?
             BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntentEnum.TransientLoading) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
-            string path = this.GetFilePath(baseFolderPath);
+            string path = this.GetFilePath(rootFolderPath);
             if (!File.Exists(path))
             {
                  return Constant.ImageValues.FileNoLongerAvailable.Value;

@@ -170,7 +170,7 @@ namespace Timelapse
             public const string FolderTooltip = "Name of the folder originally containing the template and image data files";
             public const string FolderWidth = "100";
 
-            public const string ImageQualityTooltip = "System-determined image quality: Ok, dark if mostly black, corrupted if it can not be read, missing if the image/video file is missing";
+            public const string ImageQualityTooltip = "System-determined image quality: Ok, dark if mostly black, corrupted if it can not be read";
             public const string ImageQualityWidth = "85";
 
             public const string TimeTooltip = "Time taken";
@@ -311,11 +311,10 @@ namespace Timelapse
         // shorthands for FileSelection.<value>.ToString()
         public static class ImageQuality
         {
+            public const string Unknown = "Unknown";
+            public const string Light = "Light";
             public const string Dark = "Dark";
-            public const string Missing = "Missing";
-            public const string Ok = "Ok";
-
-            public const string ListOfValues = "Ok|Dark|Corrupted|Missing";
+            public const string ListOfValues = "Light|Dark|Unknown";
         }
 
         public static class ImageValues
@@ -548,9 +547,11 @@ namespace Timelapse
             public const string DeleteFrom = "DELETE FROM ";
             public const string DropTable = " DROP TABLE ";
             public const string End = " END ";
+            public const string Equal = " = ";
             public const string EqualsCaseID = " = CASE Id";
             public const string From = " FROM ";
             public const string GroupBy = " GROUP BY ";
+            public const string In = " In ";
             public const string InsertInto = " INSERT INTO ";
             public const string Integer = " INTEGER ";
             public const string IsNull = " IS NULL ";
