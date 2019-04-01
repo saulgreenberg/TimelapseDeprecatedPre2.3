@@ -19,15 +19,15 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // get the image's current time
-            DateTimeOffset currentDateTime = imageToCorrect.GetDateTime();
+            DateTimeOffset currentDateTime = imageToCorrect.DateTimeIncorporatingOffset;
             this.originalDate.Content = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentDateTime);
 
             // get the image filename and display it
-            this.FileName.Content = imageToCorrect.FileName;
+            this.FileName.Content = imageToCorrect.File;
             this.FileName.ToolTip = this.FileName.Content;
 
             // display the image
-            this.image.Source = imageToCorrect.LoadBitmap(this.fileDatabase.FolderPath);
+            this.image.Source = imageToCorrect.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // configure timezone picker
             TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
@@ -52,7 +52,7 @@ namespace Timelapse.Dialog
             {
                 string newDateTime = String.Empty;
                 string status = "Skipped: invalid date/time";
-                DateTimeOffset currentImageDateTime = image.GetDateTime();
+                DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
                 TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
                 DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);
 
@@ -66,7 +66,7 @@ namespace Timelapse.Dialog
                 {
                     status = "Unchanged";
                 }
-                this.TimeZoneUpdateFeedback.AddFeedbackRow(image.FileName, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
+                this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
             }
         }
 

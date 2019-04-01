@@ -140,7 +140,7 @@ namespace Timelapse.Controls
                     // Process each image. As we do this, 
                     // - check the cache to see if the image is already there, 
                     // - ensure that an image is available
-                    string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].FileName);
+                    string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
                     bool inCache = false;
                     int cachedImageListIndex = 0;
                     // Iterate through the cache to see if the image is in it

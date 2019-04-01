@@ -175,7 +175,7 @@ namespace Timelapse.Database
                         {
                             case Constant.DatabaseColumn.File: // Add The File name
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.File];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.FileName));
+                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.File));
                                 break;
                             case Constant.DatabaseColumn.RelativePath: // Add the relative path name
                                 dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.RelativePath];
@@ -183,7 +183,7 @@ namespace Timelapse.Database
                                 break;
                             case Constant.DatabaseColumn.Folder: // Add The Folder name
                                 dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.Folder];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.InitialRootFolderName));
+                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.Folder));
                                 break;
                             case Constant.DatabaseColumn.Date:
                                 // Add the date
@@ -598,8 +598,8 @@ namespace Timelapse.Database
             }
 
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
-            // IMMEDIATE CHange to 2.2.2.6
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
+            // IMMEDIATE Change to 2.2.2.6 This is set to 2.2.2.7 to force execution of this every time.
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.7";
             if (versionCompatabilityColumnExists == false ||  VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
             {
                 // Alter the template in the .ddb file
@@ -607,6 +607,7 @@ namespace Timelapse.Database
                 if (templateControl != null)
                 {
                     templateControl.List = Constant.ImageQuality.ListOfValues;
+                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
                     this.SyncControlToDatabase(templateControl);
                 }
                 // Alter the template in the .tdb file
@@ -615,6 +616,7 @@ namespace Timelapse.Database
                 if (templateControl != null)
                 {
                     templateControl.List = Constant.ImageQuality.ListOfValues;
+                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
                     templateDatabase.SyncControlToDatabase(templateControl);
                 }
                 // Update the Image Quality to ensure that only Light, Dark and Unknown alues are there
@@ -681,7 +683,7 @@ namespace Timelapse.Database
                     if (!result)
                     {
                         // If we can't get the legacy date time, try getting the date time this way
-                        imageDateTime = image.GetDateTime();
+                        imageDateTime = image.DateTimeIncorporatingOffset;
                     }
                     image.SetDateTimeOffset(imageDateTime);
                     updateQuery.Add(image.GetDateTimeColumnTuples());
@@ -921,7 +923,7 @@ namespace Timelapse.Database
             // Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
             foreach (ImageRow image in this.FileTable)
             {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
+                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.File);
                 if (!File.Exists(filepath))
                 {
                     commaSeparatedListOfIDs += image.ID + ",";
@@ -986,6 +988,7 @@ namespace Timelapse.Database
         /// <returns>true if the image is already in the database</returns>
         public bool GetOrCreateFile(FileInfo fileInfo, out ImageRow file)
         {
+            // IMMEDIATE : THIS IS MISNAMED, AND I AM NOT SURE IF THIS ACTUALLY WORKS
             string initialRootFolderName = Path.GetFileName(this.FolderPath);
             // GetRelativePath() includes the image's file name; remove that from the relative path as it's stored separately
             // GetDirectoryName() returns String.Empty if there's no relative path; the SQL layer treats this inconsistently, resulting in 
@@ -1006,7 +1009,7 @@ namespace Timelapse.Database
             else
             {
                 file = this.FileTable.NewRow(fileInfo);
-                file.InitialRootFolderName = initialRootFolderName;
+                file.Folder = initialRootFolderName;
                 file.RelativePath = relativePath;
                 file.SetDateTimeOffsetFromFileInfo(this.FolderPath);
                 return false;
@@ -1219,7 +1222,7 @@ namespace Timelapse.Database
             for (int row = startRow; row <= endRow; ++row)
             {
                 ImageRow image = this.FileTable[row];
-                DateTimeOffset currentImageDateTime = image.GetDateTime();
+                DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
 
                 // adjust the date/time
                 DateTimeOffset newImageDateTime = adjustment.Invoke(currentImageDateTime);
@@ -1247,7 +1250,7 @@ namespace Timelapse.Database
                 // Add an entry into the log detailing what we just did
                 StringBuilder log = new StringBuilder(Environment.NewLine);
                 log.AppendFormat("System entry: Adjusted dates and times of {0} selected files.{1}", filesToAdjust.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}', the last '{1}', and the last file was adjusted by {2}.{3}", filesToAdjust[0].FileName, filesToAdjust[filesToAdjust.Count - 1].FileName, mostRecentAdjustment, Environment.NewLine);
+                log.AppendFormat("The first file adjusted was '{0}', the last '{1}', and the last file was adjusted by {2}.{3}", filesToAdjust[0].File, filesToAdjust[filesToAdjust.Count - 1].File, mostRecentAdjustment, Environment.NewLine);
                 this.AppendToImageSetLog(log);
             }
         }
@@ -1293,7 +1296,7 @@ namespace Timelapse.Database
             for (int row = startRow; row <= endRow; row++)
             {
                 ImageRow image = this.FileTable[row];
-                DateTimeOffset originalDateTime = image.GetDateTime();
+                DateTimeOffset originalDateTime = image.DateTimeIncorporatingOffset;
 
                 if (DateTimeHandler.TrySwapDayMonth(originalDateTime, out DateTimeOffset reversedDateTime) == false)
                 {
@@ -1315,7 +1318,7 @@ namespace Timelapse.Database
 
                 StringBuilder log = new StringBuilder(Environment.NewLine);
                 log.AppendFormat("System entry: Swapped days and months for {0} files.{1}", imagesToUpdate.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}' and the last '{1}'.{2}", firstImage.FileName, lastImage.FileName, Environment.NewLine);
+                log.AppendFormat("The first file adjusted was '{0}' and the last '{1}'.{2}", firstImage.File, lastImage.File, Environment.NewLine);
                 log.AppendFormat("The last file's date was changed from '{0}' to '{1}'.{2}", DateTimeHandler.ToDisplayDateString(mostRecentOriginalDateTime), DateTimeHandler.ToDisplayDateString(mostRecentReversedDateTime), Environment.NewLine);
                 this.AppendToImageSetLog(log);
             }
@@ -1350,8 +1353,7 @@ namespace Timelapse.Database
             {
                 return false;
             }
-
-            return this.FileTable[rowIndex].IsDisplayable();
+            return this.FileTable[rowIndex].IsDisplayable(this.FolderPath);
         }
 
         // Find the next displayable file at or after the provided row in the current image set.
@@ -1455,7 +1457,7 @@ namespace Timelapse.Database
             {
                 return -1;
             }
-            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
+            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].File, filename, CompareOptions.IgnoreCase);
         }
         #endregion
 

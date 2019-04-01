@@ -78,7 +78,7 @@ namespace Timelapse.Database
             if (dateTime.HasValue)
             {
                 TimeSpan utcOffset = imageSetTimeZone.GetUtcOffset(dateTime.Value);
-                DateTimeOffset imageSetDateTime = DateTimeHandler.FromDatabaseDateTimeOffset(dateTime.Value, utcOffset);
+                DateTimeOffset imageSetDateTime = DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime.Value, utcOffset);
                 this.DatabaseValue = DateTimeHandler.ToDatabaseDateTimeString(imageSetDateTime);
             }
             else

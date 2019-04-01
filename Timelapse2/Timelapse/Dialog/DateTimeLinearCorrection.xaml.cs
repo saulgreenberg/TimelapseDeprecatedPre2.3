@@ -35,7 +35,7 @@ namespace Timelapse
             ImageRow earliestImageRow = null;
             foreach (ImageRow image in this.fileDatabase.FileTable)
             {
-                DateTimeOffset currentImageDateTime = image.GetDateTime();
+                DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
 
                 // If the current image's date is later, then its a candidate latest image  
                 if (currentImageDateTime >= this.latestImageDateTime)
@@ -51,17 +51,18 @@ namespace Timelapse
                 }
             }
 
+            bool isCorruptOrMissing;
             // At this point, we should have succeeded getting the oldest and newest data/time
             // Configure feedback for earliest date and its image
-            this.earliestImageName.Content = earliestImageRow.FileName;
+            this.earliestImageName.Content = earliestImageRow.File;
             this.earliestImageDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.earliestImageDateTime);
-            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath);
+            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out isCorruptOrMissing);
 
             // Configure feedback for latest date (in datetime picker) and its image
-            this.latestImageName.Content = latestImageRow.FileName;
+            this.latestImageName.Content = latestImageRow.File;
             DataEntryHandler.Configure(this.dateTimePickerLatestDateTime, this.latestImageDateTime.DateTime);
             this.dateTimePickerLatestDateTime.ValueChanged += this.DateTimePicker_ValueChanged;
-            this.imageLatest.Source = latestImageRow.LoadBitmap(this.fileDatabase.FolderPath);
+            this.imageLatest.Source = latestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out isCorruptOrMissing);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -89,7 +90,7 @@ namespace Timelapse
                 DateTimeOffset imageDateTime;
                 TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
-                imageDateTime = image.GetDateTime();
+                imageDateTime = image.DateTimeIncorporatingOffset;
                 // adjust the date / time
                 if (intervalFromOldestToNewestImage == TimeSpan.Zero)
                 {
@@ -131,7 +132,7 @@ namespace Timelapse
                 {
                     status = "Unchanged";
                 }
-                this.DateUpdateFeedbackCtl.AddFeedbackRow(image.FileName, status, oldDT, newDT, difference);
+                this.DateUpdateFeedbackCtl.AddFeedbackRow(image.File, status, oldDT, newDT, difference);
             }
         }
 

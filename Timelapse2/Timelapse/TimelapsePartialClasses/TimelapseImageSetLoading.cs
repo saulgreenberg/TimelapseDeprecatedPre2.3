@@ -426,7 +426,7 @@ namespace Timelapse
                         // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
                         folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
                         folderLoadProgress.CurrentFile = filesProcessed;
-                        folderLoadProgress.CurrentFileName = file.FileName;
+                        folderLoadProgress.CurrentFileName = file.File;
 
                         int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
                         backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
@@ -442,9 +442,10 @@ namespace Timelapse
                         // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                         // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
                         // retain the frame and pass its metadata to TryUseImageTaken().
-                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
                         // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                        if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+                        //if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+                        if (isCorruptOrMissing)
                         {
                             file.ImageQuality = FileSelectionEnum.Unknown;
                         }
@@ -490,7 +491,7 @@ namespace Timelapse
                     catch (Exception exception)
                     {
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
-                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
+                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.File, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
                         file.ImageQuality = FileSelectionEnum.Unknown;
                     }
@@ -517,10 +518,10 @@ namespace Timelapse
                             }
                             else
                             {
-                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
                             }
                             folderLoadProgress.CurrentFile = filesToInsert.Count;
-                            folderLoadProgress.CurrentFileName = file.FileName;
+                            folderLoadProgress.CurrentFileName = file.File;
 
                             int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
                             backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
@@ -540,13 +541,13 @@ namespace Timelapse
                 }
 
                 // Second pass: Update database
-                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.FileName)).ToList();
+                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
                     // skip reloading images to display as the user's already seen them import
                     folderLoadProgress.BitmapSource = null;
                     folderLoadProgress.CurrentFile = fileIndex;
-                    folderLoadProgress.CurrentFileName = file.FileName;
+                    folderLoadProgress.CurrentFileName = file.File;
                     int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
                     backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
                 });

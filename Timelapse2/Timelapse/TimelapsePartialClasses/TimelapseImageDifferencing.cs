@@ -39,7 +39,7 @@ namespace Timelapse
                 this.MarkableCanvas.SetDisplayImage(this.dataHandler.ImageCache.GetCurrentImage());
 
                 // Check if its a corrupted image
-                if (!this.dataHandler.ImageCache.Current.IsDisplayable())
+                if (!this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
                 {
                     // TO DO AS WE MAY HAVE TO GET THE INDEX OF THE NEXT IN CYCLE IMAGE???
                     this.StatusBar.SetMessage(String.Format("Difference can't be shown: the current file is likely missing or corrupted"));

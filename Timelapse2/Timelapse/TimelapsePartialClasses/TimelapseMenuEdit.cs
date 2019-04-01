@@ -91,7 +91,7 @@ namespace Timelapse
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
+            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 int firstFileDisplayable = this.dataHandler.FileDatabase.GetCurrentOrNextDisplayableFile(this.dataHandler.ImageCache.CurrentRow);
                 if (firstFileDisplayable == -1)
@@ -128,7 +128,7 @@ namespace Timelapse
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
                 // IMMEDIATE: THIS NEEDS A CHECK TO ENSURE THE FILE IS NOT MISSING
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable();
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)
             {
@@ -295,7 +295,7 @@ namespace Timelapse
         private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt image, tell the person. Selecting ok will shift the views..
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
+            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 // Just a corrupted image
                 MessageBox messageBox = new MessageBox("Can't correct for daylight savings time.", this);

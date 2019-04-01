@@ -196,18 +196,18 @@ namespace Timelapse.Dialog
                             {
                                 image.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);
                                 imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, "No metadata found - date/time reread from file"));
+                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - date/time reread from file"));
                             }
                             else
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(this.dataLabelByLabel[this.dataFieldLabel], String.Empty) };
                                 imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, "No metadata found - data field is cleared"));
+                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - data field is cleared"));
                             }
                         }
                         else
                         {
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, "No metadata found - data field remains unaltered"));
+                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - data field remains unaltered"));
                         }
                         continue;
                     }
@@ -220,18 +220,18 @@ namespace Timelapse.Dialog
                         {
                             image.SetDateTimeOffset(metadataDateTime);
                             imageUpdate = image.GetDateTimeColumnTuples();
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, metadataValue));
+                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, metadataValue));
                         }
                         else
                         {
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, String.Format("'{0}' - data field remains unaltered - not a valid date/time.", metadataValue)));
+                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, String.Format("'{0}' - data field remains unaltered - not a valid date/time.", metadataValue)));
                             continue;
                         }
                     }
                     else
                     {
                         imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                        backgroundWorker.ReportProgress(0, new FeedbackMessage(image.FileName, metadataValue));
+                        backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, metadataValue));
                     }
                     imagesToUpdate.Add(imageUpdate);
 

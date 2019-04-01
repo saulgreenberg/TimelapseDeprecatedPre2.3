@@ -23,12 +23,12 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // Get the original date and display it
-            this.OriginalDate.Content = fileEnumerator.Current.GetDisplayDateTime();
+            this.OriginalDate.Content = fileEnumerator.Current.DateTimeAsDisplayable;
             this.NewDate.Content = this.OriginalDate.Content;
 
             // Display the image. While we should be on a valid image (our assumption), we can still show a missing or corrupted image if needed
-            this.Image.Source = fileEnumerator.Current.LoadBitmap(this.database.FolderPath);
-            this.FileName.Content = fileEnumerator.Current.FileName;
+            this.Image.Source = fileEnumerator.Current.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing);
+            this.FileName.Content = fileEnumerator.Current.File;
             this.FileName.ToolTip = this.FileName.Content;
         }
 

@@ -219,7 +219,7 @@ namespace Timelapse
             FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
             foreach (ImageRow image in allFiles)
             {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
+                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.File);
                 // IMMEDIATE - THERE IS NO MORE MISSING
                 if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
                 {

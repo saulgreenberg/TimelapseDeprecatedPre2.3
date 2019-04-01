@@ -84,7 +84,7 @@ namespace Timelapse.Controls
         {
             get
             {
-                return (this.ImageRow == null) ? String.Empty : System.IO.Path.Combine(this.ImageRow.RelativePath, this.ImageRow.FileName);
+                return (this.ImageRow == null) ? String.Empty : System.IO.Path.Combine(this.ImageRow.RelativePath, this.ImageRow.File);
             }
         }
 
@@ -118,7 +118,7 @@ namespace Timelapse.Controls
         public Double Rerender(FileTable fileTable, double width, int state, int fileIndex)
         {
             this.DesiredRenderWidth = width;
-            BitmapSource bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent);
+            BitmapSource bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing);
             this.Image.Source = bf;
 
             // Render the episode text if needed
@@ -147,7 +147,7 @@ namespace Timelapse.Controls
                 // This was on request from a user, who needed to scan for the first/last image in a timelapse capture sequence
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
-                string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.FileName);
+                string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.File);
                 filename = this.ShortenFileNameIfNeeded(filename, state);
                 this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
 

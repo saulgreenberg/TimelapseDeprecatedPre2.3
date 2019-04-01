@@ -11,9 +11,12 @@ namespace Timelapse.Database
         {
         }
 
+        // Return a new image or video row
         private static ImageRow CreateRow(DataRow row)
         {
             string fileName = row.GetStringField(Constant.DatabaseColumn.File);
+
+            // Return a video row if its a video file (as identified by its suffix)
             string fileExtension = Path.GetExtension(fileName);
             if (String.Equals(fileExtension, Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
                 String.Equals(fileExtension, Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase))
@@ -24,6 +27,7 @@ namespace Timelapse.Database
             {
                 return new ImageRow(row);
             }
+            // This should never be reached
             throw new NotSupportedException(String.Format("Unhandled extension '{0}' for file '{1}'.", fileExtension, fileName));
         }
 

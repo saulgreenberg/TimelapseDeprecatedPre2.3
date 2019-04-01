@@ -89,7 +89,7 @@ namespace Timelapse.Database
         public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
         {
             DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
-            return DateTimeHandler.FromDatabaseDateTimeOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
+            return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
         }
 
         // Create and return the query composed from the search term list

@@ -116,7 +116,7 @@ namespace Timelapse.Dialog
             {
                 Label imageLabel = new Label
                 {
-                    Content = imageProperties.FileName
+                    Content = imageProperties.File
                 };
                 imageLabel.ToolTip = imageLabel.Content;
                 imageLabel.Height = 25;
@@ -124,7 +124,7 @@ namespace Timelapse.Dialog
 
                 Image imageControl = new Image
                 {
-                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth)
+                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing)
                 };
 
                 Grid.SetRow(imageLabel, rowIndex);

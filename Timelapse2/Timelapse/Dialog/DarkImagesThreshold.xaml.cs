@@ -167,10 +167,10 @@ namespace Timelapse.Dialog
         // Utility routine for calling a typical sequence of UI update actions
         private void DisplayImageAndDetails()
         {
-            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath).AsWriteable();
+            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing).AsWriteable();
             this.Image.Source = this.bitmap;
-            this.FileName.Content = this.imageEnumerator.Current.FileName;
-            this.FileName.ToolTip = this.imageEnumerator.Current.FileName;
+            this.FileName.Content = this.imageEnumerator.Current.File;
+            this.FileName.ToolTip = this.imageEnumerator.Current.File;
             this.OriginalClassification.Content = this.imageEnumerator.Current.ImageQuality.ToString(); // The original image classification
 
             this.RecalculateImageQualityForCurrentImage();
@@ -401,9 +401,10 @@ namespace Timelapse.Dialog
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on that
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading).AsWriteable();
+                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
                         // IMMEDIATE NEED TO CHECK IF ITS A DISPLAYABLE IMAGE i.e., CORRUPT, MISSING, VIDEO
-                        if (imageQuality.Bitmap == (BitmapSource) Constant.ImageValues.FileNoLongerAvailable.Value || imageQuality.Bitmap == (BitmapSource)Constant.ImageValues.Corrupt.Value)
+                        //if (imageQuality.Bitmap == (BitmapSource) Constant.ImageValues.FileNoLongerAvailable.Value || imageQuality.Bitmap == (BitmapSource)Constant.ImageValues.Corrupt.Value)
+                        if (isCorruptOrMissing)
                         {
                             imageQuality.NewImageQuality = null;
                             backgroundWorker.ReportProgress(0, imageQuality);

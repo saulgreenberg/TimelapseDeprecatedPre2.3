@@ -78,7 +78,7 @@ namespace Timelapse
             SearchTerm firstDateTimeSearchTerm = this.dataHandler.FileDatabase.CustomSelection.SearchTerms.First(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
             if (firstDateTimeSearchTerm.GetDateTime() == Constant.ControlDefault.DateTimeValue.DateTime)
             {
-                DateTimeOffset defaultDate = this.dataHandler.ImageCache.Current.GetDateTime();
+                DateTimeOffset defaultDate = this.dataHandler.ImageCache.Current.DateTimeIncorporatingOffset;
                 this.dataHandler.FileDatabase.CustomSelection.SetDateTimesAndOffset(defaultDate);
             }
 
