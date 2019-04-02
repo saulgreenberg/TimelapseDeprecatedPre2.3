@@ -54,7 +54,7 @@ namespace Timelapse.Controls
                          control.Type == Constant.Control.Note)
                 {
                     // standard controls rendering as notes aren't editable by the user, so we don't need autocompletions on tht 
-                    Dictionary<string,string> autocompletions = null;
+                    Dictionary<string, string> autocompletions = null;
                     bool readOnly = control.Type != Constant.Control.Note;
                     if (readOnly == false)
                     {
@@ -135,7 +135,7 @@ namespace Timelapse.Controls
                 // Get the value and add it to the autocompletion, but only if there are at least two characters in it.
                 DataEntryNote note = control as DataEntryNote;
 
-                if (note != null && note.ContentControl.Text.Length > 1 )
+                if (note != null && note.ContentControl.Text.Length > 1)
                 {
                     string value = note.ContentControl.Text;
                     if (note.ContentControl.Autocompletions.ContainsKey(value) == false)
@@ -146,7 +146,7 @@ namespace Timelapse.Controls
             }
         }
         // Return the autocompletion list for a note identified by its datalabel
-        public Dictionary<string,string> AutocompletionGetForNote(string datalabel)
+        public Dictionary<string, string> AutocompletionGetForNote(string datalabel)
         {
             foreach (DataEntryControl control in this.Controls)
             {
@@ -166,8 +166,6 @@ namespace Timelapse.Controls
             }
             return null;
         }
-
-
 
         // Enable or disable the following stock controls: 
         //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality

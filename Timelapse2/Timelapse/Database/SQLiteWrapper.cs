@@ -159,7 +159,6 @@ namespace Timelapse.Database
                         }
                     }
                 }
-
             }
             catch (Exception exception)
             {
@@ -178,7 +177,6 @@ namespace Timelapse.Database
                     command.CommandText = String.Format(Constant.Sqlite.SelectDistinct + " {0} " + Constant.Sqlite.From + "{1}", columnName, tableName);
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
-
                         List<object> distinctValues = new List<object>();
                         while (reader.Read())
                         {

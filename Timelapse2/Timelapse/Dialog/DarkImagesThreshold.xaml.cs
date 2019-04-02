@@ -397,7 +397,7 @@ namespace Timelapse.Dialog
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on that
                         imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
                         if (isCorruptOrMissing)
-                        {;
+                        {
                             imageQuality.NewImageQuality = FileSelectionEnum.Unknown; // WAS NULL BEFORE
                             backgroundWorker.ReportProgress(0, imageQuality);
                             return;
@@ -410,7 +410,6 @@ namespace Timelapse.Dialog
                             filesToUpdate.Add(new ColumnTuplesWithWhere(new List<ColumnTuple> { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, imageQuality.NewImageQuality.Value.ToString()) }, file.ID));
                             file.ImageQuality = imageQuality.NewImageQuality.Value;
                         }
-
                     }
                     catch (Exception exception)
                     {

@@ -601,7 +601,7 @@ namespace Timelapse.Database
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
             string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
-            if (versionCompatabilityColumnExists == false ||  VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
+            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
             {
                 // Alter the template in the .ddb file
                 ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
@@ -910,7 +910,7 @@ namespace Timelapse.Database
                 }
             }
             // BOOKMARK
-            DataTable images =  this.Database.GetDataTableFromSelect(query);
+            DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
@@ -953,7 +953,7 @@ namespace Timelapse.Database
         {
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.WhereIDIn + Constant.Sqlite.OpenParenthesis + listOfIds + Constant.Sqlite.CloseParenthesis;
             DataTable images = this.Database.GetDataTableFromSelect(query);
-            return new FileTable(images); ;
+            return new FileTable(images);
         }
 
         // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
@@ -1073,7 +1073,6 @@ namespace Timelapse.Database
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
             }
         }
-
 
         #region Update Files
         /// <summary>
@@ -1555,9 +1554,9 @@ namespace Timelapse.Database
         // Perhaps - GetDistinctValuesInSelectedFileTableColumn 
         // - maybe check substrings before adding, to avoid having too many entries?
         // - or, only store the longest version of a string. But this would involve more work when adding entries, so likely not worth it.
-        public Dictionary<string,string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
+        public Dictionary<string, string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
         {
-            Dictionary<string,string> distinctValues = new Dictionary<string,string>();
+            Dictionary<string, string> distinctValues = new Dictionary<string, string>();
             foreach (ImageRow row in this.FileTable) 
             {
                 string value = row.GetValueDatabaseString(dataLabel);
