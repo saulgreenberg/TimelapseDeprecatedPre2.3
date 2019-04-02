@@ -15,7 +15,12 @@ namespace Timelapse.Controls
         // containing the text box since the clear triggers undo and undo relies on serialization.
         // If needed serialization support can be added via a TypeConverter.
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public List<string> Autocompletions { get; set; }
+
+        // Autocompletion is implemented as a dictionary rather than as a list because its an easier way
+        // to ensure that no duplicate entries are added (as keys). 
+        // Values are always null. It works better than lists, where we would have to check the list to see if each entry was in it before adding it.
+        // Yes, its a hack but a reasonable one
+        public Dictionary<string, string> Autocompletions { get; set; }
 
         /// <summary>
         /// Since auto-completion hooks the TextChanged event provide a follow on event to callers as event sequencing can be fragile.
@@ -66,7 +71,7 @@ namespace Timelapse.Controls
                 }
                 else if (this.Autocompletions != null)
                 {
-                    autocompletion = this.Autocompletions.FirstOrDefault(value => this.UseCompletion(value));
+                    autocompletion = this.Autocompletions.Keys.FirstOrDefault(value => this.UseCompletion(value));
                 }
 
                 if (String.IsNullOrEmpty(autocompletion) == false)

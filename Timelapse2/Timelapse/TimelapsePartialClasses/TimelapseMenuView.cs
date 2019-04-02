@@ -49,7 +49,7 @@ namespace Timelapse
             this.MarkableCanvas.TryZoomInOrOut(false, mousePosition);
         }
 
-        // Bookmark (save) current pan / zoom region 
+        // Save a Bookmark of the current pan / zoom region 
         private void MenuItem_BookmarkSavePanZoom(object sender, RoutedEventArgs e)
         {
             this.MarkableCanvas.SetBookmark();

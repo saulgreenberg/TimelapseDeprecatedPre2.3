@@ -18,7 +18,7 @@ namespace Timelapse.Images
         {
             this.Bitmap = null;
             this.DarkPixelRatioFound = 0;
-            this.FileName = image.FileName;
+            this.FileName = image.File;
             this.IsColor = false;
             this.OldImageQuality = image.ImageQuality;
             this.NewImageQuality = null;

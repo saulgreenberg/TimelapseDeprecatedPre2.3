@@ -15,7 +15,7 @@ namespace Timelapse.Util
             return new DateTimeOffset(dateTime);
         }
 
-        public static DateTimeOffset FromDatabaseDateTimeOffset(DateTime dateTime, TimeSpan utcOffset)
+        public static DateTimeOffset FromDatabaseDateTimeIncorporatingOffset(DateTime dateTime, TimeSpan utcOffset)
         {
             return new DateTimeOffset((dateTime + utcOffset).AsUnspecifed(), utcOffset);
         }

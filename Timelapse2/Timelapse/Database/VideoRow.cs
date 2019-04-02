@@ -10,6 +10,9 @@ using Timelapse.Images;
 using Timelapse.Util;
 namespace Timelapse.Database
 {
+    // A VideoRow is an ImageRow specialized to videos instead of images.
+    // In particular, it knows how to retrieve a bitmap from a video file
+    // See ImageRow for details
     public class VideoRow : ImageRow
     {
         public VideoRow(DataRow row)
@@ -17,18 +20,22 @@ namespace Timelapse.Database
         {
         }
 
+        // This will be invoked only on a video file, so always returns true
         public override bool IsVideo
         {
             get { return true; }
         }
 
-        // displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
-        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
+        // Get the bitmap representing a video file
+        // TODO Update so it works with cached thumbnails
+        // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
+        public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {
+            isCorruptOrMissing = true;
             string path = this.GetFilePath(imageFolderPath);
-            if (!File.Exists(path))
+            if (!System.IO.File.Exists(path))
             {
-                    return Constant.ImageValues.FileNoLongerAvailable.Value;
+                return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
 
             MediaPlayer mediaPlayer = new MediaPlayer
@@ -39,8 +46,9 @@ namespace Timelapse.Database
             {
                 // If the thumbnail exists, show that.
                 string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
-                if (File.Exists(thumbnailpath))
+                if (System.IO.File.Exists(thumbnailpath))
                 {
+                    isCorruptOrMissing = false;
                     return BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath, desiredWidth);
                 }
 
@@ -64,6 +72,7 @@ namespace Timelapse.Database
                     Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
                     if (timesTried-- <= 0)
                     {
+                        isCorruptOrMissing = false;
                         return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
                     }
                 }
@@ -108,6 +117,7 @@ namespace Timelapse.Database
                         // if the media player is closed before Render() only black is rendered
                         // TraceDebug.PrintMessage(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
                         mediaPlayer.Close();
+                        isCorruptOrMissing = false;
                         return writeableBitmap;
                     }
 

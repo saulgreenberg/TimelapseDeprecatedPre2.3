@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -31,12 +32,14 @@ namespace Timelapse.QuickPaste
         private const double ValuesWidth = 80;
         private const double ValuesHeight = 22;
         private FileDatabase fileDatabase;
+        private DataEntryControls dataEntryControls;
 
-        public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase)
+        public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase, DataEntryControls dataEntryControls)
         {
             InitializeComponent();
             this.QuickPasteEntry = quickPasteEntry;
             this.fileDatabase = fileDatabase;
+            this.dataEntryControls = dataEntryControls;
         }
 
         // When the window is loaded
@@ -110,9 +113,11 @@ namespace Timelapse.QuickPaste
                 quickPasteItem.ControlType == Constant.Control.Counter)
             {
                 // Notes and Counters both uses a text field, so they can be constructed as a textbox
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
                 AutocompleteTextBox textBoxValue = new AutocompleteTextBox()
                 {
-                    Autocompletions = this.fileDatabase.GetDistinctValuesInFileDataColumn(quickPasteItem.DataLabel),
+                    Autocompletions = null,
                     Text = quickPasteItem.Value,
                     Height = ValuesHeight,
                     Width = ValuesWidth,
@@ -122,7 +127,12 @@ namespace Timelapse.QuickPaste
                     IsEnabled = quickPasteItem.Use,
                     Tag = quickPasteItem
                 };
-
+                if (quickPasteItem.ControlType == Constant.Control.Note)
+                {
+                    textBoxValue.Autocompletions = this.dataEntryControls.AutocompletionGetForNote(quickPasteItem.DataLabel);
+                }
+                sw.Stop();
+                System.Diagnostics.Debug.Print(sw.Elapsed.Milliseconds.ToString());
                 // Counter text fields are modified to only allow numeric input
                 if (quickPasteItem.ControlType == Constant.Control.Counter)
                 {

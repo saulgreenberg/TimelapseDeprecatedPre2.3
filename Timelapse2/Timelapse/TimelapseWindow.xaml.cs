@@ -63,6 +63,7 @@ namespace Timelapse
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
             GlobalReferences.MainWindow = this; // So other classes can access methods here
+            GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
@@ -129,7 +130,7 @@ namespace Timelapse
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Abort if some of the required dependencies are missing
+             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
                 Dependencies.ShowMissingBinariesDialog(Constant.ApplicationName);
@@ -169,7 +170,6 @@ namespace Timelapse
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             this.FilePlayer_Stop();
-
 
             if ((this.dataHandler != null) &&
                 (this.dataHandler.FileDatabase != null) &&
@@ -702,7 +702,7 @@ namespace Timelapse
             if (e.ImageRow != null)
             {
                 // Switch to either the video or image view as needed
-                if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
+                if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
                 {
                     this.MarkableCanvas.SwitchToVideoView();
                 }
@@ -739,7 +739,7 @@ namespace Timelapse
                     }
 
                     // Switch the Markable Canvas to either the video or image view as needed
-                    if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable())
+                    if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
                     {
                         this.MarkableCanvas.SwitchToVideoView();
                     }

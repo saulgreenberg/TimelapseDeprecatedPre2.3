@@ -562,7 +562,7 @@ namespace Timelapse.Controls
                 return;
             }
 
-            DateTimeOffset currentImageDateTime = this.ImageCache.Current.GetDateTime();
+            DateTimeOffset currentImageDateTime = this.ImageCache.Current.DateTimeIncorporatingOffset;
             DateTimeOffset newImageDateTime = currentImageDateTime.SetOffset(utcOffsetPicker.Value.Value);
             this.ImageCache.Current.SetDateTimeOffset(newImageDateTime);
             // System.Diagnostics.Debug.Print(newImageDateTime.ToString());

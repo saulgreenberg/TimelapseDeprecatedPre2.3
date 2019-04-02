@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -21,6 +22,31 @@ namespace Timelapse.Images
             bitmap.EndInit();
             bitmap.Freeze();
             return bitmap;
+        }
+
+        // Return true only if the file exists and we can actually create a bitmap image from it
+        public static bool IsBitmapFileDisplayable(string path)
+        {
+            if (File.Exists(path) == false)
+            {
+                return false;
+            }
+            try
+            {
+                // we assume its a valid path
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.DecodePixelWidth = 1; //We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
+                bitmap.CacheOption = BitmapCacheOption.Default;
+                bitmap.UriSource = new Uri(path);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)

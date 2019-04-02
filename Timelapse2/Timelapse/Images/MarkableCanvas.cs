@@ -28,7 +28,7 @@ namespace Timelapse.Images
         #region Private variables
         private static readonly SolidColorBrush MarkerFillBrush = new SolidColorBrush(Color.FromArgb(2, 0, 0, 0));
 
-        // bookmark for pan and zoom setting
+        // A bookmark that saves the pan and zoom setting
         private ZoomBookmark bookmark;
 
         // the canvas to magnify contains both an image and markers so the magnifying glass view matches the display image

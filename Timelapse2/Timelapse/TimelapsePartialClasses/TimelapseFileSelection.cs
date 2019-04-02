@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
@@ -41,6 +43,7 @@ namespace Timelapse
         }
 
         // FilesSelectAndShow: Full version
+        // IMMEDIATE FILESSELECTANDSHOW CALLED WAY TOO MUCH, GIVEN THAT IT IS A SLOW OPERATION
         private void FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
@@ -58,13 +61,26 @@ namespace Timelapse
 
             // We set forceUpdate to true because at least one imagequality status has changed
             // and we want the correct image to be shown
-            if (CheckAndUpdateImageQualityForMissingFiles())
-            {
-                forceUpdate = true;
-            }
+            // IMMEDIATE: WE MAY ALWAYS WANT FORCEUPDATE IN CASE A FILE GOES MISSING
+            //if (CheckAndUpdateImageQualityForMissingFiles())
+            //{
+            //    forceUpdate = true;
+            //}
 
             // Select the files according to the given selection
-            this.dataHandler.FileDatabase.SelectFiles(selection);
+            // Note that our check for missing actually checks to see if the file exists,
+            // which is why its a different operation
+            // IMMEDIATE: THESE TWO ARE SLOW OPERATIONS 4.1 seconds
+            Mouse.OverrideCursor = Cursors.Wait;
+            if (selection == FileSelectionEnum.Missing)
+            {
+                this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
+            }
+            else
+            {
+                this.dataHandler.FileDatabase.SelectFiles(selection);
+            }
+            Mouse.OverrideCursor = null;
 
             // explain to user if their selection has gone empty and change to all files
             if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
@@ -78,12 +94,11 @@ namespace Timelapse
 
                 switch (selection)
                 {
-                    case FileSelectionEnum.Corrupted:
-                        messageBox.Message.Problem = "Corrupted files were previously selected but no files are currently corrupted, so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Corrupted.";
-                        messageBox.Message.Hint = "If you have files you think should be marked as 'Corrupted', set their 'ImageQuality' field to 'Corrupted' and then reselect corrupted files.";
+                    case FileSelectionEnum.Unknown:
+                        messageBox.Message.Problem = "Unknown image quality files were previously selected but no files are currently marked as unknown, so nothing can be shown.";
+                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Unknown.";
+                        messageBox.Message.Hint = "If you have files you think should be marked as 'Unknown', set their 'ImageQuality' field to 'Unknown' and then reselect Unknown files.";
                         break;
-
                     case FileSelectionEnum.Custom:
                         messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
                         messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
@@ -95,19 +110,17 @@ namespace Timelapse
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
                         break;
                     case FileSelectionEnum.Missing:
-                        messageBox.Message.Problem = "Missing files were previously selected. However, none of the files are marked as missing, so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Missing.";
-                        messageBox.Message.Hint = "If you have files that you think should be marked as 'Missing' (i.e., whose images are no longer available as shown by the displayed graphic), set their 'ImageQuality' field to 'Missing' and then reselect 'Missing' files.";
+                        messageBox.Message.Problem = "Missing files were previously selected. However, none of the files appear to be missing, so nothing can be shown.";
                         break;
                     case FileSelectionEnum.MarkedForDeletion:
                         messageBox.Message.Problem = "Files marked for deletion were previously selected but no files are currently marked so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
                         messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
                         break;
-                    case FileSelectionEnum.Ok:
-                        messageBox.Message.Problem = "Ok files were previously selected but no files are currently OK so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Ok.";
-                        messageBox.Message.Hint = "If you have files you think should be marked as 'Ok', set their 'ImageQuality' field to 'Ok' and then reselect Ok files.";
+                    case FileSelectionEnum.Light:
+                        messageBox.Message.Problem = "Light files were previously selected but no files are currently marked 'Light' so nothing can be shown.";
+                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Light.";
+                        messageBox.Message.Hint = "If you have files you think should be marked as 'Light', set their 'ImageQuality' field to 'Light' and then reselect Light files.";
                         break;
                     default:
                         throw new NotSupportedException(String.Format("Unhandled selection {0}.", selection));
@@ -127,8 +140,8 @@ namespace Timelapse
                 case FileSelectionEnum.All:
                     status = "All files";
                     break;
-                case FileSelectionEnum.Corrupted:
-                    status = "Corrupted files";
+                case FileSelectionEnum.Unknown:
+                    status = "Unknown files";
                     break;
                 case FileSelectionEnum.Custom:
                     status = "Custom selection";
@@ -142,8 +155,8 @@ namespace Timelapse
                 case FileSelectionEnum.Missing:
                     status = "Missing files";
                     break;
-                case FileSelectionEnum.Ok:
-                    status = "Light and Okay files";
+                case FileSelectionEnum.Light:
+                    status = "Light files";
                     break;
                 default:
                     throw new NotSupportedException(String.Format("Unhandled file selection {0}.", selection));
@@ -177,6 +190,7 @@ namespace Timelapse
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
 
+            this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.dataHandler.FileDatabase);
             // Always force an update after a selection
             this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 
@@ -185,54 +199,6 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
-        }
-
-        // Helper methods - used only by above
-
-        // Check every file to see if:
-        // - file exists but ImageQuality is Missing, or
-        // - file does not exist but ImageQuality is anything other than missing
-        // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
-        // The downfall is that prior ImageQuality information will be lost if a change is made
-        // Another issue is that the current version only checks the currently selected files vs. all files
-        public bool CheckAndUpdateImageQualityForMissingFiles()
-        {
-            string filepath = String.Empty;
-            string message = String.Empty;
-            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            ColumnTuplesWithWhere imageUpdate;
-
-            // Get all files, regardless of the selection
-            FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
-            foreach (ImageRow image in allFiles)
-            {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.FileName);
-                if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
-                {
-                    // The File exists but image quality is set to missing. Reset it to OK
-                    // Note that the file may be corrupt, dark, etc., but we don't check for that.
-                    // SAULXXX Perhaps we should?
-                    image.ImageQuality = FileSelectionEnum.Ok;
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                }
-                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
-                {
-                    // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
-                    // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
-                    // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
-                    message = "Missing " + filepath;
-                    image.ImageQuality = FileSelectionEnum.Missing;
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                }
-            }
-            if (imagesToUpdate.Count > 0)
-            {
-                this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                return true;
-            }
-            return false;
         }
     }
 }

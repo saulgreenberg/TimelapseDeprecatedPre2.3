@@ -130,7 +130,7 @@ namespace Timelapse.Dialog
             this.RatioFound.Content = String.Format("{0,3:##0}", 100 * this.darkPixelRatioFound);
 
             //// We don't want to update labels if the image is not valid 
-            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Ok || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
+            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Light || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
             {
                 if (this.isColor)
                 {
@@ -147,7 +147,7 @@ namespace Timelapse.Dialog
 
                 if (this.isColor)
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Ok;       // Color image
+                    this.NewClassification.Content = Constant.ImageQuality.Light;       // Color image
                 }
                 else if (this.darkPixelRatio <= this.darkPixelRatioFound)
                 {
@@ -155,7 +155,7 @@ namespace Timelapse.Dialog
                 }
                 else
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Ok;   // Light grey scale image
+                    this.NewClassification.Content = Constant.ImageQuality.Light;   // Light grey scale image
                 }
             }
             else
@@ -167,10 +167,10 @@ namespace Timelapse.Dialog
         // Utility routine for calling a typical sequence of UI update actions
         private void DisplayImageAndDetails()
         {
-            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath).AsWriteable();
+            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing).AsWriteable();
             this.Image.Source = this.bitmap;
-            this.FileName.Content = this.imageEnumerator.Current.FileName;
-            this.FileName.ToolTip = this.imageEnumerator.Current.FileName;
+            this.FileName.Content = this.imageEnumerator.Current.File;
+            this.FileName.ToolTip = this.imageEnumerator.Current.File;
             this.OriginalClassification.Content = this.imageEnumerator.Current.ImageQuality.ToString(); // The original image classification
 
             this.RecalculateImageQualityForCurrentImage();
@@ -378,10 +378,11 @@ namespace Timelapse.Dialog
 
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-                // SaulXXX There was a bug in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
+                // SaulXXX There was an issue in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
                 // While it may also affect this loop, the consequences are small if the occassional file is skipped (duplicate testing won't hurt)
+                // Also, its not clear that we really need to display each image, but given that we are already opening it, it may not be a huge expense
                 Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                {
+                { 
                     if (this.stop)
                     {
                         loopState.Break();
@@ -389,30 +390,32 @@ namespace Timelapse.Dialog
 
                     // If its not a valid image, say so and go onto the next one.
                     ImageQuality imageQuality = new ImageQuality(file);
-                    if ((imageQuality.OldImageQuality != FileSelectionEnum.Ok) && (imageQuality.OldImageQuality != FileSelectionEnum.Dark))
-                    {
-                        imageQuality.NewImageQuality = null;
-                        backgroundWorker.ReportProgress(0, imageQuality);
-                        return;
-                    }
-
                     try
                     {
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
-                        // We also use a TransientLoading, as the estimate of darkness will work just fine on thate
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading).AsWriteable();
+                        // We also use a TransientLoading, as the estimate of darkness will work just fine on that
+                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
+                        if (isCorruptOrMissing)
+                        {;
+                            imageQuality.NewImageQuality = FileSelectionEnum.Unknown; // WAS NULL BEFORE
+                            backgroundWorker.ReportProgress(0, imageQuality);
+                            return;
+                        }
                         imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;
                         if (imageQuality.OldImageQuality != imageQuality.NewImageQuality.Value)
                         {
                             filesToUpdate.Add(new ColumnTuplesWithWhere(new List<ColumnTuple> { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, imageQuality.NewImageQuality.Value.ToString()) }, file.ID));
+                            file.ImageQuality = imageQuality.NewImageQuality.Value;
                         }
+
                     }
                     catch (Exception exception)
                     {
                         // file isn't there?
+                        imageQuality.NewImageQuality = FileSelectionEnum.Unknown;
                         Debug.Fail("Exception while assessing image quality.", exception.ToString());
                     }
 
@@ -429,7 +432,7 @@ namespace Timelapse.Dialog
                         }
                     }
                 });
-
+                // Update the database to reflect the changed values
                 this.database.UpdateFiles(filesToUpdate);
             };
             backgroundWorker.ProgressChanged += (o, ea) =>

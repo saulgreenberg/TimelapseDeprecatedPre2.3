@@ -81,7 +81,7 @@ namespace Timelapse.Dialog
             for (int index = startIndex; index < this.database.CurrentlySelectedFileCount; index++)
             {
                 ImageRow image = this.database.FileTable[index];
-                DateTimeOffset imageDateTime = image.GetDateTime();
+                DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
                 if (imageDateTime.Day <= Constant.Time.MonthsInYear)
                 {
                     return index; // If the date is ambiguous, return the row index. 
@@ -107,14 +107,14 @@ namespace Timelapse.Dialog
 
             // Parse the provided starting date. Return -1 if it cannot.
             ImageRow image = this.database.FileTable[startIndex];
-            DateTimeOffset desiredDateTime = image.GetDateTime();
+            DateTimeOffset desiredDateTime = image.DateTimeIncorporatingOffset;
 
             lastMatchingDate = startIndex;
             for (int index = startIndex + 1; index < this.database.CurrentlySelectedFileCount; index++)
             {
                 // Parse the date for the given row.
                 image = this.database.FileTable[index];
-                DateTimeOffset imageDateTime = image.GetDateTime();
+                DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
                
                 if (desiredDateTime.Date == imageDateTime.Date)
                 {
@@ -167,17 +167,17 @@ namespace Timelapse.Dialog
 
             // We found an ambiguous date; provide appropriate feedback
             image = this.database.FileTable[this.ambiguousDatesList[index].StartRange];
-            this.OriginalDateLabel.Content = image.GetDateTime().Date;
+            this.OriginalDateLabel.Content = image.DateTimeIncorporatingOffset.Date;
 
             // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
-            this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateTimeString(swappedDate) : DateTimeHandler.ToDisplayDateTimeString(image.GetDateTime());
+            this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateTimeString(swappedDate) : DateTimeHandler.ToDisplayDateTimeString(image.DateTimeIncorporatingOffset);
 
             this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
             // Display the image. While we expect it to be on a valid image (our assumption), we can still show a missing or corrupted file if needed
-            this.Image.Source = image.LoadBitmap(this.database.FolderPath);
-            this.FileName.Content = image.FileName;
-            this.FileName.ToolTip = image.FileName;
+            this.Image.Source = image.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing);
+            this.FileName.Content = image.File;
+            this.FileName.ToolTip = image.File;
 
             return true;
         }
@@ -195,17 +195,17 @@ namespace Timelapse.Dialog
             {
                 ImageRow image;
                 image = this.database.FileTable[this.ambiguousDatesList[this.ambiguousDatesListIndex].StartRange];
-                this.OriginalDateLabel.Content = DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
+                this.OriginalDateLabel.Content = DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date);
 
                 // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
-                this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateString(swappedDate.Date) : DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date);
+                this.SwappedDateLabel.Content = DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate) ? DateTimeHandler.ToDisplayDateString(swappedDate.Date) : DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date);
 
                 this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
                 // Display the image. While we expect it to be on a valid image (our assumption), we can still show a missing or corrupted file if needed
-                this.Image.Source = image.LoadBitmap(this.database.FolderPath);
-                this.FileName.Content = image.FileName;
-                this.FileName.ToolTip = image.FileName;
+                this.Image.Source = image.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing);
+                this.FileName.Content = image.File;
+                this.FileName.ToolTip = image.File;
 
                 // Set the next button and the radio button back to their defaults
                 // As we do this, unlink and then relink the callback as we don't want to invoke the data update
@@ -248,7 +248,7 @@ namespace Timelapse.Dialog
                     newDate = DateTimeHandler.ToDisplayDateString(swappedDate.Date);
                     string countStatus = ambiguousDate.Count.ToString() + " file";
                     countStatus += (ambiguousDate.Count > 1) ? "s" : String.Empty;
-                    this.DateChangeFeedback.AddFeedbackRow(image.FileName, countStatus, DateTimeHandler.ToDisplayDateString(image.GetDateTime().Date), newDate, "--");
+                    this.DateChangeFeedback.AddFeedbackRow(image.File, countStatus, DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date), newDate, "--");
                 }
             }
             this.DateChangeFeedback.Column0Name = "Sample file";

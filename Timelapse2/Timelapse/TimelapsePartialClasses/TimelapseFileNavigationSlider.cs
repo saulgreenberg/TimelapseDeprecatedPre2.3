@@ -47,7 +47,7 @@ namespace Timelapse
             {
                 this.FileShow(this.FileNavigatorSlider);
                 this.state.MostRecentDragEvent = utcNow;
-                this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+                this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.File;
             }
         }
 
@@ -70,7 +70,7 @@ namespace Timelapse
         {
             this.timerFileNavigator.Stop();
             this.FileShow(this.FileNavigatorSlider);
-            this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.FileName;
+            this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.File;
         }
 
         private void FileNavigatorSlider_EnableOrDisableValueChangedCallback(bool enableCallback)

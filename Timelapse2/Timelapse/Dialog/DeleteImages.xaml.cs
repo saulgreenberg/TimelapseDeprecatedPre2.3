@@ -55,8 +55,8 @@ namespace Timelapse.Dialog
             if (deleteCurrentImageOnly)
             {
                 string imageOrVideo = imagesToDelete[0].IsVideo ? "video" : "image";
-                this.Message.Title = String.Format("Delete the current {0} ", imageOrVideo);
-                this.Message.What = String.Format("Deletes the current {0} (shown below) ", imageOrVideo);
+                this.Message.Title = String.Format("Delete the current {0}", imageOrVideo);
+                this.Message.What = String.Format("Deletes the current {0} if it exists", imageOrVideo);
                 this.Message.Result = String.Format("\u2022 The deleted {0} will be backed up in a sub-folder named {1}.{2}", imageOrVideo, Constant.File.DeletedFilesFolder, Environment.NewLine);
                 this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
                 if (deleteImageAndData == false)
@@ -80,7 +80,7 @@ namespace Timelapse.Dialog
             {
                 int numberOfImagesToDelete = this.filesToDelete.Count;
                 this.Message.Title = String.Format("Delete {0} image and/or video(s) marked for deletion ", numberOfImagesToDelete.ToString());
-                this.Message.What = String.Format("Deletes {0} image and/or video(s) that are marked for deletion (shown below), ",  numberOfImagesToDelete.ToString());
+                this.Message.What = String.Format("Deletes {0} image and/or video(s) - if they exist - that are marked for deletion, ",  numberOfImagesToDelete.ToString());
                 this.Message.Result = String.Empty;
                 this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
                 if (numberOfImagesToDelete > Constant.ImageValues.LargeNumberOfDeletedImages)
@@ -116,7 +116,7 @@ namespace Timelapse.Dialog
             {
                 Label imageLabel = new Label
                 {
-                    Content = imageProperties.FileName
+                    Content = imageProperties.File
                 };
                 imageLabel.ToolTip = imageLabel.Content;
                 imageLabel.Height = 25;
@@ -124,7 +124,7 @@ namespace Timelapse.Dialog
 
                 Image imageControl = new Image
                 {
-                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth)
+                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing)
                 };
 
                 Grid.SetRow(imageLabel, rowIndex);

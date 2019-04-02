@@ -5,6 +5,9 @@ using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Threading;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -136,17 +139,12 @@ namespace Timelapse.Database
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
 
-        /// <summary>
-        /// Run a generic select query against the database, with results returned as rows in a DataTable.
-        /// </summary>
-        /// <param name="query">The SQL to run</param>
-        /// <returns>A DataTable containing the result set.</returns>
         public DataTable GetDataTableFromSelect(string query)
         {
             try
             {
                 // Open the connection
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -161,6 +159,7 @@ namespace Timelapse.Database
                         }
                     }
                 }
+
             }
             catch (Exception exception)
             {
@@ -171,7 +170,7 @@ namespace Timelapse.Database
 
         public List<object> GetDistinctValuesInColumn(string tableName, string columnName)
         {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -179,6 +178,7 @@ namespace Timelapse.Database
                     command.CommandText = String.Format(Constant.Sqlite.SelectDistinct + " {0} " + Constant.Sqlite.From + "{1}", columnName, tableName);
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
+
                         List<object> distinctValues = new List<object>();
                         while (reader.Read())
                         {
@@ -315,6 +315,13 @@ namespace Timelapse.Database
                 queries.Add(query);
             }
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
+        }
+
+        // Set all rows in a given column to a single value
+        public void SetColumnToACommonValue(string tableName, string columnName, string value)
+        {
+            string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + Constant.Sqlite.Equal + Utilities.QuoteForSql(value);
+            this.ExecuteNonQuery(query);
         }
 
         // Convert all nulls in the list of column_names in table_name

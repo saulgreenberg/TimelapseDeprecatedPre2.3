@@ -306,7 +306,7 @@ namespace Timelapse
         // Export the current image or video _file
         private void MenuItemExportThisImage_Click(object sender, RoutedEventArgs e)
         {
-            if (!this.dataHandler.ImageCache.Current.IsDisplayable())
+            if (!this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
             {
                 MessageBox messageBox = new MessageBox("Can't export this file!", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;
@@ -317,13 +317,13 @@ namespace Timelapse
                 return;
             }
             // Get the file name of the current image 
-            string sourceFile = this.dataHandler.ImageCache.Current.FileName;
+            string sourceFile = this.dataHandler.ImageCache.Current.File;
 
             // Set up a Folder Browser with some instructions
             SaveFileDialog dialog = new SaveFileDialog()
             {
                 Title = "Export a copy of the currently displayed file",
-                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.FileName)),
+                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.File)),
                 FileName = sourceFile,
                 OverwritePrompt = true
             };

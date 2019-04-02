@@ -53,12 +53,12 @@ namespace Timelapse.Controls
                          control.Type == Constant.DatabaseColumn.Time ||
                          control.Type == Constant.Control.Note)
                 {
-                    // standard controls rendering as notes aren't editable by the user 
-                    List<string> autocompletions = null;
+                    // standard controls rendering as notes aren't editable by the user, so we don't need autocompletions on tht 
+                    Dictionary<string,string> autocompletions = null;
                     bool readOnly = control.Type != Constant.Control.Note;
                     if (readOnly == false)
                     {
-                        autocompletions = new List<string>(database.GetDistinctValuesInFileDataColumn(control.DataLabel));
+                        autocompletions = new Dictionary<string, string>();
                     }
                     DataEntryNote noteControl = new DataEntryNote(control, autocompletions, this)
                     {
@@ -101,6 +101,73 @@ namespace Timelapse.Controls
             dataEntryPropagator.SetDataEntryCallbacks(this.ControlsByDataLabel);
             this.dataEntryHandler = dataEntryPropagator;
         }
+
+        public void AutocompletionPopulateAllNotesWithFileTableValues(FileDatabase database)
+        {
+            foreach (DataEntryControl control in this.Controls)
+            {
+                // no point in autocompleting if its read-only
+                if (control.ContentReadOnly == true)
+                {
+                    continue;
+                }
+                // We are only autocompleting notes
+                DataEntryNote note = control as DataEntryNote;
+                if (note == null)
+                {
+                    continue;
+                }
+                note.ContentControl.Autocompletions = database.GetDistinctValuesInSelectedFileTableColumn(note.DataLabel, 2);
+            }
+        }
+
+        // Try to add the values in the current note fields to the autocompletion list, assuming that it is different.
+        public void AutocompletionUpdateWithCurrentRowValues()
+        {
+            foreach (DataEntryControl control in this.Controls)
+            {
+                // no point in updating autocompletion if its read-only
+                if (control.ContentReadOnly == true)
+                {
+                    continue;
+                }
+                // We are only autocompleting notes
+                // Get the value and add it to the autocompletion, but only if there are at least two characters in it.
+                DataEntryNote note = control as DataEntryNote;
+
+                if (note != null && note.ContentControl.Text.Length > 1 )
+                {
+                    string value = note.ContentControl.Text;
+                    if (note.ContentControl.Autocompletions.ContainsKey(value) == false)
+                    {
+                        note.ContentControl.Autocompletions.Add(value, String.Empty);
+                    }
+                }
+            }
+        }
+        // Return the autocompletion list for a note identified by its datalabel
+        public Dictionary<string,string> AutocompletionGetForNote(string datalabel)
+        {
+            foreach (DataEntryControl control in this.Controls)
+            {
+                // no point in autocompleting if its read-only
+                if (control.DataLabel == datalabel)
+                {
+                    DataEntryNote note = control as DataEntryNote;
+                    if (note != null)
+                    {
+                        return note.ContentControl.Autocompletions;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+
+
 
         // Enable or disable the following stock controls: 
         //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality

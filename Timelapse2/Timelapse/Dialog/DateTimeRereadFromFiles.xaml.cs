@@ -82,7 +82,7 @@ namespace Timelapse.Dialog
                 {
                     // We will store the various times here
                     ImageRow file = this.database.FileTable[fileIndex];
-                    DateTimeOffset originalDateTime = file.GetDateTime();
+                    DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
                     string feedbackMessage = String.Empty;
                     try
                     {
@@ -95,7 +95,7 @@ namespace Timelapse.Dialog
                             file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);  // We couldn't read the metadata, so get a candidate date/time from the file
                             usingMetadataTimestamp = false;
                         }
-                        DateTimeOffset rescannedDateTime = file.GetDateTime();
+                        DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
                         bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
                         bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
                         bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
@@ -115,11 +115,11 @@ namespace Timelapse.Dialog
                     }
                     catch (Exception exception)
                     {
-                        TraceDebug.PrintMessage(String.Format("Unexpected exception processing '{0}' in DateReread - StartDoneButton_Click. {1}", file.FileName, exception.ToString()));
+                        TraceDebug.PrintMessage(String.Format("Unexpected exception processing '{0}' in DateReread - StartDoneButton_Click. {1}", file.File, exception.ToString()));
                         feedbackMessage += String.Format("\x2716 skipping: {0}", exception.Message);
                     }
 
-                    backgroundWorker.ReportProgress(0, new DateTimeRereadFeedbackTuple(file.FileName, feedbackMessage));
+                    backgroundWorker.ReportProgress(0, new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
                     if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
                     {
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime); // Put in a delay every now and then, as otherwise the UI won't update.

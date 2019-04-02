@@ -25,14 +25,14 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // get the image filename and display it
-            this.FileName.Content = imageToCorrect.FileName;
+            this.FileName.Content = imageToCorrect.File;
             this.FileName.ToolTip = this.FileName.Content;
 
             // display the image
-            this.image.Source = imageToCorrect.LoadBitmap(this.fileDatabase.FolderPath);
+            this.image.Source = imageToCorrect.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // configure datetime picker
-            this.initialDate = imageToCorrect.GetDateTime();
+            this.initialDate = imageToCorrect.DateTimeIncorporatingOffset;
             this.OriginalDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.initialDate);
             DataEntryHandler.Configure(this.DateTimePicker, this.initialDate.DateTime);
             this.DateTimePicker.ValueChanged += this.DateTimePicker_ValueChanged;
@@ -58,7 +58,7 @@ namespace Timelapse.Dialog
                 string newDateTime = String.Empty;
                 string status = "Skipped: invalid date/time";
                 string difference = String.Empty;
-                DateTimeOffset imageDateTime = image.GetDateTime();
+                DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
 
                 // Pretty print the adjustment time
                 if (adjustment.Duration() >= Constant.Time.DateTimeDatabaseResolution)
@@ -72,7 +72,7 @@ namespace Timelapse.Dialog
                     status = "Unchanged";
                 }
                 this.DateTimeChangeFeedback.ShowDifferenceColumn = true;
-                this.DateTimeChangeFeedback.AddFeedbackRow(image.FileName, status, image.GetDisplayDateTime(), newDateTime, difference);
+                this.DateTimeChangeFeedback.AddFeedbackRow(image.File, status, image.DateTimeAsDisplayable, newDateTime, difference);
             }
         }
 

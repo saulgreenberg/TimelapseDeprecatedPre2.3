@@ -26,8 +26,6 @@ namespace Timelapse
             // Enable / disable various edit menu items depending on whether we are looking at the single image view or overview
             bool state = this.IsDisplayingSingleImage();
             this.MenuItemCopyPreviousValues.IsEnabled = state;
-            this.MenuItemDeleteCurrentFile.IsEnabled = state;
-            this.MenuItemDeleteCurrentFileAndData.IsEnabled = state;
         }
 
         // Find image 
@@ -91,7 +89,7 @@ namespace Timelapse
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
+            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 int firstFileDisplayable = this.dataHandler.FileDatabase.GetCurrentOrNextDisplayableFile(this.dataHandler.ImageCache.CurrentRow);
                 if (firstFileDisplayable == -1)
@@ -127,7 +125,8 @@ namespace Timelapse
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable() || this.dataHandler.ImageCache.Current.ImageQuality == FileSelectionEnum.Corrupted;
+                // IMMEDIATE: THIS NEEDS A CHECK TO ENSURE THE FILE IS NOT MISSING
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)
             {
@@ -221,13 +220,11 @@ namespace Timelapse
                     }
                     else
                     {
-                        // as only the file was deleted, change image quality to FileNoLongerAvailable and clear the delete flag
+                        // as only the file was deleted, clear the delete flag
                         image.DeleteFlag = false;
-                        image.ImageQuality = FileSelectionEnum.Missing;
                         List<ColumnTuple> columnTuples = new List<ColumnTuple>()
                         {
                             new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
-                            new ColumnTuple(Constant.DatabaseColumn.ImageQuality, FileSelectionEnum.Missing.ToString())
                         };
                         imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
                     }
@@ -296,7 +293,7 @@ namespace Timelapse
         private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt image, tell the person. Selecting ok will shift the views..
-            if (this.dataHandler.ImageCache.Current.IsDisplayable() == false)
+            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 // Just a corrupted image
                 MessageBox messageBox = new MessageBox("Can't correct for daylight savings time.", this);
@@ -411,6 +408,8 @@ namespace Timelapse
                 {
                     darkThreshold.Owner = this;
                     darkThreshold.ShowDialog();
+                    // Force an update of the current image in case the current values have changed
+                    this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
                 }
             }
         }

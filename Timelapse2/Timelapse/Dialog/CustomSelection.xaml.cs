@@ -29,15 +29,17 @@ namespace Timelapse.Dialog
         private const int SearchCriteriaColumn = 4;
 
         private FileDatabase database;
+        private DataEntryControls dataEntryControls;
         private TimeZoneInfo imageSetTimeZone;
         private bool excludeUTCOffset;
 
         #region Constructors and Loading
-        public CustomSelection(FileDatabase database, Window owner, bool excludeUTCOffset)
+        public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset)
         {
             this.InitializeComponent();
 
             this.database = database;
+            this.dataEntryControls = dataEntryControls;
             this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
@@ -191,7 +193,7 @@ namespace Timelapse.Dialog
                 {
                     AutocompleteTextBox textBoxValue = new AutocompleteTextBox()
                     {
-                        Autocompletions = this.database.GetDistinctValuesInFileDataColumn(searchTerm.DataLabel),
+                        Autocompletions = null,
                         IsEnabled = searchTerm.UseForSearching,
                         Text = searchTerm.DatabaseValue,
                         Margin = thickness,
@@ -201,6 +203,11 @@ namespace Timelapse.Dialog
                         VerticalAlignment = VerticalAlignment.Center,
                         VerticalContentAlignment = VerticalAlignment.Center
                     };
+                    if (controlType == Constant.Control.Note)
+                    {
+                        // Make autocompletions work for this control
+                        textBoxValue.Autocompletions = this.dataEntryControls.AutocompletionGetForNote(searchTerm.DataLabel);
+                    }
 
                     // The following is specific only to Counters
                     if (controlType == Constant.Control.Counter)
@@ -273,7 +280,7 @@ namespace Timelapse.Dialog
                     throw new NotSupportedException(String.Format("Unhandled control type '{0}'.", controlType));
                 }
 
-                // Ff we need to exclude UTCOffsets from the search interface. If so, just hide the UTCOffset row.
+                // We need to exclude UTCOffsets from the search interface. If so, just hide the UTCOffset row.
                 if (controlType == Constant.DatabaseColumn.UtcOffset && this.excludeUTCOffset)
                 {
                     gridRow.Height = new GridLength(0);

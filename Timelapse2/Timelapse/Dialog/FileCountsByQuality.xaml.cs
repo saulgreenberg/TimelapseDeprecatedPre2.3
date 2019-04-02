@@ -21,16 +21,13 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // Fill in the counts
-            int light = counts[FileSelectionEnum.Ok];
+            int light = counts[FileSelectionEnum.Light];
             this.Light.Text = String.Format("{0,5}", light);
-            int fileNoLongerAvailable = counts[FileSelectionEnum.Missing];
-            this.FileNoLongerAvailable.Text = String.Format("{0,5}", fileNoLongerAvailable);
             int dark = counts[FileSelectionEnum.Dark];
             this.Dark.Text = String.Format("{0,5}", dark);
-            int corrupted = counts[FileSelectionEnum.Corrupted];
-            this.Corrupted.Text = String.Format("{0,5}", corrupted);
-
-            int total = light + dark + corrupted + fileNoLongerAvailable;
+            int unknown = counts[FileSelectionEnum.Unknown];
+            this.Unknown.Text = String.Format("{0,5}", unknown);
+            int total = light + dark + unknown;
             this.Total.Text = String.Format("{0,5}", total);
         }
 

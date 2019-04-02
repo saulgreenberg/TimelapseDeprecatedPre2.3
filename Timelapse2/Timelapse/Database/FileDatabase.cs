@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -174,7 +176,7 @@ namespace Timelapse.Database
                         {
                             case Constant.DatabaseColumn.File: // Add The File name
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.File];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.FileName));
+                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.File));
                                 break;
                             case Constant.DatabaseColumn.RelativePath: // Add the relative path name
                                 dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.RelativePath];
@@ -182,7 +184,7 @@ namespace Timelapse.Database
                                 break;
                             case Constant.DatabaseColumn.Folder: // Add The Folder name
                                 dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.Folder];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.InitialRootFolderName));
+                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.Folder));
                                 break;
                             case Constant.DatabaseColumn.Date:
                                 // Add the date
@@ -391,7 +393,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatability();
+            this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -441,7 +443,7 @@ namespace Timelapse.Database
                     imageDatabaseControl.Width != templateControl.Width ||
                     imageDatabaseControl.Copyable != templateControl.Copyable ||
                     imageDatabaseControl.Visible != templateControl.Visible ||
-                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0) 
+                    templateChoices.Except(imageDatabaseChoices).ToList<string>().Count > 0)
                 {
                     templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer = true;
                 }
@@ -462,7 +464,7 @@ namespace Timelapse.Database
                 }
                 if (areDeletedColumnsInTemplate)
                 {
-                   string warning = "- ";
+                    string warning = "- ";
                     warning += templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count.ToString();
                     warning += (templateSyncResults.DataLabelsInImageButNotTemplateDatabase.Count == 1)
                         ? " data field in your.ddb data file has no corresponding control in your.tdb template file: "
@@ -493,7 +495,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability()
+        private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
         {
             // Select all files
             this.SelectFiles(FileSelectionEnum.All);
@@ -595,7 +597,33 @@ namespace Timelapse.Database
             {
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
-    
+
+            // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
+            // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
+            if (versionCompatabilityColumnExists == false ||  VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
+            {
+                // Alter the template in the .ddb file
+                ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
+                if (templateControl != null)
+                {
+                    templateControl.List = Constant.ImageQuality.ListOfValues;
+                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
+                    this.SyncControlToDatabase(templateControl);
+                }
+                // Alter the template in the .tdb file
+
+                templateControl = templateDatabase.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
+                if (templateControl != null)
+                {
+                    templateControl.List = Constant.ImageQuality.ListOfValues;
+                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
+                    templateDatabase.SyncControlToDatabase(templateControl);
+                }
+                // Update the Image Quality to ensure that only Light, Dark and Unknown alues are there
+                this.Database.SetColumnToACommonValue(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
+            }
+
             // Make sure that the column containing the VersionCompatabily exists in the image set table. 
             // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
@@ -656,7 +684,7 @@ namespace Timelapse.Database
                     if (!result)
                     {
                         // If we can't get the legacy date time, try getting the date time this way
-                        imageDateTime = image.GetDateTime();
+                        imageDateTime = image.DateTimeIncorporatingOffset;
                     }
                     image.SetDateTimeOffset(imageDateTime);
                     updateQuery.Add(image.GetDateTimeColumnTuples());
@@ -732,7 +760,7 @@ namespace Timelapse.Database
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
                     if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
-                    { 
+                    {
                         this.Database.RenameColumn(Constant.DatabaseTable.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
                 }
@@ -821,7 +849,7 @@ namespace Timelapse.Database
             if (this.ImageSet != null)
             {
                 SortTerm[] sortTerm = new SortTerm[2];
-                string[] term = new string[] { String.Empty, String.Empty }; 
+                string[] term = new string[] { String.Empty, String.Empty };
 
                 // Special case for DateTime sorting.
                 // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
@@ -881,9 +909,35 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-            DataTable images = this.Database.GetDataTableFromSelect(query);
+            // BOOKMARK
+            DataTable images =  this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+        }
+
+        public bool SelectMissingFilesFromCurrentlySelectedFiles()
+        {
+            string filepath = String.Empty;
+            string message = String.Empty;
+            string commaSeparatedListOfIDs = String.Empty;
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            // Check if each file exists. Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
+            foreach (ImageRow image in this.FileTable)
+            {
+                if (!File.Exists(Path.Combine(this.FolderPath, image.RelativePath, image.File)))
+                {
+                    commaSeparatedListOfIDs += image.ID + ",";
+                }
+            }
+            // remove the trailing comma
+            commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
+            if (commaSeparatedListOfIDs == String.Empty)
+            {
+                return false;
+            }
+            this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            return true;
         }
 
         public FileTable GetFilesMarkedForDeletion()
@@ -892,6 +946,14 @@ namespace Timelapse.Database
             string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
+        }
+
+        // Select * From DataTable Where  Id IN(1,2,4 )
+        public FileTable GetFilesInDataTableById(string listOfIds)
+        {
+            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.WhereIDIn + Constant.Sqlite.OpenParenthesis + listOfIds + Constant.Sqlite.CloseParenthesis;
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(images); ;
         }
 
         // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
@@ -926,7 +988,9 @@ namespace Timelapse.Database
         /// <returns>true if the image is already in the database</returns>
         public bool GetOrCreateFile(FileInfo fileInfo, out ImageRow file)
         {
+            // Path.GetFileName strips the last folder of the folder path,which in this case gives us the root folder..
             string initialRootFolderName = Path.GetFileName(this.FolderPath);
+
             // GetRelativePath() includes the image's file name; remove that from the relative path as it's stored separately
             // GetDirectoryName() returns String.Empty if there's no relative path; the SQL layer treats this inconsistently, resulting in 
             // DataRows returning with RelativePath = String.Empty even if null is passed despite setting String.Empty as a column default
@@ -946,7 +1010,7 @@ namespace Timelapse.Database
             else
             {
                 file = this.FileTable.NewRow(fileInfo);
-                file.InitialRootFolderName = initialRootFolderName;
+                file.Folder = initialRootFolderName;
                 file.RelativePath = relativePath;
                 file.SetDateTimeOffsetFromFileInfo(this.FolderPath);
                 return false;
@@ -958,9 +1022,8 @@ namespace Timelapse.Database
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
-                [FileSelectionEnum.Corrupted] = this.GetFileCount(FileSelectionEnum.Corrupted),
-                [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
-                [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
+                [FileSelectionEnum.Unknown] = this.GetFileCount(FileSelectionEnum.Unknown),
+                [FileSelectionEnum.Light] = this.GetFileCount(FileSelectionEnum.Light)
             };
             return counts;
         }
@@ -998,19 +1061,19 @@ namespace Timelapse.Database
             {
                 case FileSelectionEnum.All:
                     return String.Empty;
-                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Unknown:
                 case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Missing:
-                case FileSelectionEnum.Ok:
+                case FileSelectionEnum.Light:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); 
+                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                     return this.CustomSelection.GetFilesWhere();
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
             }
         }
+
 
         #region Update Files
         /// <summary>
@@ -1158,9 +1221,9 @@ namespace Timelapse.Database
             List<ImageRow> filesToAdjust = new List<ImageRow>();
             TimeSpan mostRecentAdjustment = TimeSpan.Zero;
             for (int row = startRow; row <= endRow; ++row)
-            { 
+            {
                 ImageRow image = this.FileTable[row];
-                DateTimeOffset currentImageDateTime = image.GetDateTime();
+                DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
 
                 // adjust the date/time
                 DateTimeOffset newImageDateTime = adjustment.Invoke(currentImageDateTime);
@@ -1188,7 +1251,7 @@ namespace Timelapse.Database
                 // Add an entry into the log detailing what we just did
                 StringBuilder log = new StringBuilder(Environment.NewLine);
                 log.AppendFormat("System entry: Adjusted dates and times of {0} selected files.{1}", filesToAdjust.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}', the last '{1}', and the last file was adjusted by {2}.{3}", filesToAdjust[0].FileName, filesToAdjust[filesToAdjust.Count - 1].FileName, mostRecentAdjustment, Environment.NewLine);
+                log.AppendFormat("The first file adjusted was '{0}', the last '{1}', and the last file was adjusted by {2}.{3}", filesToAdjust[0].File, filesToAdjust[filesToAdjust.Count - 1].File, mostRecentAdjustment, Environment.NewLine);
                 this.AppendToImageSetLog(log);
             }
         }
@@ -1234,7 +1297,7 @@ namespace Timelapse.Database
             for (int row = startRow; row <= endRow; row++)
             {
                 ImageRow image = this.FileTable[row];
-                DateTimeOffset originalDateTime = image.GetDateTime();
+                DateTimeOffset originalDateTime = image.DateTimeIncorporatingOffset;
 
                 if (DateTimeHandler.TrySwapDayMonth(originalDateTime, out DateTimeOffset reversedDateTime) == false)
                 {
@@ -1256,7 +1319,7 @@ namespace Timelapse.Database
 
                 StringBuilder log = new StringBuilder(Environment.NewLine);
                 log.AppendFormat("System entry: Swapped days and months for {0} files.{1}", imagesToUpdate.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}' and the last '{1}'.{2}", firstImage.FileName, lastImage.FileName, Environment.NewLine);
+                log.AppendFormat("The first file adjusted was '{0}' and the last '{1}'.{2}", firstImage.File, lastImage.File, Environment.NewLine);
                 log.AppendFormat("The last file's date was changed from '{0}' to '{1}'.{2}", DateTimeHandler.ToDisplayDateString(mostRecentOriginalDateTime), DateTimeHandler.ToDisplayDateString(mostRecentReversedDateTime), Environment.NewLine);
                 this.AppendToImageSetLog(log);
             }
@@ -1276,22 +1339,21 @@ namespace Timelapse.Database
             foreach (long fileID in fileIDs)
             {
                 idClauses.Add(Constant.DatabaseColumn.ID + " = " + fileID.ToString());
-            }           
+            }
             // Delete the data and markers associated with that image
             this.CreateBackupIfNeeded();
             this.Database.Delete(Constant.DatabaseTable.FileData, idClauses);
             this.Database.Delete(Constant.DatabaseTable.Markers, idClauses);
         }
 
-        /// <summary>A convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)</summary>
+        // Convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)
         public bool IsFileDisplayable(int rowIndex)
         {
             if (this.IsFileRowInRange(rowIndex) == false)
             {
                 return false;
             }
-
-            return this.FileTable[rowIndex].IsDisplayable();
+            return this.FileTable[rowIndex].IsDisplayable(this.FolderPath);
         }
 
         // Find the next displayable file at or after the provided row in the current image set.
@@ -1319,7 +1381,7 @@ namespace Timelapse.Database
         {
             return (imageRowIndex >= 0) && (imageRowIndex < this.CurrentlySelectedFileCount) ? true : false;
         }
-       
+
         // Find the next displayable image after the provided row in the current image set
         // If there is no next displayable image, then find the first previous image before the provided row that is dispay
         public int FindFirstDisplayableImage(int firstRowInSearch)
@@ -1395,7 +1457,7 @@ namespace Timelapse.Database
             {
                 return -1;
             }
-            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].FileName, filename, CompareOptions.IgnoreCase);
+            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].File, filename, CompareOptions.IgnoreCase);
         }
         #endregion
 
@@ -1473,12 +1535,40 @@ namespace Timelapse.Database
             return firstIndex;
         }
 
-        public List<string> GetDistinctValuesInFileDataColumn(string dataLabel)
+        // Return all distinct values from a column in the file database
+        // We used to use this for autocomplete, but its now depracated as 
+        // we scan the file table instead. However, this is a bit of a limitation, as it means autocomplete
+        // only works on the Selected File row vs. every entry.
+        public List<string> GetDistinctValuesInFileDataBaseTableColumn(string dataLabel)
         {
             List<string> distinctValues = new List<string>();
             foreach (object value in this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, dataLabel))
             {
                 distinctValues.Add(value.ToString());
+            }
+            return distinctValues;
+        }
+
+        // Return all distinct values from a column in the file table
+        // Note that this returns distinct values only in the SELECTED files
+        // See comments above in GetDistinctValuesInFileDataBaseTableColumn
+        // Perhaps - GetDistinctValuesInSelectedFileTableColumn 
+        // - maybe check substrings before adding, to avoid having too many entries?
+        // - or, only store the longest version of a string. But this would involve more work when adding entries, so likely not worth it.
+        public Dictionary<string,string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
+        {
+            Dictionary<string,string> distinctValues = new Dictionary<string,string>();
+            foreach (ImageRow row in this.FileTable) 
+            {
+                string value = row.GetValueDatabaseString(dataLabel);
+                if (value.Length < minimumNumberOfRequiredCharacters)
+                {
+                    continue;
+                }
+                if (distinctValues.ContainsKey(value) == false)
+                {
+                    distinctValues.Add(value, String.Empty);
+                }
             }
             return distinctValues;
         }

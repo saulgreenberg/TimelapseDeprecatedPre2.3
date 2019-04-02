@@ -92,7 +92,7 @@ namespace Timelapse
             int keyRepeatCount = this.state.GetKeyRepeatCount(currentKey);
             switch (currentKey.Key)
             {
-                case Key.B:                 // Bookmark (Save) the current pan / zoom level of the image
+                case Key.B:                 // Save a Bookmark of the current pan / zoom level of the image
                     this.MarkableCanvas.SetBookmark();
                     break;
                 case Key.Escape:

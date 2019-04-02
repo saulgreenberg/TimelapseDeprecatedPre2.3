@@ -91,6 +91,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
+            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
             using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
             {
                 // A file database was available to open
@@ -139,6 +140,8 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
+
+            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
@@ -186,13 +189,42 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
+                List<string> folderPaths = new List<string>();
+                // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
+                GetImageSetFoldersRecursively(this.FolderPath, folderPaths);
+                this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
+                //this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
             }
             else
             {
                 this.OnFolderLoadingComplete(false);
             }
             return true;
+        }
+
+        private static void GetImageSetFoldersRecursively(string root, List<string> folderPaths)
+        {
+            if (!Directory.Exists(root))
+            {
+                return;
+            }
+            folderPaths.Add(root);
+            // Recursively descend subfolders, collecting directory info on the way
+            // IMMEDIATE: NOTE THAT IT ALSO COLLECTS FOLDERS WITHOUT IMAGES IN IT.
+            // THIS MAY NOT BE AN ISSUE AS THAT WILL BE SORTED OUT WHEN THE DIRECTORY IS SCANNED FOR IMAGES.
+            // IF NONE ARE IN THERE, IT IS SKIPPED OVER
+            DirectoryInfo dirInfo = new DirectoryInfo(root);
+            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            foreach (DirectoryInfo subDir in subDirs)
+            {
+                // Skip the following folders
+                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
+                {
+                    continue;
+                }
+                GetImageSetFoldersRecursively(subDir.FullName, folderPaths);
+            }
+
         }
 
         // Get the root folder name from the database, and check to see if its the same as the actual root folder.
@@ -394,7 +426,7 @@ namespace Timelapse
                         // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
                         folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
                         folderLoadProgress.CurrentFile = filesProcessed;
-                        folderLoadProgress.CurrentFileName = file.FileName;
+                        folderLoadProgress.CurrentFileName = file.File;
 
                         int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
                         backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
@@ -410,11 +442,14 @@ namespace Timelapse
                         // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                         // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
                         // retain the frame and pass its metadata to TryUseImageTaken().
-                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
                         // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                        file.ImageQuality = (bitmapSource == Constant.ImageValues.Corrupt.Value) ? FileSelectionEnum.Corrupted : file.ImageQuality = FileSelectionEnum.Ok;
-
-                        if (this.state.ClassifyDarkImagesWhenLoading == true && file.ImageQuality != FileSelectionEnum.Corrupted)
+                        //if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+                        if (isCorruptOrMissing)
+                        {
+                            file.ImageQuality = FileSelectionEnum.Unknown;
+                        }
+                        if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
                             // Dark Image Classification during loading
                             // One Timelapse option is to have it automatically classify dark images when loading 
@@ -428,24 +463,24 @@ namespace Timelapse
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
                             file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                            // We don't check videos for darkness, so set it as ok.
+                            // We don't check videos for darkness, so set it as Unknown.
                             if (file.IsVideo)
                             {
-                                file.ImageQuality = FileSelectionEnum.Ok;
+                                file.ImageQuality = FileSelectionEnum.Unknown;
                             }
                             else
                             {
-                                while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
+                                while (file.ImageQuality == FileSelectionEnum.Unknown && retries_attempted < MAX_RETRIES)
                                 {
                                     // See what images were retried
                                     TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
                                     retries_attempted++;
                                     file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                 }
-                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
+                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Unknown)
                                 {
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Ok;
+                                    file.ImageQuality = FileSelectionEnum.Light;
                                 }
                             }
                         }
@@ -456,9 +491,9 @@ namespace Timelapse
                     catch (Exception exception)
                     {
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
-                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.FileName, exception.ToString()));
+                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.File, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
-                        file.ImageQuality = FileSelectionEnum.Corrupted;
+                        file.ImageQuality = FileSelectionEnum.Unknown;
                     }
 
                     int filesPendingInsert;
@@ -483,10 +518,10 @@ namespace Timelapse
                             }
                             else
                             {
-                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
                             }
                             folderLoadProgress.CurrentFile = filesToInsert.Count;
-                            folderLoadProgress.CurrentFileName = file.FileName;
+                            folderLoadProgress.CurrentFileName = file.File;
 
                             int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
                             backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
@@ -506,13 +541,13 @@ namespace Timelapse
                 }
 
                 // Second pass: Update database
-                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.FileName)).ToList();
+                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
                     // skip reloading images to display as the user's already seen them import
                     folderLoadProgress.BitmapSource = null;
                     folderLoadProgress.CurrentFile = fileIndex;
-                    folderLoadProgress.CurrentFileName = file.FileName;
+                    folderLoadProgress.CurrentFileName = file.File;
                     int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
                     backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
                 });
