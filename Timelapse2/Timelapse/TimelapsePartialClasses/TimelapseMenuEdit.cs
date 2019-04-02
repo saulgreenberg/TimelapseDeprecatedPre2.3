@@ -26,8 +26,6 @@ namespace Timelapse
             // Enable / disable various edit menu items depending on whether we are looking at the single image view or overview
             bool state = this.IsDisplayingSingleImage();
             this.MenuItemCopyPreviousValues.IsEnabled = state;
-            this.MenuItemDeleteCurrentFile.IsEnabled = state;
-            this.MenuItemDeleteCurrentFileAndData.IsEnabled = state;
         }
 
         // Find image 
@@ -410,6 +408,8 @@ namespace Timelapse
                 {
                     darkThreshold.Owner = this;
                     darkThreshold.ShowDialog();
+                    // Force an update of the current image in case the current values have changed
+                    this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
                 }
             }
         }

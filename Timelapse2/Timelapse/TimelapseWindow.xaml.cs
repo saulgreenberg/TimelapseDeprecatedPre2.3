@@ -63,6 +63,7 @@ namespace Timelapse
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
             GlobalReferences.MainWindow = this; // So other classes can access methods here
+            GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);

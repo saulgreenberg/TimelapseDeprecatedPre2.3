@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -598,8 +599,8 @@ namespace Timelapse.Database
             }
 
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
-            // IMMEDIATE Change to 2.2.2.6 This is set to 2.2.2.7 to force execution of this every time.
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.7";
+            // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
             if (versionCompatabilityColumnExists == false ||  VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
             {
                 // Alter the template in the .ddb file
@@ -908,7 +909,8 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-            DataTable images = this.Database.GetDataTableFromSelect(query);
+            // BOOKMARK
+            DataTable images =  this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
@@ -919,12 +921,10 @@ namespace Timelapse.Database
             string message = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-
-            // Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
+            // Check if each file exists. Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
             foreach (ImageRow image in this.FileTable)
             {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.File);
-                if (!File.Exists(filepath))
+                if (!File.Exists(Path.Combine(this.FolderPath, image.RelativePath, image.File)))
                 {
                     commaSeparatedListOfIDs += image.ID + ",";
                 }
@@ -988,8 +988,9 @@ namespace Timelapse.Database
         /// <returns>true if the image is already in the database</returns>
         public bool GetOrCreateFile(FileInfo fileInfo, out ImageRow file)
         {
-            // IMMEDIATE : THIS IS MISNAMED, AND I AM NOT SURE IF THIS ACTUALLY WORKS
+            // Path.GetFileName strips the last folder of the folder path,which in this case gives us the root folder..
             string initialRootFolderName = Path.GetFileName(this.FolderPath);
+
             // GetRelativePath() includes the image's file name; remove that from the relative path as it's stored separately
             // GetDirectoryName() returns String.Empty if there's no relative path; the SQL layer treats this inconsistently, resulting in 
             // DataRows returning with RelativePath = String.Empty even if null is passed despite setting String.Empty as a column default
@@ -1345,8 +1346,7 @@ namespace Timelapse.Database
             this.Database.Delete(Constant.DatabaseTable.Markers, idClauses);
         }
 
-        /// <summary>A convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)</summary>
-        /// IMMEDIATE: THIS NO LONGER DEALS WITH MISSING FILES - NEED TO ADD A CHECK FOR THAT
+        // Convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)
         public bool IsFileDisplayable(int rowIndex)
         {
             if (this.IsFileRowInRange(rowIndex) == false)

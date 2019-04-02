@@ -476,7 +476,7 @@ namespace Timelapse
                 // list of most recently image sets opened by Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
 
-                // bookmark scale and transform coordinates
+                // Set Bookmark scale and transform coordinates
                 public const string BookmarkScaleX = "BookmarkScaleX";
                 public const string BookmarkScaleY = "BookmarkScaleY";
                 public const string BookmarkTranslationX = "BookmarkTransformX";

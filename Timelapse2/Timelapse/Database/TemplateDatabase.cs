@@ -554,7 +554,7 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
                 new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.ImageQuality),
-                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ImageQuality.Unknown),
                 new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.ImageQuality),
                 new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.ImageQuality),
                 new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.ImageQualityTooltip),
@@ -825,6 +825,20 @@ namespace Timelapse.Database
                         control.DataLabel = control.Label;
                     }
 
+                    // Backwards Compatability: A prior version had a different list of items for ImageQuality, so we set it to the new list if needed
+                    if (control.DataLabel == Constant.DatabaseColumn.ImageQuality)
+                    {
+                        if (control.List != Constant.ImageQuality.ListOfValues)
+                        {
+                            control.List = Constant.ImageQuality.ListOfValues;
+                            columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.List, control.List));
+                        }
+                        if (control.DefaultValue != Constant.ImageQuality.Unknown)
+                        { 
+                            control.DefaultValue = Constant.ImageQuality.Unknown;
+                            columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DefaultValue, control.DefaultValue));
+                        }
+                    }
                     // Now add the new values to the database
                     if (columnsToUpdate.Columns.Count > 0)
                     {

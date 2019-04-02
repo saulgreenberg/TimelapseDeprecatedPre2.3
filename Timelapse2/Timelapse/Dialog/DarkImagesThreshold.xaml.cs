@@ -378,35 +378,27 @@ namespace Timelapse.Dialog
 
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-                // SaulXXX There was a bug in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
+                // SaulXXX There was an issue in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
                 // While it may also affect this loop, the consequences are small if the occassional file is skipped (duplicate testing won't hurt)
+                // Also, its not clear that we really need to display each image, but given that we are already opening it, it may not be a huge expense
                 Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                {
+                { 
                     if (this.stop)
                     {
                         loopState.Break();
                     }
 
-                    //// If its not a valid image, say so and go onto the next one.
+                    // If its not a valid image, say so and go onto the next one.
                     ImageQuality imageQuality = new ImageQuality(file);
-                    //if ((imageQuality.OldImageQuality != FileSelectionEnum.Light) && (imageQuality.OldImageQuality != FileSelectionEnum.Dark))
-                    //{
-                    //    imageQuality.NewImageQuality = null;
-                    //    backgroundWorker.ReportProgress(0, imageQuality);
-                    //    return;
-                    //}
-
                     try
                     {
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on that
                         imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
-                        // IMMEDIATE NEED TO CHECK IF ITS A DISPLAYABLE IMAGE i.e., CORRUPT, MISSING, VIDEO
-                        //if (imageQuality.Bitmap == (BitmapSource) Constant.ImageValues.FileNoLongerAvailable.Value || imageQuality.Bitmap == (BitmapSource)Constant.ImageValues.Corrupt.Value)
                         if (isCorruptOrMissing)
-                        {
-                            imageQuality.NewImageQuality = null;
+                        {;
+                            imageQuality.NewImageQuality = FileSelectionEnum.Unknown; // WAS NULL BEFORE
                             backgroundWorker.ReportProgress(0, imageQuality);
                             return;
                         }
@@ -416,11 +408,14 @@ namespace Timelapse.Dialog
                         if (imageQuality.OldImageQuality != imageQuality.NewImageQuality.Value)
                         {
                             filesToUpdate.Add(new ColumnTuplesWithWhere(new List<ColumnTuple> { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, imageQuality.NewImageQuality.Value.ToString()) }, file.ID));
+                            file.ImageQuality = imageQuality.NewImageQuality.Value;
                         }
+
                     }
                     catch (Exception exception)
                     {
                         // file isn't there?
+                        imageQuality.NewImageQuality = FileSelectionEnum.Unknown;
                         Debug.Fail("Exception while assessing image quality.", exception.ToString());
                     }
 
@@ -437,7 +432,7 @@ namespace Timelapse.Dialog
                         }
                     }
                 });
-
+                // Update the database to reflect the changed values
                 this.database.UpdateFiles(filesToUpdate);
             };
             backgroundWorker.ProgressChanged += (o, ea) =>

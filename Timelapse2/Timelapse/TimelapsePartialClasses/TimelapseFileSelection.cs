@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
@@ -41,6 +43,7 @@ namespace Timelapse
         }
 
         // FilesSelectAndShow: Full version
+        // IMMEDIATE FILESSELECTANDSHOW CALLED WAY TOO MUCH, GIVEN THAT IT IS A SLOW OPERATION
         private void FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
@@ -58,8 +61,7 @@ namespace Timelapse
 
             // We set forceUpdate to true because at least one imagequality status has changed
             // and we want the correct image to be shown
-            // IMMEDIATE: THIS IS AN EXTREMELY SLOW OPERATION 13 secs, and its repeated on every selection
-            // IMMEDIATE: NOTE THAT WE MAY ALWAYS WANT FORCEUPDATE TO BE TRUE
+            // IMMEDIATE: WE MAY ALWAYS WANT FORCEUPDATE IN CASE A FILE GOES MISSING
             //if (CheckAndUpdateImageQualityForMissingFiles())
             //{
             //    forceUpdate = true;
@@ -68,15 +70,17 @@ namespace Timelapse
             // Select the files according to the given selection
             // Note that our check for missing actually checks to see if the file exists,
             // which is why its a different operation
-            // IMMEDIATE: THIS IS A SOMEWHAT SLOW OPERATION 4.1 seconds
+            // IMMEDIATE: THESE TWO ARE SLOW OPERATIONS 4.1 seconds
+            Mouse.OverrideCursor = Cursors.Wait;
             if (selection == FileSelectionEnum.Missing)
             {
                 this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
             else
-            { 
+            {
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
+            Mouse.OverrideCursor = null;
 
             // explain to user if their selection has gone empty and change to all files
             if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
@@ -195,58 +199,6 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
-
-        }
-
-        // Helper methods - used only by above
-
-        // Check every file to see if:
-        // - file exists but ImageQuality is Missing, or
-        // - file does not exist but ImageQuality is anything other than missing
-        // If there is a mismatch, change the ImageQuality to reflect the Files' actual status.
-        // The downfall is that prior ImageQuality information will be lost if a change is made
-        // Another issue is that the current version only checks the currently selected files vs. all files
-
-        public bool CheckAndUpdateImageQualityForMissingFiles()
-        {
-            string filepath = String.Empty;
-            string message = String.Empty;
-            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            ColumnTuplesWithWhere imageUpdate;
-
-            // Get all files, regardless of the selection
-            // IMMEDIATE: Next line 4.2 secs
-            FileTable allFiles = this.dataHandler.FileDatabase.GetAllFiles();
-            foreach (ImageRow image in allFiles)
-            {
-                filepath = Path.Combine(this.FolderPath, image.RelativePath, image.File);
-                // IMMEDIATE - THERE IS NO MORE MISSING
-                if (File.Exists(filepath) && image.ImageQuality == FileSelectionEnum.Missing)
-                {
-                    // The File exists but image quality is set to missing. Reset it to OK
-                    // Note that the file may be corrupt, dark, etc., but we don't check for that.
-                    // SAULXXX Perhaps we should?
-                    image.ImageQuality = FileSelectionEnum.Light;
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                }
-                else if (File.Exists(filepath) == false && image.ImageQuality != FileSelectionEnum.Missing)
-                {
-                    // The File does not exist anymore, but the image quality is not set to missing. Reset it to Missing
-                    // Note that this could lose information,  as the file may be marked as corrupt or dark, etc., but we don't check for that.
-                    // SAULXXX Not sure how to fix this, except to separate image quality information into other columns.
-                    message = "Missing " + filepath;
-                    image.ImageQuality = FileSelectionEnum.Missing;
-                    imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(Constant.DatabaseColumn.ImageQuality, image.ImageQuality.ToString()) }, image.ID);
-                    imagesToUpdate.Add(imageUpdate);
-                }
-            }
-            if (imagesToUpdate.Count > 0)
-            {
-                this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                return true;
-            }
-            return false;
         }
     }
 }

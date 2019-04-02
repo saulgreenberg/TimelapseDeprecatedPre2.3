@@ -240,7 +240,7 @@ namespace Timelapse.Database
             // TODO Fails on reading metadata dates on video files. 
             try
             {
-                IList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
+                IReadOnlyList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
                 ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (exifSubIfd == null)
                 {
@@ -343,8 +343,9 @@ namespace Timelapse.Database
                 System.IO.File.Move(sourceFilePath, destinationFilePath);
                 return true;
             }
-            catch (UnauthorizedAccessException exception)
+            catch (Exception exception)
             {
+                // IMMEDIATE Still can generate an exception where it couldnt not move it as the file is being used
                 TraceDebug.PrintMessage("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                 return false;
             }
@@ -404,12 +405,13 @@ namespace Timelapse.Database
                 {
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
                     frame.Freeze();
+                    isCorruptOrMissing = false;
                     return frame;
                 }
 
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.DecodePixelWidth = 5;//desiredWidth.Value;
+                bitmap.DecodePixelWidth = desiredWidth.Value;
                 bitmap.CacheOption = bitmapCacheOption;
                 bitmap.UriSource = new Uri(path);
                 bitmap.EndInit();

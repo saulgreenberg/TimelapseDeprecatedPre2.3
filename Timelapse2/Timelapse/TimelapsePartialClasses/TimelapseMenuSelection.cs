@@ -16,23 +16,48 @@ namespace Timelapse
         // Select sub-menu opening
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
+            int count = 0;
             FilePlayer_Stop(); // In case the FilePlayer is going
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
 
-            // Enable only the menu items that can select at least one potential image 
-            this.MenuItemSelectLightFiles.IsEnabled = counts[FileSelectionEnum.Light] > 0;
-            this.MenuItemSelectDarkFiles.IsEnabled = counts[FileSelectionEnum.Dark] > 0;
-            this.MenuItemSelectFilesNoLongerAvailable.IsEnabled = true;
-            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion) > 0;
+            this.MenuItemSelectMissingFiles.IsEnabled = true;
+
+            count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
+            this.MenuItemSelectFilesMarkedForDeletion.Header = String.Format("Files marked for d_eletion [{0}]", count);
+            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = count > 0;
 
             // Put a checkmark next to the menu item that matches the stored selection criteria
             FileSelectionEnum selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+
             this.MenuItemSelectAllFiles.IsChecked = selection == FileSelectionEnum.All;
+
             this.MenuItemSelectDarkFiles.IsChecked = selection == FileSelectionEnum.Dark;
             this.MenuItemSelectLightFiles.IsChecked = selection == FileSelectionEnum.Light;
-            this.MenuItemSelectFilesNoLongerAvailable.IsChecked = selection == FileSelectionEnum.Missing;
+            this.MenuItemSelectUnknownFiles.IsChecked = selection == FileSelectionEnum.Unknown;
+            this.MenuItemSelectByImageQuality.IsChecked = this.MenuItemSelectLightFiles.IsChecked || this.MenuItemSelectDarkFiles.IsChecked || this.MenuItemSelectUnknownFiles.IsChecked;
+
+            this.MenuItemSelectMissingFiles.IsChecked = selection == FileSelectionEnum.Missing;
             this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionEnum.MarkedForDeletion;
             this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
+        }
+
+
+        private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
+        {
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            int count;
+
+            // Enable only the menu items that can select at least one potential image 
+            count = counts[FileSelectionEnum.Light];
+            this.MenuItemSelectLightFiles.IsEnabled = count > 0;
+            this.MenuItemSelectLightFiles.Header = String.Format("_Light files [{0}]", count);
+
+            count = counts[FileSelectionEnum.Dark];
+            this.MenuItemSelectDarkFiles.Header = String.Format("_Dark files [{0}]", count);
+            this.MenuItemSelectDarkFiles.IsEnabled = count > 0;
+
+            count = counts[FileSelectionEnum.Unknown];
+            this.MenuItemSelectUnknownFiles.Header = String.Format("_Unknown files [{0}]", count);
+            this.MenuItemSelectUnknownFiles.IsEnabled = count > 0;
         }
 
         // Select callback: handles all standard menu selection items
@@ -53,6 +78,10 @@ namespace Timelapse
             else if (item == this.MenuItemSelectUnknownFiles)
             {
                 selection = FileSelectionEnum.Unknown;
+            }
+            else if (item == this.MenuItemSelectMissingFiles)
+            {
+                selection = FileSelectionEnum.Missing;
             }
             else if (item == this.MenuItemSelectDarkFiles)
             {
@@ -102,7 +131,7 @@ namespace Timelapse
                     this.MenuItemSelectUnknownFiles.IsChecked ||
                     this.MenuItemSelectDarkFiles.IsChecked ||
                     this.MenuItemSelectLightFiles.IsChecked ||
-                    this.MenuItemSelectFilesNoLongerAvailable.IsChecked ||
+                    this.MenuItemSelectMissingFiles.IsChecked ||
                     this.MenuItemSelectFilesMarkedForDeletion.IsChecked;
                 this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
             }
