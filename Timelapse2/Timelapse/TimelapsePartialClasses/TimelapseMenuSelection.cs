@@ -40,7 +40,6 @@ namespace Timelapse
             this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
         }
 
-
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();

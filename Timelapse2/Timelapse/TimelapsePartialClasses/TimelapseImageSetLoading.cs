@@ -193,7 +193,6 @@ namespace Timelapse
                 // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
                 GetImageSetFoldersRecursively(this.FolderPath, folderPaths);
                 this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
-                //this.TryBeginImageFolderLoadAsync(new List<string>() { this.FolderPath }, out backgroundWorker);
             }
             else
             {
@@ -224,7 +223,6 @@ namespace Timelapse
                 }
                 GetImageSetFoldersRecursively(subDir.FullName, folderPaths);
             }
-
         }
 
         // Get the root folder name from the database, and check to see if its the same as the actual root folder.
@@ -443,12 +441,13 @@ namespace Timelapse
                         // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
                         // retain the frame and pass its metadata to TryUseImageTaken().
                         bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
-                        // Set the ImageQuality to corrupt if the returned bitmap is the corrupt image, otherwise set it to its Ok/Dark setting
-                        //if (bitmapSource == Constant.ImageValues.Corrupt.Value)
+
+                        // Check if the ImageQuality is corrupt or missing, and if so set it to unknown
                         if (isCorruptOrMissing)
                         {
                             file.ImageQuality = FileSelectionEnum.Unknown;
                         }
+
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
                             // Dark Image Classification during loading

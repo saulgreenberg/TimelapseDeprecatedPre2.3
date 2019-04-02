@@ -36,7 +36,7 @@ namespace Timelapse.Images
                 // we assume its a valid path
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.DecodePixelWidth = 1; //We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
+                bitmap.DecodePixelWidth = 1; // We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
                 bitmap.CacheOption = BitmapCacheOption.Default;
                 bitmap.UriSource = new Uri(path);
                 bitmap.EndInit();

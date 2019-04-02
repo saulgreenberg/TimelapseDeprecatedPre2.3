@@ -59,14 +59,6 @@ namespace Timelapse
                 return;
             }
 
-            // We set forceUpdate to true because at least one imagequality status has changed
-            // and we want the correct image to be shown
-            // IMMEDIATE: WE MAY ALWAYS WANT FORCEUPDATE IN CASE A FILE GOES MISSING
-            //if (CheckAndUpdateImageQualityForMissingFiles())
-            //{
-            //    forceUpdate = true;
-            //}
-
             // Select the files according to the given selection
             // Note that our check for missing actually checks to see if the file exists,
             // which is why its a different operation
