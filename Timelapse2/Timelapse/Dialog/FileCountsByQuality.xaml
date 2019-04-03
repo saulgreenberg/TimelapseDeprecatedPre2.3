@@ -4,16 +4,16 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         AutomationProperties.AutomationId="FileCountsByQuality"
-        Title="Summary counts of your files" Height="350" Width="650"
+        Title="Summary counts of your files" Height="325" Width="650"
 		ResizeMode="NoResize"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
     <DockPanel Margin="0,0,0,0">
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Information"
-                            Title="Summary Counts of your Files"
-                            What="Timelapse automatically categorizes the 'Image Quality' of your images and videos."
-                            Hint="Use the Select menu to selectively view and work with files in the image set." />
+                            Title="Summary Counts of files in the current selection"
+                            What="Timelapse categorized the 'Image Quality' of your selected images as light, dark or unknown."
+                            Hint="Use the Select menu to selectively view and work with all files or subsets of files in the image set." />
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
             <Grid Margin="10,0,10,0">
                 <Grid.ColumnDefinitions>
@@ -44,21 +44,21 @@
                     <Run x:Name="Total" Text="0000000" />
                 </TextBlock>
                 <TextBlock Grid.Row="0" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Light" />
+                    <Run FontWeight="Bold" Text="light" />
                     <Run Text="images, likely daytime shots" />
                 </TextBlock>
                 <TextBlock Grid.Row="1" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Dark" />
+                    <Run FontWeight="Bold" Text="dark" />
                     <Run Text="images, likely nighttime shots" />
                 </TextBlock>
                  <TextBlock Grid.Row="2" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Unknown" />
-                    <Run Text="images, likely because the dark classification has not been done" />
+                    <Run FontWeight="Bold" Text="unknown" />
+                    <Run Text="images, likely because the file is a video or invalid image" />
                 </TextBlock>
                 <Rectangle Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Width="80" Height="2" Fill="Gray" Margin="0,5,0,5" HorizontalAlignment="Left">
                 </Rectangle>
                 <TextBlock Grid.Row="4" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="Files total" />
+                    <Run FontWeight="Bold" Text="total files found in the current selection" />
                 </TextBlock>
             </Grid>
         </StackPanel>

@@ -42,7 +42,7 @@ namespace Timelapse
 
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles();
             int count;
 
             // Enable only the menu items that can select at least one potential image 
@@ -234,11 +234,7 @@ namespace Timelapse
             }
         }
 
-        // Show file counts: how many images were loaded, types in categories, etc.
-        public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        {
-            this.MaybeFileShowCountsDialog(false, this);
-        }
+
 
         // Refresh the selection: based on the current select criteria. 
         // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
@@ -247,5 +243,16 @@ namespace Timelapse
             // Reselect the images, which re-sorts them to the current sort criteria. 
             this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
         }
+
+        #region Depracated
+        // There really is no reason to have a special menu item for this, as one can see the counts
+        // when selecting. However, we keep the dialog box around as we still use that
+        // for displaying the total numbers after a manual dark threshold operation is done.
+        // Show file counts: how many images were loaded, types in categories, etc.
+        //public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
+        //{
+        //    this.MaybeFileShowCountsDialog(false, this);
+        //}
+        #endregion
     }
 }

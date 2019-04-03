@@ -229,8 +229,6 @@
                 <Separator/>
                 <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Check and show missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
                 <Separator/>
-                <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" ToolTip="Display statistics of the total number of files and their types"/>
-                <Separator/>
                 <MenuItem Name="MenuItemSelectReselect" Header="Refresh the selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
                 <Separator/>
             </MenuItem>

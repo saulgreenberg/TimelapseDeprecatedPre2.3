@@ -599,7 +599,7 @@ namespace Timelapse.Database
             // Step 3. Check both templates and update if needed
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.7";
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
             if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
             {
                 // Alter the template in the .ddb file
@@ -1011,13 +1011,24 @@ namespace Timelapse.Database
             }
         }
 
-        public Dictionary<FileSelectionEnum, int> GetFileCountsBySelection()
+        public Dictionary<FileSelectionEnum, int> GetFileCountsInAllFiles()
         {
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
                 [FileSelectionEnum.Unknown] = this.GetFileCount(FileSelectionEnum.Unknown),
                 [FileSelectionEnum.Light] = this.GetFileCount(FileSelectionEnum.Light)
+            };
+            return counts;
+        }
+
+        public Dictionary<FileSelectionEnum, int> GetFileCountsInCurrentSelection()
+        {
+            Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
+            {
+                [FileSelectionEnum.Dark] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Dark),
+                [FileSelectionEnum.Unknown] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Unknown),
+                [FileSelectionEnum.Light] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Light)
             };
             return counts;
         }

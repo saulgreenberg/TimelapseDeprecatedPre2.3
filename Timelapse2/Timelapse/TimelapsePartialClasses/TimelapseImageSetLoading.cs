@@ -477,7 +477,7 @@ namespace Timelapse
                                 if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Unknown)
                                 {
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Light;
+                                    file.ImageQuality = FileSelectionEnum.Unknown;
                                 }
                             }
                         }
@@ -579,7 +579,7 @@ namespace Timelapse
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
                 bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
                 this.MarkableCanvas.MagnifyingGlassEnabled = false;
-                this.MaybeFileShowCountsDialog(true, this);
+                this.StatusBar.SetMessage(folderLoadProgress.TotalFiles + " files are now loaded");
                 this.MarkableCanvas.MagnifyingGlassEnabled = saveMagnifierState;
 
                 // If we want to import old data from the ImageData.xml file, we can do it here...

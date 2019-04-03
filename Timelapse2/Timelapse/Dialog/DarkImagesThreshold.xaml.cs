@@ -402,7 +402,10 @@ namespace Timelapse.Dialog
                             backgroundWorker.ReportProgress(0, imageQuality);
                             return;
                         }
-                        imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
+                        // Set the image quality. Note that videos are always classified as unknown.
+                        imageQuality.NewImageQuality = file.IsVideo
+                            ? FileSelectionEnum.Unknown 
+                            : imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;
                         if (imageQuality.OldImageQuality != imageQuality.NewImageQuality.Value)

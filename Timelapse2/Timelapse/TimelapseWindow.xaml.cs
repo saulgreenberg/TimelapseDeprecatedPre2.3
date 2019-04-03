@@ -846,7 +846,9 @@ namespace Timelapse
                 return;
             }
 
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            // Show the counts in the selected files only
+            // Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles(); // This would show counts over all files
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInCurrentSelection();
             FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
             if (onFileLoading)
             {

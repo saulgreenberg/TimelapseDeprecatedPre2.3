@@ -96,7 +96,6 @@ namespace Timelapse
             public const string Choice = "Choice";         // Label for a fixed choice
 
             // highlight / non-hightlight border thicknesses of a control
-        
             public const double BorderThicknessNormal = 1;
             public const double BorderThicknessHighlight = 3;
             public static readonly SolidColorBrush BorderColorNormal = new SolidColorBrush(Colors.LightBlue); 
@@ -587,7 +586,7 @@ namespace Timelapse
 
         public static class ThrottleValues
         {
-            public const double DesiredMaximumImageRendersPerSecondLowerBound = 4.0;     // Likely very safe render rate 
+            public const double DesiredMaximumImageRendersPerSecondLowerBound = 3.0;     // Likely a very safe render rate 
             public const double DesiredMaximumImageRendersPerSecondDefault = 7.0;   // Default render rate - could exhibit stalls on poor machines
             public const double DesiredMaximumImageRendersPerSecondUpperBound = 15.0;    // Somewhat riskier render rate that I know works on high end machines without stuttering
             public const int MaximumRenderAttempts = 10;
