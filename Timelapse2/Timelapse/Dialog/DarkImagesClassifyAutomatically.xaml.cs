@@ -15,7 +15,7 @@ using Timelapse.Util;
 namespace Timelapse.Dialog
 {
     /// <summary>
-    /// Interaction logic for DarkImagesClassifyOnFirstLoad.xaml
+    /// Classify DarkImages on FirstLoad options
     /// </summary>
     public partial class DarkImagesClassifyAutomatically : Window
     {
@@ -25,16 +25,17 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
             this.Owner = owner;
             this.timelapseState = timelapseState;
-            this.CheckBoxClassifyDarkImagesAutomatically.IsChecked = this.timelapseState.ClassifyDarkImagesWhenLoading ? true : false;
         }
 
-        private void CheckBoxClassifyDarkImagesWhenLoading_Click(object sender, RoutedEventArgs e)
+        private void ClassifyButton_Click(object sender, RoutedEventArgs e)
         {
-            CheckBox cb = (CheckBox)sender;
-            this.timelapseState.ClassifyDarkImagesWhenLoading = (cb.IsChecked == true) ? true : false;
+            this.timelapseState.ClassifyDarkImagesWhenLoading = true;
+            this.DialogResult = true;
         }
-        private void OkButton_Click(object sender, RoutedEventArgs e)
+
+        private void DontClassifyButton_Click(object sender, RoutedEventArgs e)
         {
+            this.timelapseState.ClassifyDarkImagesWhenLoading = false;
             this.DialogResult = true;
         }
     }

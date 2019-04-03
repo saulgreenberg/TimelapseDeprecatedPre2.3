@@ -150,7 +150,7 @@
                 </MenuItem>
 
                 <!-- Identify or reclassify dark files...-->
-                <MenuItem Name="MenuItemOptionsDarkImages" Header="Identify or reclassify dar_k files..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
+                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k files now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
 
                 <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
