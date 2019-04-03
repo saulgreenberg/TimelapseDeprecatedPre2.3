@@ -17,46 +17,47 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // FilesSelectAndShow: various forms
-        private void FilesSelectAndShow(bool forceUpdate)
+        private bool FilesSelectAndShow(bool forceUpdate)
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
+                return false;
             }
-            this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
+            return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
 
-        private void FilesSelectAndShow(FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(FileSelectionEnum selection, bool forceUpdate)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            this.FilesSelectAndShow(fileID, selection, forceUpdate);
+            return this.FilesSelectAndShow(fileID, selection, forceUpdate);
         }
 
         // FilesSelectAndShow: Basic form doesn't force an update
-        private void FilesSelectAndShow(long imageID, FileSelectionEnum selection)
+        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
         {
-            FilesSelectAndShow(imageID, selection, false);
+            return FilesSelectAndShow(imageID, selection, false);
         }
 
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
-        private void FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
-                return;
+                return false;
             }
             if (this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
-                return;
+                return false;
             }
 
             // Select the files according to the given selection
@@ -64,9 +65,10 @@ namespace Timelapse
             // which is why its a different operation
             // PEFORMANCE: TWO  SLOW OPERATIONS 4.1 seconds FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
             Mouse.OverrideCursor = Cursors.Wait;
-            if (selection == FileSelectionEnum.Missing)
+            bool missingFilesExist = false;
+            if(selection == FileSelectionEnum.Missing)
             {
-                this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
+                missingFilesExist = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
             else
             {
@@ -74,7 +76,6 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = null;
 
-            // explain to user if their selection has gone empty and change to all files
             if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
             {
                 // These cases are reached when 
@@ -126,6 +127,7 @@ namespace Timelapse
                 messageBox.ShowDialog();
 
                 selection = FileSelectionEnum.All;
+                // PEFORMANCE: The standard select files operation in FilesSelectAndShow
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
 
@@ -199,6 +201,7 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
+            return true;
         }
     }
 }

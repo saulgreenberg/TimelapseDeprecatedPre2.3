@@ -115,7 +115,7 @@ namespace Timelapse.Database
         /// <summary>Gets the number of files currently in the file table.</summary>
         public int CurrentlySelectedFileCount
         {
-            get { return this.FileTable.RowCount; }
+            get { return (this.FileTable == null) ? 0 : this.FileTable.RowCount; }
         }
 
         #region Adding Files to the Database
@@ -280,6 +280,10 @@ namespace Timelapse.Database
 
         public void BindToDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
         {
+            if (this.FileTable == null)
+            {
+                return;
+            }
             this.boundGrid = dataGrid;
             this.onFileDataTableRowChanged = onRowChanged;
             this.FileTable.BindDataGrid(dataGrid, onRowChanged);
@@ -911,6 +915,10 @@ namespace Timelapse.Database
 
         public bool SelectMissingFilesFromCurrentlySelectedFiles()
         {
+            if (this.FileTable == null)
+            {
+                return false;
+            }
             string filepath = String.Empty;
             string message = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
@@ -925,13 +933,9 @@ namespace Timelapse.Database
             }
             // remove the trailing comma
             commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
-            if (commaSeparatedListOfIDs == String.Empty)
-            {
-                return false;
-            }
             this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-            return true;
+            return (commaSeparatedListOfIDs == String.Empty) ?  false : true;
         }
 
         public FileTable GetFilesMarkedForDeletion()

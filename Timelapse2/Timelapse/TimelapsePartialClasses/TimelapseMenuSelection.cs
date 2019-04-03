@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -188,10 +187,17 @@ namespace Timelapse
             {
                 selection = FileSelectionEnum.All;   // Just in case
             }
-            MenuItemSelectByFolder_ClearAllCheckmarks();
+            this.MenuItemSelectByFolder_ClearAllCheckmarks();
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+            if (this.dataHandler.ImageCache.Current == null)
+            {
+                FilesSelectAndShow(selection, true);
+            }
+            else
+            { 
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+            }
         }
 
         // Custom Selection: raises a dialog letting the user specify their selection criteria
