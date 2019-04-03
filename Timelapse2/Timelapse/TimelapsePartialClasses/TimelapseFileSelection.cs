@@ -43,7 +43,7 @@ namespace Timelapse
         }
 
         // FilesSelectAndShow: Full version
-        // IMMEDIATE FILESSELECTANDSHOW CALLED WAY TOO MUCH, GIVEN THAT IT IS A SLOW OPERATION
+        // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         private void FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
             // change selection
@@ -62,7 +62,7 @@ namespace Timelapse
             // Select the files according to the given selection
             // Note that our check for missing actually checks to see if the file exists,
             // which is why its a different operation
-            // IMMEDIATE: THESE TWO ARE SLOW OPERATIONS 4.1 seconds
+            // PEFORMANCE: TWO  SLOW OPERATIONS 4.1 seconds FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
             Mouse.OverrideCursor = Cursors.Wait;
             if (selection == FileSelectionEnum.Missing)
             {
@@ -95,6 +95,11 @@ namespace Timelapse
                         messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
                         messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
                         messageBox.Message.Hint = "Create a different custom selection and apply it view the matching files.";
+                        break;
+                    case FileSelectionEnum.Folders:
+                        messageBox.Message.Problem = "No files and/or image data were found for the selected folder.";
+                        messageBox.Message.Reason = "Perhaps they were deleted during this session?";
+                        messageBox.Message.Hint = "Try other folders or another selection. ";
                         break;
                     case FileSelectionEnum.Dark:
                         messageBox.Message.Problem = "Dark files were previously selected but no files are currently dark so nothing can be shown.";
@@ -143,6 +148,9 @@ namespace Timelapse
                     break;
                 case FileSelectionEnum.MarkedForDeletion:
                     status = "Files marked for deletion";
+                    break;
+                case FileSelectionEnum.Folders:
+                    status = "Files in a specific folder";
                     break;
                 case FileSelectionEnum.Missing:
                     status = "Missing files";

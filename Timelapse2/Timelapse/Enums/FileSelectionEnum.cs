@@ -11,6 +11,7 @@
         Missing = 3,
         All = 4,
         MarkedForDeletion = 5,
-        Custom = 6
+        Custom = 6,
+        Folders = 7
     }
 }

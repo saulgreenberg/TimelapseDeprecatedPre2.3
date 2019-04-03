@@ -91,7 +91,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
-            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
+            // PEFORMANCE:  4.1 SECS  TryOpenTemplateAndBeginLoadFoldersAsync calling UpgradeDatabasesAndCompareTemplates
             using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
             {
                 // A file database was available to open
@@ -140,8 +140,6 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-
-            // IMMEDIATE: THE NEXT LINE TOOK 4.1 SECS
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
@@ -702,6 +700,7 @@ namespace Timelapse
                 // This is heavier weight than desirable, but it's a one off.
                 this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
+            // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 
             this.FilesSelectAndShow(mostRecentFileID, fileSelection);
 
             // match UX availability to file availability

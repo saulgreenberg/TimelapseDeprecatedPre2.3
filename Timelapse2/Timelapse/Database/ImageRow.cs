@@ -114,12 +114,12 @@ namespace Timelapse.Database
         #region Boolean test methods
         public bool FileExists(string pathToRootFolder)
         {
-            return (System.IO.File.Exists(Path.Combine(pathToRootFolder, this.RelativePath, this.File)));
+            return System.IO.File.Exists(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
         }
 
         public bool IsDisplayable(string pathToRootFolder)
         {
-            return (BitmapUtilities.IsBitmapFileDisplayable(Path.Combine(pathToRootFolder, this.RelativePath, this.File)));
+            return BitmapUtilities.IsBitmapFileDisplayable(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
         }
 
         // This will be invoked only on an image file, so always returns false
@@ -133,7 +133,7 @@ namespace Timelapse.Database
         // Check if a datalabel is present in the ImageRow
         public bool Contains(string dataLabel)
         {
-            return (this.Row.Table.Columns.Contains(dataLabel));
+            return this.Row.Table.Columns.Contains(dataLabel);
         }
 
         public FileInfo GetFileInfo(string rootFolderPath)
@@ -144,7 +144,7 @@ namespace Timelapse.Database
         public string GetFilePath(string rootFolderPath)
         {
             // see RelativePath remarks in constructor
-            return (String.IsNullOrEmpty(this.RelativePath)) 
+            return String.IsNullOrEmpty(this.RelativePath)
                 ? Path.Combine(rootFolderPath, this.File) 
                 : Path.Combine(rootFolderPath, this.RelativePath, this.File);
         }

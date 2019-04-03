@@ -497,41 +497,48 @@ namespace Timelapse.Database
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
         private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
         {
-            // Select all files
-            this.SelectFiles(FileSelectionEnum.All);
+            // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
+            // Instead, we operate directly on the database. There is only one exception (updating DateTime),
+            // as we have to regenerate all the column's values
 
-            // Get the image set, as we will be checking some of its values
+            // Get the image set. We will be checking some of its values as we go along
             this.GetImageSet();
-            bool refreshImageDataTable = false;
 
+            // Some comparisons are triggered by comparing the version number stored in the DB with 
+            // particular version numbers where known changes occured 
+            // Note: if we can't retrieve the version number from the image set, then set it to a very low version number to guarantee all checks will be made
+            string lowestVersionNumber = "1.0.0.0";
+            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            string imageSetVersionNumber = versionCompatabilityColumnExists ? this.ImageSet.VersionCompatability
+                : lowestVersionNumber;
+            string timelapseVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+
+             // Step 1. Check the FileTable for missing columns
             // RelativePath column (if missing) needs to be added 
-            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.RelativePath) == false)
+            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath) == false)
             {
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
                 this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
-                refreshImageDataTable = true;
             }
 
             // DateTime column (if missing) needs to be added 
-            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.DateTime) == false)
+            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.DateTime) == false)
             {
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
                 this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
-                refreshImageDataTable = true;
             }
 
             // UTCOffset column (if missing) needs to be added 
-            if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.UtcOffset) == false)
+            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.UtcOffset) == false)
             {
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
                 this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
-                refreshImageDataTable = true;
             }
 
             // Remove MarkForDeletion column and add DeleteFlag column(if needed)
@@ -542,14 +549,12 @@ namespace Timelapse.Database
                 // migrate any existing MarkForDeletion column to DeleteFlag
                 // this is likely the most typical case
                 this.Database.RenameColumn(Constant.DatabaseTable.FileData, Constant.ControlsDeprecated.MarkForDeletion, Constant.DatabaseColumn.DeleteFlag);
-                refreshImageDataTable = true;
             }
             else if (hasMarkForDeletion && hasDeleteFlag)
             {
                 // if both MarkForDeletion and DeleteFlag are present drop MarkForDeletion
                 // this is not expected to occur
                 this.Database.DeleteColumn(Constant.DatabaseTable.FileData, Constant.ControlsDeprecated.MarkForDeletion);
-                refreshImageDataTable = true;
             }
             else if (hasDeleteFlag == false)
             {
@@ -558,15 +563,9 @@ namespace Timelapse.Database
                 ControlRow control = this.Controls.Find(id);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
-                refreshImageDataTable = true;
             }
 
-            if (refreshImageDataTable)
-            {
-                // update image data table to current schema
-                this.SelectFiles(FileSelectionEnum.All);
-            }
-
+            // STEP 2. Check the ImageTable for missing columns
             // Make sure that all the string data in the datatable has white space trimmed from its beginning and end
             // This is needed as the custom selection doesn't work well in testing comparisons if there is leading or trailing white space in it
             // Newer versions of Timelapse  trim the data as it is entered, but older versions did not, so this is to make it backwards-compatable.
@@ -582,26 +581,26 @@ namespace Timelapse.Database
                 this.Database.TrimWhitespace(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
 
                 // mark image set as whitespace trimmed
-                this.ImageSet.WhitespaceTrimmed = true;
                 // This still has to be synchronized, which will occur after we prepare all missing columns
+                this.GetImageSet();
+                this.ImageSet.WhitespaceTrimmed = true;
             }
 
             // Null test check against the version number
             // Versions prior to 2.2.2.4 may have set nulls as default values, which don't interact well with some aspects of Timelapse. 
             // Repair by turning all nulls in FileTable, if any, into empty strings
             // SAULXX Note that we could likely remove the WhiteSpaceTrimmed column and use the version number instead but we need to check if that is backwards compatable before doing so.
-            string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
-            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
             string firstVersionWithNullCheck = "2.2.2.4";
-            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, this.ImageSet.VersionCompatability))
+            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, imageSetVersionNumber))
             {
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
+            // Step 3. Check both templates and update if needed
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
-            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.7";
+            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
             {
                 // Alter the template in the .ddb file
                 ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
@@ -620,18 +619,19 @@ namespace Timelapse.Database
                     templateControl.DefaultValue = Constant.ImageQuality.Unknown;
                     templateDatabase.SyncControlToDatabase(templateControl);
                 }
-                // Update the Image Quality to ensure that only Light, Dark and Unknown alues are there
+                // Reset the Image Quality to Unknown. This is the only way to make this backwards compatable.
+                // I suspect in most cases that the analysts aren't using the field anyways, although they can always regenerate it if needed.
+                // IMMEDIATE Thinking about it, any existing Dark values can stay as dark. Its the 'OK' that is the issue.
                 this.Database.SetColumnToACommonValue(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
             }
 
-            // Make sure that the column containing the VersionCompatabily exists in the image set table. 
-            // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
+            // If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
+            // Add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
-            if (!versionCompatabilityColumnExists)
+            if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, currentVersionNumberAsString));
-                this.GetImageSet();
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, timelapseVersionNumberAsString));
             }
 
             // Make sure that the column containing the SortCriteria exists in the image set table. 
@@ -641,7 +641,6 @@ namespace Timelapse.Database
             {
                 // create the sortCriteria column and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
-                this.GetImageSet();
             }
 
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
@@ -651,7 +650,6 @@ namespace Timelapse.Database
             {
                 // create the QuickPaste column and update the image set. Syncronization happens later
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
-                this.GetImageSet();
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
@@ -659,16 +657,10 @@ namespace Timelapse.Database
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
             if (!timeZoneColumnExists)
             {
-                // create default time zone entry and update the image set. Syncronization happens later
+                // create default time zone entry and refresh the image set.
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
+                this.Database.SetColumnToACommonValue(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
                 this.GetImageSet();
-                this.ImageSet.TimeZone = TimeZoneInfo.Local.Id;
-            }
-
-            // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
-            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists) || (!quickPasteXMLColumnExists)))
-            {
-                this.SyncImageSetToDatabase();
             }
 
             // Populate DateTime column if the column has just been added
@@ -676,7 +668,9 @@ namespace Timelapse.Database
             {
                 TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
                 List<ColumnTuplesWithWhere> updateQuery = new List<ColumnTuplesWithWhere>();
-
+                // PERFORMANCE, BUT RARE: Because we have to update various date/time values on all rows based on existing values, 
+                // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
+                this.SelectFiles(FileSelectionEnum.All);
                 foreach (ImageRow image in this.FileTable)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
@@ -690,6 +684,7 @@ namespace Timelapse.Database
                     updateQuery.Add(image.GetDateTimeColumnTuples());
                 }
                 this.Database.Update(Constant.DatabaseTable.FileData, updateQuery);
+                // Note that the FileTable is now stale as we have updated the database directly
             }
         }
         #endregion
@@ -743,7 +738,7 @@ namespace Timelapse.Database
                     // Delete the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because we can't get the type of the data label as it no longer exists in the Template.
-                    if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabel))
+                    if (this.Database.IsColumnInTable(Constant.DatabaseTable.Markers, dataLabel))
                     {
                         this.Database.DeleteColumn(Constant.DatabaseTable.Markers, dataLabel);
                     }
@@ -759,7 +754,7 @@ namespace Timelapse.Database
                     // Rename the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
-                    if (this.Database.ColumnExists(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
+                    if (this.Database.IsColumnInTable(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
                     {
                         this.Database.RenameColumn(Constant.DatabaseTable.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
@@ -784,7 +779,6 @@ namespace Timelapse.Database
                     }
                 }
             }
-            this.SelectFiles(FileSelectionEnum.All);
         }
 
         /// <summary>
@@ -1068,6 +1062,7 @@ namespace Timelapse.Database
                 case FileSelectionEnum.MarkedForDeletion:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
+                case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
