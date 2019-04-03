@@ -927,6 +927,5 @@ namespace Timelapse
         }
 
         #endregion
-
     }
 }

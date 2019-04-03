@@ -133,7 +133,7 @@ namespace Timelapse.Database
         // Check if a datalabel is present in the ImageRow
         public bool Contains(string dataLabel)
         {
-            return (this.Row.Table.Columns.Contains(dataLabel));
+            return this.Row.Table.Columns.Contains(dataLabel);
         }
 
         public FileInfo GetFileInfo(string rootFolderPath)

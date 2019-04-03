@@ -393,6 +393,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
+            // PERFORMANCE 1st selection UpgradeDatabasesForBackwardsCompatability invoking...
             this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
 
             // Get the datalabels in the various templates 
@@ -497,12 +498,25 @@ namespace Timelapse.Database
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
         private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
         {
+            // Get the image set, and retireve its current version number if it exists
+            this.GetImageSet();
+
+            string lowestVersionNumber = "1.0.0.0";
+            // if we can't retrieve the version number from the image set, then set it to a very low version number to guarantee all checks will be made
+            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            string imageSetVersionNumber = versionCompatabilityColumnExists ? this.ImageSet.VersionCompatability
+                : lowestVersionNumber;
+            string timelapseVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+
             // Select all files
+            // PEFORMANCE 1st Selection 4.25 secs In UpgradeDatabasesForBackwardsCompatability -> this.SelectFiles(FileSelectionEnum.All) | SOLUTION: CHECK VERSION NUMBER
             this.SelectFiles(FileSelectionEnum.All);
 
             // Get the image set, as we will be checking some of its values
-            this.GetImageSet();
+
             bool refreshImageDataTable = false;
+
+            // Step 1. Check the FileTable for missing columns
 
             // RelativePath column (if missing) needs to be added 
             if (this.FileTable.ColumnNames.Contains(Constant.DatabaseColumn.RelativePath) == false)
@@ -564,9 +578,11 @@ namespace Timelapse.Database
             if (refreshImageDataTable)
             {
                 // update image data table to current schema
+                // PERFORMANCE IN UpgradeDatabasesForBackwardsCompatability ANother select only invoked if an upgrade is made
                 this.SelectFiles(FileSelectionEnum.All);
             }
 
+            // STEP 2. Check the ImageTable for missing columns
             // Make sure that all the string data in the datatable has white space trimmed from its beginning and end
             // This is needed as the custom selection doesn't work well in testing comparisons if there is leading or trailing white space in it
             // Newer versions of Timelapse  trim the data as it is entered, but older versions did not, so this is to make it backwards-compatable.
@@ -590,18 +606,18 @@ namespace Timelapse.Database
             // Versions prior to 2.2.2.4 may have set nulls as default values, which don't interact well with some aspects of Timelapse. 
             // Repair by turning all nulls in FileTable, if any, into empty strings
             // SAULXX Note that we could likely remove the WhiteSpaceTrimmed column and use the version number instead but we need to check if that is backwards compatable before doing so.
-            string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
-            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            
             string firstVersionWithNullCheck = "2.2.2.4";
-            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, this.ImageSet.VersionCompatability))
+            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, imageSetVersionNumber))
             {
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
+            // Step 3. Check both templates and update if needed
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
             string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
-            if (versionCompatabilityColumnExists == false || VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, this.ImageSet.VersionCompatability))
+            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
             {
                 // Alter the template in the .ddb file
                 ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
@@ -624,13 +640,13 @@ namespace Timelapse.Database
                 this.Database.SetColumnToACommonValue(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
             }
 
-            // Make sure that the column containing the VersionCompatabily exists in the image set table. 
-            // If not, add it and update the entry to contain the version of Timelapse currently being used to open this database
+            // If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
+            // Add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
-            if (!versionCompatabilityColumnExists)
+            if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, currentVersionNumberAsString));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, timelapseVersionNumberAsString));
                 this.GetImageSet();
             }
 
@@ -666,7 +682,7 @@ namespace Timelapse.Database
             }
 
             // Check to see if synchronization is needed i.e., if any of the columns were missing. If so, synchronziation will add those columns.
-            if (!timeZoneColumnExists || (!whiteSpaceColumnExists) || (!versionCompatabilityColumnExists || (!sortCriteriaColumnExists) || (!quickPasteXMLColumnExists)))
+            if (!timeZoneColumnExists || !whiteSpaceColumnExists || !versionCompatabilityColumnExists || !sortCriteriaColumnExists || !quickPasteXMLColumnExists)
             {
                 this.SyncImageSetToDatabase();
             }
@@ -784,6 +800,7 @@ namespace Timelapse.Database
                     }
                 }
             }
+            // PERFORMANCE 3rd Selection in OnExistingDatabaseOpened 4 secs
             this.SelectFiles(FileSelectionEnum.All);
         }
 
@@ -1068,6 +1085,7 @@ namespace Timelapse.Database
                 case FileSelectionEnum.MarkedForDeletion:
                     return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
+                case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));

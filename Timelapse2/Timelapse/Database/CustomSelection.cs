@@ -12,7 +12,7 @@ namespace Timelapse.Database
     /// </summary>
     public class CustomSelection
     {
-        public List<SearchTerm> SearchTerms { get; private set; }
+        public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
 
         /// <summary>

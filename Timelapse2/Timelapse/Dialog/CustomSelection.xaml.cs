@@ -126,7 +126,8 @@ namespace Timelapse.Dialog
                     };
                 }
                 else if (controlType == Constant.DatabaseColumn.DeleteFlag ||
-                         controlType == Constant.Control.Flag)
+                         controlType == Constant.Control.Flag ||
+                         controlType == Constant.DatabaseColumn.RelativePath)
                 {
                     // Only equals and not equals in Flags, as other options don't make sense for booleans
                     termOperators = new string[]
@@ -186,10 +187,27 @@ namespace Timelapse.Dialog
                     Grid.SetColumn(dateValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(dateValue);
                 }
+                else if (controlType == Constant.DatabaseColumn.RelativePath)
+                {
+                    // Relative path uses a dropdown that shows existing folders
+                    ComboBox comboBoxValue = new ComboBox()
+                    {
+                        IsEnabled = searchTerm.UseForSearching,
+                        Width = CustomSelection.DefaultControlWidth,
+                        Margin = thickness,
+
+                        // Create the dropdown menu containing only folders with images in it
+                        ItemsSource = this.database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath),
+                        SelectedItem = searchTerm.DatabaseValue
+                    };
+                    comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
+                    Grid.SetRow(comboBoxValue, gridRowIndex);
+                    Grid.SetColumn(comboBoxValue, CustomSelection.ValueColumn);
+                    this.SearchTerms.Children.Add(comboBoxValue);
+                }
                 else if (controlType == Constant.DatabaseColumn.File ||
                          controlType == Constant.Control.Counter ||
-                         controlType == Constant.Control.Note ||
-                         controlType == Constant.DatabaseColumn.RelativePath)
+                         controlType == Constant.Control.Note)
                 {
                     AutocompleteTextBox textBoxValue = new AutocompleteTextBox()
                     {
@@ -206,6 +224,7 @@ namespace Timelapse.Dialog
                     if (controlType == Constant.Control.Note)
                     {
                         // Make autocompletions work for this control
+                        // IMMEDIATE: NOT SURE THIS IS WORKING
                         textBoxValue.Autocompletions = this.dataEntryControls.AutocompletionGetForNote(searchTerm.DataLabel);
                     }
 
@@ -270,7 +289,7 @@ namespace Timelapse.Dialog
                         Width = CustomSelection.DefaultControlWidth
                     };
                     utcOffsetValue.ValueChanged += this.UtcOffset_SelectedDateChanged;
-                
+
                     Grid.SetRow(utcOffsetValue, gridRowIndex);
                     Grid.SetColumn(utcOffsetValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(utcOffsetValue);
