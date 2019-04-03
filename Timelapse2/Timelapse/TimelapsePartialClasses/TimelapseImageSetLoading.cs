@@ -140,8 +140,6 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-
-            // PERFORMANCE 2nd selection: 4.1 SECS FileDatabase.CreateOrOpen
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
@@ -702,7 +700,7 @@ namespace Timelapse
                 // This is heavier weight than desirable, but it's a one off.
                 this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
-            // PERFORMANCE - 4th Selection: OnFolderLoadingComplete invoking this.FilesSelectAndShow to finally show opened selected image set to user
+            // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 
             this.FilesSelectAndShow(mostRecentFileID, fileSelection);
 
             // match UX availability to file availability

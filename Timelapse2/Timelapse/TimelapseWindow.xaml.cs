@@ -416,8 +416,7 @@ namespace Timelapse
         /// <param name="eventArgs">event information</param>
         private void ContentCtl_PreviewKeyDown(object sender, KeyEventArgs eventArgs)
         {
-            IntegerUpDown counter = sender as IntegerUpDown;
-            if (counter != null)
+            if (sender is IntegerUpDown counter)
             {
                 // A hack to make the counter control work - see DateEntryCounter.cs
                 if (counter.Value == int.MaxValue)

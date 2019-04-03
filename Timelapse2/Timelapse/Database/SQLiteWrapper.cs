@@ -432,19 +432,6 @@ namespace Timelapse.Database
             return Convert.ToInt32(this.GetObjectFromSelect(query));
         }
 
-        // This method will check if a column exists in a table
-        public bool IsColumnInTable(string tableName, string columnName)
-        {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
-            {
-                connection.Open();
-                List<string> columnNames = GetColumnNamesAsList(connection, tableName);
-
-                // Return if a column named columnName  exists in the given table. 
-                return columnNames.Contains(columnName);
-            }
-        }
-
         // This method will create a column in a table of type TEXT, where it is added to its end
         // It assumes that the value, if not empty, should be treated as the default value for that column
         public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
@@ -632,7 +619,7 @@ namespace Timelapse.Database
             }
         }
 
-        public bool ColumnExists(string sourceTable, string currentColumnName)
+        public bool IsColumnInTable(string sourceTable, string currentColumnName)
         {
             try
             {
