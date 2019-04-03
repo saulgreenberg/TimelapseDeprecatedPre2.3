@@ -169,9 +169,6 @@
     <Compile Include="Dialog\EpisodeOptions.xaml.cs">
       <DependentUpon>EpisodeOptions.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\PopulateFieldsFromCSVFile.xaml.cs">
-      <DependentUpon>PopulateFieldsFromCSVFile.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\SkipHiddenFiles.xaml.cs">
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
     </Compile>
@@ -365,10 +362,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\EpisodeOptions.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\PopulateFieldsFromCSVFile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

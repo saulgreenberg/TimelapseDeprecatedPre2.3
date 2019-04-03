@@ -122,7 +122,6 @@ namespace Timelapse
             this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers();
 
-
             if (newFileToDisplay)
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
@@ -185,7 +184,6 @@ namespace Timelapse
 
             // Display the episode text as needed
             this.DisplayEpisodeTextIfWarranted(fileIndex);
-
 
             //----------------------------
             // BOUNDING BOXES

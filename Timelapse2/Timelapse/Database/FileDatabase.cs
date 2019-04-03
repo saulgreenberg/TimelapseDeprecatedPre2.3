@@ -599,7 +599,7 @@ namespace Timelapse.Database
             // Step 3. Check both templates and update if needed
             // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.7";
+            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
             if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
             {
                 // Alter the template in the .ddb file

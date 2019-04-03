@@ -29,7 +29,7 @@ namespace Timelapse.Images
         public BoundingBox(float y1, float x1, float y2, float x2, float confidence)
         {
             this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.StandardColour);
-            this.Rectangle = new Rect(new Point(x1, y1), new Point (x2, y2));
+            this.Rectangle = new Rect(new Point(x1, y1), new Point(x2, y2));
             this.Confidence = confidence;
         }
     }

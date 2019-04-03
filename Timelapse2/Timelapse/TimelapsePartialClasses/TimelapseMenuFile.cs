@@ -263,7 +263,6 @@ namespace Timelapse
             this.StatusBar.SetMessage(".csv file imported.");
         }
 
-
         private void MenuItemImportRecognitionData_Click(object sender, RoutedEventArgs e)
         {
             // Ask the user for the file name containing the recognition data

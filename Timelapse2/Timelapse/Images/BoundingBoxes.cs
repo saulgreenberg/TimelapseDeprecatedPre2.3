@@ -8,16 +8,14 @@ namespace Timelapse.Images
 {
     public class BoundingBoxes
     {
-        //public string DataLabel { get; private set; }
-
-        // the list of markers associated with the counter
-        public List<BoundingBox>Boxes { get; private set; }
+        // List of Bounding Boxes associated with the image
+        public List<BoundingBox> Boxes { get; private set; }
         public BoundingBoxes()
         {
             this.Boxes = new List<BoundingBox>();
         }
 
-        public void CreatefromRecognitionData (string predictedBoxes)
+        public void CreatefromRecognitionData(string predictedBoxes)
         {
             // The JSON data is structured as a comma-separated list of lists, i.e.
             // [] for an empty list
@@ -32,7 +30,6 @@ namespace Timelapse.Images
 
             // Strip out the first and last '[]'
             predictedBoxes = StripBraces(predictedBoxes);
-            //System.Diagnostics.Debug.Print(predictedBoxes);
 
             // cycle through each list to fill in the bounding boxes
             String[] lists = predictedBoxes.Split(new string[] { "], [" }, StringSplitOptions.None);

@@ -267,7 +267,6 @@ namespace Timelapse.Database
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelMaxConfidence)
                                 {
-
                                     maxConfidence = value;
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelMaxConfidence, maxConfidence));
                                 }
@@ -309,7 +308,7 @@ namespace Timelapse.Database
                         {
                             fileDatabase.UpdateFiles(imagesToUpdate);
                         }
-                        return (importErrors.Count == 0);
+                        return importErrors.Count == 0;
                     }
                 }
             }
@@ -319,7 +318,6 @@ namespace Timelapse.Database
                 return false;
             }
         }
-
 
         private static string AddColumnValue(string value)
         {

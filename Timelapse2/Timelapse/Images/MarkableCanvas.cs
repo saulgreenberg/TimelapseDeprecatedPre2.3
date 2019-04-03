@@ -972,13 +972,13 @@ namespace Timelapse.Images
             bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in bboxes.Boxes)
             {
-                if (bbox.Confidence < 0.85)
+                if (bbox.Confidence < 0.5)
                 {
                     continue;
                 }
                 // Create a bounding box
                 Rectangle rect = new Rectangle();
-                byte transparency = (byte) (Math.Round(255 * bbox.Confidence));
+                byte transparency = (byte)Math.Round(255 * bbox.Confidence);
 
                 SolidColorBrush brush = new SolidColorBrush(Color.FromArgb(255, 0, 0, transparency));
                 rect.Stroke = brush;
@@ -991,14 +991,6 @@ namespace Timelapse.Images
                 Canvas.SetTop(rect, top);
                 bboxCanvas.Children.Add(rect);
             }
-
-            //  // Get the point from the marker, and convert it so that the marker will be in the right place
-            //Point screenPosition = Marker.ConvertRatioToPoint(marker.Position, canvasRenderSize.Width, canvasRenderSize.Height);
-            //if (doTransform)
-            //{
-            //    screenPosition = this.transformGroup.Transform(screenPosition);
-            //}
-
             Canvas.SetLeft(bboxCanvas, 0);
             Canvas.SetTop(bboxCanvas, 0);
             Canvas.SetZIndex(bboxCanvas, 0);
