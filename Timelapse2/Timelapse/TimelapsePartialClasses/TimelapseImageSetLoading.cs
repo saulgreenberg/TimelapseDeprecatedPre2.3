@@ -206,9 +206,7 @@ namespace Timelapse
             }
             folderPaths.Add(root);
             // Recursively descend subfolders, collecting directory info on the way
-            // IMMEDIATE: NOTE THAT IT ALSO COLLECTS FOLDERS WITHOUT IMAGES IN IT.
-            // THIS MAY NOT BE AN ISSUE AS THAT WILL BE SORTED OUT WHEN THE DIRECTORY IS SCANNED FOR IMAGES.
-            // IF NONE ARE IN THERE, IT IS SKIPPED OVER
+            // Note that while folders without images are also collected, these wille eventually be skipped when it is later scanned for images to load
             DirectoryInfo dirInfo = new DirectoryInfo(root);
             DirectoryInfo[] subDirs = dirInfo.GetDirectories();
             foreach (DirectoryInfo subDir in subDirs)
@@ -411,6 +409,7 @@ namespace Timelapse
                 // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
                 // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
                 int filesProcessed = 0;
+                TimeSpan showImageOnlyAfterThisTimeSpan = TimeSpan.FromMilliseconds(500);
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
                     // Note that calling GetOrCreateFile inserts the the creation date as the Date/Time. 
@@ -499,21 +498,29 @@ namespace Timelapse
                         filesPendingInsert = filesToInsert.Count;
                     }
 
-                    // If the throttle interval isn't reached then skip showing the image.
+                    // Display progress on feedback either
+                    // - on every image loaded (if the user has set that state), 
+                    // - or every 1/2 second
                     DateTime utcNow = DateTime.UtcNow;
-                    if ((this.state.SuppressThrottleWhenLoading == true) ||
-                    (utcNow - previousImageRender > this.state.Throttles.DesiredIntervalBetweenRenders))
+                    if ((this.state.ShowAllImagesWhenLoading == true) ||
+                    (utcNow - previousImageRender >= showImageOnlyAfterThisTimeSpan))
                     {
                         lock (folderLoadProgress)
                         {
-                            // if file was already loaded for dark checking use the resulting bitmap
-                            // otherwise, load the file for display
-                            if (bitmapSource != null)
+                            if (file.IsVideo)
                             {
+                                // TODO When Video thumbnails are available, we can use those.
+                                // Show a stock video bitmap image as they won't be retrieved fast enough anyways
+                                folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
+                            }
+                            else if (bitmapSource != null)
+                            {
+                                // if file was already loaded for dark checking use the resulting bitmap
                                 folderLoadProgress.BitmapSource = bitmapSource;
                             }
                             else
                             {
+                                // otherwise, load the file for display
                                 folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
                             }
                             folderLoadProgress.CurrentFile = filesToInsert.Count;
@@ -529,8 +536,8 @@ namespace Timelapse
                     else
                     {
                         // Uncomment this to see how many images (if any) are skipped
-                        // Console.WriteLine(" ");
-                        // Console.WriteLine("Skipped");
+                         Console.WriteLine(" ");
+                         Console.WriteLine("Skipped");
                         folderLoadProgress.BitmapSource = null;
                     }
                     // }); // SAULXXX Parallel.ForEach

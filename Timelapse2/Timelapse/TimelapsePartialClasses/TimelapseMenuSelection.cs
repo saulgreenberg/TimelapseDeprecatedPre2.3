@@ -58,8 +58,6 @@ namespace Timelapse
             this.MenuItemSelectUnknownFiles.IsEnabled = count > 0;
         }
 
-        // IMMEDIATE -  IF WE ADD FOLDERS IN A SESSION RESET IT. 
-        // Also CHECKMARK ON MENU ITEM, ETC
         private void MenuItemSelectByFolder_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             MenuItem menu = sender as MenuItem;

@@ -46,7 +46,7 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
 
             // Showing Images
-            this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.SuppressThrottleWhenLoading ? true : false;
+            this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.ShowAllImagesWhenLoading ? true : false;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -129,12 +129,17 @@ namespace Timelapse.Dialog
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
         }
 
+        #region Reset to defaults
         private void ResetThrottle_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.Throttles.ResetToDefaults();
             this.ImageRendersPerSecond.Value = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
-            this.timelapseState.SuppressThrottleWhenLoading = false;
+        }
+
+        private void ResetImageLoading_Click(object sender, RoutedEventArgs e)
+        {
+            this.timelapseState.ShowAllImagesWhenLoading = false;
             this.CheckBoxSuppressThrottleWhenLoading.IsChecked = false;
         }
 
@@ -145,7 +150,7 @@ namespace Timelapse.Dialog
             this.MaxZoom.Value = this.markableCanvas.ZoomMaximum;
             this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
         }
-
+        #endregion
         // Callback: The user has changed the maximum zoom value
         private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -169,12 +174,16 @@ namespace Timelapse.Dialog
         private void SuppressThrottleWhenLoading_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.timelapseState.SuppressThrottleWhenLoading = (cb.IsChecked == true) ? true : false;
+            this.timelapseState.ShowAllImagesWhenLoading = (cb.IsChecked == true) ? true : false;
         }
+
+
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
+
+
     }
 }
