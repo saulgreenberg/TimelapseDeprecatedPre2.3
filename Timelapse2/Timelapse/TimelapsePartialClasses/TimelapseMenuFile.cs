@@ -61,6 +61,13 @@ namespace Timelapse
             {
                 Mouse.OverrideCursor = Cursors.Wait;
                 this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
+
+                // BOOKMARK Need to add those folders to the folder menu
+                // Unfortunately, the database is not yet updated, so I can't just use the 'distinct' call in MenuItemSelectByFolder_ResetFolderList()
+                foreach (string folderPath in folderPaths)
+                {
+                    System.Diagnostics.Debug.Print(folderPath);
+                }
                 Mouse.OverrideCursor = null;
             }
         }

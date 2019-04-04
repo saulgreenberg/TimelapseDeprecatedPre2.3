@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -42,7 +41,7 @@ namespace Timelapse
 
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles();
             int count;
 
             // Enable only the menu items that can select at least one potential image 
@@ -71,8 +70,21 @@ namespace Timelapse
                 return;
             }
 
+            // Repopulate the menu if needed. Get the folders from the database, and create a menu item representing it
+            MenuItemSelectByFolder_ResetFolderList();
+        }
+        // Populate the menu. Get the folders from the database, and create a menu item representing it
+        private void MenuItemSelectByFolder_ResetFolderList()
+        {
+            // Clear the list, excepting the first menu item all folders, which should be kept.
+            MenuItem item = (MenuItem)MenuItemSelectByFolder.Items[0];
+            MenuItemSelectByFolder.Items.Clear();
+            MenuItemSelectByFolder.Items.Add(item);
+
             // Populate the menu . Get the folders from the database, and create a menu item representing it
             int i = 1;
+            // PERFORMANCE. THIS ADDS ABOUT .250 ms. Since its invoked when loading images for the first time, it may be unneeded if the user doesn't use that menu
+            // BUT TO FIX THAT, WE WOULD HAVE TO DISTINGUISH BETWEEN THE FIRST TIME VS subsequent times files were added.
             List<object> folderList = this.dataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
@@ -89,7 +101,7 @@ namespace Timelapse
                     ToolTip = "Show only files in the folder: " + header
                 };
                 menuitemFolder.Click += MenuItemSelectFolder_Click;
-                menu.Items.Insert(i++, menuitemFolder);
+                MenuItemSelectByFolder.Items.Insert(i++, menuitemFolder);
             }
         }
 
@@ -132,6 +144,7 @@ namespace Timelapse
                 messageBox.ShowDialog();
                 return;
             }
+            MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
             this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders);  // Go to the first result (i.e., index 0) in the given selection set
@@ -187,10 +200,17 @@ namespace Timelapse
             {
                 selection = FileSelectionEnum.All;   // Just in case
             }
-            MenuItemSelectByFolder_ClearAllCheckmarks();
+            this.MenuItemSelectByFolder_ClearAllCheckmarks();
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+            if (this.dataHandler.ImageCache.Current == null)
+            {
+                FilesSelectAndShow(selection, true);
+            }
+            else
+            { 
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+            }
         }
 
         // Custom Selection: raises a dialog letting the user specify their selection criteria
@@ -234,12 +254,6 @@ namespace Timelapse
             }
         }
 
-        // Show file counts: how many images were loaded, types in categories, etc.
-        public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        {
-            this.MaybeFileShowCountsDialog(false, this);
-        }
-
         // Refresh the selection: based on the current select criteria. 
         // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
         private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
@@ -247,5 +261,16 @@ namespace Timelapse
             // Reselect the images, which re-sorts them to the current sort criteria. 
             this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
         }
+
+        #region Depracated
+        // There really is no reason to have a special menu item for this, as one can see the counts
+        // when selecting. However, we keep the dialog box around as we still use that
+        // for displaying the total numbers after a manual dark threshold operation is done.
+        // Show file counts: how many images were loaded, types in categories, etc.
+        // public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
+        // {
+        //    this.MaybeFileShowCountsDialog(false, this);
+        // }
+        #endregion
     }
 }

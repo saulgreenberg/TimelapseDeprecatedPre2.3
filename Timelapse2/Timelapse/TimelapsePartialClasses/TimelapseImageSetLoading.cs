@@ -91,7 +91,6 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
-            // PEFORMANCE:  4.1 SECS  TryOpenTemplateAndBeginLoadFoldersAsync calling UpgradeDatabasesAndCompareTemplates
             using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
             {
                 // A file database was available to open
@@ -477,7 +476,7 @@ namespace Timelapse
                                 if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Unknown)
                                 {
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Light;
+                                    file.ImageQuality = FileSelectionEnum.Unknown;
                                 }
                             }
                         }
@@ -579,7 +578,7 @@ namespace Timelapse
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
                 bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
                 this.MarkableCanvas.MagnifyingGlassEnabled = false;
-                this.MaybeFileShowCountsDialog(true, this);
+                this.StatusBar.SetMessage(folderLoadProgress.TotalFiles + " files are now loaded");
                 this.MarkableCanvas.MagnifyingGlassEnabled = saveMagnifierState;
 
                 // If we want to import old data from the ImageData.xml file, we can do it here...
@@ -602,7 +601,6 @@ namespace Timelapse
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Folder loading beginning...");
             this.StatusBar.SetMessage("Loading folders...");
-
             backgroundWorker.RunWorkerAsync();
             externallyVisibleWorker = backgroundWorker;
             return true;
@@ -693,6 +691,22 @@ namespace Timelapse
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
             FileSelectionEnum fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            if (fileSelection == FileSelectionEnum.Folders)
+            {
+                // Compose a custom search term
+                List<SearchTerm> folderTerms = new List<SearchTerm>();
+                SearchTerm folderTerm = new SearchTerm
+                {
+                    DataLabel = Constant.DatabaseColumn.RelativePath,
+                    DatabaseValue = this.dataHandler.FileDatabase.ImageSet.SelectedFolder,
+                    Operator = Constant.SearchTermOperator.Equal,
+                    UseForSearching = true
+                };
+                folderTerms.Add(folderTerm);
+
+                List<SearchTerm> savedSearchTerms = this.dataHandler.FileDatabase.CustomSelection.SearchTerms;
+                this.dataHandler.FileDatabase.CustomSelection.SearchTerms = folderTerms;
+            }
             if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {
                 // if this is completion of an add to an existing image set stay on the image, ideally, shown before the import
@@ -706,9 +720,12 @@ namespace Timelapse
             // match UX availability to file availability
             this.EnableOrDisableMenusAndControls();
 
+            // Reset the folder list used to construct the Select Folders menu
+            this.MenuItemSelectByFolder_ResetFolderList();
+
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
-
+            
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {

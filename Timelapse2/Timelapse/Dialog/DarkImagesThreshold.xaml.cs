@@ -379,13 +379,16 @@ namespace Timelapse.Dialog
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
                 // SaulXXX There was an issue in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
-                // While it may also affect this loop, the consequences are small if the occassional file is skipped (duplicate testing won't hurt)
-                // Also, its not clear that we really need to display each image, but given that we are already opening it, it may not be a huge expense
-                Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                { 
+                // Its not clear that we really need to display each image, but given that we are already opening it, it may not be a huge expense
+                // If we want to try the parallel again, here it is.
+                // Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
+                // replace break (after this.stop) with loopState.Break
+                // -- add closing brace});
+                foreach (ImageRow file in selectedFiles)
+                {
                     if (this.stop)
                     {
-                        loopState.Break();
+                        break;
                     }
 
                     // If its not a valid image, say so and go onto the next one.
@@ -402,7 +405,10 @@ namespace Timelapse.Dialog
                             backgroundWorker.ReportProgress(0, imageQuality);
                             return;
                         }
-                        imageQuality.NewImageQuality = imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
+                        // Set the image quality. Note that videos are always classified as unknown.
+                        imageQuality.NewImageQuality = file.IsVideo
+                            ? FileSelectionEnum.Unknown
+                            : imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;
                         if (imageQuality.OldImageQuality != imageQuality.NewImageQuality.Value)
@@ -430,7 +436,8 @@ namespace Timelapse.Dialog
                             }
                         }
                     }
-                });
+                }
+
                 // Update the database to reflect the changed values
                 this.database.UpdateFiles(filesToUpdate);
             };

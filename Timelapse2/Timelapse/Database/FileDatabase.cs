@@ -115,7 +115,7 @@ namespace Timelapse.Database
         /// <summary>Gets the number of files currently in the file table.</summary>
         public int CurrentlySelectedFileCount
         {
-            get { return this.FileTable.RowCount; }
+            get { return (this.FileTable == null) ? 0 : this.FileTable.RowCount; }
         }
 
         #region Adding Files to the Database
@@ -280,6 +280,10 @@ namespace Timelapse.Database
 
         public void BindToDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
         {
+            if (this.FileTable == null)
+            {
+                return;
+            }
             this.boundGrid = dataGrid;
             this.onFileDataTableRowChanged = onRowChanged;
             this.FileTable.BindDataGrid(dataGrid, onRowChanged);
@@ -323,6 +327,7 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
@@ -643,6 +648,21 @@ namespace Timelapse.Database
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
+            // Make sure that the column containing the SelectedFolder exists in the image set table. 
+            // If not, add it and set it to the default
+
+            string firstVersionWithSelectedFilesColumns = "2.2.2.6";
+            if (VersionClient.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
+            {
+                // Because we may be running this several times on the same version, we should still check to see if the column exists before adding it
+                bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SelectedFolder);
+                if (!selectedFolderColumnExists)
+                {
+                    // create the sortCriteria column and update the image set. Syncronization happens later
+                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text, String.Empty));
+                    this.GetImageSet();
+                }
+            }
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
             // If not, add it and set it to the default
             bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
@@ -903,7 +923,6 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-            // BOOKMARK
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -911,6 +930,10 @@ namespace Timelapse.Database
 
         public bool SelectMissingFilesFromCurrentlySelectedFiles()
         {
+            if (this.FileTable == null)
+            {
+                return false;
+            }
             string filepath = String.Empty;
             string message = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
@@ -925,13 +948,9 @@ namespace Timelapse.Database
             }
             // remove the trailing comma
             commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
-            if (commaSeparatedListOfIDs == String.Empty)
-            {
-                return false;
-            }
             this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-            return true;
+            return (commaSeparatedListOfIDs == String.Empty) ? false : true;
         }
 
         public FileTable GetFilesMarkedForDeletion()
@@ -1011,13 +1030,24 @@ namespace Timelapse.Database
             }
         }
 
-        public Dictionary<FileSelectionEnum, int> GetFileCountsBySelection()
+        public Dictionary<FileSelectionEnum, int> GetFileCountsInAllFiles()
         {
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
                 [FileSelectionEnum.Unknown] = this.GetFileCount(FileSelectionEnum.Unknown),
                 [FileSelectionEnum.Light] = this.GetFileCount(FileSelectionEnum.Light)
+            };
+            return counts;
+        }
+
+        public Dictionary<FileSelectionEnum, int> GetFileCountsInCurrentSelection()
+        {
+            Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
+            {
+                [FileSelectionEnum.Dark] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Dark),
+                [FileSelectionEnum.Unknown] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Unknown),
+                [FileSelectionEnum.Light] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Light)
             };
             return counts;
         }
@@ -1047,6 +1077,12 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Insert(table, insertionStatements);
+        }
+
+        // Return the selected folder (if any)
+        public string GetSelectedFolder()
+        {
+            return this.CustomSelection.GetRelativePathFolder();
         }
 
         private string GetFilesWhere(FileSelectionEnum selection)

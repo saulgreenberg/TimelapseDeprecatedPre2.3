@@ -413,6 +413,10 @@ namespace Timelapse.Dialog
         {
             ComboBox comboBox = sender as ComboBox;
             int row = Grid.GetRow(comboBox);  // Get the row number...
+            if (comboBox.SelectedValue == null)
+            {
+                return;
+            }
             this.database.CustomSelection.SearchTerms[row - 1].DatabaseValue = comboBox.SelectedValue.ToString(); // Set the corresponding value to the current selection
             this.UpdateSearchCriteriaFeedback();
         }

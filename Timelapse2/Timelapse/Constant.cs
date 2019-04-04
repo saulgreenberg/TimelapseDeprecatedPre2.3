@@ -96,7 +96,6 @@ namespace Timelapse
             public const string Choice = "Choice";         // Label for a fixed choice
 
             // highlight / non-hightlight border thicknesses of a control
-        
             public const double BorderThicknessNormal = 1;
             public const double BorderThicknessHighlight = 3;
             public static readonly SolidColorBrush BorderColorNormal = new SolidColorBrush(Colors.LightBlue); 
@@ -240,6 +239,7 @@ namespace Timelapse
             public const string VersionCompatabily = "VersionCompatabily";      // The latest version of Timelapse that opened this database. Useful for cases when we want to check for backwards compatability
             public const string SortTerms = "SortTerms";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms and their attribute
             public const string QuickPasteXML = "QuickPasteXML";              // an XML description that specifies the user's quickpaste entries and values.
+            public const string SelectedFolder = "SelectedFolder";              // a string identifying the folder selected by a user via the Select|Folders menu. Otherwise empty if another selection was done, or if its all files
 
             // other columns found in Old XML files
             public const string Data = "Data";                 // the data describing the attributes of that control
@@ -595,7 +595,7 @@ namespace Timelapse
 
         public static class ThrottleValues
         {
-            public const double DesiredMaximumImageRendersPerSecondLowerBound = 4.0;     // Likely very safe render rate 
+            public const double DesiredMaximumImageRendersPerSecondLowerBound = 3.0;     // Likely a very safe render rate 
             public const double DesiredMaximumImageRendersPerSecondDefault = 7.0;   // Default render rate - could exhibit stalls on poor machines
             public const double DesiredMaximumImageRendersPerSecondUpperBound = 15.0;    // Somewhat riskier render rate that I know works on high end machines without stuttering
             public const int MaximumRenderAttempts = 10;

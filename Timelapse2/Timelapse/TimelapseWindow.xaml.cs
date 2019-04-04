@@ -181,6 +181,16 @@ namespace Timelapse
                     // don't save custom selections, revert to All 
                     this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                 }
+                else if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
+                {
+                    // If the last selection was a non-empty folder, save it as the folder selection
+                    if (String.IsNullOrEmpty(this.dataHandler.FileDatabase.ImageSet.SelectedFolder))
+                    {
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                    }
+                    string folder = this.dataHandler.FileDatabase.ImageSet.SelectedFolder;
+                    System.Diagnostics.Debug.Print(folder);
+                }
                 
                 // sync image set properties
                 if (this.MarkableCanvas != null)
@@ -207,6 +217,8 @@ namespace Timelapse
                 {
                     this.DeleteTheDeletedFilesFolderIfNeeded();
                 }
+
+                // Save selection state
             }
 
             // persist user specific state to the registry
@@ -846,7 +858,9 @@ namespace Timelapse
                 return;
             }
 
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsBySelection();
+            // Show the counts in the selected files only
+            // Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles(); // This would show counts over all files
+            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInCurrentSelection();
             FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
             if (onFileLoading)
             {

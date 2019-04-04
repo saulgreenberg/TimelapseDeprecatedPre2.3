@@ -156,7 +156,7 @@
                 </MenuItem>
 
                 <!-- Identify or reclassify dark files...-->
-                <MenuItem Name="MenuItemOptionsDarkImages" Header="Identify or reclassify dar_k files..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
+                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k files now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
 
                 <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
@@ -234,8 +234,6 @@
                 <MenuItem Name="MenuItemSelectCustomSelection" IsCheckable="True" IsChecked="False" Header="_Custom Selection..."  ToolTip="Create a custom selection to display only particular files" Click="MenuItemSelectCustomSelection_Click"/>
                 <Separator/>
                 <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Check and show missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
-                <Separator/>
-                <MenuItem Name="MenuItemImageCounts" Header="Show _file counts..." Click="MenuItemImageCounts_Click" ToolTip="Display statistics of the total number of files and their types"/>
                 <Separator/>
                 <MenuItem Name="MenuItemSelectReselect" Header="Refresh the selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
                 <Separator/>
