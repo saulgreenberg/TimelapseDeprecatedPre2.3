@@ -1190,6 +1190,7 @@ namespace Timelapse.Images
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
+            this.RedrawMarkers(); // Clears the markers as none should be associated with the video
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
