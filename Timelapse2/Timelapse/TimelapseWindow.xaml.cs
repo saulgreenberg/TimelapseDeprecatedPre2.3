@@ -740,7 +740,6 @@ namespace Timelapse
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
                     DataRowView rowView = row.Item as DataRowView;
                     long fileID = (long)rowView.Row.ItemArray[0];
-                    // BOOKMARK datagrid
                     this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
 
