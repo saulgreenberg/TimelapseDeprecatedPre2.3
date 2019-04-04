@@ -60,7 +60,13 @@ namespace Timelapse
             if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
+                List<string> subFolderPaths = new List<string>();
+                foreach(string subFolder in folderPaths)
+                { 
+                    // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
+                    GetImageSetFoldersRecursively(subFolder, subFolderPaths);
+                }
+                this.TryBeginImageFolderLoadAsync(subFolderPaths, out BackgroundWorker backgroundWorker);
 
                 // BOOKMARK Need to add those folders to the folder menu
                 // Unfortunately, the database is not yet updated, so I can't just use the 'distinct' call in MenuItemSelectByFolder_ResetFolderList()
