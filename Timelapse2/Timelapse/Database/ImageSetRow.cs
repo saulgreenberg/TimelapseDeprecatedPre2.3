@@ -20,6 +20,13 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.Selection, (int)value); }
         }
 
+        // The last folder selected via the Select - Folder menu
+        public string SelectedFolder
+        {
+            get { return this.Row.GetStringField(Constant.DatabaseColumn.SelectedFolder); }
+            set { this.Row.SetField(Constant.DatabaseColumn.SelectedFolder, value); }
+        }
+
         public long MostRecentFileID
         {
             get { return this.Row.GetLongStringField(Constant.DatabaseColumn.MostRecentFileID); }
@@ -88,7 +95,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, this.WhitespaceTrimmed),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, this.VersionCompatability),
                 new ColumnTuple(Constant.DatabaseColumn.SortTerms, this.SortTerms),
-                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, this.QuickPasteXML)
+                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, this.QuickPasteXML),
+                new ColumnTuple(Constant.DatabaseColumn.SelectedFolder, this.SelectedFolder)
             };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }

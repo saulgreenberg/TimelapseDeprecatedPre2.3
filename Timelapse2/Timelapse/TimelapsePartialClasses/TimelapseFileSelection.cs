@@ -66,12 +66,16 @@ namespace Timelapse
             // PEFORMANCE: TWO  SLOW OPERATIONS 4.1 seconds FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
             Mouse.OverrideCursor = Cursors.Wait;
             bool missingFilesExist = false;
-            if(selection == FileSelectionEnum.Missing)
+            if (selection == FileSelectionEnum.Missing)
             {
                 missingFilesExist = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
-            else
+            else 
             {
+                // If its a folder selection, record it so we can save it later in the image set table 
+                this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
+                    ? this.dataHandler.FileDatabase.GetSelectedFolder()
+                    : String.Empty;
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
             Mouse.OverrideCursor = null;

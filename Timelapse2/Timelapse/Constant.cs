@@ -239,6 +239,7 @@ namespace Timelapse
             public const string VersionCompatabily = "VersionCompatabily";      // The latest version of Timelapse that opened this database. Useful for cases when we want to check for backwards compatability
             public const string SortTerms = "SortTerms";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms and their attribute
             public const string QuickPasteXML = "QuickPasteXML";              // an XML description that specifies the user's quickpaste entries and values.
+            public const string SelectedFolder = "SelectedFolder";              // a string identifying the folder selected by a user via the Select|Folders menu. Otherwise empty if another selection was done, or if its all files
 
             // other columns found in Old XML files
             public const string Data = "Data";                 // the data describing the attributes of that control

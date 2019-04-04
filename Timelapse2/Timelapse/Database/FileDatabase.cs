@@ -327,6 +327,7 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
@@ -647,6 +648,21 @@ namespace Timelapse.Database
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
+            // Make sure that the column containing the SelectedFolder exists in the image set table. 
+            // If not, add it and set it to the default
+
+            string firstVersionWithSelectedFilesColumns = "2.2.2.6";
+            if (VersionClient.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
+            {
+                // Because we may be running this several times on the same version, we should still check to see if the column exists before adding it
+                bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SelectedFolder);
+                if (!selectedFolderColumnExists)
+                {
+                    // create the sortCriteria column and update the image set. Syncronization happens later
+                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text, String.Empty));
+                    this.GetImageSet();
+                }
+            }
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
             // If not, add it and set it to the default
             bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
@@ -907,7 +923,6 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-            // BOOKMARK
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -935,7 +950,7 @@ namespace Timelapse.Database
             commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
             this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-            return (commaSeparatedListOfIDs == String.Empty) ?  false : true;
+            return (commaSeparatedListOfIDs == String.Empty) ? false : true;
         }
 
         public FileTable GetFilesMarkedForDeletion()
@@ -1062,6 +1077,12 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Insert(table, insertionStatements);
+        }
+
+        // Return the selected folder (if any)
+        public string GetSelectedFolder()
+        {
+            return this.CustomSelection.GetRelativePathFolder();
         }
 
         private string GetFilesWhere(FileSelectionEnum selection)

@@ -92,6 +92,18 @@ namespace Timelapse.Database
             return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
         }
 
+        public string GetRelativePathFolder()
+        {
+            foreach (SearchTerm searchTerm in this.SearchTerms)
+            {
+                if (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
+                {
+                    return searchTerm.DatabaseValue;
+                }
+            }
+            return String.Empty;
+        }
+
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
         {

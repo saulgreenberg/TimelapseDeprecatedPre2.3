@@ -70,8 +70,21 @@ namespace Timelapse
                 return;
             }
 
+            // Repopulate the menu if needed. Get the folders from the database, and create a menu item representing it
+            MenuItemSelectByFolder_ResetFolderList();
+        }
+        // Populate the menu. Get the folders from the database, and create a menu item representing it
+        private void MenuItemSelectByFolder_ResetFolderList()
+        {
+            // Clear the list, excepting the first menu item all folders, which should be kept.
+            MenuItem item = (MenuItem)MenuItemSelectByFolder.Items[0];
+            MenuItemSelectByFolder.Items.Clear();
+            MenuItemSelectByFolder.Items.Add(item);
+
             // Populate the menu . Get the folders from the database, and create a menu item representing it
             int i = 1;
+            // PERFORMANCE. THIS ADDS ABOUT .250 ms. Since its invoked when loading images for the first time, it may be unneeded if the user doesn't use that menu
+            // BUT TO FIX THAT, WE WOULD HAVE TO DISTINGUISH BETWEEN THE FIRST TIME VS subsequent times files were added.
             List<object> folderList = this.dataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
@@ -88,7 +101,7 @@ namespace Timelapse
                     ToolTip = "Show only files in the folder: " + header
                 };
                 menuitemFolder.Click += MenuItemSelectFolder_Click;
-                menu.Items.Insert(i++, menuitemFolder);
+                MenuItemSelectByFolder.Items.Insert(i++, menuitemFolder);
             }
         }
 
@@ -241,8 +254,6 @@ namespace Timelapse
             }
         }
 
-
-
         // Refresh the selection: based on the current select criteria. 
         // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
         private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
@@ -256,10 +267,10 @@ namespace Timelapse
         // when selecting. However, we keep the dialog box around as we still use that
         // for displaying the total numbers after a manual dark threshold operation is done.
         // Show file counts: how many images were loaded, types in categories, etc.
-        //public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        //{
+        // public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
+        // {
         //    this.MaybeFileShowCountsDialog(false, this);
-        //}
+        // }
         #endregion
     }
 }
