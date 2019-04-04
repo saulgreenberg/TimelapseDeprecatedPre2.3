@@ -740,6 +740,7 @@ namespace Timelapse
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
                     DataRowView rowView = row.Item as DataRowView;
                     long fileID = (long)rowView.Row.ItemArray[0];
+                    // BOOKMARK datagrid
                     this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
 
@@ -747,16 +748,6 @@ namespace Timelapse
                     if (!this.DataGridPane.IsFloating)
                     {
                         this.ImageSetPane.IsActive = true;
-                    }
-
-                    // Switch the Markable Canvas to either the video or image view as needed
-                    if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
-                    {
-                        this.MarkableCanvas.SwitchToVideoView();
-                    }
-                    else
-                    {
-                        this.MarkableCanvas.SwitchToImageView();
                     }
                 }
             }
