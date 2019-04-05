@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -536,8 +537,8 @@ namespace Timelapse
                     else
                     {
                         // Uncomment this to see how many images (if any) are skipped
-                         Console.WriteLine(" ");
-                         Console.WriteLine("Skipped");
+                         // Console.WriteLine(" ");
+                         // Console.WriteLine("Skipped");
                         folderLoadProgress.BitmapSource = null;
                     }
                     // }); // SAULXXX Parallel.ForEach
@@ -562,6 +563,18 @@ namespace Timelapse
                 this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, folderLoadProgress.GetMessage());
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
+                //this.BusyIndicator.BusyContent = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+                TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
+                if (bar != null)
+                {
+                    bar.Value = ea.ProgressPercentage;
+                }
+                if (textmessage != null)
+                {
+                    textmessage.Text = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+                }
+
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
@@ -576,7 +589,7 @@ namespace Timelapse
                 }
 
                 // hide the feedback panel, and show the file slider
-                this.FeedbackControl.Visibility = Visibility.Collapsed;
+                //this.FeedbackControl.Visibility = Visibility.Collapsed;
                 this.FileNavigatorSlider.Visibility = Visibility.Visible;
 
                 this.OnFolderLoadingComplete(true);
@@ -601,10 +614,11 @@ namespace Timelapse
                         this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
                     }
                 }
+                this.BusyIndicator.IsBusy = false;
             };
-
+            this.BusyIndicator.IsBusy = true;
             // Update UI for import
-            this.FeedbackControl.Visibility = Visibility.Visible;
+            // this.FeedbackControl.Visibility = Visibility.Visible;
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Folder loading beginning...");
             this.StatusBar.SetMessage("Loading folders...");
