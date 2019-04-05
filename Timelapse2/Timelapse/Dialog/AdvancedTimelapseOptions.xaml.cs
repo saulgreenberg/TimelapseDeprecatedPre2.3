@@ -177,13 +177,9 @@ namespace Timelapse.Dialog
             this.timelapseState.ShowAllImagesWhenLoading = (cb.IsChecked == true) ? true : false;
         }
 
-
-
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
-
-
     }
 }

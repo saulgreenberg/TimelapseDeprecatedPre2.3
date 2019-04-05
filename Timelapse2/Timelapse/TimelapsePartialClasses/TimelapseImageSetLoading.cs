@@ -563,7 +563,7 @@ namespace Timelapse
                 this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, folderLoadProgress.GetMessage());
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
-                //this.BusyIndicator.BusyContent = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+                // this.BusyIndicator.BusyContent = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
                 ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
                 TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
                 if (bar != null)
@@ -574,7 +574,6 @@ namespace Timelapse
                 {
                     textmessage.Text = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
                 }
-
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
@@ -589,7 +588,7 @@ namespace Timelapse
                 }
 
                 // hide the feedback panel, and show the file slider
-                //this.FeedbackControl.Visibility = Visibility.Collapsed;
+                // this.FeedbackControl.Visibility = Visibility.Collapsed;
                 this.FileNavigatorSlider.Visibility = Visibility.Visible;
 
                 this.OnFolderLoadingComplete(true);
