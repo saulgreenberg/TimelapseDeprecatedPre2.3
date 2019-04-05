@@ -601,8 +601,9 @@ namespace Timelapse.Database
                 this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
-            // Step 3. Check both templates and update if needed
-            // For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
+            // STEP 3. Check both templates and update if needed (including values)
+
+            // ImageQuality Column and Data: For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
             // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
             string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
             if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
@@ -616,7 +617,6 @@ namespace Timelapse.Database
                     this.SyncControlToDatabase(templateControl);
                 }
                 // Alter the template in the .tdb file
-
                 templateControl = templateDatabase.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
                 if (templateControl != null)
                 {
@@ -624,13 +624,15 @@ namespace Timelapse.Database
                     templateControl.DefaultValue = Constant.ImageQuality.Unknown;
                     templateDatabase.SyncControlToDatabase(templateControl);
                 }
-                // Reset the Image Quality to Unknown. This is the only way to make this backwards compatable.
+                // ImageQuality Values: Reset the Image Quality values. All Dark values remain as is, but other values are reset to unknown.
+                // This is the only way to make this backwards compatable.
                 // I suspect in most cases that the analysts aren't using the field anyways, although they can always regenerate it if needed.
-                // IMMEDIATE Thinking about it, any existing Dark values can stay as dark. Its the 'OK' that is the issue.
-                this.Database.SetColumnToACommonValue(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
+                ColumnTuple columnTuple = new ColumnTuple(Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
+                ColumnTuplesWithWhere columnTupleWithWhere = new ColumnTuplesWithWhere(columnTuple, Constant.ImageQuality.Dark, true);
+                this.Database.Update(Constant.DatabaseTable.FileData, columnTupleWithWhere);
             }
 
-            // If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
+            // Version Compatabillity Column: If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
             // Add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
             if (versionCompatabilityColumnExists == false)
@@ -639,7 +641,7 @@ namespace Timelapse.Database
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, timelapseVersionNumberAsString));
             }
 
-            // Make sure that the column containing the SortCriteria exists in the image set table. 
+            // Sort Criteria Column: Make sure that the column containing the SortCriteria exists in the image set table. 
             // If not, add it and set it to the default
             bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SortTerms);
             if (!sortCriteriaColumnExists)
@@ -648,9 +650,8 @@ namespace Timelapse.Database
                 this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
-            // Make sure that the column containing the SelectedFolder exists in the image set table. 
+            // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
             // If not, add it and set it to the default
-
             string firstVersionWithSelectedFilesColumns = "2.2.2.6";
             if (VersionClient.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
             {

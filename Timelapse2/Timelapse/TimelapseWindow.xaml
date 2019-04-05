@@ -587,7 +587,38 @@
         </StatusBar>
         
         <!-- Busy Indicator-->
+        <!--<xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1">
+        </xceed:BusyIndicator>-->
         <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1">
+            <xceed:BusyIndicator.BusyContentTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4" Orientation="Vertical">
+                        <StackPanel Margin="4">
+                            <Label Name="foo" Content="Please wait..." />
+                            <ProgressBar Name="bar" Value="0" Height="15"/>
+                        </StackPanel>
+                        <!--<Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="Pause" HorizontalAlignment="Right" Margin="0 0 2 0"/>
+                            <Button Grid.Column="1" Content="Cancel" HorizontalAlignment="Left" Margin="2 0 0 0"/>
+                        </Grid>-->
+                    </StackPanel>
+                </DataTemplate>
+            </xceed:BusyIndicator.BusyContentTemplate>
+            <!--<xceed:BusyIndicator.OverlayStyle>
+                <Style TargetType="Rectangle">
+                    <Setter Property="Fill" Value="#ffffeeee" />
+                </Style>
+            </xceed:BusyIndicator.OverlayStyle>-->
+            <xceed:BusyIndicator.ProgressBarStyle>
+                <Style TargetType="ProgressBar">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </xceed:BusyIndicator.ProgressBarStyle>
+            <!--<ContentControl Style="{StaticResource SampleContent}"/>-->
         </xceed:BusyIndicator>
     </Grid>
 </Window>

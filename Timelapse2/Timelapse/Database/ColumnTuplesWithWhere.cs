@@ -35,6 +35,22 @@ namespace Timelapse.Database
             };
         }
 
+        public ColumnTuplesWithWhere(ColumnTuple column, string field, bool useNotEqualCondition)
+        {
+            if (useNotEqualCondition)
+            {
+                this.SetWhereNotEquals(column, field);
+            }
+            else
+            {
+                this.SetWhere(column, field);
+            }
+            this.Columns = new List<ColumnTuple>
+            {
+                column
+            };
+        }
+
         public void SetWhere(long id)
         {
             this.Where = Constant.DatabaseColumn.ID + " = " + id.ToString();
@@ -43,6 +59,11 @@ namespace Timelapse.Database
         public void SetWhere(ColumnTuple columnTuple, string field)
         {
             this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(field));
+        }
+
+        public void SetWhereNotEquals(ColumnTuple columnTuple, string field)
+        {
+            this.Where = String.Format("{0} <> {1}", columnTuple.Name, Utilities.QuoteForSql(field));
         }
 
         public void SetWhere(string folder, string relativePath, string file)
