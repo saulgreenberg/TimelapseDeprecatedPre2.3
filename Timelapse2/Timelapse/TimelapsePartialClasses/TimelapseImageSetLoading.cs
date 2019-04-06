@@ -189,6 +189,7 @@ namespace Timelapse
             {
                 List<string> folderPaths = new List<string>();
                 // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
+                int count = folderPaths.Count();
                 GetImageSetFoldersRecursively(this.FolderPath, folderPaths);
                 this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
             }
@@ -205,9 +206,20 @@ namespace Timelapse
             {
                 return;
             }
-            folderPaths.Add(root);
+            // Add a folder only if it contains one of the desired extensions
+            List<string> extensions = new List<string>() { "*" + Constant.File.JpgFileExtension, "*" + Constant.File.Mp4FileExtension, "*" + Constant.File.AviFileExtension, };
+            foreach (string extension in extensions)
+            {
+                if (Directory.GetFiles(root, extension).Length !=0)
+                {
+                    folderPaths.Add(root);
+                    System.Diagnostics.Debug.Print(root);
+                    break;
+                }
+            }
+               
             // Recursively descend subfolders, collecting directory info on the way
-            // Note that while folders without images are also collected, these wille eventually be skipped when it is later scanned for images to load
+            // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
             DirectoryInfo dirInfo = new DirectoryInfo(root);
             DirectoryInfo[] subDirs = dirInfo.GetDirectories();
             foreach (DirectoryInfo subDir in subDirs)
@@ -316,11 +328,16 @@ namespace Timelapse
             foreach (string imageFolderPath in imageFolderPaths)
             {
                 DirectoryInfo imageFolder = new DirectoryInfo(imageFolderPath);
-                foreach (string extension in new List<string>() { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.JpgFileExtension })
+                foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
                 {
                     filesToAdd.AddRange(imageFolder.GetFiles("*" + extension));
                 }
             }
+
+            filesToAdd.RemoveAll(x => !(x.Name.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) == true
+                                   || x.Name.EndsWith(".avi", StringComparison.InvariantCultureIgnoreCase) == true
+                                   || x.Name.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase) == true));
+          
 
             // Check if there are any Mac OSX hidden files captured . 
             // e.g., if there is an image called image01.jpg, MacOSX may make a file called ._image01.jpg
