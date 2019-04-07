@@ -160,7 +160,7 @@ namespace Timelapse
             // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
             this.CheckAndCorrectRootFolder(fileDatabase);
 
-            // Check to see if there are any missing folders as specified by the relative paths. For thos missing, as the user to try to locate those folders.
+            // Check to see if there are any missing folders as specified by the relative paths. For those missing, ask the user to try to locate those folders.
             this.CheckAndCorrectForMissingFolders(fileDatabase);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
@@ -356,65 +356,6 @@ namespace Timelapse
 
             List<FileInfo> filesToAdd = Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(imageFolderPath);
            
-            //// There are various conditions that should be tested in terms of how many folders and files were returned
-            //if (isRootFolder && folderCount == 0)
-            //{
-            //    // No images were found in the root folder or subfolders
-            //    MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
-            //    messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
-            //    messageBox.Message.Problem += "\u2022 " + imageFolderPaths.First() + Environment.NewLine;
-            //    messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
-            //    messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
-            //    messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
-            //    messageBox.Message.Solution = "Timelapse aborted the load operation." + Environment.NewLine;
-            //    messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
-            //    messageBox.Message.Icon = MessageBoxImage.Exclamation;
-            //    messageBox.ShowDialog();
-            //    externallyVisibleWorker = null;
-            //    return false;
-            //}
-            //else if (folderCount == 1 && rootFolderContainsImages == true)
-            //{
-            //    System.Diagnostics.Debug.Print("Images in root folder only");
-            //}
-            //else if (folderCount > 1 && rootFolderContainsImages)
-            //{
-            //    System.Diagnostics.Debug.Print("Images in root folder and in subfolders");
-            //}
-            //else if (folderCount >= 1 && rootFolderContainsImages == false)
-            //{
-            //    System.Diagnostics.Debug.Print("Images only in subfolders");
-            //}
-
-            //if (filesToAdd.Count == 0)
-            //{
-            //    externallyVisibleWorker = null;
-
-            //    // no images were found in folder; see if user wants to try again
-            //    MessageBox messageBox = new MessageBox("Select a folder containing images or videos", this, MessageBoxButton.OKCancel);
-            //    messageBox.Message.Problem = "Select a folder containing images or videos, as there aren't any images or videos in the folder:" + Environment.NewLine;
-            //    messageBox.Message.Problem += "\u2022 " + this.FolderPath + Environment.NewLine;
-            //    messageBox.Message.Reason = "\u2022 This folder has no JPG files in it (files ending in '.jpg'), and" + Environment.NewLine;
-            //    messageBox.Message.Reason += "\u2022 This folder has no AVI files in it (files ending in '.avi'), and" + Environment.NewLine;
-            //    messageBox.Message.Reason += "\u2022 This folder has no MP4 files in it (files ending in '.mp4'), or" + Environment.NewLine;
-            //    messageBox.Message.Reason += "\u2022 The images / videos may be located in a subfolder to this one.";
-            //    messageBox.Message.Solution = "Select a folder containing images (files with a '.jpg' suffix) and/or" + Environment.NewLine;
-            //    messageBox.Message.Solution += "videos ('.avi' or '.mp4' files)." + Environment.NewLine;
-            //    messageBox.Message.Icon = MessageBoxImage.Question;
-            //    if (messageBox.ShowDialog() == false)
-            //    {
-            //        return false;
-            //    }
-
-            //    if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
-            //    {
-            //        return this.TryBeginImageFolderLoadAsync(folderPaths, out externallyVisibleWorker);
-            //    }
-
-            //    // exit if user changed their mind about trying again
-            //    return false;
-            //}
-
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
             BackgroundWorker backgroundWorker = new BackgroundWorker()
