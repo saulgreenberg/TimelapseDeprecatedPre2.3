@@ -299,6 +299,7 @@
     <Compile Include="Util\GlobalReferences.cs" />
     <Compile Include="Util\ImageMetadata.cs" />
     <Compile Include="Util\ImageMetadataDictionary.cs" />
+    <Compile Include="Util\FilesFoldersAndPaths.cs" />
     <Compile Include="Util\RegistryKeyExtensions.cs" />
     <Compile Include="Util\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />
