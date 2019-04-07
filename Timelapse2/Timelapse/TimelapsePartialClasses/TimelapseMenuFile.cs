@@ -64,7 +64,7 @@ namespace Timelapse
                 foreach(string subFolder in folderPaths)
                 { 
                     // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
-                    GetImageSetFoldersRecursively(subFolder, subFolderPaths);
+                    Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(subFolder, subFolderPaths);
                 }
                 this.TryBeginImageFolderLoadAsync(subFolderPaths, out BackgroundWorker backgroundWorker);
 

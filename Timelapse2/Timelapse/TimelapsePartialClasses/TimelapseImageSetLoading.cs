@@ -190,7 +190,8 @@ namespace Timelapse
                 List<string> folderPaths = new List<string>();
                 // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
                 int count = folderPaths.Count();
-                GetImageSetFoldersRecursively(this.FolderPath, folderPaths);
+                // Performance: .6 secs
+                Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(this.FolderPath, folderPaths);
                 this.TryBeginImageFolderLoadAsync(folderPaths, out backgroundWorker);
             }
             else
@@ -198,39 +199,6 @@ namespace Timelapse
                 this.OnFolderLoadingComplete(false);
             }
             return true;
-        }
-
-        private static void GetImageSetFoldersRecursively(string root, List<string> folderPaths)
-        {
-            if (!Directory.Exists(root))
-            {
-                return;
-            }
-            // Add a folder only if it contains one of the desired extensions
-            List<string> extensions = new List<string>() { "*" + Constant.File.JpgFileExtension, "*" + Constant.File.Mp4FileExtension, "*" + Constant.File.AviFileExtension, };
-            foreach (string extension in extensions)
-            {
-                if (Directory.GetFiles(root, extension).Length !=0)
-                {
-                    folderPaths.Add(root);
-                    System.Diagnostics.Debug.Print(root);
-                    break;
-                }
-            }
-               
-            // Recursively descend subfolders, collecting directory info on the way
-            // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
-            DirectoryInfo dirInfo = new DirectoryInfo(root);
-            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
-            foreach (DirectoryInfo subDir in subDirs)
-            {
-                // Skip the following folders
-                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
-                {
-                    continue;
-                }
-                GetImageSetFoldersRecursively(subDir.FullName, folderPaths);
-            }
         }
 
         // Get the root folder name from the database, and check to see if its the same as the actual root folder.
@@ -324,35 +292,11 @@ namespace Timelapse
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoadAsync(IEnumerable<string> imageFolderPaths, out BackgroundWorker externallyVisibleWorker)
         {
-            List<FileInfo> filesToAdd = new List<FileInfo>();
-            foreach (string imageFolderPath in imageFolderPaths)
-            {
-                DirectoryInfo imageFolder = new DirectoryInfo(imageFolderPath);
-                foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
-                {
-                    filesToAdd.AddRange(imageFolder.GetFiles("*" + extension));
-                }
-            }
-
-            filesToAdd.RemoveAll(x => !(x.Name.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) == true
-                                   || x.Name.EndsWith(".avi", StringComparison.InvariantCultureIgnoreCase) == true
-                                   || x.Name.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase) == true));
-          
-
-            // Check if there are any Mac OSX hidden files captured . 
-            // e.g., if there is an image called image01.jpg, MacOSX may make a file called ._image01.jpg
-            // If so, warn the user and ask them if they want to skip those files.
-            if (filesToAdd.Any(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0))
-            {
-                SkipHiddenFiles messageBox = new SkipHiddenFiles(this);
-                if (messageBox.ShowDialog() == true)
-                {
-                    filesToAdd.RemoveAll(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
-                }
-            }
-
-            // Reorder the files
-            filesToAdd = filesToAdd.OrderBy(file => file.FullName).ToList();
+            // Get all image/video files from the imageFolderPaths, sorted by path/filename. 
+            // Note that this excludes any MacOSX hidden Files beginning with '._'
+            // Performance: this takes 1.6 secs
+            List<FileInfo> filesToAdd = Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolders(imageFolderPaths);
+ 
             if (filesToAdd.Count == 0)
             {
                 externallyVisibleWorker = null;
