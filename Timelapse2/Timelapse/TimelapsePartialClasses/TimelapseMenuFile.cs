@@ -57,18 +57,9 @@ namespace Timelapse
         // Add Images to Image Set 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
         {
-            //if (this.ShowFolderSelectionDialog(out IEnumerable<string> folderPaths))
             if (this.ShowFolderSelectionDialog(out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                //List<string> subFolderPaths = new List<string>();
-                //foreach (string subFolder in folderPaths)
-                //{
-                //    // IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
-                //    Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(subFolder, subFolderPaths);
-                //}
-                // this.TryBeginImageFolderLoadAsync(subFolderPaths, out BackgroundWorker backgroundWorker);
-                //this.TryBeginImageFolderLoadAsync(folderPaths, out BackgroundWorker backgroundWorker);
                 this.TryBeginImageFolderLoadAsync(folderPath, false, out BackgroundWorker backgroundWorker);
                 Mouse.OverrideCursor = null;
             }
