@@ -187,12 +187,6 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                //List<string> folderPaths = new List<string>();
-                //// IMMEDIATE: FIGURE OUT HOW TO MAKE THIS A USER OPTION
-                //int count = folderPaths.Count();
-                //// Performance: .6 secs
-                //Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(this.FolderPath, folderPaths);
-                //this.TryBeginImageFolderLoadAsync(folderPaths, true, out backgroundWorker);
                 this.TryBeginImageFolderLoadAsync(this.FolderPath, true, out backgroundWorker);
             }
             else
@@ -291,7 +285,6 @@ namespace Timelapse
 
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
-        //private bool TryBeginImageFolderLoadAsync(IEnumerable<string> imageFolderPaths, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         private bool TryBeginImageFolderLoadAsync(string imageFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
             // We check for different things if this is the initial first-time load of an image set vs. adding files after the database has been created.
@@ -302,7 +295,7 @@ namespace Timelapse
                 List<string> subFolderPaths = new List<string>();
                 Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
 
-                // The else ifs are stubs in case we want to modify the code to ask the user if she wants to load only images in the root folder, 
+                // The else-ifs are stubs in case we want to modify the code to ask the user if she wants to load only images in the root folder, 
                 // or to include subfolders as well.
                 if (subFolderPaths.Count == 0)
                 {
