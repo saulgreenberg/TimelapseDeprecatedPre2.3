@@ -33,6 +33,35 @@ namespace Timelapse.Util
             return fileInfoList.OrderBy(file => file.FullName).ToList();
         }
 
+        public static List<FileInfo> GetAllImageAndVideoFilesInFolderAndSubfolders(string rootFolderPath)
+        {
+            List<string> folderPaths = new List<string>();
+            GetAllFoldersContainingAnImageOrVideo(rootFolderPath, folderPaths);
+                        
+            List<FileInfo> fileInfoList = new List<FileInfo>();
+            foreach (string folderPath in folderPaths)
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
+                foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+                {
+                    // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
+                    // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX
+                    fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                }
+            }
+            // Because of that bug, we need to check for, and remove, any files that don't exactly match the desired extension
+            // At the same time, we also remove MacOSX hidden files, if any
+            FilesRemoveAllButImagesAndVideos(fileInfoList);
+            if (fileInfoList.Count() == 0)
+            {
+                // There are no files, so just return the empty list
+                return fileInfoList;
+            }
+
+            // Reorder the files
+            return fileInfoList.OrderBy(file => file.FullName).ToList();
+        }
+
         // Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
         public static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths)
         {
@@ -64,6 +93,23 @@ namespace Timelapse.Util
             }
         }
 
+        // Return true if any of the files in the fileinfo list includes at least  image or video
+        public static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+            {
+                List<FileInfo> fileInfoList = new List<FileInfo>();
+                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                FilesRemoveAllButImagesAndVideos(fileInfoList);
+                if (fileInfoList.Any(x => x.Name.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase) == true))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
         #region Private methods
         // Remove, any files that 
         // - don't exactly match the desired image or video extension, 
@@ -81,21 +127,7 @@ namespace Timelapse.Util
         // These are prefixed by '._' and are not actually a valid image or video
 
 
-        // Return true if any of the files in the fileinfo list includes at least  image or video
-        private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
-            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
-            {
-                List<FileInfo> fileInfoList = new List<FileInfo>();
-                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
-                if (fileInfoList.Any(x => x.Name.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase) == true))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+
         #endregion
 
         #region Unused methods

@@ -556,7 +556,7 @@ namespace Timelapse
             CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
             {
                 Title = "Select one or more folders ...",
-                DefaultDirectory = this.mostRecentFileAddFolderPath ?? this.FolderPath,
+                DefaultDirectory = this.FolderPath,
                 IsFolderPicker = true,
                 Multiselect = true
             };
@@ -576,6 +576,30 @@ namespace Timelapse
             return false;
         }
 
+        // Open a dialog where the user selects one or more folders that contain the image set(s)
+        private bool ShowFolderSelectionDialog(out string folderPath)
+        {
+            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            {
+                Title = "Select a folder ...",
+                DefaultDirectory = this.FolderPath,
+                IsFolderPicker = true,
+                Multiselect = false
+            };
+            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
+            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                IEnumerable<string> folderPaths = folderSelectionDialog.FileNames;
+                folderPath = folderPaths.First();
+                // remember the parent of the selected folder path to save the user clicks and scrolling in case images from additional 
+                // directories are added
+                this.mostRecentFileAddFolderPath = Path.GetDirectoryName(folderPaths.First());
+                return true;
+            }
+            folderPath = null;
+            return false;
+        }
         /// <summary>
         /// File menu helper function:
         /// </summary>
