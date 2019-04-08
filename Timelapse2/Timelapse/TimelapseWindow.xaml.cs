@@ -62,8 +62,7 @@ namespace Timelapse
         {
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
-            GlobalReferences.MainWindow = this; // So other classes can access methods here
-            GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
+
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
@@ -92,6 +91,12 @@ namespace Timelapse
 
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
             this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
+
+            // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
+            // Yup, poor practice but...
+            GlobalReferences.MainWindow = this; // So other classes can access methods here
+            GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
+            GlobalReferences.TimelapseState = this.state;
 
             // Populate the most recent image set list
             this.RecentFileSets_Refresh();
@@ -954,5 +959,6 @@ namespace Timelapse
         }
 
         #endregion
+
     }
 }

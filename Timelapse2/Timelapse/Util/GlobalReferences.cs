@@ -9,5 +9,7 @@ namespace Timelapse.Util
         public static TimelapseWindow MainWindow { get; set; }
 
         public static BusyIndicator BusyIndicator { get; set; }
+
+        public static TimelapseState TimelapseState { get; set; }
     }
 }

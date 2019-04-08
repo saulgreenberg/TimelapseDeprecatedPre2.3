@@ -193,13 +193,14 @@ namespace Timelapse
             if (imageRow.Contains(Constant.Recognition.DataLabelBoundingBoxes))
             {
                 string bboxesAsString = imageRow.GetValueDisplayString(Constant.Recognition.DataLabelBoundingBoxes);
+                string maxConfidenceAsString = imageRow.GetValueDisplayString(Constant.Recognition.DataLabelMaxConfidence);
                 if (bboxesAsString == null)
                 {
                     System.Diagnostics.Debug.Print("NULL");
                 }
                 else
                 { 
-                    bboxes.CreatefromRecognitionData(bboxesAsString);
+                    bboxes.CreatefromRecognitionData(maxConfidenceAsString, bboxesAsString);
                 }
             }
             else

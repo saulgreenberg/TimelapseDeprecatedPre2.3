@@ -284,6 +284,7 @@ namespace Timelapse
             public const string Mp4FileExtension = ".mp4";
             public const string MacOSXHiddenFilePrefix = "._";
             public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep
+            public const string RecognitionDataFileName = "recognitionData.csv";
             public const string TemplateDatabaseFileExtension = ".tdb";
             public const string VideoThumbnailFolderName = ".vthumb";
             public const string XmlTemplateFileName = "CodeTemplate.xml";
@@ -435,12 +436,18 @@ namespace Timelapse
             public const string CSVLabelImagePath = "image_path";
             public const string CSVLabelMaxConfidence = "max_confidence";
             public const string CSVLabelBoundingBoxes = "predicted_boxes";
+            public const double BoundingBoxDisplayThresholdDefault = 0.8;
+            public const double SpeciesDetectedThresholdDefault = 0.8;
+            public const string SpeciesDetectedDataLabel = "SpeciesDetected";
         }
         public static class Registry
         {
             // Various keys used to save state in the Windows Registry
             public static class TimelapseKey
             {
+                // Various Recognition-related values
+                public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";
+
                 // whether audio feedback is enabled
                 public const string AudioFeedback = "AudioFeedback";
 

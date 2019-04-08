@@ -10,12 +10,13 @@ namespace Timelapse.Images
     {
         // List of Bounding Boxes associated with the image
         public List<BoundingBox> Boxes { get; private set; }
+        public float MaxConfidence { get; set; }
         public BoundingBoxes()
         {
             this.Boxes = new List<BoundingBox>();
         }
 
-        public void CreatefromRecognitionData(string predictedBoxes)
+        public void CreatefromRecognitionData(string maxConfidenceAsString, string predictedBoxes)
         {
             // The JSON data is structured as a comma-separated list of lists, i.e.
             // [] for an empty list
@@ -25,7 +26,17 @@ namespace Timelapse.Images
             if (predictedBoxes == String.Empty || predictedBoxes == "[]")
             {
                 // empty list, so do nothing
+                MaxConfidence = 0;
                 return;
+            }
+
+            if (float.TryParse(maxConfidenceAsString, out float value))
+            {
+                MaxConfidence = value;
+            }
+            else
+            {
+                MaxConfidence = 0;
             }
 
             // Strip out the first and last '[]'
@@ -42,9 +53,9 @@ namespace Timelapse.Images
                 List<float> bbox_parameters = new List<float>();
                 foreach (string parameter in bbox_parametersAsString)
                 {
-                    if (float.TryParse(parameter, out float value))
+                    if (float.TryParse(parameter, out float floatValue))
                     {
-                        bbox_parameters.Add(value);
+                        bbox_parameters.Add(floatValue);
                     }
                     else
                     {

@@ -65,45 +65,6 @@ namespace Timelapse
             }
         }
 
-        private void MenuItemImportRecognitionData_Click(object sender, RoutedEventArgs e)
-        {
-            // Ask the user for the file name containing the recognition data
-            string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
-            if (Utilities.TryGetFileFromUser(
-                      "Select a .csv file that contains the recognition data. It will be merged into the current image set",
-                      Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
-                      String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
-                      Constant.File.CsvFileExtension,
-                      out string csvFilePath) == false)
-            {
-                return;
-            }
-
-            // Create a backup database file
-            if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))
-            {
-                this.StatusBar.SetMessage("Backup of data file made.");
-            }
-            else
-            {
-                this.StatusBar.SetMessage("No data file backup was made.");
-            }
-
-            // Try to import the recognition data
-            if (CsvReaderWriter.TryImportRecognitionDataFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
-            {
-                MessageBox messageBox = new MessageBox("The recognition data could not be imported.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = String.Format("The recognition data could not be imported from ", csvFilePath);
-                messageBox.Message.Reason = "The errors encountered were:" + Environment.NewLine;
-                foreach (string importError in importErrors)
-                {
-                    messageBox.Message.Reason += Environment.NewLine + "\u2022 " + importError;
-                }
-                messageBox.ShowDialog();
-            }
-        }
-
         // Export data for this image set as a .csv file
         // Export data for this image set as a .csv file and preview in Excel 
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)

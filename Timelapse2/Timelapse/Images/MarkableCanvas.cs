@@ -968,11 +968,15 @@ namespace Timelapse.Images
         {
             bboxCanvas.Children.Clear();
             this.Children.Remove(bboxCanvas);
+            if (bboxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold) //Constant.Recognition.BoundingBoxDisplayThresholdDefault)
+            { 
+                return;
+            }
             bboxCanvas.Width = canvasRenderSize.Width;
             bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in bboxes.Boxes)
             {
-                if (bbox.Confidence < 0.5)
+                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold) //Constant.Recognition.BoundingBoxDisplayThresholdDefault
                 {
                     continue;
                 }

@@ -163,7 +163,7 @@ namespace Timelapse.Database
 
                         // accumulate image
                         Debug.Assert(String.IsNullOrWhiteSpace(imageFileName) == false, "File name was not loaded.");
-                        imageToUpdate.SetWhere(folder, relativePath, imageFileName);
+                        imageToUpdate.SetWhere(relativePath, imageFileName);
                         imagesToUpdate.Add(imageToUpdate);
 
                         // write current batch of updates to database
@@ -189,7 +189,7 @@ namespace Timelapse.Database
             {
                 // Check if the data labels contain the required data fields to hold the recognition data, i.e., the MaxConfidence and the Bounding boxes
                 List<string> dataLabels = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
-                bool useSpeciesPresent = dataLabels.Contains("SpeciesPresent");
+                bool useSpeciesDetected = dataLabels.Contains(Constant.Recognition.SpeciesDetectedDataLabel);
                 string errorMessage = dataLabels.Contains(Constant.Recognition.DataLabelMaxConfidence) ? String.Empty : " " + Constant.Recognition.DataLabelMaxConfidence;
                 errorMessage += dataLabels.Contains(Constant.Recognition.DataLabelBoundingBoxes) ? String.Empty : " " + Constant.Recognition.DataLabelBoundingBoxes;
                 if (errorMessage != String.Empty)
@@ -267,8 +267,22 @@ namespace Timelapse.Database
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelMaxConfidence)
                                 {
-                                    maxConfidence = value;
+                                    // Convert the number into a string of the form "#.##"
+                                    if (float.TryParse(value, out float maxConfidenceAsFloat))
+                                    {
+                                        maxConfidence = maxConfidenceAsFloat.ToString("0.00");
+                                    }
+                                    else
+                                    {
+                                        maxConfidence = "0.00";
+                                        maxConfidenceAsFloat = 0;
+                                    }
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelMaxConfidence, maxConfidence));
+                                    if (useSpeciesDetected)
+                                    {
+                                        bool predicted = maxConfidenceAsFloat >= Constant.Recognition.BoundingBoxDisplayThresholdDefault;
+                                        imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.SpeciesDetectedDataLabel, predicted));
+                                    }
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelBoundingBoxes)
                                 {
@@ -276,6 +290,7 @@ namespace Timelapse.Database
                                     // Not sure why its read in as part of the CSV row...
                                     boundingBoxes = value.Replace("\"", String.Empty);
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelBoundingBoxes, boundingBoxes));
+
                                 }
                                 else
                                 {
@@ -283,11 +298,6 @@ namespace Timelapse.Database
                                 }
                             }
 
-                            if (useSpeciesPresent)
-                            {
-                                bool predicted = maxConfidence != String.Empty && float.Parse(maxConfidence) > 0.8;
-                                imageToUpdate.Columns.Add(new ColumnTuple("SpeciesPresent", predicted));
-                            }
                             // update those column values in the image
                             imageToUpdate.SetWhere(folder, relativePath, fileName);
                             imagesToUpdate.Add(imageToUpdate);

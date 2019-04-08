@@ -53,6 +53,11 @@ namespace Timelapse
             // Sort menu
             this.MenuItemSort.IsEnabled = filesSelected;
 
+            // Recognition menu
+            this.MenuItemRecognition.IsEnabled = filesSelected;
+            this.MenuItemImportRecognitionData.IsEnabled = filesSelected;
+            this.MenuItemDetectorOptions.IsEnabled = filesSelected;
+
             // Windows menu is always enabled
 
             // Enablement state of the various other UI components.
