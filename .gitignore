@@ -5,7 +5,8 @@
 *.dll
 
 # But keep these dll as they are custom and not retrievable via NuGet
-!**/CustomAvalonDll/Xceed.Wpf.AvalonDock.dll
+!**/CustomAvalonDll3.4/*Xceed.Wpf.AvalonDock.dll
+!**/CustomAvalonDll3.4/*Xceed.Wpf.Toolkit.dll
 
 # Build results 
 bin/
