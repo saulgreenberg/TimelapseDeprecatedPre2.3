@@ -2,7 +2,7 @@
 *.suo
 *.user
 *.sln
-*.dll
+
 
 # But keep these dll as they are custom and not retrievable via NuGet
 !**/CustomAvalonDll3.4/*Xceed.Wpf.AvalonDock.dll
