@@ -14,7 +14,6 @@ namespace Timelapse.Dialog
         private TimelapseState timelapseState;
         private FileDatabase fileDatabase;
         private bool useSpeciesDetected;
-        static private double previousSpeciesDetectedThresholdValue = Constant.Recognition.SpeciesDetectedThresholdDefault;
         public DetectorOptions(TimelapseState timelapseState, FileDatabase fileDataBase, Window owner)
         {
             this.InitializeComponent();
@@ -30,7 +29,7 @@ namespace Timelapse.Dialog
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
-            this.RecomputeSpeciesDetectedThresholdSlider.Value = previousSpeciesDetectedThresholdValue;
+            this.RecomputeSpeciesDetectedThresholdSlider.Value = this.timelapseState.SpeciesDetectedThreshold;
             this.RecomputeSpeciesDetectedGroupBox.IsEnabled = this.useSpeciesDetected;
         }
 
@@ -88,6 +87,8 @@ namespace Timelapse.Dialog
         {
             // Update the SpeciesDetected field in the FileTable and ImageSet to match the current threshold
             UpdateSpeciesDetected(this.RecomputeSpeciesDetectedThresholdSlider.Value);
+            this.timelapseState.SpeciesDetectedThreshold = this.RecomputeSpeciesDetectedThresholdSlider.Value;
+            this.FeedbackMessage.Text = "Species detected values have been updated";
         }
 
         // Update the species detected against the threshold in both the database and the file table
@@ -103,7 +104,7 @@ namespace Timelapse.Dialog
                 ImageRow imageRow = this.fileDatabase.FileTable[row];
                 bool? newSpeciesDetectedValue = null;
                 bool forceUpdate = false;
-                //Get the current SpeciesDetected value
+                // Get the current SpeciesDetected value
                 if (bool.TryParse(imageRow.GetValueDisplayString(Constant.Recognition.SpeciesDetectedDataLabel), out bool currentSpeciesDetectedValue) == false)
                 {
                     forceUpdate = true;
@@ -132,10 +133,13 @@ namespace Timelapse.Dialog
                     }, imageRow.ID));
                 }
             }
-
-
             // update the database with the new values
             this.fileDatabase.UpdateFiles(filesToUpdate);
+        }
+
+        private void ResetSpeciesDetectedThreshold_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            this.FeedbackMessage.Text = string.Empty;
         }
     }
 }

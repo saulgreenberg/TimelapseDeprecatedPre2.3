@@ -291,7 +291,7 @@ namespace Timelapse
             if (isInitialImageSetLoading)
             {
                 // We are loading images from the root folder for the first time
-                bool isImagesInRootFolder = (Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath));
+                bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
                 List<string> subFolderPaths = new List<string>();
                 Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
 
@@ -302,7 +302,7 @@ namespace Timelapse
                     // No images were found in the root folder or subfolders
                     MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
                     messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
-                    messageBox.Message.Problem += "\u2022 " + imageFolderPath+ Environment.NewLine;
+                    messageBox.Message.Problem += "\u2022 " + imageFolderPath + Environment.NewLine;
                     messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
                     messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
                     messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
@@ -316,24 +316,23 @@ namespace Timelapse
                 else if (subFolderPaths.Contains(imageFolderPath) && subFolderPaths.Count() == 1)
                 {
                     // Images found in root folder only
-                    System.Diagnostics.Debug.Print("Images in root folder only");
+                    // System.Diagnostics.Debug.Print("Images in root folder only");
                 }
                 else if (subFolderPaths.Contains(imageFolderPath) && subFolderPaths.Count() > 1)
                 {
                     // Images found in root folder and sub folders
-                    System.Diagnostics.Debug.Print("Images in root folder and subfolders");
+                    // System.Diagnostics.Debug.Print("Images in root folder and subfolders");
                 }
                 else if (subFolderPaths.Contains(imageFolderPath) == false && subFolderPaths.Count() > 0)
                 {
                     // Images found in subfolders only
-                    System.Diagnostics.Debug.Print("Images in sub folders only");
+                    // System.Diagnostics.Debug.Print("Images in sub folders only");
                 }
-                
             }
             else
             {
                 // We are adding images to an already existing database
-                bool isImagesInRootFolder = (Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath));
+                bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
                 List<string> subFolderPaths = new List<string>();
                 Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
                 if (subFolderPaths.Count == 0)

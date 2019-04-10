@@ -290,11 +290,10 @@ namespace Timelapse.Database
                                     // Not sure why its read in as part of the CSV row...
                                     boundingBoxes = value.Replace("\"", String.Empty);
                                     imageToUpdate.Columns.Add(new ColumnTuple(Constant.Recognition.DataLabelBoundingBoxes, boundingBoxes));
-
                                 }
                                 else
-                                {
-                                    System.Diagnostics.Debug.Print("Something went wrong...");
+                                {  
+                                    System.Diagnostics.Debug.Print("Something went wrong... The CSV file is likely open.");
                                 }
                             }
 
@@ -324,7 +323,7 @@ namespace Timelapse.Database
             }
             catch
             {
-                importErrors.Add(String.Format("In catch: Something went wrong."));
+                importErrors.Add(String.Format("The CSV file could not be read. Is it opened in another application?"));
                 return false;
             }
         }

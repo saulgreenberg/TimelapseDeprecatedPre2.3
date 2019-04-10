@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Timelapse.Dialog"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         mc:Ignorable="d"
-        Title="Detector Optons" Height="450" Width="844.186" MinHeight="450" MinWidth="850" Loaded="Window_Loaded" >
+        Title="Detector Optons" Height="410" Width="844.186" MinHeight="410" MinWidth="850" Loaded="Window_Loaded" >
     <StackPanel Orientation="Vertical" Width="811" Margin="2,0,1,3">
         <controls:StockMessageControl x:Name="Message" Margin="15,0,15,10" Icon="Question"
                             Title="Detector Options"
@@ -43,12 +43,12 @@
                         <TextBlock Name="RecomputeSpeciesDetectedThresholdDisplayValue"  FontWeight="Normal" Text="0.00" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
-                <Button Name="ResetSpeciesDetectedThreshold" Content="Apply to Selected Images" Padding="10,0,10,0" FontWeight="Normal" Height="30" Margin="20,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="RecomputeSpeciesDetectedThreshold_Click"></Button>
+                <Button Name="ResetSpeciesDetectedThreshold" Content="Apply to Selected Images" Padding="10,0,10,0" FontWeight="Normal" Height="30" Margin="20,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="RecomputeSpeciesDetectedThreshold_Click" MouseEnter="ResetSpeciesDetectedThreshold_MouseEnter"></Button>
             </DockPanel>
         </GroupBox>
-
-
-
-        <Button Margin="698,20,37,0" x:Name="OkButton" Content="Ok" IsDefault="True" Height="34" Click="OkButton_Click" AutomationProperties.AutomationId="OkButton" />
+        <DockPanel Margin="0,10,0,0">
+            <Button  x:Name="OkButton"  DockPanel.Dock="Right" Margin="0,0,38,0" Content="Ok" HorizontalAlignment="Right" IsDefault="True" Width="100" Height="34" Click="OkButton_Click" AutomationProperties.AutomationId="OkButton" />
+            <TextBlock Name="FeedbackMessage" Margin="38,0,10,0" VerticalAlignment="Bottom" Height="24" HorizontalAlignment="Right" DockPanel.Dock="Right"/>
+        </DockPanel>
     </StackPanel>
 </Window>

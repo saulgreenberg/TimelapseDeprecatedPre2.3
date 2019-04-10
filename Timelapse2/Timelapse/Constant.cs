@@ -447,6 +447,7 @@ namespace Timelapse
             {
                 // Various Recognition-related values
                 public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";
+                public const string SpeciesDetectedThreshold = "SpeciesDetectedThreshold";
 
                 // whether audio feedback is enabled
                 public const string AudioFeedback = "AudioFeedback";

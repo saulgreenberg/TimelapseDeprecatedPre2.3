@@ -26,21 +26,21 @@ namespace Timelapse.Images
             if (predictedBoxes == String.Empty || predictedBoxes == "[]")
             {
                 // empty list, so do nothing
-                MaxConfidence = 0;
+                this.MaxConfidence = 0;
                 return;
             }
 
             if (float.TryParse(maxConfidenceAsString, out float value))
             {
-                MaxConfidence = value;
+                this.MaxConfidence = value;
             }
             else
             {
-                MaxConfidence = 0;
+                this.MaxConfidence = 0;
             }
 
             // Strip out the first and last '[]'
-            predictedBoxes = StripBraces(predictedBoxes);
+            predictedBoxes = this.StripBraces(predictedBoxes);
 
             // cycle through each list to fill in the bounding boxes
             String[] lists = predictedBoxes.Split(new string[] { "], [" }, StringSplitOptions.None);
@@ -49,7 +49,7 @@ namespace Timelapse.Images
                 // The split above still keeps some braces, so strip them as needed
 
                 // Get the individual parameters
-                string[] bbox_parametersAsString = StripBraces(str).Split(new string[] { ", " }, StringSplitOptions.None);
+                string[] bbox_parametersAsString = this.StripBraces(str).Split(new string[] { ", " }, StringSplitOptions.None);
                 List<float> bbox_parameters = new List<float>();
                 foreach (string parameter in bbox_parametersAsString)
                 {

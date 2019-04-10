@@ -109,24 +109,20 @@ namespace Timelapse.Util
             }
             return false;
         }
-    
+
         #region Private methods
         // Remove, any files that 
         // - don't exactly match the desired image or video extension, 
         // - have a MacOSX hidden file prefix
-        static private void FilesRemoveAllButImagesAndVideos(List<FileInfo> fileInfoList)
+        // When files from a MacOSX system are copied to Windows, it may produce 'hidden' files mirroring the valid files. 
+        // These are prefixed by '._' and are not actually a valid image or video
+        private static void FilesRemoveAllButImagesAndVideos(List<FileInfo> fileInfoList)
         {
             fileInfoList.RemoveAll(x => !(x.Name.EndsWith(Constant.File.JpgFileExtension, StringComparison.InvariantCultureIgnoreCase) == true
                                    || x.Name.EndsWith(Constant.File.AviFileExtension, StringComparison.InvariantCultureIgnoreCase) == true
                                    || x.Name.EndsWith(Constant.File.Mp4FileExtension, StringComparison.InvariantCultureIgnoreCase) == true)
                                    || x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
         }
-
-        // It is possible that the list of image or video files contains bogus MacOSX hidden files 
-        // Whe files from a MacOSX system are copied to Windows, it may produce 'hidden' files mirroring the valid files. 
-        // These are prefixed by '._' and are not actually a valid image or video
-
-
 
         #endregion
 

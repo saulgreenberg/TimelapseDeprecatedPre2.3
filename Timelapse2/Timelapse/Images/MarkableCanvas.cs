@@ -968,7 +968,7 @@ namespace Timelapse.Images
         {
             bboxCanvas.Children.Clear();
             this.Children.Remove(bboxCanvas);
-            if (bboxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold) //Constant.Recognition.BoundingBoxDisplayThresholdDefault)
+            if (bboxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
             { 
                 return;
             }
@@ -976,7 +976,7 @@ namespace Timelapse.Images
             bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in bboxes.Boxes)
             {
-                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold) //Constant.Recognition.BoundingBoxDisplayThresholdDefault
+                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
                 {
                     continue;
                 }
