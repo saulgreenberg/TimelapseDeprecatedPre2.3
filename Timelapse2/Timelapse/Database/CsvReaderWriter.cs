@@ -263,7 +263,7 @@ namespace Timelapse.Database
                                         relativePath = Path.GetDirectoryName(value.Substring(index + 1));
                                     }
                                     fileName = Path.GetFileName(value);
-                                    System.Diagnostics.Debug.Print(folder + "|" + relativePath + "|" + fileName);
+                                    // System.Diagnostics.Debug.Print(folder + "|" + relativePath + "|" + fileName);
                                 }
                                 else if (dataLabel == Constant.Recognition.CSVLabelMaxConfidence)
                                 {
@@ -293,7 +293,7 @@ namespace Timelapse.Database
                                 }
                                 else
                                 {  
-                                    System.Diagnostics.Debug.Print("Something went wrong... The CSV file is likely open.");
+                                    // System.Diagnostics.Debug.Print("Something went wrong... The CSV file is likely open.");
                                 }
                             }
 

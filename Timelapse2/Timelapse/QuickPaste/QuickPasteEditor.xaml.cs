@@ -113,8 +113,6 @@ namespace Timelapse.QuickPaste
                 quickPasteItem.ControlType == Constant.Control.Counter)
             {
                 // Notes and Counters both uses a text field, so they can be constructed as a textbox
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
                 AutocompleteTextBox textBoxValue = new AutocompleteTextBox()
                 {
                     Autocompletions = null,
@@ -131,8 +129,6 @@ namespace Timelapse.QuickPaste
                 {
                     textBoxValue.Autocompletions = this.dataEntryControls.AutocompletionGetForNote(quickPasteItem.DataLabel);
                 }
-                sw.Stop();
-                System.Diagnostics.Debug.Print(sw.Elapsed.Milliseconds.ToString());
                 // Counter text fields are modified to only allow numeric input
                 if (quickPasteItem.ControlType == Constant.Control.Counter)
                 {

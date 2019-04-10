@@ -121,7 +121,7 @@ namespace Timelapse.Dialog
                 }
                 if (forceUpdate == true || newSpeciesDetectedValue != currentSpeciesDetectedValue)
                 {
-                    System.Diagnostics.Debug.Print(newSpeciesDetectedValue.ToString());
+                    //System.Diagnostics.Debug.Print(newSpeciesDetectedValue.ToString());
                     string newSpeciesDetectedValueAsString = (newSpeciesDetectedValue == true) 
                         ? Constant.BooleanValue.True 
                         : Constant.BooleanValue.False;

@@ -196,7 +196,7 @@ namespace Timelapse
                 string maxConfidenceAsString = imageRow.GetValueDisplayString(Constant.Recognition.DataLabelMaxConfidence);
                 if (bboxesAsString == null)
                 {
-                    System.Diagnostics.Debug.Print("NULL");
+                    // System.Diagnostics.Debug.Print("NULL");
                 }
                 else
                 { 
@@ -205,7 +205,7 @@ namespace Timelapse
             }
             else
             {
-                System.Diagnostics.Debug.Print("bbox datalabel not present");
+                // System.Diagnostics.Debug.Print("bbox datalabel not present");
             }
             if (bboxes.Boxes.Count > 0)
             { 

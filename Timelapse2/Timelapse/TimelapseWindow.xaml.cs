@@ -194,7 +194,7 @@ namespace Timelapse
                         this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                     }
                     string folder = this.dataHandler.FileDatabase.ImageSet.SelectedFolder;
-                    System.Diagnostics.Debug.Print(folder);
+                    //System.Diagnostics.Debug.Print(folder);
                 }
                 
                 // sync image set properties
