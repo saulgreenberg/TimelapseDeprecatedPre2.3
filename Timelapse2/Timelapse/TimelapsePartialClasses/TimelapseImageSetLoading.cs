@@ -363,7 +363,7 @@ namespace Timelapse
                 WorkerReportsProgress = true
             };
 
-            // Set up the feedback to show the user
+            // folderLoadProgress contains data to be used to provide feedback on the folder loading state
             FolderLoadProgress folderLoadProgress = new FolderLoadProgress(filesToAdd.Count)
             {
                 TotalPasses = 2,
@@ -411,15 +411,14 @@ namespace Timelapse
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
                     utcNow = DateTime.UtcNow;
-                    // Note that calling GetOrCreateFile inserts the the creation date as the Date/Time. 
-                    // We should ensure that a later call examines the bitmap metadata, and - if that metadata date exists - over-writes the creation date  
+                    // As GetOrCreateFile inserts the file date as the Date/Time, a later call will examine the bitmap metadata, and - if it exists - over-write the file date  
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
                     {
+
                         // The image is already in the database. So skip it.
                         // Even so, provide feedback every UpdateInterval
                         if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
                         {
-                           
                             folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
                             folderLoadProgress.CurrentFile = filesProcessed;
                             folderLoadProgress.CurrentFileName = file.File;
@@ -431,9 +430,9 @@ namespace Timelapse
                             continue;
                         }
                     }
-                    filesProcessed++;
 
                     // The image is not in the database, so add it.
+                    filesProcessed++;
                     BitmapSource bitmapSource = null;
                     try
                     {
@@ -451,11 +450,9 @@ namespace Timelapse
 
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
-                            // Dark Image Classification during loading
-                            // One Timelapse option is to have it automatically classify dark images when loading 
-                            // If its set, check to see if its a Dark or Okay image.
-                            // However, invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
-                            // likley due to some threading issue that I can't debug.
+                            // Dark Image Classification during loading if the automatically classify dark images option is set  
+                            // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
+                            // likely due to some threading issue that I can't debug.
                             // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
                             // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
                             // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
@@ -463,6 +460,7 @@ namespace Timelapse
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
                             file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+
                             // We don't check videos for darkness, so set it as Unknown.
                             if (file.IsVideo)
                             {
@@ -482,11 +480,12 @@ namespace Timelapse
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
                                     file.ImageQuality = FileSelectionEnum.Unknown;
                                 }
+                                // Try to update the datetime (which is currently the file date) with the metadata date time the image was taken instead
+                                // We only do this for files, as videos do not have these metadata fields
+                                file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                             }
                         }
-                        // Try to update the datetime (which is currently the creation date) with the metadata date time tthe image was taken instead
-                        // SAULXXX Note: This fails on video reading when we try to read the dark threshold. Check into it....
-                        file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
+
                     }
                     catch (Exception exception)
                     {
@@ -500,7 +499,7 @@ namespace Timelapse
                     //lock (filesToInsert) // SAULXXX Parallel.ForEach
                     //{
                     filesToInsert.Add(file);
-                        filesPendingInsert = filesToInsert.Count;
+                    filesPendingInsert = filesToInsert.Count;
                     //}
 
                     // Display progress on feedback after a given time interval
@@ -516,7 +515,7 @@ namespace Timelapse
                             }
                             else if (bitmapSource != null)
                             {
-                                // if file was already loaded for dark checking use the resulting bitmap
+                                // if file was already loaded for dark checking, use the resulting bitmap
                                 folderLoadProgress.BitmapSource = bitmapSource;
                             }
                             else
@@ -610,10 +609,12 @@ namespace Timelapse
                         this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
                     }
                 }
-                this.BusyIndicator.IsBusy = false;
+                this.BusyIndicator.IsBusy = false; // Hide the busy indicator
             };
-            this.BusyIndicator.IsBusy = true;
-            // Update UI for import
+
+            // Set up the user interface to show feedback
+            this.BusyIndicator.IsBusy = true; // Display the busy indicator
+
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Loading folders...");
             this.StatusBar.SetMessage("Loading folders...");
@@ -621,6 +622,7 @@ namespace Timelapse
             externallyVisibleWorker = backgroundWorker;
             return true;
         }
+
         private void UpdateFolderLoadProgress(BitmapSource bitmap, int percent, string message)
         {
             if (bitmap != null)
