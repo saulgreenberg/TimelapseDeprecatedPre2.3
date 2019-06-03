@@ -363,7 +363,13 @@ namespace Timelapse
                 WorkerReportsProgress = true
             };
 
-            FolderLoadProgress folderLoadProgress = new FolderLoadProgress(filesToAdd.Count);
+            // folderLoadProgress contains data to be used to provide feedback on the folder loading state
+            FolderLoadProgress folderLoadProgress = new FolderLoadProgress(filesToAdd.Count)
+            {
+                TotalPasses = 2,
+                CurrentPass = 1
+            };
+
             backgroundWorker.DoWork += (ow, ea) =>
             {
                 // First pass: Examine files to extract their basic properties and build a list of files not already in the database
@@ -394,33 +400,39 @@ namespace Timelapse
                 // nearly sequentially may also offer some minor disk performance benefit.                
                 List<ImageRow> filesToInsert = new List<ImageRow>();
                 TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
-                DateTime previousImageRender = DateTime.UtcNow - this.state.Throttles.DesiredIntervalBetweenRenders;
+                DateTime utcNow = new DateTime();
+                DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.UpdateInterval;  // so the first update check will refresh 
 
                 // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
                 // It also occassion produces an SQLite Database locked error. 
                 // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
                 // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
                 int filesProcessed = 0;
-                TimeSpan showImageOnlyAfterThisTimeSpan = TimeSpan.FromMilliseconds(500);
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
-                    // Note that calling GetOrCreateFile inserts the the creation date as the Date/Time. 
-                    // We should ensure that a later call examines the bitmap metadata, and - if that metadata date exists - over-writes the creation date  
+                    utcNow = DateTime.UtcNow;
+                    // As GetOrCreateFile inserts the file date as the Date/Time, a later call will examine the bitmap metadata, and - if it exists - over-write the file date  
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
                     {
-                        // the database already has an entry for this file so skip it
-                        // feedback is displayed, albeit fleetingly unless a large number of images are skipped.
-                        folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
-                        folderLoadProgress.CurrentFile = filesProcessed;
-                        folderLoadProgress.CurrentFileName = file.File;
 
-                        int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
-                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
-                        filesProcessed++;
-                        continue;
+                        // The image is already in the database. So skip it.
+                        // Even so, provide feedback every UpdateInterval
+                        if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
+                        {
+                            folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
+                            folderLoadProgress.CurrentFile = filesProcessed;
+                            folderLoadProgress.CurrentFileName = file.File;
+                            int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
+                            backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+
+                            lastUpdateTime = utcNow;
+                            filesProcessed++;
+                            continue;
+                        }
                     }
-                    filesProcessed++;
 
+                    // The image is not in the database, so add it.
+                    filesProcessed++;
                     BitmapSource bitmapSource = null;
                     try
                     {
@@ -438,11 +450,9 @@ namespace Timelapse
 
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
-                            // Dark Image Classification during loading
-                            // One Timelapse option is to have it automatically classify dark images when loading 
-                            // If its set, check to see if its a Dark or Okay image.
-                            // However, invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
-                            // likley due to some threading issue that I can't debug.
+                            // Dark Image Classification during loading if the automatically classify dark images option is set  
+                            // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
+                            // likely due to some threading issue that I can't debug.
                             // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
                             // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
                             // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
@@ -450,6 +460,7 @@ namespace Timelapse
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
                             file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+
                             // We don't check videos for darkness, so set it as Unknown.
                             if (file.IsVideo)
                             {
@@ -469,11 +480,12 @@ namespace Timelapse
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
                                     file.ImageQuality = FileSelectionEnum.Unknown;
                                 }
+                                // Try to update the datetime (which is currently the file date) with the metadata date time the image was taken instead
+                                // We only do this for files, as videos do not have these metadata fields
+                                file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                             }
                         }
-                        // Try to update the datetime (which is currently the creation date) with the metadata date time tthe image was taken instead
-                        // SAULXXX Note: This fails on video reading when we try to read the dark threshold. Check into it....
-                        file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
+
                     }
                     catch (Exception exception)
                     {
@@ -484,22 +496,18 @@ namespace Timelapse
                     }
 
                     int filesPendingInsert;
-                    lock (filesToInsert)
-                    {
-                        filesToInsert.Add(file);
-                        filesPendingInsert = filesToInsert.Count;
-                    }
+                    //lock (filesToInsert) // SAULXXX Parallel.ForEach
+                    //{
+                    filesToInsert.Add(file);
+                    filesPendingInsert = filesToInsert.Count;
+                    //}
 
-                    // Display progress on feedback either
-                    // - on every image loaded (if the user has set that state), 
-                    // - or every 1/2 second
-                    DateTime utcNow = DateTime.UtcNow;
-                    if ((this.state.ShowAllImagesWhenLoading == true) ||
-                    (utcNow - previousImageRender >= showImageOnlyAfterThisTimeSpan))
+                    // Display progress on feedback after a given time interval
+                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
                     {
-                        lock (folderLoadProgress)
-                        {
-                            if (file.IsVideo)
+                        //lock (folderLoadProgress) // SAULXXX Parallel.ForEach
+                        //{
+                        if (file.IsVideo)
                             {
                                 // TODO When Video thumbnails are available, we can use those.
                                 // Show a stock video bitmap image as they won't be retrieved fast enough anyways
@@ -507,7 +515,7 @@ namespace Timelapse
                             }
                             else if (bitmapSource != null)
                             {
-                                // if file was already loaded for dark checking use the resulting bitmap
+                                // if file was already loaded for dark checking, use the resulting bitmap
                                 folderLoadProgress.BitmapSource = bitmapSource;
                             }
                             else
@@ -517,13 +525,12 @@ namespace Timelapse
                             }
                             folderLoadProgress.CurrentFile = filesToInsert.Count;
                             folderLoadProgress.CurrentFileName = file.File;
-
                             int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
                             backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
-                            previousImageRender = utcNow;
+                            lastUpdateTime = utcNow;
                             // Uncomment this to see how many images (if any) are not skipped
                             //  Console.Write(" ");
-                        }
+                        //}
                     }
                     else
                     {
@@ -535,36 +542,35 @@ namespace Timelapse
                     // }); // SAULXXX Parallel.ForEach
                 }
 
+                utcNow = DateTime.UtcNow;
+                lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.UpdateInterval;  // so the first update check will refresh 
                 // Second pass: Update database
                 filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
+                folderLoadProgress.CurrentPass = 2;
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
-                    // skip reloading images to display as the user's already seen them import
-                    folderLoadProgress.BitmapSource = null;
-                    folderLoadProgress.CurrentFile = fileIndex;
-                    folderLoadProgress.CurrentFileName = file.File;
-                    int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
-                    backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
+                    { 
+                        // skip reloading images to display as the user's already seen them import
+                        folderLoadProgress.BitmapSource = null;
+                        folderLoadProgress.CurrentFile = fileIndex;
+                        folderLoadProgress.CurrentFileName = file.File;
+                        int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
+                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+                        lastUpdateTime = utcNow;
+                    }
                 });
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
-                this.ImageSetPane.IsActive = true;
                 // this gets called on the UI thread
-                this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, folderLoadProgress.GetMessage());
+                this.ImageSetPane.IsActive = true;
+                string message = (folderLoadProgress.TotalPasses > 1) ? String.Format("Pass {0}/{1}: ", folderLoadProgress.CurrentPass, folderLoadProgress.TotalPasses) : String.Empty;
+                message = String.Format("{0} Analyzing file {1} of {2} ({3})", message, folderLoadProgress.CurrentFile, folderLoadProgress.TotalFiles, folderLoadProgress.CurrentFileName);
+
+                this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, message);
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
-                // this.BusyIndicator.BusyContent = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
-                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-                TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
-                if (bar != null)
-                {
-                    bar.Value = ea.ProgressPercentage;
-                }
-                if (textmessage != null)
-                {
-                    textmessage.Text = "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
-                }
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
@@ -578,8 +584,7 @@ namespace Timelapse
                     throw new FileLoadException("Folder loading failed unexpectedly.  See inner exception for details.", ea.Error);
                 }
 
-                // hide the feedback panel, and show the file slider
-                // this.FeedbackControl.Visibility = Visibility.Collapsed;
+                // Show the file slider
                 this.FileNavigatorSlider.Visibility = Visibility.Visible;
 
                 this.OnFolderLoadingComplete(true);
@@ -604,26 +609,39 @@ namespace Timelapse
                         this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true); // to regenerate the controls and markers for this image
                     }
                 }
-                this.BusyIndicator.IsBusy = false;
+                this.BusyIndicator.IsBusy = false; // Hide the busy indicator
             };
-            this.BusyIndicator.IsBusy = true;
-            // Update UI for import
-            // this.FeedbackControl.Visibility = Visibility.Visible;
+
+            // Set up the user interface to show feedback
+            this.BusyIndicator.IsBusy = true; // Display the busy indicator
+
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
-            this.UpdateFolderLoadProgress(null, 0, "Folder loading beginning...");
+            this.UpdateFolderLoadProgress(null, 0, "Loading folders...");
             this.StatusBar.SetMessage("Loading folders...");
             backgroundWorker.RunWorkerAsync();
             externallyVisibleWorker = backgroundWorker;
             return true;
         }
+
         private void UpdateFolderLoadProgress(BitmapSource bitmap, int percent, string message)
         {
             if (bitmap != null)
             {
                 this.MarkableCanvas.SetNewImage(bitmap, null);
             }
-            this.FeedbackControl.Message.Content = message;
-            this.FeedbackControl.ProgressBar.Value = percent;
+
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
+            if (bar != null)
+            {
+                bar.Value = percent;
+            }
+            if (textmessage != null)
+            {
+
+                System.Diagnostics.Debug.Print(message);
+                textmessage.Text = message;// "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+            }
         }
 
         // Given the location path of the template,  return:

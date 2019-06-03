@@ -467,9 +467,6 @@ namespace Timelapse
                 // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
                 public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
 
-                // Loading of images: whether to supress image display, or throttling image display, image classification
-                public const string SuppressThrottleWhenLoading = "SuppressThrottleWhenLoading";
-
                 // key containing whether to classify dark images when loading
                 public const string ClassifyDarkImagesWhenLoading = "ClassifyDarkImagesWhenLoading";
 
@@ -501,6 +498,7 @@ namespace Timelapse
                 public const string TabOrderIncludeDateTime = "TabOrderIncludeDateTime";
                 public const string TabOrderIncludeDeleteFlag = "TabOrderIncludeDeleteFlag";
                 public const string TabOrderIncludeImageQuality = "TabOrderIncludeImageQuality";
+
                 // Avalon doc state
                 public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
             }
@@ -598,6 +596,7 @@ namespace Timelapse
             public static readonly TimeSpan RenderingBackoffTime = TimeSpan.FromMilliseconds(25.0);
             public static readonly TimeSpan VideoRenderingBackoffTime = TimeSpan.FromMilliseconds(10.0);
             public static readonly TimeSpan DataGridTimerInterval = TimeSpan.FromMilliseconds(250);
+            public static readonly TimeSpan UpdateInterval = TimeSpan.FromMilliseconds(250);
         }
 
         public static class Time
