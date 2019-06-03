@@ -514,10 +514,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\FeedbackControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Controls\HelpUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -567,9 +563,6 @@
     </Compile>
     <Compile Include="Dialog\TemplateSynchronization.xaml.cs">
       <DependentUpon>TemplateSynchronization.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\FeedbackControl.xaml.cs">
-      <DependentUpon>FeedbackControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Database\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />

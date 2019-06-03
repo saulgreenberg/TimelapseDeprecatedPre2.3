@@ -39,7 +39,6 @@ namespace Timelapse.Util
         public bool SuppressSelectedRereadDatesFromFilesPrompt { get; set; }
         public bool SuppressSelectedSetTimeZonePrompt { get; set; }
         public Throttles Throttles { get; private set; }
-        public bool ShowAllImagesWhenLoading { get; set; }
         public bool TabOrderIncludeDateTime { get; set; }
         public bool TabOrderIncludeDeleteFlag { get; set; }
         public bool TabOrderIncludeImageQuality { get; set; }
@@ -96,7 +95,6 @@ namespace Timelapse.Util
                 this.SuppressSelectedPopulateFieldFromMetadataPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressSelectedPopulateFieldFromMetadataPrompt, false);
                 this.SuppressSelectedRereadDatesFromFilesPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressSelectedRereadDatesFromFilesPrompt, false);
                 this.SuppressSelectedSetTimeZonePrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressSelectedSetTimeZonePrompt, false);
-                this.ShowAllImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, false);
                 this.TabOrderIncludeDateTime = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeDateTime, false);
                 this.TabOrderIncludeDeleteFlag = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeDeleteFlag, false);
                 this.TabOrderIncludeImageQuality = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, false);
@@ -176,7 +174,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedPopulateFieldFromMetadataPrompt, this.SuppressSelectedPopulateFieldFromMetadataPrompt);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedSetTimeZonePrompt, this.SuppressSelectedSetTimeZonePrompt);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressSelectedRereadDatesFromFilesPrompt, this.SuppressSelectedRereadDatesFromFilesPrompt);
-                registryKey.Write(Constant.Registry.TimelapseKey.SuppressThrottleWhenLoading, this.ShowAllImagesWhenLoading);
                 registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeDateTime, this.TabOrderIncludeDateTime);
                 registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeDeleteFlag, this.TabOrderIncludeDeleteFlag);
                 registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, this.TabOrderIncludeImageQuality);
