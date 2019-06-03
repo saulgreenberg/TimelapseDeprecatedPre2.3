@@ -44,9 +44,6 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
             this.DifferenceThreshold.Maximum = Constant.ImageValues.DifferenceThresholdMax;
             this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
-
-            // Showing Images
-            this.CheckBoxSuppressThrottleWhenLoading.IsChecked = this.timelapseState.ShowAllImagesWhenLoading ? true : false;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -137,12 +134,6 @@ namespace Timelapse.Dialog
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
         }
 
-        private void ResetImageLoading_Click(object sender, RoutedEventArgs e)
-        {
-            this.timelapseState.ShowAllImagesWhenLoading = false;
-            this.CheckBoxSuppressThrottleWhenLoading.IsChecked = false;
-        }
-
         // Reset the maximum zoom to the amount specified in Max Zoom;
         private void ResetMaxZoom_Click(object sender, RoutedEventArgs e)
         {
@@ -169,12 +160,6 @@ namespace Timelapse.Dialog
         {
             this.timelapseState.DifferenceThreshold = (byte)this.DifferenceThreshold.Value;
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
-        }
-
-        private void SuppressThrottleWhenLoading_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBox cb = (CheckBox)sender;
-            this.timelapseState.ShowAllImagesWhenLoading = (cb.IsChecked == true) ? true : false;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
