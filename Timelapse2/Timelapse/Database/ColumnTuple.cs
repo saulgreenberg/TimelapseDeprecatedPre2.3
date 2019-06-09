@@ -41,6 +41,12 @@ namespace Timelapse.Database
             this.Value = value;
         }
 
+        public ColumnTuple(string column, float value)
+        {
+            this.Name = column;
+            this.Value = value.ToString();
+        }
+
         public ColumnTuple(string column, TimeSpan utcOffset)
         {
             if ((utcOffset < Constant.Time.MinimumUtcOffset) ||

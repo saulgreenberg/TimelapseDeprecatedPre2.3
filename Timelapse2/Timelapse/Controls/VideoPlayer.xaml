@@ -59,8 +59,8 @@
                                FrameType="Circle"
                                BorderBrush="#FFC72035"
                                BorderThickness="2"
-                               Width="180"
-                               Height="280"
+                               Width="200"
+                               Height="200"
                                IsUsingZoomOnMouseWheel="True"
                                ZoomFactorOnMouseWheel="0.1"
                                Visibility="Collapsed"/>
