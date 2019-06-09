@@ -298,7 +298,7 @@ namespace Timelapse.Database
                             }
 
                             // update those column values in the image
-                            imageToUpdate.SetWhere(folder, relativePath, fileName);
+                            imageToUpdate.SetWhere(relativePath, fileName);
                             imagesToUpdate.Add(imageToUpdate);
 
                             // write current batch of updates to database
