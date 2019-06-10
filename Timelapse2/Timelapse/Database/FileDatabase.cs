@@ -1106,7 +1106,20 @@ namespace Timelapse.Database
             }
         }
 
-        #region Indexes: Create and Drop Indexes to column in a table
+        public void IndexCreateForFileAndRelativePath()
+        {
+            List<string> columnNames = new List<string>()
+            {
+                Constant.DatabaseColumn.RelativePath,
+                Constant.DatabaseColumn.File
+            };
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePathFile, Constant.DatabaseTable.FileData, columnNames);
+        }
+
+        public void IndexDropForFileAndRelativePath()
+        {
+            this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePathFile);
+        }
 
         #region Update Files
         /// <summary>
