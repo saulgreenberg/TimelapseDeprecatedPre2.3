@@ -548,6 +548,7 @@ namespace Timelapse
                 folderLoadProgress.CurrentPass = 2;
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
+                    utcNow = DateTime.UtcNow;
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
                     { 
                         // skip reloading images to display as the user's already seen them import
@@ -637,8 +638,6 @@ namespace Timelapse
             }
             if (textmessage != null)
             {
-
-                System.Diagnostics.Debug.Print(message);
                 textmessage.Text = message;// "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
             }
         }
