@@ -250,7 +250,7 @@ namespace Timelapse.Database
             //      ...
             //      queryn
             // END
-            const int MaxStatementCount = 500;
+            const int MaxStatementCount = 50000;
             string mostRecentStatement = null;
             try
             {
@@ -272,7 +272,7 @@ namespace Timelapse.Database
                             // Insert a BEGIN if we are at the beginning of the count
                             if (statementsInQuery == 1)
                             {
-                                command.CommandText = Constant.Sqlite.Begin;
+                                command.CommandText = Constant.Sqlite.BeginTransaction;
                                 command.ExecuteNonQuery();
                             }
 
@@ -282,7 +282,7 @@ namespace Timelapse.Database
                             // END
                             if (statementsInQuery >= MaxStatementCount)
                             {
-                                command.CommandText = Constant.Sqlite.End;
+                                command.CommandText = Constant.Sqlite.EndTransaction;
                                 rowsUpdated += command.ExecuteNonQuery();
                                 statementsInQuery = 0;
                             }
@@ -290,7 +290,7 @@ namespace Timelapse.Database
                         // END
                         if (statementsInQuery != 0)
                         {
-                            command.CommandText = Constant.Sqlite.End;
+                            command.CommandText = Constant.Sqlite.EndTransaction;
                             rowsUpdated += command.ExecuteNonQuery();
                         }
                     }

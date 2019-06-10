@@ -204,7 +204,7 @@ namespace Timelapse
             public const long InvalidID = -1;
             public const int InvalidRow = -1;
             public const int RelativePathPosition = 2;
-            public const int RowsPerInsert = 100;
+            public const int RowsPerInsert = 50000;
             public const int UtcOffsetPosition = 5;
             public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Constant.Sqlite.Integer + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
             public const string DefaultQuickPasteXML = "<Entries></Entries>";
@@ -534,7 +534,7 @@ namespace Timelapse
             public const string As = " AS ";
             public const string Ascending = " ASC ";
             public const string Descending = " DESC ";
-            public const string Begin = " BEGIN ";
+            public const string BeginTransaction = " BEGIN TRANSACTION ";
             public const string CreateTable = "CREATE TABLE ";
             public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";
             public const string CloseParenthesis = " ) ";
@@ -544,7 +544,7 @@ namespace Timelapse
             public const string Default = " DEFAULT ";
             public const string DeleteFrom = "DELETE FROM ";
             public const string DropTable = " DROP TABLE ";
-            public const string End = " END ";
+            public const string EndTransaction = " END TRANSACTION ";
             public const string Equal = " = ";
             public const string EqualsCaseID = " = CASE Id";
             public const string From = " FROM ";
