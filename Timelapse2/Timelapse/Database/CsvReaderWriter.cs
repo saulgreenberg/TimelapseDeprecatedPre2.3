@@ -229,7 +229,7 @@ namespace Timelapse.Database
                         // Updating many rows is made hugely more efficient if we create an index for File and Relative Path
                         // as otherwise each update is in linear time to the table rows vs log time. 
                         // Because we will not need these indexes later, we will drop them after the updates are done
-
+                        fileDatabase.IndexCreateForFileAndRelativePath();
 
                         // Get each row from the csv file
                         List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
@@ -328,6 +328,7 @@ namespace Timelapse.Database
                             System.Diagnostics.Debug.Print("Updating...");
                             fileDatabase.UpdateFiles(imagesToUpdate);
                             System.Diagnostics.Debug.Print("Done...");
+                            fileDatabase.IndexDropForFileAndRelativePath();
                         }
                         return importErrors.Count == 0;
                     }
