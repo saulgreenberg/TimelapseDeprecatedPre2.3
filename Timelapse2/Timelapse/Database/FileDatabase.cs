@@ -1106,6 +1106,8 @@ namespace Timelapse.Database
             }
         }
 
+        #region Indexes: Create and Drop Indexes to column in a table
+
         #region Update Files
         /// <summary>
         /// Update a column value (identified by its key) in an existing row (identified by its ID) 
