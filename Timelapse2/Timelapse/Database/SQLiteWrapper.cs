@@ -63,16 +63,10 @@ namespace Timelapse.Database
 
         #region Indexes: Create or Drop
         // Create an index in table tableName named index name to the column names
-        public void CreateIndex(string indexName, string tableName, List<string>columnNames)
+        public void CreateIndex(string indexName, string tableName, string columnNames)
         {
             // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
-            string query = Constant.Sqlite.CreateIndex + Constant.Sqlite.IfNotExists + indexName + Constant.Sqlite.On + tableName + Constant.Sqlite.OpenParenthesis;
-            foreach (string columnName in columnNames)
-            {
-                query += columnName + Constant.Sqlite.Comma;
-            }
-            query.TrimEnd(',');
-            query += Constant.Sqlite.CloseParenthesis;
+            string query = Constant.Sqlite.CreateIndex + Constant.Sqlite.IfNotExists + indexName + Constant.Sqlite.On + tableName + Constant.Sqlite.OpenParenthesis + columnNames + Constant.Sqlite.CloseParenthesis;
             this.ExecuteNonQuery(query);
         }
 
