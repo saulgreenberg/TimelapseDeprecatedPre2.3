@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -31,7 +32,7 @@ namespace Timelapse
             {
                 return;
             }
-
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             // Create a backup database file
             if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))
             {
@@ -43,7 +44,10 @@ namespace Timelapse
             }
 
             // Try to import the recognition data
-            if (CsvReaderWriter.TryImportRecognitionDataFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
+
+            bool result = CsvReaderWriter.TryImportRecognitionDataFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors);
+            Mouse.OverrideCursor = null;
+            if (result == false)
             {
                 MessageBox messageBox = new MessageBox("The recognition data could not be imported.", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;
