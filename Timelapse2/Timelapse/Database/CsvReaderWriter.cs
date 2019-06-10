@@ -233,7 +233,6 @@ namespace Timelapse.Database
 
                         // Get each row from the csv file
                         List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                        int foo = 0;
                         for (List<string> row = ReadAndParseLine(csvReader); row != null; row = ReadAndParseLine(csvReader))
                         {
                             if (row.Count == expectedCSVColumns - 1)
@@ -312,7 +311,6 @@ namespace Timelapse.Database
                             // write current batch of updates to database
                             if (imagesToUpdate.Count >= Constant.DatabaseValues.RowsPerInsert)
                             {
-                                System.Diagnostics.Debug.Print("Updating");
                                 fileDatabase.UpdateFiles(imagesToUpdate);
                                 imagesToUpdate.Clear();
                             }
@@ -320,15 +318,14 @@ namespace Timelapse.Database
                             {
                                 return false;
                             }
-                            if (foo++ % 1000 == 0) System.Diagnostics.Debug.Print(foo.ToString());
                         }
                         // perform any remaining updates
                         if (imagesToUpdate.Count > 0)
                         {
-                            System.Diagnostics.Debug.Print("Updating...");
                             fileDatabase.UpdateFiles(imagesToUpdate);
-                            System.Diagnostics.Debug.Print("Done...");
-                            fileDatabase.IndexDropForFileAndRelativePath();
+                           // TO DO: When we drop the index, the index data is still there. Its not a big deal, but 
+                           // by dropping it (instead of keeping it) we eliminate some performance tradeoffs.
+                           fileDatabase.IndexDropForFileAndRelativePath(); 
                         }
                         return importErrors.Count == 0;
                     }
