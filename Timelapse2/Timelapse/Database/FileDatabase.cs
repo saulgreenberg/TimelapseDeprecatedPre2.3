@@ -1108,17 +1108,14 @@ namespace Timelapse.Database
 
         public void IndexCreateForFileAndRelativePath()
         {
-            List<string> columnNames = new List<string>()
-            {
-                Constant.DatabaseColumn.RelativePath,
-                Constant.DatabaseColumn.File
-            };
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePathFile, Constant.DatabaseTable.FileData, columnNames);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexFile, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.File);
         }
 
         public void IndexDropForFileAndRelativePath()
         {
-            this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePathFile);
+            this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePath);
+            this.Database.DropIndex(Constant.DatabaseValues.IndexFile);
         }
 
         #region Update Files
