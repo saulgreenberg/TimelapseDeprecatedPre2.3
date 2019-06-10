@@ -1106,6 +1106,21 @@ namespace Timelapse.Database
             }
         }
 
+        public void IndexCreateForFileAndRelativePath()
+        {
+            List<string> columnNames = new List<string>()
+            {
+                Constant.DatabaseColumn.RelativePath,
+                Constant.DatabaseColumn.File
+            };
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePathFile, Constant.DatabaseTable.FileData, columnNames);
+        }
+
+        public void IndexDropForFileAndRelativePath()
+        {
+            this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePathFile);
+        }
+
         #region Update Files
         /// <summary>
         /// Update a column value (identified by its key) in an existing row (identified by its ID) 
