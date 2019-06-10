@@ -61,6 +61,30 @@ namespace Timelapse.Database
             this.ExecuteNonQuery(query);
         }
 
+        #region Indexes: Create or Drop
+        // Create an index in table tableName named index name to the column names
+        public void CreateIndex(string index, string indexName, string tableName, List<string>columnNames)
+        {
+            // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
+            string query = Constant.Sqlite.CreateIndex + Constant.Sqlite.IfNotExists + indexName + Constant.Sqlite.On + tableName + Constant.Sqlite.OpenParenthesis;
+            foreach (string columnName in columnNames)
+            {
+                query += columnName + Constant.Sqlite.Comma;
+            }
+            query.TrimEnd(',');
+            query += Constant.Sqlite.CloseParenthesis;
+            this.ExecuteNonQuery(query);
+        }
+
+        // Drop an index named indexName if it exists
+        public void DropIndex(string indexName)
+        {
+            // Form: DROP INDEX IF EXISTS indexName 
+            string query = Constant.Sqlite.DropIndex + Constant.Sqlite.IfExists + indexName ;
+            this.ExecuteNonQuery(query);
+        }
+        #endregion
+
         // Return a dictionary comprising each column in the schema and its default values (if any)
         public Dictionary<string, string> GetColumnsAndDefaultValuesFromSchema(string tableName)
         {
@@ -85,6 +109,7 @@ namespace Timelapse.Database
                 return null;
             }
         }
+
         private void DataTableColumns_Changed(object sender, CollectionChangeEventArgs columnChange)
         {
             // DateTime columns default to DataSetDateTime.UnspecifiedLocal, which converts fully qualified DateTimes returned from SQLite to DateTimeKind.Unspecified
@@ -483,7 +508,7 @@ namespace Timelapse.Database
                 this.ExecuteNonQueryWrappedInBeginEnd(queries);
             }
         }
-
+        #region Schema and Column Changes: Replace Schema, IsColumnInTable / Add / Delete / Rename / 
         public void ReplaceTableSchemaWithNewColumnDefinitionsSchema(string sourceTable, List<ColumnDefinition> columnDefinitions)
         {
             string destTable = "TempTable";
@@ -510,6 +535,24 @@ namespace Timelapse.Database
             }
         }
 
+        public bool IsColumnInTable(string sourceTable, string currentColumnName)
+        {
+            try
+            {
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
+                    return currentColumnNames.Contains(currentColumnName);
+                }
+            }
+            catch (Exception exception)
+            {
+                TraceDebug.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                return false;
+            }
+        }
+        
         /// <summary>
         /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
         /// The value in columnDefinition is assumed to be the desired default value
@@ -619,23 +662,6 @@ namespace Timelapse.Database
             }
         }
 
-        public bool IsColumnInTable(string sourceTable, string currentColumnName)
-        {
-            try
-            {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
-                    return currentColumnNames.Contains(currentColumnName);
-                }
-            }
-            catch (Exception exception)
-            {
-                TraceDebug.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
-                return false;
-            }
-        }
         public void RenameColumn(string sourceTable, string currentColumnName, string newColumnName)
         {
             // Some basic error checking to make sure we can do the operation
@@ -732,6 +758,7 @@ namespace Timelapse.Database
                 command.ExecuteNonQuery();
             }
         }
+        #endregion
 
         /// <summary>
         /// Copy all the values from the source table into the destination table. Assumes that both tables are populated with identically-named columns
