@@ -677,6 +677,19 @@ namespace Timelapse
 
         // TODO - DETECTION TABLES -INTEGRATE BACK IN WHEN DEVELOP INCLUDES DETECTION ROUTINES
         #region Detection Constants.
+
+        public static class Recognition
+        {
+            public const string DataLabelMaxConfidence = "Confidence";
+            public const string DataLabelBoundingBoxes = "BoundingBoxes";
+            public const string CSVLabelImagePath = "image_path";
+            public const string CSVLabelMaxConfidence = "max_confidence";
+            public const string CSVLabelBoundingBoxes = "predicted_boxes";
+            public const double BoundingBoxDisplayThresholdDefault = 0.8;
+            public const double SpeciesDetectedThresholdDefault = 0.8;
+            public const string SpeciesDetectedDataLabel = "SpeciesDetected";
+        }
+
         public static class DBTableNames
         {
             public const string Info = "Info";
