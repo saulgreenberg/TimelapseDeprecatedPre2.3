@@ -674,5 +674,64 @@ namespace Timelapse
             public const string Url = "url";
             public const string Version = "version";
         }
+
+        // TODO - DETECTION TABLES -INTEGRATE BACK IN WHEN DEVELOP INCLUDES DETECTION ROUTINES
+        #region Detection Constants.
+        public static class DBTableNames
+        {
+            public const string Info = "Info";
+            public const string DetectionCategories = "DetectionCategories";
+            public const string ClassificationCategories = "ClassificationCategories";
+            public const string Images = "Images";
+            public const string Detections = "Detections";
+            public const string Classifications = "Classifications";
+        }
+
+        public static class InfoColumns
+        {
+            public const string InfoID = "infoID";
+            public const string Detector = "detector";
+            public const string DetectionCompletionTime = "detection_completion_time";
+            public const string Classifier = "classifier";
+            public const string ClassificationCompletionTime = "classification_completion_time";
+        }
+
+        public static class DetectionCategoriesColumns
+        {
+            public const string Category = "category";
+            public const string Label = "label";
+        }
+
+        public static class ClassificationCategoriesColumns
+        {
+            public const string Category = "classification";
+            public const string Label = "label";
+        }
+
+        public static class ImageColumns
+        {
+            public const string ImageID = "imageID";
+            public const string File = "file";
+            public const string MaxDetectionConf = "max_detection_conf";
+            // public const string Detections = "detections";
+        }
+
+        public static class DetectionColumns
+        {
+            public const string DetectionID = "detectionID";
+            public const string ImageID = Constant.ImageColumns.ImageID; // Foreign key
+            public const string Category = "category";
+            public const string Conf = "conf";
+            public const string BBox = "bbox";
+        }
+
+        public static class ClassificationColumns
+        {
+            public const string ClassificationID = "classificationID";
+            public const string DetectionID = Constant.DetectionColumns.DetectionID; // Foreign key
+            public const string Category = "category";
+            public const string Conf = "conf";
+        }
+    #endregion
     }
 }
