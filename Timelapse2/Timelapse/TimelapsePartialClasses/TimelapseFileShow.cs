@@ -121,29 +121,31 @@ namespace Timelapse
             //----------------------------
             // BOUNDING BOXES
             // ADD TEST FOR MULTIPLE CLICKABLE IMAGE GRID AND FOR VIDEO
-            ImageRow imageRow = this.dataHandler.ImageCache.Current;
             BoundingBoxes bboxes = new BoundingBoxes();
-            DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromImageID(this.dataHandler.ImageCache.Current.ID.ToString());
-            foreach (DataRow row in dataTable.Rows)
+            if (this.dataHandler.FileDatabase.TableExists(Constant.DBTableNames.Detections))
             {
-                string coords = (string)row[3];
-                if (coords == String.Empty)
-                {
-                    // This shouldn't happen, but...
-                    continue;
-                }
-                float confidence = float.Parse(row[2].ToString());
-                string category = (string)row[1];
-                // Determine the maximum confidence of these detections
-                if (bboxes.MaxConfidence < confidence)
-                {
-                    bboxes.MaxConfidence = confidence;
-                }
+                ImageRow imageRow = this.dataHandler.ImageCache.Current;
 
-                BoundingBox box = new BoundingBox((string)row[3], confidence, category);
-                bboxes.Boxes.Add(box);
+                DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromImageID(this.dataHandler.ImageCache.Current.ID.ToString());
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    string coords = (string)row[3];
+                    if (coords == String.Empty)
+                    {
+                        // This shouldn't happen, but...
+                        continue;
+                    }
+                    float confidence = float.Parse(row[2].ToString());
+                    string category = (string)row[1];
+                    // Determine the maximum confidence of these detections
+                    if (bboxes.MaxConfidence < confidence)
+                    {
+                        bboxes.MaxConfidence = confidence;
+                    }
+                    BoundingBox box = new BoundingBox((string)row[3], confidence, category);
+                    bboxes.Boxes.Add(box);
+                }
             }
-            //this.MarkableCanvas.BoundingBoxes = bboxes;
             // END BOundingBoxes
 
             // display new file if the file changed

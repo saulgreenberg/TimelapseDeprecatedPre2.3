@@ -18,7 +18,7 @@ namespace Timelapse.Database
     {
         // A connection string identifying the  database file. Takes the form:
         // "Data Source=filepath" 
-        private string connectionString;
+        private readonly string connectionString;
 
         /// <summary>
         /// Constructor: Create a database file if it does not exist, and then create a connection string to that file
@@ -160,6 +160,7 @@ namespace Timelapse.Database
 
         public DataTable GetDataTableFromSelect(string query)
         {
+            DataTable dataTable = new DataTable();
             try
             {
                 // Open the connection
@@ -171,7 +172,7 @@ namespace Timelapse.Database
                         command.CommandText = query;
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {
-                            DataTable dataTable = new DataTable();
+
                             dataTable.Columns.CollectionChanged += this.DataTableColumns_Changed;
                             dataTable.Load(reader);
                             return dataTable;
@@ -182,7 +183,7 @@ namespace Timelapse.Database
             catch (Exception exception)
             {
                 TraceDebug.PrintMessage(String.Format("Failure executing query '{0}' in GetDataTableFromSelect. {1}", query, exception.ToString()));
-                return null;
+                return dataTable;
             }
         }
 

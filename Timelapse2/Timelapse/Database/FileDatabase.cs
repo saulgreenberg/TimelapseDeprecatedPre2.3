@@ -1448,6 +1448,11 @@ namespace Timelapse.Database
             return -1;
         }
 
+        public bool TableExists(string dataTable)
+        {
+            return this.Database.TableExists(dataTable);
+        }
+
         #region FindByFilename variations
         // Find by file name, forwards and backwards with wrapping
         public int FindByFileName(int currentRow, bool isForward, string filename)
