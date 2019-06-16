@@ -143,7 +143,7 @@ namespace Timelapse
                 BoundingBox box = new BoundingBox((string)row[3], confidence, category);
                 bboxes.Boxes.Add(box);
             }
-            this.MarkableCanvas.BoundingBoxes = bboxes;
+            //this.MarkableCanvas.BoundingBoxes = bboxes;
             // END BOundingBoxes
 
             // display new file if the file changed

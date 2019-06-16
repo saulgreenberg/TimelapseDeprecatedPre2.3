@@ -46,6 +46,7 @@ namespace Timelapse.Images
         // markers
         private List<Marker> markers;
 
+        // bounding boxes for detection
         private BoundingBoxes boundingBoxes;
 
         // mouse and position states used to discriminate clicks from drags
@@ -122,6 +123,7 @@ namespace Timelapse.Images
             }
         }
 
+        // BOunding boxes for detection. Whenever one is set, it is redrawn
         public BoundingBoxes BoundingBoxes
         {
             get
@@ -1000,44 +1002,65 @@ namespace Timelapse.Images
         /// </summary>
         private void RedrawBoundingBoxes()
         {
-            //this.RemoveBoundingBox(this);
             if (this.ImageToDisplay != null)
             {
                 this.DrawBoundingBox(this.ImageToDisplay.RenderSize);
             }
         }
 
-
         public void DrawBoundingBox(Size canvasRenderSize)
         {
+            // Remove existing bounding boxes, if any.
             bboxCanvas.Children.Clear();
             this.Children.Remove(bboxCanvas);
+
+            // Max Confidence is over all bounding boxes, regardless of the categories.
+            // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
             if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
             { 
                 return;
             }
+
+            // DETECTOR: THIS METHOD IS BEING INVOKED TWICE ON EVERY NEW IMAGE! DEBUG THIS.
             bboxCanvas.Width = canvasRenderSize.Width;
             bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
                 if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
                 {
+                    // Ignore any bounding box that is below the desired confidence threshold for displaying it.
                     continue;
                 }
-                // Create a bounding box
+                // Create a bounding box 
                 Rectangle rect = new Rectangle();
                 byte transparency = (byte)Math.Round(255 * bbox.Confidence);
-                SolidColorBrush brush = (bbox.Category == "1") ? 
-                    new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)) :
-                    new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0));
+
+                // The color of the bounding box depends upon its category
+                SolidColorBrush brush;
+                switch (bbox.Category)
+                {
+                    case "0":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 0)); // Green
+                        break;
+                    case "1":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0)); // Red
+                        break;
+                    case "2":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)); // Blue
+                        break;
+                    case "4":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255));
+                        break;
+                    default:
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255));
+                        break;
+                }
                 rect.Stroke = brush;
                 rect.StrokeThickness = 5;
 
                 //// Get the corners from the bounding box, and convert it into a rectangle that will be in the right place (including scaling / panning as needed)
-                Point screenPositionTopLeft = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height);
-                Point screenPositionBottomRight = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height);
-                screenPositionTopLeft = this.transformGroup.Transform(screenPositionTopLeft);
-                screenPositionBottomRight = this.transformGroup.Transform(screenPositionBottomRight);
+                Point screenPositionTopLeft = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height));
+                Point screenPositionBottomRight = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height));
                 Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
                 rect.Width = screenPostionWidthHeight.X;
                 rect.Height = screenPostionWidthHeight.Y;
