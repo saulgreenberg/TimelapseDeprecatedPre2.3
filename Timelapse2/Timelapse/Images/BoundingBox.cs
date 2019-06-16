@@ -33,6 +33,12 @@ namespace Timelapse.Images
             SetValues(coords[0], coords[1], coords[2], coords[3], confidence, category);
         }
 
+        public static Point ConvertRatioToPoint(double x, double y, double width, double height)
+        {
+            Point point = new Point(x * width, y * height);
+            return point;
+        }
+
         private void SetValues(float x1, float y1, float width, float height, float confidence, string category)
         {
             this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.StandardColour);

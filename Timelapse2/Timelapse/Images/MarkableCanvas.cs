@@ -982,7 +982,12 @@ namespace Timelapse.Images
             {
                 if (canvas.Children[index] is Canvas && canvas.Children[index] != this.magnifyingGlass)
                 {
-                    canvas.Children.RemoveAt(index);
+                    // Its either a marker or a bounding box, so we have to figure out which one.
+                    Canvas tempCanvas = canvas.Children[index] as Canvas;
+                    if (tempCanvas != null && (tempCanvas.Tag != null && tempCanvas.Tag.ToString() != Constant.MarkableCanvas.BoundingBoxCanvasTag))
+                    {
+                        canvas.Children.RemoveAt(index);
+                    }
                 }
             }
         }
@@ -1027,13 +1032,21 @@ namespace Timelapse.Images
                     new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0));
                 rect.Stroke = brush;
                 rect.StrokeThickness = 5;
-                rect.Width = bbox.Rectangle.Width * canvasRenderSize.Width;
-                rect.Height = bbox.Rectangle.Height * canvasRenderSize.Height;
-                double left = bbox.Rectangle.Left * canvasRenderSize.Width;
-                double top = bbox.Rectangle.Top * canvasRenderSize.Height;
-                Canvas.SetLeft(rect, left);
-                Canvas.SetTop(rect, top);
+
+                //// Get the corners from the bounding box, and convert it into a rectangle that will be in the right place (including scaling / panning as needed)
+                Point screenPositionTopLeft = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height);
+                Point screenPositionBottomRight = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height);
+                screenPositionTopLeft = this.transformGroup.Transform(screenPositionTopLeft);
+                screenPositionBottomRight = this.transformGroup.Transform(screenPositionBottomRight);
+                Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
+                rect.Width = screenPostionWidthHeight.X;
+                rect.Height = screenPostionWidthHeight.Y;
+
+                // Now add the rectangle to the canvas
+                Canvas.SetLeft(rect, screenPositionTopLeft.X);
+                Canvas.SetTop(rect, screenPositionTopLeft.Y);
                 bboxCanvas.Children.Add(rect);
+                bboxCanvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
             }
             Canvas.SetLeft(bboxCanvas, 0);
             Canvas.SetTop(bboxCanvas, 0);
