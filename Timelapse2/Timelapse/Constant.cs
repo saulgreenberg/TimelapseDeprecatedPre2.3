@@ -283,10 +283,12 @@ namespace Timelapse
             public const string DefaultTemplateDatabaseFileName = "TimelapseTemplate.tdb";
             public const string FileDatabaseFileExtension = ".ddb";
             public const string JpgFileExtension = ".jpg";
+            public const string JsonFileExtension = ".json";
             public const string Mp4FileExtension = ".mp4";
             public const string MacOSXHiddenFilePrefix = "._";
             public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep
             public const string RecognitionDataFileName = "recognitionData.csv";
+            public const string RecognitionJsonDataFileName = "recognitionData.json";
             public const string TemplateDatabaseFileExtension = ".tdb";
             public const string VideoThumbnailFolderName = ".vthumb";
             public const string XmlTemplateFileName = "CodeTemplate.xml";
@@ -431,17 +433,6 @@ namespace Timelapse
             public static readonly double MarkingVsPanningDistanceThreshold = 2.0;
         }
 
-        public static class Recognition
-        {
-            public const string DataLabelMaxConfidence = "Confidence";
-            public const string DataLabelBoundingBoxes = "BoundingBoxes";
-            public const string CSVLabelImagePath = "image_path";
-            public const string CSVLabelMaxConfidence = "max_confidence";
-            public const string CSVLabelBoundingBoxes = "predicted_boxes";
-            public const double BoundingBoxDisplayThresholdDefault = 0.8;
-            public const double SpeciesDetectedThresholdDefault = 0.8;
-            public const string SpeciesDetectedDataLabel = "SpeciesDetected";
-        }
         public static class Registry
         {
             // Various keys used to save state in the Windows Registry
@@ -544,7 +535,7 @@ namespace Timelapse
             public const string FileStatusBarLabel = "File Path{0}";
             public const string IDStatusBarLabel = "Id{0} (the order files were added to Timelapse)";
         }
-            public static class Sqlite
+        public static class Sqlite
         {
             public const string AddColumn = " ADD COLUMN ";
             public const string AlterTable = " ALTER TABLE ";
@@ -601,6 +592,9 @@ namespace Timelapse
             public const string SelectCountStarFrom = "Select Count(*) FROM ";
             public const string Semicolon = " ; ";
             public const string Set = " SET ";
+            public const string String = " STRING ";
+            public const string MasterTableList = "sqlite_master";
+            public const string Real = " REAL ";
             public const string Text = "TEXT";
             public const string Trim = " TRIM ";
             public const string TypeEqualsTable = " TYPE='table' ";
@@ -737,18 +731,16 @@ namespace Timelapse
             public const string Label = "label";
         }
 
-        public static class ImageColumns
+        public static class DataTableAddedDetectionColumns
         {
-            public const string ImageID = "imageID";
-            public const string File = "file";
             public const string MaxDetectionConf = "max_detection_conf";
-            // public const string Detections = "detections";
+            public const string DetectionID = DetectionColumns.DetectionID;
         }
 
         public static class DetectionColumns
         {
             public const string DetectionID = "detectionID";
-            public const string ImageID = Constant.ImageColumns.ImageID; // Foreign key
+            public const string ImageID = Constant.DatabaseColumn.ID; // Foreign key
             public const string Category = "category";
             public const string Conf = "conf";
             public const string BBox = "bbox";

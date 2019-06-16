@@ -502,6 +502,7 @@ namespace Timelapse.Database
                 this.ExecuteNonQueryWrappedInBeginEnd(queries);
             }
         }
+
         #region Schema and Column Changes: Replace Schema, IsColumnInTable / Add / Delete / Rename / 
         public void ReplaceTableSchemaWithNewColumnDefinitionsSchema(string sourceTable, List<ColumnDefinition> columnDefinitions)
         {
@@ -1022,6 +1023,38 @@ namespace Timelapse.Database
         private SQLiteConnection GetNewSqliteConnection(string connectionString)
         {
             return new SQLiteConnection(this.connectionString, true);
+        }
+        #endregion
+
+        #region DetectionTable - related routines, put in normal places.
+        public void ClearRowsInTables(List<string> tables)
+        {
+            if (tables == null || tables.Count == 0)
+            {
+                return;
+            }
+            List<string> queries = new List<string>();                      // A list of SQL queries
+
+            // Construct a list containing queries of the form DELETE FROM table_name
+            foreach (string table in tables)
+            {
+                string query = Constant.Sqlite.DeleteFrom + table;     // DELETE FROM tablename
+                query += "; ";
+                queries.Add(query);
+            }
+            // Invoke the batched queries
+            if (queries.Count > 0)
+            {
+                this.ExecuteNonQueryWrappedInBeginEnd(queries);
+            }
+        }
+
+        public bool TableExists(string tableName)
+        {
+            //DETECTIONS: Move statements into constants
+            string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
+            DataTable datatable = this.GetDataTableFromSelect(query);
+            return (datatable.Rows.Count != 0);
         }
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -1760,5 +1762,38 @@ namespace Timelapse.Database
             }
             return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
         }
+
+        // DETECTION: MAYBE MOVE THIS CODE IF POSSIBLE?
+        #region DETECTION INTEGRATION
+        public bool PopulateDetectionTables(string path)
+        {
+            DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+            if (File.Exists(path) == false)
+            {
+                return false;
+            }
+            try
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path));
+                sw.Stop();
+                System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
+                DetectionDatabases.PopulateTables(detector, this, this.Database);
+                System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
+                return true;
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print("Could not populate detection data");
+                return false;
+            }
+        }
+
+        public DataTable GetDetectionsFromImageID(string id)
+        {
+            return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + id);
+        }
+        #endregion
     }
 }

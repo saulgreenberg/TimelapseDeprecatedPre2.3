@@ -46,6 +46,8 @@ namespace Timelapse.Images
         // markers
         private List<Marker> markers;
 
+        private BoundingBoxes boundingBoxes;
+
         // mouse and position states used to discriminate clicks from drags
         private UIElement mouseDownSender;
         private Point mouseDownLocation;
@@ -117,6 +119,21 @@ namespace Timelapse.Images
                 this.markers = value;
                 // render new markers and update display image
                 this.RedrawMarkers();
+            }
+        }
+
+        public BoundingBoxes BoundingBoxes
+        {
+            get
+            {
+                return this.boundingBoxes;
+            }
+            set
+            {
+                // update bounding boxes
+                this.boundingBoxes = value;
+                // render new bounding boxes and update display image
+                this.RedrawBoundingBoxes();
             }
         }
 
@@ -216,6 +233,7 @@ namespace Timelapse.Images
             this.SizeChanged += this.MarkableImageCanvas_SizeChanged;
 
             this.markers = new List<Marker>();
+            this.BoundingBoxes = new BoundingBoxes();
 
             // initialize render transforms
             // scale transform's center is set during layout once the image size is known
@@ -507,21 +525,25 @@ namespace Timelapse.Images
         {
             // redraw markers so they're in the right place to appear in the magnifying glass
             this.RedrawMarkers();
-
+            this.RedrawBoundingBoxes();
             // update the magnifying glass's contents
             this.RedrawMagnifyingGlassIfVisible();
+
+
         }
 
         // Whenever the image size changes, refresh the markers so they appear in the correct place
         private void ImageToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
 
         // Whenever the image size changes, refresh the markers so they appear in the correct place
         private void VideoToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
         #endregion
 
@@ -716,6 +738,7 @@ namespace Timelapse.Images
                 this.imageToDisplayTranslation.Y += newY - center.Y;
             }
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
 
         // Return to the zoomed out level, with no panning
@@ -726,6 +749,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.X = 0.0;
             this.imageToDisplayTranslation.Y = 0.0;
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
         #endregion
 
@@ -766,6 +790,7 @@ namespace Timelapse.Images
         {
             this.bookmark.Apply(this.imageToDisplayScale, this.imageToDisplayTranslation);
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
         #endregion
 
@@ -809,6 +834,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.Y += newY - center.Y;
 
             this.RedrawMarkers();
+            this.RedrawBoundingBoxes();
         }
         #endregion
 
@@ -964,17 +990,30 @@ namespace Timelapse.Images
 
         private Canvas bboxCanvas = new Canvas();
         #region Draw Bounding Box
-        public void DrawBoundingBox(BoundingBoxes bboxes, Size canvasRenderSize)
+        /// <summary>
+        /// Remove all and then draw all the markers
+        /// </summary>
+        private void RedrawBoundingBoxes()
+        {
+            //this.RemoveBoundingBox(this);
+            if (this.ImageToDisplay != null)
+            {
+                this.DrawBoundingBox(this.ImageToDisplay.RenderSize);
+            }
+        }
+
+
+        public void DrawBoundingBox(Size canvasRenderSize)
         {
             bboxCanvas.Children.Clear();
             this.Children.Remove(bboxCanvas);
-            if (bboxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
+            if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
             { 
                 return;
             }
             bboxCanvas.Width = canvasRenderSize.Width;
             bboxCanvas.Height = canvasRenderSize.Height;
-            foreach (BoundingBox bbox in bboxes.Boxes)
+            foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
                 if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
                 {
@@ -983,8 +1022,9 @@ namespace Timelapse.Images
                 // Create a bounding box
                 Rectangle rect = new Rectangle();
                 byte transparency = (byte)Math.Round(255 * bbox.Confidence);
-
-                SolidColorBrush brush = new SolidColorBrush(Color.FromArgb(255, 0, 0, transparency));
+                SolidColorBrush brush = (bbox.Category == "1") ? 
+                    new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)) :
+                    new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0));
                 rect.Stroke = brush;
                 rect.StrokeThickness = 5;
                 rect.Width = bbox.Rectangle.Width * canvasRenderSize.Width;
@@ -997,7 +1037,7 @@ namespace Timelapse.Images
             }
             Canvas.SetLeft(bboxCanvas, 0);
             Canvas.SetTop(bboxCanvas, 0);
-            Canvas.SetZIndex(bboxCanvas, 0);
+            Canvas.SetZIndex(bboxCanvas, 1);
             this.Children.Add(bboxCanvas);
         }
         #endregion

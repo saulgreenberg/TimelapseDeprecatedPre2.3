@@ -120,6 +120,9 @@
       <HintPath>..\..\packages\WindowsAPICodePack-Shell.1.1.1\lib\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -166,6 +169,10 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Detection\DetectionDatabases.cs" />
+    <Compile Include="Detection\Detector.cs" />
+    <Compile Include="Detection\ImportCSVDetectionData.cs" />
+    <Compile Include="Detection\ImportDetectionData.cs" />
     <Compile Include="Dialog\DetectorOptions.xaml.cs">
       <DependentUpon>DetectorOptions.xaml</DependentUpon>
     </Compile>

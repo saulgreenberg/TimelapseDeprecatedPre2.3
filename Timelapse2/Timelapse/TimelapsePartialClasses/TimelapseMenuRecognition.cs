@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.Detection;
 using Timelapse.Dialog;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -18,8 +20,34 @@ namespace Timelapse
             // Not sure if we need this
         }
 
+        private void MenuItemDetectorTest_Click(object sender, RoutedEventArgs e)
+        {
+            string jsonFileName = Constant.File.RecognitionJsonDataFileName;
+            if (Utilities.TryGetFileFromUser(
+                      "Select a .json file that contains the recognition data. It will be merged into the current image set",
+                      Path.Combine(this.dataHandler.FileDatabase.FolderPath, jsonFileName),
+                      String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
+                      Constant.File.JsonFileExtension,
+                      out string jsonFilePath) == false)
+            {
+                return;
+            }
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
+            Mouse.OverrideCursor = null;
+        }
+
+        private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
+        {
+            DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromImageID(this.dataHandler.ImageCache.Current.ID.ToString());
+            foreach (DataRow row in dataTable.Rows)
+            {
+                System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", row[0], row[1], row[2], row[3]));
+            }
+        }
+
         // Import the recognition data from a well-formed csv file. 
-       private void MenuItemImportRecognitionData_Click(object sender, RoutedEventArgs e)
+        private void MenuItemImportRecognitionData_Click(object sender, RoutedEventArgs e)
         {
             // Ask the user for the file name containing the recognition data
             string csvFileName = Constant.File.RecognitionDataFileName;
