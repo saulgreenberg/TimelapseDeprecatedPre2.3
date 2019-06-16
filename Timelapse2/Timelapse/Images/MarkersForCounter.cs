@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using Timelapse.Util;
@@ -32,7 +34,7 @@ namespace Timelapse.Images
         public void AddMarker(Point point)
         {
             this.AddMarker(new Marker(this.DataLabel, point));
-        }
+        } 
 
         public string GetPointList()
         {
@@ -43,7 +45,12 @@ namespace Timelapse.Images
                 {
                     pointList.Append(Constant.DatabaseValues.MarkerBar); // don't put a separator at the beginning of the point list
                 }
-                pointList.AppendFormat("{0:0.000},{1:0.000}", markerForCounter.Position.X, markerForCounter.Position.Y); // Add a point in the form x,y e.g., 0.500, 0.700
+
+                // Different cultures specify doubles differently, e.g., 0.100 vs 0,100 which will break things if we try to parse them later.
+                // To get around this, format coordinates (which are only used internally and which the user never sees) as an Invariant culture. 
+                string x = String.Format(CultureInfo.InvariantCulture, "{0:0.000}", markerForCounter.Position.X);
+                string y = String.Format(CultureInfo.InvariantCulture, "{0:0.000}", markerForCounter.Position.Y);
+                pointList.AppendFormat("{0},{1}", x,y); // Add a point in the form x,y e.g., 0.500, 0.700
             }
             return pointList.ToString();
         }
@@ -54,19 +61,44 @@ namespace Timelapse.Images
             {
                 return;
             }
-
-            char[] delimiterBar = { Constant.DatabaseValues.MarkerBar };
-            string[] pointsAsStrings = pointList.Split(delimiterBar);
-            List<Point> points = new List<Point>();
-            foreach (string pointAsString in pointsAsStrings)
+            try
             {
-                Point point = Point.Parse(pointAsString);
-                points.Add(point);
+                char[] delimiterBar = { '|' };
+                string[] pointsAsStrings = pointList.Split(delimiterBar);
+                List<Point> points = new List<Point>();
+                string invariantCulturePoint = String.Empty;
+                foreach (string pointAsString in pointsAsStrings)
+                {
+                    if (pointAsString.Count(f => f == ',') == 3)
+                    {
+                        // The point was not stored in an invariant culture, i.e., 0,345,0,400 rather than 0.345,0.400
+                        // So we have to fix it.
+                        // Remove the first comma
+                        int index = pointAsString.IndexOf(",");
+                        invariantCulturePoint = pointAsString.Remove(index, 1).Insert(index, ".");
+
+                        // Remove the last comma
+                        index = invariantCulturePoint.LastIndexOf(",");
+                        invariantCulturePoint = invariantCulturePoint.Remove(index, 1).Insert(index, ".");
+                    }
+                    else
+                    {
+                        invariantCulturePoint = pointAsString;
+                    }
+                    Point point = Point.Parse(invariantCulturePoint);
+                    points.Add(point);
+                }
+
+                foreach (Point point in points)
+                {
+                    this.AddMarker(point);  // add the marker to the list;
+                }
             }
-
-            foreach (Point point in points)
+            catch
             {
-                this.AddMarker(point);  // add the marker to the list
+                // Just in case there is a weird format in the point list.
+                // essentially it will add points to the list until the first parsing failure
+                return;
             }
         }
 
