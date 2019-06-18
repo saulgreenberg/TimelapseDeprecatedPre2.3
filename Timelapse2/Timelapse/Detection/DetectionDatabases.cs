@@ -188,8 +188,10 @@ namespace Timelapse.Detection
             if (detector.images != null && detector.images.Count > 0)
             {
                 int detectionIndex = 1;
+                int classificationIndex = 1;
                 // insertionStatements = new List<List<ColumnTuple>>();
                 List<List<ColumnTuple>> detectionInsertionStatements = new List<List<ColumnTuple>>();
+                List<List<ColumnTuple>> classificationInsertionStatements = new List<List<ColumnTuple>>();
 
                 // Get a data table containing the ID, RelativePath, and File
                 // and create primary keys for the fields we will search for (for performance speedup)
@@ -236,7 +238,7 @@ namespace Timelapse.Detection
                         string bboxAsString = (detection.bbox == null || detection.bbox.Length != 4)
                             ? String.Empty
                             : String.Format("{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
-                        detection.detectionID = detectionIndex++;
+                        detection.detectionID = detectionIndex;
                         List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
                         {
                             new ColumnTuple(Constant.DetectionColumns.DetectionID, detection.detectionID),
@@ -247,13 +249,30 @@ namespace Timelapse.Detection
                         };
                         // System.Diagnostics.Debug.Print("id:"+image.imageID.ToString());
                         detectionInsertionStatements.Add(detectionColumnsToUpdate);
+                        
+                        // If the detection has some classification info, then add that to the classifications data table
+                        foreach(Object[] classification in detection.classifications)
+                        {
+                            string category = (string)classification[0];
+                            double conf = Double.Parse(classification[1].ToString());
+                            System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
+                            List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
+                            {
+                                new ColumnTuple(Constant.ClassificationColumns.ClassificationID, classificationIndex),
+                                new ColumnTuple(Constant.ClassificationColumns.DetectionID, detection.detectionID),
+                                new ColumnTuple(Constant.ClassificationColumns.Category, (string)classification[0]),
+                                new ColumnTuple(Constant.ClassificationColumns.Conf, (float) Double.Parse(classification[1].ToString())),
+                            };
+                            classificationInsertionStatements.Add(classificationColumnsToUpdate);
+                            classificationIndex++;
+                        }
+                        detectionIndex++;  
                     }
                     foocount++;
                 }
-
-                //detectionDB.Insert(Constant.DBTableNames.Images, insertionStatements);
                 detectionDB.Insert(Constant.DBTableNames.Detections, detectionInsertionStatements);
-                System.Diagnostics.Debug.Print("Files done: " + foocount + " Detections done: " + detectionInsertionStatements.Count());
+                detectionDB.Insert(Constant.DBTableNames.Classifications, classificationInsertionStatements);
+                System.Diagnostics.Debug.Print("Files: " + foocount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
             }
             #endregion
         }

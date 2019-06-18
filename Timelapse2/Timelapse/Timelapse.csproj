@@ -172,7 +172,6 @@
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\ImportCSVDetectionData.cs" />
-    <Compile Include="Detection\ImportDetectionData.cs" />
     <Compile Include="Dialog\DetectorOptions.xaml.cs">
       <DependentUpon>DetectorOptions.xaml</DependentUpon>
     </Compile>
@@ -281,6 +280,7 @@
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuRecognition.cs" />
     <Compile Include="Util\Episodes.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileShow.cs" />

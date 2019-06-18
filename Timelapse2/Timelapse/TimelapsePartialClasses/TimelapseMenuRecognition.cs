@@ -39,7 +39,7 @@ namespace Timelapse
 
         private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
         {
-            DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromImageID(this.dataHandler.ImageCache.Current.ID.ToString());
+            DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromFileID(this.dataHandler.ImageCache.Current.ID);
             foreach (DataRow row in dataTable.Rows)
             {
                 System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", row[0], row[1], row[2], row[3]));

@@ -1635,7 +1635,7 @@ namespace Timelapse.Database
         /// This is done by getting the marker list associated with all counters representing the current row
         /// It will have a MarkerCounter for each control, even if there may be no metatags in it
         /// </summary>
-        public List<MarkersForCounter> GetMarkersOnFile(long fileID)
+        public List<MarkersForCounter> GetMarkersForCurrentFile(long fileID)
         {
             List<MarkersForCounter> markersForAllCounters = new List<MarkersForCounter>();
 
@@ -1795,9 +1795,11 @@ namespace Timelapse.Database
             }
         }
 
-        public DataTable GetDetectionsFromImageID(string id)
+        // Get the detections associated with the current file, if any
+        public DataTable GetDetectionsFromFileID(long fileID)
         {
-            return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + id);
+            // Note that because IDs are in the database as a string, we convert it
+            return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
         }
         #endregion
     }

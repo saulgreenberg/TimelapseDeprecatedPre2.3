@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -37,7 +36,7 @@ namespace Timelapse
             this.FileShow(fileIndex, false, forceUpdate);
         }
 
-        // Show the image in the specified row, but only if its a different image.
+        // Show the image / video file for the specified row, but only if its different from what is currently being displayed.
         private void FileShow(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
@@ -118,41 +117,13 @@ namespace Timelapse
 
             this.FileNavigatorSlider.Value = fileIndex + 1;
 
-            //----------------------------
-            // BOUNDING BOXES
-            // ADD TEST FOR MULTIPLE CLICKABLE IMAGE GRID AND FOR VIDEO
-            BoundingBoxes bboxes = new BoundingBoxes();
-            if (this.dataHandler.FileDatabase.TableExists(Constant.DBTableNames.Detections))
-            {
-                ImageRow imageRow = this.dataHandler.ImageCache.Current;
-
-                DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromImageID(this.dataHandler.ImageCache.Current.ID.ToString());
-                foreach (DataRow row in dataTable.Rows)
-                {
-                    string coords = (string)row[3];
-                    if (coords == String.Empty)
-                    {
-                        // This shouldn't happen, but...
-                        continue;
-                    }
-                    float confidence = float.Parse(row[2].ToString());
-                    string category = (string)row[1];
-                    // Determine the maximum confidence of these detections
-                    if (bboxes.MaxConfidence < confidence)
-                    {
-                        bboxes.MaxConfidence = confidence;
-                    }
-                    BoundingBox box = new BoundingBox((string)row[3], confidence, category);
-                    bboxes.Boxes.Add(box);
-                }
-            }
-            // END BOundingBoxes
-
-            // display new file if the file changed
-            // this avoids unnecessary image reloads and refreshes in cases where FileShow() is just being called to refresh controls
-            this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersOnFile(this.dataHandler.ImageCache.Current.ID);
+            // Get the bounding boxes and markers (if any) for the current image;
+            BoundingBoxes bboxes = this.GetBoundingBoxesForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+            this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers();
 
+            // Display new file if the file changed
+            // This avoids unnecessary image reloads and refreshes in cases where FileShow() is just being called to refresh controls
             if (newFileToDisplay)
             {
                 if (this.dataHandler.ImageCache.Current.IsVideo)
@@ -216,8 +187,6 @@ namespace Timelapse
 
             // Display the episode text as needed
             this.DisplayEpisodeTextIfWarranted(fileIndex);
-
-
         }
 
         // Get and display the episode text if various conditions are met

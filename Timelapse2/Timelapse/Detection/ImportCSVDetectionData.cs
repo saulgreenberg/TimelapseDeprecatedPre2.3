@@ -65,7 +65,7 @@ namespace Timelapse.Detection
                             string file = String.Empty;
                             image image = new image();
                             string boundingBoxes = String.Empty;
-                            BoundingBoxes bb = new BoundingBoxes();
+                            CSVBoundingBoxes bb = new CSVBoundingBoxes();
 
                             if (row.Count == expectedCSVColumns - 1)
                             {
@@ -112,7 +112,7 @@ namespace Timelapse.Detection
                                     // For some reason, the bounding box list can include a trailing quote ("), so we remove it if its there. 
                                     // Not sure why its read in as part of the CSV row...
                                     boundingBoxes = value.Replace("\"", String.Empty);
-                                    bb = new BoundingBoxes();
+                                    bb = new CSVBoundingBoxes();
                                     bb.CreatefromRecognitionData(maxDetectionConfidence, boundingBoxes);
                                 }
                                 else
@@ -126,7 +126,7 @@ namespace Timelapse.Detection
                             image.file = file;
                             image.max_detection_conf = maxDetectionConfidence;
 
-                            foreach (BoundingBox box in bb.Boxes)
+                            foreach (CSVBoundingBox box in bb.Boxes)
                             {
                                 detection detection = new detection
                                 {
@@ -255,14 +255,14 @@ namespace Timelapse.Detection
     #region BoundingBoxes class
     // Bounding Box class maintains a list of Bounding Boxes and confidence values associated with a single image 
     // This is only used by the CSV reader, so can be removed if we just import using JSON
-    internal class BoundingBoxes
+    internal class CSVBoundingBoxes
     {
         // List of Bounding Boxes
-        public List<BoundingBox> Boxes { get; private set; }
+        public List<CSVBoundingBox> Boxes { get; private set; }
         public float MaxConfidenceAcrossAllBoxes { get; set; }
-        public BoundingBoxes()
+        public CSVBoundingBoxes()
         {
-            this.Boxes = new List<BoundingBox>();
+            this.Boxes = new List<CSVBoundingBox>();
         }
 
         public void CreatefromRecognitionData(float maxConfidence, string allDetectedBoxes)
@@ -307,7 +307,7 @@ namespace Timelapse.Detection
 
                 if (bbox_parameters.Count == 5)
                 {
-                    this.Boxes.Add(new BoundingBox(bbox_parameters[0], bbox_parameters[1], bbox_parameters[2], bbox_parameters[3], bbox_parameters[4]));
+                    this.Boxes.Add(new CSVBoundingBox(bbox_parameters[0], bbox_parameters[1], bbox_parameters[2], bbox_parameters[3], bbox_parameters[4]));
                 }
                 else
                 {
@@ -334,7 +334,7 @@ namespace Timelapse.Detection
     #region BoundingBox class
     // A BoundingBox instance contains data describing a bounding box's appearance and the data associated with that bounding box.
     // This is only used by the CSV reader, so can be removed if we just import using JSON
-    internal class BoundingBox
+    internal class CSVBoundingBox
     {
         // Gets or sets the bounding box's normalized location in the canvas, as a relative rectangle .
         public double[] Box { get; set; }
@@ -344,13 +344,13 @@ namespace Timelapse.Detection
         /// </summary>
         public float Confidence { get; set; }
 
-        public BoundingBox()
+        public CSVBoundingBox()
         {
             this.Box = new double[4];
             this.Confidence = 0;
         }
 
-        public BoundingBox(float x1, float y1, float width, float height, float confidence)
+        public CSVBoundingBox(float x1, float y1, float width, float height, float confidence)
         {
             this.Box = new double[] { x1, y1, width, height };
             this.Confidence = confidence;
