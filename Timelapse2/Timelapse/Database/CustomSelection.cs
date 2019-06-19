@@ -14,6 +14,7 @@ namespace Timelapse.Database
     {
         public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
+        public Detection.DetectionSelections DetectionSelections = new Detection.DetectionSelections();
 
         /// <summary>
         /// Create a CustomSelection, where we build a list of potential search terms based on the controls found in the sorted template table
@@ -107,8 +108,11 @@ namespace Timelapse.Database
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
         {
+            // this.DetectionSelections.SetCriteria("1", 0.9, "1", 0.9); //FOR TESTING ONLY - REMOVE THIS
+
             int numberOfDateTimesSearchTerms = 0;
             string where = String.Empty;
+
             // Construct and show the search term only if that search row is activated
             foreach (SearchTerm searchTerm in this.SearchTerms.Where(term => term.UseForSearching))
             {
@@ -120,17 +124,20 @@ namespace Timelapse.Database
                 // check to see if the search should match an empty string
                 // If so, nulls need also to be matched as NULL and empty are considered interchangeable.
                 string whereForTerm;
+                string label = (this.DetectionSelections.Enabled == true) ? Constant.DatabaseTable.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
                 // Check to see if the search and operator should match an empty value, in which case we also need to deal with NULLs 
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
                 {
                     // The where expression constructed should look something like: (DataLabel IS NULL OR DataLabel = '')
-                    whereForTerm = " (" + searchTerm.DataLabel + " IS NULL OR " + searchTerm.DataLabel + " = '') ";
+                    whereForTerm = " (" + label + " IS NULL OR " + label + " = '') ";
+                    //whereForTerm = " (" + searchTerm.DataLabel + " IS NULL OR " + searchTerm.DataLabel + " = '') ";
                 }
                 else
                 {
                     // The where expression constructed should look something like DataLabel > "5"
-                    Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue)); 
-                    whereForTerm = searchTerm.DataLabel + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
+                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    //whereForTerm = searchTerm.DataLabel + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Constant.Sqlite.CollateNocase; // so that true and false comparisons are case-insensitive
@@ -162,6 +169,27 @@ namespace Timelapse.Database
                 }
                 where += whereForTerm;
             }
+            // Add the Detection selection terms
+            if (DetectionSelections.Enabled)
+            {
+                if (where != String.Empty) where += Constant.Sqlite.And;
+                bool AddAnd = false;
+                if (DetectionSelections.UseDetectionCategory)
+                {
+                    where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + DetectionSelections.DetectionCategory;
+                    AddAnd = true;
+                }
+                if (DetectionSelections.UseDetectionCategory)
+                {
+
+                    if (AddAnd)
+                    {
+                        where += Constant.Sqlite.And;
+                    }
+                    where +=  Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold.ToString();
+                }
+            }
+            System.Diagnostics.Debug.Print(where);
             return where.Trim();
         }
 

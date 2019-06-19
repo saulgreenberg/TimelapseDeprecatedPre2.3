@@ -172,6 +172,10 @@
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\ImportCSVDetectionData.cs" />
+    <Compile Include="Detection\DetectionSelections.cs" />
+    <Compile Include="Dialog\DetectionCriteriaSelection.xaml.cs">
+      <DependentUpon>DetectionCriteriaSelection.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\DetectorOptions.xaml.cs">
       <DependentUpon>DetectorOptions.xaml</DependentUpon>
     </Compile>
@@ -370,6 +374,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DetectionCriteriaSelection.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

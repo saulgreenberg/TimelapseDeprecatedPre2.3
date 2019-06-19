@@ -39,7 +39,8 @@ namespace Timelapse
 
         private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
         {
-
+            DetectionCriteriaSelection detectionCriteriaSelection = new DetectionCriteriaSelection(this.dataHandler.FileDatabase, this, this.dataHandler.FileDatabase.CustomSelection.DetectionSelections);
+            detectionCriteriaSelection.ShowDialog();
         }
 
         // Set various options of the image recognition detector

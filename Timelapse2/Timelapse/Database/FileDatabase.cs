@@ -864,7 +864,19 @@ namespace Timelapse.Database
         /// </summary>
         public void SelectFiles(FileSelectionEnum selection)
         {
-            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+            string query = String.Empty;
+            if (this.CustomSelection.DetectionSelections.Enabled == true)
+            {
+                query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
+                    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
+                     Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + 
+                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+            }
+            else
+            { 
+                query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+            }
+
             string where = this.GetFilesWhere(selection);
             if (String.IsNullOrEmpty(where) == false)
             {
@@ -935,6 +947,7 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
+            System.Diagnostics.Debug.Print(query);
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -1066,7 +1079,19 @@ namespace Timelapse.Database
 
         public int GetFileCount(FileSelectionEnum fileSelection)
         {
-            string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
+            string query = String.Empty;
+            if (this.CustomSelection.DetectionSelections.Enabled == true)
+            {
+                query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
+                    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
+                     Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+            }
+            else
+            {
+                query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+            }
+            //string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesWhere(fileSelection);
             if (String.IsNullOrEmpty(where))
             {
@@ -1871,6 +1896,34 @@ namespace Timelapse.Database
         }
 
         // return the label that matches the detection category 
+        public string GetDetectionCategoryFromLabel(string label)
+        {
+            try
+            {
+                // Null means we have never tried to create the dictionary. Try to do so.
+                if (this.detectionCategoriesDictionary == null)
+                {
+                    this.detectionCategoriesDictionary = new Dictionary<string, string>();
+                    DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        DataRow row = dataTable.Rows[i];
+                        this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                    }
+                }
+                // 
+                // At this point, a lookup dictionary already exists, so just return the category value.
+                string myKey = detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                return (myKey == null) ? String.Empty : myKey;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
+        }
+
+        // return the label that matches the detection category 
         public string GetClassificationLabelFromCategory(string category)
         {
             try
@@ -1896,6 +1949,17 @@ namespace Timelapse.Database
                 return String.Empty;
             }
         }
+
+        public List<string> GetDetectionLabels()
+        {
+            List<string> labels = new List<string>();
+            foreach (KeyValuePair<string,string> entry in this.detectionCategoriesDictionary)
+            {
+                labels.Add(entry.Value);
+            }
+            return labels;
+        }
+
         #endregion
     }
 }
