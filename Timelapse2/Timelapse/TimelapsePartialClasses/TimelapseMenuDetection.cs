@@ -15,12 +15,12 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        private void Recognition_SubmenuOpening(object sender, RoutedEventArgs e)
+        private void Detection_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             // Not sure if we need this
         }
 
-        private void MenuItemDetectorTest_Click(object sender, RoutedEventArgs e)
+        private void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
             if (Utilities.TryGetFileFromUser(
@@ -39,20 +39,29 @@ namespace Timelapse
 
         private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
         {
-            DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromFileID(this.dataHandler.ImageCache.Current.ID);
-            foreach (DataRow row in dataTable.Rows)
-            {
-                System.Diagnostics.Debug.Print(String.Format("{0}, {1}, {2}, {3}", row[0], row[1], row[2], row[3]));
+
+        }
+
+        // Set various options of the image recognition detector
+        private void MenuItemDetectorOptions_Click(object sender, RoutedEventArgs e)
+        {
+            DetectorOptions detectorOptions = new DetectorOptions(this.state, this.dataHandler.FileDatabase, this);
+            detectorOptions.ShowDialog();
+            // redisplay the file as the options may change how bounding boxes should be displayed
+            if (this.dataHandler != null)
+            { 
+                this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
             }
         }
 
+        // DETECTIONS: DEFUNCT - MAYBE
         // Import the recognition data from a well-formed csv file. 
-        private void MenuItemImportRecognitionData_Click(object sender, RoutedEventArgs e)
+        private void MenuItemImportDetectionDataFromCSV_Click(object sender, RoutedEventArgs e)
         {
             // Ask the user for the file name containing the recognition data
             string csvFileName = Constant.File.RecognitionDataFileName;
             if (Utilities.TryGetFileFromUser(
-                      "Select a .csv file that contains the recognition data. It will be merged into the current image set",
+                      "Select a .csv file that contains the detection data. It will be merged into the current image set",
                       Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
                       String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
                       Constant.File.CsvFileExtension,
@@ -91,18 +100,6 @@ namespace Timelapse
             {
                 // PERFORMANCE - This reselect can be avoided by updating the data fields in the table as we read the recognition data. 
                 this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection, true);
-            }
-        }
-
-        // Set various options of the image recognition detector
-        private void MenuItemDetectorOptions_Click(object sender, RoutedEventArgs e)
-        {
-            DetectorOptions detectorOptions = new DetectorOptions(this.state, this.dataHandler.FileDatabase, this);
-            detectorOptions.ShowDialog();
-            // redisplay the file as the options may change how bounding boxes should be displayed
-            if (this.dataHandler != null)
-            { 
-                this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
             }
         }
     }

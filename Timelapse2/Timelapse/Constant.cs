@@ -210,6 +210,8 @@ namespace Timelapse
             public const string DefaultQuickPasteXML = "<Entries></Entries>";
             public const string IndexRelativePath = "IndexRelativePath";
             public const string IndexFile = "IndexFile";
+            public const string IndexID = "IndexDetectionID";
+            public const string IndexDetectionID = "IndexDetectionID";
 
             // Special characters
             public const char MarkerBar = '|';              // Separator used to separate marker points in the database i.e. "2.3,5.6 | 7.1, 3.3"

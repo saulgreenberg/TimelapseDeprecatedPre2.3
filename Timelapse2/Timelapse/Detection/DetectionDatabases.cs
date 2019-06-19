@@ -9,6 +9,7 @@ using Timelapse.Database;
 
 namespace Timelapse.Detection
 {
+
     static public class DetectionDatabases
     {
         // Create all Detection Database Tables
@@ -255,7 +256,7 @@ namespace Timelapse.Detection
                         {
                             string category = (string)classification[0];
                             double conf = Double.Parse(classification[1].ToString());
-                            System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
+                            //System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
                             List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
                             {
                                 new ColumnTuple(Constant.ClassificationColumns.ClassificationID, classificationIndex),
@@ -272,6 +273,7 @@ namespace Timelapse.Detection
                 }
                 detectionDB.Insert(Constant.DBTableNames.Detections, detectionInsertionStatements);
                 detectionDB.Insert(Constant.DBTableNames.Classifications, classificationInsertionStatements);
+                fileDatabase.IndexCreateForDetectionsAndClassifications();
                 System.Diagnostics.Debug.Print("Files: " + foocount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
             }
             #endregion

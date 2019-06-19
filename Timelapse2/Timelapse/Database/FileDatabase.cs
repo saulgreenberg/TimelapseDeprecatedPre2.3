@@ -23,6 +23,12 @@ namespace Timelapse.Database
         private DataGrid boundGrid;
         private bool disposed;
         private DataRowChangeEventHandler onFileDataTableRowChanged;
+        // These two dictionaries mirror the contents of the detectionCategory and classificationCategory database table
+        // for faster access
+        private Dictionary<string, string> detectionCategoriesDictionary = null;
+        private Dictionary<string, string> classificationCategoriesDictionary = null;
+        private DataTable DetectionDataTable; // Mirrors the database detection table
+        private DataTable ClassificationsDataTable; // Mirrors the database classification table
         #endregion
 
         #region Properties 
@@ -107,6 +113,90 @@ namespace Timelapse.Database
             }
             return String.Empty;
         }
+
+        /// <summary>
+        /// Make an empty Data Table based on the information in the Template Table.
+        /// Assumes that the database has already been opened and that the Template Table is loaded, where the DataLabel always has a valid value.
+        /// Then create both the ImageSet table and the Markers table
+        /// </summary>
+        protected override void OnDatabaseCreated(TemplateDatabase templateDatabase)
+        {
+            // copy the template's TemplateTable
+            base.OnDatabaseCreated(templateDatabase);
+
+            // Create the DataTable from the template
+            // First, define the creation string based on the contents of the template. 
+            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
+            {
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+            };
+            foreach (ControlRow control in this.Controls)
+            {
+                columnDefinitions.Add(CreateFileDataColumnDefinition(control));
+            }
+            this.Database.CreateTable(Constant.DatabaseTable.FileData, columnDefinitions);
+
+            // SAULXX THIS IS IN TODDs - Don't uncomment it until we figure out how he uses it. He creates it but I am unsure if he actually uses it
+            // Index the DateTime column
+            // this.Database.ExecuteNonQuery("CREATE INDEX 'FileDateTimeIndex' ON 'FileData' ('DateTime')");
+
+            // Create the ImageSetTable and initialize a single row in it
+            columnDefinitions.Clear();
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
+            int allImages = (int)FileSelectionEnum.All;
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+
+            this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
+
+            // Populate the data for the image set with defaults
+            // VersionCompatabily
+            Version timelapseCurrentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
+            List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.DatabaseColumn.Log, Constant.DatabaseValues.ImageSetDefaultLog),
+                new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True),
+                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
+                new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
+                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
+                new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
+                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms),
+                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, Constant.DatabaseValues.DefaultQuickPasteXML)
+            };
+            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
+            {
+                columnsToUpdate
+            };
+            this.Database.Insert(Constant.DatabaseTable.ImageSet, insertionStatements);
+
+            this.GetImageSet();
+
+            // create the Files table
+            // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
+            // so that the selection can be persisted.
+            this.SelectFiles(FileSelectionEnum.All);
+
+            // Create the MarkersTable and initialize it from the template table
+            columnDefinitions.Clear();
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            foreach (ControlRow control in this.Controls)
+            {
+                if (control.Type.Equals(Constant.Control.Counter))
+                {
+                    columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty));
+                }
+            }
+            this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
+        }
         #endregion
 
         public List<object> GetDistinctValuesInColumn(string table, string columnName)
@@ -119,6 +209,8 @@ namespace Timelapse.Database
         {
             get { return (this.FileTable == null) ? 0 : this.FileTable.RowCount; }
         }
+
+ 
 
         #region Adding Files to the Database
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
@@ -289,90 +381,6 @@ namespace Timelapse.Database
             this.boundGrid = dataGrid;
             this.onFileDataTableRowChanged = onRowChanged;
             this.FileTable.BindDataGrid(dataGrid, onRowChanged);
-        }
-
-        /// <summary>
-        /// Make an empty Data Table based on the information in the Template Table.
-        /// Assumes that the database has already been opened and that the Template Table is loaded, where the DataLabel always has a valid value.
-        /// Then create both the ImageSet table and the Markers table
-        /// </summary>
-        protected override void OnDatabaseCreated(TemplateDatabase templateDatabase)
-        {
-            // copy the template's TemplateTable
-            base.OnDatabaseCreated(templateDatabase);
-
-            // Create the DataTable from the template
-            // First, define the creation string based on the contents of the template. 
-            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
-            {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey)  // It begins with the ID integer primary key
-            };
-            foreach (ControlRow control in this.Controls)
-            {
-                columnDefinitions.Add(CreateFileDataColumnDefinition(control));
-            }
-            this.Database.CreateTable(Constant.DatabaseTable.FileData, columnDefinitions);
-
-            // SAULXX THIS IS IN TODDs - Don't uncomment it until we figure out how he uses it. He creates it but I am unsure if he actually uses it
-            // Index the DateTime column
-            // this.Database.ExecuteNonQuery("CREATE INDEX 'FileDateTimeIndex' ON 'FileData' ('DateTime')");
-
-            // Create the ImageSetTable and initialize a single row in it
-            columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
-            int allImages = (int)FileSelectionEnum.All;
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
-
-            this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
-
-            // Populate the data for the image set with defaults
-            // VersionCompatabily
-            Version timelapseCurrentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
-            List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.DatabaseColumn.Log, Constant.DatabaseValues.ImageSetDefaultLog),
-                new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
-                new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
-                new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
-                new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
-                new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms),
-                new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, Constant.DatabaseValues.DefaultQuickPasteXML)
-            };
-            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
-            {
-                columnsToUpdate
-            };
-            this.Database.Insert(Constant.DatabaseTable.ImageSet, insertionStatements);
-
-            this.GetImageSet();
-
-            // create the Files table
-            // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
-            // so that the selection can be persisted.
-            this.SelectFiles(FileSelectionEnum.All);
-
-            // Create the MarkersTable and initialize it from the template table
-            columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
-            foreach (ControlRow control in this.Controls)
-            {
-                if (control.Type.Equals(Constant.Control.Counter))
-                {
-                    columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty));
-                }
-            }
-            this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
         }
 
         #region Upgrade Databases
@@ -822,6 +830,7 @@ namespace Timelapse.Database
             }
         }
 
+        #region File (image) retrieval and manipulation
         public void RenameFile(string newFileName)
         {
             if (File.Exists(Path.Combine(this.FolderPath, this.FileName)))
@@ -1074,6 +1083,7 @@ namespace Timelapse.Database
             }
             return this.Database.GetCountFromSelect(query);
         }
+        #endregion
 
         // Insert one or more rows into a table
         private void InsertRows(string table, List<List<ColumnTuple>> insertionStatements)
@@ -1087,7 +1097,6 @@ namespace Timelapse.Database
         {
             return this.CustomSelection.GetRelativePathFolder();
         }
-
         private string GetFilesWhere(FileSelectionEnum selection)
         {
             switch (selection)
@@ -1108,6 +1117,11 @@ namespace Timelapse.Database
             }
         }
 
+        public void IndexCreateForDetectionsAndClassifications()
+        {
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexID, Constant.DBTableNames.Detections, Constant.DatabaseColumn.ID);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexDetectionID, Constant.DBTableNames.Classifications, Constant.DetectionColumns.DetectionID);
+        }
         public void IndexCreateForFileAndRelativePath()
         {
             this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
@@ -1625,7 +1639,7 @@ namespace Timelapse.Database
 
         private void GetImageSet()
         {
-            string imageSetQuery = "Select * From " + Constant.DatabaseTable.ImageSet + " WHERE " + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
+            string imageSetQuery = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.ImageSet + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
         }
@@ -1669,7 +1683,7 @@ namespace Timelapse.Database
 
         private void GetMarkers()
         {
-            string markersQuery = "Select * FROM " + Constant.DatabaseTable.Markers;
+            string markersQuery = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.Markers;
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
@@ -1768,7 +1782,6 @@ namespace Timelapse.Database
             return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
         }
 
-        // DETECTION: MAYBE MOVE THIS CODE IF POSSIBLE?
         #region DETECTION INTEGRATION
         public bool PopulateDetectionTables(string path)
         {
@@ -1796,10 +1809,92 @@ namespace Timelapse.Database
         }
 
         // Get the detections associated with the current file, if any
-        public DataTable GetDetectionsFromFileID(long fileID)
+        // As part of the, create a DetectionTable in memory that mirrors the database table
+        public DataRow[] GetDetectionsFromFileID(long fileID)
         {
+            if (this.DetectionDataTable == null)
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                this.DetectionDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections);
+                sw.Stop();
+                System.Diagnostics.Debug.Print(String.Format("creating detections datatable took {0}", sw.ElapsedMilliseconds / 1000));
+                // this.DetectionDataTable.PrimaryKey = new DataColumn[] { this.DetectionDataTable.Columns[Constant.DatabaseColumn.ID] };
+            }
             // Note that because IDs are in the database as a string, we convert it
-            return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
+            //return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
+            return this.DetectionDataTable.Select(Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
+        }
+
+        // Get the detections associated with the current file, if any
+        public DataRow[] GetClassificationsFromDetectionID(long detectionID)
+        {
+            if (this.ClassificationsDataTable == null)
+            {
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                this.ClassificationsDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications);
+                sw.Stop();
+                System.Diagnostics.Debug.Print(String.Format("creating classifications datatable took {0}", sw.ElapsedMilliseconds / 1000));
+                //this.ClassificationsDataTable.PrimaryKey = new DataColumn[] { this.ClassificationsDataTable.Columns[Constant.ClassificationColumns.DetectionID]};
+            }
+            // Note that because IDs are in the database as a string, we convert it
+            //return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications + Constant.Sqlite.Where + Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
+            return this.ClassificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
+        }
+
+        // return the label that matches the detection category 
+        public string GetDetectionLabelFromCategory(string category)
+        {
+            try
+            {
+                // Null means we have never tried to create the dictionary. Try to do so.
+                if (this.detectionCategoriesDictionary == null)
+                {
+                    this.detectionCategoriesDictionary = new Dictionary<string, string>();
+                    DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        DataRow row = dataTable.Rows[i];
+                        this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                    }
+                }
+                // 
+                // At this point, a lookup dictionary already exists, so just return the category value.
+                return detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
+        }
+
+        // return the label that matches the detection category 
+        public string GetClassificationLabelFromCategory(string category)
+        {
+            try
+            {
+                // Null means we have never tried to create the dictionary. Try to do so.
+                if (this.classificationCategoriesDictionary == null)
+                {
+                    this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                    DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.ClassificationCategories);
+                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    {
+                        DataRow row = dataTable.Rows[i];
+                        this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
+                    }
+                }
+                // 
+                // At this point, a lookup dictionary already exists, so just return the category value.
+                return classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
         }
         #endregion
     }

@@ -1037,7 +1037,7 @@ namespace Timelapse.Images
 
                 // The color of the bounding box depends upon its category
                 SolidColorBrush brush;
-                switch (bbox.Category)
+                switch (bbox.DetectionCategory)
                 {
                     case "0":
                         brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 0)); // Green
@@ -1057,6 +1057,11 @@ namespace Timelapse.Images
                 }
                 rect.Stroke = brush;
                 rect.StrokeThickness = 5;
+                rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
+                foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                {
+                    rect.ToolTip += Environment.NewLine + classification.Key + " " + classification.Value;
+                }
 
                 //// Get the corners from the bounding box, and convert it into a rectangle that will be in the right place (including scaling / panning as needed)
                 Point screenPositionTopLeft = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height));

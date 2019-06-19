@@ -25,7 +25,7 @@ namespace Timelapse
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
-            this.MenuItemImportRecognitionData.IsEnabled = imageSetAvailable;
+            this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable;
 
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
@@ -54,8 +54,8 @@ namespace Timelapse
             this.MenuItemSort.IsEnabled = filesSelected;
 
             // Recognition menu
-            this.MenuItemRecognition.IsEnabled = filesSelected;
-            this.MenuItemImportRecognitionData.IsEnabled = filesSelected;
+            this.MenuItemDetection.IsEnabled = filesSelected;
+            this.MenuItemImportDetectionData.IsEnabled = filesSelected;
             this.MenuItemDetectorOptions.IsEnabled = filesSelected;
 
             // Windows menu is always enabled
