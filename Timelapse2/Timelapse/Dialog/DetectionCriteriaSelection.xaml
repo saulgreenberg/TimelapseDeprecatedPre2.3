@@ -50,11 +50,11 @@
 
             <CheckBox Name="UseDetectionCategoryCheckbox" IsChecked="False" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
             <TextBlock Text="Detection Category:" FontWeight="Bold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0"/>
-            <ComboBox Name="DetectionCategoryComboBox" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0"/>
+            <ComboBox Name="DetectionCategoryComboBox" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged"/>
 
             <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
             <TextBlock Text="Detection Confidence:" FontWeight="Bold" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0"/>
-            <xceed:DoubleUpDown Name="DetectionConfidenceSpinner" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="False" Margin="10,0,10,0"/>
+            <xceed:DoubleUpDown Name="DetectionConfidenceSpinner" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="False" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner_ValueChanged"/>
         </Grid>
     </DockPanel>
 </Window>

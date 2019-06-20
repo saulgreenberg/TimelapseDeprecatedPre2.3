@@ -223,7 +223,9 @@ namespace Timelapse.Database
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
                         command.CommandText = query;
-                        return command.ExecuteScalar();
+                        var foo = command.ExecuteScalar();
+                        return foo;
+                        //return command.ExecuteScalar();
                     }
                 }
             }

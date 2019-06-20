@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Timelapse.Database;
 using Timelapse.Detection;
 using Timelapse.Enums;
@@ -51,25 +40,15 @@ namespace Timelapse.Dialog
                 this.DetectionCategoryComboBox.Items.Add(label);
             }
             this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+            this.SetCriteria();
+            this.ShowCount();
         }
 
         #region Ok/Cancel buttons
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
-            this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
-            if (this.DetectionSelections.UseDetectionCategory)
-            {
-                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-            }
-
-            this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;
-            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
-            {
-                this.DetectionSelections.DetectionConfidenceThreshold = (double) this.DetectionConfidenceSpinner.Value;
-            }
-
-            this.database.SelectFiles(FileSelectionEnum.Custom);
+            this.SetCriteria();
             this.DialogResult = true;
         }
 
@@ -84,6 +63,49 @@ namespace Timelapse.Dialog
         {
             this.DetectionConfidenceSpinner.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
+            this.SetCriteria();
+            this.ShowCount();
+        }
+
+        private void SetCriteria()
+        {
+            if (this.IsLoaded == false)
+            {
+                return;
+            }
+            this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseDetectionCategory)
+            {
+                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+            }
+
+            this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
+            {
+                this.DetectionSelections.DetectionConfidenceThreshold = (double)this.DetectionConfidenceSpinner.Value;
+            }
+        }
+
+        private void ShowCount()
+        {
+            if (this.IsLoaded == false)
+            {
+                return;
+            }
+            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
+            this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
+        }
+
+        private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            this.SetCriteria();
+            this.ShowCount();
+        }
+
+        private void DetectionConfidenceSpinner_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            this.SetCriteria();
+            this.ShowCount();
         }
     }
 }

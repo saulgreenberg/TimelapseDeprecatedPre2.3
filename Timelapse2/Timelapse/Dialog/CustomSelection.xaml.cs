@@ -543,7 +543,6 @@ namespace Timelapse.Dialog
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
-            this.database.SelectFiles(FileSelectionEnum.Custom);
             this.DialogResult = true;
         }
 

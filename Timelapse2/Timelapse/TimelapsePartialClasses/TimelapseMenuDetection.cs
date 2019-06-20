@@ -8,6 +8,7 @@ using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Detection;
 using Timelapse.Dialog;
+using Timelapse.Enums;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
@@ -40,7 +41,10 @@ namespace Timelapse
         private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
         {
             DetectionCriteriaSelection detectionCriteriaSelection = new DetectionCriteriaSelection(this.dataHandler.FileDatabase, this, this.dataHandler.FileDatabase.CustomSelection.DetectionSelections);
-            detectionCriteriaSelection.ShowDialog();
+            if (detectionCriteriaSelection.ShowDialog() == true)
+            {
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
+            }
         }
 
         // Set various options of the image recognition detector

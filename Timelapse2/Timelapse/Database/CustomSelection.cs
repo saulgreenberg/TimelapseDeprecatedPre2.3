@@ -108,8 +108,6 @@ namespace Timelapse.Database
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
         {
-            // this.DetectionSelections.SetCriteria("1", 0.9, "1", 0.9); //FOR TESTING ONLY - REMOVE THIS
-
             int numberOfDateTimesSearchTerms = 0;
             string where = String.Empty;
 
@@ -179,7 +177,7 @@ namespace Timelapse.Database
                     where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + DetectionSelections.DetectionCategory;
                     AddAnd = true;
                 }
-                if (DetectionSelections.UseDetectionCategory)
+                if (DetectionSelections.UseDetectionConfidenceThreshold)
                 {
 
                     if (AddAnd)
