@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         mc:Ignorable="d"
-        Title="Rename the Timelapse data file" Height="320" Width="600" MinHeight="320" MinWidth="600"
+        Title="Rename the Timelapse data file" Height="380" Width="600" MinHeight="380" MinWidth="600"
         ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
