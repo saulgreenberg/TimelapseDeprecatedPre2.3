@@ -720,19 +720,8 @@ namespace Timelapse
             FileSelectionEnum fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
             if (fileSelection == FileSelectionEnum.Folders)
             {
-                // Compose a custom search term
-                List<SearchTerm> folderTerms = new List<SearchTerm>();
-                SearchTerm folderTerm = new SearchTerm
-                {
-                    DataLabel = Constant.DatabaseColumn.RelativePath,
-                    DatabaseValue = this.dataHandler.FileDatabase.ImageSet.SelectedFolder,
-                    Operator = Constant.SearchTermOperator.Equal,
-                    UseForSearching = true
-                };
-                folderTerms.Add(folderTerm);
-
-                List<SearchTerm> savedSearchTerms = this.dataHandler.FileDatabase.CustomSelection.SearchTerms;
-                this.dataHandler.FileDatabase.CustomSelection.SearchTerms = folderTerms;
+                // Compose a custom search term for the relative path
+                this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.dataHandler.FileDatabase.ImageSet.SelectedFolder);
             }
             if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {

@@ -60,10 +60,8 @@ namespace Timelapse
 
         private void MenuItemSelectByFolder_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            MenuItem menu = sender as MenuItem;
-
             // We don't have to do anything if the folder menu item list has previously been populated
-            if (menu == null || menu.Items.Count != 1)
+            if (!(sender is MenuItem menu) || menu.Items.Count != 1)
             {
                 return;
             }
@@ -103,11 +101,10 @@ namespace Timelapse
             }
         }
 
-        // A specific older was selected.
+        // A specific folder was selected.
         private void MenuItemSelectFolder_Click(object sender, RoutedEventArgs e)
         {
-            MenuItem mi = sender as MenuItem;
-            if (mi == null)
+            if (!(sender is MenuItem mi))
             {
                 return;
             }
@@ -119,19 +116,8 @@ namespace Timelapse
                 return;
             }
 
-            // Compose a custom search term
-            List<SearchTerm> folderTerms = new List<SearchTerm>();
-            SearchTerm folderTerm = new SearchTerm
-            {
-                DataLabel = Constant.DatabaseColumn.RelativePath,
-                DatabaseValue = (string)mi.Header,
-                Operator = Constant.SearchTermOperator.Equal,
-                UseForSearching = true
-            };
-            folderTerms.Add(folderTerm);
-
-            List<SearchTerm> savedSearchTerms = this.dataHandler.FileDatabase.CustomSelection.SearchTerms;
-            this.dataHandler.FileDatabase.CustomSelection.SearchTerms = folderTerms;
+            // Set the search terms to the designated relative path
+            this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
             int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.Custom);
             if (count <= 0)
             {
@@ -140,13 +126,12 @@ namespace Timelapse
                 messageBox.Message.Reason = String.Format("While the folder {0} exists, no image data is associated with any files in it.", mi.Header);
                 messageBox.Message.Hint = String.Format("Perhaps you removed these files and its data during this session?", mi.Header);
                 messageBox.ShowDialog();
-                return;
+ //               return;
             }
             MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
             this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders);  // Go to the first result (i.e., index 0) in the given selection set
-            this.dataHandler.FileDatabase.CustomSelection.SearchTerms = savedSearchTerms;
         }
 
         private void MenuItemSelectByFolder_ClearAllCheckmarks()

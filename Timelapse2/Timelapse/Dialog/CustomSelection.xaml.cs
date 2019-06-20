@@ -32,6 +32,7 @@ namespace Timelapse.Dialog
         private DataEntryControls dataEntryControls;
         private TimeZoneInfo imageSetTimeZone;
         private bool excludeUTCOffset;
+        private bool dontUpdate = true;
 
         #region Constructors and Loading
         public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset)
@@ -48,6 +49,7 @@ namespace Timelapse.Dialog
         // When the window is loaded, add SearchTerm controls to it
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.dontUpdate = true;
             // Adjust this dialog window position 
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
@@ -181,8 +183,9 @@ namespace Timelapse.Dialog
                         Value = dateTime.DateTime
                     };
                     dateValue.ValueChanged += this.DateTime_SelectedDateChanged;
+                    // TODO: It looks like this now works so its commented out. Remove?
                     // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
-                    dateValue.MouseMove += DateValue_MouseMove;
+                    // dateValue.MouseMove += DateValue_MouseMove;
                     Grid.SetRow(dateValue, gridRowIndex);
                     Grid.SetColumn(dateValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(dateValue);
@@ -318,14 +321,16 @@ namespace Timelapse.Dialog
                 Grid.SetColumn(searchCriteria, CustomSelection.SearchCriteriaColumn);
                 this.SearchTerms.Children.Add(searchCriteria);
             }
+            this.dontUpdate = false;
             this.UpdateSearchCriteriaFeedback();
         }
 
+        // TODO: It looks like this isn't needed anymore. Check
         // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
-        private void DateValue_MouseMove(object sender, MouseEventArgs e)
-        {
-            this.DateTime_SelectedDateChanged(sender, null);
-        }
+        //private void DateValue_MouseMove(object sender, MouseEventArgs e)
+        //{
+        //    this.DateTime_SelectedDateChanged(sender, null);
+        //}
         #endregion
 
         #region Query formation callbacks
@@ -399,7 +404,6 @@ namespace Timelapse.Dialog
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
                 { 
-                    // this.database.CustomSelection.SetDateTime(row - 1, datePicker.Value.Value, this.imageSetTimeZone);
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
                     this.UpdateSearchCriteriaFeedback();
                 }
@@ -460,10 +464,12 @@ namespace Timelapse.Dialog
         // which also show or hides the search term feedback for that row.
         private void UpdateSearchCriteriaFeedback()
         {
+            if (this.dontUpdate) return;
             // We go backwards, as we don't want to print the AND or OR on the last expression
             bool lastExpression = true;
             int numberOfDateTimesSearchTerms = 0;
             string utcOffset = "Utc Offset";
+            bool searchTermsInUse = false;
             for (int index = this.database.CustomSelection.SearchTerms.Count - 1; index >= 0; index--)
             {
                 int row = index + 1; // we offset the row by 1 as row 0 is the header
@@ -482,6 +488,7 @@ namespace Timelapse.Dialog
                     searchCriteria.Text = String.Empty;
                     continue;
                 }
+                searchTermsInUse = true;
 
                 // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
@@ -530,7 +537,7 @@ namespace Timelapse.Dialog
                 lastExpression = false;
             }
 
-            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
+            int count = (searchTermsInUse) ? this.database.GetFileCount(FileSelectionEnum.Custom) : this.database.GetFileCount(FileSelectionEnum.All);
             // if count == -1 Means no search terms selected
             this.OkButton.IsEnabled = count > 0 ? true : false;
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";

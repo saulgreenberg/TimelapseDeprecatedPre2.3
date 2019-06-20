@@ -865,6 +865,7 @@ namespace Timelapse.Database
         public void SelectFiles(FileSelectionEnum selection)
         {
             string query = String.Empty;
+            this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
             if (this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
@@ -1144,6 +1145,8 @@ namespace Timelapse.Database
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
             }
         }
+
+
 
         public void IndexCreateForDetectionsAndClassifications()
         {
