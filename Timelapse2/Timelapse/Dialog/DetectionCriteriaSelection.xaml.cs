@@ -91,7 +91,6 @@ namespace Timelapse.Dialog
             // Enable or disable the controls depending on the various checkbox states
             SetDetectionSpinnerEnable();
 
-
             this.SetCriteria();
             this.ShowCount();
         }
@@ -121,9 +120,10 @@ namespace Timelapse.Dialog
             {
                 return;
             }
-            int count = (this.DetectionSelections.UseDetectionConfidenceThreshold || this.DetectionSelections.UseDetectionCategory) ? this.database.GetFileCount(FileSelectionEnum.Custom) : this.database.GetFileCount(FileSelectionEnum.All);
+            //int count = (this.DetectionSelections.UseDetectionConfidenceThreshold || this.DetectionSelections.UseDetectionCategory) ? this.database.GetFileCount(FileSelectionEnum.Custom) : this.database.GetFileCount(FileSelectionEnum.All);
+            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
-            this.OkButton.IsEnabled = (count > 0); // Dusable OK button if there are no matches.
+            this.OkButton.IsEnabled = true; // (count > 0); // Dusable OK button if there are no matches.
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

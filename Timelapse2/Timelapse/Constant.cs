@@ -570,6 +570,7 @@ namespace Timelapse
             public const string GreaterThanEqual = " >= ";
             public const string GreaterThan = " > ";
             public const string GroupBy = " GROUP BY ";
+            public const string Having = " HAVING ";
             public const string IfNotExists = " IF NOT EXISTS ";
             public const string IfExists = " IF EXISTS ";
             public const string In = " In ";
@@ -579,6 +580,7 @@ namespace Timelapse
             public const string IsNull = " IS NULL ";
             public const string LessThanEqual = " <= ";
             public const string LessThan = " < ";
+            public const string Max = " MAX ";
             public const string Name = " NAME ";
             public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
             public const string NotNull = " NOT NULL ";

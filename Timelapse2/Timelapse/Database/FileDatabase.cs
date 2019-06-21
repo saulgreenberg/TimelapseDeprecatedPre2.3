@@ -868,6 +868,7 @@ namespace Timelapse.Database
             this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
             if (this.CustomSelection.DetectionSelections.Enabled == true)
             {
+                // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
                 query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
                     Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
                      Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + 
@@ -878,10 +879,11 @@ namespace Timelapse.Database
                 query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             }
 
-            string where = this.GetFilesWhere(selection);
-            if (String.IsNullOrEmpty(where) == false)
+            string conditionalExpression = this.GetFilesConditionalExpression(selection);
+            if (String.IsNullOrEmpty(conditionalExpression) == false)
             {
-                query += Constant.Sqlite.Where + where;
+                //    query += Constant.Sqlite.Where + conditionalExpression;
+                query += conditionalExpression;
             }
 
             // Sort by primary and secondary sort criteria if an image set is actually initialized (i.e., not null)
@@ -948,7 +950,8 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.Semicolon;
                 }
             }
-            System.Diagnostics.Debug.Print(query);
+
+            System.Diagnostics.Debug.Print("Doit: " + query);
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -1078,13 +1081,18 @@ namespace Timelapse.Database
             return counts;
         }
 
+        // Form examples
+        // - Select Count(*) FROM DataTable WHERE ImageQuality='Light'
+        // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
         public int GetFileCount(FileSelectionEnum fileSelection)
         {
             string query = String.Empty;
             if (this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 // query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
-                query = Constant.Sqlite.SelectCountStarFrom + Constant.DBTableNames.Detections +
+                query = Constant.Sqlite.SelectCountStarFrom +
+                    Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
+                    Constant.DBTableNames.Detections +
                     Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
                      Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
                      Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
@@ -1095,7 +1103,7 @@ namespace Timelapse.Database
             }
 
             //string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
-            string where = this.GetFilesWhere(fileSelection);
+            string where = this.GetFilesConditionalExpression(fileSelection);
             if (String.IsNullOrEmpty(where))
             {
                 if (fileSelection == FileSelectionEnum.Custom)
@@ -1107,9 +1115,14 @@ namespace Timelapse.Database
             }
             else
             {
-                query += Constant.Sqlite.Where + where;
+                query += where;
+                // query += Constant.Sqlite.Where + where;
             }
-            System.Diagnostics.Debug.Print("Count: " + query);
+            if (this.CustomSelection.DetectionSelections.Enabled == true)
+            {
+                query += Constant.Sqlite.CloseParenthesis;
+            }
+                System.Diagnostics.Debug.Print("Count: " + query);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion
@@ -1126,7 +1139,7 @@ namespace Timelapse.Database
         {
             return this.CustomSelection.GetRelativePathFolder();
         }
-        private string GetFilesWhere(FileSelectionEnum selection)
+        private string GetFilesConditionalExpression(FileSelectionEnum selection)
         {
             switch (selection)
             {
@@ -1135,9 +1148,9 @@ namespace Timelapse.Database
                 case FileSelectionEnum.Unknown:
                 case FileSelectionEnum.Dark:
                 case FileSelectionEnum.Light:
-                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
+                    return Constant.Sqlite.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
+                    return Constant.Sqlite.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                 case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();

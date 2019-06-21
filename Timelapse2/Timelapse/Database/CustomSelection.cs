@@ -189,8 +189,17 @@ namespace Timelapse.Database
             string where = String.Empty;
 
             // Construct and show the search term only if that search row is activated
+            // Form after the ForEach should be:
+            // "" if nothing in it
+            // WHERE a=b for single terme
+            // WHERE a=b AND c=d ... for multiple terms
             foreach (SearchTerm searchTerm in this.SearchTerms.Where(term => term.UseForSearching))
             {
+                if (where == String.Empty)
+                {
+                    // Because there is at least one search term, we will need the WHERE clause
+                    where += Constant.Sqlite.Where;
+                }
                 // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
                 {
@@ -219,8 +228,8 @@ namespace Timelapse.Database
                     }
                 }
 
-                // if there is already a term in the query add either and 'And' or an 'Or' to it 
-                if (where.Length > 0)
+                // if there is a term in the query other than ' Where 'add either and 'And' or an 'Or' to it 
+                if (where != Constant.Sqlite.Where)
                 {
                     if (numberOfDateTimesSearchTerms == 2)
                     {
@@ -244,44 +253,75 @@ namespace Timelapse.Database
                 }
                 where += whereForTerm;
             }
+
+            // If no detections, return the above
+
             // Add the Detection selection terms
             if (DetectionSelections.Enabled)
             {
-                if (where != String.Empty) where += Constant.Sqlite.And;
-                bool AddAnd = false;
+                bool addAnd = true;
+                if (where == String.Empty && DetectionSelections.UseDetectionCategory == true)
+                {
+                    where += Constant.Sqlite.Where;
+                    addAnd = false;
+                }
+                else
+                {
+                    addAnd = true;
+                }
+
                 if (DetectionSelections.UseDetectionCategory)
                 {
-                    where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + DetectionSelections.DetectionCategory;
-                    AddAnd = true;
-                }
-                if (DetectionSelections.UseDetectionConfidenceThreshold)
-                {
-                    if (AddAnd)
+                    if (addAnd)
                     {
                         where += Constant.Sqlite.And;
                     }
-
-                    switch(DetectionSelections.DetectionComparison)
+                    // Form: Detections.category = <DetectionCategory>
+                    where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + DetectionSelections.DetectionCategory;
+                    addAnd = true;
+                }
+                else
+                {
+                    
+                }
+                if (DetectionSelections.UseDetectionConfidenceThreshold)
+                {
+                    switch (DetectionSelections.DetectionComparison)
                     {
+                        // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
                         case ComparisonEnum.LessThanEqual:
-                            // Form: SELECT DataTable.*, Detections.category, Detections.Conf  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
-                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+ 
+                            where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Constant.Sqlite.Having + 
+                                Constant.Sqlite.Max + Constant.Sqlite.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.CloseParenthesis +
+                                Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+
+                               // Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
                             break;
                         case ComparisonEnum.Between:
+                            if (addAnd)
+                            {
+                                // Form: And
+                                where += Constant.Sqlite.And;
+                            }
                             where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString() +
                                 Constant.Sqlite.And +
                                 Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold2.ToString();
                             break;
                         case ComparisonEnum.GreaterThan:
                         default:
+                            if (addAnd)
+                            {
+                                // Form: And
+                                where += Constant.Sqlite.And;
+                            }
                             where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
                             break;
                     }
                     //where +=  Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
                 }
             }
-            System.Diagnostics.Debug.Print(where);
-            return where.Trim();
+            // System.Diagnostics.Debug.Print(where);
+            return where;
         }
 
         public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime, TimeZoneInfo imageSetTimeZone)
