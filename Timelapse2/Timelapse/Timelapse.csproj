@@ -185,6 +185,7 @@
     <Compile Include="Dialog\SkipHiddenFiles.xaml.cs">
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\FlashEnums.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />

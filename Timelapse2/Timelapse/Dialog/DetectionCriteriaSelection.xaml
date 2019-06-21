@@ -7,8 +7,8 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         mc:Ignorable="d"
         Title="Select files matching detections"
-        MinHeight="400" MinWidth="500"
-		Height="400" Width="500"
+        MinHeight="500" MinWidth="600"
+		Height="500" Width="600"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner"  Loaded="Window_Loaded" >
@@ -36,12 +36,13 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="200"/>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" MinWidth="300"/>
                 </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" MinHeight="25" />
                 <RowDefinition Height="Auto" MinHeight="25" />
+                <RowDefinition Height="Auto" MinHeight="25"/>
                 <RowDefinition Height="Auto" MinHeight="25"/>
             </Grid.RowDefinitions>
             <TextBlock Text="Use" FontWeight="Bold" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" />
@@ -50,11 +51,16 @@
 
             <CheckBox Name="UseDetectionCategoryCheckbox" IsChecked="False" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
             <TextBlock Text="Detection Category:" FontWeight="Bold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0"/>
-            <ComboBox Name="DetectionCategoryComboBox" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged"/>
+            <ComboBox Name="DetectionCategoryComboBox" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged" Width="Auto"/>
 
             <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
             <TextBlock Text="Detection Confidence:" FontWeight="Bold" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0"/>
-            <xceed:DoubleUpDown Name="DetectionConfidenceSpinner" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="False" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner_ValueChanged"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="2" Margin="10,0,10,0" Height="30">
+                <ComboBox Name="DetectionRangeType" SelectionChanged="DetectionRangeType_SelectionChanged" Width="100"/>
+                <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1" Value="0" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
+                <Label Name="AndLabel" Content="and "/>
+                <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
+            </StackPanel>
         </Grid>
     </DockPanel>
 </Window>

@@ -256,12 +256,28 @@ namespace Timelapse.Database
                 }
                 if (DetectionSelections.UseDetectionConfidenceThreshold)
                 {
-
                     if (AddAnd)
                     {
                         where += Constant.Sqlite.And;
                     }
-                    where +=  Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold.ToString();
+
+                    switch(DetectionSelections.DetectionComparison)
+                    {
+                        case ComparisonEnum.LessThanEqual:
+                            // Form: SELECT DataTable.*, Detections.category, Detections.Conf  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
+                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                            break;
+                        case ComparisonEnum.Between:
+                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString() +
+                                Constant.Sqlite.And +
+                                Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold2.ToString();
+                            break;
+                        case ComparisonEnum.GreaterThan:
+                        default:
+                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                            break;
+                    }
+                    //where +=  Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
                 }
             }
             System.Diagnostics.Debug.Print(where);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Timelapse.Enums;
 
 namespace Timelapse.Detection
 {
@@ -14,34 +15,34 @@ namespace Timelapse.Detection
                 return this.UseCategoryCategory || this.UseCategoryConfidenceThreshold || this.UseDetectionCategory || this.UseDetectionConfidenceThreshold;
             }
         }
-        public string DetectionCategory { get; set; }
         public bool UseDetectionCategory { get; set; }
+        public string DetectionCategory { get; set; }
 
-        public double DetectionConfidenceThreshold { get; set; }
         public bool UseDetectionConfidenceThreshold { get; set; }
+        public double DetectionConfidenceThreshold1 { get; set; }
+        public double DetectionConfidenceThreshold2 { get; set; }
+        public ComparisonEnum DetectionComparison { get; set; }
 
-        public string CategoryCategory { get; set; }
         public bool UseCategoryCategory { get; set; }
+        public string CategoryCategory { get; set; }
 
-        public double CategoryConfidenceThreshold { get; set; }
         public bool UseCategoryConfidenceThreshold { get; set; }
+        public double CategoryConfidenceThreshold1 { get; set; }
+        public double CategoryConfidenceThreshold2 { get; set; }
+        public ComparisonEnum CategoryComparison { get; set; }
+
 
         public DetectionSelections()
         {
             this.DisableAllUses();
+            // Set default: Greater than .8
             this.DetectionCategory = "1";
-            this.DetectionConfidenceThreshold = 0.95;
-            this.CategoryConfidenceThreshold = 0.95;
+            this.DetectionConfidenceThreshold1 = 0.8;
+            this.DetectionConfidenceThreshold2 = 1;
+            this.CategoryComparison = ComparisonEnum.GreaterThan;
+            this.CategoryConfidenceThreshold1 = 0.8;
+            this.CategoryConfidenceThreshold2 = 1;
             this.CategoryCategory = "1";
-        }
-
-        // Bulk setting of detection selection criteria
-        public void SetCriteria (string detectionCategory, double detectionConfidence, string categoryCategory, double categoryConfidence)
-        {
-            this.DetectionCategory = detectionCategory;
-            this.DetectionConfidenceThreshold = detectionConfidence;
-            this.CategoryCategory = categoryCategory;
-            this.CategoryConfidenceThreshold = categoryConfidence;
         }
 
         // Bulk disabling of detection selection criteria
