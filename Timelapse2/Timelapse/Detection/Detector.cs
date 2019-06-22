@@ -7,7 +7,7 @@ namespace Timelapse.Detection
     // The Detector class holds data produced by Microsoft's Megadetector
     // Property names and structures follow the Microsoft Megadetetor JSON attribut names
     // in order to allow the JSON data to be deserialized into the Detector data structure
-    public class Detector
+    public class Detector : IDisposable
     {
         public info info { get; set; }
         public Dictionary<string, string> detection_categories { get; set; }
@@ -20,13 +20,20 @@ namespace Timelapse.Detection
             this.info = new info();
             this.images = new List<image>();
         }
+        public void Dispose()
+        {
+            this.info = null;
+            this.detection_categories = null;
+            this.classification_categories = null;
+            this.images = null;
+        }
 
         // Defaults are just used when reading in current csv files, as that file does not include the category definitions
         public void SetDetectionCategoryDefaults()
         {
             this.detection_categories = new Dictionary<string, string>
             {
-                { "0", "empty" },
+                { "0", "None" },
                 { "1", "animal" },
                 { "2", "person" },
                 { "3", "group" },

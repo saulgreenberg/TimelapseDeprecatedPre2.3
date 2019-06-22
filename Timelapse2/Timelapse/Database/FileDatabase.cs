@@ -865,16 +865,29 @@ namespace Timelapse.Database
         public void SelectFiles(FileSelectionEnum selection)
         {
             string query = String.Empty;
-            this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
-            if (this.CustomSelection.DetectionSelections.Enabled == true)
+            bool useStandardQuery = false;
+            if (this.CustomSelection == null)
             {
-                // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
-                query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
-                    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
-                     Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + 
-                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                useStandardQuery = true;
             }
             else
+            { 
+            this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
+                if (this.CustomSelection.DetectionSelections.Enabled == true)
+                {
+                    // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
+                    query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
+                        Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
+                         Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                         Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                }
+                else
+                {
+                    useStandardQuery = true;
+                }
+            }
+
+            if (useStandardQuery)
             { 
                 query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             }
@@ -1127,6 +1140,10 @@ namespace Timelapse.Database
         // Return the selected folder (if any)
         public string GetSelectedFolder()
         {
+            if (this.CustomSelection == null)
+            {
+                return String.Empty;
+            }
             return this.CustomSelection.GetRelativePathFolder();
         }
         private string GetFilesConditionalExpression(FileSelectionEnum selection)
@@ -1828,12 +1845,25 @@ namespace Timelapse.Database
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path));
-                sw.Stop();
-                System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
-                DetectionDatabases.PopulateTables(detector, this, this.Database);
-                System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
-                return true;
+                using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
+                {
+                    sw.Stop();
+                    System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
+
+                    // If detection population was previously done in this session, resetting these tables to null 
+                    // will force reading the new values into them
+                    this.DetectionDataTable = null; // to force repopulating the data structure if it already exists.
+                    this.detectionCategoriesDictionary = null;
+                    this.classificationCategoriesDictionary = null;
+                    this.ClassificationsDataTable = null;
+
+                    sw.Reset();
+                    sw.Start();
+                    DetectionDatabases.PopulateTables(detector, this, this.Database);
+                    sw.Stop();
+                    System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
+                    return true;
+                }
             }
             catch
             {

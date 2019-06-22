@@ -35,6 +35,7 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
+            this.FilesSelectAndShow(true);
             Mouse.OverrideCursor = null;
         }
 

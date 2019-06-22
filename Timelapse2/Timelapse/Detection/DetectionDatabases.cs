@@ -88,31 +88,7 @@ namespace Timelapse.Detection
             };
             database.CreateTable(Constant.DBTableNames.Classifications, columnDefinitions);
             #endregion
-
-            // I DONT THINK WE NEED TO PUT THE ADDITIONAL COLUMNS IN THE TABLE
-            //if (database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DataTableAddedDetectionColumns.DetectionID))
-            //{
-            //    // The image detection columns already exist in the datatable table, so just clear their values
-            //}
-            //else
-            //{
-            //    // Create the detection columns in the datatable
-            //    ColumnDefinition columnDefinition = new ColumnDefinition(Constant.DataTableAddedDetectionColumns.DetectionID, Constant.Sqlite.String);
-            //    database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
-            //    columnDefinition = new ColumnDefinition(Constant.DataTableAddedDetectionColumns.MaxDetectionConf, Constant.Sqlite.Real);
-            //    database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
-            //}
-            #region  Images: add Detection column to the datatable if needed
-            //columnDefinitions = new List<ColumnDefinition>
-            //{
-            //    new ColumnDefinition(Constant.ImageColumns.ImageID, Timelapse.Constant.Sqlite.Integer +  Timelapse.Constant.Sqlite.PrimaryKey),
-            //    new ColumnDefinition(Constant.ImageColumns.File,  Constant.Sqlite.String),
-            //    new ColumnDefinition(Constant.ImageColumns.MaxDetectionConf,  Constant.Sqlite.Real),
-            //};
-            //database.CreateTable(Constant.DBTableNames.Images, columnDefinitions);
-            #endregion
         }
-
 
         static public void ClearDetectionTables(SQLiteWrapper database)
         {
@@ -217,6 +193,7 @@ namespace Timelapse.Detection
                     if (rows.Count() == 0)
                     {
                         // Couldn't find the image
+                        // MAYBE PUT IN 0 DETECTIONS HERE
                         System.Diagnostics.Debug.Print("Could not find: " + image.file);
                         continue;
                     }
