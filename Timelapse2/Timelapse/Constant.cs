@@ -551,6 +551,7 @@ namespace Timelapse
             public const string Ascending = " ASC ";
             public const string Descending = " DESC ";
             public const string BeginTransaction = " BEGIN TRANSACTION ";
+            public const string Between = " BETWEEN ";
             public const string Cast = " CAST ";
             public const string CreateIndex = " CREATE INDEX ";
             public const string CreateTable = " CREATE TABLE ";

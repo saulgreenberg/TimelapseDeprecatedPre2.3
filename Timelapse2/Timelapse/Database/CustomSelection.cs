@@ -294,8 +294,6 @@ namespace Timelapse.Database
                             where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Constant.Sqlite.Having + 
                                 Constant.Sqlite.Max + Constant.Sqlite.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.CloseParenthesis +
                                 Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
-
-                               // Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
                             break;
                         case ComparisonEnum.Between:
                             if (addAnd)
@@ -303,9 +301,12 @@ namespace Timelapse.Database
                                 // Form: And
                                 where += Constant.Sqlite.And;
                             }
-                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString() +
-                                Constant.Sqlite.And +
-                                Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold2.ToString();
+                            where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.Between + 
+                                DetectionSelections.DetectionConfidenceThreshold1.ToString() + Constant.Sqlite.And + 
+                                DetectionSelections.DetectionConfidenceThreshold2.ToString();
+                            //where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString() +
+                            //    Constant.Sqlite.And +
+                            //    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold2.ToString();
                             break;
                         case ComparisonEnum.GreaterThan:
                         default:

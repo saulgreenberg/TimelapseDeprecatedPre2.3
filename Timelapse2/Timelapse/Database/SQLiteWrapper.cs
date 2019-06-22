@@ -213,7 +213,8 @@ namespace Timelapse.Database
         /// </summary>
         /// <param name="query">The SQL to run</param>
         /// <returns>A value containing the single result.</returns>
-        private object GetObjectFromSelect(string query)
+        
+        private object GetScalarFromSelect(string query)
         {
             try
             {
@@ -223,9 +224,7 @@ namespace Timelapse.Database
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
                         command.CommandText = query;
-                        object foo = command.ExecuteScalar();
-                        System.Diagnostics.Debug.Print("FOO IS " + foo.ToString());
-                        return foo;
+                        return command.ExecuteScalar();
                     }
                 }
             }
@@ -451,7 +450,7 @@ namespace Timelapse.Database
         /// <returns>The number of items selected.</returns>
         public int GetCountFromSelect(string query)
         {
-            return Convert.ToInt32(this.GetObjectFromSelect(query));
+            return Convert.ToInt32(this.GetScalarFromSelect(query));
         }
 
         // This method will create a column in a table of type TEXT, where it is added to its end

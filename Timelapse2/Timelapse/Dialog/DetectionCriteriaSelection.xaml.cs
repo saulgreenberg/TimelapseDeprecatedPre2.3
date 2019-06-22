@@ -14,8 +14,9 @@ namespace Timelapse.Dialog
     {
         private FileDatabase database;
         private bool dontInvoke = false;
-        const string LessThan = "Less than";
-        const string GreaterThan = "Greater than";
+        private bool dontCount;
+        const string LessThan = "\u2264";
+        const string GreaterThan = "\u2265";
         const string Between = "Between";
         Dictionary<ComparisonEnum, string> ComparisonDictionary = new Dictionary<ComparisonEnum, string>();
         public DetectionSelections DetectionSelections {get; set;}
@@ -33,10 +34,12 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
             // Adjust this dialog window position 
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
+            this.dontCount = true;
             this.DetectionRangeType.Items.Add(LessThan);
             this.DetectionRangeType.Items.Add(Between);
             this.DetectionRangeType.Items.Add(GreaterThan);
@@ -48,9 +51,6 @@ namespace Timelapse.Dialog
             this.dontInvoke = false;
 
             this.DetectionRangeType.SelectedItem = this.ComparisonDictionary[this.DetectionSelections.DetectionComparison];
-
-            //this.DetectionConfidenceSpinner.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
-
             this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
             this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
 
@@ -66,6 +66,7 @@ namespace Timelapse.Dialog
             this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
             this.SetDetectionSpinnerEnable();
 
+            this.dontCount = false;
             this.SetCriteria();
             this.ShowCount();
         }
@@ -112,18 +113,23 @@ namespace Timelapse.Dialog
             {
                 this.DetectionSelections.DetectionConfidenceThreshold1 = (double)this.DetectionConfidenceSpinner1.Value;
             }
+
+            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
+            {
+                this.DetectionSelections.DetectionConfidenceThreshold2 = (double)this.DetectionConfidenceSpinner2.Value;
+            }
         }
 
         private void ShowCount()
         {
-            if (this.IsLoaded == false)
+            if (this.dontCount == true)
             {
                 return;
             }
             //int count = (this.DetectionSelections.UseDetectionConfidenceThreshold || this.DetectionSelections.UseDetectionCategory) ? this.database.GetFileCount(FileSelectionEnum.Custom) : this.database.GetFileCount(FileSelectionEnum.All);
             int count = this.database.GetFileCount(FileSelectionEnum.Custom);
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
-            this.OkButton.IsEnabled = true; // (count > 0); // Dusable OK button if there are no matches.
+            this.OkButton.IsEnabled = (count > 0); // Dusable OK button if there are no matches.
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -135,16 +141,6 @@ namespace Timelapse.Dialog
             this.SetCriteria();
             this.ShowCount();
         }
-
-        //private void DetectionConfidenceSpinner_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        //{
-        //    if (this.IsLoaded == false)
-        //    {
-        //        return;
-        //    }
-        //    this.SetCriteria();
-        //    this.ShowCount();
-        //}
 
         private bool ignoreSpinnerUpdates = false;
         private void DetectionConfidenceSpinner1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

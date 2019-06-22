@@ -1104,25 +1104,15 @@ namespace Timelapse.Database
 
             //string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesConditionalExpression(fileSelection);
-            if (String.IsNullOrEmpty(where))
-            {
-                if (fileSelection == FileSelectionEnum.Custom)
-                {
-                    // if no search terms are active the image count is undefined as no filtering is in operation
-                    return -1;
-                }
-                // otherwise, the query is for all images as no where clause is present
-            }
-            else
+            if (!String.IsNullOrEmpty(where))
             {
                 query += where;
-                // query += Constant.Sqlite.Where + where;
             }
             if (this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 query += Constant.Sqlite.CloseParenthesis;
             }
-                System.Diagnostics.Debug.Print("Count: " + query);
+            System.Diagnostics.Debug.Print("Count: " + query);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion
