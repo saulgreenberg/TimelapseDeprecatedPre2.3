@@ -129,14 +129,22 @@ namespace Timelapse.Detection
             if (detector.detection_categories != null || detector.detection_categories.Count > 0)
             {
                 insertionStatements = new List<List<ColumnTuple>>();
+                // Include the category '0' for no detections.
+                columnsToUpdate = new List<ColumnTuple>
+                {
+                     new ColumnTuple(Constant.DetectionCategoriesColumns.Category, Constant.DetectionValues.NoDetectionCategory),
+                     new ColumnTuple(Constant.DetectionCategoriesColumns.Label, Constant.DetectionValues.NoDetectionLabel)
+                };
+                insertionStatements.Add(columnsToUpdate);
+
                 foreach (KeyValuePair<string, string> detection_category in detector.detection_categories)
                 {
                     // Populate each detection category row
                     columnsToUpdate = new List<ColumnTuple>
-                        {
-                            new ColumnTuple(Constant.DetectionCategoriesColumns.Category, detection_category.Key),
-                            new ColumnTuple(Constant.DetectionCategoriesColumns.Label, detection_category.Value)
-                        };
+                    {
+                        new ColumnTuple(Constant.DetectionCategoriesColumns.Category, detection_category.Key),
+                        new ColumnTuple(Constant.DetectionCategoriesColumns.Label, detection_category.Value)
+                    };
                     insertionStatements.Add(columnsToUpdate);
                 }
                 detectionDB.Insert(Constant.DBTableNames.DetectionCategories, insertionStatements);
@@ -166,7 +174,6 @@ namespace Timelapse.Detection
             {
                 int detectionIndex = 1;
                 int classificationIndex = 1;
-                // insertionStatements = new List<List<ColumnTuple>>();
                 List<List<ColumnTuple>> detectionInsertionStatements = new List<List<ColumnTuple>>();
                 List<List<ColumnTuple>> classificationInsertionStatements = new List<List<ColumnTuple>>();
 
@@ -179,6 +186,7 @@ namespace Timelapse.Detection
                     dataTable.Columns[Constant.DatabaseColumn.File],
                     dataTable.Columns[Constant.DatabaseColumn.RelativePath],
                 };
+
                 int foocount = 0;
                 foreach (image image in detector.images)
                 {
@@ -192,59 +200,77 @@ namespace Timelapse.Detection
                     DataRow[] rows = dataTable.Select(queryFileRelativePath);
                     if (rows.Count() == 0)
                     {
-                        // Couldn't find the image
-                        // MAYBE PUT IN 0 DETECTIONS HERE
+                        // Couldn't find the image. This could happen if that image and its data was deleted.
+                        // This isn't a bug, as all we would do is skip that image.
                         System.Diagnostics.Debug.Print("Could not find: " + image.file);
                         continue;
                     }
-                    //DataRow row = rows[0];
+
+                    // Get the image id from the image
+                    // If we can't, just skip it (this should not happen)
                     if (Int32.TryParse(rows[0][0].ToString(), out int id))
                     {
                         image.imageID = id;
                     }
                     else
                     {
-                        // Invalid index. This should not happen.
                         System.Diagnostics.Debug.Print("Invalid index: " + rows[0][0].ToString());
                         continue;
                     }
                     
-                    // We populate the detections table per image
-                    foreach (detection detection in image.detections)
+                    // Populate the detections table per image.
+                    // If there are no detections, we populate it with values that indicate that.
+                    if (image.detections.Count == 0)
                     {
-                        // Populate each classification category row
-                        string bboxAsString = (detection.bbox == null || detection.bbox.Length != 4)
-                            ? String.Empty
-                            : String.Format("{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
-                        detection.detectionID = detectionIndex;
+                        string bboxAsString = String.Empty;
                         List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
                         {
-                            new ColumnTuple(Constant.DetectionColumns.DetectionID, detection.detectionID),
-                            new ColumnTuple(Constant.DetectionColumns.ImageID, image.imageID),
-                            new ColumnTuple(Constant.DetectionColumns.Category, detection.category),
-                            new ColumnTuple(Constant.DetectionColumns.Conf, detection.conf),
-                            new ColumnTuple(Constant.DetectionColumns.BBox, bboxAsString),
+                                new ColumnTuple(Constant.DetectionColumns.DetectionID, detectionIndex++),
+                                new ColumnTuple(Constant.DetectionColumns.ImageID, image.imageID),
+                                new ColumnTuple(Constant.DetectionColumns.Category, Constant.DetectionValues.NoDetectionCategory),
+                                new ColumnTuple(Constant.DetectionColumns.Conf, 0),
+                                new ColumnTuple(Constant.DetectionColumns.BBox, bboxAsString),
                         };
-                        // System.Diagnostics.Debug.Print("id:"+image.imageID.ToString());
                         detectionInsertionStatements.Add(detectionColumnsToUpdate);
-                        
-                        // If the detection has some classification info, then add that to the classifications data table
-                        foreach(Object[] classification in detection.classifications)
+                    }
+                    else
+                    {
+                        foreach (detection detection in image.detections)
                         {
-                            string category = (string)classification[0];
-                            double conf = Double.Parse(classification[1].ToString());
-                            //System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
-                            List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
+                            // Populate each classification category row
+                            string bboxAsString = (detection.bbox == null || detection.bbox.Length != 4)
+                                ? String.Empty
+                                : String.Format("{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
+                            detection.detectionID = detectionIndex;
+                            List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
                             {
-                                new ColumnTuple(Constant.ClassificationColumns.ClassificationID, classificationIndex),
-                                new ColumnTuple(Constant.ClassificationColumns.DetectionID, detection.detectionID),
-                                new ColumnTuple(Constant.ClassificationColumns.Category, (string)classification[0]),
-                                new ColumnTuple(Constant.ClassificationColumns.Conf, (float) Double.Parse(classification[1].ToString())),
+                                new ColumnTuple(Constant.DetectionColumns.DetectionID, detection.detectionID),
+                                new ColumnTuple(Constant.DetectionColumns.ImageID, image.imageID),
+                                new ColumnTuple(Constant.DetectionColumns.Category, detection.category),
+                                new ColumnTuple(Constant.DetectionColumns.Conf, detection.conf),
+                                new ColumnTuple(Constant.DetectionColumns.BBox, bboxAsString),
                             };
-                            classificationInsertionStatements.Add(classificationColumnsToUpdate);
-                            classificationIndex++;
+                            // System.Diagnostics.Debug.Print("id:"+image.imageID.ToString());
+                            detectionInsertionStatements.Add(detectionColumnsToUpdate);
+
+                            // If the detection has some classification info, then add that to the classifications data table
+                            foreach (Object[] classification in detection.classifications)
+                            {
+                                string category = (string)classification[0];
+                                double conf = Double.Parse(classification[1].ToString());
+                                //System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
+                                List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
+                                {
+                                    new ColumnTuple(Constant.ClassificationColumns.ClassificationID, classificationIndex),
+                                    new ColumnTuple(Constant.ClassificationColumns.DetectionID, detection.detectionID),
+                                    new ColumnTuple(Constant.ClassificationColumns.Category, (string)classification[0]),
+                                    new ColumnTuple(Constant.ClassificationColumns.Conf, (float) Double.Parse(classification[1].ToString())),
+                                };
+                                classificationInsertionStatements.Add(classificationColumnsToUpdate);
+                                classificationIndex++;
+                            }
+                            detectionIndex++;
                         }
-                        detectionIndex++;  
                     }
                     foocount++;
                 }

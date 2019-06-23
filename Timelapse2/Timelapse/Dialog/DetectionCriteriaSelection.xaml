@@ -53,7 +53,7 @@
 
                 <CheckBox Name="UseDetectionCategoryCheckbox" IsChecked="False" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
                 <TextBlock Text="Category:" FontWeight="DemiBold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,0,0"/>
-                <ComboBox Name="DetectionCategoryComboBox" FontWeight="DemiBold" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged" Width="Auto"/>
+                <ComboBox Name="DetectionCategoryComboBox" FontWeight="DemiBold" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged" Width="160" HorizontalAlignment="Left"/>
 
                 <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
                 <TextBlock Text="Confidence:" FontWeight="DemiBold" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,0,0"/>

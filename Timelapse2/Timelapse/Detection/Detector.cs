@@ -33,7 +33,7 @@ namespace Timelapse.Detection
         {
             this.detection_categories = new Dictionary<string, string>
             {
-                { "0", "None" },
+                { Constant.DetectionValues.NoDetectionCategory, Constant.DetectionValues.NoDetectionLabel},
                 { "1", "animal" },
                 { "2", "person" },
                 { "3", "group" },

@@ -754,6 +754,12 @@ namespace Timelapse
             public const string BBox = "bbox";
         }
 
+        public static class DetectionValues
+        {
+            public const string NoDetectionCategory = "0";
+            public const string NoDetectionLabel = "Nothing detected";
+        }
+
         public static class ClassificationColumns
         {
             public const string ClassificationID = "classificationID";

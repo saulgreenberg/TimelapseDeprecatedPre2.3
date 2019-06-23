@@ -40,15 +40,15 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             this.dontCount = true;
+            this.dontInvoke = true;
             this.DetectionRangeType.Items.Add(LessThan);
             this.DetectionRangeType.Items.Add(Between);
             this.DetectionRangeType.Items.Add(GreaterThan);
 
             // Set the state of the detections to the last used ones (or to its defaults)
-            this.dontInvoke = true;
             this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
             this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
-            this.dontInvoke = false;
+
 
             this.DetectionRangeType.SelectedItem = this.ComparisonDictionary[this.DetectionSelections.DetectionComparison];
             this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
@@ -66,9 +66,11 @@ namespace Timelapse.Dialog
             this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
             this.SetDetectionSpinnerEnable();
 
+            this.dontInvoke = false;
             this.dontCount = false;
             this.SetCriteria();
             this.ShowCount();
+            this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
         }
 
         #region Ok/Cancel buttons
@@ -98,7 +100,7 @@ namespace Timelapse.Dialog
 
         private void SetCriteria()
         {
-            if (this.IsLoaded == false)
+            if (this.IsLoaded == false || this.dontInvoke)
             {
                 return;
             }
@@ -179,6 +181,10 @@ namespace Timelapse.Dialog
 
         private void DetectionRangeType_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            if (this.IsLoaded == false || this.dontInvoke)
+            {
+                return;
+            }
             this.SetDetectionSpinnerVisibility((string)this.DetectionRangeType.SelectedValue);
             this.DetectionSelections.DetectionComparison = ComparisonDictionary.FirstOrDefault(x => x.Value == (string)this.DetectionRangeType.SelectedValue).Key;
             this.SetCriteria();

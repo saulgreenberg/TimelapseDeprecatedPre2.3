@@ -38,7 +38,6 @@ namespace Timelapse
             this.FilesSelectAndShow(true);
             Mouse.OverrideCursor = null;
         }
-
         private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
         {
             DetectionCriteriaSelection detectionCriteriaSelection = new DetectionCriteriaSelection(this.dataHandler.FileDatabase, this, this.dataHandler.FileDatabase.CustomSelection.DetectionSelections);
