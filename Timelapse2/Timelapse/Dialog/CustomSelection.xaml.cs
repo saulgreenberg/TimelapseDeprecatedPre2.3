@@ -86,7 +86,8 @@ namespace Timelapse.Dialog
             // Set the state of the detections to the last used ones (or to its defaults)
             this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
             this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
-
+            this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
 
             this.DetectionRangeType.SelectedItem = this.ComparisonDictionary[this.DetectionSelections.DetectionComparison];
             this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
@@ -143,6 +144,7 @@ namespace Timelapse.Dialog
                 Thickness thickness = new Thickness(5, 2, 5, 2);
                 CheckBox useCurrentRow = new CheckBox()
                 {
+                    FontWeight= FontWeights.DemiBold,
                     Margin = thickness,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -157,6 +159,7 @@ namespace Timelapse.Dialog
                 // LABEL column: The label associated with the control (Note: not the data label)
                 TextBlock controlLabel = new TextBlock()
                 {
+                    FontWeight = searchTerm.UseForSearching ? FontWeights.DemiBold : FontWeights.Normal,
                     Margin = new Thickness(5),
                     Text = searchTerm.Label
                 };
@@ -213,6 +216,7 @@ namespace Timelapse.Dialog
                 // term operator combo box
                 ComboBox operatorsComboBox = new ComboBox()
                 {
+                    FontWeight = FontWeights.DemiBold,
                     IsEnabled = searchTerm.UseForSearching,
                     ItemsSource = termOperators,
                     Margin = thickness,
@@ -233,6 +237,7 @@ namespace Timelapse.Dialog
 
                     DateTimePicker dateValue = new DateTimePicker()
                     {
+                        FontWeight = FontWeights.Normal,
                         Format = DateTimeFormat.Custom,
                         FormatString = Constant.Time.DateTimeDisplayFormat,
                         IsEnabled = searchTerm.UseForSearching,
@@ -253,6 +258,7 @@ namespace Timelapse.Dialog
                     // Relative path uses a dropdown that shows existing folders
                     ComboBox comboBoxValue = new ComboBox()
                     {
+                        FontWeight = FontWeights.Normal,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = CustomSelection.DefaultControlWidth,
                         Margin = thickness,
@@ -272,6 +278,7 @@ namespace Timelapse.Dialog
                 {
                     AutocompleteTextBox textBoxValue = new AutocompleteTextBox()
                     {
+                        FontWeight = FontWeights.Normal,
                         Autocompletions = null,
                         IsEnabled = searchTerm.UseForSearching,
                         Text = searchTerm.DatabaseValue,
@@ -307,6 +314,7 @@ namespace Timelapse.Dialog
                     // FixedChoice and ImageQuality both present combo boxes, so they can be constructed the same way
                     ComboBox comboBoxValue = new ComboBox()
                     {
+                        FontWeight = FontWeights.Normal,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = CustomSelection.DefaultControlWidth,
                         Margin = thickness,
@@ -326,6 +334,7 @@ namespace Timelapse.Dialog
                     // Flags present checkboxes
                     CheckBox flagCheckBox = new CheckBox()
                     {
+                        FontWeight = FontWeights.Normal,
                         Margin = thickness,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Left,
@@ -345,6 +354,7 @@ namespace Timelapse.Dialog
                 {
                     UtcOffsetUpDown utcOffsetValue = new UtcOffsetUpDown()
                     {
+                        FontWeight = FontWeights.Normal,
                         IsEnabled = searchTerm.UseForSearching,
                         Value = searchTerm.GetUtcOffset(),
                         Width = CustomSelection.DefaultControlWidth
@@ -369,6 +379,7 @@ namespace Timelapse.Dialog
                 // Search Criteria Column: initially as an empty textblock. Indicates the constructed query expression for this row
                 TextBlock searchCriteria = new TextBlock()
                 {
+                    FontWeight = FontWeights.Normal,
                     Width = CustomSelection.DefaultSearchCriteriaWidth,
                     Margin = thickness,
                     IsEnabled = true,
@@ -416,7 +427,7 @@ namespace Timelapse.Dialog
             ComboBox expression = this.GetGridElement<ComboBox>(CustomSelection.OperatorColumn, row);
             UIElement value = this.GetGridElement<UIElement>(CustomSelection.ValueColumn, row);
 
-            label.FontWeight = select.IsChecked.Value ? FontWeights.Bold : FontWeights.Normal;
+            label.FontWeight = select.IsChecked.Value ? FontWeights.DemiBold : FontWeights.Normal;
             expression.IsEnabled = select.IsChecked.Value;
             value.IsEnabled = select.IsChecked.Value;
 
@@ -663,6 +674,8 @@ namespace Timelapse.Dialog
             {
                 this.DetectionSelections.DetectionConfidenceThreshold2 = (double)this.DetectionConfidenceSpinner2.Value;
             }
+            this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
