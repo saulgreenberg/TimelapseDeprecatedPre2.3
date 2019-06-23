@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
@@ -33,9 +36,21 @@ namespace Timelapse.Dialog
         private TimeZoneInfo imageSetTimeZone;
         private bool excludeUTCOffset;
         private bool dontUpdate = true;
+        // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
+        DispatcherTimer CountTimer = new DispatcherTimer();
+
+        // Detections variables
+        private bool dontInvoke = false;
+        private bool dontCount;
+        private const string LessThan = "\u2264";
+        private const string GreaterThan = "\u2265";
+        private const string Between = "Between";
+        private Dictionary<ComparisonEnum, string> ComparisonDictionary = new Dictionary<ComparisonEnum, string>();
+        private DetectionSelections DetectionSelections { get; set; }
+
 
         #region Constructors and Loading
-        public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset)
+        public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections)
         {
             this.InitializeComponent();
 
@@ -44,16 +59,59 @@ namespace Timelapse.Dialog
             this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
+            CountTimer.Interval = TimeSpan.FromMilliseconds(500);
+            CountTimer.Tick += CountTimer_Tick;
+
+            // Detections-specific
+            this.DetectionSelections = detectionSelections;
+            ComparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
+            ComparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
+            ComparisonDictionary.Add(ComparisonEnum.Between, Between); 
         }
 
         // When the window is loaded, add SearchTerm controls to it
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.dontUpdate = true;
             // Adjust this dialog window position 
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
+            // Detections-specific
+            this.dontCount = true;
+            this.dontInvoke = true;
+            this.DetectionRangeType.Items.Add(LessThan);
+            this.DetectionRangeType.Items.Add(Between);
+            this.DetectionRangeType.Items.Add(GreaterThan);
+
+            // Set the state of the detections to the last used ones (or to its defaults)
+            this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
+            this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
+
+
+            this.DetectionRangeType.SelectedItem = this.ComparisonDictionary[this.DetectionSelections.DetectionComparison];
+            this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
+            this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
+
+
+            // Put Detection categories in as human-readable labels and set it to the last used one.
+            List<string> labels = this.database.GetDetectionLabels();
+            foreach (string label in labels)
+            {
+                this.DetectionCategoryComboBox.Items.Add(label);
+            }
+            this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+
+            this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
+            this.SetDetectionSpinnerEnable();
+
+            this.dontInvoke = false;
+            this.dontCount = false;
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+            this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
+
+            // Selection-specific
+            this.dontUpdate = true;
             // And vs Or conditional
             if (this.database.CustomSelection.TermCombiningOperator == CustomSelectionOperatorEnum.And)
             {
@@ -536,27 +594,8 @@ namespace Timelapse.Dialog
                 searchCriteria.Text = searchCriteriaText;
                 lastExpression = false;
             }
-
-            int count = (searchTermsInUse) ? this.database.GetFileCount(FileSelectionEnum.Custom) : this.database.GetFileCount(FileSelectionEnum.All);
-            // if count == -1 Means no search terms selected
-            this.OkButton.IsEnabled = count > 0 ? true : false;
-            this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
-
+            this.InitiateShowCountsOfMatchingFiles();
             this.ShowAll.IsEnabled = lastExpression == false;
-        }
-        #endregion
-
-        #region Ok/Cancel buttons
-        // Apply the selection if the Ok button is clicked
-        private void OkButton_Click(object sender, RoutedEventArgs args)
-        {
-            this.DialogResult = true;
-        }
-
-        // Cancel - exit the dialog without doing anythikng.
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = false;
         }
         #endregion
 
@@ -588,6 +627,167 @@ namespace Timelapse.Dialog
         {
             Regex regex = new Regex("[^0-9.-]+"); // regex that matches allowed text
             return regex.IsMatch(text);
+        }
+        #endregion
+
+        #region Detection-specific methos and callbacks
+        private void UseCriteria_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (this.dontInvoke) return;
+            // Enable or disable the controls depending on the various checkbox states
+            SetDetectionSpinnerEnable();
+
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private void SetDetectionCriteria()
+        {
+            if (this.IsLoaded == false || this.dontInvoke)
+            {
+                return;
+            }
+            this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseDetectionCategory)
+            {
+                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+            }
+
+            this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
+            {
+                this.DetectionSelections.DetectionConfidenceThreshold1 = (double)this.DetectionConfidenceSpinner1.Value;
+            }
+
+            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
+            {
+                this.DetectionSelections.DetectionConfidenceThreshold2 = (double)this.DetectionConfidenceSpinner2.Value;
+            }
+        }
+
+        private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (this.IsLoaded == false)
+            {
+                return;
+            }
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private bool ignoreSpinnerUpdates = false;
+        private void DetectionConfidenceSpinner1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (this.IsLoaded == false || ignoreSpinnerUpdates)
+            {
+                return;
+            }
+
+            if (this.DetectionConfidenceSpinner1.Value > this.DetectionConfidenceSpinner2.Value)
+            {
+                ignoreSpinnerUpdates = true;
+                this.DetectionConfidenceSpinner2.Value = this.DetectionConfidenceSpinner1.Value;
+                ignoreSpinnerUpdates = false;
+            }
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private void DetectionConfidenceSpinner2_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (this.IsLoaded == false || ignoreSpinnerUpdates)
+            {
+                return;
+            }
+
+            if (this.DetectionConfidenceSpinner2.Value < this.DetectionConfidenceSpinner1.Value)
+            {
+                ignoreSpinnerUpdates = true;
+                this.DetectionConfidenceSpinner2.Value = this.DetectionConfidenceSpinner1.Value;
+                ignoreSpinnerUpdates = false;
+            }
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private void DetectionRangeType_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (this.IsLoaded == false || this.dontInvoke)
+            {
+                return;
+            }
+            this.SetDetectionSpinnerVisibility((string)this.DetectionRangeType.SelectedValue);
+            this.DetectionSelections.DetectionComparison = ComparisonDictionary.FirstOrDefault(x => x.Value == (string)this.DetectionRangeType.SelectedValue).Key;
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        // Depending on what comparision operator is used, set the visibility of particular spinners and labels
+        private void SetDetectionSpinnerVisibility(ComparisonEnum comparisonEnum)
+        {
+            SetDetectionSpinnerVisibility(ComparisonDictionary[comparisonEnum]);
+        }
+        private void SetDetectionSpinnerVisibility(string comparison)
+        {
+            switch (comparison)
+            {
+                case LessThan:
+                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
+                    this.AndLabel.Visibility = Visibility.Hidden;
+                    break;
+                case Between:
+                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Visible;
+                    this.AndLabel.Visibility = Visibility.Visible;
+                    break;
+                case GreaterThan:
+                default:
+                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
+                    this.AndLabel.Visibility = Visibility.Hidden;
+                    break;
+            }
+        }
+        private void SetDetectionSpinnerEnable()
+        {
+            // Enable or disable the controls depending on the various checkbox states
+            this.DetectionConfidenceSpinner1.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            this.DetectionConfidenceSpinner2.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            this.DetectionRangeType.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
+        }
+        #endregion
+
+        #region Common
+        private void CountTimer_Tick(object sender, EventArgs e)
+        {
+            CountTimer.Stop();
+            // This is set everytime a selectin is made
+            if (this.dontCount == true)
+            {
+                return;
+            }
+            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
+            this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
+            this.OkButton.IsEnabled = (count > 0); // Dusable OK button if there are no matches
+        }
+
+        // Start the timere that will show how many files match the current selection
+        private void InitiateShowCountsOfMatchingFiles()
+        {
+            CountTimer.Stop();
+            CountTimer.Start();
+        }
+
+        // Apply the selection if the Ok button is clicked
+        private void OkButton_Click(object sender, RoutedEventArgs args)
+        {
+            this.SetDetectionCriteria();
+            this.DialogResult = true;
+        }
+
+        // Cancel - exit the dialog without doing anythikng.
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
         }
         #endregion
     }

@@ -19,7 +19,7 @@ namespace Timelapse.Dialog
         const string GreaterThan = "\u2265";
         const string Between = "Between";
         Dictionary<ComparisonEnum, string> ComparisonDictionary = new Dictionary<ComparisonEnum, string>();
-        public DetectionSelections DetectionSelections {get; set;}
+        private DetectionSelections DetectionSelections {get; set;}
 
         public DetectionCriteriaSelection(FileDatabase database, Window owner, DetectionSelections detectionSelections)
         {
@@ -73,20 +73,7 @@ namespace Timelapse.Dialog
             this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
         }
 
-        #region Ok/Cancel buttons
-        // Apply the selection if the Ok button is clicked
-        private void OkButton_Click(object sender, RoutedEventArgs args)
-        {
-            this.SetCriteria();
-            this.DialogResult = true;
-        }
-
-        // Cancel - exit the dialog without doing anythikng.
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = false;
-        }
-        #endregion
+ 
 
         private void UseCriteria_CheckedChanged(object sender, RoutedEventArgs e)
         {
@@ -223,6 +210,21 @@ namespace Timelapse.Dialog
             this.DetectionConfidenceSpinner2.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionRangeType.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
+        }
+        #endregion
+
+        #region Ok/Cancel buttons
+        // Apply the selection if the Ok button is clicked
+        private void OkButton_Click(object sender, RoutedEventArgs args)
+        {
+            this.SetCriteria();
+            this.DialogResult = true;
+        }
+
+        // Cancel - exit the dialog without doing anythikng.
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
         }
         #endregion
     }

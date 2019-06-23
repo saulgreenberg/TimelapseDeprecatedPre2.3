@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Select and view a  subset of your files"
         MinHeight="500" MinWidth="700"
@@ -21,9 +22,46 @@
                             Result="Only those images and videos matching your search criteria will be displayed."
                             Hint="Glob expressions are case sensitive and allow wildcards as follows:&#10;&#x2022; * matches any number of characters and ? matches any single character&#10;&#x2022; [abc] matches one of the indicated characters; [a-z] matches one charecter in the range of indicated characters. "
                             ShowExplanationVisibility="True"/>
+        <!--Detection Panel-->
+        <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto" DockPanel.Dock="Top">
+            <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="10,5,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" MinHeight="20" />
+                    <RowDefinition Height="Auto" MinHeight="20" />
+                    <RowDefinition Height="Auto" MinHeight="20"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Select" FontWeight="Bold" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <TextBlock Text="Criteria" FontWeight="Bold" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <TextBlock Text="Value" FontWeight="Bold" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                <CheckBox Name="UseDetectionCategoryCheckbox" IsChecked="False" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
+                <TextBlock Text="Category:" FontWeight="DemiBold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,0,0"/>
+                <ComboBox Name="DetectionCategoryComboBox" FontWeight="DemiBold" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged" Width="160" HorizontalAlignment="Left"/>
+
+                <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="10,0,10,0"/>
+                <TextBlock Text="Confidence:" FontWeight="DemiBold" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,0,0"/>
+                
+                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" Margin="10,6,10,0" Height="Auto">
+                    <ComboBox Name="DetectionRangeType"  FontWeight="DemiBold" SelectionChanged="DetectionRangeType_SelectionChanged" Width="100" VerticalContentAlignment="Center"/>
+                    <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1"  FontWeight="DemiBold" Value="0" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
+                    <Label Name="AndLabel" FontWeight="DemiBold" Content="and "/>
+                    <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2"  FontWeight="DemiBold" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!--Selection Panel-->
 
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch" >
-            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
+            <Rectangle Fill="#FF868686" Height="6" Margin="0,10,0,0"></Rectangle>
+          
             <StackPanel Orientation="Horizontal">
                 <TextBlock Margin="10" FontWeight="Bold" VerticalAlignment="Center" Text="Combine searches using: "/>
                 <StackPanel Orientation="Vertical">
