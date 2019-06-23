@@ -74,7 +74,7 @@ namespace Timelapse.Database
         public void DropIndex(string indexName)
         {
             // Form: DROP INDEX IF EXISTS indexName 
-            string query = Constant.Sqlite.DropIndex + Constant.Sqlite.IfExists + indexName ;
+            string query = Constant.Sqlite.DropIndex + Constant.Sqlite.IfExists + indexName;
             this.ExecuteNonQuery(query);
         }
         #endregion
@@ -172,7 +172,6 @@ namespace Timelapse.Database
                         command.CommandText = query;
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {
-
                             dataTable.Columns.CollectionChanged += this.DataTableColumns_Changed;
                             dataTable.Load(reader);
                             return dataTable;
@@ -213,7 +212,6 @@ namespace Timelapse.Database
         /// </summary>
         /// <param name="query">The SQL to run</param>
         /// <returns>A value containing the single result.</returns>
-        
         private object GetScalarFromSelect(string query)
         {
             try
@@ -1053,10 +1051,10 @@ namespace Timelapse.Database
 
         public bool TableExists(string tableName)
         {
-            //DETECTIONS: Move statements into constants
+            // DETECTIONS: Move statements into constants
             string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
             DataTable datatable = this.GetDataTableFromSelect(query);
-            return (datatable.Rows.Count != 0);
+            return datatable.Rows.Count != 0;
         }
         #endregion
     }

@@ -16,49 +16,6 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        private void Detection_SubmenuOpening(object sender, RoutedEventArgs e)
-        {
-            // Not sure if we need this
-        }
-
-        private void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
-        {
-            string jsonFileName = Constant.File.RecognitionJsonDataFileName;
-            if (Utilities.TryGetFileFromUser(
-                      "Select a .json file that contains the recognition data. It will be merged into the current image set",
-                      Path.Combine(this.dataHandler.FileDatabase.FolderPath, jsonFileName),
-                      String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
-                      Constant.File.JsonFileExtension,
-                      out string jsonFilePath) == false)
-            {
-                return;
-            }
-            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
-            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
-            this.FilesSelectAndShow(true);
-            Mouse.OverrideCursor = null;
-        }
-        private void MenuItemGetDetectionsTest_Click(object sender, RoutedEventArgs e)
-        {
-            DetectionCriteriaSelection detectionCriteriaSelection = new DetectionCriteriaSelection(this.dataHandler.FileDatabase, this, this.dataHandler.FileDatabase.CustomSelection.DetectionSelections);
-            if (detectionCriteriaSelection.ShowDialog() == true)
-            {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
-            }
-        }
-
-        // Set various options of the image recognition detector
-        private void MenuItemDetectorOptions_Click(object sender, RoutedEventArgs e)
-        {
-            DetectorOptions detectorOptions = new DetectorOptions(this.state, this.dataHandler.FileDatabase, this);
-            detectorOptions.ShowDialog();
-            // redisplay the file as the options may change how bounding boxes should be displayed
-            if (this.dataHandler != null)
-            { 
-                this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
-            }
-        }
-
         // DETECTIONS: DEFUNCT - MAYBE
         // Import the recognition data from a well-formed csv file. 
         private void MenuItemImportDetectionDataFromCSV_Click(object sender, RoutedEventArgs e)

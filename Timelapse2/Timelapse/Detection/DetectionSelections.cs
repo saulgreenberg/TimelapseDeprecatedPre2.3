@@ -9,7 +9,8 @@ namespace Timelapse.Detection
 {
     public class DetectionSelections
     {
-        public bool Enabled {
+        public bool Enabled
+        {
             get
             {
                 return this.UseCategoryCategory || this.UseCategoryConfidenceThreshold || this.UseDetectionCategory || this.UseDetectionConfidenceThreshold;
@@ -30,8 +31,6 @@ namespace Timelapse.Detection
         public double CategoryConfidenceThreshold1 { get; set; }
         public double CategoryConfidenceThreshold2 { get; set; }
         public ComparisonEnum CategoryComparison { get; set; }
-
-
         public DetectionSelections()
         {
             this.DisableAllUses();

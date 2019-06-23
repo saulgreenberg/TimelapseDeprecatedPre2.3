@@ -126,7 +126,6 @@ namespace Timelapse
                 messageBox.Message.Reason = String.Format("While the folder {0} exists, no image data is associated with any files in it.", mi.Header);
                 messageBox.Message.Hint = String.Format("Perhaps you removed these files and its data during this session?", mi.Header);
                 messageBox.ShowDialog();
- //               return;
             }
             MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;

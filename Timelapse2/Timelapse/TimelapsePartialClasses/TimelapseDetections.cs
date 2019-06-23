@@ -1,12 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Windows;
-using Timelapse.Database;
-using Timelapse.Detection;
-using BoundingBoxes = Timelapse.Images.BoundingBoxes;
 using BoundingBox = Timelapse.Images.BoundingBox;
-using Timelapse.Controls;
-using System.Collections.Generic;
+using BoundingBoxes = Timelapse.Images.BoundingBoxes;
 
 namespace Timelapse
 {
@@ -42,19 +39,18 @@ namespace Timelapse
                     }
                     detectionCategoryLabel = this.dataHandler.FileDatabase.GetDetectionLabelFromCategory((string)detectionRow[Constant.DetectionColumns.Category]);
 
-                    //DataTable classificationDataTable = this.dataHandler.FileDatabase.GetClassificationsFromDetectionID((long)detectionRow[Constant.DetectionColumns.DetectionID]);
                     DataRow[] classificationDataTableRows = this.dataHandler.FileDatabase.GetClassificationsFromDetectionID((long)detectionRow[Constant.DetectionColumns.DetectionID]);
                     List<KeyValuePair<string, string>> classifications = new List<KeyValuePair<string, string>>();
 
                     double conf = 0;
-                    //foreach (DataRow classificationRow in classificationDataTable.Rows)
+
                     foreach (DataRow classificationRow in classificationDataTableRows)
                     {
                         conf = (double)classificationRow[Constant.DetectionColumns.Conf];
                         if (conf > 0.1)
                         { 
                             classificationCategoryLabel = this.dataHandler.FileDatabase.GetClassificationLabelFromCategory((string)classificationRow[Constant.ClassificationColumns.Category]);
-                            classifications.Add(new KeyValuePair<string,string>(classificationCategoryLabel, conf.ToString()));
+                            classifications.Add(new KeyValuePair<string, string>(classificationCategoryLabel,conf.ToString()));
                         }
                     }
 

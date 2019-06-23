@@ -65,6 +65,25 @@ namespace Timelapse
             }
         }
 
+        // Import Detection data
+        private void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
+        {
+            string jsonFileName = Constant.File.RecognitionJsonDataFileName;
+            if (Utilities.TryGetFileFromUser(
+                      "Select a .json file that contains the recognition data. It will be merged into the current image set",
+                      Path.Combine(this.dataHandler.FileDatabase.FolderPath, jsonFileName),
+                      String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
+                      Constant.File.JsonFileExtension,
+                      out string jsonFilePath) == false)
+            {
+                return;
+            }
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
+            this.FilesSelectAndShow(true);
+            Mouse.OverrideCursor = null;
+        }
+
         // Export data for this image set as a .csv file
         // Export data for this image set as a .csv file and preview in Excel 
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)

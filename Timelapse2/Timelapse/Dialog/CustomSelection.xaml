@@ -62,7 +62,7 @@
         <GroupBox Name="SelectionGroupBox" Header="Selections" FontWeight="Bold" Height="Auto" DockPanel.Dock="Bottom" Margin="10,15,5,0">
             <DockPanel>
                 <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="45,0,0,0">
                         <TextBlock Margin="10" FontWeight="DemiBold" VerticalAlignment="Center" Text="Combine searches using: "/>
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal">

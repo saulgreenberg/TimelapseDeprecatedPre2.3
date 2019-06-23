@@ -413,7 +413,6 @@ namespace Timelapse
                     // As GetOrCreateFile inserts the file date as the Date/Time, a later call will examine the bitmap metadata, and - if it exists - over-write the file date  
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
                     {
-
                         // The image is already in the database. So skip it.
                         // Even so, provide feedback every UpdateInterval
                         if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
@@ -484,7 +483,6 @@ namespace Timelapse
                                 file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                             }
                         }
-
                     }
                     catch (Exception exception)
                     {
@@ -495,17 +493,17 @@ namespace Timelapse
                     }
 
                     int filesPendingInsert;
-                    //lock (filesToInsert) // SAULXXX Parallel.ForEach
-                    //{
+                    // lock (filesToInsert) // SAULXXX Parallel.ForEach
+                    // {
                     filesToInsert.Add(file);
                     filesPendingInsert = filesToInsert.Count;
-                    //}
+                    // }
 
                     // Display progress on feedback after a given time interval
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
                     {
-                        //lock (folderLoadProgress) // SAULXXX Parallel.ForEach
-                        //{
+                        // lock (folderLoadProgress) // SAULXXX Parallel.ForEach
+                        // {
                         if (file.IsVideo)
                             {
                                 // TODO When Video thumbnails are available, we can use those.
@@ -529,7 +527,7 @@ namespace Timelapse
                             lastUpdateTime = utcNow;
                             // Uncomment this to see how many images (if any) are not skipped
                             //  Console.Write(" ");
-                        //}
+                        // }
                     }
                     else
                     {
@@ -638,7 +636,7 @@ namespace Timelapse
             }
             if (textmessage != null)
             {
-                textmessage.Text = message;// "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+                textmessage.Text = message; // "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
             }
         }
 

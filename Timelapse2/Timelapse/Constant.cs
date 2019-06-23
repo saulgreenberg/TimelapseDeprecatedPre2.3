@@ -432,7 +432,6 @@ namespace Timelapse
 
             public const string BoundingBoxCanvasTag = "BoundingBoxCanvas";
 
-
             // Threshold for a double click duration and for differentiating between marking and panning
             public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
             public static readonly double MarkingVsPanningDistanceThreshold = 2.0;

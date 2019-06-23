@@ -29,19 +29,19 @@ namespace Timelapse.Images
         private static readonly SolidColorBrush MarkerFillBrush = new SolidColorBrush(Color.FromArgb(2, 0, 0, 0));
 
         // A bookmark that saves the pan and zoom setting
-        private ZoomBookmark bookmark;
+        private readonly ZoomBookmark bookmark;
 
         // the canvas to magnify contains both an image and markers so the magnifying glass view matches the display image
-        private Canvas canvasToMagnify;
+        private readonly Canvas canvasToMagnify;
 
         // render transforms
-        private ScaleTransform imageToDisplayScale;
-        private TransformGroup transformGroup;
-        private TranslateTransform imageToDisplayTranslation;
+        private readonly ScaleTransform imageToDisplayScale;
+        private readonly TransformGroup transformGroup;
+        private readonly TranslateTransform imageToDisplayTranslation;
 
         // magnifying glass, including increment for increasing or decreasing magnifying glass zoom
-        private MagnifyingGlass magnifyingGlass;
-        private double magnifyingGlassZoomStep;
+        private readonly MagnifyingGlass magnifyingGlass;
+        private readonly double magnifyingGlassZoomStep;
 
         // markers
         private List<Marker> markers;
@@ -64,7 +64,7 @@ namespace Timelapse.Images
         // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
         // These widths can be altered if needed
        
-        private Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
+        private readonly Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
         {
             { 0, 0 },
             { 1, 640 },
@@ -75,10 +75,10 @@ namespace Timelapse.Images
         private bool displayingImage = false;
 
         // Timer for resizing the clickable images grid only after resizing is (likely) completed
-        private DispatcherTimer timerResize = new DispatcherTimer();
+        private readonly DispatcherTimer timerResize = new DispatcherTimer();
 
         // Timer for delaying updates in the midst of rapid navigation with the slider
-        private DispatcherTimer timerSlider = new DispatcherTimer();
+        private readonly DispatcherTimer timerSlider = new DispatcherTimer();
         #endregion
 
         #region Properties
@@ -530,8 +530,6 @@ namespace Timelapse.Images
             this.RedrawBoundingBoxes();
             // update the magnifying glass's contents
             this.RedrawMagnifyingGlassIfVisible();
-
-
         }
 
         // Whenever the image size changes, refresh the markers so they appear in the correct place

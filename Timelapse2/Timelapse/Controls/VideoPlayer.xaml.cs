@@ -33,8 +33,8 @@ namespace Timelapse.Controls
             this.autoPlayDelayTimer.Tick += this.AutoPlayDelayTimer_Tick;
 
             // TODO ASAP Maybe redo all magnification lenses - its currently hidden, but we want to enable it.
-            //TranslateTransform tt = new TranslateTransform(100, -100);
-            //this._magnifier.RenderTransform = tt;
+            // TranslateTransform tt = new TranslateTransform(100, -100);
+            // this._magnifier.RenderTransform = tt;
             // this._magnifier.IsEnabled = true;
             // this._magnifier.Visibility = Visibility.Visible;
 

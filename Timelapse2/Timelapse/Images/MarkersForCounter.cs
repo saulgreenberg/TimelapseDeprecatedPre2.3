@@ -50,7 +50,7 @@ namespace Timelapse.Images
                 // To get around this, format coordinates (which are only used internally and which the user never sees) as an Invariant culture. 
                 string x = String.Format(CultureInfo.InvariantCulture, "{0:0.000}", markerForCounter.Position.X);
                 string y = String.Format(CultureInfo.InvariantCulture, "{0:0.000}", markerForCounter.Position.Y);
-                pointList.AppendFormat("{0},{1}", x,y); // Add a point in the form x,y e.g., 0.500, 0.700
+                pointList.AppendFormat("{0},{1}", x, y); // Add a point in the form x,y e.g., 0.500, 0.700
             }
             return pointList.ToString();
         }

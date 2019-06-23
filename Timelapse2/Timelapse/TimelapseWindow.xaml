@@ -56,7 +56,8 @@
                         <Image Source="Icons/NewFile_40x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                
+
+                <!-- Load Detections -->
                 <Separator />
                 <MenuItem Name="MenuItemImportDetectionData" Header="Import detection data for this image set" IsEnabled="False" Click="MenuItemImportDetectionData_Click" ToolTip="Import detection data for the image set from a Microsoft-supplied .json file">
                     <MenuItem.Icon>
@@ -175,7 +176,7 @@
                     <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                 </MenuItem>
 
-
+                <MenuItem Name="MenuItemDetectorOptions" Header="Detector options..." IsEnabled="false" Click="MenuItemDetectorOptions_Click" ToolTip="Configure options for how the detector information is displayed"/>
 
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
 
@@ -308,20 +309,6 @@
                 <MenuItem Name="MenuItemWindowLastUsed" Header="_Reset to Initial Layout" Click="MenuItemWindowRestore_Click" ToolTip="Reset to the initial layout" Tag="AvalonLayout_LastUsed"/>
             </MenuItem>
             
-            <!--Recogntion Menu -->
-            <MenuItem Name="MenuItemDetection" Header="_Detection" IsTabStop="false" IsEnabled="false" SubmenuOpened="Detection_SubmenuOpening">
-
-
-                <MenuItem Name="MenuItemTest" Header="Select Detection Criteria" IsEnabled="true" Click="MenuItemGetDetectionsTest_Click" />
-                <!--<MenuItem Name="MenuItemImportDetectionData" Header="I_mport detection data from a .csv file..." IsEnabled="false" Click="MenuItemImportDetectionData_Click" ToolTip="Import image recognition data for the image set from a CSV (comma separated value) file">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/CSVImport_32x.png" />
-                    </MenuItem.Icon>-->
-                <!--</MenuItem>-->
-                <MenuItem Name="MenuItemDetectorOptions" Header="Detector options..." IsEnabled="false" Click="MenuItemDetectorOptions_Click" ToolTip="Configure options for how the detector information is displayed"/>
-            </MenuItem>
-
-
             <!-- Help Menu -->
             <MenuItem Name="MenuItemHelp" Header="_Help" IsEnabled="true" IsTabStop="false" SubmenuOpened="Help_SubmenuOpening" >
 

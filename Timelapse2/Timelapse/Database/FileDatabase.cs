@@ -27,8 +27,8 @@ namespace Timelapse.Database
         // for faster access
         private Dictionary<string, string> detectionCategoriesDictionary = null;
         private Dictionary<string, string> classificationCategoriesDictionary = null;
-        private DataTable DetectionDataTable; // Mirrors the database detection table
-        private DataTable ClassificationsDataTable; // Mirrors the database classification table
+        private DataTable detectionDataTable; // Mirrors the database detection table
+        private DataTable classificationsDataTable; // Mirrors the database classification table
         #endregion
 
         #region Properties 
@@ -210,8 +210,6 @@ namespace Timelapse.Database
             get { return (this.FileTable == null) ? 0 : this.FileTable.RowCount; }
         }
 
- 
-
         #region Adding Files to the Database
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
@@ -365,7 +363,6 @@ namespace Timelapse.Database
             this.GetMarkers();
         }
         #endregion
-
         public void AppendToImageSetLog(StringBuilder logEntry)
         {
             this.ImageSet.Log += logEntry;
@@ -895,7 +892,6 @@ namespace Timelapse.Database
             string conditionalExpression = this.GetFilesConditionalExpression(selection);
             if (String.IsNullOrEmpty(conditionalExpression) == false)
             {
-                //    query += Constant.Sqlite.Where + conditionalExpression;
                 query += conditionalExpression;
             }
 
@@ -1115,7 +1111,6 @@ namespace Timelapse.Database
                 query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             }
 
-            //string query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             string where = this.GetFilesConditionalExpression(fileSelection);
             if (!String.IsNullOrEmpty(where))
             {
@@ -1166,13 +1161,12 @@ namespace Timelapse.Database
             }
         }
 
-
-
         public void IndexCreateForDetectionsAndClassifications()
         {
             this.Database.CreateIndex(Constant.DatabaseValues.IndexID, Constant.DBTableNames.Detections, Constant.DatabaseColumn.ID);
             this.Database.CreateIndex(Constant.DatabaseValues.IndexDetectionID, Constant.DBTableNames.Classifications, Constant.DetectionColumns.DetectionID);
         }
+
         public void IndexCreateForFileAndRelativePath()
         {
             this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
@@ -1852,10 +1846,10 @@ namespace Timelapse.Database
 
                     // If detection population was previously done in this session, resetting these tables to null 
                     // will force reading the new values into them
-                    this.DetectionDataTable = null; // to force repopulating the data structure if it already exists.
+                    this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
                     this.detectionCategoriesDictionary = null;
                     this.classificationCategoriesDictionary = null;
-                    this.ClassificationsDataTable = null;
+                    this.classificationsDataTable = null;
 
                     sw.Reset();
                     sw.Start();
@@ -1876,38 +1870,36 @@ namespace Timelapse.Database
         // As part of the, create a DetectionTable in memory that mirrors the database table
         public DataRow[] GetDetectionsFromFileID(long fileID)
         {
-            if (this.DetectionDataTable == null)
+            if (this.detectionDataTable == null)
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                this.DetectionDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections);
+                this.detectionDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections);
                 sw.Stop();
                 System.Diagnostics.Debug.Print(String.Format("creating detections datatable took {0}", sw.ElapsedMilliseconds / 1000));
                 // this.DetectionDataTable.PrimaryKey = new DataColumn[] { this.DetectionDataTable.Columns[Constant.DatabaseColumn.ID] };
             }
             // Note that because IDs are in the database as a string, we convert it
-            //return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
-            return this.DetectionDataTable.Select(Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
+            return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
         }
 
         // Get the detections associated with the current file, if any
         public DataRow[] GetClassificationsFromDetectionID(long detectionID)
         {
-            if (this.ClassificationsDataTable == null)
+            if (this.classificationsDataTable == null)
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                this.ClassificationsDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications);
+                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications);
                 sw.Stop();
                 System.Diagnostics.Debug.Print(String.Format("creating classifications datatable took {0}", sw.ElapsedMilliseconds / 1000));
-                //this.ClassificationsDataTable.PrimaryKey = new DataColumn[] { this.ClassificationsDataTable.Columns[Constant.ClassificationColumns.DetectionID]};
+                // this.ClassificationsDataTable.PrimaryKey = new DataColumn[] { this.ClassificationsDataTable.Columns[Constant.ClassificationColumns.DetectionID]};
             }
             // Note that because IDs are in the database as a string, we convert it
-            //return this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications + Constant.Sqlite.Where + Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
-            return this.ClassificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
+            return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
         }
 
-        // return the label that matches the detection category 
+        // Return the label that matches the detection category 
         public string GetDetectionLabelFromCategory(string category)
         {
             try
@@ -1923,7 +1915,7 @@ namespace Timelapse.Database
                         this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
                     }
                 }
-                // 
+
                 // At this point, a lookup dictionary already exists, so just return the category value.
                 return detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
@@ -1958,7 +1950,7 @@ namespace Timelapse.Database
                 CreateDetectionCategoriesDictionaryIfNeeded();
                 // At this point, a lookup dictionary already exists, so just return the category value.
                 string myKey = detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
-                return (myKey == null) ? String.Empty : myKey;
+                return myKey ?? String.Empty;
             }
             catch
             {
@@ -1966,7 +1958,6 @@ namespace Timelapse.Database
                 return String.Empty;
             }
         }
-
 
         public List<string> GetDetectionLabels()
         {
@@ -1978,7 +1969,6 @@ namespace Timelapse.Database
             }
             return labels;
         }
-
 
         // Create the classification category dictionary to mirror the detection table
         public void CreateClassificationCategoriesDictionaryIfNeeded()
@@ -2002,7 +1992,7 @@ namespace Timelapse.Database
             try
             {
                 CreateClassificationCategoriesDictionaryIfNeeded();
-                // 
+
                 // At this point, a lookup dictionary already exists, so just return the category value.
                 return classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
@@ -2012,8 +2002,6 @@ namespace Timelapse.Database
                 return String.Empty;
             }
         }
-
-
         #endregion
     }
 }

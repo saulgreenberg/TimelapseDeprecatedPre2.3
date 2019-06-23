@@ -55,7 +55,6 @@ namespace Timelapse
             this.MenuItemSort.IsEnabled = filesSelected;
 
             // Recognition menu
-            this.MenuItemDetection.IsEnabled = filesSelected;
             this.MenuItemImportDetectionData.IsEnabled = filesSelected;
             this.MenuItemDetectorOptions.IsEnabled = filesSelected;
 

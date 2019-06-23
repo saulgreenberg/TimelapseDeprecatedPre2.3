@@ -36,8 +36,7 @@ namespace Timelapse.Dialog
         // Set the bounding box display threshold value to a new value between 0 and 1
         private void BoundingBoxDisplayThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            Slider slider = sender as Slider;
-            if (slider == null)
+            if (!(sender is Slider slider))
             {
                 return;
             }
@@ -66,8 +65,7 @@ namespace Timelapse.Dialog
 
         private void RecomputeSpeciesDetectedThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            Slider slider = sender as Slider;
-            if (slider == null)
+            if (!(sender is Slider slider))
             {
                 return;
             }
@@ -121,7 +119,7 @@ namespace Timelapse.Dialog
                 }
                 if (forceUpdate == true || newSpeciesDetectedValue != currentSpeciesDetectedValue)
                 {
-                    //System.Diagnostics.Debug.Print(newSpeciesDetectedValue.ToString());
+                    // System.Diagnostics.Debug.Print(newSpeciesDetectedValue.ToString());
                     string newSpeciesDetectedValueAsString = (newSpeciesDetectedValue == true) 
                         ? Constant.BooleanValue.True 
                         : Constant.BooleanValue.False;

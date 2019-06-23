@@ -60,6 +60,18 @@ namespace Timelapse
             filePlayerOptions.ShowDialog();
         }
 
+        // Set various options for the image detector
+        private void MenuItemDetectorOptions_Click(object sender, RoutedEventArgs e)
+        {
+            DetectorOptions detectorOptions = new DetectorOptions(this.state, this.dataHandler.FileDatabase, this);
+            detectorOptions.ShowDialog();
+            // redisplay the file as the options may change how bounding boxes should be displayed
+            if (this.dataHandler != null)
+            {
+                this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
+            }
+        }
+
         private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
         {
             Episodes.ShowEpisodes = !Episodes.ShowEpisodes;

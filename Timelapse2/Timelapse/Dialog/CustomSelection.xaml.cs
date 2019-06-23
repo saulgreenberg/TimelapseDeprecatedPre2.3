@@ -31,23 +31,25 @@ namespace Timelapse.Dialog
         private const int ValueColumn = 3;
         private const int SearchCriteriaColumn = 4;
 
+        // Detection Constants
+        private const string LessThan = "\u2264";
+        private const string GreaterThan = "\u2265";
+        private const string Between = "Between";
+
         private FileDatabase database;
         private DataEntryControls dataEntryControls;
         private TimeZoneInfo imageSetTimeZone;
         private bool excludeUTCOffset;
         private bool dontUpdate = true;
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
-        DispatcherTimer CountTimer = new DispatcherTimer();
+        private DispatcherTimer countTimer = new DispatcherTimer();
 
         // Detections variables
         private bool dontInvoke = false;
         private bool dontCount;
-        private const string LessThan = "\u2264";
-        private const string GreaterThan = "\u2265";
-        private const string Between = "Between";
-        private Dictionary<ComparisonEnum, string> ComparisonDictionary = new Dictionary<ComparisonEnum, string>();
-        private DetectionSelections DetectionSelections { get; set; }
 
+        private Dictionary<ComparisonEnum, string> comparisonDictionary = new Dictionary<ComparisonEnum, string>();
+        private DetectionSelections DetectionSelections { get; set; }
 
         #region Constructors and Loading
         public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections)
@@ -59,14 +61,14 @@ namespace Timelapse.Dialog
             this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
-            CountTimer.Interval = TimeSpan.FromMilliseconds(500);
-            CountTimer.Tick += CountTimer_Tick;
+            countTimer.Interval = TimeSpan.FromMilliseconds(500);
+            countTimer.Tick += CountTimer_Tick;
 
             // Detections-specific
             this.DetectionSelections = detectionSelections;
-            ComparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
-            ComparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
-            ComparisonDictionary.Add(ComparisonEnum.Between, Between); 
+            comparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
+            comparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
+            comparisonDictionary.Add(ComparisonEnum.Between, Between); 
         }
 
         // When the window is loaded, add SearchTerm controls to it
@@ -89,10 +91,9 @@ namespace Timelapse.Dialog
             this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
             this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
 
-            this.DetectionRangeType.SelectedItem = this.ComparisonDictionary[this.DetectionSelections.DetectionComparison];
+            this.DetectionRangeType.SelectedItem = this.comparisonDictionary[this.DetectionSelections.DetectionComparison];
             this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
             this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
-
 
             // Put Detection categories in as human-readable labels and set it to the last used one.
             List<string> labels = this.database.GetDetectionLabels();
@@ -144,7 +145,7 @@ namespace Timelapse.Dialog
                 Thickness thickness = new Thickness(5, 2, 5, 2);
                 CheckBox useCurrentRow = new CheckBox()
                 {
-                    FontWeight= FontWeights.DemiBold,
+                    FontWeight = FontWeights.DemiBold,
                     Margin = thickness,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -396,10 +397,10 @@ namespace Timelapse.Dialog
 
         // TODO: It looks like this isn't needed anymore. Check
         // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
-        //private void DateValue_MouseMove(object sender, MouseEventArgs e)
-        //{
+        // private void DateValue_MouseMove(object sender, MouseEventArgs e)
+        // {
         //    this.DateTime_SelectedDateChanged(sender, null);
-        //}
+        // }
         #endregion
 
         #region Query formation callbacks
@@ -533,12 +534,14 @@ namespace Timelapse.Dialog
         // which also show or hides the search term feedback for that row.
         private void UpdateSearchCriteriaFeedback()
         {
-            if (this.dontUpdate) return;
+            if (this.dontUpdate)
+            {
+                return;
+            }
             // We go backwards, as we don't want to print the AND or OR on the last expression
             bool lastExpression = true;
             int numberOfDateTimesSearchTerms = 0;
             string utcOffset = "Utc Offset";
-            bool searchTermsInUse = false;
             for (int index = this.database.CustomSelection.SearchTerms.Count - 1; index >= 0; index--)
             {
                 int row = index + 1; // we offset the row by 1 as row 0 is the header
@@ -557,7 +560,6 @@ namespace Timelapse.Dialog
                     searchCriteria.Text = String.Empty;
                     continue;
                 }
-                searchTermsInUse = true;
 
                 // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
@@ -644,7 +646,10 @@ namespace Timelapse.Dialog
         #region Detection-specific methos and callbacks
         private void UseCriteria_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            if (this.dontInvoke) return;
+            if (this.dontInvoke)
+            {
+                return;
+            }
             // Enable or disable the controls depending on the various checkbox states
             SetDetectionSpinnerEnable();
 
@@ -730,7 +735,7 @@ namespace Timelapse.Dialog
                 return;
             }
             this.SetDetectionSpinnerVisibility((string)this.DetectionRangeType.SelectedValue);
-            this.DetectionSelections.DetectionComparison = ComparisonDictionary.FirstOrDefault(x => x.Value == (string)this.DetectionRangeType.SelectedValue).Key;
+            this.DetectionSelections.DetectionComparison = comparisonDictionary.FirstOrDefault(x => x.Value == (string)this.DetectionRangeType.SelectedValue).Key;
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
@@ -738,7 +743,7 @@ namespace Timelapse.Dialog
         // Depending on what comparision operator is used, set the visibility of particular spinners and labels
         private void SetDetectionSpinnerVisibility(ComparisonEnum comparisonEnum)
         {
-            SetDetectionSpinnerVisibility(ComparisonDictionary[comparisonEnum]);
+            SetDetectionSpinnerVisibility(comparisonDictionary[comparisonEnum]);
         }
         private void SetDetectionSpinnerVisibility(string comparison)
         {
@@ -772,7 +777,7 @@ namespace Timelapse.Dialog
         #region Common
         private void CountTimer_Tick(object sender, EventArgs e)
         {
-            CountTimer.Stop();
+            countTimer.Stop();
             // This is set everytime a selectin is made
             if (this.dontCount == true)
             {
@@ -780,14 +785,14 @@ namespace Timelapse.Dialog
             }
             int count = this.database.GetFileCount(FileSelectionEnum.Custom);
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
-            this.OkButton.IsEnabled = (count > 0); // Dusable OK button if there are no matches
+            this.OkButton.IsEnabled = count > 0; // Dusable OK button if there are no matches
         }
 
         // Start the timere that will show how many files match the current selection
         private void InitiateShowCountsOfMatchingFiles()
         {
-            CountTimer.Stop();
-            CountTimer.Start();
+            countTimer.Stop();
+            countTimer.Start();
         }
 
         // Apply the selection if the Ok button is clicked

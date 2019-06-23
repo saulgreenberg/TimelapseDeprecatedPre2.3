@@ -14,6 +14,7 @@ namespace Timelapse.Database
     {
         public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
+
         public Detection.DetectionSelections DetectionSelections = new Detection.DetectionSelections();
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace Timelapse.Database
         // Clear all the 'use' flags in the custom search term
         public void ClearCustomSearchUses()
         {
-            foreach (SearchTerm searchTerm in SearchTerms)
+            foreach (SearchTerm searchTerm in this.SearchTerms)
             {
                 searchTerm.UseForSearching = false;
             }
@@ -214,14 +215,12 @@ namespace Timelapse.Database
                 {
                     // The where expression constructed should look something like: (DataLabel IS NULL OR DataLabel = '')
                     whereForTerm = " (" + label + " IS NULL OR " + label + " = '') ";
-                    //whereForTerm = " (" + searchTerm.DataLabel + " IS NULL OR " + searchTerm.DataLabel + " = '') ";
                 }
                 else
                 {
                     // The where expression constructed should look something like DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
                     whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
-                    //whereForTerm = searchTerm.DataLabel + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Constant.Sqlite.CollateNocase; // so that true and false comparisons are case-insensitive
@@ -254,7 +253,7 @@ namespace Timelapse.Database
                 where += whereForTerm;
             }
             // If no detections, return the above
-            if (DetectionSelections.Enabled == false)
+            if (this.DetectionSelections.Enabled == false)
             {
                 return where;
             }
@@ -263,7 +262,7 @@ namespace Timelapse.Database
             // Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
             // Form ... WHERE Detections.category = 1
             bool addAnd = true;
-            if (where == String.Empty && DetectionSelections.UseDetectionCategory == true)
+            if (where == String.Empty && this.DetectionSelections.UseDetectionCategory == true)
             {
                 where += Constant.Sqlite.Where;
                 addAnd = false;
@@ -273,36 +272,36 @@ namespace Timelapse.Database
                 addAnd = true;
             }
 
-            if (DetectionSelections.UseDetectionCategory)
+            if (this.DetectionSelections.UseDetectionCategory)
             {
                 if (addAnd)
                 {
                     where += Constant.Sqlite.And;
                 }
                 // Form: Detections.category = <DetectionCategory>
-                where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + DetectionSelections.DetectionCategory;
+                where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + this.DetectionSelections.DetectionCategory;
             }
-            if (DetectionSelections.UseDetectionConfidenceThreshold)
+            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
             {
                 // Form:  ...Group By Detections.Id Having Max  (Detections.conf )  ...
                 where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Constant.Sqlite.Having +
                     Constant.Sqlite.Max + Constant.Sqlite.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.CloseParenthesis;
-                switch (DetectionSelections.DetectionComparison)
+                switch (this.DetectionSelections.DetectionComparison)
                 {
                     case ComparisonEnum.LessThanEqual:
-                        //  <= .80
-                        where += Constant.Sqlite.LessThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                        // <= .80
+                        where += Constant.Sqlite.LessThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
                         break;
                     case ComparisonEnum.Between:
                         // BETWEEN .80 AND .90
                         where += Constant.Sqlite.Between +
-                            DetectionSelections.DetectionConfidenceThreshold1.ToString() + Constant.Sqlite.And +
-                            DetectionSelections.DetectionConfidenceThreshold2.ToString();
+                            this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Constant.Sqlite.And +
+                            this.DetectionSelections.DetectionConfidenceThreshold2.ToString();
                         break;
                     case ComparisonEnum.GreaterThan:
                     default:
                         // >= .80
-                        where += Constant.Sqlite.GreaterThanEqual + DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                        where += Constant.Sqlite.GreaterThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
                         break;
                 }
             }
