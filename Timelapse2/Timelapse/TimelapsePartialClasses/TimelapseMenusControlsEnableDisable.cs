@@ -19,6 +19,7 @@ namespace Timelapse
             this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
             this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
+            this.MenuItemImportDetectionData.IsEnabled = filesSelected;
             this.MenuItemExportThisImage.IsEnabled = filesSelected;
             this.MenuItemExportAsCsvAndPreview.IsEnabled = filesSelected;
             this.MenuItemExportAsCsv.IsEnabled = filesSelected;
