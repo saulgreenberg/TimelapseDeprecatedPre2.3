@@ -151,11 +151,11 @@ namespace Timelapse.Detection
         }
 
         #region Parsing methods
-        //private static List<Rect> ParseBoundingBoxes(string sBoundingBoxes)
-        //{
+        // private static List<Rect> ParseBoundingBoxes(string sBoundingBoxes)
+        // {
         //    List<Rect> boundingBoxes = new List<Rect>();
         //    return boundingBoxes;
-        //}
+        // }
         private static List<string> ReadAndParseLine(StreamReader csvReader)
         {
             string unparsedLine = csvReader.ReadLine();

@@ -43,6 +43,24 @@ namespace Timelapse.Images
         private readonly MagnifyingGlass magnifyingGlass;
         private readonly double magnifyingGlassZoomStep;
 
+        // Timer for resizing the clickable images grid only after resizing is (likely) completed
+        private readonly DispatcherTimer timerResize = new DispatcherTimer();
+
+        // zoomed out state for ClickableImages. 
+        // 0 - not zoomed out; 
+        // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
+        // These widths can be altered if needed
+        private readonly Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
+        {
+            { 0, 0 },
+            { 1, 640 },
+            { 2, 320 },
+            { 3, 256 }
+        };
+
+        // Timer for delaying updates in the midst of rapid navigation with the slider
+        private readonly DispatcherTimer timerSlider = new DispatcherTimer();
+
         // markers
         private List<Marker> markers;
 
@@ -58,27 +76,7 @@ namespace Timelapse.Images
         private DateTime mouseDoubleClickTime;
         private bool isDoubleClick = false;
         private bool isPanning = false;
-
-        // zoomed out state for ClickableImages. 
-        // 0 - not zoomed out; 
-        // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
-        // These widths can be altered if needed
-       
-        private readonly Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
-        {
-            { 0, 0 },
-            { 1, 640 },
-            { 2, 320 },
-            { 3, 256 }
-        };
-
         private bool displayingImage = false;
-
-        // Timer for resizing the clickable images grid only after resizing is (likely) completed
-        private readonly DispatcherTimer timerResize = new DispatcherTimer();
-
-        // Timer for delaying updates in the midst of rapid navigation with the slider
-        private readonly DispatcherTimer timerSlider = new DispatcherTimer();
         #endregion
 
         #region Properties
@@ -983,8 +981,7 @@ namespace Timelapse.Images
                 if (canvas.Children[index] is Canvas && canvas.Children[index] != this.magnifyingGlass)
                 {
                     // Its either a marker or a bounding box, so we have to figure out which one.
-                    Canvas tempCanvas = canvas.Children[index] as Canvas;
-                    if (tempCanvas != null && (tempCanvas.Tag != null && tempCanvas.Tag.ToString() != Constant.MarkableCanvas.BoundingBoxCanvasTag))
+                    if (canvas.Children[index] is Canvas tempCanvas && (tempCanvas.Tag != null && tempCanvas.Tag.ToString() != Constant.MarkableCanvas.BoundingBoxCanvasTag))
                     {
                         canvas.Children.RemoveAt(index);
                     }

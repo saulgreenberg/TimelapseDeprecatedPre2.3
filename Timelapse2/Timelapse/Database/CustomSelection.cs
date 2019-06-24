@@ -15,7 +15,7 @@ namespace Timelapse.Database
         public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
 
-        public Detection.DetectionSelections DetectionSelections = new Detection.DetectionSelections();
+        public Detection.DetectionSelections DetectionSelections { get; set; }
 
         /// <summary>
         /// Create a CustomSelection, where we build a list of potential search terms based on the controls found in the sorted template table
@@ -23,6 +23,7 @@ namespace Timelapse.Database
         /// </summary>
         public CustomSelection(DataTableBackedList<ControlRow> templateTable, CustomSelectionOperatorEnum termCombiningOperator)
         {
+            this.DetectionSelections = new Detection.DetectionSelections();
             this.SearchTerms = new List<SearchTerm>();
             this.TermCombiningOperator = termCombiningOperator;
 
