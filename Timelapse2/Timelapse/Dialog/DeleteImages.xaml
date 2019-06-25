@@ -4,8 +4,7 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         Title="Delete ..." 
-        Height="780" Width="1079"
-        MinHeight="728" MinWidth="1079"
+        Height="780" Width="600" MinWidth="600"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
@@ -15,30 +14,30 @@
                             ShowExplanationVisibility="True" />
         <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-            <CheckBox Name="chkboxConfirm" IsChecked="False" FontSize="14" Margin="0,0,20,0" Height="20" 
+            <CheckBox Name="chkboxConfirm" IsChecked="False" Margin="0,5,5,0" Height="40" 
                 Checked="ConfirmBox_Checked" Unchecked="ConfirmBox_Checked">
                 <TextBlock>
-                       <Run FontWeight="Bold" Text="Confirm deletion of selected files and data " />
-                        <Run >(you must check this before the Okay button can be clicked; deleted data is not recoverable)</Run>
+                        <Run FontWeight="Bold" Text="Click to confirm deletion of selected files and data " />
+                        <LineBreak/>
+                        <Run>(Deleted data is not recoverable)</Run>
                 </TextBlock>
             </CheckBox>
 
             <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
             <Button Name="OkButton" IsDefault="True" IsEnabled="False" AutomationProperties.AutomationId="ChangesButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
         </StackPanel>
-        <ScrollViewer Name="scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible" CanContentScroll="True" PanningMode="Both" DockPanel.Dock="Top">
-            <Grid Name="GridGallery" DockPanel.Dock="Top" Margin="10,10,10,10" ShowGridLines="False" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="200" />
-                    <ColumnDefinition Width="200" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="200"/>
-                </Grid.RowDefinitions>
-            </Grid>
-        </ScrollViewer>
+
+        <TextBlock Name="SingleFileTextBlock" FontWeight="DemiBold" DockPanel.Dock="Top" Margin="10">
+            <Run Text="File to delete:" FontWeight="Bold"></Run>
+            <LineBreak/>
+            <Run Text="     "/>
+            <Run Name="SingleFileNameRun" Text="" FontWeight="DemiBold"/>
+        </TextBlock>
+
+        <StackPanel Orientation="Horizontal"  DockPanel.Dock="Top" Margin='10,0,0,0'>
+            <ListBox Name="DeletedFilesListBox"/>
+            <Image Name="ImageViewer" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Stretch" Visibility="Collapsed"/>
+            <TextBlock Name="MouseOverMessageTextBlock" FontStyle="Italic" Text="Mouse over the file name to view the image" Margin="10,10,0,0" Visibility="Visible"/>
+        </StackPanel>
     </DockPanel>
 </Window>

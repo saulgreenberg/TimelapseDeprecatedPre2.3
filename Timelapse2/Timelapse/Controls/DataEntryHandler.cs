@@ -777,54 +777,5 @@ namespace Timelapse.Controls
             }
         }
         #endregion
-        #region Defunct Code
-        // When the number in a particular counter box changes, update the particular counter field(s) in the database
-        // SAULXXX NOTE THAT WE DONT REFERENCE THIS ANYMORE AS ITS BEEN REPLACED BY CounterCOntrol_ValueChanged  BUT KEEP IT FOR NOW JUST IN CASE
-        // private void CounterControl_TextChanged(object sender, TextChangedEventArgs e)
-        // {
-        // if (this.IsProgrammaticControlUpdate)
-        //  {
-        //    return;
-        // }
-
-        // TextBox textBox = (TextBox)sender;
-        //  // Get the caret position, as we will have to restore it if we change the text
-        //  // If the character under the caret isn't a digit, we will be deleting it.
-        //    // That means we have to adjust the caret position so that it appears in the correct place 
-        //    int pos = textBox.CaretIndex;
-        //    string old_text = textBox.Text;
-
-        // // The caret is already at the beginning, so don't change it.
-        //    if (old_text.Length == 0 || pos == 0) 
-        //    {
-        //        pos = 0;
-        //    }
-        //    else
-        //    { 
-        //        // Adjust the caret backwards if the character won't be entered
-        //        char ch = old_text[pos - 1];
-        //        if (Char.IsDigit(ch) == false)
-        //        {
-        //            pos--;
-        //        }
-        //    }
-        //    // Remove any characters that are not numbers
-        //    // Note that we allow the field to be either a number or empty (i.e., blank).
-        //    Regex rgx = new Regex("[^0-9]");
-        //    string new_text = rgx.Replace(textBox.Text, String.Empty);
-        //    if (String.Equals(new_text, textBox.Text) == false)
-        //    {
-        //        this.IsProgrammaticControlUpdate = true;
-        //        textBox.Text = rgx.Replace(textBox.Text, String.Empty);
-        //        this.IsProgrammaticControlUpdate = false;
-        //    }
-        //    textBox.CaretIndex = pos;
-
-        // // Get the key identifying the control, and then add its value to the database
-        //    DataEntryControl control = (DataEntryControl)textBox.Tag;
-        //    control.SetContentAndTooltip(textBox.Text);
-        //    this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
-        // }
-        #endregion
         }
     }

@@ -179,6 +179,10 @@ namespace Timelapse
                 }
             }
 
+            // We have to change the way the current image is displayed, as otherwise it cannot be deleted as there is still a reference to the file.
+            // NOTE THAT WE NEED TO DO THIS FOR VIDEOS AND FOR MULTIPLEIMAGEVIEW
+            // MAYBE CLEAR THE IMAGE CACHE TOO?
+            this.dataHandler.ImageCache.Current.GetBitmapFromFile(this.FolderPath, 128, ImageDisplayIntentEnum.TransientNavigating, out bool foo);
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...
@@ -204,6 +208,12 @@ namespace Timelapse
                 List<long> imageIDsToDropFromDatabase = new List<long>();
                 foreach (ImageRow image in imagesToDelete)
                 {
+
+                    if (currentFileID == image.ID)
+                    {
+                        // if the current image being displayed is to be deleted, then clear its bitmap so it can be moved
+                        this.dataHandler.ImageCache.Current.ClearBitmap();
+                    }
                     // invalidate cache so Missing placeholder will be displayed
                     // release any handle open on the file so it can be moved
                     this.dataHandler.ImageCache.TryInvalidate(image.ID);

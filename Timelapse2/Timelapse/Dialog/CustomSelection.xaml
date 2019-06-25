@@ -8,7 +8,7 @@
         xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="Select and view a  subset of your files"
-        MinHeight="500" MinWidth="700"
+        MinHeight="800" MinWidth="700"
 		Height="900" Width="768"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"

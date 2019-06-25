@@ -384,6 +384,11 @@ namespace Timelapse.Database
             }
         }
 
+        public BitmapSource ClearBitmap()
+        {
+            return Constant.ImageValues.FileNoLongerAvailable.Value;
+        }
+
         // Load full form
         public virtual BitmapSource GetBitmapFromFile(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {

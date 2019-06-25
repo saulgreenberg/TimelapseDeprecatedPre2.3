@@ -21,8 +21,8 @@ namespace Timelapse.Dialog
         // these variables will hold the values of the passed in parameters
         private bool deleteImageAndData;
         private List<ImageRow> filesToDelete;
-
-        public List<long> ImageFilesRemovedByID { get; private set; }
+        private FileDatabase database;
+        private int maxPathLength = 45;
 
         /// <summary>
         /// Ask the user if he/she wants to delete one or more images and (depending on whether deleteData is set) the data associated with those images.
@@ -30,15 +30,28 @@ namespace Timelapse.Dialog
         /// -deleteData is true when the data associated with that image should be deleted.
         /// -useDeleteFlags is true when the user is trying to delete images with the deletion flag set, otherwise its the current image being deleted
         /// </summary>
-        public DeleteImages(FileDatabase database, List<ImageRow> imagesToDelete, bool deleteImageAndData, bool deleteCurrentImageOnly, Window owner)
+        public DeleteImages(FileDatabase database, List<ImageRow> filesToDelete, bool deleteImageAndData, bool deleteCurrentImageOnly, Window owner)
         {
             this.InitializeComponent();
+            Mouse.OverrideCursor = Cursors.Wait;
+
             this.deleteImageAndData = deleteImageAndData;
-            this.filesToDelete = imagesToDelete;
+            this.filesToDelete = filesToDelete;
             this.Owner = owner;
+            this.database = database;
 
-            this.ImageFilesRemovedByID = new List<long>();
+            // Construct the interface for either a single or for multiple images to delete
+            if (deleteCurrentImageOnly)
+            {
+                this.DeleteCurrentImageOnly();
+            }
+            else
+            {
+                this.DeleteMultipleImages();
+            }
 
+            // Depending upon what is being deleted,
+            // set the visibility and enablement of various controls
             if (this.deleteImageAndData)
             {
                 this.OkButton.IsEnabled = false;
@@ -49,129 +62,190 @@ namespace Timelapse.Dialog
                 this.OkButton.IsEnabled = true;
                 this.chkboxConfirm.Visibility = Visibility.Collapsed;
             }
-            this.GridGallery.RowDefinitions.Clear();
-
-            // Construct the dialog's text based on the state of the flags
-            if (deleteCurrentImageOnly)
-            {
-                string imageOrVideo = imagesToDelete[0].IsVideo ? "video" : "image";
-                this.Message.Title = String.Format("Delete the current {0}", imageOrVideo);
-                this.Message.What = String.Format("Deletes the current {0} if it exists", imageOrVideo);
-                this.Message.Result = String.Format("\u2022 The deleted {0} will be backed up in a sub-folder named {1}.{2}", imageOrVideo, Constant.File.DeletedFilesFolder, Environment.NewLine);
-                this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
-                if (deleteImageAndData == false)
-                {
-                    // Case 1: Delete the current image, but not its data.
-                    this.Message.Title += "but not its data.";
-                    this.Message.What += "but not its data.";
-                    this.Message.Result += String.Format("\u2022 A placeholder {0} will be shown when you try to view a deleted {0}.", imageOrVideo);
-                    this.Message.Hint += "\u2022 Restore this deleted file by manually moving it back to its original location." + Environment.NewLine;
-                }
-                else
-                {
-                    // Case 2: Delete the current image and its data
-                    this.Message.Title += "and its data";
-                    this.Message.What += String.Format("and the data associated with that {0}.", imageOrVideo);
-                    this.Message.Result += String.Format("\u2022 However, the data associated with that {0} will be permanently deleted.", imageOrVideo);
-                    this.Message.Hint += "\u2022 Restore this deleted file by manually moving it to a new sub-folder, and adding that sub-folder to the image set." + Environment.NewLine;
-                }
-            }
-            else
-            {
-                int numberOfImagesToDelete = this.filesToDelete.Count;
-                this.Message.Title = String.Format("Delete {0} image and/or video(s) marked for deletion ", numberOfImagesToDelete.ToString());
-                this.Message.What = String.Format("Deletes {0} image and/or video(s) - if they exist - that are marked for deletion, ",  numberOfImagesToDelete.ToString());
-                this.Message.Result = String.Empty;
-                this.Message.Hint = String.Format("\u2022 Permanently delete the backup files by deleting the {0} folder.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
-                if (numberOfImagesToDelete > Constant.ImageValues.LargeNumberOfDeletedImages)
-                {
-                    this.Message.Result += String.Format("Deleting {0} files will take a few moments. Please be patient.{1}", numberOfImagesToDelete.ToString(), Environment.NewLine);
-                }
-                this.Message.Result += String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
-                if (deleteImageAndData == false)
-                {
-                    // Case 3: Delete the images that have the delete flag set, but not their data
-                    this.Message.Title += "but not their data";
-                    this.Message.What += "but not the data entered for them.";
-                    this.Message.Result += "\u2022 A placeholder image will be shown when you try to view a deleted file.";
-                    this.Message.Hint += "\u2022 Restore these deleted files by manually moving them back to their original location." + Environment.NewLine;
-                }
-                else
-                {
-                    // Case 4: Delete the images that have the delete flag set, and their data
-                    this.Message.Title += "and their data";
-                    this.Message.What += "along with the data entered for them.";
-                    this.Message.Result += "\u2022 However, the data associated with those files will be permanently deleted.";
-                    this.Message.Hint += "\u2022 Restore these deleted files by manually moving them to a new sub-folder, and adding that sub-folder to the image set." + Environment.NewLine;
-                }
-            }
-
-            // load thumbnails of those images that are candidates for deletion
-            Mouse.OverrideCursor = Cursors.Wait;
-            this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
-            this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
-            int columnIndex = 0;
-            int rowIndex = 0;
-            foreach (ImageRow imageProperties in imagesToDelete)
-            {
-                Label imageLabel = new Label
-                {
-                    Content = imageProperties.File
-                };
-                imageLabel.ToolTip = imageLabel.Content;
-                imageLabel.Height = 25;
-                imageLabel.VerticalAlignment = VerticalAlignment.Top;
-
-                Image imageControl = new Image
-                {
-                    Source = imageProperties.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing)
-                };
-
-                Grid.SetRow(imageLabel, rowIndex);
-                Grid.SetRow(imageControl, rowIndex + 1);
-                Grid.SetColumn(imageLabel, columnIndex);
-                Grid.SetColumn(imageControl, columnIndex);
-                this.GridGallery.Children.Add(imageLabel);
-                this.GridGallery.Children.Add(imageControl);
-                ++columnIndex;
-                if (columnIndex == 5)
-                {
-                    // A new row is started every five columns
-                    columnIndex = 0;
-                    rowIndex += 2;
-                    this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
-                    this.GridGallery.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
-                }
-            }
             Mouse.OverrideCursor = null;
-            this.scroller.CanContentScroll = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-           Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
-        /// <summary>
-        /// Cancel button selected
-        /// </summary>
+        private void DeleteCurrentImageOnly()
+        {
+            ImageRow imageRow = this.filesToDelete[0];
+            // Set various visibility and size attributes
+            this.DeletedFilesListBox.Visibility = Visibility.Collapsed;
+            this.SingleFileTextBlock.Visibility = Visibility.Visible;
+            this.MouseOverMessageTextBlock.Visibility = Visibility.Collapsed;
+            this.ImageViewer.Visibility = Visibility.Visible;
+
+            this.Height = 600;
+            this.MinHeight = 600;
+            this.ImageViewer.Margin = new Thickness(20, 0, 0, 0);
+            this.ImageViewer.Source = imageRow.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumnnailWidthWhenNavigating, out bool isCorruptOrMissing);
+
+            // Show  the deleted file name and image in the interface
+            this.maxPathLength = 70;
+            string filePath = Path.Combine(imageRow.RelativePath, imageRow.File);
+            if (string.IsNullOrEmpty(filePath) == false)
+            {
+                filePath = filePath.Length <= this.maxPathLength ? filePath : "..." + filePath.Substring(filePath.Length - this.maxPathLength, this.maxPathLength);
+            }
+            this.SingleFileTextBlock.ToolTip = Path.Combine(imageRow.RelativePath, imageRow.File);
+            this.ImageViewer.ToolTip = Path.Combine(imageRow.RelativePath, imageRow.File);
+            this.SingleFileNameRun.Text = filePath;
+
+            string imageOrVideo = this.filesToDelete[0].IsVideo ? "video" : "image";
+            this.Message.Title = String.Format("Delete the current {0}", imageOrVideo);
+            this.Message.What = String.Format("Deletes the current {0} if it exists", imageOrVideo);
+            this.Message.Result = String.Format("\u2022 The deleted {0} will be backed up in a sub-folder named {1}.{2}", imageOrVideo, Constant.File.DeletedFilesFolder, Environment.NewLine);
+            this.Message.Hint = String.Format("\u2022 Restore the deleted {0} by manually moving it ", imageOrVideo);
+            if (deleteImageAndData == false)
+            {
+                // Case 1: Delete the current image, but not its data.
+                this.Message.Title += " but not its data.";
+                this.Message.What += String.Format("{0}The data entered for the {1} IS NOT deleted.", Environment.NewLine, imageOrVideo);
+                this.Message.Result += String.Format("\u2022 A placeholder {0} will be shown when you try to view a deleted {0}.", imageOrVideo);
+                this.Message.Hint += "back to its original location." + Environment.NewLine;
+            }
+            else
+            {
+                // Case 2: Delete the current image and its data
+                this.Message.Title += " and its data";
+                this.Message.What += String.Format("{0}The data entered for the {1} IS deleted as well.", Environment.NewLine, imageOrVideo);
+                this.Message.Result += String.Format("\u2022 However, the data associated with that {0} will be permanently deleted.", imageOrVideo);
+                this.Message.Hint += "to a new sub-folder." + Environment.NewLine + "  Then add that sub-folder back to the image set." + Environment.NewLine;
+            }
+            this.Message.Hint += String.Format("\u2022 See Options|Preferences to manage how files in {0} are permanently deleted.", Constant.File.DeletedFilesFolder);
+        }
+
+        private void DeleteMultipleImages()
+        {
+            int numberOfImagesToDelete = this.filesToDelete.Count;
+
+            // Set various visibility and size attributes
+            this.DeletedFilesListBox.Visibility = Visibility.Visible;
+            this.SingleFileTextBlock.Visibility = Visibility.Collapsed;
+            this.Height = 780;
+            this.MinHeight = 680;
+            this.ImageViewer.Width = Constant.ImageValues.ThumbnailWidth * 2; // Set the size of the image to display on mouse-over
+
+            // Deleting multiple images
+            // load the files that are candidates for deletion as listbox items
+            this.DeletedFilesListBox.Items.Clear();
+            this.maxPathLength = 45;
+            foreach (ImageRow imageProperties in this.filesToDelete)
+            {
+                string filePath = Path.Combine(imageProperties.RelativePath, imageProperties.File);
+                if (string.IsNullOrEmpty(filePath) == false)
+                {
+                    filePath = filePath.Length <= this.maxPathLength ? filePath : "..." + filePath.Substring(filePath.Length - this.maxPathLength, this.maxPathLength);
+                }
+
+                ListBoxItem lbi = new ListBoxItem
+                {
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Height = 28,
+                    Content = filePath,
+                    ToolTip = Path.Combine(imageProperties.RelativePath, imageProperties.File),
+                    Tag = imageProperties
+                };
+                lbi.MouseEnter += Lbi_MouseEnter;
+                lbi.MouseLeave += Lbi_MouseLeave;
+                this.DeletedFilesListBox.Items.Add(lbi);
+            }
+
+            // Override how the mouse wheel works with the listbox scrollviewer
+            ScrollViewer sv = Utilities.GetVisualChild<ScrollViewer>(this.DeletedFilesListBox);
+            if (sv != null)
+            {
+                sv.PreviewMouseWheel += Sv_PreviewMouseWheel;
+            }
+
+            this.Message.Title = String.Format("Delete {0} files(s) ", numberOfImagesToDelete.ToString());
+            this.Message.What = String.Format("Delete {0} image and/or video(s) - if they exist - marked for deletion.", numberOfImagesToDelete.ToString());
+            this.Message.Result = String.Empty;
+            this.Message.Hint = "\u2022 Restore deleted files by manually moving them ";
+
+
+            this.Message.Result += String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
+            if (deleteImageAndData == false)
+            {
+                // Case 3: Delete the images that have the delete flag set, but not their data
+                this.Message.Title += "but not their data";
+                this.Message.What += Environment.NewLine + "The data entered for them IS NOT deleted.";
+                this.Message.Result += "\u2022 A placeholder image will be shown when you try to view a deleted file.";
+                this.Message.Hint += "back to their original location." + Environment.NewLine;
+            }
+            else
+            {
+                // Case 4: Delete the images that have the delete flag set, and their data
+                this.Message.Title += "and their data";
+                this.Message.What += Environment.NewLine + "The data entered for them IS deleted as well.";
+                this.Message.Result += "\u2022 However, the data associated with those files will be permanently deleted.";
+                this.Message.Hint += "to a new sub-folder." + Environment.NewLine + "  Then add that sub-folder back to the image set." + Environment.NewLine;
+            }
+            if (numberOfImagesToDelete > Constant.ImageValues.LargeNumberOfDeletedImages)
+            {
+                this.Message.Result += String.Format("{0}\u2022 Deleting {1} files takes time. Please be patient.", Environment.NewLine, numberOfImagesToDelete.ToString());
+            }
+            this.Message.Hint += String.Format("\u2022 See Options|Preferences to manage how files in {0} are permanently deleted.", Constant.File.DeletedFilesFolder);
+        }
+
+        // When the user enters a listbox item, show the image
+        private void Lbi_MouseEnter(object sender, MouseEventArgs e)
+        {
+            ListBoxItem lbi = (sender as ListBoxItem);
+            ImageRow ir = (ImageRow)lbi.Tag;
+            this.ImageViewer.Source = ir.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing);
+            this.MouseOverMessageTextBlock.Visibility = Visibility.Collapsed;
+            this.ImageViewer.Visibility = Visibility.Visible;
+        }
+
+        // When the user leaves a listbox item, remove the image
+        private void Lbi_MouseLeave(object sender, MouseEventArgs e)
+        {
+            this.ImageViewer.Source = null;
+            this.MouseOverMessageTextBlock.Visibility = Visibility.Visible;
+            this.ImageViewer.Visibility = Visibility.Collapsed;
+        }
+
+        // Scroll one line (and thus show one image) at a time
+        // Otherwise it would scroll 3 lines at a time (the default)
+        private void Sv_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            ScrollViewer sv = sender as ScrollViewer;
+            e.Handled = true;
+            if (e.Delta > 0)
+            {
+                sv.LineUp();
+            }
+            else
+            {
+                sv.LineDown(); 
+            }
+        }
+
+
+        // Set the confirm checkbox, which enables the ok button if the data deletions are confirmed. 
+        private void ConfirmBox_Checked(object sender, RoutedEventArgs e)
+        {
+            this.OkButton.IsEnabled = (bool)this.chkboxConfirm.IsChecked;
+        }
+        
+        // Cancel button selected
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
         }
 
-        private void ConfirmBox_Checked(object sender, RoutedEventArgs e)
-        {
-            this.OkButton.IsEnabled = (bool)this.chkboxConfirm.IsChecked;
-        }
-
-        /// <summary>
-        /// Ok button selected
-        /// </summary>
+        // Ok button selected
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
+
+
     }
 }
