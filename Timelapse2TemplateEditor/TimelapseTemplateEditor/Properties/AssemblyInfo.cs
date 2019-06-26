@@ -29,7 +29,7 @@ using System.Windows;
                                               // app, or any theme specific resource dictionaries)
 )]
 
-[assembly: AssemblyVersion("2.2.2.5")]
-[assembly: AssemblyFileVersion("2.2.2.5")]
+[assembly: AssemblyVersion("2.2.2.7")]
+[assembly: AssemblyFileVersion("2.2.2.7")]
 
 [assembly: InternalsVisibleTo("Timelapse2.UnitTests")]
