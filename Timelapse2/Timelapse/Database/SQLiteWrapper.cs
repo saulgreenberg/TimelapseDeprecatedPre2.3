@@ -36,6 +36,8 @@ namespace Timelapse.Database
                 DataSource = inputFile,
                 DateTimeKind = DateTimeKind.Utc
             };
+            // Enable foreign keys
+            connectionStringBuilder.ForeignKeys = true;
             this.connectionString = connectionStringBuilder.ConnectionString;
         }
 
@@ -59,7 +61,7 @@ namespace Timelapse.Database
             query = query.Remove(query.Length - Constant.Sqlite.Comma.Length - Environment.NewLine.Length);         // remove last comma / new line and replace with );
             query += Constant.Sqlite.CloseParenthesis + Constant.Sqlite.Semicolon;
             this.ExecuteNonQuery(query);
-        }
+        } 
 
         #region Indexes: Create or Drop
         // Create an index in table tableName named index name to the column names

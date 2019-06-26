@@ -400,7 +400,7 @@ namespace Timelapse
                 List<ImageRow> filesToInsert = new List<ImageRow>();
                 TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
                 DateTime utcNow = new DateTime();
-                DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.UpdateInterval;  // so the first update check will refresh 
+                DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
 
                 // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
                 // It also occassion produces an SQLite Database locked error. 
@@ -414,8 +414,8 @@ namespace Timelapse
                     if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
                     {
                         // The image is already in the database. So skip it.
-                        // Even so, provide feedback every UpdateInterval
-                        if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
+                        // Even so, provide feedback every LoadingImageDisplayInterval
+                        if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                         {
                             folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
                             folderLoadProgress.CurrentFile = filesProcessed;
@@ -500,7 +500,7 @@ namespace Timelapse
                     // }
 
                     // Display progress on feedback after a given time interval
-                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
+                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                     {
                         // lock (folderLoadProgress) // SAULXXX Parallel.ForEach
                         // {
@@ -540,14 +540,14 @@ namespace Timelapse
                 }
 
                 utcNow = DateTime.UtcNow;
-                lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.UpdateInterval;  // so the first update check will refresh 
+                lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
                 // Second pass: Update database
                 filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 folderLoadProgress.CurrentPass = 2;
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
                     utcNow = DateTime.UtcNow;
-                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.UpdateInterval)
+                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                     { 
                         // skip reloading images to display as the user's already seen them import
                         folderLoadProgress.BitmapSource = null;

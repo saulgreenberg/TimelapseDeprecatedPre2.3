@@ -8,7 +8,9 @@ namespace Timelapse.Images
 {
     public static class BitmapUtilities
     {
-        public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        // TODO: CHECK, AS CHANGED TO ONLOAD AS DELETIONS WERE NOT WORKING
+        //public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
             Uri uri = new Uri(path);
             BitmapImage bitmap = new BitmapImage();
@@ -37,7 +39,9 @@ namespace Timelapse.Images
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.DecodePixelWidth = 1; // We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
-                bitmap.CacheOption = BitmapCacheOption.Default;
+                // TODO: CHECK, AS CHANGED TO ONLOAD AS DELETIONS WERE NOT WORKING
+                // bitmap.CacheOption = BitmapCacheOption.Default;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.UriSource = new Uri(path);
                 bitmap.EndInit();
                 bitmap.Freeze();
@@ -49,7 +53,9 @@ namespace Timelapse.Images
             }
         }
 
-        public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        // TODO: CHECK, AS CHANGED TO ONLOAD AS DELETIONS WERE NOT WORKING
+        //public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
             BitmapSource bmp = BitmapUtilities.GetBitmapFromFile(path, desiredWidth, bitmapCacheOption);
             RenderTargetBitmap target = new RenderTargetBitmap(bmp.PixelWidth, bmp.PixelHeight, bmp.DpiX, bmp.DpiY, PixelFormats.Pbgra32);

@@ -591,6 +591,7 @@ namespace Timelapse
             public const string Or = " OR ";
             public const string OrderBy = " ORDER BY ";
             public const string PragmaTableInfo = " PRAGMA TABLE_INFO ";
+            public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1";
             public const string PrimaryKey = " PRIMARY KEY ";
             public const string RenameTo = " RENAME TO ";
             public const string Select = " SELECT ";
@@ -628,7 +629,7 @@ namespace Timelapse
             public static readonly TimeSpan RenderingBackoffTime = TimeSpan.FromMilliseconds(25.0);
             public static readonly TimeSpan VideoRenderingBackoffTime = TimeSpan.FromMilliseconds(10.0);
             public static readonly TimeSpan DataGridTimerInterval = TimeSpan.FromMilliseconds(250);
-            public static readonly TimeSpan UpdateInterval = TimeSpan.FromMilliseconds(250);
+            public static readonly TimeSpan LoadingImageDisplayInterval = TimeSpan.FromMilliseconds(500);
         }
 
         public static class Time

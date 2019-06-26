@@ -68,7 +68,7 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.DetectionColumns.Conf,  Constant.Sqlite.Real),
                 new ColumnDefinition(Constant.DetectionColumns.BBox,  Constant.Sqlite.String), // Will need to parse it into new new double[4]
                 new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Constant.Sqlite.Integer), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DBTableNames.Images + " ( " + Constant.DetectionColumns.ImageID + " ) "),
+                new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DatabaseTable.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTableNames.Detections, columnDefinitions);
 
@@ -79,7 +79,7 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.ClassificationColumns.Category, Constant.Sqlite.String),
                 new ColumnDefinition(Constant.ClassificationColumns.Conf,  Constant.Sqlite.Real),
                 new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Constant.Sqlite.Integer), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTableNames.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) "),
+                new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTableNames.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTableNames.Classifications, columnDefinitions);
         }

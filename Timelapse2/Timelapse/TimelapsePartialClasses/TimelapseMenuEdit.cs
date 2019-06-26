@@ -214,7 +214,7 @@ namespace Timelapse
                     {
                         this.dataHandler.ImageCache.Current.ClearBitmap();
                     }
-                    // Second, the  cache   
+                    // Second, release the image cache   
                     this.dataHandler.ImageCache.TryInvalidate(image.ID);
                     // Third, clear images from the multiple image view so it can be moved
                     this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
