@@ -473,7 +473,7 @@ namespace Timelapse.Dialog
                 this.ApplyButton.IsEnabled = true;
                 this.CancelButton.IsEnabled = false;
                 TimelapseWindow tw = (TimelapseWindow)this.Owner;
-                tw.MaybeFileShowCountsDialog(false, this);
+                tw.MaybeFileShowCountsDialog(false, this.Owner);
             };
             backgroundWorker.RunWorkerAsync();
         }
