@@ -208,15 +208,17 @@ namespace Timelapse
                 List<long> imageIDsToDropFromDatabase = new List<long>();
                 foreach (ImageRow image in imagesToDelete)
                 {
-
+                    // We need to release the file handle to various images as otherwise we won't be able to move them
+                    // First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
                     if (currentFileID == image.ID)
                     {
-                        // if the current image being displayed is to be deleted, then clear its bitmap so it can be moved
                         this.dataHandler.ImageCache.Current.ClearBitmap();
                     }
-                    // invalidate cache so Missing placeholder will be displayed
-                    // release any handle open on the file so it can be moved
+                    // Second, the  cache   
                     this.dataHandler.ImageCache.TryInvalidate(image.ID);
+                    // Third, clear images from the multiple image view so it can be moved
+                    this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
+
                     // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
                     // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlage and ImageQuality values. 
                     // SAULXXX A good way is to put an 'image.ImageFileExists' field in, and then do various tests on that.
