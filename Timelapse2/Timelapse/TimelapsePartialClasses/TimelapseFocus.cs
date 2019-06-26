@@ -34,16 +34,15 @@ namespace Timelapse
         private void FocusSaveOn_MouseLeave(object sender, MouseEventArgs e)
         {
             IInputElement focusedElement = FocusManager.GetFocusedElement(this);
-            // I DONT THINK THIS IS NEEDED ANYMORE
-            // if (focusedElement == null ||
-            //    focusedElement is Timelapse.Images.MarkableCanvas ||
-            //    focusedElement is System.Windows.Controls.TabItem)
-            // {
-            //    // We only want to save the focus on controls
-            //    //string message = (lastControlWithFocus == null) ? "Leave: No control has focus" : "Leave: " + lastControlWithFocus.GetType().ToString();
-            //    //Debug.Print(message);
-            //    //return;
-            // }
+            if (focusedElement == null ||
+               focusedElement is Timelapse.Images.MarkableCanvas ||
+               focusedElement is System.Windows.Controls.TabItem)
+            {
+                // We only want to save the focus on controls
+                // string message = (lastControlWithFocus == null) ? "Leave: No control has focus" : "Leave: " + lastControlWithFocus.GetType().ToString();
+                // System.Diagnostics.Debug.Print(message);
+                return;
+            }
             this.lastControlWithFocus = focusedElement;
         }
 
