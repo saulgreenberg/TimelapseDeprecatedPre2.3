@@ -22,7 +22,6 @@ namespace Timelapse.Util
         }
 
         // Insert these call into the beginning of a method name with the TRACE flag set in properties
-
         [Conditional("TRACE")]
         // Option to print various failure messagesfor debugging
         public static void PrintMessage(string message)

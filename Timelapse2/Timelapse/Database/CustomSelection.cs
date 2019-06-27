@@ -14,6 +14,7 @@ namespace Timelapse.Database
     {
         public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
+        public bool ShowMissingDetections { get; set; }
 
         public Detection.DetectionSelections DetectionSelections { get; set; }
 
@@ -111,6 +112,7 @@ namespace Timelapse.Database
         public void SetRelativePathSearchTerm(string relativePath)
         {
             this.ClearCustomSearchUses();
+
             SearchTerm searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.RelativePath);
             searchTerm.DatabaseValue = relativePath;
             searchTerm.Operator = Constant.SearchTermOperator.Equal;
@@ -175,13 +177,18 @@ namespace Timelapse.Database
             }
         }
 
-        // Clear all the 'use' flags in the custom search term
+        // Clear all the 'use' flags in the custom search term and in the detections (if any)
         public void ClearCustomSearchUses()
         {
             foreach (SearchTerm searchTerm in this.SearchTerms)
             {
                 searchTerm.UseForSearching = false;
             }
+            if (GlobalReferences.DetectionsExists && this.DetectionSelections != null)
+            { 
+                this.DetectionSelections.ClearAllDetectionsUses();
+            }
+            this.ShowMissingDetections = false;
         }
 
         // Create and return the query composed from the search term list
@@ -254,7 +261,7 @@ namespace Timelapse.Database
                 where += whereForTerm;
             }
             // If no detections, return the above
-            if (this.DetectionSelections.Enabled == false)
+            if (GlobalReferences.DetectionsExists == false || this.DetectionSelections.Enabled == false)
             {
                 return where;
             }

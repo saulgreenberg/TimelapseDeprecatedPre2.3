@@ -222,7 +222,6 @@ namespace Timelapse
                 {
                     this.DeleteTheDeletedFilesFolderIfNeeded();
                 }
-
                 // Save selection state
             }
 

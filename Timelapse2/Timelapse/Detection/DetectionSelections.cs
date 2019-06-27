@@ -16,6 +16,7 @@ namespace Timelapse.Detection
                 return this.UseCategoryCategory || this.UseCategoryConfidenceThreshold || this.UseDetectionCategory || this.UseDetectionConfidenceThreshold;
             }
         }
+
         public bool UseDetectionCategory { get; set; }
         public string DetectionCategory { get; set; }
 
@@ -33,7 +34,7 @@ namespace Timelapse.Detection
         public ComparisonEnum CategoryComparison { get; set; }
         public DetectionSelections()
         {
-            this.DisableAllUses();
+            this.ClearAllDetectionsUses();
             // Set default: Greater than .8
             this.DetectionCategory = "1";
             this.DetectionConfidenceThreshold1 = 0.8;
@@ -45,7 +46,7 @@ namespace Timelapse.Detection
         }
 
         // Bulk disabling of detection selection criteria
-        public void DisableAllUses()
+        public void ClearAllDetectionsUses()
         {
             this.UseDetectionCategory = false;
             this.UseDetectionConfidenceThreshold = false;

@@ -708,6 +708,9 @@ namespace Timelapse
             // Show the File Player
             FilePlayer.Visibility = Visibility.Visible;
 
+            // Set whether detections actually exist at this point.
+            GlobalReferences.DetectionsExists = this.dataHandler.FileDatabase.DetectionsExists();
+
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;
             this.quickPasteEntries = QuickPasteOperations.QuickPasteEntriesFromXML(this.dataHandler.FileDatabase, xml);
@@ -728,6 +731,7 @@ namespace Timelapse
                 // This is heavier weight than desirable, but it's a one off.
                 this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
+
             // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 
             this.FilesSelectAndShow(mostRecentFileID, fileSelection);
 

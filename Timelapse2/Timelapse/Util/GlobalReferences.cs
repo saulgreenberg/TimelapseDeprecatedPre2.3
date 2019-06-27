@@ -11,5 +11,7 @@ namespace Timelapse.Util
         public static BusyIndicator BusyIndicator { get; set; }
 
         public static TimelapseState TimelapseState { get; set; }
+
+        public static bool DetectionsExists { get; set; }
     }
 }

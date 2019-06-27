@@ -223,8 +223,11 @@ namespace Timelapse.Database
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
+                        Stopwatch sw = new Stopwatch(); sw.Start();
                         command.CommandText = query;
-                        return command.ExecuteScalar();
+                        object result = command.ExecuteScalar();
+                        sw.Stop(); System.Diagnostics.Debug.Print("Time: " + sw.ElapsedMilliseconds.ToString() + " " + query);
+                        return result;
                     }
                 }
             }

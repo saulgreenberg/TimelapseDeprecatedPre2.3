@@ -80,6 +80,7 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
+            GlobalReferences.DetectionsExists = this.dataHandler.FileDatabase.DetectionsExists();
             this.FilesSelectAndShow(true);
             Mouse.OverrideCursor = null;
         }
@@ -383,6 +384,10 @@ namespace Timelapse
                 this.templateDatabase = null;
                 this.DataEntryControlPanel.IsVisible = false;
             }
+
+            // As we are starting afresh, no detections should now exists.
+            GlobalReferences.DetectionsExists = false;
+
             // Clear the data grid
             this.DataGrid.ItemsSource = null;
 
@@ -398,6 +403,7 @@ namespace Timelapse
             this.DataGridSelectionsTimer.Stop();
             this.lastControlWithFocus = null;
             this.QuickPasteWindowTerminate();
+
         }
 
         // Exit Timelapse

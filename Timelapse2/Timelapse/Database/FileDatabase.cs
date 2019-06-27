@@ -868,9 +868,13 @@ namespace Timelapse.Database
                 useStandardQuery = true;
             }
             else
-            { 
-            this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
-                if (this.CustomSelection.DetectionSelections.Enabled == true)
+            {
+                this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
+                if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+                {
+                    query = "SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
+                }
+                else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
                     query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
@@ -889,10 +893,13 @@ namespace Timelapse.Database
                 query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             }
 
-            string conditionalExpression = this.GetFilesConditionalExpression(selection);
-            if (String.IsNullOrEmpty(conditionalExpression) == false)
-            {
-                query += conditionalExpression;
+            if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
+            { 
+                string conditionalExpression = this.GetFilesConditionalExpression(selection);
+                if (String.IsNullOrEmpty(conditionalExpression) == false)
+                {
+                 query += conditionalExpression;
+                }
             }
 
             // Sort by primary and secondary sort criteria if an image set is actually initialized (i.e., not null)
@@ -960,7 +967,7 @@ namespace Timelapse.Database
                 }
             }
 
-            System.Diagnostics.Debug.Print("Doit: " + query);
+           //  System.Diagnostics.Debug.Print("Doit: " + query);
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -1096,31 +1103,40 @@ namespace Timelapse.Database
         public int GetFileCount(FileSelectionEnum fileSelection)
         {
             string query = String.Empty;
-            if (this.CustomSelection.DetectionSelections.Enabled == true)
+            bool skipWhere = false;
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+            {
+                query = "Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
+                skipWhere = true;
+            }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true )
             {
                 // query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
                 query = Constant.Sqlite.SelectCountStarFrom +
                     Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
                     Constant.DBTableNames.Detections +
                     Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
-                     Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
-                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
-            }
+                    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+            } 
             else
             {
                 query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             }
 
-            string where = this.GetFilesConditionalExpression(fileSelection);
-            if (!String.IsNullOrEmpty(where))
+            if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
             {
-                query += where;
+                string where = this.GetFilesConditionalExpression(fileSelection);
+                if (!String.IsNullOrEmpty(where))
+                {
+                    query += where;
+                }
+                if (fileSelection == FileSelectionEnum.Custom && this.CustomSelection.DetectionSelections.Enabled == true)
+                {
+                    query += Constant.Sqlite.CloseParenthesis;
+                }
             }
-            if (this.CustomSelection.DetectionSelections.Enabled == true)
-            {
-                query += Constant.Sqlite.CloseParenthesis;
-            }
-            System.Diagnostics.Debug.Print("Count: " + query);
+            // System.Diagnostics.Debug.Print("Count: " + query);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion
@@ -1143,6 +1159,7 @@ namespace Timelapse.Database
         }
         private string GetFilesConditionalExpression(FileSelectionEnum selection)
         {
+            // System.Diagnostics.Debug.Print(selection.ToString());
             switch (selection)
             {
                 case FileSelectionEnum.All:
@@ -1178,6 +1195,8 @@ namespace Timelapse.Database
             this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePath);
             this.Database.DropIndex(Constant.DatabaseValues.IndexFile);
         }
+
+        
 
         #region Update Files
         /// <summary>
@@ -1852,7 +1871,7 @@ namespace Timelapse.Database
                     this.classificationsDataTable = null;
 
                     sw.Reset();
-                    sw.Start();
+                     sw.Start();
                     DetectionDatabases.PopulateTables(detector, this, this.Database);
                     sw.Stop();
                     System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
@@ -2001,6 +2020,10 @@ namespace Timelapse.Database
                 // Should never really get here, but just in case.
                 return String.Empty;
             }
+        }
+        public bool DetectionsExists()
+        {
+            return this.Database.TableExists(Constant.DBTableNames.Detections);
         }
         #endregion
     }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -65,10 +66,13 @@ namespace Timelapse.Dialog
             countTimer.Tick += CountTimer_Tick;
 
             // Detections-specific
-            this.DetectionSelections = detectionSelections;
-            comparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
-            comparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
-            comparisonDictionary.Add(ComparisonEnum.Between, Between); 
+            if (GlobalReferences.DetectionsExists)
+            {
+                this.DetectionSelections = detectionSelections;
+                comparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
+                comparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
+                comparisonDictionary.Add(ComparisonEnum.Between, Between);
+            }
         }
 
         // When the window is loaded, add SearchTerm controls to it
@@ -86,31 +90,44 @@ namespace Timelapse.Dialog
             this.DetectionRangeType.Items.Add(GreaterThan);
 
             // Set the state of the detections to the last used ones (or to its defaults)
-            this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
-            this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
-            this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
-
-            this.DetectionRangeType.SelectedItem = this.comparisonDictionary[this.DetectionSelections.DetectionComparison];
-            this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
-            this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
-
-            // Put Detection categories in as human-readable labels and set it to the last used one.
-            List<string> labels = this.database.GetDetectionLabels();
-            foreach (string label in labels)
+            if (GlobalReferences.DetectionsExists)
             {
-                this.DetectionCategoryComboBox.Items.Add(label);
+                this.DetectionGroupBox.Visibility = Visibility.Visible;
+                this.ShowMissingDetectionsCheckbox.Visibility = Visibility.Visible;
+                this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
+                this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
+                this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
+                this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+
+                this.DetectionRangeType.SelectedItem = this.comparisonDictionary[this.DetectionSelections.DetectionComparison];
+                this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
+                this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
+
+                // Put Detection categories in as human-readable labels and set it to the last used one.
+                List<string> labels = this.database.GetDetectionLabels();
+                foreach (string label in labels)
+                {
+                    this.DetectionCategoryComboBox.Items.Add(label);
+                }
+                this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+
+                this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
+                this.SetDetectionSpinnerEnable();
             }
-            this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-
-            this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
-            this.SetDetectionSpinnerEnable();
-
+            else
+            {
+                this.DetectionGroupBox.Visibility = Visibility.Collapsed;
+                this.ShowMissingDetectionsCheckbox.Visibility = Visibility.Collapsed;
+            }
             this.dontInvoke = false;
             this.dontCount = false;
-            this.SetDetectionCriteria();
+            if (GlobalReferences.DetectionsExists)
+            { 
+                this.SetDetectionCriteria();
+                this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
+                this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
+            }
             this.InitiateShowCountsOfMatchingFiles();
-            this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
 
             // Selection-specific
             this.dontUpdate = true;
@@ -507,13 +524,16 @@ namespace Timelapse.Dialog
         }
 
         // When this button is pressed, all the search terms checkboxes are cleared, which is equivalent to showing all images
-        private void ShowAllButton_Click(object sender, RoutedEventArgs e)
+        private void ResetToAllImagesButton_Click(object sender, RoutedEventArgs e)
         {
             for (int row = 1; row <= this.database.CustomSelection.SearchTerms.Count; row++)
             {
                 CheckBox select = this.GetGridElement<CheckBox>(CustomSelection.SelectColumn, row);
                 select.IsChecked = false;
             }
+            this.UseDetectionCategoryCheckbox.IsChecked = false;
+            this.UseDetectionConfidenceCheckbox.IsChecked = false;
+            this.ShowMissingDetectionsCheckbox.IsChecked = false;
         }
 
         // Value (UtcOffset): we need to construct a string TimeSpan from it
@@ -608,7 +628,10 @@ namespace Timelapse.Dialog
                 lastExpression = false;
             }
             this.InitiateShowCountsOfMatchingFiles();
-            this.ShowAll.IsEnabled = lastExpression == false;
+            this.ResetToAllImagesButton.IsEnabled = (lastExpression == false ||
+                (bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
+                (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
+                (bool)this.UseDetectionCategoryCheckbox.IsChecked);
         }
         #endregion
 
@@ -681,6 +704,17 @@ namespace Timelapse.Dialog
             }
             this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
             this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+
+            this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
+            this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White ;
+
+            this.DetectionGroupBox.IsEnabled = !(bool)this.database.CustomSelection.ShowMissingDetections;
+            this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
+
+            if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
+                (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
+                (bool)this.UseDetectionCategoryCheckbox.IsChecked)
+                this.ResetToAllImagesButton.IsEnabled = true;
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -798,7 +832,10 @@ namespace Timelapse.Dialog
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
-            this.SetDetectionCriteria();
+            if (GlobalReferences.DetectionsExists)
+            { 
+                this.SetDetectionCriteria();
+            }
             this.DialogResult = true;
         }
 
@@ -808,5 +845,12 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
+
+        private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            this.database.CustomSelection.ShowMissingDetections = (bool) ShowMissingDetectionsCheckbox.IsChecked;
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
     }
 }

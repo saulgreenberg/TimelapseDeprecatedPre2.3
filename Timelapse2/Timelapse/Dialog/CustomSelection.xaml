@@ -22,9 +22,19 @@
                             Result="Only those images and videos matching your search criteria will be displayed."
                             Hint="Glob expressions are case sensitive and allow wildcards as follows:&#10;&#x2022; * matches any number of characters and ? matches any single character&#10;&#x2022; [abc] matches one of the indicated characters; [a-z] matches one charecter in the range of indicated characters. "
                             ShowExplanationVisibility="True"/>
- 
+        <DockPanel DockPanel.Dock="Bottom">
+            <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
+            <Button Name="ResetToAllImagesButton" Content="_Reset to All Images" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="10,0,0,0"  Padding="10" Click="ResetToAllImagesButton_Click" IsEnabled="False"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Name="QueryMatches" HorizontalAlignment="Left"  Margin="10,5,0,5" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  FontWeight="DemiBold" FontSize="12"><Run Text="0  "/></TextBlock>
+                <TextBlock HorizontalAlignment="Left"  Margin="0,5,0,5" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  FontSize="12"><Run Text=" files match your query "/></TextBlock>
+                <Button Name="CancelButton" Grid.Column="0" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+                <Button Name="OkButton" Grid.Column="1" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
+            </StackPanel>
+        </DockPanel>
         <!--Detection Panel-->
-        <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto" DockPanel.Dock="Top" Margin="10,5,5,0">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+        <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
             <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="10,0,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -57,7 +67,9 @@
                 </StackPanel>
             </Grid>
         </GroupBox>
+            <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no detection data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
 
+        </StackPanel>
         <!--Selection Panel-->
         <GroupBox Name="SelectionGroupBox" Header="Selections" FontWeight="Bold" Height="Auto" DockPanel.Dock="Bottom" Margin="10,15,5,0">
             <DockPanel>
@@ -79,16 +91,6 @@
                     <Rectangle Fill="#FF868686" Height="1" Margin="5"></Rectangle>
                 </StackPanel>
 
-                <DockPanel DockPanel.Dock="Bottom">
-                    <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
-                    <Button Name="ShowAll" Content="_Reset to All Images" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="10,0,0,0"  Padding="10" Click="ShowAllButton_Click" IsEnabled="False"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <TextBlock Name="QueryMatches" HorizontalAlignment="Left"  Margin="10,5,0,5" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  FontWeight="DemiBold" FontSize="12"><Run Text="0  "/></TextBlock>
-                        <TextBlock HorizontalAlignment="Left"  Margin="0,5,0,5" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"  FontSize="12"><Run Text=" files match your query "/></TextBlock>
-                        <Button Name="CancelButton" Grid.Column="0" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-                        <Button Name="OkButton" Grid.Column="1" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
-                    </StackPanel>
-                </DockPanel>
                 <ScrollViewer>
                     <Grid Name="SearchTerms" Width="Auto" Height="Auto" DockPanel.Dock="Bottom">
                         <Grid.ColumnDefinitions>
@@ -110,5 +112,7 @@
                 </ScrollViewer>
             </DockPanel>
         </GroupBox>
+
+  
     </DockPanel>
 </Window>
