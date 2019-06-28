@@ -756,8 +756,8 @@ namespace Timelapse
 
         public static class DetectionValues
         {
-            public const string NoDetectionCategory = "-1";
-            public const string NoDetectionLabel = "Nothing detected";
+            public const string NoDetectionCategory = "0";
+            public const string NoDetectionLabel = "Empty";
         }
 
         public static class ClassificationColumns

@@ -121,17 +121,14 @@ namespace Timelapse.Detection
             // DetectionCategories:  Populate
             if (detector.detection_categories != null || detector.detection_categories.Count > 0)
             {
+                bool emptyCategoryExists = false;
                 insertionStatements = new List<List<ColumnTuple>>();
-                // Include the category '0' for no detections.
-                columnsToUpdate = new List<ColumnTuple>
-                {
-                     new ColumnTuple(Constant.DetectionCategoriesColumns.Category, Constant.DetectionValues.NoDetectionCategory),
-                     new ColumnTuple(Constant.DetectionCategoriesColumns.Label, Constant.DetectionValues.NoDetectionLabel)
-                };
-                insertionStatements.Add(columnsToUpdate);
-
                 foreach (KeyValuePair<string, string> detection_category in detector.detection_categories)
                 {
+                    if (detection_category.Key == Constant.DetectionValues.NoDetectionCategory)
+                    {
+                        emptyCategoryExists = true;
+                    }
                     // Populate each detection category row
                     columnsToUpdate = new List<ColumnTuple>
                     {
@@ -139,6 +136,17 @@ namespace Timelapse.Detection
                         new ColumnTuple(Constant.DetectionCategoriesColumns.Label, detection_category.Value)
                     };
                     insertionStatements.Add(columnsToUpdate);
+                }
+                if (emptyCategoryExists == false)
+                {
+                    // If its not defined, include the category '0' for Empty i.e., no detections.
+                    insertionStatements = new List<List<ColumnTuple>>();
+                    columnsToUpdate = new List<ColumnTuple>
+                    {
+                        new ColumnTuple(Constant.DetectionCategoriesColumns.Category, Constant.DetectionValues.NoDetectionCategory),
+                        new ColumnTuple(Constant.DetectionCategoriesColumns.Label, Constant.DetectionValues.NoDetectionLabel)
+                    };
+                    insertionStatements.Insert(0, columnsToUpdate);
                 }
                 detectionDB.Insert(Constant.DBTableNames.DetectionCategories, insertionStatements);
             }
