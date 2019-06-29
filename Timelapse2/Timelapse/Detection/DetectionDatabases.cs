@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Timelapse.Database;
 
 namespace Timelapse.Detection
@@ -12,7 +10,6 @@ namespace Timelapse.Detection
     public static class DetectionDatabases
     {
         // Create all Detection Database Tables
-        // DETECTION: CHECK IF TABLES EXIST FIRST. IF THEY DO, CLEAR ALL ENTRIES.
         public static void CreateOrRecreateTablesAndColumns(SQLiteWrapper database)
         {
             List<ColumnDefinition> columnDefinitions;
@@ -97,7 +94,7 @@ namespace Timelapse.Detection
         }
 
         // Populate the various Detection Database Tables from the detection data structure.
-        public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB)
+        public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string folderTruncationPrefix)
         {
             // Updating many rows is made hugely more efficient if we create an index for File and Relative Path
             // as otherwise each update is in linear time to the table rows vs log time. 
@@ -140,7 +137,6 @@ namespace Timelapse.Detection
                 if (emptyCategoryExists == false)
                 {
                     // If its not defined, include the category '0' for Empty i.e., no detections.
-                    insertionStatements = new List<List<ColumnTuple>>();
                     columnsToUpdate = new List<ColumnTuple>
                     {
                         new ColumnTuple(Constant.DetectionCategoriesColumns.Category, Constant.DetectionValues.NoDetectionCategory),
@@ -190,19 +186,42 @@ namespace Timelapse.Detection
                 int foocount = 0;
                 foreach (image image in detector.images)
                 {
-                    // Find the id of the file matching the File and Relative Path of the detected image
-                    // If we can't we just skip it and try again for the next detected image
+                    // The truncation prefix is a prefix of the folder path that should be removed from the file path (unless its empty, of course)
+                    // As well, detections whose path is in the prefix should not be read in, as they are outside of this sub-folder
+                    // It occurs when the actual images were in a subfolder, where that subfolder was read in separately as a datafile
+                    // That is, the .tdb file was located in an image subfolder, rather than in the root folder where the detections were done
+                    string imageFile = String.Empty;
+                    if (folderTruncationPrefix == String.Empty)
+                    {
+                        imageFile = image.file;
+                    }
+                    else
+                    {
+                        if (image.file.StartsWith(folderTruncationPrefix) == false)
+                        {
+                            // Skip images that start with the truncation string, as these are outside of the image set
+                            // System.Diagnostics.Debug.Print("Skipping: " + image.file);
+                            continue;
+                        }
+                        else
+                        {
+                            // Remove the trunctation prefex from the file path 
+                            imageFile = image.file.Substring(folderTruncationPrefix.Length);
+                            //System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
+                        }
+                    }
                     string queryFileRelativePath = String.Format("{0} = '{1}' AND {2} = '{3}'",
-                         Constant.DatabaseColumn.File, 
-                         Path.GetFileName(image.file),
+                         Constant.DatabaseColumn.File,
+                         Path.GetFileName(imageFile),
                          Constant.DatabaseColumn.RelativePath,
-                         Path.GetDirectoryName(image.file));
+                         Path.GetDirectoryName(imageFile));
+
                     DataRow[] rows = dataTable.Select(queryFileRelativePath);
                     if (rows.Count() == 0)
                     {
                         // Couldn't find the image. This could happen if that image and its data was deleted.
                         // This isn't a bug, as all we would do is skip that image.
-                        System.Diagnostics.Debug.Print("Could not find: " + image.file);
+                        // System.Diagnostics.Debug.Print("Could not find: " + image.file);
                         continue;
                     }
 

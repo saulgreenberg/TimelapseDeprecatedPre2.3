@@ -36,9 +36,7 @@ namespace Timelapse.Detection
             this.detection_categories = new Dictionary<string, string>
             {
                 { Constant.DetectionValues.NoDetectionCategory, Constant.DetectionValues.NoDetectionLabel },
-                { "1", "animal" },
                 { "2", "person" },
-                { "3", "group" },
                 { "4", "vehicle" }
             };
         }
@@ -48,10 +46,7 @@ namespace Timelapse.Detection
         {
             this.classification_categories = new Dictionary<string, string>
             {
-                { "1", "elk" },
-                { "2", "wolf" },
-                { "3", "bear" },
-                { "6", "moose" }
+                { Constant.DetectionValues.NoDetectionCategory, Constant.DetectionValues.NoDetectionLabel },
             };
         }
     }

@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Timelapse.Detection;
+using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -525,7 +526,7 @@ namespace Timelapse.Database
                 : lowestVersionNumber;
             string timelapseVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
 
-             // Step 1. Check the FileTable for missing columns
+            // Step 1. Check the FileTable for missing columns
             // RelativePath column (if missing) needs to be added 
             if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath) == false)
             {
@@ -889,16 +890,16 @@ namespace Timelapse.Database
             }
 
             if (useStandardQuery)
-            { 
+            {
                 query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
             }
 
             if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
-            { 
+            {
                 string conditionalExpression = this.GetFilesConditionalExpression(selection);
                 if (String.IsNullOrEmpty(conditionalExpression) == false)
                 {
-                 query += conditionalExpression;
+                    query += conditionalExpression;
                 }
             }
 
@@ -967,7 +968,7 @@ namespace Timelapse.Database
                 }
             }
 
-           //  System.Diagnostics.Debug.Print("Doit: " + query);
+            //  System.Diagnostics.Debug.Print("Doit: " + query);
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -1109,7 +1110,7 @@ namespace Timelapse.Database
                 query = "Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
                 skipWhere = true;
             }
-            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true )
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 // query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
                 query = Constant.Sqlite.SelectCountStarFrom +
@@ -1118,7 +1119,7 @@ namespace Timelapse.Database
                     Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
                     Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
-            } 
+            }
             else
             {
                 query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
@@ -1196,7 +1197,7 @@ namespace Timelapse.Database
             this.Database.DropIndex(Constant.DatabaseValues.IndexFile);
         }
 
-        
+
 
         #region Update Files
         /// <summary>
@@ -1686,7 +1687,7 @@ namespace Timelapse.Database
         public Dictionary<string, string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
         {
             Dictionary<string, string> distinctValues = new Dictionary<string, string>();
-            foreach (ImageRow row in this.FileTable) 
+            foreach (ImageRow row in this.FileTable)
             {
                 string value = row.GetValueDatabaseString(dataLabel);
                 if (value.Length < minimumNumberOfRequiredCharacters)
@@ -1840,8 +1841,8 @@ namespace Timelapse.Database
                 return new ColumnDefinition(control.DataLabel, "REAL", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.ControlDefault.DateTimeValue.Offset));
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
-            { 
-                 return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty);
+            {
+                return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty);
             }
             return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
         }
@@ -1858,10 +1859,117 @@ namespace Timelapse.Database
             {
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
+
                 using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
                 {
                     sw.Stop();
                     System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
+                    sw.Reset();
+                    // Its possible that the folder where the .tdb file is located is either:
+                    // - the same as the root folder where the detections were done 
+                    // - a subfolder somewhere beneath the root folder.
+                    // If a subfolder, then the file paths for the detections will not be valid.
+                    // The code below examines one of the existing images and compares it to every folder path in the detection file, where
+                    // it tries to find the portion of the path that is 'above' the current folder. Because this could be ambiguous, it creates a list
+                    // of possible folders where the sub-folder could have originally been located in, and asks the user to disambiguate between them
+                    // For example, consider detections done on these folders:
+                    //  A/B/C/X/Y
+                    //  A/B/D/Y/Z
+                    //  A/B/S/T
+                    // If the Y/Z folder from A/B/C was moved to (say) myFolder and the .tdb located there, 
+                    // the two possible locations would be A/B/C/Y/Z and A/B/D/Y/Z
+                    // The code below would present those two to the user and ask the user to choose which one is the correct one.
+                    // Later, any detecton image not matching A/B/C will be ignored, and for the ones matching A/B/C will be trimmed off the path
+                    string pathPrefixToTruncateFromPaths = String.Empty;
+                    string folderpath;
+                    if (detector.images.Count <= 0)
+                    {
+                        // No point continuing as there are no detector images
+                        return false;
+                    }
+
+                    // Get an example file for comparing its path against the detector paths
+                    int fileindex = this.GetCurrentOrNextDisplayableFile(0);
+                    if (fileindex < 0)
+                    {
+                        // No point continuing as there are no files to process
+                        return false;
+                    }
+
+                    // First pass. Get all the unique folder paths from the detector images
+                    sw.Start();
+                    string imageFilePath = this.FileTable[fileindex].RelativePath;
+                    string imageFileName = this.FileTable[fileindex].File;
+                    SortedSet<string> folders = new SortedSet<string>();
+                    foreach (image image in detector.images)
+                    {
+                        folderpath = Path.GetDirectoryName(image.file);
+                        if (folderpath != String.Empty)
+                        {
+                            folderpath += "\\";
+                        }
+                        if (folders.Contains(folderpath) == false)
+                        {
+                            folders.Add(folderpath);
+                        }
+                    }
+
+                    // Add a closing slash onto the imageFilePath to terminate any matches
+                    // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
+                    if (imageFilePath != String.Empty)
+                    {
+                        imageFilePath += "\\";
+                    }
+
+                    // Second Pass. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
+                    // and create a 
+                    int shortestIndex = int.MaxValue;
+                    int currentIndex;
+                    string highestFoldermatch = String.Empty;
+                    foreach (string folder in folders)
+                    {
+                        currentIndex = folder.IndexOf(imageFilePath);
+                        if ((currentIndex < shortestIndex) && (currentIndex >= 0))
+                        {
+                            shortestIndex = folder.IndexOf(imageFilePath);
+                            highestFoldermatch = folder;
+                        }
+                    }
+                    currentIndex = highestFoldermatch.IndexOf(imageFilePath);
+                    pathPrefixToTruncateFromPaths = highestFoldermatch.Substring(0, currentIndex);
+                    List<string> candidateFolders = new List<string>();
+                    foreach (string folder in folders)
+                    {
+                        if (folder.IndexOf(imageFilePath) != -1)
+                        {
+                            candidateFolders.Add(folder);
+                        }
+                    }
+
+                    // Third step. If there is more than one candidate folder that may have contained the image set, 
+                    // ask the user to disambiguate which one it is.
+                    if (candidateFolders.Count > 1)
+                    {
+                        ChooseDetectorFilePath chooseDetectorFilePath = new ChooseDetectorFilePath(candidateFolders, pathPrefixToTruncateFromPaths, Path.Combine(imageFilePath, imageFileName), GlobalReferences.MainWindow);
+                        if (chooseDetectorFilePath.ShowDialog() == true)
+                        {
+                            currentIndex = chooseDetectorFilePath.SelectedFolder.IndexOf(imageFilePath);
+                            pathPrefixToTruncateFromPaths = chooseDetectorFilePath.SelectedFolder.Substring(0, currentIndex).Replace('\\', '/');
+                        }
+                        else
+                        {
+                            // The user has aborted detections, likely because they didn't know which folder to choose
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // There is only one or 0 candidate folders, so we know what the path Prefix should be.
+                        pathPrefixToTruncateFromPaths = (candidateFolders.Count == 1) ? candidateFolders[0] : String.Empty;
+                    }
+                    sw.Stop();
+                    System.Diagnostics.Debug.Print("Dealing with truncations: " + sw.ElapsedMilliseconds.ToString());
+                    // END TEST STUFF FOR FINDING CORRECT SUBFOLDER
 
                     // If detection population was previously done in this session, resetting these tables to null 
                     // will force reading the new values into them
@@ -1871,8 +1979,8 @@ namespace Timelapse.Database
                     this.classificationsDataTable = null;
 
                     sw.Reset();
-                     sw.Start();
-                    DetectionDatabases.PopulateTables(detector, this, this.Database);
+                    sw.Start();
+                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixToTruncateFromPaths);
                     sw.Stop();
                     System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
                     return true;
@@ -2023,7 +2131,7 @@ namespace Timelapse.Database
         }
         public bool DetectionsExists()
         {
-            return this.Database.TableExists(Constant.DBTableNames.Detections);
+            return this.Database.TableExistsAndNotEmpty(Constant.DBTableNames.Detections);
         }
         #endregion
     }

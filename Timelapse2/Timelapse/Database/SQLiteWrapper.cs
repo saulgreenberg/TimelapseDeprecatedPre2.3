@@ -1061,6 +1061,19 @@ namespace Timelapse.Database
             DataTable datatable = this.GetDataTableFromSelect(query);
             return datatable.Rows.Count != 0;
         }
+
+        public bool TableExistsAndNotEmpty(string tableName)
+        {
+            // DETECTIONS: Move statements into constants
+            string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
+            DataTable datatable = this.GetDataTableFromSelect(query);
+            if (datatable.Rows.Count == 0)
+            {
+                return false;
+            }
+            query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
+            return (this.GetCountFromSelect(query) != 0);
+        }
         #endregion
     }
 }
