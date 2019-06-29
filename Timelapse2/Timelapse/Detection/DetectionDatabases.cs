@@ -94,7 +94,7 @@ namespace Timelapse.Detection
         }
 
         // Populate the various Detection Database Tables from the detection data structure.
-        public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string folderTruncationPrefix)
+        public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string pathPrefixForTruncation)
         {
             // Updating many rows is made hugely more efficient if we create an index for File and Relative Path
             // as otherwise each update is in linear time to the table rows vs log time. 
@@ -191,13 +191,13 @@ namespace Timelapse.Detection
                     // It occurs when the actual images were in a subfolder, where that subfolder was read in separately as a datafile
                     // That is, the .tdb file was located in an image subfolder, rather than in the root folder where the detections were done
                     string imageFile = String.Empty;
-                    if (folderTruncationPrefix == String.Empty)
+                    if (pathPrefixForTruncation == String.Empty)
                     {
                         imageFile = image.file;
                     }
                     else
                     {
-                        if (image.file.StartsWith(folderTruncationPrefix) == false)
+                        if (image.file.StartsWith(pathPrefixForTruncation) == false)
                         {
                             // Skip images that start with the truncation string, as these are outside of the image set
                             // System.Diagnostics.Debug.Print("Skipping: " + image.file);
@@ -206,7 +206,7 @@ namespace Timelapse.Detection
                         else
                         {
                             // Remove the trunctation prefex from the file path 
-                            imageFile = image.file.Substring(folderTruncationPrefix.Length);
+                            imageFile = image.file.Substring(pathPrefixForTruncation.Length);
                             //System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
                         }
                     }

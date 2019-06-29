@@ -1865,111 +1865,7 @@ namespace Timelapse.Database
                     sw.Stop();
                     System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
                     sw.Reset();
-                    // Its possible that the folder where the .tdb file is located is either:
-                    // - the same as the root folder where the detections were done 
-                    // - a subfolder somewhere beneath the root folder.
-                    // If a subfolder, then the file paths for the detections will not be valid.
-                    // The code below examines one of the existing images and compares it to every folder path in the detection file, where
-                    // it tries to find the portion of the path that is 'above' the current folder. Because this could be ambiguous, it creates a list
-                    // of possible folders where the sub-folder could have originally been located in, and asks the user to disambiguate between them
-                    // For example, consider detections done on these folders:
-                    //  A/B/C/X/Y
-                    //  A/B/D/Y/Z
-                    //  A/B/S/T
-                    // If the Y/Z folder from A/B/C was moved to (say) myFolder and the .tdb located there, 
-                    // the two possible locations would be A/B/C/Y/Z and A/B/D/Y/Z
-                    // The code below would present those two to the user and ask the user to choose which one is the correct one.
-                    // Later, any detecton image not matching A/B/C will be ignored, and for the ones matching A/B/C will be trimmed off the path
-                    string pathPrefixToTruncateFromPaths = String.Empty;
-                    string folderpath;
-                    if (detector.images.Count <= 0)
-                    {
-                        // No point continuing as there are no detector images
-                        return false;
-                    }
-
-                    // Get an example file for comparing its path against the detector paths
-                    int fileindex = this.GetCurrentOrNextDisplayableFile(0);
-                    if (fileindex < 0)
-                    {
-                        // No point continuing as there are no files to process
-                        return false;
-                    }
-
-                    // First pass. Get all the unique folder paths from the detector images
-                    sw.Start();
-                    string imageFilePath = this.FileTable[fileindex].RelativePath;
-                    string imageFileName = this.FileTable[fileindex].File;
-                    SortedSet<string> folders = new SortedSet<string>();
-                    foreach (image image in detector.images)
-                    {
-                        folderpath = Path.GetDirectoryName(image.file);
-                        if (folderpath != String.Empty)
-                        {
-                            folderpath += "\\";
-                        }
-                        if (folders.Contains(folderpath) == false)
-                        {
-                            folders.Add(folderpath);
-                        }
-                    }
-
-                    // Add a closing slash onto the imageFilePath to terminate any matches
-                    // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
-                    if (imageFilePath != String.Empty)
-                    {
-                        imageFilePath += "\\";
-                    }
-
-                    // Second Pass. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
-                    // and create a 
-                    int shortestIndex = int.MaxValue;
-                    int currentIndex;
-                    string highestFoldermatch = String.Empty;
-                    foreach (string folder in folders)
-                    {
-                        currentIndex = folder.IndexOf(imageFilePath);
-                        if ((currentIndex < shortestIndex) && (currentIndex >= 0))
-                        {
-                            shortestIndex = folder.IndexOf(imageFilePath);
-                            highestFoldermatch = folder;
-                        }
-                    }
-                    currentIndex = highestFoldermatch.IndexOf(imageFilePath);
-                    pathPrefixToTruncateFromPaths = highestFoldermatch.Substring(0, currentIndex);
-                    List<string> candidateFolders = new List<string>();
-                    foreach (string folder in folders)
-                    {
-                        if (folder.IndexOf(imageFilePath) != -1)
-                        {
-                            candidateFolders.Add(folder);
-                        }
-                    }
-
-                    // Third step. If there is more than one candidate folder that may have contained the image set, 
-                    // ask the user to disambiguate which one it is.
-                    if (candidateFolders.Count > 1)
-                    {
-                        ChooseDetectorFilePath chooseDetectorFilePath = new ChooseDetectorFilePath(candidateFolders, pathPrefixToTruncateFromPaths, Path.Combine(imageFilePath, imageFileName), GlobalReferences.MainWindow);
-                        if (chooseDetectorFilePath.ShowDialog() == true)
-                        {
-                            currentIndex = chooseDetectorFilePath.SelectedFolder.IndexOf(imageFilePath);
-                            pathPrefixToTruncateFromPaths = chooseDetectorFilePath.SelectedFolder.Substring(0, currentIndex).Replace('\\', '/');
-                        }
-                        else
-                        {
-                            // The user has aborted detections, likely because they didn't know which folder to choose
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        // There is only one or 0 candidate folders, so we know what the path Prefix should be.
-                        pathPrefixToTruncateFromPaths = (candidateFolders.Count == 1) ? candidateFolders[0] : String.Empty;
-                    }
-                    sw.Stop();
-                    System.Diagnostics.Debug.Print("Dealing with truncations: " + sw.ElapsedMilliseconds.ToString());
-                    // END TEST STUFF FOR FINDING CORRECT SUBFOLDER
+ 
 
                     // If detection population was previously done in this session, resetting these tables to null 
                     // will force reading the new values into them
@@ -1980,7 +1876,11 @@ namespace Timelapse.Database
 
                     sw.Reset();
                     sw.Start();
-                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixToTruncateFromPaths);
+                    if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                    {
+                        return false;
+                    };
+                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
                     sw.Stop();
                     System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
                     return true;
@@ -1991,6 +1891,112 @@ namespace Timelapse.Database
                 System.Diagnostics.Debug.Print("Could not populate detection data");
                 return false;
             }
+        }
+
+        // Its possible that the folder where the .tdb file is located is either:
+        // - the same as the root folder where the detections were done 
+        // - a subfolder somewhere beneath the root folder.
+        // If a subfolder, then the file paths for the detections will not be valid.
+        // The code below examines one of the existing images and compares it to every folder path in the detection file, where
+        // it tries to find the portion of the path that is 'above' the current folder. Because this could be ambiguous, it creates a list
+        // of possible folders where the sub-folder could have originally been located in, and asks the user to disambiguate between them
+        // For example, consider detections done on these folders:
+        //  A/B/C/X/Y
+        //  A/B/D/Y/Z
+        //  A/B/S/T
+        // If the Y/Z folder from A/B/C was moved to (say) myFolder and the .tdb located there, 
+        // the two possible locations would be A/B/C/Y/Z and A/B/D/Y/Z
+        // The code below would present those two to the user and ask the user to choose which one is the correct one.
+        // Later, any detecton image not matching A/B/C will be ignored, and for the ones matching A/B/C will be trimmed off the path
+        private bool TryGetPathPrefixForTruncation(Detector detector, out string pathPrefixForTruncation)
+        {
+            pathPrefixForTruncation = String.Empty;
+            string folderpath;
+            if (detector.images.Count <= 0)
+            {
+                // No point continuing as there are no detector images
+                return false;
+            }
+
+            // Get an example file for comparing its path against the detector paths
+            int fileindex = this.GetCurrentOrNextDisplayableFile(0);
+            if (fileindex < 0)
+            {
+                // No point continuing as there are no files to process
+                return false;
+            }
+
+            // First pass. Get all the unique folder paths from the detector images
+            string imageFilePath = this.FileTable[fileindex].RelativePath;
+            string imageFileName = this.FileTable[fileindex].File;
+            SortedSet<string> folders = new SortedSet<string>();
+            foreach (image image in detector.images)
+            {
+                folderpath = Path.GetDirectoryName(image.file);
+                if (folderpath != String.Empty)
+                {
+                    folderpath += "\\";
+                }
+                if (folders.Contains(folderpath) == false)
+                {
+                    folders.Add(folderpath);
+                }
+            }
+
+            // Add a closing slash onto the imageFilePath to terminate any matches
+            // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
+            if (imageFilePath != String.Empty)
+            {
+                imageFilePath += "\\";
+            }
+
+            // Second Pass. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
+            // and create a 
+            int shortestIndex = int.MaxValue;
+            int currentIndex;
+            string highestFoldermatch = String.Empty;
+            foreach (string folder in folders)
+            {
+                currentIndex = folder.IndexOf(imageFilePath);
+                if ((currentIndex < shortestIndex) && (currentIndex >= 0))
+                {
+                    shortestIndex = folder.IndexOf(imageFilePath);
+                    highestFoldermatch = folder;
+                }
+            }
+            currentIndex = highestFoldermatch.IndexOf(imageFilePath);
+            pathPrefixForTruncation = highestFoldermatch.Substring(0, currentIndex);
+            List<string> candidateFolders = new List<string>();
+            foreach (string folder in folders)
+            {
+                if (folder.IndexOf(imageFilePath) != -1)
+                {
+                    candidateFolders.Add(folder);
+                }
+            }
+
+            // Third step. If there is more than one candidate folder that may have contained the image set, 
+            // ask the user to disambiguate which one it is.
+            if (candidateFolders.Count > 1)
+            {
+                ChooseDetectorFilePath chooseDetectorFilePath = new ChooseDetectorFilePath(candidateFolders, pathPrefixForTruncation, Path.Combine(imageFilePath, imageFileName), GlobalReferences.MainWindow);
+                if (chooseDetectorFilePath.ShowDialog() == true)
+                {
+                    currentIndex = chooseDetectorFilePath.SelectedFolder.IndexOf(imageFilePath);
+                    pathPrefixForTruncation = chooseDetectorFilePath.SelectedFolder.Substring(0, currentIndex).Replace('\\', '/');
+                }
+                else
+                {
+                    // The user has aborted detections, likely because they didn't know which folder to choose
+                    return false;
+                }
+            }
+            else
+            {
+                // There is only one or 0 candidate folders, so we know what the path Prefix should be.
+                pathPrefixForTruncation = (candidateFolders.Count == 1) ? candidateFolders[0] : String.Empty;
+            }
+            return true;
         }
 
         // Get the detections associated with the current file, if any
