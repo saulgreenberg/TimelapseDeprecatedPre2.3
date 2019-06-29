@@ -223,11 +223,8 @@ namespace Timelapse.Database
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
-                        Stopwatch sw = new Stopwatch(); sw.Start();
                         command.CommandText = query;
-                        object result = command.ExecuteScalar();
-                        sw.Stop(); System.Diagnostics.Debug.Print("Time: " + sw.ElapsedMilliseconds.ToString() + " " + query);
-                        return result;
+                        return command.ExecuteScalar();
                     }
                 }
             }
@@ -1072,7 +1069,7 @@ namespace Timelapse.Database
                 return false;
             }
             query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
-            return (this.GetCountFromSelect(query) != 0);
+            return this.GetCountFromSelect(query) != 0;
         }
         #endregion
     }

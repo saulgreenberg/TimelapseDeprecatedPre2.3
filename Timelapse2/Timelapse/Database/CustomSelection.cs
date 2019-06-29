@@ -313,6 +313,10 @@ namespace Timelapse.Database
                         break;
                 }
             }
+            else if (this.DetectionSelections.UseDetectionCategory)
+            {
+                where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+            }
             return where;
         }
 

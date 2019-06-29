@@ -968,7 +968,7 @@ namespace Timelapse.Database
                 }
             }
 
-            //  System.Diagnostics.Debug.Print("Doit: " + query);
+            // System.Diagnostics.Debug.Print("Doit: " + query);
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -1105,6 +1105,7 @@ namespace Timelapse.Database
         {
             string query = String.Empty;
             bool skipWhere = false;
+            bool useGroupBy = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 query = "Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
@@ -1113,6 +1114,12 @@ namespace Timelapse.Database
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 // query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
+                //query = Constant.Sqlite.SelectCountStarFrom +
+                //    Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
+                //    Constant.DBTableNames.Detections +
+                //    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
+                //    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                //    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
                 query = Constant.Sqlite.SelectCountStarFrom +
                     Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
                     Constant.DBTableNames.Detections +
@@ -1137,7 +1144,7 @@ namespace Timelapse.Database
                     query += Constant.Sqlite.CloseParenthesis;
                 }
             }
-            // System.Diagnostics.Debug.Print("Count: " + query);
+            System.Diagnostics.Debug.Print("Count: " + query);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion
@@ -1196,8 +1203,6 @@ namespace Timelapse.Database
             this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePath);
             this.Database.DropIndex(Constant.DatabaseValues.IndexFile);
         }
-
-
 
         #region Update Files
         /// <summary>
@@ -1857,16 +1862,8 @@ namespace Timelapse.Database
             }
             try
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-
                 using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
                 {
-                    sw.Stop();
-                    System.Diagnostics.Debug.Print(("Json Time: " + sw.ElapsedMilliseconds / 1000).ToString());
-                    sw.Reset();
- 
-
                     // If detection population was previously done in this session, resetting these tables to null 
                     // will force reading the new values into them
                     this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
@@ -1874,15 +1871,11 @@ namespace Timelapse.Database
                     this.classificationCategoriesDictionary = null;
                     this.classificationsDataTable = null;
 
-                    sw.Reset();
-                    sw.Start();
                     if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
                     {
                         return false;
-                    };
+                    }
                     DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
-                    sw.Stop();
-                    System.Diagnostics.Debug.Print(("Populate Time: " + sw.ElapsedMilliseconds / 1000).ToString());
                     return true;
                 }
             }
@@ -1926,7 +1919,7 @@ namespace Timelapse.Database
                 return false;
             }
 
-            // First pass. Get all the unique folder paths from the detector images
+            // First step. Get all the unique folder paths from the detector images
             string imageFilePath = this.FileTable[fileindex].RelativePath;
             string imageFileName = this.FileTable[fileindex].File;
             SortedSet<string> folders = new SortedSet<string>();
@@ -1950,7 +1943,7 @@ namespace Timelapse.Database
                 imageFilePath += "\\";
             }
 
-            // Second Pass. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
+            // Second Step. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
             // and create a 
             int shortestIndex = int.MaxValue;
             int currentIndex;
@@ -1991,11 +1984,6 @@ namespace Timelapse.Database
                     return false;
                 }
             }
-            else
-            {
-                // There is only one or 0 candidate folders, so we know what the path Prefix should be.
-                pathPrefixForTruncation = (candidateFolders.Count == 1) ? candidateFolders[0] : String.Empty;
-            }
             return true;
         }
 
@@ -2005,12 +1993,7 @@ namespace Timelapse.Database
         {
             if (this.detectionDataTable == null)
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
                 this.detectionDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections);
-                sw.Stop();
-                System.Diagnostics.Debug.Print(String.Format("creating detections datatable took {0}", sw.ElapsedMilliseconds / 1000));
-                // this.DetectionDataTable.PrimaryKey = new DataColumn[] { this.DetectionDataTable.Columns[Constant.DatabaseColumn.ID] };
             }
             // Note that because IDs are in the database as a string, we convert it
             return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
@@ -2021,12 +2004,7 @@ namespace Timelapse.Database
         {
             if (this.classificationsDataTable == null)
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
                 this.classificationsDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications);
-                sw.Stop();
-                System.Diagnostics.Debug.Print(String.Format("creating classifications datatable took {0}", sw.ElapsedMilliseconds / 1000));
-                // this.ClassificationsDataTable.PrimaryKey = new DataColumn[] { this.ClassificationsDataTable.Columns[Constant.ClassificationColumns.DetectionID]};
             }
             // Note that because IDs are in the database as a string, we convert it
             return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());

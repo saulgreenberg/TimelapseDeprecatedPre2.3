@@ -403,7 +403,6 @@ namespace Timelapse
             this.DataGridSelectionsTimer.Stop();
             this.lastControlWithFocus = null;
             this.QuickPasteWindowTerminate();
-
         }
 
         // Exit Timelapse

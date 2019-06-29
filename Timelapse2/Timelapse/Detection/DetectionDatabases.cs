@@ -183,7 +183,7 @@ namespace Timelapse.Detection
                     dataTable.Columns[Constant.DatabaseColumn.RelativePath],
                 };
 
-                int foocount = 0;
+                int fileCount = 0;
                 foreach (image image in detector.images)
                 {
                     // The truncation prefix is a prefix of the folder path that should be removed from the file path (unless its empty, of course)
@@ -207,7 +207,7 @@ namespace Timelapse.Detection
                         {
                             // Remove the trunctation prefex from the file path 
                             imageFile = image.file.Substring(pathPrefixForTruncation.Length);
-                            //System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
+                            // System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
                         }
                     }
                     string queryFileRelativePath = String.Format("{0} = '{1}' AND {2} = '{3}'",
@@ -291,12 +291,12 @@ namespace Timelapse.Detection
                             detectionIndex++;
                         }
                     }
-                    foocount++;
+                    fileCount++;
                 }
                 detectionDB.Insert(Constant.DBTableNames.Detections, detectionInsertionStatements);
                 detectionDB.Insert(Constant.DBTableNames.Classifications, classificationInsertionStatements);
                 fileDatabase.IndexCreateForDetectionsAndClassifications();
-                System.Diagnostics.Debug.Print("Files: " + foocount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
+                // System.Diagnostics.Debug.Print("Files: " + fileCount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
             }
         }
     }

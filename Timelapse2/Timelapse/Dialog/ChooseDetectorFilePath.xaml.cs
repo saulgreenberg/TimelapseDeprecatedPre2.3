@@ -27,11 +27,12 @@ namespace Timelapse.Dialog
             this.Owner = owner;
             this.SelectedFolder = String.Empty;
             FolderPathsListbox.ItemsSource = candidateFolders;
-            this.Message.Problem = "The detection file was run on a folder called '" + truncatedTerm + "' that contained many sub-folders with images in it." + Environment.NewLine;
-            this.Message.Problem += "However, it appears that your image set is just one of the sub-folders of '" + truncatedTerm + "'." + Environment.NewLine;
-            this.Message.Problem += "The problem is that several sub-folders in the detection data match your subfolder.";
-            this.Message.Solution = "Select the folder that originally held the sample image file name below." + Environment.NewLine;
-            this.Message.Solution = "If you are unsure, select Cancel which will ignore the detection data until you find out." ;
+            this.Message.Problem = "The detection file was run on a folder called '" + truncatedTerm + "' that contained many sub-folders with images." + Environment.NewLine;
+            this.Message.Problem += "The folder containing your image set is one of those sub-folders." + Environment.NewLine;
+            this.Message.Problem += "The problem is that several sub-folders in the detection data match your subfolder's name." + Environment.NewLine;
+            this.Message.Problem += "Timelapse doesn't know which one to use.";
+            this.Message.Solution = "Select the folder that originally held the sample image file named below." + Environment.NewLine;
+            this.Message.Solution += "If you are unsure, select Cancel which will ignore the detection data until you find out.";
             this.ImageMessageLabel.Content += imageFilePath;
         }
 

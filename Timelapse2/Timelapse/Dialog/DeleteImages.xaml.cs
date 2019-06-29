@@ -167,8 +167,6 @@ namespace Timelapse.Dialog
             this.Message.What = String.Format("Delete {0} image and/or video(s) - if they exist - marked for deletion.", numberOfImagesToDelete.ToString());
             this.Message.Result = String.Empty;
             this.Message.Hint = "\u2022 Restore deleted files by manually moving them ";
-
-
             this.Message.Result += String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
             if (deleteImageAndData == false)
             {
@@ -196,7 +194,7 @@ namespace Timelapse.Dialog
         // When the user enters a listbox item, show the image
         private void Lbi_MouseEnter(object sender, MouseEventArgs e)
         {
-            ListBoxItem lbi = (sender as ListBoxItem);
+            ListBoxItem lbi = sender as ListBoxItem;
             ImageRow ir = (ImageRow)lbi.Tag;
             this.ImageViewer.Source = ir.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing);
             this.MouseOverMessageTextBlock.Visibility = Visibility.Collapsed;
@@ -227,7 +225,6 @@ namespace Timelapse.Dialog
             }
         }
 
-
         // Set the confirm checkbox, which enables the ok button if the data deletions are confirmed. 
         private void ConfirmBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -245,7 +242,5 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
-
-
     }
 }

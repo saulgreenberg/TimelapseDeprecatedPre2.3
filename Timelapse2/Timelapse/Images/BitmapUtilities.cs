@@ -9,7 +9,7 @@ namespace Timelapse.Images
     public static class BitmapUtilities
     {
         // TODO: CHECK, AS CHANGED TO ONLOAD AS DELETIONS WERE NOT WORKING
-        //public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        // public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
         public static BitmapSource GetBitmapFromFile(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
             Uri uri = new Uri(path);
@@ -54,7 +54,7 @@ namespace Timelapse.Images
         }
 
         // TODO: CHECK, AS CHANGED TO ONLOAD AS DELETIONS WERE NOT WORKING
-        //public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
+        // public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnDemand)
         public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
             BitmapSource bmp = BitmapUtilities.GetBitmapFromFile(path, desiredWidth, bitmapCacheOption);

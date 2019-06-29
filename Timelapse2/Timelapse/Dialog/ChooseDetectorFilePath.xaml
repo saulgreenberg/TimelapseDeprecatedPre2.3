@@ -20,14 +20,11 @@
         </Grid.RowDefinitions>
         <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"
                             Title="Choose the folder where one of your images is located"
-                            Problem=""
-                            Solution="Choose the folder that actually contains your images."
                             Result="The detection file folders will be adjusted to match the folder you provided" 
-                            Hint="Its important that you get this right, otherwise the detection information will be wrong or omitted."/>
+                            Hint="It is important that you choose the correct folder, otherwise the detection information will be wrong. If you don't know, ask the person who supplied the detection data."/>
         <Rectangle Fill="#FF868686" Height="1" Grid.Row="1"></Rectangle>
         <Label Name="ImageMessageLabel" FontWeight="Bold" Content="Select the original folder path that contains this image: "  Grid.Row="2" Margin="5,0,0,0"/>
-        <ListBox Name="FolderPathsListbox" Grid.Row="3" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="10,0,10,5" MouseDoubleClick="FolderPathsListbox_MouseDoubleClick" SelectionChanged="FolderPathsListbox_SelectionChanged"
-                 />
+        <ListBox Name="FolderPathsListbox" Grid.Row="3" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="10,0,10,5" MouseDoubleClick="FolderPathsListbox_MouseDoubleClick" SelectionChanged="FolderPathsListbox_SelectionChanged"/>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
             <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>

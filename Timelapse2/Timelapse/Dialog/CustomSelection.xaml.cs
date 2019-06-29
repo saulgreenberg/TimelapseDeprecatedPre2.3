@@ -628,10 +628,10 @@ namespace Timelapse.Dialog
                 lastExpression = false;
             }
             this.InitiateShowCountsOfMatchingFiles();
-            this.ResetToAllImagesButton.IsEnabled = (lastExpression == false ||
+            this.ResetToAllImagesButton.IsEnabled = lastExpression == false ||
                 (bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
                 (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
-                (bool)this.UseDetectionCategoryCheckbox.IsChecked);
+                (bool)this.UseDetectionCategoryCheckbox.IsChecked;
         }
         #endregion
 
@@ -706,7 +706,7 @@ namespace Timelapse.Dialog
             this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
 
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
-            this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White ;
+            this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
 
             this.DetectionGroupBox.IsEnabled = !(bool)this.database.CustomSelection.ShowMissingDetections;
             this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
@@ -714,7 +714,9 @@ namespace Timelapse.Dialog
             if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
                 (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
                 (bool)this.UseDetectionCategoryCheckbox.IsChecked)
+            {
                 this.ResetToAllImagesButton.IsEnabled = true;
+            }
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -848,7 +850,7 @@ namespace Timelapse.Dialog
 
         private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            this.database.CustomSelection.ShowMissingDetections = (bool) ShowMissingDetectionsCheckbox.IsChecked;
+            this.database.CustomSelection.ShowMissingDetections = (bool)ShowMissingDetectionsCheckbox.IsChecked;
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
