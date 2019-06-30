@@ -1017,6 +1017,10 @@ namespace Timelapse.Images
             }
 
             // DETECTOR: THIS METHOD IS BEING INVOKED TWICE ON EVERY NEW IMAGE! DEBUG THIS.
+            if (GlobalReferences.DetectionsExists == false)
+            {
+                return;
+            }
             bboxCanvas.Width = canvasRenderSize.Width;
             bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
