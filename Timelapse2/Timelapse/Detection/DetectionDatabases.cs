@@ -33,38 +33,38 @@ namespace Timelapse.Detection
             }
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Constant.Sqlite.Integer + Timelapse.Constant.Sqlite.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.InfoColumns.Detector,  Constant.Sqlite.String),
-                new ColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Constant.Sqlite.String),
-                new ColumnDefinition(Constant.InfoColumns.Classifier,  Constant.Sqlite.String),
-                new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Constant.Sqlite.String)
+                new ColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.InfoColumns.Detector,  Sql.String),
+                new ColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.String),
+                new ColumnDefinition(Constant.InfoColumns.Classifier,  Sql.String),
+                new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.String)
             };
             database.CreateTable(Constant.DBTableNames.Info, columnDefinitions);
 
             // DetectionCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Constant.Sqlite.String + Timelapse.Constant.Sqlite.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Constant.Sqlite.String),
+                new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.String),
             };
             database.CreateTable(Constant.DBTableNames.DetectionCategories, columnDefinitions);
 
             // ClassificationCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Constant.Sqlite.String + Timelapse.Constant.Sqlite.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Constant.Sqlite.String),
+                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.String),
             };
             database.CreateTable(Constant.DBTableNames.ClassificationCategories, columnDefinitions);
 
             // Detections: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Constant.Sqlite.Integer + Timelapse.Constant.Sqlite.PrimaryKey),
-                new ColumnDefinition(Constant.DetectionColumns.Category,  Constant.Sqlite.String),
-                new ColumnDefinition(Constant.DetectionColumns.Conf,  Constant.Sqlite.Real),
-                new ColumnDefinition(Constant.DetectionColumns.BBox,  Constant.Sqlite.String), // Will need to parse it into new new double[4]
-                new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Constant.Sqlite.Integer), // Foreign key: ImageID
+                new ColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey),
+                new ColumnDefinition(Constant.DetectionColumns.Category,  Sql.String),
+                new ColumnDefinition(Constant.DetectionColumns.Conf,  Sql.Real),
+                new ColumnDefinition(Constant.DetectionColumns.BBox,  Sql.String), // Will need to parse it into new new double[4]
+                new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.Integer), // Foreign key: ImageID
                 new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DatabaseTable.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTableNames.Detections, columnDefinitions);
@@ -72,10 +72,10 @@ namespace Timelapse.Detection
             // Classifications: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Constant.Sqlite.Integer + Timelapse.Constant.Sqlite.PrimaryKey),
-                new ColumnDefinition(Constant.ClassificationColumns.Category, Constant.Sqlite.String),
-                new ColumnDefinition(Constant.ClassificationColumns.Conf,  Constant.Sqlite.Real),
-                new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Constant.Sqlite.Integer), // Foreign key: ImageID
+                new ColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey),
+                new ColumnDefinition(Constant.ClassificationColumns.Category, Sql.String),
+                new ColumnDefinition(Constant.ClassificationColumns.Conf,  Sql.Real),
+                new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.Integer), // Foreign key: ImageID
                 new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTableNames.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTableNames.Classifications, columnDefinitions);
@@ -175,7 +175,7 @@ namespace Timelapse.Detection
                 // Get a data table containing the ID, RelativePath, and File
                 // and create primary keys for the fields we will search for (for performance speedup)
                 // We will use that to search for the file index.
-                string query = Constant.Sqlite.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Constant.Sqlite.From + Constant.DatabaseTable.FileData;
+                string query = Sql.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Sql.From + Constant.DatabaseTable.FileData;
                 DataTable dataTable = detectionDB.GetDataTableFromSelect(query);
                 dataTable.PrimaryKey = new DataColumn[] 
                 {

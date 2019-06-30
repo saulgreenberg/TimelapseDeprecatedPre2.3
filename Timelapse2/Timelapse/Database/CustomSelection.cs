@@ -207,7 +207,7 @@ namespace Timelapse.Database
                 if (where == String.Empty)
                 {
                     // Because there is at least one search term, we will need the WHERE clause
-                    where += Constant.Sqlite.Where;
+                    where += Sql.Where;
                 }
                 // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
                 if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
@@ -231,16 +231,16 @@ namespace Timelapse.Database
                     whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
-                        whereForTerm += Constant.Sqlite.CollateNocase; // so that true and false comparisons are case-insensitive
+                        whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
                     }
                 }
 
                 // if there is a term in the query other than ' Where 'add either and 'And' or an 'Or' to it 
-                if (where != Constant.Sqlite.Where)
+                if (where != Sql.Where)
                 {
                     if (numberOfDateTimesSearchTerms == 2)
                     {
-                        where += Constant.Sqlite.And;
+                        where += Sql.And;
                         numberOfDateTimesSearchTerms = 0;
                     }
                     else
@@ -248,10 +248,10 @@ namespace Timelapse.Database
                         switch (this.TermCombiningOperator)
                         {
                             case CustomSelectionOperatorEnum.And:
-                                where += Constant.Sqlite.And;
+                                where += Sql.And;
                                 break;
                             case CustomSelectionOperatorEnum.Or:
-                                where += Constant.Sqlite.Or;
+                                where += Sql.Or;
                                 break;
                             default:
                                 throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
@@ -272,7 +272,7 @@ namespace Timelapse.Database
             bool addAnd = true;
             if (where == String.Empty && this.DetectionSelections.UseDetectionCategory == true)
             {
-                where += Constant.Sqlite.Where;
+                where += Sql.Where;
                 addAnd = false;
             }
             else
@@ -284,38 +284,38 @@ namespace Timelapse.Database
             {
                 if (addAnd)
                 {
-                    where += Constant.Sqlite.And;
+                    where += Sql.And;
                 }
                 // Form: Detections.category = <DetectionCategory>
-                where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Constant.Sqlite.Equal + this.DetectionSelections.DetectionCategory;
+                where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
             }
             if (this.DetectionSelections.UseDetectionConfidenceThreshold)
             {
                 // Form:  ...Group By Detections.Id Having Max  (Detections.conf )  ...
-                where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Constant.Sqlite.Having +
-                    Constant.Sqlite.Max + Constant.Sqlite.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Constant.Sqlite.CloseParenthesis;
+                where += Sql.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
+                    Sql.Max + Sql.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
                 switch (this.DetectionSelections.DetectionComparison)
                 {
                     case ComparisonEnum.LessThanEqual:
                         // <= .80
-                        where += Constant.Sqlite.LessThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                        where += Sql.LessThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
                         break;
                     case ComparisonEnum.Between:
                         // BETWEEN .80 AND .90
-                        where += Constant.Sqlite.Between +
-                            this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Constant.Sqlite.And +
+                        where += Sql.Between +
+                            this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Sql.And +
                             this.DetectionSelections.DetectionConfidenceThreshold2.ToString();
                         break;
                     case ComparisonEnum.GreaterThan:
                     default:
                         // >= .80
-                        where += Constant.Sqlite.GreaterThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
+                        where += Sql.GreaterThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
                         break;
                 }
             }
             else if (this.DetectionSelections.UseDetectionCategory)
             {
-                where += Constant.Sqlite.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                where += Sql.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
             }
             return where;
         }

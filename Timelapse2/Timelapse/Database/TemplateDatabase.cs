@@ -153,7 +153,7 @@ namespace Timelapse.Database
         private void GetControlsSortedByControlOrder()
         {
             // Utilities.PrintMethodName();
-            DataTable templateTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.Controls + Constant.Sqlite.OrderBy + Constant.Control.ControlOrder);
+            DataTable templateTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DatabaseTable.Controls + Sql.OrderBy + Constant.Control.ControlOrder);
             this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
         }
@@ -444,18 +444,18 @@ namespace Timelapse.Database
             // create the template table
             List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey),
-                new ColumnDefinition(Constant.Control.ControlOrder, Constant.Sqlite.Integer),
-                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Constant.Sqlite.Integer),
-                new ColumnDefinition(Constant.Control.Type, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.DefaultValue, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.Label, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.DataLabel, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.Tooltip, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.TextBoxWidth, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.Copyable, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.Visible, Constant.Sqlite.Text),
-                new ColumnDefinition(Constant.Control.List, Constant.Sqlite.Text)
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
+                new ColumnDefinition(Constant.Control.ControlOrder, Sql.Integer),
+                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.Integer),
+                new ColumnDefinition(Constant.Control.Type, Sql.Text),
+                new ColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
+                new ColumnDefinition(Constant.Control.Label, Sql.Text),
+                new ColumnDefinition(Constant.Control.DataLabel, Sql.Text),
+                new ColumnDefinition(Constant.Control.Tooltip, Sql.Text),
+                new ColumnDefinition(Constant.Control.TextBoxWidth, Sql.Text),
+                new ColumnDefinition(Constant.Control.Copyable, Sql.Text),
+                new ColumnDefinition(Constant.Control.Visible, Sql.Text),
+                new ColumnDefinition(Constant.Control.List, Sql.Text)
             };
             this.Database.CreateTable(Constant.DatabaseTable.Controls, templateTableColumns);
 
@@ -740,25 +740,25 @@ namespace Timelapse.Database
                 Debug.Assert((maximumID > 0) && (maximumID <= Int64.MaxValue), String.Format("Maximum ID found is {0}, which is out of range.", maximumID));
                 string jumpAmount = maximumID.ToString();
 
-                string increaseIDs = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
-                increaseIDs += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " + 1 + " + jumpAmount;
-                increaseIDs += Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " >= " + newID;
+                string increaseIDs = Sql.Update + Constant.DatabaseTable.Controls;
+                increaseIDs += Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " + 1 + " + jumpAmount;
+                increaseIDs += Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(increaseIDs);
 
                 // Second update: decrease IDs above newID to be one more than their original value
                 // This leaves everything in sequence except for an open spot at newID.
-                string reduceIDs = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
-                reduceIDs += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " - " + jumpAmount;
-                reduceIDs += Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " >= " + newID;
+                string reduceIDs = Sql.Update + Constant.DatabaseTable.Controls;
+                reduceIDs += Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " - " + jumpAmount;
+                reduceIDs += Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(reduceIDs);
             }
 
             // 3rd update: change the target ID to the desired ID
             this.CreateBackupIfNeeded();
 
-            string setControlID = Constant.Sqlite.Update + Constant.DatabaseTable.Controls;
-            setControlID += Constant.Sqlite.Set + Constant.DatabaseColumn.ID + " = " + newID;
-            setControlID += Constant.Sqlite.Where + Constant.Control.DataLabel + " = '" + dataLabel + "'";
+            string setControlID = Sql.Update + Constant.DatabaseTable.Controls;
+            setControlID += Sql.Set + Constant.DatabaseColumn.ID + " = " + newID;
+            setControlID += Sql.Where + Constant.Control.DataLabel + " = '" + dataLabel + "'";
             queries.Add(setControlID);
             this.Database.ExecuteNonQueryWrappedInBeginEnd(queries);
 

@@ -285,6 +285,7 @@
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
     <Compile Include="Images\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
+    <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuDetection.cs" />
     <Compile Include="Util\Episodes.cs" />

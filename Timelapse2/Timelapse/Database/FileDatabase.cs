@@ -129,7 +129,7 @@ namespace Timelapse.Database
             // First, define the creation string based on the contents of the template. 
             List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
             };
             foreach (ControlRow control in this.Controls)
             {
@@ -143,18 +143,18 @@ namespace Timelapse.Database
 
             // Create the ImageSetTable and initialize a single row in it
             columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Constant.Sqlite.Text, Constant.DatabaseValues.ImageSetDefaultLog));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Constant.Sqlite.Text, Constant.BooleanValue.True));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Constant.Sqlite.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Sql.Text, Constant.DatabaseValues.ImageSetDefaultLog));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Sql.Text, Constant.BooleanValue.True));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Sql.Text));
             int allImages = (int)FileSelectionEnum.All;
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Constant.Sqlite.Text, allImages));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text));  // Records the highest Timelapse version number ever used to open this database
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Sql.Text, allImages));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text));  // Records the highest Timelapse version number ever used to open this database
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text));        // A comma-separated list of 4 sort terms
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text));
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
 
@@ -188,12 +188,12 @@ namespace Timelapse.Database
 
             // Create the MarkersTable and initialize it from the template table
             columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
             foreach (ControlRow control in this.Controls)
             {
                 if (control.Type.Equals(Constant.Control.Counter))
                 {
-                    columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty));
+                    columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty));
                 }
             }
             this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
@@ -494,7 +494,7 @@ namespace Timelapse.Database
             // Initialize a schema 
             List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Constant.Sqlite.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
             };
 
             // Add the schema for the columns from the FileDB table
@@ -588,7 +588,7 @@ namespace Timelapse.Database
             if (!whiteSpaceColumnExists)
             {
                 // create the whitespace column
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.Sqlite.Text, Constant.BooleanValue.False));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
 
                 // trim whitespace from the data table
                 this.Database.TrimWhitespace(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
@@ -646,7 +646,7 @@ namespace Timelapse.Database
             if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Constant.Sqlite.Text, timelapseVersionNumberAsString));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
             }
 
             // Sort Criteria Column: Make sure that the column containing the SortCriteria exists in the image set table. 
@@ -655,7 +655,7 @@ namespace Timelapse.Database
             if (!sortCriteriaColumnExists)
             {
                 // create the sortCriteria column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultSortTerms));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
             // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
@@ -668,7 +668,7 @@ namespace Timelapse.Database
                 if (!selectedFolderColumnExists)
                 {
                     // create the sortCriteria column and update the image set. Syncronization happens later
-                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Constant.Sqlite.Text, String.Empty));
+                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
                     this.GetImageSet();
                 }
             }
@@ -678,7 +678,7 @@ namespace Timelapse.Database
             if (!quickPasteXMLColumnExists)
             {
                 // create the QuickPaste column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Constant.Sqlite.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
@@ -687,7 +687,7 @@ namespace Timelapse.Database
             if (!timeZoneColumnExists)
             {
                 // create default time zone entry and refresh the image set.
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Constant.Sqlite.Text));
+                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
                 this.Database.SetColumnToACommonValue(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
                 this.GetImageSet();
             }
@@ -752,7 +752,7 @@ namespace Timelapse.Database
 
                     if (control.Type == Constant.Control.Counter)
                     {
-                        ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Constant.Sqlite.Text);
+                        ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Sql.Text);
                         this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.Markers, markerColumnDefinition);
                     }
                 }
@@ -847,7 +847,7 @@ namespace Timelapse.Database
                 throw new ArgumentOutOfRangeException("FileDatabase: 'where' clause is empty or null");
             }
 
-            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.Where + where;
+            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             FileTable temporaryTable = new FileTable(images);
             if (temporaryTable.RowCount != 1)
@@ -878,9 +878,9 @@ namespace Timelapse.Database
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
-                    query = Constant.Sqlite.Select + Constant.DatabaseTable.FileData + ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
-                        Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
-                         Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                    query = Sql.Select + Constant.DatabaseTable.FileData + ".*" + Sql.From + Constant.DBTableNames.Detections +
+                        Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
+                         Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
                          Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
                 }
                 else
@@ -891,7 +891,7 @@ namespace Timelapse.Database
 
             if (useStandardQuery)
             {
-                query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+                query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData;
             }
 
             if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
@@ -936,7 +936,7 @@ namespace Timelapse.Database
                     else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
                     {
                         // File: the modified term creates a file path by concatonating relative path and file
-                        term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Constant.Sqlite.Comma, Constant.DatabaseColumn.File);
+                        term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
                     }
                     else if (sortTerm[i].ControlType == Constant.Control.Counter)
                     {
@@ -951,20 +951,20 @@ namespace Timelapse.Database
                     // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
                     if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
                     {
-                        term[i] += Constant.Sqlite.Descending;
+                        term[i] += Sql.Descending;
                     }
                 }
 
                 if (!String.IsNullOrEmpty(term[0]))
                 {
-                    query += Constant.Sqlite.OrderBy + term[0];
+                    query += Sql.OrderBy + term[0];
 
                     // If there is a second sort key, add it here
                     if (!String.IsNullOrEmpty(term[1]))
                     {
-                        query += Constant.Sqlite.Comma + term[1];
+                        query += Sql.Comma + term[1];
                     }
-                    query += Constant.Sqlite.Semicolon;
+                    query += Sql.Semicolon;
                 }
             }
 
@@ -1002,7 +1002,7 @@ namespace Timelapse.Database
         public FileTable GetFilesMarkedForDeletion()
         {
             string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
-            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.Where + where;
+            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1010,7 +1010,7 @@ namespace Timelapse.Database
         // Select * From DataTable Where  Id IN(1,2,4 )
         public FileTable GetFilesInDataTableById(string listOfIds)
         {
-            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.WhereIDIn + Constant.Sqlite.OpenParenthesis + listOfIds + Constant.Sqlite.CloseParenthesis;
+            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.WhereIDIn + Sql.OpenParenthesis + listOfIds + Sql.CloseParenthesis;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1019,15 +1019,15 @@ namespace Timelapse.Database
         // Get a table containing a subset of rows that have duplicate File and RelativePaths 
         public FileTable GetDuplicateFiles()
         {
-            string query = Constant.Sqlite.Select + " RelativePath, File, COUNT(*) " + Constant.Sqlite.From + Constant.DatabaseTable.FileData;
-            query += Constant.Sqlite.GroupBy + " RelativePath, File HAVING COUNT(*) > 1";
+            string query = Sql.Select + " RelativePath, File, COUNT(*) " + Sql.From + Constant.DatabaseTable.FileData;
+            query += Sql.GroupBy + " RelativePath, File HAVING COUNT(*) > 1";
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
 
         public FileTable GetAllFiles()
         {
-            string query = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.FileData;
+            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1036,8 +1036,8 @@ namespace Timelapse.Database
         // Delete duplicate rows from the database, identified by identical File and RelativePath contents.
         public void DeleteDuplicateFiles()
         {
-            string query = Constant.Sqlite.DeleteFrom + Constant.DatabaseTable.FileData + Constant.Sqlite.WhereIDNotIn;
-            query += Constant.Sqlite.OpenParenthesis + Constant.Sqlite.Select + " MIN(Id) " + Constant.Sqlite.From + Constant.DatabaseTable.FileData + Constant.Sqlite.GroupBy + "RelativePath, File)";
+            string query = Sql.DeleteFrom + Constant.DatabaseTable.FileData + Sql.WhereIDNotIn;
+            query += Sql.OpenParenthesis + Sql.Select + " MIN(Id) " + Sql.From + Constant.DatabaseTable.FileData + Sql.GroupBy + "RelativePath, File)";
             DataTable images = this.Database.GetDataTableFromSelect(query);
         }
 
@@ -1113,23 +1113,23 @@ namespace Timelapse.Database
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
-                // query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Constant.Sqlite.From + Constant.DBTableNames.Detections +
-                //query = Constant.Sqlite.SelectCountStarFrom +
-                //    Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
+                // query = Sql.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Sql.From + Constant.DBTableNames.Detections +
+                //query = Sql.SelectCountStarFrom +
+                //    Sql.OpenParenthesis + Sql.SelectStarFrom +
                 //    Constant.DBTableNames.Detections +
-                //    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
-                //    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                //    Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
+                //    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
                 //    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
-                query = Constant.Sqlite.SelectCountStarFrom +
-                    Constant.Sqlite.OpenParenthesis + Constant.Sqlite.SelectStarFrom +
+                query = Sql.SelectCountStarFrom +
+                    Sql.OpenParenthesis + Sql.SelectStarFrom +
                     Constant.DBTableNames.Detections +
-                    Constant.Sqlite.InnerJoin + Constant.DatabaseTable.FileData + Constant.Sqlite.On +
-                    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Constant.Sqlite.Equal +
+                    Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
+                    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
                     Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
             }
             else
             {
-                query = Constant.Sqlite.SelectCountStarFrom + Constant.DatabaseTable.FileData;
+                query = Sql.SelectCountStarFrom + Constant.DatabaseTable.FileData;
             }
 
             if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
@@ -1141,7 +1141,7 @@ namespace Timelapse.Database
                 }
                 if (fileSelection == FileSelectionEnum.Custom && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
-                    query += Constant.Sqlite.CloseParenthesis;
+                    query += Sql.CloseParenthesis;
                 }
             }
             System.Diagnostics.Debug.Print("Count: " + query);
@@ -1175,9 +1175,9 @@ namespace Timelapse.Database
                 case FileSelectionEnum.Unknown:
                 case FileSelectionEnum.Dark:
                 case FileSelectionEnum.Light:
-                    return Constant.Sqlite.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return Constant.Sqlite.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                 case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();
@@ -1709,7 +1709,7 @@ namespace Timelapse.Database
 
         private void GetImageSet()
         {
-            string imageSetQuery = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.ImageSet + Constant.Sqlite.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
+            string imageSetQuery = Sql.SelectStarFrom + Constant.DatabaseTable.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
         }
@@ -1753,7 +1753,7 @@ namespace Timelapse.Database
 
         private void GetMarkers()
         {
-            string markersQuery = Constant.Sqlite.SelectStarFrom + Constant.DatabaseTable.Markers;
+            string markersQuery = Sql.SelectStarFrom + Constant.DatabaseTable.Markers;
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
@@ -1847,9 +1847,9 @@ namespace Timelapse.Database
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
             {
-                return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, String.Empty);
+                return new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty);
             }
-            return new ColumnDefinition(control.DataLabel, Constant.Sqlite.Text, control.DefaultValue);
+            return new ColumnDefinition(control.DataLabel, Sql.Text, control.DefaultValue);
         }
 
         #region DETECTION INTEGRATION
@@ -1993,10 +1993,10 @@ namespace Timelapse.Database
         {
             if (this.detectionDataTable == null)
             {
-                this.detectionDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Detections);
+                this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.Detections);
             }
             // Note that because IDs are in the database as a string, we convert it
-            return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Constant.Sqlite.Equal + fileID.ToString());
+            return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Sql.Equal + fileID.ToString());
         }
 
         // Get the detections associated with the current file, if any
@@ -2004,10 +2004,10 @@ namespace Timelapse.Database
         {
             if (this.classificationsDataTable == null)
             {
-                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.Classifications);
+                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.Classifications);
             }
             // Note that because IDs are in the database as a string, we convert it
-            return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Constant.Sqlite.Equal + detectionID.ToString());
+            return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Sql.Equal + detectionID.ToString());
         }
 
         // Return the label that matches the detection category 
@@ -2019,7 +2019,7 @@ namespace Timelapse.Database
                 if (this.detectionCategoriesDictionary == null)
                 {
                     this.detectionCategoriesDictionary = new Dictionary<string, string>();
-                    DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                    DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow row = dataTable.Rows[i];
@@ -2044,7 +2044,7 @@ namespace Timelapse.Database
             {
                 this.detectionCategoriesDictionary = new Dictionary<string, string>();
 
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     DataRow row = dataTable.Rows[i];
@@ -2088,7 +2088,7 @@ namespace Timelapse.Database
             if (this.classificationCategoriesDictionary == null)
             {
                 this.classificationCategoriesDictionary = new Dictionary<string, string>();
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Constant.Sqlite.SelectStarFrom + Constant.DBTableNames.ClassificationCategories);
+                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.ClassificationCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     DataRow row = dataTable.Rows[i];

@@ -53,13 +53,13 @@ namespace Timelapse.Database
             //     column2name datatype,               NAME TEXT NOT NULL,
             //     ...                                 ...
             //     columnNname datatype);              SALARY REAL);
-            string query = Constant.Sqlite.CreateTable + tableName + Constant.Sqlite.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (
+            string query = Sql.CreateTable + tableName + Sql.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (
             foreach (ColumnDefinition column in columnDefinitions)
             {
-                query += column.ToString() + Constant.Sqlite.Comma + Environment.NewLine;             // "columnname TEXT DEFAULT 'value',\n" or similar
+                query += column.ToString() + Sql.Comma + Environment.NewLine;             // "columnname TEXT DEFAULT 'value',\n" or similar
             }
-            query = query.Remove(query.Length - Constant.Sqlite.Comma.Length - Environment.NewLine.Length);         // remove last comma / new line and replace with );
-            query += Constant.Sqlite.CloseParenthesis + Constant.Sqlite.Semicolon;
+            query = query.Remove(query.Length - Sql.Comma.Length - Environment.NewLine.Length);         // remove last comma / new line and replace with );
+            query += Sql.CloseParenthesis + Sql.Semicolon;
             this.ExecuteNonQuery(query);
         } 
 
@@ -68,7 +68,7 @@ namespace Timelapse.Database
         public void CreateIndex(string indexName, string tableName, string columnNames)
         {
             // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
-            string query = Constant.Sqlite.CreateIndex + Constant.Sqlite.IfNotExists + indexName + Constant.Sqlite.On + tableName + Constant.Sqlite.OpenParenthesis + columnNames + Constant.Sqlite.CloseParenthesis;
+            string query = Sql.CreateIndex + Sql.IfNotExists + indexName + Sql.On + tableName + Sql.OpenParenthesis + columnNames + Sql.CloseParenthesis;
             this.ExecuteNonQuery(query);
         }
 
@@ -76,7 +76,7 @@ namespace Timelapse.Database
         public void DropIndex(string indexName)
         {
             // Form: DROP INDEX IF EXISTS indexName 
-            string query = Constant.Sqlite.DropIndex + Constant.Sqlite.IfExists + indexName;
+            string query = Sql.DropIndex + Sql.IfExists + indexName;
             this.ExecuteNonQuery(query);
         }
         #endregion
@@ -133,24 +133,24 @@ namespace Timelapse.Database
                 string values = String.Empty;
                 foreach (ColumnTuple column in columnsToUpdate)
                 {
-                    columns += String.Format(" {0}" + Constant.Sqlite.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
-                    values += String.Format(" {0}" + Constant.Sqlite.Comma, Utilities.QuoteForSql(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
+                    columns += String.Format(" {0}" + Sql.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
+                    values += String.Format(" {0}" + Sql.Comma, Utilities.QuoteForSql(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
                 }
                 if (columns.Length > 0)
                 {
-                    columns = columns.Substring(0, columns.Length - Constant.Sqlite.Comma.Length);     // Remove last comma in the sequence to produce (col1, col2, ... coln)  
+                    columns = columns.Substring(0, columns.Length - Sql.Comma.Length);     // Remove last comma in the sequence to produce (col1, col2, ... coln)  
                 }
                 if (values.Length > 0)
                 {
-                    values = values.Substring(0, values.Length - Constant.Sqlite.Comma.Length);        // Remove last comma in the sequence 
+                    values = values.Substring(0, values.Length - Sql.Comma.Length);        // Remove last comma in the sequence 
                 }
 
                 // Construct the query. The newlines are to format it for pretty printing
-                string query = Constant.Sqlite.InsertInto + tableName;               // INSERT INTO table_name
+                string query = Sql.InsertInto + tableName;               // INSERT INTO table_name
                 query += Environment.NewLine;
                 query += String.Format("({0}) ", columns);                         // (col1, col2, ... coln)
                 query += Environment.NewLine;
-                query += Constant.Sqlite.Values;                                     // VALUES
+                query += Sql.Values;                                     // VALUES
                 query += Environment.NewLine;
                 query += String.Format("({0}); ", values);                         // ('value1', 'value2', ... 'valueN');
                 queries.Add(query);
@@ -195,7 +195,7 @@ namespace Timelapse.Database
                 connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand(connection))
                 {
-                    command.CommandText = String.Format(Constant.Sqlite.SelectDistinct + " {0} " + Constant.Sqlite.From + "{1}", columnName, tableName);
+                    command.CommandText = String.Format(Sql.SelectDistinct + " {0} " + Sql.From + "{1}", columnName, tableName);
                     using (SQLiteDataReader reader = command.ExecuteReader())
                     {
                         List<object> distinctValues = new List<object>();
@@ -293,7 +293,7 @@ namespace Timelapse.Database
                             // Insert a BEGIN if we are at the beginning of the count
                             if (statementsInQuery == 1)
                             {
-                                command.CommandText = Constant.Sqlite.BeginTransaction;
+                                command.CommandText = Sql.BeginTransaction;
                                 command.ExecuteNonQuery();
                             }
 
@@ -303,7 +303,7 @@ namespace Timelapse.Database
                             // END
                             if (statementsInQuery >= MaxStatementCount)
                             {
-                                command.CommandText = Constant.Sqlite.EndTransaction;
+                                command.CommandText = Sql.EndTransaction;
                                 rowsUpdated += command.ExecuteNonQuery();
                                 statementsInQuery = 0;
                             }
@@ -311,7 +311,7 @@ namespace Timelapse.Database
                         // END
                         if (statementsInQuery != 0)
                         {
-                            command.CommandText = Constant.Sqlite.EndTransaction;
+                            command.CommandText = Sql.EndTransaction;
                             rowsUpdated += command.ExecuteNonQuery();
                         }
                     }
@@ -330,7 +330,7 @@ namespace Timelapse.Database
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
             {
-                string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + " = " + Constant.Sqlite.Trim + Constant.Sqlite.OpenParenthesis + columnName + Constant.Sqlite.CloseParenthesis + Constant.Sqlite.Semicolon; // Form: UPDATE tablename SET columname = TRIM(columnname);
+                string query = Sql.Update + tableName + Sql.Set + columnName + " = " + Sql.Trim + Sql.OpenParenthesis + columnName + Sql.CloseParenthesis + Sql.Semicolon; // Form: UPDATE tablename SET columname = TRIM(columnname);
                 queries.Add(query);
             }
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
@@ -339,7 +339,7 @@ namespace Timelapse.Database
         // Set all rows in a given column to a single value
         public void SetColumnToACommonValue(string tableName, string columnName, string value)
         {
-            string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + Constant.Sqlite.Equal + Utilities.QuoteForSql(value);
+            string query = Sql.Update + tableName + Sql.Set + columnName + Sql.Equal + Utilities.QuoteForSql(value);
             this.ExecuteNonQuery(query);
         }
 
@@ -351,7 +351,7 @@ namespace Timelapse.Database
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
             {
-                string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set + columnName + " = '' " + Constant.Sqlite.Where + columnName + Constant.Sqlite.IsNull + Constant.Sqlite.Semicolon; // Form: UPDATE tablename SET columname = '' WHERE columnname IS NULL;
+                string query = Sql.Update + tableName + Sql.Set + columnName + " = '' " + Sql.Where + columnName + Sql.IsNull + Sql.Semicolon; // Form: UPDATE tablename SET columname = '' WHERE columnname IS NULL;
                 queries.Add(query);
             }
             this.ExecuteNonQueryWrappedInBeginEnd(queries);
@@ -394,7 +394,7 @@ namespace Timelapse.Database
         {
             // UPDATE table_name SET 
             // columnname = value, 
-            string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set;
+            string query = Sql.Update + tableName + Sql.Set;
             query += String.Format(" {0} = {1}", columnToUpdate.Name, Utilities.QuoteForSql(columnToUpdate.Value));
             this.ExecuteNonQuery(query);
         }
@@ -413,7 +413,7 @@ namespace Timelapse.Database
             // colnameN = valueN
             // WHERE
             // <condition> e.g., ID=1;
-            string query = Constant.Sqlite.Update + tableName + Constant.Sqlite.Set;
+            string query = Sql.Update + tableName + Sql.Set;
             if (columnsToUpdate.Columns.Count < 0)
             {
                 return String.Empty;     // No data, so nothing to update. This isn't really an error, so...
@@ -425,21 +425,21 @@ namespace Timelapse.Database
                 // we have to cater to different formats for integers, NULLS and strings...
                 if (column.Value == null)
                 {
-                    query += String.Format(" {0} = {1}{2}", column.Name.ToString(), Constant.Sqlite.Null, Constant.Sqlite.Comma);
+                    query += String.Format(" {0} = {1}{2}", column.Name.ToString(), Sql.Null, Sql.Comma);
                 }
                 else
                 {
-                    query += String.Format(" {0} = {1}{2}", column.Name, Utilities.QuoteForSql(column.Value), Constant.Sqlite.Comma);
+                    query += String.Format(" {0} = {1}{2}", column.Name, Utilities.QuoteForSql(column.Value), Sql.Comma);
                 }
             }
-            query = query.Substring(0, query.Length - Constant.Sqlite.Comma.Length); // Remove the last comma
+            query = query.Substring(0, query.Length - Sql.Comma.Length); // Remove the last comma
 
             if (String.IsNullOrWhiteSpace(columnsToUpdate.Where) == false)
             {
-                query += Constant.Sqlite.Where;
+                query += Sql.Where;
                 query += columnsToUpdate.Where;
             }
-            query += Constant.Sqlite.Semicolon;
+            query += Sql.Semicolon;
             return query;
         }
 
@@ -457,7 +457,7 @@ namespace Timelapse.Database
         // It assumes that the value, if not empty, should be treated as the default value for that column
         public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
         {
-            this.ExecuteNonQuery(Constant.Sqlite.AlterTable + tableName + Constant.Sqlite.AddColumn + columnDefinition.ToString());
+            this.ExecuteNonQuery(Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition.ToString());
         }
 
         /// <summary>delete specific rows from the DB where...</summary>
@@ -466,11 +466,11 @@ namespace Timelapse.Database
         public void DeleteRows(string tableName, string where)
         {
             // DELETE FROM table_name WHERE where
-            string query = Constant.Sqlite.DeleteFrom + tableName;        // DELETE FROM table_name
+            string query = Sql.DeleteFrom + tableName;        // DELETE FROM table_name
             if (!String.IsNullOrWhiteSpace(where))
             {
                 // Add the WHERE clause only when where is not empty
-                query += Constant.Sqlite.Where;                   // WHERE
+                query += Sql.Where;                   // WHERE
                 query += where;                                 // where
             }
             this.ExecuteNonQuery(query);
@@ -491,8 +491,8 @@ namespace Timelapse.Database
                 // Add the WHERE clause only when uts is not empty
                 if (!String.IsNullOrEmpty(whereClause.Trim()))
                 {                                                            // Construct each query statement
-                    string query = Constant.Sqlite.DeleteFrom + tableName;     // DELETE FROM tablename
-                    query += Constant.Sqlite.Where;                            // DELETE FROM tablename WHERE
+                    string query = Sql.DeleteFrom + tableName;     // DELETE FROM tablename
+                    query += Sql.Where;                            // DELETE FROM tablename WHERE
                     query += whereClause;                                    // DELETE FROM tablename WHERE whereClause
                     query += "; ";                                           // DELETE FROM tablename WHERE whereClause;
                     queries.Add(query);
@@ -588,7 +588,7 @@ namespace Timelapse.Database
 
                     // Create a new table 
                     string destTable = tableName + "NEW";
-                    string sql = Constant.Sqlite.CreateTable + destTable + Constant.Sqlite.OpenParenthesis + newSchema + Constant.Sqlite.CloseParenthesis;
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
                         command.ExecuteNonQuery();
@@ -635,7 +635,7 @@ namespace Timelapse.Database
 
                     // Create a new table 
                     string destTable = sourceTable + "NEW";
-                    string sql = Constant.Sqlite.CreateTable + destTable + Constant.Sqlite.OpenParenthesis + newSchema + Constant.Sqlite.CloseParenthesis;
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
                         command.ExecuteNonQuery();
@@ -690,7 +690,7 @@ namespace Timelapse.Database
 
                     // Create a new table 
                     string destTable = sourceTable + "NEW";
-                    string sql = Constant.Sqlite.CreateTable + destTable + Constant.Sqlite.OpenParenthesis + newSchema + Constant.Sqlite.CloseParenthesis;
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
                         command.ExecuteNonQuery();
@@ -749,7 +749,7 @@ namespace Timelapse.Database
 
         private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string columnDefinition)
         {
-            string sql = Constant.Sqlite.AlterTable + tableName + Constant.Sqlite.AddColumn + columnDefinition;
+            string sql = Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition;
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
@@ -763,7 +763,7 @@ namespace Timelapse.Database
         private static void CopyAllValuesFromTable(SQLiteConnection connection, string schemaFromTable, string dataSourceTable, string dataDestinationTable)
         {
             string commaSeparatedColumns = GetColumnNamesAsString(connection, schemaFromTable);
-            string sql = Constant.Sqlite.InsertInto + dataDestinationTable + Constant.Sqlite.OpenParenthesis + commaSeparatedColumns + Constant.Sqlite.CloseParenthesis + Constant.Sqlite.Select + commaSeparatedColumns + Constant.Sqlite.From + dataSourceTable;
+            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumns + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumns + Sql.From + dataSourceTable;
 
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
@@ -778,7 +778,7 @@ namespace Timelapse.Database
         {
             string commaSeparatedColumnsSource = GetColumnNamesAsString(connection, schemaFromSourceTable);
             string commaSeparatedColumnsDestination = GetColumnNamesAsString(connection, schemaFromDestinationTable);
-            string sql = Constant.Sqlite.InsertInto + dataDestinationTable + Constant.Sqlite.OpenParenthesis + commaSeparatedColumnsDestination + Constant.Sqlite.CloseParenthesis + Constant.Sqlite.Select + commaSeparatedColumnsSource + Constant.Sqlite.From + dataSourceTable;
+            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumnsDestination + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumnsSource + Sql.From + dataSourceTable;
 
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
@@ -793,7 +793,7 @@ namespace Timelapse.Database
         /// <param name="tableName">the name of the table</param>
         private static void DropTable(SQLiteConnection connection, string tableName)
         {
-            string sql = Constant.Sqlite.DropTable + tableName;
+            string sql = Sql.DropTable + tableName;
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
@@ -830,20 +830,20 @@ namespace Timelapse.Database
                             case 3:  // notnull (Column has a NOT NULL constraint)
                                 if (reader[field].ToString() != "0")
                                 {
-                                    existingColumnDefinition += Constant.Sqlite.NotNull;
+                                    existingColumnDefinition += Sql.NotNull;
                                 }
                                 break;
                             case 4:  // dflt_value (Column has a default value)
                                 string s = reader[field].ToString();
                                 if (!String.IsNullOrEmpty(s))
                                 {
-                                    existingColumnDefinition += Constant.Sqlite.Default + reader[field].ToString() + " ";
+                                    existingColumnDefinition += Sql.Default + reader[field].ToString() + " ";
                                 }
                                 break;
                             case 5:  // pk (Column is part of the primary key)
                                 if (reader[field].ToString() != "0")
                                 {
-                                    existingColumnDefinition += Constant.Sqlite.PrimaryKey;
+                                    existingColumnDefinition += Sql.PrimaryKey;
                                 }
                                 break;
                             default:
@@ -909,7 +909,7 @@ namespace Timelapse.Database
         /// </returns>
         private static SQLiteDataReader GetSchema(SQLiteConnection connection, string tableName)
         {
-            string sql = Constant.Sqlite.PragmaTableInfo + Constant.Sqlite.OpenParenthesis + tableName + Constant.Sqlite.CloseParenthesis; // Syntax is: PRAGMA TABLE_INFO (tableName)
+            string sql = Sql.PragmaTableInfo + Sql.OpenParenthesis + tableName + Sql.CloseParenthesis; // Syntax is: PRAGMA TABLE_INFO (tableName)
             SQLiteCommand command = new SQLiteCommand(sql, connection);
             return command.ExecuteReader();
         }
@@ -978,19 +978,19 @@ namespace Timelapse.Database
                         case 3:  // notnull (Column has a NOT NULL constraint)
                             if (reader[field].ToString() != "0")
                             {
-                                existingColumnDefinition += Constant.Sqlite.NotNull;
+                                existingColumnDefinition += Sql.NotNull;
                             }
                             break;
                         case 4:  // dflt_value (Column has a default value)
                             if (String.IsNullOrEmpty(reader[field].ToString()))
                             {
-                                existingColumnDefinition += Constant.Sqlite.Default + Utilities.QuoteForSql(reader[field].ToString()) + " ";
+                                existingColumnDefinition += Sql.Default + Utilities.QuoteForSql(reader[field].ToString()) + " ";
                             }
                             break;
                         case 5:  // pk (Column is part of the primary key)
                             if (reader[field].ToString() != "0")
                             {
-                                existingColumnDefinition += Constant.Sqlite.PrimaryKey;
+                                existingColumnDefinition += Sql.PrimaryKey;
                             }
                             break;
                     }
@@ -1010,7 +1010,7 @@ namespace Timelapse.Database
         /// <param name="newTableName">the new name of the table</param> 
         private static void RenameTable(SQLiteConnection connection, string tableName, string newTableName)
         {
-            string sql = Constant.Sqlite.AlterTable + tableName + Constant.Sqlite.RenameTo + newTableName;
+            string sql = Sql.AlterTable + tableName + Sql.RenameTo + newTableName;
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
@@ -1040,7 +1040,7 @@ namespace Timelapse.Database
             // Construct a list containing queries of the form DELETE FROM table_name
             foreach (string table in tables)
             {
-                string query = Constant.Sqlite.DeleteFrom + table;     // DELETE FROM tablename
+                string query = Sql.DeleteFrom + table;     // DELETE FROM tablename
                 query += "; ";
                 queries.Add(query);
             }
