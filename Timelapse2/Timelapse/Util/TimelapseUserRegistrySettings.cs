@@ -24,7 +24,6 @@ namespace Timelapse.Util
         public DateTime MostRecentCheckForUpdates { get; set; }
         public MostRecentlyUsedCollection<string> MostRecentImageSets { get; private set; }
         public Rect QuickPasteWindowPosition { get; set; }
-        public double SpeciesDetectedThreshold { get; set; }
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
         public bool SuppressCsvImportPrompt { get; set; }
@@ -45,6 +44,7 @@ namespace Timelapse.Util
 
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
+        public bool UseDetections { get; set; }
         public bool ClassifyDarkImagesWhenLoading { get; set; }
         #endregion
 
@@ -81,7 +81,6 @@ namespace Timelapse.Util
                 this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.ReadMostRecentlyUsedList(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets);
                 this.QuickPasteWindowPosition = registryKey.ReadRect(Constant.Registry.TimelapseKey.QuickPasteWindowPosition, new Rect(0.0, 0.0, 0.0, 0.0));
-                this.SpeciesDetectedThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.SpeciesDetectedThreshold, Constant.Recognition.SpeciesDetectedThresholdDefault);
                 this.SuppressAmbiguousDatesDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, false);
                 this.SuppressCsvImportPrompt = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, false);
@@ -100,6 +99,7 @@ namespace Timelapse.Util
                 this.TabOrderIncludeImageQuality = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, false);
                 this.Throttles.SetDesiredImageRendersPerSecond(registryKey.ReadDouble(Constant.Registry.TimelapseKey.DesiredImageRendersPerSecond, Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault));
                 this.TimelapseWindowPosition = registryKey.ReadRect(Constant.Registry.TimelapseKey.TimelapseWindowPosition, new Rect(0.0, 0.0, 1350.0, 900.0));
+                this.UseDetections = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.UseDetections, false);
             }
         }
 
@@ -160,7 +160,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.Registry.TimelapseKey.MostRecentlyUsedImageSets, this.MostRecentImageSets);
                 registryKey.Write(Constant.Registry.TimelapseKey.QuickPasteWindowPosition, this.QuickPasteWindowPosition);
-                registryKey.Write(Constant.Registry.TimelapseKey.SpeciesDetectedThreshold, this.SpeciesDetectedThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressAmbiguousDatesDialog, this.SuppressAmbiguousDatesDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvExportDialog, this.SuppressCsvExportDialog);
                 registryKey.Write(Constant.Registry.TimelapseKey.SuppressCsvImportPrompt, this.SuppressCsvImportPrompt);
@@ -178,6 +177,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeDeleteFlag, this.TabOrderIncludeDeleteFlag);
                 registryKey.Write(Constant.Registry.TimelapseKey.TabOrderIncludeImageQuality, this.TabOrderIncludeImageQuality);
                 registryKey.Write(Constant.Registry.TimelapseKey.TimelapseWindowPosition, this.TimelapseWindowPosition);
+                registryKey.Write(Constant.Registry.TimelapseKey.UseDetections, this.UseDetections);
             }
         }
 

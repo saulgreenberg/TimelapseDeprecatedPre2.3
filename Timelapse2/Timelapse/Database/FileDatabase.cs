@@ -2,13 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using Timelapse.Detection;
 using Timelapse.Dialog;
@@ -1105,7 +1103,6 @@ namespace Timelapse.Database
         {
             string query = String.Empty;
             bool skipWhere = false;
-            bool useGroupBy = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 query = "Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";

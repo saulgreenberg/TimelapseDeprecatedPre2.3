@@ -176,9 +176,6 @@
     <Compile Include="Dialog\ChooseDetectorFilePath.xaml.cs">
       <DependentUpon>ChooseDetectorFilePath.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\DetectorOptions.xaml.cs">
-      <DependentUpon>DetectorOptions.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\EpisodeOptions.xaml.cs">
       <DependentUpon>EpisodeOptions.xaml</DependentUpon>
     </Compile>
@@ -380,10 +377,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\ChooseDetectorFilePath.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\DetectorOptions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

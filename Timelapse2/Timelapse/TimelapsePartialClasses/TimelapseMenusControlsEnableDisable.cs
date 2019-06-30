@@ -26,11 +26,14 @@ namespace Timelapse
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
-            this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable;
+            this.MenuItemImportDetectionData.Visibility = this.state.UseDetections ? Visibility.Visible : Visibility.Collapsed;
+            this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable && this.state.UseDetections;
+            this.MenuSeparatorDetections.Visibility = this.MenuItemImportDetectionData.Visibility;
 
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
+
             // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
 
             // Options menu
@@ -53,10 +56,6 @@ namespace Timelapse
 
             // Sort menu
             this.MenuItemSort.IsEnabled = filesSelected;
-
-            // Recognition menu
-            this.MenuItemImportDetectionData.IsEnabled = filesSelected;
-            this.MenuItemDetectorOptions.IsEnabled = filesSelected;
 
             // Windows menu is always enabled
 

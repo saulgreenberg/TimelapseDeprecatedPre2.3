@@ -56,14 +56,7 @@
                         <Image Source="Icons/NewFile_40x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-
-                <!-- Load Detections -->
-                <Separator />
-                <MenuItem Name="MenuItemImportDetectionData" Header="Import detection data for this image set" IsEnabled="False" Click="MenuItemImportDetectionData_Click" ToolTip="Import detection data for the image set from a Microsoft-supplied .json file">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/JSONImport_32x.png" />
-                    </MenuItem.Icon>
-                </MenuItem>
+                
                 <Separator />
                 
                 <!-- Export data for this image set as a .csv file... -->
@@ -86,7 +79,13 @@
                     </MenuItem.Icon>
                 </MenuItem>
 
- 
+                <!-- Load Detections -->
+                <Separator Name="MenuSeparatorDetections"/>
+                <MenuItem Name="MenuItemImportDetectionData" Header="Import detection data for this image set" IsEnabled="False" Click="MenuItemImportDetectionData_Click" ToolTip="Import detection data for the image set from a Microsoft-supplied .json file">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/JSONImport_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
 
                 <!-- Export the current image or video _file...-->
                 <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
@@ -94,6 +93,7 @@
                         <Image Source="Icons/ImageExport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
+                
                 <Separator />
 
                 <!-- Rename the _data file...-->
@@ -175,8 +175,6 @@
                     <MenuItem Name="MenuItemMagnifyingGlassIncrease" InputGestureText="U" Header="_Increase magnification" Click="MenuItemMagnifyingGlassIncrease_Click" ToolTip="Increase the magnification of the magnifying glass"/>
                     <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                 </MenuItem>
-
-                <MenuItem Name="MenuItemDetectorOptions" Header="Detector options..." IsEnabled="false" Click="MenuItemDetectorOptions_Click" ToolTip="Configure options for how the detector information is displayed"/>
 
                 <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
 

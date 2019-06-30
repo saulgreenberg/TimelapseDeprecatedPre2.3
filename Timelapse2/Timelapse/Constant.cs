@@ -512,6 +512,7 @@ namespace Timelapse
                 public const string TabOrderIncludeDeleteFlag = "TabOrderIncludeDeleteFlag";
                 public const string TabOrderIncludeImageQuality = "TabOrderIncludeImageQuality";
 
+                public const string UseDetections = "UseDetections";
                 // Avalon doc state
                 public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
             }

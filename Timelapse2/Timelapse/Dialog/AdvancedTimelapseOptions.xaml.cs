@@ -44,11 +44,16 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
             this.DifferenceThreshold.Maximum = Constant.ImageValues.DifferenceThresholdMax;
             this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
+
+            // Detections
+            this.CheckBoxUseDetections.IsChecked = this.timelapseState.UseDetections;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
+            this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
         }
 
         #region Delete Folder Management
@@ -162,9 +167,42 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
         }
 
+        // Detection settings
+        private void CheckBoxUseDetections_Click(object sender, RoutedEventArgs e)
+        {
+            this.timelapseState.UseDetections = CheckBoxUseDetections.IsChecked == true;
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
+        }
+
+        private void ResetDetections_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBoxUseDetections.IsChecked = false;
+            this.timelapseState.UseDetections = false;
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
+            this.BoundingBoxDisplayThresholdSlider.Value = Constant.Recognition.BoundingBoxDisplayThresholdDefault;
+        }
+
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+        }
+
+        private void BoundingBoxDisplayThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (!(sender is Slider slider))
+            {
+                return;
+            }
+            this.BoundingBoxThresholdDisplayValue.Text = slider.Value.ToString("0.00");
+            if (slider.Value == 0)
+            {
+                this.BoundingBoxThresholdDisplayValue.Text += " (always display bounding box)";
+            }
+            else if (slider.Value == 1)
+            {
+                this.BoundingBoxThresholdDisplayValue.Text += " (never display bounding box)";
+            }
+            this.timelapseState.BoundingBoxDisplayThreshold = slider.Value;
         }
     }
 }
