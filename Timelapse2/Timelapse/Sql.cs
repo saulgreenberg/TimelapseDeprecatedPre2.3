@@ -68,7 +68,7 @@ namespace Timelapse
         public const string RenameTo = " RENAME TO ";
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";
-        public const string SelectStarFrom = Sql.Select + Sql.Star + Sql.From; //" SELECT * FROM "
+        public const string SelectStarFrom = Sql.Select + Sql.Star + Sql.From; // SELECT * FROM "
         public const string SelectCount = " Select Count ";
         public const string SelectCountStarFrom = Sql.SelectCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
         public const string Semicolon = " ; ";

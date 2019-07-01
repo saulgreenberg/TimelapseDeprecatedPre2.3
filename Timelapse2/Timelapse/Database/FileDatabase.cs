@@ -1112,7 +1112,7 @@ namespace Timelapse.Database
             bool skipWhere = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
-                //Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+                // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                 query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
                     Sql.From + Constant.DatabaseTable.FileData +
                     Sql.LeftJoin + Constant.DBTableNames.Detections + Sql.On +

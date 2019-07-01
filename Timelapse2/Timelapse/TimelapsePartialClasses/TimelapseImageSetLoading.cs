@@ -709,7 +709,7 @@ namespace Timelapse
             FilePlayer.Visibility = Visibility.Visible;
 
             // Set whether detections actually exist at this point.
-            GlobalReferences.DetectionsExists = (this.state.UseDetections) ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+            GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
 
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;

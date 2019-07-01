@@ -80,7 +80,7 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
-            GlobalReferences.DetectionsExists = (this.state.UseDetections) ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+            GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
             this.FilesSelectAndShow(true);
             Mouse.OverrideCursor = null;
         }
