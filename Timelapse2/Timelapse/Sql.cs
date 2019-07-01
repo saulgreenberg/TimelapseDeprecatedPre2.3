@@ -16,6 +16,10 @@ namespace Timelapse
         public const string AsReal = " AS REAL ";
         public const string Ascending = " ASC ";
         public const string Descending = " DESC ";
+        public const string Dot = ".";
+
+        public const string DotStar = Sql.Dot + Sql.Star;
+        
         public const string BeginTransaction = " BEGIN TRANSACTION ";
         public const string Between = " BETWEEN ";
         public const string Cast = " CAST ";
@@ -45,6 +49,7 @@ namespace Timelapse
         public const string InsertInto = " INSERT INTO ";
         public const string Integer = " INTEGER ";
         public const string IsNull = " IS NULL ";
+        public const string LeftJoin = " LEFT JOIN ";
         public const string LessThanEqual = " <= ";
         public const string LessThan = " < ";
         public const string Max = " MAX ";
@@ -63,10 +68,12 @@ namespace Timelapse
         public const string RenameTo = " RENAME TO ";
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";
-        public const string SelectStarFrom = "SELECT * FROM ";
-        public const string SelectCountStarFrom = "Select Count(*) FROM ";
+        public const string SelectStarFrom = Sql.Select + Sql.Star + Sql.From; //" SELECT * FROM "
+        public const string SelectCount = " Select Count ";
+        public const string SelectCountStarFrom = Sql.SelectCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
         public const string Semicolon = " ; ";
         public const string Set = " SET ";
+        public const string Star = "*";
         public const string String = " STRING ";
         public const string MasterTableList = "sqlite_master";
         public const string Real = " REAL ";

@@ -61,7 +61,7 @@
 
                 <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" Margin="10,6,10,0" Height="Auto">
                     <ComboBox Name="DetectionRangeType"  FontWeight="Normal" SelectionChanged="DetectionRangeType_SelectionChanged" Width="100" VerticalContentAlignment="Center"/>
-                    <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1"  FontWeight="Normal" Value="0" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
+                    <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1"  FontWeight="Normal" Value="0"  FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
                     <Label Name="AndLabel" FontWeight="DemiBold" Content="and "/>
                     <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2"  FontWeight="Normal" Value="1" FormatString="F2" Increment="0.05" Grid.Row="2" Grid.Column="2" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,0,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
                 </StackPanel>

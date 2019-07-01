@@ -871,15 +871,22 @@ namespace Timelapse.Database
                 this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
-                    query = "SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
+                    // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+                    query = Sql.Select + Constant.DatabaseTable.FileData + Sql.DotStar +
+                        Sql.From + Constant.DatabaseTable.FileData +
+                        Sql.LeftJoin + Constant.DBTableNames.Detections +
+                        Sql.On + Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                        Sql.Equal + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                        Sql.Where + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
-                    // Form: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  WHERE Detections.category = 1 Group By Detections.Id Having Max  (Detections.conf )  < .2
-                    query = Sql.Select + Constant.DatabaseTable.FileData + ".*" + Sql.From + Constant.DBTableNames.Detections +
-                        Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
-                         Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                         Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                    // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                    query = Sql.Select + Constant.DatabaseTable.FileData + Sql.DotStar +
+                         Sql.From + Constant.DBTableNames.Detections +
+                         Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
+                         Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
+                         Constant.DBTableNames.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
                 }
                 else
                 {
@@ -1105,18 +1112,18 @@ namespace Timelapse.Database
             bool skipWhere = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
-                query = "Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL";
+                //Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+                query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
+                    Sql.From + Constant.DatabaseTable.FileData +
+                    Sql.LeftJoin + Constant.DBTableNames.Detections + Sql.On +
+                    Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                    Sql.Equal + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                    Sql.Where + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
-                // query = Sql.SelectCountStarFrom + Constant.DatabaseTable.FileData + // ".*" + Sql.From + Constant.DBTableNames.Detections +
-                //query = Sql.SelectCountStarFrom +
-                //    Sql.OpenParenthesis + Sql.SelectStarFrom +
-                //    Constant.DBTableNames.Detections +
-                //    Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
-                //    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                //    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                 query = Sql.SelectCountStarFrom +
                     Sql.OpenParenthesis + Sql.SelectStarFrom +
                     Constant.DBTableNames.Detections +
@@ -1141,7 +1148,7 @@ namespace Timelapse.Database
                     query += Sql.CloseParenthesis;
                 }
             }
-            System.Diagnostics.Debug.Print("Count: " + query);
+            // System.Diagnostics.Debug.Print("Count: " + query);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion

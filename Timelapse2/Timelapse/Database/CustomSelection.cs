@@ -222,7 +222,8 @@ namespace Timelapse.Database
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
                 {
                     // The where expression constructed should look something like: (DataLabel IS NULL OR DataLabel = '')
-                    whereForTerm = " (" + label + " IS NULL OR " + label + " = '') ";
+                    // Form: " (" + label + " IS NULL OR " + label + " = '') ";
+                    whereForTerm = Sql.OpenParenthesis + label + Sql.IsNull + Sql.Or + label + Sql.Equal + "''" + Sql.CloseParenthesis;
                 }
                 else
                 {
