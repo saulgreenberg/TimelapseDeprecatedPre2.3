@@ -99,13 +99,13 @@ namespace Timelapse.Database
         {
             // Open the database if it exists
             SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
-            if (sqliteWrapper.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
+            if (sqliteWrapper.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
             {
                 // The column isn't in the table, so give up
                 return String.Empty;
             }
 
-            List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
             if (listOfObjects.Count == 1)
             {
                 return (string)listOfObjects[0];
@@ -133,7 +133,7 @@ namespace Timelapse.Database
             {
                 columnDefinitions.Add(CreateFileDataColumnDefinition(control));
             }
-            this.Database.CreateTable(Constant.DatabaseTable.FileData, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.FileData, columnDefinitions);
 
             // SAULXX THIS IS IN TODDs - Don't uncomment it until we figure out how he uses it. He creates it but I am unsure if he actually uses it
             // Index the DateTime column
@@ -154,7 +154,7 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text));        // A comma-separated list of 4 sort terms
 
-            this.Database.CreateTable(Constant.DatabaseTable.ImageSet, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.ImageSet, columnDefinitions);
 
             // Populate the data for the image set with defaults
             // VersionCompatabily
@@ -175,7 +175,7 @@ namespace Timelapse.Database
             {
                 columnsToUpdate
             };
-            this.Database.Insert(Constant.DatabaseTable.ImageSet, insertionStatements);
+            this.Database.Insert(Constant.DBTables.ImageSet, insertionStatements);
 
             this.GetImageSet();
 
@@ -194,7 +194,7 @@ namespace Timelapse.Database
                     columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty));
                 }
             }
-            this.Database.CreateTable(Constant.DatabaseTable.Markers, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.Markers, columnDefinitions);
         }
         #endregion
 
@@ -348,8 +348,8 @@ namespace Timelapse.Database
                 }
 
                 this.CreateBackupIfNeeded();
-                this.InsertRows(Constant.DatabaseTable.FileData, fileDataRows);
-                this.InsertRows(Constant.DatabaseTable.Markers, markerRows);
+                this.InsertRows(Constant.DBTables.FileData, fileDataRows);
+                this.InsertRows(Constant.DBTables.Markers, markerRows);
 
                 if (onFileAdded != null)
                 {
@@ -502,7 +502,7 @@ namespace Timelapse.Database
             }
 
             // Replace the schema in the FildDB table with the schema defined by the column definitions.
-            this.Database.ReplaceTableSchemaWithNewColumnDefinitionsSchema(Constant.DatabaseTable.FileData, columnDefinitions);
+            this.Database.ReplaceTableSchemaWithNewColumnDefinitionsSchema(Constant.DBTables.FileData, columnDefinitions);
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
@@ -519,53 +519,53 @@ namespace Timelapse.Database
             // particular version numbers where known changes occured 
             // Note: if we can't retrieve the version number from the image set, then set it to a very low version number to guarantee all checks will be made
             string lowestVersionNumber = "1.0.0.0";
-            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
             string imageSetVersionNumber = versionCompatabilityColumnExists ? this.ImageSet.VersionCompatability
                 : lowestVersionNumber;
             string timelapseVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
 
             // Step 1. Check the FileTable for missing columns
             // RelativePath column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath) == false)
+            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath) == false)
             {
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
             }
 
             // DateTime column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.DateTime) == false)
+            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DateTime) == false)
             {
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
             }
 
             // UTCOffset column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.UtcOffset) == false)
+            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.UtcOffset) == false)
             {
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
-                this.Database.AddColumnToTable(Constant.DatabaseTable.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
+                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
             }
 
             // Remove MarkForDeletion column and add DeleteFlag column(if needed)
-            bool hasMarkForDeletion = this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.ControlsDeprecated.MarkForDeletion);
-            bool hasDeleteFlag = this.Database.IsColumnInTable(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.DeleteFlag);
+            bool hasMarkForDeletion = this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
+            bool hasDeleteFlag = this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DeleteFlag);
             if (hasMarkForDeletion && (hasDeleteFlag == false))
             {
                 // migrate any existing MarkForDeletion column to DeleteFlag
                 // this is likely the most typical case
-                this.Database.RenameColumn(Constant.DatabaseTable.FileData, Constant.ControlsDeprecated.MarkForDeletion, Constant.DatabaseColumn.DeleteFlag);
+                this.Database.RenameColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion, Constant.DatabaseColumn.DeleteFlag);
             }
             else if (hasMarkForDeletion && hasDeleteFlag)
             {
                 // if both MarkForDeletion and DeleteFlag are present drop MarkForDeletion
                 // this is not expected to occur
-                this.Database.DeleteColumn(Constant.DatabaseTable.FileData, Constant.ControlsDeprecated.MarkForDeletion);
+                this.Database.DeleteColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
             }
             else if (hasDeleteFlag == false)
             {
@@ -573,7 +573,7 @@ namespace Timelapse.Database
                 long id = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DeleteFlag);
                 ControlRow control = this.Controls.Find(id);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
             }
 
             // STEP 2. Check the ImageTable for missing columns
@@ -582,14 +582,14 @@ namespace Timelapse.Database
             // Newer versions of Timelapse  trim the data as it is entered, but older versions did not, so this is to make it backwards-compatable.
             // The WhiteSpaceExists column in the ImageSet Table did not exist before this version, so we add it to the table if needed. If it exists, then 
             // we know the data has been trimmed and we don't have to do it again as the newer versions take care of trimmingon the fly.
-            bool whiteSpaceColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.WhiteSpaceTrimmed);
+            bool whiteSpaceColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.WhiteSpaceTrimmed);
             if (!whiteSpaceColumnExists)
             {
                 // create the whitespace column
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
 
                 // trim whitespace from the data table
-                this.Database.TrimWhitespace(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
+                this.Database.TrimWhitespace(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
 
                 // mark image set as whitespace trimmed
                 // This still has to be synchronized, which will occur after we prepare all missing columns
@@ -604,7 +604,7 @@ namespace Timelapse.Database
             string firstVersionWithNullCheck = "2.2.2.4";
             if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, imageSetVersionNumber))
             {
-                this.Database.ChangeNullToEmptyString(Constant.DatabaseTable.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
+                this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
             // STEP 3. Check both templates and update if needed (including values)
@@ -635,7 +635,7 @@ namespace Timelapse.Database
                 // I suspect in most cases that the analysts aren't using the field anyways, although they can always regenerate it if needed.
                 ColumnTuple columnTuple = new ColumnTuple(Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
                 ColumnTuplesWithWhere columnTupleWithWhere = new ColumnTuplesWithWhere(columnTuple, Constant.ImageQuality.Dark, true);
-                this.Database.Update(Constant.DatabaseTable.FileData, columnTupleWithWhere);
+                this.Database.Update(Constant.DBTables.FileData, columnTupleWithWhere);
             }
 
             // Version Compatabillity Column: If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
@@ -644,16 +644,16 @@ namespace Timelapse.Database
             if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
             }
 
             // Sort Criteria Column: Make sure that the column containing the SortCriteria exists in the image set table. 
             // If not, add it and set it to the default
-            bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SortTerms);
+            bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SortTerms);
             if (!sortCriteriaColumnExists)
             {
                 // create the sortCriteria column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
             // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
@@ -662,31 +662,31 @@ namespace Timelapse.Database
             if (VersionClient.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
             {
                 // Because we may be running this several times on the same version, we should still check to see if the column exists before adding it
-                bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.SelectedFolder);
+                bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SelectedFolder);
                 if (!selectedFolderColumnExists)
                 {
                     // create the sortCriteria column and update the image set. Syncronization happens later
-                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
+                    this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
                     this.GetImageSet();
                 }
             }
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
             // If not, add it and set it to the default
-            bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
             if (!quickPasteXMLColumnExists)
             {
                 // create the QuickPaste column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
-            bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone);
+            bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone);
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
             if (!timeZoneColumnExists)
             {
                 // create default time zone entry and refresh the image set.
-                this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
-                this.Database.SetColumnToACommonValue(Constant.DatabaseTable.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
+                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
+                this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
                 this.GetImageSet();
             }
 
@@ -710,7 +710,7 @@ namespace Timelapse.Database
                     image.SetDateTimeOffset(imageDateTime);
                     updateQuery.Add(image.GetDateTimeColumnTuples());
                 }
-                this.Database.Update(Constant.DatabaseTable.FileData, updateQuery);
+                this.Database.Update(Constant.DBTables.FileData, updateQuery);
                 // Note that the FileTable is now stale as we have updated the database directly
             }
         }
@@ -731,7 +731,7 @@ namespace Timelapse.Database
                 {
                     // The TemplateTable in the .tdb and .ddb database differ. 
                     // Update the .ddb Template table by dropping the .ddb template table and replacing it with the .tdb table. 
-                    base.Database.DropTable(Constant.DatabaseTable.Controls);
+                    base.Database.DropTable(Constant.DBTables.Controls);
                     base.OnDatabaseCreated(templateDatabase);
                 }
 
@@ -746,12 +746,12 @@ namespace Timelapse.Database
                     long id = this.GetControlIDFromTemplateTable(dataLabel);
                     ControlRow control = this.Controls.Find(id);
                     ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
-                    this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.FileData, columnDefinition);
+                    this.Database.AddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
 
                     if (control.Type == Constant.Control.Counter)
                     {
                         ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Sql.Text);
-                        this.Database.AddColumnToEndOfTable(Constant.DatabaseTable.Markers, markerColumnDefinition);
+                        this.Database.AddColumnToEndOfTable(Constant.DBTables.Markers, markerColumnDefinition);
                     }
                 }
 
@@ -760,14 +760,14 @@ namespace Timelapse.Database
                 // Action: Delete those data columns
                 foreach (string dataLabel in templateSyncResults.DataLabelsToDelete)
                 {
-                    this.Database.DeleteColumn(Constant.DatabaseTable.FileData, dataLabel);
+                    this.Database.DeleteColumn(Constant.DBTables.FileData, dataLabel);
 
                     // Delete the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because we can't get the type of the data label as it no longer exists in the Template.
-                    if (this.Database.IsColumnInTable(Constant.DatabaseTable.Markers, dataLabel))
+                    if (this.Database.IsColumnInTable(Constant.DBTables.Markers, dataLabel))
                     {
-                        this.Database.DeleteColumn(Constant.DatabaseTable.Markers, dataLabel);
+                        this.Database.DeleteColumn(Constant.DBTables.Markers, dataLabel);
                     }
                 }
 
@@ -776,14 +776,14 @@ namespace Timelapse.Database
                 foreach (KeyValuePair<string, string> dataLabelToRename in templateSyncResults.DataLabelsToRename)
                 {
                     // Rename the column associated with that data label from the FileData table
-                    this.Database.RenameColumn(Constant.DatabaseTable.FileData, dataLabelToRename.Key, dataLabelToRename.Value);
+                    this.Database.RenameColumn(Constant.DBTables.FileData, dataLabelToRename.Key, dataLabelToRename.Value);
 
                     // Rename the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
-                    if (this.Database.IsColumnInTable(Constant.DatabaseTable.Markers, dataLabelToRename.Key))
+                    if (this.Database.IsColumnInTable(Constant.DBTables.Markers, dataLabelToRename.Key))
                     {
-                        this.Database.RenameColumn(Constant.DatabaseTable.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
+                        this.Database.RenameColumn(Constant.DBTables.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
                 }
 
@@ -845,7 +845,7 @@ namespace Timelapse.Database
                 throw new ArgumentOutOfRangeException("FileDatabase: 'where' clause is empty or null");
             }
 
-            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.Where + where;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             FileTable temporaryTable = new FileTable(images);
             if (temporaryTable.RowCount != 1)
@@ -872,21 +872,21 @@ namespace Timelapse.Database
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = Sql.Select + Constant.DatabaseTable.FileData + Sql.DotStar +
-                        Sql.From + Constant.DatabaseTable.FileData +
-                        Sql.LeftJoin + Constant.DBTableNames.Detections +
-                        Sql.On + Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Equal + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Where + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
+                        Sql.From + Constant.DBTables.FileData +
+                        Sql.LeftJoin + Constant.DBTables.Detections +
+                        Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                        Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                        Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = Sql.Select + Constant.DatabaseTable.FileData + Sql.DotStar +
-                         Sql.From + Constant.DBTableNames.Detections +
-                         Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
-                         Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
-                         Constant.DBTableNames.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
+                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
+                         Sql.From + Constant.DBTables.Detections +
+                         Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
+                         Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
+                         Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
                 }
                 else
                 {
@@ -896,7 +896,7 @@ namespace Timelapse.Database
 
             if (useStandardQuery)
             {
-                query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData;
+                query = Sql.SelectStarFrom + Constant.DBTables.FileData;
             }
 
             if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
@@ -1007,7 +1007,7 @@ namespace Timelapse.Database
         public FileTable GetFilesMarkedForDeletion()
         {
             string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
-            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.Where + where;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1015,7 +1015,7 @@ namespace Timelapse.Database
         // Select * From DataTable Where  Id IN(1,2,4 )
         public FileTable GetFilesInDataTableById(string listOfIds)
         {
-            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData + Sql.WhereIDIn + Sql.OpenParenthesis + listOfIds + Sql.CloseParenthesis;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDIn + Sql.OpenParenthesis + listOfIds + Sql.CloseParenthesis;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1024,7 +1024,7 @@ namespace Timelapse.Database
         // Get a table containing a subset of rows that have duplicate File and RelativePaths 
         public FileTable GetDuplicateFiles()
         {
-            string query = Sql.Select + " RelativePath, File, COUNT(*) " + Sql.From + Constant.DatabaseTable.FileData;
+            string query = Sql.Select + " RelativePath, File, COUNT(*) " + Sql.From + Constant.DBTables.FileData;
             query += Sql.GroupBy + " RelativePath, File HAVING COUNT(*) > 1";
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
@@ -1032,7 +1032,7 @@ namespace Timelapse.Database
 
         public FileTable GetAllFiles()
         {
-            string query = Sql.SelectStarFrom + Constant.DatabaseTable.FileData;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1041,8 +1041,8 @@ namespace Timelapse.Database
         // Delete duplicate rows from the database, identified by identical File and RelativePath contents.
         public void DeleteDuplicateFiles()
         {
-            string query = Sql.DeleteFrom + Constant.DatabaseTable.FileData + Sql.WhereIDNotIn;
-            query += Sql.OpenParenthesis + Sql.Select + " MIN(Id) " + Sql.From + Constant.DatabaseTable.FileData + Sql.GroupBy + "RelativePath, File)";
+            string query = Sql.DeleteFrom + Constant.DBTables.FileData + Sql.WhereIDNotIn;
+            query += Sql.OpenParenthesis + Sql.Select + " MIN(Id) " + Sql.From + Constant.DBTables.FileData + Sql.GroupBy + "RelativePath, File)";
             DataTable images = this.Database.GetDataTableFromSelect(query);
         }
 
@@ -1113,12 +1113,12 @@ namespace Timelapse.Database
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
-                    Sql.From + Constant.DatabaseTable.FileData +
-                    Sql.LeftJoin + Constant.DBTableNames.Detections + Sql.On +
-                    Constant.DatabaseTable.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
-                    Sql.Equal + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
-                    Sql.Where + Constant.DBTableNames.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+                query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
+                    Sql.From + Constant.DBTables.FileData +
+                    Sql.LeftJoin + Constant.DBTables.Detections + Sql.On +
+                    Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                    Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                    Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
@@ -1126,14 +1126,14 @@ namespace Timelapse.Database
                 // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                 query = Sql.SelectCountStarFrom +
                     Sql.OpenParenthesis + Sql.SelectStarFrom +
-                    Constant.DBTableNames.Detections +
-                    Sql.InnerJoin + Constant.DatabaseTable.FileData + Sql.On +
-                    Constant.DatabaseTable.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                    Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                    Constant.DBTables.Detections +
+                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
+                    Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
+                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
             }
             else
             {
-                query = Sql.SelectCountStarFrom + Constant.DatabaseTable.FileData;
+                query = Sql.SelectCountStarFrom + Constant.DBTables.FileData;
             }
 
             if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
@@ -1192,14 +1192,14 @@ namespace Timelapse.Database
 
         public void IndexCreateForDetectionsAndClassifications()
         {
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexID, Constant.DBTableNames.Detections, Constant.DatabaseColumn.ID);
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexDetectionID, Constant.DBTableNames.Classifications, Constant.DetectionColumns.DetectionID);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
         }
 
         public void IndexCreateForFileAndRelativePath()
         {
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexFile, Constant.DatabaseTable.FileData, Constant.DatabaseColumn.File);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            this.Database.CreateIndex(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
         }
 
         public void IndexDropForFileAndRelativePath()
@@ -1225,7 +1225,7 @@ namespace Timelapse.Database
             ColumnTuplesWithWhere columnToUpdate = new ColumnTuplesWithWhere();
             columnToUpdate.Columns.Add(new ColumnTuple(dataLabel, value)); // Populate the data 
             columnToUpdate.SetWhere(fileID);
-            this.Database.Update(Constant.DatabaseTable.FileData, columnToUpdate);
+            this.Database.Update(Constant.DBTables.FileData, columnToUpdate);
         }
 
         // Set one property on all rows in the selected view to a given value
@@ -1238,7 +1238,7 @@ namespace Timelapse.Database
         public void UpdateFiles(List<ColumnTuplesWithWhere> filesToUpdate)
         {
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.FileData, filesToUpdate);
+            this.Database.Update(Constant.DBTables.FileData, filesToUpdate);
         }
 
         public void UpdateFiles(ColumnTuplesWithWhere filesToUpdate)
@@ -1247,12 +1247,12 @@ namespace Timelapse.Database
             {
                 filesToUpdate
             };
-            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdateList);
+            this.Database.Update(Constant.DBTables.FileData, imagesToUpdateList);
         }
 
         public void UpdateFiles(ColumnTuple columnToUpdate)
         {
-            this.Database.Update(Constant.DatabaseTable.FileData, columnToUpdate);
+            this.Database.Update(Constant.DBTables.FileData, columnToUpdate);
         }
 
         // Given a range of selected files, update the field identifed by dataLabel with the value in valueSource
@@ -1282,7 +1282,7 @@ namespace Timelapse.Database
                 imagesToUpdate.Add(imageUpdate);
             }
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+            this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
         }
 
         // Similar to above
@@ -1309,7 +1309,7 @@ namespace Timelapse.Database
                 imagesToUpdate.Add(imageUpdate);
             }
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+            this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
         }
         #endregion
 
@@ -1379,7 +1379,7 @@ namespace Timelapse.Database
             if (imagesToUpdate.Count > 0)
             {
                 this.CreateBackupIfNeeded();
-                this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+                this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
 
                 // Add an entry into the log detailing what we just did
                 StringBuilder log = new StringBuilder(Environment.NewLine);
@@ -1448,7 +1448,7 @@ namespace Timelapse.Database
             if (imagesToUpdate.Count > 0)
             {
                 this.CreateBackupIfNeeded();
-                this.Database.Update(Constant.DatabaseTable.FileData, imagesToUpdate);
+                this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
 
                 StringBuilder log = new StringBuilder(Environment.NewLine);
                 log.AppendFormat("System entry: Swapped days and months for {0} files.{1}", imagesToUpdate.Count, Environment.NewLine);
@@ -1475,8 +1475,8 @@ namespace Timelapse.Database
             }
             // Delete the data and markers associated with that image
             this.CreateBackupIfNeeded();
-            this.Database.Delete(Constant.DatabaseTable.FileData, idClauses);
-            this.Database.Delete(Constant.DatabaseTable.Markers, idClauses);
+            this.Database.Delete(Constant.DBTables.FileData, idClauses);
+            this.Database.Delete(Constant.DBTables.Markers, idClauses);
         }
 
         // Convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)
@@ -1680,7 +1680,7 @@ namespace Timelapse.Database
         public List<string> GetDistinctValuesInFileDataBaseTableColumn(string dataLabel)
         {
             List<string> distinctValues = new List<string>();
-            foreach (object value in this.Database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, dataLabel))
+            foreach (object value in this.Database.GetDistinctValuesInColumn(Constant.DBTables.FileData, dataLabel))
             {
                 distinctValues.Add(value.ToString());
             }
@@ -1713,7 +1713,7 @@ namespace Timelapse.Database
 
         private void GetImageSet()
         {
-            string imageSetQuery = Sql.SelectStarFrom + Constant.DatabaseTable.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
+            string imageSetQuery = Sql.SelectStarFrom + Constant.DBTables.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
         }
@@ -1757,7 +1757,7 @@ namespace Timelapse.Database
 
         private void GetMarkers()
         {
-            string markersQuery = Sql.SelectStarFrom + Constant.DatabaseTable.Markers;
+            string markersQuery = Sql.SelectStarFrom + Constant.DBTables.Markers;
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
@@ -1783,13 +1783,13 @@ namespace Timelapse.Database
         {
             // don't trigger backups on image set updates as none of the properties in the image set table is particularly important
             // For example, this avoids creating a backup when a custom selection is reverted to all when Timelapse exits.
-            this.Database.Update(Constant.DatabaseTable.ImageSet, this.ImageSet.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.ImageSet, this.ImageSet.GetColumnTuples());
         }
 
         public void SyncMarkerToDatabase(MarkerRow marker)
         {
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.Markers, marker.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.Markers, marker.GetColumnTuples());
         }
 
         // The id is the row to update, the datalabels are the labels of each control to updata, 
@@ -1798,7 +1798,7 @@ namespace Timelapse.Database
         {
             // update markers in database
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.Markers, markersToUpdate);
+            this.Database.Update(Constant.DBTables.Markers, markersToUpdate);
 
             // update markers in marker data table
             this.GetMarkers();
@@ -1997,7 +1997,7 @@ namespace Timelapse.Database
         {
             if (this.detectionDataTable == null)
             {
-                this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.Detections);
+                this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
             }
             // Note that because IDs are in the database as a string, we convert it
             return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Sql.Equal + fileID.ToString());
@@ -2008,7 +2008,7 @@ namespace Timelapse.Database
         {
             if (this.classificationsDataTable == null)
             {
-                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.Classifications);
+                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
             }
             // Note that because IDs are in the database as a string, we convert it
             return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Sql.Equal + detectionID.ToString());
@@ -2023,7 +2023,7 @@ namespace Timelapse.Database
                 if (this.detectionCategoriesDictionary == null)
                 {
                     this.detectionCategoriesDictionary = new Dictionary<string, string>();
-                    DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                    DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow row = dataTable.Rows[i];
@@ -2048,7 +2048,7 @@ namespace Timelapse.Database
             {
                 this.detectionCategoriesDictionary = new Dictionary<string, string>();
 
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.DetectionCategories);
+                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     DataRow row = dataTable.Rows[i];
@@ -2092,7 +2092,7 @@ namespace Timelapse.Database
             if (this.classificationCategoriesDictionary == null)
             {
                 this.classificationCategoriesDictionary = new Dictionary<string, string>();
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTableNames.ClassificationCategories);
+                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {
                     DataRow row = dataTable.Rows[i];
@@ -2119,7 +2119,7 @@ namespace Timelapse.Database
         }
         public bool DetectionsExists()
         {
-            return this.Database.TableExistsAndNotEmpty(Constant.DBTableNames.Detections);
+            return this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
         }
         #endregion
     }

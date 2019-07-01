@@ -253,13 +253,19 @@ namespace Timelapse
             public const string Y = "Y";
         }
 
-        public static class DatabaseTable
+        public static class DBTables
         {
             // database table names
             public const string Controls = "TemplateTable"; // the table containing the template data
             public const string FileData = "DataTable";         // the table containing the image data
             public const string ImageSet = "ImageSetTable"; // the table containing information common to the entire image set
             public const string Markers = "MarkersTable";         // the table containing the marker data
+            public const string Info = "Info";
+            public const string DetectionCategories = "DetectionCategories";
+            public const string ClassificationCategories = "ClassificationCategories";
+            public const string Images = "Images";
+            public const string Detections = "Detections";
+            public const string Classifications = "Classifications";
         }
 
         public static class EpisodeDefaults
@@ -633,15 +639,7 @@ namespace Timelapse
             public const string SpeciesDetectedDataLabel = "SpeciesDetected";
         }
 
-        public static class DBTableNames
-        {
-            public const string Info = "Info";
-            public const string DetectionCategories = "DetectionCategories";
-            public const string ClassificationCategories = "ClassificationCategories";
-            public const string Images = "Images";
-            public const string Detections = "Detections";
-            public const string Classifications = "Classifications";
-        }
+
 
         public static class InfoColumns
         {

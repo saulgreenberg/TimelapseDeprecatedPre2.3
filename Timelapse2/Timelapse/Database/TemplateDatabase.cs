@@ -136,7 +136,7 @@ namespace Timelapse.Database
 
             // add the new control to the database
             List<List<ColumnTuple>> controlInsertWrapper = new List<List<ColumnTuple>>() { newControl.GetColumnTuples().Columns };
-            this.Database.Insert(Constant.DatabaseTable.Controls, controlInsertWrapper);
+            this.Database.Insert(Constant.DBTables.Controls, controlInsertWrapper);
 
             // update the in memory table to reflect current database content
             // could just add the new row to the table but this is done in case a bug results in the insert lacking perfect fidelity
@@ -153,7 +153,7 @@ namespace Timelapse.Database
         private void GetControlsSortedByControlOrder()
         {
             // Utilities.PrintMethodName();
-            DataTable templateTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DatabaseTable.Controls + Sql.OrderBy + Constant.Control.ControlOrder);
+            DataTable templateTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Controls + Sql.OrderBy + Constant.Control.ControlOrder);
             this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
         }
@@ -237,7 +237,7 @@ namespace Timelapse.Database
 
             // drop the control from the database and data table
             string where = Constant.DatabaseColumn.ID + " = " + controlToRemove.ID;
-            this.Database.DeleteRows(Constant.DatabaseTable.Controls, where);
+            this.Database.DeleteRows(Constant.DBTables.Controls, where);
             this.GetControlsSortedByControlOrder();
 
             // regenerate counter and spreadsheet orders; if they're greater than the one removed, decrement
@@ -267,7 +267,7 @@ namespace Timelapse.Database
                     controlUpdates.Add(new ColumnTuplesWithWhere(controlUpdate, control.ID));
                 }
             }
-            this.Database.Update(Constant.DatabaseTable.Controls, controlUpdates);
+            this.Database.Update(Constant.DBTables.Controls, controlUpdates);
 
             // update the in memory table to reflect current database content
             // should not be necessary but this is done to mitigate divergence in case a bug results in the delete lacking perfect fidelity
@@ -277,7 +277,7 @@ namespace Timelapse.Database
         public void SyncControlToDatabase(ControlRow control)
         {
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DatabaseTable.Controls, control.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.Controls, control.GetColumnTuples());
 
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
@@ -297,7 +297,7 @@ namespace Timelapse.Database
                 columnTupleList.Add(new ColumnTuple(Constant.Control.SpreadsheetOrder, control.SpreadsheetOrder));
                 columnsTuplesWithWhereList.Add(columnTupleWithWhere);
             }
-            this.Database.Update(Constant.DatabaseTable.Controls, columnsTuplesWithWhereList);
+            this.Database.Update(Constant.DBTables.Controls, columnsTuplesWithWhereList);
             // update the in memory table to reflect current database content
             // could just use the new table but this is done in case a bug results in the insert lacking perfect fidelity
             this.GetControlsSortedByControlOrder();
@@ -310,7 +310,7 @@ namespace Timelapse.Database
         {
             // Utilities.PrintMethodName("Called with arguments");
             // clear the existing table in the database 
-            this.Database.DeleteRows(Constant.DatabaseTable.Controls, null);
+            this.Database.DeleteRows(Constant.DBTables.Controls, null);
 
             // Create new rows in the database to match the in-memory verson
             List<List<ColumnTuple>> newTableTuples = new List<List<ColumnTuple>>();
@@ -318,7 +318,7 @@ namespace Timelapse.Database
             {
                 newTableTuples.Add(control.GetColumnTuples().Columns);
             }
-            this.Database.Insert(Constant.DatabaseTable.Controls, newTableTuples);
+            this.Database.Insert(Constant.DBTables.Controls, newTableTuples);
 
             // update the in memory table to reflect current database content
             // could just use the new table but this is done in case a bug results in the insert lacking perfect fidelity
@@ -457,7 +457,7 @@ namespace Timelapse.Database
                 new ColumnDefinition(Constant.Control.Visible, Sql.Text),
                 new ColumnDefinition(Constant.Control.List, Sql.Text)
             };
-            this.Database.CreateTable(Constant.DatabaseTable.Controls, templateTableColumns);
+            this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
 
             // if an existing table was passed, clone its contents into this database
             if (other != null)
@@ -569,7 +569,7 @@ namespace Timelapse.Database
             standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
 
             // insert standard controls into the template table
-            this.Database.Insert(Constant.DatabaseTable.Controls, standardControls);
+            this.Database.Insert(Constant.DBTables.Controls, standardControls);
 
             // populate the in memory version of the template table
             this.GetControlsSortedByControlOrder();
@@ -599,7 +599,7 @@ namespace Timelapse.Database
                 // insert a relative path control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
                 List<ColumnTuple> relativePathControl = GetRelativePathTuples(order, order, true);
-                this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { relativePathControl });
+                this.Database.Insert(Constant.DBTables.Controls, new List<List<ColumnTuple>>() { relativePathControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
                 this.SetControlID(Constant.DatabaseColumn.RelativePath, Constant.DatabaseValues.RelativePathPosition);
@@ -618,7 +618,7 @@ namespace Timelapse.Database
                 bool dateTimeVisible = date.Visible || time.Visible;
                 long order = this.GetOrderForNewControl();
                 List<ColumnTuple> dateTimeControl = GetDateTimeTuples(order, order, dateTimeVisible);
-                this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { dateTimeControl });
+                this.Database.Insert(Constant.DBTables.Controls, new List<List<ColumnTuple>>() { dateTimeControl });
 
                 // make date and time controls invisible as they're replaced by the date time control
                 if (date.Visible)
@@ -643,7 +643,7 @@ namespace Timelapse.Database
                 // insert a relative path control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
                 List<ColumnTuple> utcOffsetControl = GetUtcOffsetTuples(order, order, false);
-                this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { utcOffsetControl });
+                this.Database.Insert(Constant.DBTables.Controls, new List<List<ColumnTuple>>() { utcOffsetControl });
 
                 // move the relative path control to ID and order 2 for consistency with newly created templates
                 this.SetControlID(Constant.DatabaseColumn.UtcOffset, Constant.DatabaseValues.UtcOffsetPosition);
@@ -655,7 +655,7 @@ namespace Timelapse.Database
             if (markForDeletion != null)
             {
                 List<ColumnTuple> deleteFlagControl = GetDeleteFlagTuples(markForDeletion.ControlOrder, markForDeletion.SpreadsheetOrder, markForDeletion.Visible);
-                this.Database.Update(Constant.DatabaseTable.Controls, new ColumnTuplesWithWhere(deleteFlagControl, markForDeletion.ID));
+                this.Database.Update(Constant.DBTables.Controls, new ColumnTuplesWithWhere(deleteFlagControl, markForDeletion.ID));
                 this.GetControlsSortedByControlOrder();
             }
             else if (this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DeleteFlag) < 0)
@@ -663,7 +663,7 @@ namespace Timelapse.Database
                 // insert a DeleteFlag control, where its ID will be created as the next highest ID
                 long order = this.GetOrderForNewControl();
                 List<ColumnTuple> deleteFlagControl = GetDeleteFlagTuples(order, order, true);
-                this.Database.Insert(Constant.DatabaseTable.Controls, new List<List<ColumnTuple>>() { deleteFlagControl });
+                this.Database.Insert(Constant.DBTables.Controls, new List<List<ColumnTuple>>() { deleteFlagControl });
                 this.GetControlsSortedByControlOrder();
             }
         }
@@ -740,14 +740,14 @@ namespace Timelapse.Database
                 Debug.Assert((maximumID > 0) && (maximumID <= Int64.MaxValue), String.Format("Maximum ID found is {0}, which is out of range.", maximumID));
                 string jumpAmount = maximumID.ToString();
 
-                string increaseIDs = Sql.Update + Constant.DatabaseTable.Controls;
+                string increaseIDs = Sql.Update + Constant.DBTables.Controls;
                 increaseIDs += Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " + 1 + " + jumpAmount;
                 increaseIDs += Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(increaseIDs);
 
                 // Second update: decrease IDs above newID to be one more than their original value
                 // This leaves everything in sequence except for an open spot at newID.
-                string reduceIDs = Sql.Update + Constant.DatabaseTable.Controls;
+                string reduceIDs = Sql.Update + Constant.DBTables.Controls;
                 reduceIDs += Sql.Set + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseColumn.ID + " - " + jumpAmount;
                 reduceIDs += Sql.Where + Constant.DatabaseColumn.ID + " >= " + newID;
                 queries.Add(reduceIDs);
@@ -756,7 +756,7 @@ namespace Timelapse.Database
             // 3rd update: change the target ID to the desired ID
             this.CreateBackupIfNeeded();
 
-            string setControlID = Sql.Update + Constant.DatabaseTable.Controls;
+            string setControlID = Sql.Update + Constant.DBTables.Controls;
             setControlID += Sql.Set + Constant.DatabaseColumn.ID + " = " + newID;
             setControlID += Sql.Where + Constant.Control.DataLabel + " = '" + dataLabel + "'";
             queries.Add(setControlID);
@@ -843,7 +843,7 @@ namespace Timelapse.Database
                     if (columnsToUpdate.Columns.Count > 0)
                     {
                         columnsToUpdate.SetWhere(control.ID);
-                        this.Database.Update(Constant.DatabaseTable.Controls, columnsToUpdate);
+                        this.Database.Update(Constant.DBTables.Controls, columnsToUpdate);
                     }
                 }
             }

@@ -143,7 +143,7 @@ namespace Timelapse
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
-            Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DatabaseTable.FileData);
+            Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DBTables.FileData);
             char[] quote = { '\'' };
            
             foreach (KeyValuePair<string, string> pair in columndefaultdict)
@@ -200,7 +200,7 @@ namespace Timelapse
         // If not, ask the user if he/she wants to update the database.
         public void CheckAndCorrectRootFolder(FileDatabase fileDatabase)
         {
-            List<object> allRootFolderPaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.Folder);
+            List<object> allRootFolderPaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.Folder);
             if (allRootFolderPaths.Count < 1)
             {
                 // System.Diagnostics.Debug.Print("Checking the root folder name in the database, but no entries were found. Perhaps the database is empty?");
@@ -238,7 +238,7 @@ namespace Timelapse
         // If not, ask the user to try to locate each missing folder.
         public void CheckAndCorrectForMissingFolders(FileDatabase fileDatabase)
         {
-            List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath);
+            List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             List<string> missingRelativePaths = new List<string>();
             foreach (string relativePath in allRelativePaths)
             {

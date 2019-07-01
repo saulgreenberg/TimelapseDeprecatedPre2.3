@@ -282,7 +282,7 @@ namespace Timelapse.Dialog
                         Margin = thickness,
 
                         // Create the dropdown menu containing only folders with images in it
-                        ItemsSource = this.database.GetDistinctValuesInColumn(Constant.DatabaseTable.FileData, Constant.DatabaseColumn.RelativePath),
+                        ItemsSource = this.database.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
                         SelectedItem = searchTerm.DatabaseValue
                     };
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;

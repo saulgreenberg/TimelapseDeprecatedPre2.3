@@ -16,17 +16,17 @@ namespace Timelapse.Detection
             // Create the various tables used to hold detection data
 
            // Info: Create or clear table 
-            if (database.TableExists(Constant.DBTableNames.Info))
+            if (database.TableExists(Constant.DBTables.Info))
             {
                 // all the data tables were previously created. 
                 // So just clear their contents as there is no need to create them
                 List<string> tableList = new List<string>
                 {
-                   Constant.DBTableNames.Info,
-                   Constant.DBTableNames.DetectionCategories,
-                   Constant.DBTableNames.ClassificationCategories,
-                   Constant.DBTableNames.Detections,
-                   Constant.DBTableNames.Classifications
+                   Constant.DBTables.Info,
+                   Constant.DBTables.DetectionCategories,
+                   Constant.DBTables.ClassificationCategories,
+                   Constant.DBTables.Detections,
+                   Constant.DBTables.Classifications
                 };
                 database.ClearRowsInTables(tableList);
                 return;
@@ -39,7 +39,7 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.InfoColumns.Classifier,  Sql.String),
                 new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.String)
             };
-            database.CreateTable(Constant.DBTableNames.Info, columnDefinitions);
+            database.CreateTable(Constant.DBTables.Info, columnDefinitions);
 
             // DetectionCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
@@ -47,7 +47,7 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
                 new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.String),
             };
-            database.CreateTable(Constant.DBTableNames.DetectionCategories, columnDefinitions);
+            database.CreateTable(Constant.DBTables.DetectionCategories, columnDefinitions);
 
             // ClassificationCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
@@ -55,7 +55,7 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
                 new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.String),
             };
-            database.CreateTable(Constant.DBTableNames.ClassificationCategories, columnDefinitions);
+            database.CreateTable(Constant.DBTables.ClassificationCategories, columnDefinitions);
 
             // Detections: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
@@ -65,9 +65,9 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.DetectionColumns.Conf,  Sql.Real),
                 new ColumnDefinition(Constant.DetectionColumns.BBox,  Sql.String), // Will need to parse it into new new double[4]
                 new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.Integer), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DatabaseTable.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
+                new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DBTables.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
             };
-            database.CreateTable(Constant.DBTableNames.Detections, columnDefinitions);
+            database.CreateTable(Constant.DBTables.Detections, columnDefinitions);
 
             // Classifications: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
@@ -76,19 +76,19 @@ namespace Timelapse.Detection
                 new ColumnDefinition(Constant.ClassificationColumns.Category, Sql.String),
                 new ColumnDefinition(Constant.ClassificationColumns.Conf,  Sql.Real),
                 new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.Integer), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTableNames.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
+                new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTables.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
             };
-            database.CreateTable(Constant.DBTableNames.Classifications, columnDefinitions);
+            database.CreateTable(Constant.DBTables.Classifications, columnDefinitions);
         }
 
         public static void ClearDetectionTables(SQLiteWrapper database)
         {
             List<string> detectionTables = new List<string>
             {
-                Constant.DBTableNames.ClassificationCategories,
-                Constant.DBTableNames.Classifications,
-                Constant.DBTableNames.DetectionCategories,
-                Constant.DBTableNames.Detections
+                Constant.DBTables.ClassificationCategories,
+                Constant.DBTables.Classifications,
+                Constant.DBTables.DetectionCategories,
+                Constant.DBTables.Detections
             };
             database.ClearRowsInTables(detectionTables);
         }
@@ -113,7 +113,7 @@ namespace Timelapse.Detection
             {
                 columnsToUpdate
             };
-            detectionDB.Insert(Constant.DBTableNames.Info, insertionStatements);
+            detectionDB.Insert(Constant.DBTables.Info, insertionStatements);
 
             // DetectionCategories:  Populate
             if (detector.detection_categories != null || detector.detection_categories.Count > 0)
@@ -144,7 +144,7 @@ namespace Timelapse.Detection
                     };
                     insertionStatements.Insert(0, columnsToUpdate);
                 }
-                detectionDB.Insert(Constant.DBTableNames.DetectionCategories, insertionStatements);
+                detectionDB.Insert(Constant.DBTables.DetectionCategories, insertionStatements);
             }
 
             // ClassificationCategories:  Populate
@@ -161,7 +161,7 @@ namespace Timelapse.Detection
                     };
                     insertionStatements.Add(columnsToUpdate);
                 }
-                detectionDB.Insert(Constant.DBTableNames.ClassificationCategories, insertionStatements);
+                detectionDB.Insert(Constant.DBTables.ClassificationCategories, insertionStatements);
             }
 
             // Images and Detections:  Populate
@@ -175,7 +175,7 @@ namespace Timelapse.Detection
                 // Get a data table containing the ID, RelativePath, and File
                 // and create primary keys for the fields we will search for (for performance speedup)
                 // We will use that to search for the file index.
-                string query = Sql.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Sql.From + Constant.DatabaseTable.FileData;
+                string query = Sql.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Sql.From + Constant.DBTables.FileData;
                 DataTable dataTable = detectionDB.GetDataTableFromSelect(query);
                 dataTable.PrimaryKey = new DataColumn[] 
                 {
@@ -293,8 +293,8 @@ namespace Timelapse.Detection
                     }
                     fileCount++;
                 }
-                detectionDB.Insert(Constant.DBTableNames.Detections, detectionInsertionStatements);
-                detectionDB.Insert(Constant.DBTableNames.Classifications, classificationInsertionStatements);
+                detectionDB.Insert(Constant.DBTables.Detections, detectionInsertionStatements);
+                detectionDB.Insert(Constant.DBTables.Classifications, classificationInsertionStatements);
                 fileDatabase.IndexCreateForDetectionsAndClassifications();
                 // System.Diagnostics.Debug.Print("Files: " + fileCount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
             }

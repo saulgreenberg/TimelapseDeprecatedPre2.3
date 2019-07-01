@@ -217,7 +217,7 @@ namespace Timelapse.Database
                 // check to see if the search should match an empty string
                 // If so, nulls need also to be matched as NULL and empty are considered interchangeable.
                 string whereForTerm;
-                string label = (this.DetectionSelections.Enabled == true) ? Constant.DatabaseTable.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
+                string label = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
                 // Check to see if the search and operator should match an empty value, in which case we also need to deal with NULLs 
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
                 {
@@ -288,13 +288,13 @@ namespace Timelapse.Database
                     where += Sql.And;
                 }
                 // Form: Detections.category = <DetectionCategory>
-                where += Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
+                where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
             }
             if (this.DetectionSelections.UseDetectionConfidenceThreshold)
             {
                 // Form:  ...Group By Detections.Id Having Max  (Detections.conf )  ...
-                where += Sql.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
-                    Sql.Max + Sql.OpenParenthesis + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
+                    Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
                 switch (this.DetectionSelections.DetectionComparison)
                 {
                     case ComparisonEnum.LessThanEqual:
@@ -316,7 +316,7 @@ namespace Timelapse.Database
             }
             else if (this.DetectionSelections.UseDetectionCategory)
             {
-                where += Sql.GroupBy + Constant.DBTableNames.Detections + "." + Constant.DetectionColumns.ImageID;
+                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
             }
             return where;
         }
