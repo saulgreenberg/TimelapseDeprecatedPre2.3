@@ -69,7 +69,7 @@ namespace Timelapse.Util
                 this.AudioFeedback = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.AudioFeedback, false);
                 this.BookmarkScale = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationY, 1.0));
-                this.BoundingBoxDisplayThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.BoundingBoxDisplayThreshold, Constant.Recognition.BoundingBoxDisplayThresholdDefault);
+                this.BoundingBoxDisplayThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.BoundingBoxDisplayThreshold, Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault);
                 this.ClassifyDarkImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperatorEnum>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperatorEnum.And);
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);

@@ -437,6 +437,7 @@ namespace Timelapse
             public const int MarkerStrokeThickness = 2;
 
             public const string BoundingBoxCanvasTag = "BoundingBoxCanvas";
+            public const double BoundingBoxDisplayThresholdDefault = 0.8;
 
             // Threshold for a double click duration and for differentiating between marking and panning
             public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
@@ -624,21 +625,8 @@ namespace Timelapse
             public const string Version = "version";
         }
 
-        // TODO - DETECTION TABLES -INTEGRATE BACK IN WHEN DEVELOP INCLUDES DETECTION ROUTINES
+        // DETECTION Columns and values  
         #region Detection Constants.
-
-        public static class Recognition
-        {
-            public const string DataLabelMaxConfidence = "Confidence";
-            public const string DataLabelBoundingBoxes = "BoundingBoxes";
-            public const string CSVLabelImagePath = "image_path";
-            public const string CSVLabelMaxConfidence = "max_confidence";
-            public const string CSVLabelBoundingBoxes = "predicted_boxes";
-            public const double BoundingBoxDisplayThresholdDefault = 0.8;
-            public const double SpeciesDetectedThresholdDefault = 0.8;
-            public const string SpeciesDetectedDataLabel = "SpeciesDetected";
-        }
-
 
 
         public static class InfoColumns
@@ -660,12 +648,6 @@ namespace Timelapse
         {
             public const string Category = "classification";
             public const string Label = "label";
-        }
-
-        public static class DataTableAddedDetectionColumns
-        {
-            public const string MaxDetectionConf = "max_detection_conf";
-            public const string DetectionID = DetectionColumns.DetectionID;
         }
 
         public static class DetectionColumns

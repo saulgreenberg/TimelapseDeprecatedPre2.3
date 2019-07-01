@@ -179,7 +179,7 @@ namespace Timelapse.Dialog
             CheckBoxUseDetections.IsChecked = false;
             this.timelapseState.UseDetections = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
-            this.BoundingBoxDisplayThresholdSlider.Value = Constant.Recognition.BoundingBoxDisplayThresholdDefault;
+            this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

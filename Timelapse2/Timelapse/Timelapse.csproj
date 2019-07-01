@@ -171,7 +171,6 @@
     </Compile>
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
-    <Compile Include="Detection\ImportCSVDetectionData.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
     <Compile Include="Dialog\ChooseDetectorFilePath.xaml.cs">
       <DependentUpon>ChooseDetectorFilePath.xaml</DependentUpon>
@@ -284,7 +283,6 @@
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuDetection.cs" />
     <Compile Include="Util\Episodes.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileShow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseAvalonDock.cs" />
