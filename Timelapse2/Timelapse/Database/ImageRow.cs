@@ -74,9 +74,10 @@ namespace Timelapse.Database
             {
                 switch (value)
                 {
-                    case FileSelectionEnum.Unknown:
+                    case FileSelectionEnum.Corrupted:
+                    case FileSelectionEnum.Missing:
+                    case FileSelectionEnum.Ok:
                     case FileSelectionEnum.Dark:
-                    case FileSelectionEnum.Light:
                         this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:

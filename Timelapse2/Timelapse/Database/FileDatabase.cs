@@ -609,35 +609,6 @@ namespace Timelapse.Database
 
             // STEP 3. Check both templates and update if needed (including values)
 
-            // ImageQuality Column and Data: For both templates, replace the ImageQuality List menu with the new one (that contains only Unknown, Light and Dark items)
-            // IMMEDIATE Change to 2.2.2.6 For testing, set to a later version (e.g., 3..0.0.0 to force execution of this every time.
-            string firstVersionWithAlteredImageQualityChoices = "2.2.2.6";
-            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithAlteredImageQualityChoices, imageSetVersionNumber))
-            {
-                // Alter the template in the .ddb file
-                ControlRow templateControl = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
-                if (templateControl != null)
-                {
-                    templateControl.List = Constant.ImageQuality.ListOfValues;
-                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
-                    this.SyncControlToDatabase(templateControl);
-                }
-                // Alter the template in the .tdb file
-                templateControl = templateDatabase.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
-                if (templateControl != null)
-                {
-                    templateControl.List = Constant.ImageQuality.ListOfValues;
-                    templateControl.DefaultValue = Constant.ImageQuality.Unknown;
-                    templateDatabase.SyncControlToDatabase(templateControl);
-                }
-                // ImageQuality Values: Reset the Image Quality values. All Dark values remain as is, but other values are reset to unknown.
-                // This is the only way to make this backwards compatable.
-                // I suspect in most cases that the analysts aren't using the field anyways, although they can always regenerate it if needed.
-                ColumnTuple columnTuple = new ColumnTuple(Constant.DatabaseColumn.ImageQuality, Constant.ImageQuality.Unknown);
-                ColumnTuplesWithWhere columnTupleWithWhere = new ColumnTuplesWithWhere(columnTuple, Constant.ImageQuality.Dark, true);
-                this.Database.Update(Constant.DBTables.FileData, columnTupleWithWhere);
-            }
-
             // Version Compatabillity Column: If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
             // Add it and update the entry to contain the version of Timelapse currently being used to open this database
             // Note that we do this after the version compatability tests as otherwise we would just get the current version number
@@ -979,6 +950,24 @@ namespace Timelapse.Database
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
 
+        public int CountMissingFilesFromCurrentlySelectedFiles()
+        {
+            int count = 0;
+            if (this.FileTable == null)
+            {
+                return count;
+            }
+            string filepath = String.Empty;
+            foreach (ImageRow image in this.FileTable)
+            {
+                if (!File.Exists(Path.Combine(this.FolderPath, image.RelativePath, image.File)))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
         public bool SelectMissingFilesFromCurrentlySelectedFiles()
         {
             if (this.FileTable == null)
@@ -986,7 +975,6 @@ namespace Timelapse.Database
                 return false;
             }
             string filepath = String.Empty;
-            string message = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             // Check if each file exists. Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
@@ -1086,8 +1074,9 @@ namespace Timelapse.Database
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
-                [FileSelectionEnum.Unknown] = this.GetFileCount(FileSelectionEnum.Unknown),
-                [FileSelectionEnum.Light] = this.GetFileCount(FileSelectionEnum.Light)
+                //[FileSelectionEnum.Corrupted] = this.GetFileCount(FileSelectionEnum.Corrupted),
+                [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
+                [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
             };
             return counts;
         }
@@ -1097,8 +1086,7 @@ namespace Timelapse.Database
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Dark),
-                [FileSelectionEnum.Unknown] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Unknown),
-                [FileSelectionEnum.Light] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Light)
+                [FileSelectionEnum.Ok] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Ok)
             };
             return counts;
         }
@@ -1174,11 +1162,13 @@ namespace Timelapse.Database
             // System.Diagnostics.Debug.Print(selection.ToString());
             switch (selection)
             {
+                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Missing:
+                    return String.Empty;
                 case FileSelectionEnum.All:
                     return String.Empty;
-                case FileSelectionEnum.Unknown:
                 case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Light:
+                case FileSelectionEnum.Ok:
                     return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
                     return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);

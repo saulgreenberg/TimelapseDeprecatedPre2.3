@@ -223,17 +223,16 @@
             <MenuItem Name="MenuItemSelect" Header="_Select" IsEnabled="false" IsTabStop="false" SubmenuOpened="MenuItemSelect_SubmenuOpening" ToolTip="Select a subset of files">
                 <MenuItem Name="MenuItemSelectAllFiles" IsCheckable="True" IsChecked="True" Header="_All files" Click="MenuItemSelectFiles_Click" ToolTip="Show all files"/>
                 <MenuItem Name="MenuItemSelectByImageQuality" Header="By Image Quality..." IsEnabled="True" SubmenuOpened="MenuItemSelectImageQuality_SubmenuOpening">
-                    <MenuItem Name="MenuItemSelectLightFiles" IsCheckable="True" IsChecked="False" Header="_Light files" Click="MenuItemSelectFiles_Click" ToolTip="Show only Light ImageQuality files (usually daytime shots)"/>
+                    <MenuItem Name="MenuItemSelectOkFiles" IsCheckable="True" IsChecked="False" Header="_Light files" Click="MenuItemSelectFiles_Click" ToolTip="Show only Light ImageQuality files (usually daytime shots)"/>
                     <MenuItem Name="MenuItemSelectDarkFiles" IsCheckable="True" IsChecked="False" Header="_Dark files" Click="MenuItemSelectFiles_Click" ToolTip="Show only Dark ImageQuality files (usually night-time shots)"/>
-                    <MenuItem Name="MenuItemSelectUnknownFiles" IsCheckable="True" IsChecked="False" Header="_Unknown files" Click="MenuItemSelectFiles_Click" ToolTip="Show only Unknown ImageQuality files (usually because they are unclassifed)"/>
+                    <Separator/>
+                    <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Check and show missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
                 </MenuItem>
                 <MenuItem Name="MenuItemSelectByFolder" Header="By Folders..." IsEnabled="True" SubmenuOpened="MenuItemSelectByFolder_SubmenuOpening">
                     <MenuItem Name="MenuItemSelectAllFolders" IsCheckable="True" IsChecked="False" Header="All Folders" Click="MenuItemSelectFiles_Click" ToolTip="Show all files in all folders"/>
                </MenuItem>
                 <MenuItem Name="MenuItemSelectFilesMarkedForDeletion" IsCheckable="True" IsChecked="False" Header="Files marked for d_eletion" Click="MenuItemSelectFiles_Click" ToolTip="Show only those marked for deletion"/>
                 <MenuItem Name="MenuItemSelectCustomSelection" IsCheckable="True" IsChecked="False" Header="_Custom Selection..."  ToolTip="Create a custom selection to display only particular files" Click="MenuItemSelectCustomSelection_Click"/>
-                <Separator/>
-                <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Check and show missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
                 <Separator/>
                 <MenuItem Name="MenuItemSelectReselect" Header="Refresh the selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
                 <Separator/>

@@ -85,6 +85,21 @@ namespace Timelapse.Controls
             this.ContentControl.SelectedIndex = 1;
         }
 
+        public void HideItems(List<String> itemsToHide)
+        {
+            if (this.ContentControl == null || this.ContentControl.Items == null)
+            {
+                return;
+            }
+            foreach(ComboBoxItem cbi in ContentControl.Items)
+            {
+                if (itemsToHide.Contains((string)cbi.Content ))
+                {
+                    cbi.Height = 0;
+                }
+            }
+        }
+
         #region Event Handlers
         // Users may want to use the text search facility on the combobox, where they type the first letter and then enter
         // For some reason, it wasn't working on pressing 'enter' so this handler does that.

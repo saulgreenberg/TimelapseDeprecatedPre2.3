@@ -443,7 +443,7 @@ namespace Timelapse
                         // Check if the ImageQuality is corrupt or missing, and if so set it to unknown
                         if (isCorruptOrMissing)
                         {
-                            file.ImageQuality = FileSelectionEnum.Unknown;
+                            file.ImageQuality = FileSelectionEnum.Ok;
                         }
 
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
@@ -462,21 +462,21 @@ namespace Timelapse
                             // We don't check videos for darkness, so set it as Unknown.
                             if (file.IsVideo)
                             {
-                                file.ImageQuality = FileSelectionEnum.Unknown;
+                                file.ImageQuality = FileSelectionEnum.Ok;
                             }
                             else
                             {
-                                while (file.ImageQuality == FileSelectionEnum.Unknown && retries_attempted < MAX_RETRIES)
+                                while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                                 {
                                     // See what images were retried
                                     TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
                                     retries_attempted++;
                                     file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                                 }
-                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Unknown)
+                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
                                 {
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Unknown;
+                                    file.ImageQuality = FileSelectionEnum.Ok;
                                 }
                                 // Try to update the datetime (which is currently the file date) with the metadata date time the image was taken instead
                                 // We only do this for files, as videos do not have these metadata fields
@@ -489,7 +489,7 @@ namespace Timelapse
                         // We couldn't manage the image for whatever reason, so mark it as corrupted.
                         TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.File, exception.ToString()));
                         bitmapSource = Constant.ImageValues.Corrupt.Value;
-                        file.ImageQuality = FileSelectionEnum.Unknown;
+                        file.ImageQuality = FileSelectionEnum.Ok;
                     }
 
                     int filesPendingInsert;

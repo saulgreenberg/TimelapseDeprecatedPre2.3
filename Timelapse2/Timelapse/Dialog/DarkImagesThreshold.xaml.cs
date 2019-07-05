@@ -130,7 +130,7 @@ namespace Timelapse.Dialog
             this.RatioFound.Content = String.Format("{0,3:##0}", 100 * this.darkPixelRatioFound);
 
             //// We don't want to update labels if the image is not valid 
-            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Light || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
+            if (this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Ok || this.OriginalClassification.Content.ToString() == Constant.ImageQuality.Dark)
             {
                 if (this.isColor)
                 {
@@ -147,7 +147,7 @@ namespace Timelapse.Dialog
 
                 if (this.isColor)
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Light;       // Color image
+                    this.NewClassification.Content = Constant.ImageQuality.Ok;       // Color image
                 }
                 else if (this.darkPixelRatio <= this.darkPixelRatioFound)
                 {
@@ -155,7 +155,7 @@ namespace Timelapse.Dialog
                 }
                 else
                 {
-                    this.NewClassification.Content = Constant.ImageQuality.Light;   // Light grey scale image
+                    this.NewClassification.Content = Constant.ImageQuality.Ok;   // Light grey scale image
                 }
             }
             else
@@ -390,8 +390,6 @@ namespace Timelapse.Dialog
                     {
                         break;
                     }
-
-                    // If its not a valid image, say so and go onto the next one.
                     ImageQuality imageQuality = new ImageQuality(file);
                     try
                     {
@@ -401,14 +399,16 @@ namespace Timelapse.Dialog
                         imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
                         if (isCorruptOrMissing)
                         {
-                            imageQuality.NewImageQuality = FileSelectionEnum.Unknown; // WAS NULL BEFORE
-                            backgroundWorker.ReportProgress(0, imageQuality);
-                            return;
+                            // If we can't read the image, just set its quality to OK
+                            imageQuality.NewImageQuality = FileSelectionEnum.Ok; 
                         }
-                        // Set the image quality. Note that videos are always classified as unknown.
-                        imageQuality.NewImageQuality = file.IsVideo
-                            ? FileSelectionEnum.Unknown
-                            : imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
+                        else
+                        { 
+                            // Set the image quality. Note that videos are always classified as Ok.
+                            imageQuality.NewImageQuality = file.IsVideo
+                                ? FileSelectionEnum.Ok
+                                : imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
+                        }
                         imageQuality.IsColor = this.isColor;
                         imageQuality.DarkPixelRatioFound = this.darkPixelRatioFound;
                         if (imageQuality.OldImageQuality != imageQuality.NewImageQuality.Value)
@@ -420,7 +420,7 @@ namespace Timelapse.Dialog
                     catch (Exception exception)
                     {
                         // file isn't there?
-                        imageQuality.NewImageQuality = FileSelectionEnum.Unknown;
+                        imageQuality.NewImageQuality = FileSelectionEnum.Ok;
                         Debug.Fail("Exception while assessing image quality.", exception.ToString());
                     }
 

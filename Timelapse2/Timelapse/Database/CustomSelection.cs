@@ -137,23 +137,20 @@ namespace Timelapse.Database
                     // Clearing all use fields is the same as selecting All Files
                     this.ClearCustomSearchUses();
                     return;
-                case FileSelectionEnum.Unknown:
+                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Missing:
+                case FileSelectionEnum.Ok:
                 case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Light:
                     this.ClearCustomSearchUses();
                     // Set the use field for Image Quality, and its value to one of the three possibilities
                     searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.ImageQuality);
-                    if (selection == FileSelectionEnum.Light)
+                    if (selection == FileSelectionEnum.Ok)
                     {
-                        searchTerm.DatabaseValue = Constant.ImageQuality.Light;
+                        searchTerm.DatabaseValue = Constant.ImageQuality.Ok;
                     }
                     else if (selection == FileSelectionEnum.Dark)
                     {
                         searchTerm.DatabaseValue = Constant.ImageQuality.Dark;
-                    }
-                    else if (selection == FileSelectionEnum.Unknown)
-                    {
-                        searchTerm.DatabaseValue = Constant.ImageQuality.Unknown;
                     }
                     else
                     {

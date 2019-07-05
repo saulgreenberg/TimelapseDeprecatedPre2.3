@@ -3,15 +3,17 @@
     public enum FileSelectionEnum : int
     {
         // file selections also used as image qualities
-        Unknown = 0,
-        Light = 1,
-        Dark = 2,
+        Ok = 0,
+        Dark = 1,
+        Missing = 2,
+        Corrupted = 3,
+
 
         // file selections only
-        Missing = 3,
         All = 4,
         MarkedForDeletion = 5,
         Custom = 6,
         Folders = 7
+          
     }
 }

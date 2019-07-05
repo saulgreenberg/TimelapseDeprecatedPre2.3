@@ -91,11 +91,6 @@ namespace Timelapse
 
                 switch (selection)
                 {
-                    case FileSelectionEnum.Unknown:
-                        messageBox.Message.Problem = "Unknown image quality files were previously selected but no files are currently marked as unknown, so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Unknown.";
-                        messageBox.Message.Hint = "If you have files you think should be marked as 'Unknown', set their 'ImageQuality' field to 'Unknown' and then reselect Unknown files.";
-                        break;
                     case FileSelectionEnum.Custom:
                         messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
                         messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
@@ -119,7 +114,7 @@ namespace Timelapse
                         messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
                         messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
                         break;
-                    case FileSelectionEnum.Light:
+                    case FileSelectionEnum.Ok:
                         messageBox.Message.Problem = "Light files were previously selected but no files are currently marked 'Light' so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Light.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Light', set their 'ImageQuality' field to 'Light' and then reselect Light files.";
@@ -143,9 +138,6 @@ namespace Timelapse
                 case FileSelectionEnum.All:
                     status = "All files";
                     break;
-                case FileSelectionEnum.Unknown:
-                    status = "Unknown files";
-                    break;
                 case FileSelectionEnum.Custom:
                     status = "Custom selection";
                     break;
@@ -161,8 +153,8 @@ namespace Timelapse
                 case FileSelectionEnum.Missing:
                     status = "Missing files";
                     break;
-                case FileSelectionEnum.Light:
-                    status = "Light files";
+                case FileSelectionEnum.Ok:
+                    status = "Non-dark files";
                     break;
                 default:
                     throw new NotSupportedException(String.Format("Unhandled file selection {0}.", selection));

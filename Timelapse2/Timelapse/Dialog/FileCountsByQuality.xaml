@@ -11,9 +11,10 @@
     <DockPanel Margin="0,0,0,0">
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Information"
-                            Title="Summary Counts of files in the current selection"
-                            What="Timelapse categorized the 'Image Quality' of your selected images as light, dark or unknown."
-                            Hint="Use the Select menu to selectively view and work with all files or subsets of files in the image set." />
+                            Title="Summary:  Dark Files in the Current Selection"
+                            What="Counts the number of files where ImageQuality is set to 'Dark'.
+                                       &#10; Images set to 'Ok'  includes both light images videos, as well as missing or corrupt files."
+                            Hint="Select|Custom_Select will let you select and work with 'All files', 'Dark files, or 'Ok' files." />
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
             <Grid Margin="10,0,10,0">
                 <Grid.ColumnDefinitions>
@@ -22,7 +23,6 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -37,35 +37,24 @@
                 <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
                     <Run x:Name="Dark" Text="0000000" />
                 </TextBlock>
-                <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
-                    <Run x:Name="Unknown" Text="0000000" />
-                </TextBlock>
-                <TextBlock Grid.Row="4" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
+                <TextBlock Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,5,0">
                     <Run x:Name="Total" Text="0000000" />
                 </TextBlock>
                 <TextBlock Grid.Row="0" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="light" />
-                    <Run Text="images, likely daytime shots" />
+                    <Run FontWeight="Bold" Text="Ok" />
+                    <Run Text="files (light images, videos and/or images that could not be classified)" />
                 </TextBlock>
                 <TextBlock Grid.Row="1" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="dark" />
+                    <Run FontWeight="Bold" Text="Dark" />
                     <Run Text="images, likely nighttime shots" />
                 </TextBlock>
-                 <TextBlock Grid.Row="2" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="unknown" />
-                    <Run Text="images, likely because the file is a video or invalid image" />
-                </TextBlock>
-                <Rectangle Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Width="80" Height="2" Fill="Gray" Margin="0,5,0,5" HorizontalAlignment="Left">
+                <Rectangle Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Width="80" Height="2" Fill="Gray" Margin="0,5,0,5" HorizontalAlignment="Left">
                 </Rectangle>
-                <TextBlock Grid.Row="4" Grid.Column="2">
-                    <Run FontWeight="Bold" Text="total files found in the current selection" />
+                <TextBlock Grid.Row="3" Grid.Column="2">
+                    <Run FontWeight="Bold" Text="Total files found in the current selection" />
                 </TextBlock>
             </Grid>
         </StackPanel>
-  <!--      <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-            <CheckBox x:Name="DontShowAgain" Margin="79,10,10,10" Content="_Don't show this message again." Visibility="Visible" />
-        </StackPanel>
-        -->
         <Grid Margin="10,0,10,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
