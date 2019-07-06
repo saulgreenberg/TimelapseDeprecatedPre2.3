@@ -78,8 +78,8 @@ namespace Timelapse
 
             // Populate the menu . Get the folders from the database, and create a menu item representing it
             int i = 1;
-            // PERFORMANCE. THIS ADDS ABOUT .250 ms. Since its invoked when loading images for the first time, it may be unneeded if the user doesn't use that menu
-            // BUT TO FIX THAT, WE WOULD HAVE TO DISTINGUISH BETWEEN THE FIRST TIME VS subsequent times files were added.
+            // PERFORMANCE. THIS introduces a delay when there are a large number of files. It is invoked when the user loads images for the first time. 
+            // PROGRESSBAR - at the very least, show a progress bar if needed.
             List<object> folderList = this.dataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {

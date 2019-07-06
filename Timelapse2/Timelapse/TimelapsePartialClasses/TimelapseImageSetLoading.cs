@@ -293,6 +293,7 @@ namespace Timelapse
                 // We are loading images from the root folder for the first time
                 bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
                 List<string> subFolderPaths = new List<string>();
+                // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown
                 Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
 
                 // The else-ifs are stubs in case we want to modify the code to ask the user if she wants to load only images in the root folder, 
@@ -352,7 +353,9 @@ namespace Timelapse
                     return false;
                 }
             }
-
+            // Return a list of FileInfo for every single image / video file in the folder path (including subfolders). These become the files to add to the database
+            // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown.
+            // Perhaps merge with above Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo to do it all in one pass.
             List<FileInfo> filesToAdd = Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(imageFolderPath);
            
             // Load all the files (matching allowable file types) found in the folder
@@ -372,38 +375,24 @@ namespace Timelapse
             backgroundWorker.DoWork += (ow, ea) =>
             {
                 // First pass: Examine files to extract their basic properties and build a list of files not already in the database
+                // PERFORMANCE: In prior tests, using two threads in parallel seemed to give the biggest bang for the buck in speeding things up.
+                // Ideally, try to get at least two threads as that captures most of the benefit from parallel operation.  
+                // If dark image checks are enabled, we may want to reduce the pixel stride in image quality calculation.
                 //
-                // Todd found the following. With dark calculations enabled:
-                // Profiling of a 1000 image load on quad core, single 80+MB/s capable SSD shows the following:en
-                // - one thread:   100% normalized execution time, 35% CPU, 16MB/s disk (100% normalized time = 1 minute 58 seconds)
-                // - two threads:   55% normalized execution time, 50% CPU, 17MB/s disk (6.3% normalized time with dark checking skipped)
-                // - three threads: 46% normalized execution time, 70% CPU, 20MB/s disk
-                // This suggests memory bound operation due to image quality calculation.  The overhead of displaying preview images is fairly low; 
-                // normalized time is about 5% with both dark checking and previewing skipped.
-                //
-                // For now, try to get at least two threads as that captures most of the benefit from parallel operation.  Video loading may be more CPU bound 
-                // due to initial frame rendering and benefit from additional threads.  This requires further investigation.  It may also be desirable to reduce 
-                // the pixel stride in image quality calculation, which would increase CPU load.
-                //
-                // With dark calculations disabled:
-                // The bottleneck's the SQL insert though using more than four threads (or possibly more threads than the number of physical processors as the 
-                // test machine was quad core) results in slow progress on the first 20 files or so, making the optimum number of loading threads complex as it
-                // depends on amortizing startup lag across faster progress on the remaining import.  As this is comparatively minor relative to SQL (at least
-                // for O(10,000) files for now, just default to four threads in the disabled case.
-                //
-                // Note: the UI thread is free during loading.  So if loading's going slow the user can switch off dark checking asynchronously to speed up 
+                // Note: the UI thread is free during loading - the user does have the option to switch off dark checking (if its enabled) asynchronously via the Options menu to speed up 
                 // loading.
                 //
-                // A sequential partitioner is used as this keeps the preview images displayed to the user in pretty much the same order as they're named,
-                // which is less confusing than TPL's default partitioning where the displayed image jumps back and forth through the image set.  Pulling files
-                // nearly sequentially may also offer some minor disk performance benefit.                
+                // Timelapse used to display every image as it was being loaded. This is not necessary, and I changed it to show an image every 500 milliseconds to speed things up. 
+                // An earlier version used a Parallel.Foreach (now commented out), which included a sequential partitioner to display preview images 
+                // to the user in pretty much the same order as they're named. As well, pulling files nearly sequentially may (perhaps)  offer  minor disk performance benefit.                
                 List<ImageRow> filesToInsert = new List<ImageRow>();
                 TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
                 DateTime utcNow = new DateTime();
                 DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
 
-                // SaulXXX There is a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
-                // It also occassion produces an SQLite Database locked error. 
+                // Performance.There was a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
+                // This may be due to me not using a data structure that manages concurrent access.
+                // It also occassionaly produced an SQLite Database locked error. I have changed the way updates to the databases are done so that SQL lock error may no longer be an issue, but I am not sure. 
                 // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
                 // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
                 int filesProcessed = 0;
@@ -438,6 +427,8 @@ namespace Timelapse
                         // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                         // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
                         // retain the frame and pass its metadata to TryUseImageTaken().
+                        // PERFORMANCE Loading a bitmap is an expensive operation (~24 ms while stepping through the debugger) as it has to be done on every image. 
+                        // If larger images are used, it could be even slower.
                         bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
 
                         // Check if the ImageQuality is corrupt or missing, and if so set it to unknown
@@ -448,6 +439,7 @@ namespace Timelapse
 
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
+ 
                             // Dark Image Classification during loading if the automatically classify dark images option is set  
                             // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
                             // likely due to some threading issue that I can't debug.
@@ -457,6 +449,10 @@ namespace Timelapse
                             // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
+                            // PERFORMANCE: Dark Image Classification slows things down even further, as we now have to examine pixels in the image.
+                            // The good news is that most users don't need this - the use case is for those who put their camera on 'timelapse' vs. 'motion detection' mode,
+                            // and want to filter out the night-time shots. Thus while we could get performance gain by optimizing the 'GetImageQuality' method below,
+                            // a better use of time is to optimize the loop in other places. Users can also classify dark images any time later. via an option on the Edit menu
                             file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
 
                             // We don't check videos for darkness, so set it as Unknown.
@@ -480,6 +476,7 @@ namespace Timelapse
                                 }
                                 // Try to update the datetime (which is currently the file date) with the metadata date time the image was taken instead
                                 // We only do this for files, as videos do not have these metadata fields
+                                // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
                                 file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
                             }
                         }
@@ -733,6 +730,7 @@ namespace Timelapse
             }
 
             // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 
+            // PROGRESSBAR - Display a progress bar on this (and all other) calls to FilesSelectAndShow after a delay of (say) .5 seconds.
             this.FilesSelectAndShow(mostRecentFileID, fileSelection);
 
             // match UX availability to file availability

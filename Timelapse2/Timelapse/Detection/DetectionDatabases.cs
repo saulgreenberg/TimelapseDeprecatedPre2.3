@@ -9,6 +9,7 @@ namespace Timelapse.Detection
 {
     public static class DetectionDatabases
     {
+        // IMMEDIATE Check that image and classifications use foreign keys
         // Create all Detection Database Tables
         public static void CreateOrRecreateTablesAndColumns(SQLiteWrapper database)
         {

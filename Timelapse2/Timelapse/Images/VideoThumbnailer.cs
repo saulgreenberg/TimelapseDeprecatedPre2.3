@@ -5,6 +5,8 @@ using System.IO;
 
 namespace Timelapse.Images
 {
+    // TODO Enable Video thumbnail generation for faster display of video.
+    // We could do this explicitly (as currently implemented), or on initial load (makes more sense) or as a background async operation.
     public static class VideoThumbnailer
     {
         // Recursively go through the folder and subfolders. When video files are found in a folder, 
@@ -125,7 +127,7 @@ namespace Timelapse.Images
                         // We don't really have to wait for exit, but 
                         // I am not sure if there are limits to how many process we can
                         // create and run concurrently. This gives them time to finish
-                        // TODO ASAP we need to check / play with this.
+                        // TODO Video thumbnail generation should be an async process run at low priority
                         // process.WaitForExit(500);
                     }
                 }
@@ -157,7 +159,6 @@ namespace Timelapse.Images
         // Compose the FFmpeg command string to be used generates a thumbnail file at thumbnailFullPath from the video at videoFullPath 
         private static string FfmpegComposeThumbnailCommand(string videoFullPath, string thumbnailFullPath)
         {
-            // TODO Maybe put it in the section of code that checks dll?
             string ffmpegFullPath = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase), "ffmpeg.exe");
             ffmpegFullPath = ffmpegFullPath.Replace("file:\\", String.Empty);
             string ffmpegCommand = String.Format("{0} -i \"{1}\" -frames:V 1 \"{2}\"", ffmpegFullPath, videoFullPath, thumbnailFullPath);

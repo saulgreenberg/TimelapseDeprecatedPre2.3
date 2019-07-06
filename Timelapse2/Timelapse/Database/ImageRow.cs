@@ -311,8 +311,8 @@ namespace Timelapse.Database
         #region Delete File
         /// <summary>
         /// Delete the file, where we also try to back it up by moving it into the Deleted folder
-        /// TODO Because files in different relative paths could have the same name, we really should try to mirror the structure as otherwise a previously deleted file could be overwritten
-        /// TODO Should this method really be part of an image row?
+        /// TODO File deletion backups is problematic as files in different relative paths could have the same file name (overwritting possible, ambiguity). Perhaps mirror the file structure as otherwise a previously deleted file could be overwritten
+        /// CODECLEANUP Should this method really be part of an image row? 
         /// </summary>
         public bool TryMoveFileToDeletedFilesFolder(string folderPath)
         {
@@ -352,7 +352,8 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                // IMMEDIATE Still can generate an exception where it couldnt not move it as the file is being used
+                // This may occur if for some reason we could not move the file, for example, if we have loaded the image in a way that it locks the file.
+                // I've changed image loading to avoid this, but its something to watch out for.
                 TraceDebug.PrintMessage("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                 return false;
             }
@@ -404,15 +405,17 @@ namespace Timelapse.Database
             }
             try
             {
-                // TODO DISCRETIONARY: Look at CA1001 https://msdn.microsoft.com/en-us/library/ms182172.aspx as a different strategy
+                // PERFORMANCE Image loading is somewhat slow given that some operations need to do this very frequently. 
+                // What makes this even more problematic is that we can't use image caching effectively (see below). Are there better / faster alternatives?
+                // CA1001 https://msdn.microsoft.com/en-us/library/ms182172.aspx describes a different strategy, but I am not sure its any better. 
                 // Scanning through images with BitmapCacheOption.None results in less than 6% CPU in BitmapFrame.Create() and
                 // 90% in System.Windows.Application.Run(), suggesting little scope for optimization within Timelapse proper
                 // this is significantly faster than BitmapCacheOption.Default
                 // However, using BitmapCacheOption.None locks the file as it is being accessed (rather than a memory copy being created when using a cache)
                 // This means we cannot do any file operations on it as it will produce an access violation.
                 // For now, we use the (slower) form of BitmapCacheOption.OnLoad.
-                // SAULXXX ADD: To CHECK OUT AND MAYBE TRY https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
-                // SAULXXX ALSO CHECK http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
+                // Also look at: https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
+                // and  http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
                 if (desiredWidth.HasValue == false)
                 {
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);

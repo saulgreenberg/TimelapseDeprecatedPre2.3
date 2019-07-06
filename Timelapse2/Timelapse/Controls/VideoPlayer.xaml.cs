@@ -14,7 +14,7 @@ namespace Timelapse.Controls
         private bool isProgrammaticUpdate;
         private DispatcherTimer positionUpdateTimer;
         private DispatcherTimer autoPlayDelayTimer;
-        // TODO ASAP: Setu up video so a mouse click starts and stops it, i.e., as does the space bar.
+        // TODO: Setup up video so a mouse click starts and stops it, i.e., as does the space bar.
         public VideoPlayer()
         {
             this.InitializeComponent();
@@ -32,7 +32,8 @@ namespace Timelapse.Controls
             };
             this.autoPlayDelayTimer.Tick += this.AutoPlayDelayTimer_Tick;
 
-            // TODO ASAP Maybe redo all magnification lenses - its currently hidden, but we want to enable it.
+            // TODO Add magnifier to videos. But to do this, we should change all magnifiers to the xceed one.
+            // The commented out code below will use the Xceed magnifier.
             // TranslateTransform tt = new TranslateTransform(100, -100);
             // this._magnifier.RenderTransform = tt;
             // this._magnifier.IsEnabled = true;
@@ -102,8 +103,6 @@ namespace Timelapse.Controls
             this.Video.Play();
             this.Video.Pause();
             this.PlayOrPause.IsChecked = false;
-            // TODO NOTE - THIS WAS THE ORIGINAL. CHECK FOR SIDE EFFECTS
-            // this.Video.Position = TimeSpan.FromMilliseconds(1.0);
             this.Video.Position = TimeSpan.FromMilliseconds(0.0);
             this.Video.Volume = originalVolume;
             // position updated through the media opened event

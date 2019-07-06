@@ -40,9 +40,9 @@ namespace Timelapse.Dialog
             VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
             if (updater.TryGetAndParseVersion(true))
             {
-                // SAULXXX: TO CHECK. This isn't quite right, as the mostrecentcheckfor update data is set only (I think) if there is a new release
+                // PERHAPS. This isn't quite right, as the most recent check for update data is (I think) set only if there is a new release
                 // (as true is only returned by TryGetAndParseVersion when that happens, I think).
-                // Perhaps the most recent check date should be done anytime a check is done???
+                // Maybe the most recent check date should be done anytime a check is done???
                 this.MostRecentCheckForUpdate = DateTime.UtcNow;
             }
         }

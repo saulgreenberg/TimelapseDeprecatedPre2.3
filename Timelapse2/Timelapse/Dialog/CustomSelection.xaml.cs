@@ -264,9 +264,6 @@ namespace Timelapse.Dialog
                         Value = dateTime.DateTime
                     };
                     dateValue.ValueChanged += this.DateTime_SelectedDateChanged;
-                    // TODO: It looks like this now works so its commented out. Remove?
-                    // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
-                    // dateValue.MouseMove += DateValue_MouseMove;
                     Grid.SetRow(dateValue, gridRowIndex);
                     Grid.SetColumn(dateValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(dateValue);
@@ -309,8 +306,7 @@ namespace Timelapse.Dialog
                     };
                     if (controlType == Constant.Control.Note)
                     {
-                        // Make autocompletions work for this control
-                        // IMMEDIATE: NOT SURE THIS IS WORKING
+                        // Add existing autocompletions for this control
                         textBoxValue.Autocompletions = this.dataEntryControls.AutocompletionGetForNote(searchTerm.DataLabel);
                     }
 
@@ -411,13 +407,6 @@ namespace Timelapse.Dialog
             this.dontUpdate = false;
             this.UpdateSearchCriteriaFeedback();
         }
-
-        // TODO: It looks like this isn't needed anymore. Check
-        // DateTimePicker has a bug where ValueChanged is not triggered as expected, so we use a mousemove event to check if the value has changed
-        // private void DateValue_MouseMove(object sender, MouseEventArgs e)
-        // {
-        //    this.DateTime_SelectedDateChanged(sender, null);
-        // }
         #endregion
 
         #region Query formation callbacks

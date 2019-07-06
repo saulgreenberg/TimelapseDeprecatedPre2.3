@@ -135,10 +135,6 @@ namespace Timelapse.Database
             }
             this.Database.CreateTable(Constant.DBTables.FileData, columnDefinitions);
 
-            // SAULXX THIS IS IN TODDs - Don't uncomment it until we figure out how he uses it. He creates it but I am unsure if he actually uses it
-            // Index the DateTime column
-            // this.Database.ExecuteNonQuery("CREATE INDEX 'FileDateTimeIndex' ON 'FileData' ('DateTime')");
-
             // Create the ImageSetTable and initialize a single row in it
             columnDefinitions.Clear();
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
@@ -666,7 +662,8 @@ namespace Timelapse.Database
             {
                 TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
                 List<ColumnTuplesWithWhere> updateQuery = new List<ColumnTuplesWithWhere>();
-                // PERFORMANCE, BUT RARE: Because we have to update various date/time values on all rows based on existing values, 
+                // PERFORMANCE, BUT RARE: We invoke this to update various date/time values on all rows based on existing values. However, its rarely called
+                // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
                 // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
                 this.SelectFiles(FileSelectionEnum.All);
                 foreach (ImageRow image in this.FileTable)
@@ -828,6 +825,7 @@ namespace Timelapse.Database
 
         /// <summary> 
         /// Rebuild the file table with all files in the database table which match the specified selection.
+        /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.
         /// </summary>
         public void SelectFiles(FileSelectionEnum selection)
         {
@@ -1051,6 +1049,8 @@ namespace Timelapse.Database
             relativePath = Path.GetDirectoryName(relativePath);
 
             // Check if the file already exists in the database. If so, no need to recreate it.
+            // This is necessary in cases where the user is adding a folder that has previously been added
+            // where files that exists are skipped, but new files are added.
             ColumnTuplesWithWhere fileQuery = new ColumnTuplesWithWhere();
             fileQuery.SetWhere(initialRootFolderName, relativePath, fileInfo.Name);
             file = this.GetFile(fileQuery.Where);
@@ -1074,7 +1074,6 @@ namespace Timelapse.Database
             Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
             {
                 [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
-                //[FileSelectionEnum.Corrupted] = this.GetFileCount(FileSelectionEnum.Corrupted),
                 [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
                 [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
             };
@@ -1677,12 +1676,12 @@ namespace Timelapse.Database
             return distinctValues;
         }
 
-        // Return all distinct values from a column in the file table
+        // Return all distinct values from a column in the file table, used for autocompletion
         // Note that this returns distinct values only in the SELECTED files
         // See comments above in GetDistinctValuesInFileDataBaseTableColumn
-        // Perhaps - GetDistinctValuesInSelectedFileTableColumn 
-        // - maybe check substrings before adding, to avoid having too many entries?
-        // - or, only store the longest version of a string. But this would involve more work when adding entries, so likely not worth it.
+        // PERHAPS - the issue here is that there may be too many distinct entries, which slows down autocompletion. This should thus restrict entries, perhaps by:
+        // - check matching substrings before adding, to avoid having too many entries?
+        // - only store the longest version of a string. But this would involve more work when adding entries, so likely not worth it.
         public Dictionary<string, string> GetDistinctValuesInSelectedFileTableColumn(string dataLabel, int minimumNumberOfRequiredCharacters)
         {
             Dictionary<string, string> distinctValues = new Dictionary<string, string>();

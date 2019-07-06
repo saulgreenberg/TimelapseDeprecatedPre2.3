@@ -150,7 +150,7 @@ namespace Timelapse.Controls
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
         public override void SetContentAndTooltip(string value)
         {
-            // TODO Cleanup this hack for counters.
+            // CODECLEANUP this hack for counters, perhaps by updating to latest version of xceed.
             // This is a hack, but it works (sort of).
             // To explain, the IntegerUpDown control supplied with the WPFToolkit only allows numbers. 
             // As we want it to also show both ellipsis and blanks, we have to coerce it to show those.

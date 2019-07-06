@@ -124,7 +124,6 @@ namespace Timelapse
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                // IMMEDIATE: THIS NEEDS A CHECK TO ENSURE THE FILE IS NOT MISSING
                 this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)

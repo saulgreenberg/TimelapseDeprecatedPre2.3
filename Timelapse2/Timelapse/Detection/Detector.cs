@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Timelapse.Detection
 {
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Reviewed.")]
-#pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
+    #pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
     // The Detector class holds data produced by Microsoft's Megadetector
     // Property names and structures follow the Microsoft Megadetetor JSON attribut names
     // in order to allow the JSON data to be deserialized into the Detector data structure
@@ -71,7 +71,6 @@ namespace Timelapse.Detection
             this.classification_completion_time = "unknown";
         }
     }
-    // TODO Replace file with a foreign key that points to the actual data table (or perhaps the foreign key should be in the actual data table, with just an index here.)
 
     public class image
     {
@@ -87,7 +86,6 @@ namespace Timelapse.Detection
         }
     }
 
-    // TODO Include a foreign key that points to the image table field ()
     public class detection
     {
         public int detectionID { get; set; }

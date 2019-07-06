@@ -26,8 +26,8 @@ namespace Timelapse.Database
             get { return true; }
         }
 
-        // Get the bitmap representing a video file
         // TODO Update so it works with cached thumbnails
+        // Get the bitmap representing a video file
         // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
         public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {
@@ -60,10 +60,12 @@ namespace Timelapse.Database
                 // MediaPlayer is not actually synchronous despite exposing synchronous APIs, so wait for it get the video loaded.  Otherwise
                 // the width and height properties are zero and only black pixels are drawn.  The properties will populate with just a call to
                 // Open() call but without also Play() only black is rendered
-                // TODO ASAP The solution for rapidly showing videos needs further work. 
-                // ONLOAD It currently loads a blank video image when scouring thorugh the videos 
-                // Rapid navigation: loads a blank video image in the background, then the video on pause
-                // Multiview: very slow as only loads the  video.
+
+                // TODO Rapidly show videos as it is too slow now, where:
+                // - ONLOAD It currently loads a blank video image when scouring thorugh the videos 
+                // - Rapid navigation: loads a blank video image in the background, then the video on pause
+                // - Multiview: very slow as only loads the  video.
+                // This will be fixed when we pre-process thumbnails
                 int timesTried = (displayIntent == ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
                 while ((mediaPlayer.NaturalVideoWidth < 1) || (mediaPlayer.NaturalVideoHeight < 1))
                 {

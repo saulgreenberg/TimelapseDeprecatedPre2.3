@@ -97,7 +97,7 @@ namespace Timelapse.Images
             try
             {
                 // Examine only a subset of pixels as otherwise this is a very expensive operation
-                // TODO DISCRETIONARY: Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
+                // TODO: Calculate pixelStride as a function of image resolution so future high res images will still be processed quickly.
                 byte* currentPixel = (byte*)image.BackBuffer.ToPointer(); // the imageIndex will point to a particular byte in the pixel array
                 int pixelSizeInBytes = image.Format.BitsPerPixel / 8;
                 int pixelStride = Constant.ImageValues.DarkPixelSampleStrideDefault;
@@ -176,7 +176,7 @@ namespace Timelapse.Images
             // examine only a subset of pixels as otherwise this is an expensive operation
             // check pixels from last to first as most cameras put a non-black status bar or at least non-black text at the bottom of the frame,
             // so reverse order may be a little faster on average in cases of nighttime images with black skies
-            // TODO DISCRETIONARY: Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
+            // TODO  Calculate pixelStride as a function of image size so future high res images will still be processed quickly.
             byte* currentPixel = (byte*)image.BackBuffer.ToPointer(); // the imageIndex will point to a particular byte in the pixel array
             int pixelStride = Constant.ImageValues.DarkPixelSampleStrideDefault;
             int totalPixels = image.PixelHeight * image.PixelWidth; // total number of pixels in the image

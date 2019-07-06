@@ -19,8 +19,8 @@ namespace Timelapse
                 this.dataHandler.FileDatabase == null ||
                 this.dataHandler.FileDatabase.CurrentlySelectedFileCount == 0)
             {
-                // SAULXXX: BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
-                // Perhaps we need to change the enable state?
+                // PERHAPS BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
+                // Maybe we need to change the enable state?
                 switch (currentKey.Key)
                 {
                     case Key.Home:

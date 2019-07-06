@@ -1016,7 +1016,6 @@ namespace Timelapse.Images
                 return;
             }
 
-            // DETECTOR: THIS METHOD IS BEING INVOKED TWICE ON EVERY NEW IMAGE! DEBUG THIS.
             if (GlobalReferences.DetectionsExists == false)
             {
                 return;
