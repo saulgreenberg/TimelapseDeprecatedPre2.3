@@ -148,7 +148,6 @@ namespace Timelapse
             }
             count = last - first + 1;
             return !(minSearch == 0 || maxSearch == 0);
-
         }
 
         #region Depracated - these functions returned all episodes across all files vs. the current version which is on demand

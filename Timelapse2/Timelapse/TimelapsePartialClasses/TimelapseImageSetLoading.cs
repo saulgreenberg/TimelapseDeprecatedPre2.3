@@ -431,7 +431,6 @@ namespace Timelapse
                         file.ImageQuality = FileSelectionEnum.Ok;
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
-
                             // Create the bitmap and determine its quality
                             // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
                             // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
@@ -476,7 +475,6 @@ namespace Timelapse
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
                                     file.ImageQuality = FileSelectionEnum.Ok;
                                 }
-
                             }
                         }
                     }

@@ -76,12 +76,12 @@ namespace Timelapse.Controls
                     DataEntryCounter counterControl = new DataEntryCounter(control, this);
                     controlToAdd = counterControl;
                 }
-                else if (control.Type == Constant.Control.FixedChoice )
+                else if (control.Type == Constant.Control.FixedChoice)
                 {
                     DataEntryChoice choiceControl = new DataEntryChoice(control, this);
                     controlToAdd = choiceControl;
                 }
-                else if ( control.Type == Constant.DatabaseColumn.ImageQuality)
+                else if (control.Type == Constant.DatabaseColumn.ImageQuality)
                 {
                     DataEntryChoice choiceControl = new DataEntryChoice(control, this);
                     choiceControl.HideItems(new List<string> { FileSelectionEnum.Corrupted.ToString(), FileSelectionEnum.Missing.ToString() });

@@ -309,11 +309,9 @@ namespace Timelapse.Database
         #endregion
 
         #region Delete File
-        /// <summary>
-        /// Delete the file, where we also try to back it up by moving it into the Deleted folder
-        /// TODO File deletion backups is problematic as files in different relative paths could have the same file name (overwritting possible, ambiguity). Perhaps mirror the file structure as otherwise a previously deleted file could be overwritten
-        /// CODECLEANUP Should this method really be part of an image row? 
-        /// </summary>
+        // Delete the file, where we also try to back it up by moving it into the Deleted folder
+        // TODO File deletion backups is problematic as files in different relative paths could have the same file name (overwritting possible, ambiguity). Perhaps mirror the file structure as otherwise a previously deleted file could be overwritten
+        // CODECLEANUP Should this method really be part of an image row? 
         public bool TryMoveFileToDeletedFilesFolder(string folderPath)
         {
             string sourceFilePath = this.GetFilePath(folderPath);

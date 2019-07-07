@@ -221,9 +221,6 @@ namespace Timelapse
                 // Since we canceled the custom selection, uncheck the item (but only if another menu item is shown checked)
                 bool otherMenuItemIsChecked =
                     this.MenuItemSelectAllFiles.IsChecked ||
-                    //this.MenuItemSelectUnknownFiles.IsChecked ||
-                    //this.MenuItemSelectDarkFiles.IsChecked ||
-                    //this.MenuItemSelectLightFiles.IsChecked ||
                     this.MenuItemSelectMissingFiles.IsChecked ||
                     this.MenuItemSelectByFolder.IsChecked ||
                     this.MenuItemSelectFilesMarkedForDeletion.IsChecked;

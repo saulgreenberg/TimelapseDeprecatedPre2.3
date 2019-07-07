@@ -629,8 +629,6 @@ namespace Timelapse
 
         // DETECTION Columns and values  
         #region Detection Constants.
-
-
         public static class InfoColumns
         {
             public const string InfoID = "infoID";

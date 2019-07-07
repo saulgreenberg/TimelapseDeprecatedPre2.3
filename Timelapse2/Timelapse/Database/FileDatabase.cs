@@ -2112,7 +2112,9 @@ namespace Timelapse.Database
                 // its important to show detection and category data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
                 // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
                 if (this.detectionCategoriesDictionary == null)
+                { 
                     this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                }
                 DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {

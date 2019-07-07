@@ -12,26 +12,24 @@ using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
 {
-    /// <summary>
-    /// PERFORMANCE Clickable Grid Overview
-    /// A user can use the mouse wheel to not only zoom into an image, but also to zoom out into an overview that displays 
-    /// multiple images at the same time in a grid. There are currently three levels of overviews, where the largest overview can 
-    /// – depending on the size of the display – display a good number of images (e.g., ~100) and let the user choose between them 
-    /// (e.g., any data entered will be applied to the images the user has checked).  However, I implemented this by brute force: 
-    /// I construct a fixed size grid, read images into it, and then display the grid. I don’t use infinite scroll. 
-    /// Nor do I display images asynchronously. This means that there could be a noticeable delay (particularly on slower computers) 
-    /// when switching into the overview, and when navigating images in the overview. I do cache images, but that’s a somewhat 
-    /// so-so solution. We are not talking about large delays here – perhaps a few seconds when switching between pages of images. 
-    /// Even so, it can disrupt the interactive feel of this. I suspect this simplest solution is to load images asynchronously, 
-    /// so users can start looking at images as they are being loaded. However, there may be better approaches. A
-    /// nother approach could use infinite scroll, but that could introduce some issues  in how user selections are done, 
-    /// where mis-selections are possible.
+    // PERFORMANCE Clickable Grid Overview
+    // A user can use the mouse wheel to not only zoom into an image, but also to zoom out into an overview that displays 
+    // multiple images at the same time in a grid. There are currently three levels of overviews, where the largest overview can 
+    // – depending on the size of the display – display a good number of images (e.g., ~100) and let the user choose between them 
+    // (e.g., any data entered will be applied to the images the user has checked).  However, I implemented this by brute force: 
+    // I construct a fixed size grid, read images into it, and then display the grid. I don’t use infinite scroll. 
+    // Nor do I display images asynchronously. This means that there could be a noticeable delay (particularly on slower computers) 
+    // when switching into the overview, and when navigating images in the overview. I do cache images, but that’s a somewhat 
+    // so-so solution. We are not talking about large delays here – perhaps a few seconds when switching between pages of images. 
+    // Even so, it can disrupt the interactive feel of this. I suspect this simplest solution is to load images asynchronously, 
+    // so users can start looking at images as they are being loaded. However, there may be better approaches. 
+    // Another approach could use infinite scroll, but that could introduce some issues  in how user selections are done, 
+    // where mis-selections are possible.
     // The ClickableImagesGrid class does all the above.I suspect it could be completely re-implemented 
     // as an infinite scroll.However, if it is possible to change the existing class to load images asynchronously, 
     // that would help too.The catch is that the current implementation checks the size of each image to determine the size of the grid, 
     // so I am not sure how to get around that (except by using a heuristic).
 
-    /// </summary>
     public partial class ClickableImagesGrid : UserControl
     {
         #region Public properties
