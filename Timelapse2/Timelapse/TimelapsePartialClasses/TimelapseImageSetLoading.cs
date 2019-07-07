@@ -29,7 +29,7 @@ namespace Timelapse
             if (Utilities.TryGetFileFromUser(
                 "Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
-                                             String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension), 
+                                             String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension),
                                              Constant.File.TemplateDatabaseFileExtension,
                                              out templateDatabasePath) == false)
             {
@@ -145,7 +145,7 @@ namespace Timelapse
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
             Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DBTables.FileData);
             char[] quote = { '\'' };
-           
+
             foreach (KeyValuePair<string, string> pair in columndefaultdict)
             {
                 ControlRow row = this.templateDatabase.GetControlFromTemplateTable(pair.Key);
@@ -357,7 +357,7 @@ namespace Timelapse
             // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown.
             // Perhaps merge with above Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo to do it all in one pass.
             List<FileInfo> filesToAdd = Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(imageFolderPath);
-           
+
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
             BackgroundWorker backgroundWorker = new BackgroundWorker()
@@ -423,23 +423,21 @@ namespace Timelapse
                     BitmapSource bitmapSource = null;
                     try
                     {
-                        // Create the bitmap and determine its quality
-                        // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
-                        // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
-                        // retain the frame and pass its metadata to TryUseImageTaken().
-                        // PERFORMANCE Loading a bitmap is an expensive operation (~24 ms while stepping through the debugger) as it has to be done on every image. 
-                        // If larger images are used, it could be even slower.
-                        bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
-
-                        // Check if the ImageQuality is corrupt or missing, and if so set it to unknown
-                        if (isCorruptOrMissing)
-                        {
-                            file.ImageQuality = FileSelectionEnum.Ok;
-                        }
-
+                        // By default, file image quality is ok (i.e., not dark)
+                        file.ImageQuality = FileSelectionEnum.Ok;
                         if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
                         {
- 
+
+                            // Create the bitmap and determine its quality
+                            // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
+                            // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
+                            // retain the frame and pass its metadata to TryUseImageTaken().
+                            // PERFORMANCE Loading a bitmap is an expensive operation (~24 ms while stepping through the debugger) as it has to be done on every image. 
+                            // If larger images are used, it could be even slower. I'm not sure if there is better way of loading bitmaps. This is also complicated by 
+                            // caching issues: if the loadbitmap keeps a handle to the image, it means that image cannot be deleted later via an Edit|Delete options. 
+                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
+                            file.ImageQuality = FileSelectionEnum.Ok;
+
                             // Dark Image Classification during loading if the automatically classify dark images option is set  
                             // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
                             // likely due to some threading issue that I can't debug.
@@ -449,7 +447,7 @@ namespace Timelapse
                             // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
                             const int MAX_RETRIES = 3;
                             int retries_attempted = 0;
-                            // PERFORMANCE: Dark Image Classification slows things down even further, as we now have to examine pixels in the image.
+                            // PERFORMANCE: Dark Image Classification slows things down even further, as this method determines whether an image is a dark (nighttime) shot by examining image pixels against a threshold.
                             // The good news is that most users don't need this - the use case is for those who put their camera on 'timelapse' vs. 'motion detection' mode,
                             // and want to filter out the night-time shots. Thus while we could get performance gain by optimizing the 'GetImageQuality' method below,
                             // a better use of time is to optimize the loop in other places. Users can also classify dark images any time later. via an option on the Edit menu
@@ -474,10 +472,7 @@ namespace Timelapse
                                     // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
                                     file.ImageQuality = FileSelectionEnum.Ok;
                                 }
-                                // Try to update the datetime (which is currently the file date) with the metadata date time the image was taken instead
-                                // We only do this for files, as videos do not have these metadata fields
-                                // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                                file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
+
                             }
                         }
                     }
@@ -489,6 +484,11 @@ namespace Timelapse
                         file.ImageQuality = FileSelectionEnum.Ok;
                     }
 
+                    // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
+                    // We only do this for files, as videos do not have these metadata fields
+                    // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
+                    file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
+
                     int filesPendingInsert;
                     // lock (filesToInsert) // SAULXXX Parallel.ForEach
                     // {
@@ -496,57 +496,67 @@ namespace Timelapse
                     filesPendingInsert = filesToInsert.Count;
                     // }
 
-                    // Display progress on feedback after a given time interval
+                    // Display progress on feedback after a given time interval (currently every half second)
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                     {
                         // lock (folderLoadProgress) // SAULXXX Parallel.ForEach
                         // {
                         if (file.IsVideo)
+                        {
+                            // TODO When Video thumbnails become available, we can use those.
+                            // Show a stock video bitmap image as they won't be retrieved fast enough anyways
+                            folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
+                        }
+                        else if (bitmapSource != null)
+                        {
+                            // if file was already loaded for dark checking, use the resulting bitmap
+                            try
                             {
-                                // TODO When Video thumbnails are available, we can use those.
-                                // Show a stock video bitmap image as they won't be retrieved fast enough anyways
-                                folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
-                            }
-                            else if (bitmapSource != null)
-                            {
-                                // if file was already loaded for dark checking, use the resulting bitmap
                                 folderLoadProgress.BitmapSource = bitmapSource;
                             }
-                            else
+                            catch
                             {
-                                // otherwise, load the file for display
-                                folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
+                                folderLoadProgress.BitmapSource = Constant.ImageValues.Corrupt.Value;
                             }
-                            folderLoadProgress.CurrentFile = filesToInsert.Count;
-                            folderLoadProgress.CurrentFileName = file.File;
-                            int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
-                            backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
-                            lastUpdateTime = utcNow;
-                            // Uncomment this to see how many images (if any) are not skipped
-                            //  Console.Write(" ");
+                        }
+                        else
+                        {
+                            // otherwise, load the file for display
+                            folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
+                        }
+                        folderLoadProgress.CurrentFile = filesToInsert.Count;
+                        folderLoadProgress.CurrentFileName = file.File;
+                        int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
+                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+                        lastUpdateTime = utcNow;
+                        // Uncomment this to see how many images (if any) are not skipped
+                        //  Console.Write(" ");
                         // }
                     }
                     else
                     {
                         // Uncomment this to see how many images (if any) are skipped
-                         // Console.WriteLine(" ");
-                         // Console.WriteLine("Skipped");
+                        // Console.WriteLine(" ");
+                        // Console.WriteLine("Skipped");
                         folderLoadProgress.BitmapSource = null;
                     }
                     // }); // SAULXXX Parallel.ForEach
                 }
 
+                // Second pass: Update database
                 utcNow = DateTime.UtcNow;
                 lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
-                // Second pass: Update database
+
+                // PERFORMANCE: this could be a relatively expensie operation with a huge number of files, but have already tried to optimize it somewhat by batch inserting files.
                 filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 folderLoadProgress.CurrentPass = 2;
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
                 {
                     utcNow = DateTime.UtcNow;
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
-                    { 
-                        // skip reloading images to display as the user's already seen them import
+                    {
+                        // Don't bother showing images as the user's already seen them import and loading is relatively fast in this pass.
+                        // That is, only show the percent progress.
                         folderLoadProgress.BitmapSource = null;
                         folderLoadProgress.CurrentFile = fileIndex;
                         folderLoadProgress.CurrentFileName = file.File;
@@ -741,7 +751,7 @@ namespace Timelapse
 
             // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
             this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
-            
+
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
