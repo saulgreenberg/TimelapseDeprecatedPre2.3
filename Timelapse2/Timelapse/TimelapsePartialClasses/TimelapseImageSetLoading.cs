@@ -293,7 +293,8 @@ namespace Timelapse
                 // We are loading images from the root folder for the first time
                 bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
                 List<string> subFolderPaths = new List<string>();
-                // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown
+                // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown.
+                // Indeed, this whole method should be wrapped in a progress bar, as well as changed to the newer async/await method vs. background worker.
                 Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
 
                 // The else-ifs are stubs in case we want to modify the code to ask the user if she wants to load only images in the root folder, 
@@ -360,6 +361,9 @@ namespace Timelapse
 
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
+            // Generally, Background worker examines each image, and extracts data from it which it stores in a data structure, which in turn is used to compose bulk database inserts. 
+            // PERFORMANCE This is likely the place that the best performance increases can be gained by transforming its foreach loop into a Parallel.ForEach. 
+            // Indeed, you will see commented out remnants of a Parallel.ForEach in the code where this was done, but using it introduced errors. 
             BackgroundWorker backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
@@ -547,7 +551,7 @@ namespace Timelapse
                 utcNow = DateTime.UtcNow;
                 lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
 
-                // PERFORMANCE: this could be a relatively expensie operation with a huge number of files, but have already tried to optimize it somewhat by batch inserting files.
+                // PERFORMANCE: this could be a relatively expensie operation with a huge number of files, although I have already optimized it somewhat by batch-inserting the data into the database.
                 filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 folderLoadProgress.CurrentPass = 2;
                 this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
@@ -555,7 +559,7 @@ namespace Timelapse
                     utcNow = DateTime.UtcNow;
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                     {
-                        // Don't bother showing images as the user's already seen them import and loading is relatively fast in this pass.
+                        // Don't bother showing images as the user's already seen them imported, and this pass is comparatively fast compared to the previous one.
                         // That is, only show the percent progress.
                         folderLoadProgress.BitmapSource = null;
                         folderLoadProgress.CurrentFile = fileIndex;
