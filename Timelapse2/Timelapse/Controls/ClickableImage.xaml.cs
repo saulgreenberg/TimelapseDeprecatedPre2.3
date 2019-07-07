@@ -156,7 +156,14 @@ namespace Timelapse.Controls
                     Episodes.EpisodeGetEpisodesInRange(fileTable, fileIndex);
                 }
                 Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
-                this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
+                if (episode.Item1 == int.MaxValue)
+                {
+                    this.EpisodeText.Text = "\u221E";
+                }
+                else
+                { 
+                    this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
+                }
                 this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
                 this.EpisodeText.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
             }

@@ -58,7 +58,10 @@ namespace Timelapse
 
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex)
         {
-            Episodes.EpisodesDictionary = new Dictionary<int, Tuple<int, int>>();
+            if (Episodes.EpisodesDictionary == null)
+            { 
+                Episodes.Reset();
+            }
             int index = fileTableIndex;
 
             // Ensure the argument is valid
@@ -67,7 +70,7 @@ namespace Timelapse
                 return;
             }
 
-            Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, out int first, out int last, out int count);
+            bool inRange = Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, out int first, out int last, out int count);
 
             // foreach fileindex within the episode, ranging from first to last, add its episode information to the episode dictionary
             for (int i = 1; i <= count; i++)
@@ -75,13 +78,14 @@ namespace Timelapse
                 int currentFileIndex = first + i - 1;
                 if (!Episodes.EpisodesDictionary.ContainsKey(currentFileIndex))
                 {
-                    Episodes.EpisodesDictionary.Add(currentFileIndex, new Tuple<int, int>(i, count));
+                    Tuple<int, int> tuple = inRange ? new Tuple<int, int>(i, count) : new Tuple<int, int>(int.MaxValue, int.MaxValue);
+                    Episodes.EpisodesDictionary.Add(currentFileIndex, tuple);
                 }
             }
         }
 
         // Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
-        private static void EpisodeGetAroundIndex(FileTable files, int index,  out int first, out int last, out int count)
+        private static bool EpisodeGetAroundIndex(FileTable files, int index,  out int first, out int last, out int count)
         {
             DateTime date1;
             DateTime date2;
@@ -95,15 +99,18 @@ namespace Timelapse
             // Note that numberOfFiles should never return zero if the provided index is valid
             if (files == null)
             {
-                return;
+                return false;
             }
 
             file = files[index];
             date1 = file.DateTime;
 
             int current = index - 1;
-            // Go backwards in the filetable until we find the first file in the episode
-            while (current >= 0)
+            int minSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+            int maxSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+            // Go backwards in the filetable until we find the first file in the episode, or we fail
+            // as we have gone back minSearch times
+            while (current >= 0 && minSearch != 0)
             {
                 file = files[current];
                 date2 = file.DateTime;
@@ -116,13 +123,15 @@ namespace Timelapse
                 first = current;
                 date1 = date2;
                 current--;
+                minSearch--;
             }
 
-            // Now go forwards in the filetable until we find the last file in the episode
+            // Now go forwards in the filetable until we find the last file in the episode, or we fail
+            // as we have gone forwards maxSearch times
             current = index + 1;
             file = files[index];
             date1 = file.DateTime;
-            while (current < files.Count())
+            while (current < files.Count() && maxSearch != 0)
             {
                 file = files[current];
                 date2 = file.DateTime;
@@ -135,8 +144,11 @@ namespace Timelapse
                 date1 = date2;
                 last = current;
                 current++;
+                maxSearch--;
             }
             count = last - first + 1;
+            return !(minSearch == 0 || maxSearch == 0);
+
         }
 
         #region Depracated - these functions returned all episodes across all files vs. the current version which is on demand
