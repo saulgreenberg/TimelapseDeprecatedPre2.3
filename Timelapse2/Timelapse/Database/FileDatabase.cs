@@ -840,6 +840,8 @@ namespace Timelapse.Database
                 this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
+                    // PERFORMANCE Creates what seems to be a slow query on large databases
+                    // Select covers queries including detections and mising detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                     query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
                         Sql.From + Constant.DBTables.FileData +
@@ -850,6 +852,8 @@ namespace Timelapse.Database
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
+                    // PERFORMANCE Creates what seems to be a slow query on large databases
+                    // Select covers queries including detections 
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                     query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
                          Sql.From + Constant.DBTables.Detections +
@@ -859,6 +863,7 @@ namespace Timelapse.Database
                 }
                 else
                 {
+                    // PERFORMANCE Creates what seems to be a slow query on large databases
                     useStandardQuery = true;
                 }
             }
@@ -943,6 +948,9 @@ namespace Timelapse.Database
             }
 
             // System.Diagnostics.Debug.Print("Doit: " + query);
+            // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
+            // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
+            // as I am not that savvy in database optimizations.
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
@@ -966,6 +974,9 @@ namespace Timelapse.Database
             return count;
         }
 
+        // Check for the existence of missing files in the current selection, 
+        // and return a list of IDs of those that are missing
+        // PERFORMANCE this can be slow if there are many files
         public bool SelectMissingFilesFromCurrentlySelectedFiles()
         {
             if (this.FileTable == null)
@@ -1156,6 +1167,7 @@ namespace Timelapse.Database
             }
             return this.CustomSelection.GetRelativePathFolder();
         }
+
         private string GetFilesConditionalExpression(FileSelectionEnum selection)
         {
             // System.Diagnostics.Debug.Print(selection.ToString());
@@ -1855,8 +1867,9 @@ namespace Timelapse.Database
             }
             try
             {
+                // PERFORMANCE Reading in very large json tables is somewhat slow. I am not sure if this can be optimized as the entire file is needed.
                 using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
-                {
+                 {
                     // If detection population was previously done in this session, resetting these tables to null 
                     // will force reading the new values into them
                     this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
@@ -1864,10 +1877,16 @@ namespace Timelapse.Database
                     this.classificationCategoriesDictionary = null;
                     this.classificationsDataTable = null;
 
+                    // PERFORMANCE This check is somewhat slow. 
                     if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
                     {
                         return false;
                     }
+                    // PERFORMANCE This method does two things:
+                    // - it walks through the detector data structure to construct sql insertion statements
+                    // - it invokes the actual insertion in the database.
+                    // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                    // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
                     DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
                     return true;
                 }
@@ -1986,9 +2005,16 @@ namespace Timelapse.Database
         {
             if (this.detectionDataTable == null)
             {
+                // PERFORMANCE 0 or more detections can be associated with every image. THus we should expect the number of detections could easily be two or three times the 
+                // number of images. With very large databases, retrieving the datatable of detections can be very slow (and can consume significant memory). 
+                // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
+                // its important to show detection data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
+                // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
                 this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
             }
+            // Retrieve the detection from the in-memory datatable.
             // Note that because IDs are in the database as a string, we convert it
+            // PERFORMANCE: This takes a bit of time, not much... but could be improved. Not sure if there is an index automatically built on it. If not, do so.
             return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Sql.Equal + fileID.ToString());
         }
 
@@ -2009,7 +2035,7 @@ namespace Timelapse.Database
             try
             {
                 // Null means we have never tried to create the dictionary. Try to do so.
-                if (this.detectionCategoriesDictionary == null)
+
                 {
                     this.detectionCategoriesDictionary = new Dictionary<string, string>();
                     DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
@@ -2080,7 +2106,13 @@ namespace Timelapse.Database
             // Null means we have never tried to create the dictionary. Try to do so.
             if (this.classificationCategoriesDictionary == null)
             {
-                this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                // PERFORMANCE 0 or more categories can be associated with every detection. THus we should expect the number of categories could easily be much higher than the 
+                // number of detections, which in turn is higher than the number of images. With very large databases, retrieving the datatable of categories can be very slow (and can consume significant memory). 
+                // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
+                // its important to show detection and category data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
+                // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
+                if (this.detectionCategoriesDictionary == null)
+                    this.classificationCategoriesDictionary = new Dictionary<string, string>();
                 DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories);
                 for (int i = 0; i < dataTable.Rows.Count; i++)
                 {

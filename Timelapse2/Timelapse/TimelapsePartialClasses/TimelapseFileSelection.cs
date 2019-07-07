@@ -63,11 +63,13 @@ namespace Timelapse
             // Select the files according to the given selection
             // Note that our check for missing actually checks to see if the file exists,
             // which is why its a different operation
-            // PEFORMANCE: TWO  SLOW OPERATIONS 4.1 seconds FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
+            // PEFORMANCE - TWO  SLOW OPERATIONS: FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
             Mouse.OverrideCursor = Cursors.Wait;
             bool missingFilesExist = false;
             if (selection == FileSelectionEnum.Missing)
             {
+                // PERFORMANCE this can be slow if there are many files, as it checks every single file in the current database selection to see if it exists
+                // However, it is not a mainstream operation so can be considered a lower priority place for optimization
                 missingFilesExist = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
             else 
@@ -76,6 +78,7 @@ namespace Timelapse
                 this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
+                // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
             Mouse.OverrideCursor = null;

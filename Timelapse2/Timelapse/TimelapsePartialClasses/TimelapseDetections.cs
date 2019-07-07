@@ -53,7 +53,6 @@ namespace Timelapse
                             classifications.Add(new KeyValuePair<string, string>(classificationCategoryLabel, conf.ToString()));
                         }
                     }
-
                     BoundingBox box = new BoundingBox((string)detectionRow[3], confidence, (string)detectionRow[Constant.DetectionColumns.Category], detectionCategoryLabel, classifications);
                     bboxes.Boxes.Add(box);
                 }
