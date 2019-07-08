@@ -42,6 +42,7 @@ namespace Timelapse.Dialog
         private TimeZoneInfo imageSetTimeZone;
         private bool excludeUTCOffset;
         private bool dontUpdate = true;
+        private bool dontUpdateRangeSlider = false;
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
         private DispatcherTimer countTimer = new DispatcherTimer();
 
@@ -102,6 +103,9 @@ namespace Timelapse.Dialog
                 this.DetectionRangeType.SelectedItem = this.comparisonDictionary[this.DetectionSelections.DetectionComparison];
                 this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
                 this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
+                this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1;
+                this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2;
+
 
                 // Put Detection categories in as human-readable labels and set it to the last used one.
                 List<string> labels = this.database.GetDetectionLabels();
@@ -733,6 +737,14 @@ namespace Timelapse.Dialog
                 ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
+            if (this.dontUpdateRangeSlider == false)
+            {
+                this.DetectionRangeSlider.LowerValue = (double)this.DetectionConfidenceSpinner1.Value;
+            }
+            else
+            {
+                dontUpdateRangeSlider = false;
+            }
             this.InitiateShowCountsOfMatchingFiles();
         }
 
@@ -750,9 +762,27 @@ namespace Timelapse.Dialog
                 ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
+            if (this.dontUpdateRangeSlider == false)
+            {
+                this.DetectionRangeSlider.HigherValue = (double) this.DetectionConfidenceSpinner2.Value;
+            }
+            else
+            {
+                dontUpdateRangeSlider = false;
+            }
             this.InitiateShowCountsOfMatchingFiles();
         }
 
+        private void DetectionRangeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
+        {
+            this.DetectionConfidenceSpinner2.Value = DetectionRangeSlider.HigherValue;
+            this.dontUpdateRangeSlider = true;
+        }
+
+        private void DetectionRangeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
+        {
+            this.DetectionConfidenceSpinner1.Value = DetectionRangeSlider.LowerValue;
+        }
         private void DetectionRangeType_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (this.IsLoaded == false || this.dontInvoke)
@@ -776,16 +806,19 @@ namespace Timelapse.Dialog
             {
                 case LessThan:
                     this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
-                    this.AndLabel.Visibility = Visibility.Hidden;
+                    this.FromLabel.Visibility = Visibility.Hidden;
+                    this.ToLabel.Visibility = Visibility.Hidden;
                     break;
                 case Between:
                     this.DetectionConfidenceSpinner2.Visibility = Visibility.Visible;
-                    this.AndLabel.Visibility = Visibility.Visible;
+                    this.FromLabel.Visibility = Visibility.Visible;
+                    this.ToLabel.Visibility = Visibility.Visible;
                     break;
                 case GreaterThan:
                 default:
                     this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
-                    this.AndLabel.Visibility = Visibility.Hidden;
+                    this.FromLabel.Visibility = Visibility.Hidden;
+                    this.ToLabel.Visibility = Visibility.Hidden;
                     break;
             }
         }
@@ -796,6 +829,7 @@ namespace Timelapse.Dialog
             this.DetectionConfidenceSpinner2.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionRangeType.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
+            this.DetectionRangeSlider.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
         }
         #endregion
 
@@ -843,5 +877,7 @@ namespace Timelapse.Dialog
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
+
+
     }
 }

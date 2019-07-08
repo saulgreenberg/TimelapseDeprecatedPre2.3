@@ -39,9 +39,9 @@ namespace Timelapse.Detection
             this.DetectionCategory = "1";
             this.DetectionConfidenceThreshold1 = 0.8;
             this.DetectionConfidenceThreshold2 = 1;
-            this.DetectionComparison = ComparisonEnum.GreaterThan;
+            this.DetectionComparison = ComparisonEnum.Between;
 
-            this.CategoryComparison = ComparisonEnum.GreaterThan;
+            this.CategoryComparison = ComparisonEnum.Between;
             this.CategoryConfidenceThreshold1 = 0.8;
             this.CategoryConfidenceThreshold2 = 1;
             this.CategoryCategory = "1";
