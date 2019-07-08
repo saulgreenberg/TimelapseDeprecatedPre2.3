@@ -23,7 +23,6 @@ namespace Timelapse.Detection
         public bool UseDetectionConfidenceThreshold { get; set; }
         public double DetectionConfidenceThreshold1 { get; set; }
         public double DetectionConfidenceThreshold2 { get; set; }
-        public ComparisonEnum DetectionComparison { get; set; }
 
         public bool UseCategoryCategory { get; set; }
         public string CategoryCategory { get; set; }
@@ -31,7 +30,7 @@ namespace Timelapse.Detection
         public bool UseCategoryConfidenceThreshold { get; set; }
         public double CategoryConfidenceThreshold1 { get; set; }
         public double CategoryConfidenceThreshold2 { get; set; }
-        public ComparisonEnum CategoryComparison { get; set; }
+
         public DetectionSelections()
         {
             this.ClearAllDetectionsUses();
@@ -39,9 +38,7 @@ namespace Timelapse.Detection
             this.DetectionCategory = "1";
             this.DetectionConfidenceThreshold1 = 0.8;
             this.DetectionConfidenceThreshold2 = 1;
-            this.DetectionComparison = ComparisonEnum.Between;
 
-            this.CategoryComparison = ComparisonEnum.Between;
             this.CategoryConfidenceThreshold1 = 0.8;
             this.CategoryConfidenceThreshold2 = 1;
             this.CategoryCategory = "1";

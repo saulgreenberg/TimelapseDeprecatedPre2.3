@@ -292,24 +292,10 @@ namespace Timelapse.Database
                 // Form:  ...Group By Detections.Id Having Max  (Detections.conf )  ...
                 where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
                     Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
-                switch (this.DetectionSelections.DetectionComparison)
-                {
-                    case ComparisonEnum.LessThanEqual:
-                        // <= .80
-                        where += Sql.LessThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
-                        break;
-                    case ComparisonEnum.Between:
-                        // BETWEEN .80 AND .90
-                        where += Sql.Between +
-                            this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Sql.And +
-                            this.DetectionSelections.DetectionConfidenceThreshold2.ToString();
-                        break;
-                    case ComparisonEnum.GreaterThan:
-                    default:
-                        // >= .80
-                        where += Sql.GreaterThanEqual + this.DetectionSelections.DetectionConfidenceThreshold1.ToString();
-                        break;
-                }
+                // BETWEEN .80 AND .90
+                where += Sql.Between +
+                         this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Sql.And +
+                         this.DetectionSelections.DetectionConfidenceThreshold2.ToString();
             }
             else if (this.DetectionSelections.UseDetectionCategory)
             {

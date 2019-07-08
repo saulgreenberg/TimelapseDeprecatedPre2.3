@@ -50,7 +50,6 @@ namespace Timelapse.Dialog
         private bool dontInvoke = false;
         private bool dontCount;
 
-        private Dictionary<ComparisonEnum, string> comparisonDictionary = new Dictionary<ComparisonEnum, string>();
         private DetectionSelections DetectionSelections { get; set; }
 
         #region Constructors and Loading
@@ -70,9 +69,6 @@ namespace Timelapse.Dialog
             if (GlobalReferences.DetectionsExists)
             {
                 this.DetectionSelections = detectionSelections;
-                comparisonDictionary.Add(ComparisonEnum.LessThanEqual, LessThan);
-                comparisonDictionary.Add(ComparisonEnum.GreaterThan, GreaterThan);
-                comparisonDictionary.Add(ComparisonEnum.Between, Between);
             }
         }
 
@@ -86,9 +82,6 @@ namespace Timelapse.Dialog
             // Detections-specific
             this.dontCount = true;
             this.dontInvoke = true;
-            this.DetectionRangeType.Items.Add(LessThan);
-            this.DetectionRangeType.Items.Add(Between);
-            this.DetectionRangeType.Items.Add(GreaterThan);
 
             // Set the state of the detections to the last used ones (or to its defaults)
             if (GlobalReferences.DetectionsExists)
@@ -100,12 +93,10 @@ namespace Timelapse.Dialog
                 this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
                 this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
 
-                this.DetectionRangeType.SelectedItem = this.comparisonDictionary[this.DetectionSelections.DetectionComparison];
                 this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
                 this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
                 this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1;
                 this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2;
-
 
                 // Put Detection categories in as human-readable labels and set it to the last used one.
                 List<string> labels = this.database.GetDetectionLabels();
@@ -114,8 +105,6 @@ namespace Timelapse.Dialog
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
                 this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-
-                this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionCategory);
                 this.SetDetectionSpinnerEnable();
             }
             else
@@ -128,7 +117,6 @@ namespace Timelapse.Dialog
             if (GlobalReferences.DetectionsExists)
             { 
                 this.SetDetectionCriteria();
-                this.SetDetectionSpinnerVisibility(this.DetectionSelections.DetectionComparison);
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
             }
             this.InitiateShowCountsOfMatchingFiles();
@@ -697,6 +685,9 @@ namespace Timelapse.Dialog
             }
             this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
             this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+            this.FromLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ToLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+            this.DetectionRangeSlider.RangeBackground = this.DetectionSelections.UseDetectionConfidenceThreshold ? Brushes.Gold : Brushes.LightGoldenrodYellow;
 
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
             this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
@@ -764,7 +755,7 @@ namespace Timelapse.Dialog
             this.SetDetectionCriteria();
             if (this.dontUpdateRangeSlider == false)
             {
-                this.DetectionRangeSlider.HigherValue = (double) this.DetectionConfidenceSpinner2.Value;
+                this.DetectionRangeSlider.HigherValue = (double)this.DetectionConfidenceSpinner2.Value;
             }
             else
             {
@@ -783,51 +774,20 @@ namespace Timelapse.Dialog
         {
             this.DetectionConfidenceSpinner1.Value = DetectionRangeSlider.LowerValue;
         }
-        private void DetectionRangeType_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (this.IsLoaded == false || this.dontInvoke)
-            {
-                return;
-            }
-            this.SetDetectionSpinnerVisibility((string)this.DetectionRangeType.SelectedValue);
-            this.DetectionSelections.DetectionComparison = comparisonDictionary.FirstOrDefault(x => x.Value == (string)this.DetectionRangeType.SelectedValue).Key;
-            this.SetDetectionCriteria();
-            this.InitiateShowCountsOfMatchingFiles();
-        }
 
         // Depending on what comparision operator is used, set the visibility of particular spinners and labels
         private void SetDetectionSpinnerVisibility(ComparisonEnum comparisonEnum)
         {
-            SetDetectionSpinnerVisibility(comparisonDictionary[comparisonEnum]);
+            this.DetectionConfidenceSpinner2.Visibility = Visibility.Visible;
+            this.FromLabel.Visibility = Visibility.Visible;
+            this.ToLabel.Visibility = Visibility.Visible;
         }
-        private void SetDetectionSpinnerVisibility(string comparison)
-        {
-            switch (comparison)
-            {
-                case LessThan:
-                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
-                    this.FromLabel.Visibility = Visibility.Hidden;
-                    this.ToLabel.Visibility = Visibility.Hidden;
-                    break;
-                case Between:
-                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Visible;
-                    this.FromLabel.Visibility = Visibility.Visible;
-                    this.ToLabel.Visibility = Visibility.Visible;
-                    break;
-                case GreaterThan:
-                default:
-                    this.DetectionConfidenceSpinner2.Visibility = Visibility.Hidden;
-                    this.FromLabel.Visibility = Visibility.Hidden;
-                    this.ToLabel.Visibility = Visibility.Hidden;
-                    break;
-            }
-        }
+
         private void SetDetectionSpinnerEnable()
         {
             // Enable or disable the controls depending on the various checkbox states
             this.DetectionConfidenceSpinner1.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionConfidenceSpinner2.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
-            this.DetectionRangeType.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
             this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
             this.DetectionRangeSlider.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
         }
@@ -877,7 +837,5 @@ namespace Timelapse.Dialog
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
-
-
     }
 }

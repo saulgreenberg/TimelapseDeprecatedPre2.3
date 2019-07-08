@@ -34,7 +34,7 @@
         </DockPanel>
         <!--Detection Panel-->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-        <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
+            <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
                 <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="10,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -73,7 +73,6 @@
                             <RowDefinition Height="Auto" MinHeight="20" />
                             <RowDefinition Height="Auto" MinHeight="20"/>
                         </Grid.RowDefinitions>
-                        <ComboBox Name="DetectionRangeType"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Visibility="Collapsed" FontWeight="Normal" SelectionChanged="DetectionRangeType_SelectionChanged" Width="100" VerticalContentAlignment="Center"/>
                         <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Center" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="8,6,10,0"/>
                         <TextBlock Name="ConfidenceLabel" Text="Confidence" FontWeight="DemiBold" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,10,0,0"/>
                         <Label Name="FromLabel" Grid.Row="0" Grid.Column="2" FontWeight="DemiBold" Content="from " Margin="20,6,0,0"/>
@@ -84,7 +83,7 @@
                                        HigherValue="1" LowerValue=".8" Maximum="1" Minimum="0" Step="0.01" HigherValueChanged="DetectionRangeSlider_HigherValueChanged" LowerValueChanged="DetectionRangeSlider_LowerValueChanged" HigherRangeBackground="WhiteSmoke" RangeBackground="Gold" LowerRangeBackground="WhiteSmoke"/>
                     </Grid>
                 </Grid>
-        </GroupBox>
+            </GroupBox>
             <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no detection data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
 
         </StackPanel>
@@ -131,6 +130,6 @@
             </DockPanel>
         </GroupBox>
 
-  
+
     </DockPanel>
 </Window>
