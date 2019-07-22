@@ -34,7 +34,7 @@
         </DockPanel>
         <!--Detection Panel-->
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <GroupBox Name="DetectionGroupBox" Header="Detections" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
+            <GroupBox Name="DetectionGroupBox" Header="Image Recognition" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
                 <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="10,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -84,7 +84,7 @@
                     </Grid>
                 </Grid>
             </GroupBox>
-            <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no detection data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
+            <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no recognition data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
 
         </StackPanel>
         <!--Selection Panel-->

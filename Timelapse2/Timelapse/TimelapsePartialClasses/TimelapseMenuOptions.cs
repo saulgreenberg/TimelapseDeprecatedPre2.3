@@ -131,8 +131,17 @@ namespace Timelapse
             advancedTimelapseOptions.ShowDialog();
             // Reset how some controls appear depending upon the current options
             this.EnableOrDisableMenusAndControls();
-            // If we aren't using detectins, then hide their existence even if detection data may be present
-            GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+
+            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            { 
+                // If we aren't using detections, then hide their existence even if detection data may be present
+                GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+            }
+            else
+            {
+                GlobalReferences.DetectionsExists = false;
+            }
+
 
             // redisplay the file as the options may change how bounding boxes should be displayed
             if (this.dataHandler != null)
