@@ -290,6 +290,8 @@ namespace Timelapse
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoadAsync(string imageFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
+            System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
+            s.Start();
             // We check for different things if this is the initial first-time load of an image set vs. adding files after the database has been created.
             if (isInitialImageSetLoading)
             {
@@ -650,6 +652,9 @@ namespace Timelapse
                     }
                 }
                 this.BusyIndicator.IsBusy = false; // Hide the busy indicator
+                s.Stop();
+
+                TraceDebug.PrintMessage("Elapsed load time: " + s.ElapsedMilliseconds);
             };
 
             // Set up the user interface to show feedback

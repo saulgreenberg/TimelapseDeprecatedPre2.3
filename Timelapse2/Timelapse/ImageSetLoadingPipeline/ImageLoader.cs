@@ -57,7 +57,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             this.state = state;
         }
 
-        public async Task<ImageLoader> LoadImageAsync()
+        public async Task<ImageLoader> LoadImageAsync(Action OnImageLoadComplete)
         {
             // First check to see if the file is already in the database. If it is, there's basically nothing to do here.
             // Set the loader's file member.
@@ -147,6 +147,14 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
                 File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
 
+            }
+
+            // This completes processing, but it may be some time before the task is checked for completion.
+            // for purposes of reporting progress, call the completion delegate provided.
+
+            if (OnImageLoadComplete != null)
+            {
+                OnImageLoadComplete();
             }
 
             return this;

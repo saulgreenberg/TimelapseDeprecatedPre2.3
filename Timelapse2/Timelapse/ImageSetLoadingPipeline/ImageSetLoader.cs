@@ -76,7 +76,13 @@ namespace Timelapse.ImageSetLoadingPipeline
                 {
                     ImageLoader loader = new ImageLoader(fileInfo, dataHandler, state);
 
-                    Task<ImageLoader> loaderTask = loader.LoadImageAsync();
+                    Task<ImageLoader> loaderTask = loader.LoadImageAsync(() => 
+                    {
+                        // Both of these operations are atomic, the specific number and the specific loader at any given
+                        // time may not coorespond.
+                        Interlocked.Increment(ref imagesLoaded);
+                        this.LastLoadComplete = loader;
+                    });
 
                     loadTasks.Add(loaderTask);
                 }
@@ -84,51 +90,14 @@ namespace Timelapse.ImageSetLoadingPipeline
                 Task<ImageLoader>[] taskArray = loadTasks.ToArray();
 
                 // Allow all the tasks to complete.
-                do
-                {
-                    // Wait for any of the tasks to complete
-                    int completedIndex = Task.WaitAny(taskArray);
 
-                    // Set the current progress
-                    ImageLoader completedLoader = taskArray[completedIndex].Result;
+                Task.WaitAll(taskArray);
 
-                    this.LastLoadComplete = completedLoader;
-
-                    // Set up the next iteration, minus the just-completed task. This prevents double counting completions.
-                    loadTasks.RemoveAt(completedIndex);
-                    taskArray = loadTasks.ToArray();
-
-                    if (completedLoader.RequiresDatabaseInsert)
-                    {
-                        this.imagesToInsert.Add(completedLoader);
-                    }
-
-                    #region old
-                    /*Task<ImageLoader>[] nextTaskArray = new Task<ImageLoader>[taskArray.Length - 1];
-
-                    if (completedIndex > 0 && completedIndex < taskArray.Length - 1)
-                    {
-                        Array.Copy(taskArray, 0, nextTaskArray, 0, completedIndex);
-                        Array.Copy(taskArray, completedIndex + 1, nextTaskArray, completedIndex, taskArray.Length - completedIndex);
-                    }
-                    else if (nextTaskArray.Length == 0)
-                    {
-                        // This was the last task
-                    }
-                    else if (completedIndex == 0)
-                    {
-                        // Only need the tasks after index 0
-                        Array.Copy(taskArray, 1, nextTaskArray, 0, taskArray.Length - 1);
-                    }
-                    else if (completedIndex == taskArray.Length - 1)
-                    {
-                        // Only need the tasks before the last index
-                        Array.Copy(taskArray, 0, nextTaskArray, 0, taskArray.Length - 1);
-                    }
-
-                    taskArray = nextTaskArray;*/
-                    #endregion
-                } while (Interlocked.Increment(ref imagesLoaded) < this.ImagesToLoad);
+                // With all tasks complete, collect those loaders that need to be inserted into the DB
+                this.imagesToInsert.AddRange(from task in taskArray
+                                             let loader = task.Result
+                                             where loader.RequiresDatabaseInsert
+                                             select loader);
             });
 
             this.pass2 = new Task(() =>
@@ -154,8 +123,6 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             Timer t = new Timer((state) =>
             {
-                //FolderLoadProgress folderLoadProgressState = state as FolderLoadProgress;
-
                 folderLoadProgress.BitmapSource = this.LastLoadComplete?.BitmapSource;
                 folderLoadProgress.CurrentFile = this.ImagesLoaded;
                 folderLoadProgress.CurrentFileName = this.LastLoadComplete?.File.File;
@@ -174,8 +141,6 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             t = new Timer((state) =>
             {
-                //FolderLoadProgress folderLoadProgressState = state as FolderLoadProgress;
-
                 folderLoadProgress.BitmapSource = null;
                 folderLoadProgress.CurrentFile = this.LastIndexInsertComplete;
                 folderLoadProgress.CurrentFileName = this.LastInsertComplete?.File;
