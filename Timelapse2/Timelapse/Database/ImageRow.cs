@@ -391,11 +391,11 @@ namespace Timelapse.Database
         /// <param name="baseFolderPath"></param>
         /// <param name="imageExpectedUsage"></param>
         /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
-        public virtual async Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
+        public virtual Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
         {
-            return await this.GetBitmapFromFileAsync(baseFolderPath,
-                                                     imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null, 
-                                                     imageExpectedUsage);
+            return this.GetBitmapFromFileAsync(baseFolderPath,
+                                               imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null, 
+                                               imageExpectedUsage);
         }
 
         public BitmapSource ClearBitmap()
@@ -410,9 +410,9 @@ namespace Timelapse.Database
         /// <param name="desiredWidth"></param>
         /// <param name="displayIntent"></param>
         /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
-        public async Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
+        public Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
                 // Note to bridge the gap between the out parameter and the requirements of the task, this uses
                 // a tuple to carry both.

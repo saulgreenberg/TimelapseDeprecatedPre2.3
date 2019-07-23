@@ -123,7 +123,22 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             Timer t = new Timer((state) =>
             {
-                folderLoadProgress.BitmapSource = this.LastLoadComplete?.BitmapSource;
+                if (this.LastLoadComplete != null)
+                {
+                    if (this.LastLoadComplete.File.IsVideo)
+                    {
+                        folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
+                    }
+                    else
+                    {
+                        folderLoadProgress.BitmapSource = this.LastLoadComplete?.BitmapSource;
+                    }
+                }
+                else
+                {
+                    folderLoadProgress.BitmapSource = null;
+                }
+
                 folderLoadProgress.CurrentFile = this.ImagesLoaded;
                 folderLoadProgress.CurrentFileName = this.LastLoadComplete?.File.File;
                 int percentProgress = (int)(100.0 * this.ImagesLoaded / (double)this.ImagesToLoad);
