@@ -111,7 +111,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                         }
                         else
                         {
-                            // rbane: Why does this need retrying? What's the transient failure here?
                             while (File.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                             {
                                 // See what images were retried
