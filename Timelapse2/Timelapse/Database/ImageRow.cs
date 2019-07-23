@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -384,9 +385,41 @@ namespace Timelapse.Database
             }
         }
 
+        /// <summary>
+        /// Wrapper for the LoadBitmap method to enable async await use
+        /// </summary>
+        /// <param name="baseFolderPath"></param>
+        /// <param name="imageExpectedUsage"></param>
+        /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
+        public virtual async Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
+        {
+            return await this.GetBitmapFromFileAsync(baseFolderPath,
+                                                     imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null, 
+                                                     imageExpectedUsage);
+        }
+
         public BitmapSource ClearBitmap()
         {
             return Constant.ImageValues.FileNoLongerAvailable.Value;
+        }
+
+        /// <summary>
+        /// Wrapper for GetBitmapFromFile to allow async await use.
+        /// </summary>
+        /// <param name="rootFolderPath"></param>
+        /// <param name="desiredWidth"></param>
+        /// <param name="displayIntent"></param>
+        /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
+        public async Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
+        {
+            return await Task.Run(() =>
+            {
+                // Note to bridge the gap between the out parameter and the requirements of the task, this uses
+                // a tuple to carry both.
+                bool isCorruptOrMissing = false;
+                BitmapSource bitmap = GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out isCorruptOrMissing);
+                return Tuple.Create(bitmap, isCorruptOrMissing);
+            });
         }
 
         // Load full form

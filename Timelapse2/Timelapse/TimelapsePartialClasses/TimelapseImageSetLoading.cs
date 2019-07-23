@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -12,6 +14,7 @@ using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
+using Timelapse.ImageSetLoadingPipeline;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -378,6 +381,19 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
+                ImageSetLoader loader = new ImageSetLoader(filesToAdd, this.dataHandler, this.state);
+
+                // rbaneTODO: Define and use timer and callback to bring progress back to report progress.
+                backgroundWorker.ReportProgress(0, folderLoadProgress);
+
+                // If the DoWork delegate is async, this is considered finished before the actual image set is loaded.
+                // Instead of an async DoWork and an await here, wait for the loading to finish.
+                loader.LoadAsync(backgroundWorker.ReportProgress, folderLoadProgress, 500).Wait();
+
+                //folderLoadProgress.CurrentPass = 2;
+                //backgroundWorker.ReportProgress(100, folderLoadProgress);
+
+                /*
                 // First pass: Examine files to extract their basic properties and build a list of files not already in the database
                 // PERFORMANCE: In prior tests, using two threads in parallel seemed to give the biggest bang for the buck in speeding things up.
                 // Ideally, try to get at least two threads as that captures most of the benefit from parallel operation.  
@@ -389,7 +405,8 @@ namespace Timelapse
                 // Timelapse used to display every image as it was being loaded. This is not necessary, and I changed it to show an image every 500 milliseconds to speed things up. 
                 // An earlier version used a Parallel.Foreach (now commented out), which included a sequential partitioner to display preview images 
                 // to the user in pretty much the same order as they're named. As well, pulling files nearly sequentially may (perhaps)  offer  minor disk performance benefit.                
-                List<ImageRow> filesToInsert = new List<ImageRow>();
+                
+                ConcurrentBag<ImageRow> filesToInsert = new ConcurrentBag<ImageRow>();
                 TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
                 DateTime utcNow = new DateTime();
                 DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
@@ -399,12 +416,15 @@ namespace Timelapse
                 // It also occassionaly produced an SQLite Database locked error. I have changed the way updates to the databases are done so that SQL lock error may no longer be an issue, but I am not sure. 
                 // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
                 // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
+
+                // rbane: This is a great place to parallelize in the initial load. Set these up as async tasks, possibly limit to number of cores on the
+                // system or let the task engine figure things out. Avoids an IO bound foreach that will suck up time without using processing resources.
                 int filesProcessed = 0;
                 foreach (FileInfo fileInfo in filesToAdd)
                 {
                     utcNow = DateTime.UtcNow;
                     // As GetOrCreateFile inserts the file date as the Date/Time, a later call will examine the bitmap metadata, and - if it exists - over-write the file date  
-                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
+                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file)) // rbane: Does this need to be updated to work async?
                     {
                         // The image is already in the database. So skip it.
                         // Even so, provide feedback every LoadingImageDisplayInterval
@@ -418,12 +438,12 @@ namespace Timelapse
 
                             lastUpdateTime = utcNow;
                             filesProcessed++;
-                            continue;
+                            continue; // rbane: End the task here, this is already ready
                         }
                     }
 
                     // The image is not in the database, so add it.
-                    filesProcessed++;
+                    filesProcessed++; // rbane: Need a thread safe increment here
                     BitmapSource bitmapSource = null;
                     try
                     {
@@ -438,7 +458,14 @@ namespace Timelapse
                             // PERFORMANCE Loading a bitmap is an expensive operation (~24 ms while stepping through the debugger) as it has to be done on every image. 
                             // If larger images are used, it could be even slower. I'm not sure if there is better way of loading bitmaps. This is also complicated by 
                             // caching issues: if the loadbitmap keeps a handle to the image, it means that image cannot be deleted later via an Edit|Delete options. 
-                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
+
+                            // rbane: This is what IO bounds this process. The system should not block a single worker thread here, it should instead await the loading
+                            // and let the threadpool move on to other things until ready. Internally, this is using the imaging library bitmap suff, see if there are good
+                            // solutions to awaiting.
+                            var loadResult = await file.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+
+                            bitmapSource = loadResult.Item1;
+
                             file.ImageQuality = FileSelectionEnum.Ok;
 
                             // Dark Image Classification during loading if the automatically classify dark images option is set  
@@ -463,6 +490,7 @@ namespace Timelapse
                             }
                             else
                             {
+                                // rbane: Why does this need retrying? What's the transient failure here?
                                 while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                                 {
                                     // See what images were retried
@@ -492,13 +520,12 @@ namespace Timelapse
                     file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
 
                     int filesPendingInsert;
-                    // lock (filesToInsert) // SAULXXX Parallel.ForEach
-                    // {
+                    
                     filesToInsert.Add(file);
                     filesPendingInsert = filesToInsert.Count;
-                    // }
 
                     // Display progress on feedback after a given time interval (currently every half second)
+                    // rbane: better to display progress from some list of updates than to try to organize updates over all tasks to some source
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
                     {
                         // lock (folderLoadProgress) // SAULXXX Parallel.ForEach
@@ -524,7 +551,8 @@ namespace Timelapse
                         else
                         {
                             // otherwise, load the file for display
-                            folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
+                            var loadResult = await file.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                            folderLoadProgress.BitmapSource = loadResult.Item1;
                         }
                         folderLoadProgress.CurrentFile = filesToInsert.Count;
                         folderLoadProgress.CurrentFileName = file.File;
@@ -543,16 +571,17 @@ namespace Timelapse
                         folderLoadProgress.BitmapSource = null;
                     }
                     // }); // SAULXXX Parallel.ForEach
-                }
+                } // rbane: Ends the image loading loop, at this point we have a built up filesToInsert list in memory
+                // rbane: why do this in two passes, though?
 
                 // Second pass: Update database
                 utcNow = DateTime.UtcNow;
                 lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
 
-                // PERFORMANCE: this could be a relatively expensie operation with a huge number of files, although I have already optimized it somewhat by batch-inserting the data into the database.
-                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
+                // PERFORMANCE: this could be a relatively expensive operation with a huge number of files, although I have already optimized it somewhat by batch-inserting the data into the database.
+                List<ImageRow> pass2filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
                 folderLoadProgress.CurrentPass = 2;
-                this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
+                this.dataHandler.FileDatabase.AddFiles(pass2filesToInsert, (ImageRow file, int fileIndex) =>
                 {
                     utcNow = DateTime.UtcNow;
                     if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
@@ -562,12 +591,15 @@ namespace Timelapse
                         folderLoadProgress.BitmapSource = null;
                         folderLoadProgress.CurrentFile = fileIndex;
                         folderLoadProgress.CurrentFileName = file.File;
-                        int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
+                        int percentProgress = (int)(100.0 * fileIndex / (double)pass2filesToInsert.Count);
                         backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
                         lastUpdateTime = utcNow;
                     }
                 });
+                */
             };
+
+            // rbane: Update to work with progress as reported by async tasks
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
                 // this gets called on the UI thread
@@ -579,6 +611,7 @@ namespace Timelapse
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
             };
+
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
                 // BackgroundWorker aborts execution on an exception and transfers it to completion for handling
@@ -625,7 +658,7 @@ namespace Timelapse
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             this.UpdateFolderLoadProgress(null, 0, "Loading folders...");
             this.StatusBar.SetMessage("Loading folders...");
-            backgroundWorker.RunWorkerAsync();
+            backgroundWorker.RunWorkerAsync(); // rbane: still keep the background worker, but switch out the internals to async
             externallyVisibleWorker = backgroundWorker;
             return true;
         }
