@@ -59,7 +59,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     var loadResult = task.Result;
                     this.bitmapSource = loadResult.Item1;
                 }
-
+                
                 return this.bitmapSource;
             }
             private set
@@ -75,7 +75,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             this.state = state;
         }
 
-        public async Task<ImageLoader> LoadImageAsync(Action OnImageLoadComplete)
+        public async Task LoadImageAsync(Action OnImageLoadComplete)
         {
             // First check to see if the file is already in the database. If it is, there's basically nothing to do here.
             // Set the loader's file member.
@@ -146,7 +146,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     else
                     {
                         // Not opening things to check for dark images at this time, but still need to report some progress.
-                        
+                        // Let this be done by lazy load when needed
                         /*var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
                         this.BitmapSource = loadResult.Item1;*/
                     }
@@ -173,8 +173,6 @@ namespace Timelapse.ImageSetLoadingPipeline
             {
                 OnImageLoadComplete();
             }
-
-            return this;
         }
     }
 }
