@@ -22,10 +22,9 @@ namespace Timelapse.ImageSetLoadingPipeline
     public class ImageSetLoader
     {
         private int imagesLoaded = 0;
+        private int imagesToInsert = 0;
         
         private Task pass1 = null;
-
-        private List<ImageLoader> imagesToInsert = new List<ImageLoader>();
 
         private Task pass2 = null;
 
@@ -95,6 +94,8 @@ namespace Timelapse.ImageSetLoadingPipeline
                             // any order. By sorting the file infos above, things that sort first in the database should
                             // be done first, BUT THIS MAY REQUIRE ADDITIONAL FINESSE TO KEEP THE EXPLICIT ORDER CORRECT.
                             databaseInsertionQueue.Enqueue(loader.File);
+
+                            Interlocked.Increment(ref imagesToInsert);
                         }
                     });
 
@@ -107,12 +108,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // or may not, depending on the specifics of the system running this code.
 
                 Task.WaitAll(taskArray);
-
-                // With all tasks complete, collect those loaders that need to be inserted into the DB
-                /*this.imagesToInsert.AddRange(from task in taskArray
-                                             let loader = task.Result
-                                             where loader.RequiresDatabaseInsert
-                                             select loader);*/
             });
             
             
@@ -128,57 +123,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                                                       this.LastIndexInsertComplete = fileIndex;
                                                   });
             });
-            
-
-            /*
-            // TODO: Seems to be a lot of memory pressure from lots of these ImageRows and accompanying ImageLoaders. Can
-            // we set up pass 2 to run on batches of these files and clear them out of memory? What happens if we spin up
-            // a pass 2 for every thousand images loaded?
-            // If we sort the list of file names to be inserted, can we still preserve the order?
-            this.pass2 = new Task(() =>
-            {
-                pass1DataStart.WaitOne();
-                List<ImageRow> filesToInsert = new List<ImageRow>();
-
-                do
-                {
-                    ImageRow row;
-                    while (filesToInsert.Count < 1024 &&
-                           databaseInsertionQueue.Count > 0 &&
-                           databaseInsertionQueue.TryDequeue(out row) == true)
-                    {
-                        filesToInsert.Add(row);
-                    }
-
-                    if (filesToInsert.Count == 1024 || (pass1Done.WaitOne(0) == true && databaseInsertionQueue.Count == 0))
-                    {
-                        dataHandler.FileDatabase.AddFiles(filesToInsert.OrderBy(f => Path.Combine(f.RelativePath, f.File)).ToList(), 
-                                                          (ImageRow file, int fileIndex) =>
-                        {
-                            this.LastInsertComplete = file;
-                            this.LastIndexInsertComplete = fileIndex;
-                        });
-
-                        TraceDebug.PrintMessage("Inserted " + filesToInsert.Count + " files");
-
-                        filesToInsert.Clear(); // This drops out all the ImageRow objects in memory that are now part of the database, and frees them for GC
-                    }
-                    else
-                    {
-                        // No files to insert. Wait 100ms and see if we're done or there's more work to do.
-                        Task.Delay(100).Wait();
-                    }
-                } while (pass1Done.WaitOne(0) == false);
-
-                // Load the necessary items into the database.
-                    //List<ImageRow> filesToInsert = (from imageLoader in this.imagesToInsert
-                    //                            select imageLoader.File)
-                    //                           .OrderBy(file => Path.Combine(file.RelativePath, file.File))
-                    //                          .ToList();
-
-                
-
-            });*/
         }
 
         internal async Task LoadAsync(Action<int, FolderLoadProgress> reportProgress, FolderLoadProgress folderLoadProgress, int progressIntervalMilliseconds)
@@ -224,7 +168,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 folderLoadProgress.BitmapSource = null;
                 folderLoadProgress.CurrentFile = this.LastIndexInsertComplete;
                 folderLoadProgress.CurrentFileName = this.LastInsertComplete?.File;
-                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / (double)this.imagesToInsert.Count);
+                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / (double)this.imagesToInsert);
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 
