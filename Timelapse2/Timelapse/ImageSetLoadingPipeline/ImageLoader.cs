@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -44,10 +45,27 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
+        private BitmapSource bitmapSource = null;
         public BitmapSource BitmapSource
         {
-            get;
-            private set;
+            get
+            {
+                if (this.bitmapSource == null)
+                {
+                    // Lazy load
+                    var task = this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                    task.Wait();
+
+                    var loadResult = task.Result;
+                    this.bitmapSource = loadResult.Item1;
+                }
+
+                return this.bitmapSource;
+            }
+            private set
+            {
+                this.bitmapSource = value;
+            }
         }
 
         public ImageLoader(FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
@@ -128,9 +146,9 @@ namespace Timelapse.ImageSetLoadingPipeline
                     else
                     {
                         // Not opening things to check for dark images at this time, but still need to report some progress.
-
-                        var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
-                        this.BitmapSource = loadResult.Item1;
+                        
+                        /*var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        this.BitmapSource = loadResult.Item1;*/
                     }
                 }
                 catch (Exception exception)

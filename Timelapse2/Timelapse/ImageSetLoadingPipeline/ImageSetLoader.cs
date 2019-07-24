@@ -131,7 +131,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     }
                     else
                     {
-                        folderLoadProgress.BitmapSource = this.LastLoadComplete?.BitmapSource;
+                        folderLoadProgress.BitmapSource = this.LastLoadComplete.BitmapSource;
                     }
                 }
                 else
