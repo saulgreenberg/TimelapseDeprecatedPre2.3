@@ -22,6 +22,18 @@ using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
+using System.Runtime.InteropServices;
+
+namespace Timelapse
+{
+    public class Externals
+    {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AllocConsole();
+    }
+}
+
 namespace Timelapse
 {
     /// <summary>
@@ -60,9 +72,12 @@ namespace Timelapse
         #region Main
         public TimelapseWindow()
         {
+#if DEBUG
+            Externals.AllocConsole();
+#endif
+
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
-
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);

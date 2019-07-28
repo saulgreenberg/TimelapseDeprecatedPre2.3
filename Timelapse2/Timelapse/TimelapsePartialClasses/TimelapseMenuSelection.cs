@@ -192,7 +192,7 @@ namespace Timelapse
 
         // Custom Selection: raises a dialog letting the user specify their selection criteria
         private void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
-        {
+            {            
             // the first time the custom selection dialog is launched update the DateTime and UtcOffset search terms to the time of the current image
             SearchTerm firstDateTimeSearchTerm = this.dataHandler.FileDatabase.CustomSelection.SearchTerms.FirstOrDefault(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
             if (firstDateTimeSearchTerm.GetDateTime() == Constant.ControlDefault.DateTimeValue.DateTime)
@@ -207,14 +207,15 @@ namespace Timelapse
                 Owner = this
             };
             bool? changeToCustomSelection = customSelection.ShowDialog();
+
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom, false, this.BusyIndicator);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
                     MenuItemSelectByFolder_ClearAllCheckmarks();
-                }
+                }                
             }
             else
             {
@@ -226,10 +227,13 @@ namespace Timelapse
                     this.MenuItemSelectFilesMarkedForDeletion.IsChecked;
                 this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
             }
+            
         }
 
         // Refresh the selection: based on the current select criteria. 
-        // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
+        //
+        // Useful when, for example, the user has selected a view, but then changed some data values where items no 
+        // longer match the current selection.
         private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
         {
             // Reselect the images, which re-sorts them to the current sort criteria. 

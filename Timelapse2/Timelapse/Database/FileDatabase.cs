@@ -823,6 +823,39 @@ namespace Timelapse.Database
             return temporaryTable[0];
         }
 
+        public delegate void SelectionDelegate(FileSelectionEnum selection, Xceed.Wpf.Toolkit.BusyIndicator busyIndicator);
+        public delegate void CompletionIndicatorDelegate(Xceed.Wpf.Toolkit.BusyIndicator busyIndicator);
+
+        public void OnSelectionComplete(Xceed.Wpf.Toolkit.BusyIndicator busyIndicator)
+        {
+            busyIndicator.IsBusy = false;
+
+        }
+        public void _DoSelectFiles(FileSelectionEnum selection, Xceed.Wpf.Toolkit.BusyIndicator busyIndicator)
+        {
+            SelectFiles(selection);
+            busyIndicator.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal,
+                new CompletionIndicatorDelegate(OnSelectionComplete), busyIndicator);
+            Console.WriteLine("Done");
+        }
+
+        public void SelectFiles(FileSelectionEnum selection, Xceed.Wpf.Toolkit.BusyIndicator busyIndicator)
+        {
+            if (busyIndicator == null)
+            {
+                SelectFiles(selection);
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Invoking");
+                busyIndicator.IsBusy = true;
+                SelectionDelegate selector = new SelectionDelegate(_DoSelectFiles);
+                selector.BeginInvoke(selection, busyIndicator, null, null);
+                Console.WriteLine("Invoked");
+            }
+        }
+
         /// <summary> 
         /// Rebuild the file table with all files in the database table which match the specified selection.
         /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.

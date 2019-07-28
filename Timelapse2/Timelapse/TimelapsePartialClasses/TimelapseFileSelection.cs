@@ -10,6 +10,7 @@ using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
+using System.Threading;
 
 namespace Timelapse
 {
@@ -47,6 +48,10 @@ namespace Timelapse
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
         {
+            return FilesSelectAndShow(imageID, selection, forceUpdate, null);
+        }
+        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate, Xceed.Wpf.Toolkit.BusyIndicator busyIndicator)
+        {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
@@ -79,7 +84,7 @@ namespace Timelapse
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
-                this.dataHandler.FileDatabase.SelectFiles(selection);
+                this.dataHandler.FileDatabase.SelectFiles(selection, busyIndicator);                
             }
             Mouse.OverrideCursor = null;
 
@@ -130,7 +135,7 @@ namespace Timelapse
 
                 selection = FileSelectionEnum.All;
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
-                this.dataHandler.FileDatabase.SelectFiles(selection);
+                this.dataHandler.FileDatabase.SelectFiles(selection, busyIndicator);                 
             }
 
             // Change the selection to reflect what the user selected. Update the menu state accordingly
