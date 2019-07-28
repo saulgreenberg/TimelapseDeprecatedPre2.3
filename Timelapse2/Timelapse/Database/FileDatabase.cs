@@ -13,6 +13,7 @@ using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
+using CGS;
 
 namespace Timelapse.Database
 {
@@ -1858,6 +1859,18 @@ namespace Timelapse.Database
         }
 
         #region DETECTION INTEGRATION
+
+        static void pStream_BytesRead(object sender,
+                                      ProgressStreamReportEventArgs args)
+        {
+            long current = args.StreamPosition;
+            long total = args.StreamLength;
+            double p = ((double)current) / ((double)total);
+
+            TimelapseWindow w = System.Windows.Application.Current.MainWindow as TimelapseWindow;
+            w.UpdateDetectionLoadProgress(p);
+        }
+
         public bool PopulateDetectionTables(string path)
         {
             DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
@@ -1868,34 +1881,48 @@ namespace Timelapse.Database
             try
             {
                 // PERFORMANCE Reading in very large json tables is somewhat slow. I am not sure if this can be optimized as the entire file is needed.
-                using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
-                 {
-                    // If detection population was previously done in this session, resetting these tables to null 
-                    // will force reading the new values into them
-                    this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
-                    this.detectionCategoriesDictionary = null;
-                    this.classificationCategoriesDictionary = null;
-                    this.classificationsDataTable = null;
-
-                    // PERFORMANCE This check is somewhat slow. 
-                    if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                // String s = File.ReadAllText(path);
+                
+                using (ProgressStream ps = new ProgressStream(System.IO.File.OpenRead(path)))
+                {
+                    ps.BytesRead += new ProgressStreamReportDelegate(pStream_BytesRead);
+                    using (TextReader sr = new StreamReader(ps))
                     {
-                        return false;
+                        using (JsonReader reader = new JsonTextReader(sr))
+                        {
+                            JsonSerializer serializer = new JsonSerializer();
+                            Detector detector = serializer.Deserialize<Detector>(reader);
+
+                            // If detection population was previously done in this session, resetting these tables to null 
+                            // will force reading the new values into them
+                            this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                            this.detectionCategoriesDictionary = null;
+                            this.classificationCategoriesDictionary = null;
+                            this.classificationsDataTable = null;
+
+                            // PERFORMANCE This check is somewhat slow. 
+                            if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                            {
+                                return false;
+                            }
+                            // PERFORMANCE This method does two things:
+                            // - it walks through the detector data structure to construct sql insertion statements
+                            // - it invokes the actual insertion in the database.
+                            // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                            // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+                            DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
+                        }
                     }
-                    // PERFORMANCE This method does two things:
-                    // - it walks through the detector data structure to construct sql insertion statements
-                    // - it invokes the actual insertion in the database.
-                    // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                    // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
-                    return true;
-                }
+                }                
             }
             catch
             {
                 System.Diagnostics.Debug.Print("Could not populate detection data");
                 return false;
             }
+            TimelapseWindow w = System.Windows.Application.Current.MainWindow as TimelapseWindow;
+            w.FinalizeDetectionLoad();
+            return true;
         }
 
         // Its possible that the folder where the .tdb file is located is either:

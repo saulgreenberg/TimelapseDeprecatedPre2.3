@@ -172,6 +172,7 @@
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
+    <Compile Include="Detection\ProgressStream.cs" />
     <Compile Include="Dialog\ChooseDetectorFilePath.xaml.cs">
       <DependentUpon>ChooseDetectorFilePath.xaml</DependentUpon>
     </Compile>

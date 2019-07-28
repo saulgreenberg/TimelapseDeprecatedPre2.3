@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -79,7 +80,34 @@ namespace Timelapse
                 return;
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
-            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
+            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath); 
+        }
+
+        public delegate void UpdateLoadDelegate(double p);
+
+        public void UpdateDetectionLoadProgress(double p)
+        {
+            if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
+                _UpdateDetectionLoadProgress(p);
+            else this.Dispatcher.BeginInvoke(new UpdateLoadDelegate(_UpdateDetectionLoadProgress),p);
+        }
+
+        private void _UpdateDetectionLoadProgress(double p)
+        {
+            // This is now running on the GUI thread.
+            Console.WriteLine(string.Format("{0}% done", 100.0 * p));
+        }
+
+        public void FinalizeDetectionLoad()
+        {
+            if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
+                _FinalizeDetectionLoad();            
+            else this.Dispatcher.BeginInvoke(new Action(_FinalizeDetectionLoad));            
+        }
+
+        private void _FinalizeDetectionLoad()
+        {
+            // This is now running on the GUI thread.
             GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
             this.FilesSelectAndShow(true);
             Mouse.OverrideCursor = null;
