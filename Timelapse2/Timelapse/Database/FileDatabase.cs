@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -208,11 +209,13 @@ namespace Timelapse.Database
         #region Adding Files to the Database
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
-            // We need to get a list of which columns are counters vs notes or fixed coices, 
-            // as we will shortly have to initialize them to some defaults
-            List<string> counterList = new List<string>();
-            List<string> notesAndFixedChoicesList = new List<string>();
-            List<string> flagsList = new List<string>();
+            StringBuilder queryColumns = new StringBuilder("insert into DataTable (");
+            int rowNumber = 0;
+            Dictionary<string, string> defaultValueLookup = this.GetDefaultControlValueLookup();
+
+            // We need to get a list of which columns are counters
+            HashSet<string> counterList = new HashSet<string>();
+
             foreach (string columnName in this.FileTable.ColumnNames)
             {
                 if (columnName == Constant.DatabaseColumn.ID)
@@ -221,31 +224,26 @@ namespace Timelapse.Database
                     continue;
                 }
 
-                string controlType = this.FileTableColumnsByDataLabel[columnName].ControlType;
-                if (controlType.Equals(Constant.Control.Counter))
-                {
-                    counterList.Add(columnName);
-                }
-                else if (controlType.Equals(Constant.Control.Note) || controlType.Equals(Constant.Control.FixedChoice))
-                {
-                    notesAndFixedChoicesList.Add(columnName);
-                }
-                else if (controlType.Equals(Constant.Control.Flag))
-                {
-                    flagsList.Add(columnName);
-                }
+                queryColumns.Append(columnName);
+                queryColumns.Append(",");
             }
 
-            // Create a dataline from each of the image properties, add it to a list of data lines,
-            // then do a multiple insert of the list of datalines to the database 
+            queryColumns.Remove(queryColumns.Length - 1, 1);
+            queryColumns.Append(") VALUES ");
+
+            // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
             for (int image = 0; image < files.Count; image += Constant.DatabaseValues.RowsPerInsert)
             {
-                // Create a dataline from the image properties, add it to a list of data lines,
-                // then do a multiple insert of the list of datalines to the database 
-                List<List<ColumnTuple>> fileDataRows = new List<List<ColumnTuple>>();
+                // Create a dataline from the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
+                SQLiteCommand command = new SQLiteCommand();
+                StringBuilder queryValues = new StringBuilder();
+                Dictionary<string, Dictionary<string, string>> parameterLookup = new Dictionary<string, Dictionary<string, string>>();
+
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
+                    queryValues.Append("(");
+
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
                     foreach (string columnName in this.FileTable.ColumnNames)
@@ -261,74 +259,55 @@ namespace Timelapse.Database
                         ImageRow imageProperties = files[insertIndex];
                         switch (controlType)
                         {
-                            case Constant.DatabaseColumn.File: // Add The File name
-                                string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.File];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.File));
+                            case Constant.DatabaseColumn.File:
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)},");
                                 break;
-                            case Constant.DatabaseColumn.RelativePath: // Add the relative path name
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.RelativePath];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.RelativePath));
+
+                            case Constant.DatabaseColumn.RelativePath:
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)},");
                                 break;
-                            case Constant.DatabaseColumn.Folder: // Add The Folder name
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.Folder];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.Folder));
+
+                            case Constant.DatabaseColumn.Folder:
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)},");
                                 break;
+
                             case Constant.DatabaseColumn.Date:
-                                // Add the date
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.Date];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.Date));
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)},");
                                 break;
+
                             case Constant.DatabaseColumn.DateTime:
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DateTime];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.DateTime));
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))},");
                                 break;
+
                             case Constant.DatabaseColumn.UtcOffset:
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.UtcOffset];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.UtcOffset));
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))},");
                                 break;
+
                             case Constant.DatabaseColumn.Time:
-                                // Add the time
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.Time];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.Time));
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)},");
                                 break;
-                            case Constant.DatabaseColumn.ImageQuality: // Add the Image Quality
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality];
-                                imageRow.Add(new ColumnTuple(dataLabel, imageProperties.ImageQuality.ToString()));
+
+                            case Constant.DatabaseColumn.ImageQuality:
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())},");
                                 break;
-                            case Constant.DatabaseColumn.DeleteFlag: // Add the Delete flag
-                                dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
-                                imageRow.Add(new ColumnTuple(dataLabel, this.GetControlDefaultValue(dataLabel))); // Default as specified in the template file, which should be "false"
+
+                            case Constant.DatabaseColumn.DeleteFlag:
+                                string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
+
+                                // Default as specified in the template file, which should be "false"
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])},");
                                 break;
+
                             case Constant.Control.Note:        // Find and then Add the Note or Fixed Choice
                             case Constant.Control.FixedChoice:
-                                // Now initialize notes, counters, and fixed choices to the defaults
-                                foreach (string controlName in notesAndFixedChoicesList)
-                                {
-                                    if (columnName.Equals(controlName))
-                                    {
-                                        imageRow.Add(new ColumnTuple(controlName, this.GetControlDefaultValue(controlName))); // Default as specified in the template file
-                                    }
-                                }
-                                break;
                             case Constant.Control.Flag:
-                                // Now initialize flags to the defaults
-                                foreach (string controlName in flagsList)
-                                {
-                                    if (columnName.Equals(controlName))
-                                    {
-                                        imageRow.Add(new ColumnTuple(controlName, this.GetControlDefaultValue(controlName))); // Default as specified in the template file
-                                    }
-                                }
+                                // Now initialize notes, flags, and fixed choices to the defaults
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
                                 break;
+
                             case Constant.Control.Counter:
-                                foreach (string controlName in counterList)
-                                {
-                                    if (columnName.Equals(controlName))
-                                    {
-                                        imageRow.Add(new ColumnTuple(controlName, this.GetControlDefaultValue(controlName))); // Default as specified in the template file
-                                        markerRow.Add(new ColumnTuple(controlName, String.Empty));
-                                    }
-                                }
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
+                                markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 
                             default:
@@ -336,15 +315,24 @@ namespace Timelapse.Database
                                 break;
                         }
                     }
-                    fileDataRows.Add(imageRow);
+
+                    // Remove trailing comma.
+                    queryValues.Remove(queryValues.Length - 1, 1);
+                    queryValues.Append("),");
+                    ++rowNumber;
+
                     if (markerRow.Count > 0)
                     {
                         markerRows.Add(markerRow);
                     }
                 }
 
+                // Remove trailing comma.
+                queryValues.Remove(queryValues.Length - 1, 1);
+                command.CommandText = queryColumns.ToString() + queryValues.ToString();
+
                 this.CreateBackupIfNeeded();
-                this.InsertRows(Constant.DBTables.FileData, fileDataRows);
+                this.Database.ExecuteCommand(command);
                 this.InsertRows(Constant.DBTables.Markers, markerRows);
 
                 if (onFileAdded != null)
@@ -357,6 +345,7 @@ namespace Timelapse.Database
             // Load / refresh the marker table from the database to keep it in sync - Doing so here will make sure that there is one row for each image.
             this.GetMarkers();
         }
+
         #endregion
         public void AppendToImageSetLog(StringBuilder logEntry)
         {
@@ -1855,6 +1844,24 @@ namespace Timelapse.Database
                 return new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty);
             }
             return new ColumnDefinition(control.DataLabel, Sql.Text, control.DefaultValue);
+        }
+
+        /// <summary>
+        /// Gets a dictionary populated with control default values based on the control data label.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, string> GetDefaultControlValueLookup()
+        {
+            Dictionary<string, string> results = new Dictionary<string, string>();
+            foreach (ControlRow control in this.Controls)
+            {
+                if (!results.ContainsKey(control.DataLabel))
+                {
+                    results.Add(control.DataLabel, control.DefaultValue);
+                }
+            }
+
+            return results;
         }
 
         #region DETECTION INTEGRATION

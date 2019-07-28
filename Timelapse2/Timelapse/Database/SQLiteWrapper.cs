@@ -323,6 +323,30 @@ namespace Timelapse.Database
             }
         }
 
+        /// <summary>
+        /// Executes the incoming <see cref="SQLiteCommand"/>.
+        /// </summary>
+        /// <param name="command">The command to execute.</param>
+        public void ExecuteCommand(SQLiteCommand command)
+        {
+            if (command != null && !string.IsNullOrEmpty(command.CommandText))
+            {
+                try
+                {
+                    using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                    {
+                        connection.Open();
+                        command.Connection = connection;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", command.CommandText, exception.ToString()));
+                }
+            }
+        }
+
         // Trims all the white space from the data held in the list of column_names in table_name
         // Note: this is needed as earlier versions didn't trim the white space from the data. This allows us to trim it in the database after the fact.
         public void TrimWhitespace(string tableName, List<string> columnNames)
