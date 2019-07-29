@@ -61,7 +61,7 @@ namespace Timelapse.Database
             query = query.Remove(query.Length - Sql.Comma.Length - Environment.NewLine.Length);         // remove last comma / new line and replace with );
             query += Sql.CloseParenthesis + Sql.Semicolon;
             this.ExecuteNonQuery(query);
-        } 
+        }
 
         #region Indexes: Create or Drop
         // Create an index in table tableName named index name to the column names
@@ -218,7 +218,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -243,7 +243,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -275,7 +275,7 @@ namespace Timelapse.Database
             string mostRecentStatement = null;
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString)) 
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
@@ -320,6 +320,30 @@ namespace Timelapse.Database
             catch (Exception exception)
             {
                 TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// Executes the incoming <see cref="SQLiteCommand"/>.
+        /// </summary>
+        /// <param name="command">The command to execute.</param>
+        public void ExecuteCommand(SQLiteCommand command)
+        {
+            if (command != null && !string.IsNullOrEmpty(command.CommandText))
+            {
+                try
+                {
+                    using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                    {
+                        connection.Open();
+                        command.Connection = connection;
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", command.CommandText, exception.ToString()));
+                }
             }
         }
 
@@ -369,7 +393,7 @@ namespace Timelapse.Database
                 }
                 queries.Add(query);
             }
-            this.ExecuteNonQueryWrappedInBeginEnd(queries); 
+            this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
 
         /// <summary>
@@ -549,7 +573,7 @@ namespace Timelapse.Database
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
         /// The value in columnDefinition is assumed to be the desired default value

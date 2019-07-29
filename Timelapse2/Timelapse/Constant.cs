@@ -98,8 +98,8 @@ namespace Timelapse
             // highlight / non-hightlight border thicknesses of a control
             public const double BorderThicknessNormal = 1;
             public const double BorderThicknessHighlight = 3;
-            public static readonly SolidColorBrush BorderColorNormal = new SolidColorBrush(Colors.LightBlue); 
-            public static readonly SolidColorBrush BorderColorHighlight = new SolidColorBrush(Colors.Blue); 
+            public static readonly SolidColorBrush BorderColorNormal = new SolidColorBrush(Colors.LightBlue);
+            public static readonly SolidColorBrush BorderColorHighlight = new SolidColorBrush(Colors.Blue);
 
             // a minty green
             public static readonly SolidColorBrush CopyableFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
@@ -188,7 +188,7 @@ namespace Timelapse
         {
             public const string EmptyChoiceItem = "<EMPTY>"; // Indicates an empty item included in the choice menu list
         }
-            public static class ControlsDeprecated
+        public static class ControlsDeprecated
         {
             // MarkForDeletion data label was split between editor and Timelapse and normalized to DeleteFlag in 2.1.0.4
             public const string MarkForDeletion = "MarkForDeletion";
@@ -204,7 +204,7 @@ namespace Timelapse
             public const long InvalidID = -1;
             public const int InvalidRow = -1;
             public const int RelativePathPosition = 2;
-            public const int RowsPerInsert = 50000;
+            public const int RowsPerInsert = 500;
             public const int UtcOffsetPosition = 5;
             public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.Integer + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
             public const string DefaultQuickPasteXML = "<Entries></Entries>";
@@ -221,7 +221,7 @@ namespace Timelapse
         public static class DatabaseColumn
         {
             public const string ID = "Id";
-            
+
             // columns in ImageDataTable
             public const string Date = "Date";
             public const string DateTime = "DateTime";
@@ -321,7 +321,7 @@ namespace Timelapse
             public static readonly TimeSpan PlayFastDefault = TimeSpan.FromMilliseconds(100.0);
             public static readonly TimeSpan PlayFastMaximum = TimeSpan.FromMilliseconds(500.0);
         }
-        
+
         // shorthands for FileSelection.<value>.ToString()
         public static class ImageQuality
         {
@@ -372,14 +372,14 @@ namespace Timelapse
             {
                 return new Lazy<BitmapImage>(() =>
                 {
-                // if the requested image is available as an application resource, prefer that
-                if (Application.Current != null && Application.Current.Resources.Contains(fileName))
+                    // if the requested image is available as an application resource, prefer that
+                    if (Application.Current != null && Application.Current.Resources.Contains(fileName))
                     {
                         return (BitmapImage)Application.Current.Resources[fileName];
                     }
 
-                // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
-                BitmapImage image = new BitmapImage();
+                    // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
+                    BitmapImage image = new BitmapImage();
                     image.BeginInit();
                     image.UriSource = new Uri("pack://application:,,/Resources/" + fileName);
                     image.EndInit();
@@ -672,6 +672,6 @@ namespace Timelapse
             public const string Category = "category";
             public const string Conf = "conf";
         }
-    #endregion
+        #endregion
     }
 }
