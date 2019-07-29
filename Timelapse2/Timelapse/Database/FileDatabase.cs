@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Controls;
+using Timelapse.Common;
+using Timelapse.Data;
 using Timelapse.Detection;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -260,53 +262,53 @@ namespace Timelapse.Database
                         switch (controlType)
                         {
                             case Constant.DatabaseColumn.File:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.File)},");
                                 break;
 
                             case Constant.DatabaseColumn.RelativePath:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.RelativePath)},");
                                 break;
 
                             case Constant.DatabaseColumn.Folder:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Folder)},");
                                 break;
 
                             case Constant.DatabaseColumn.Date:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Date)},");
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))},");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))},");
                                 break;
 
                             case Constant.DatabaseColumn.Time:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Time)},");
                                 break;
 
                             case Constant.DatabaseColumn.ImageQuality:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.ImageQuality.ToString())},");
                                 break;
 
                             case Constant.DatabaseColumn.DeleteFlag:
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
 
                                 // Default as specified in the template file, which should be "false"
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[dataLabel])},");
                                 break;
 
                             case Constant.Control.Note:        // Find and then Add the Note or Fixed Choice
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])},");
                                 break;
 
                             case Constant.Control.Counter:
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])},");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 
@@ -992,7 +994,7 @@ namespace Timelapse.Database
 
         public FileTable GetFilesMarkedForDeletion()
         {
-            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
+            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + SqlUtility.QuoteForSql(Constant.BooleanValue.True); // = value
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
@@ -1169,9 +1171,9 @@ namespace Timelapse.Database
                     return String.Empty;
                 case FileSelectionEnum.Dark:
                 case FileSelectionEnum.Ok:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + SqlUtility.QuoteForSql(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + SqlUtility.QuoteForSql(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                 case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();

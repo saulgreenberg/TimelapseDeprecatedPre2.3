@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Util;
 using Directory = MetadataExtractor.Directory;

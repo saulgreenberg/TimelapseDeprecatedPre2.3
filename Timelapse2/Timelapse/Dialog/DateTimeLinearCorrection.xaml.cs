@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;

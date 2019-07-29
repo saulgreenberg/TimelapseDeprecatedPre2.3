@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Controls
@@ -116,11 +117,11 @@ namespace Timelapse.Controls
             {
                 this.VideoPosition.Maximum = this.Video.NaturalDuration.TimeSpan.TotalSeconds;
                 // SAULXX: The line below will show the end time as a delta rather than absolute time. I decided that is undesirable, as the start time already shows the delta
-                // this.TimeDuration.Text = (this.Video.NaturalDuration.TimeSpan - this.Video.Position).ToString(Constant.Time.VideoPositionFormat);
-                this.TimeDuration.Text = this.Video.NaturalDuration.TimeSpan.ToString(Constant.Time.VideoPositionFormat);
+                // this.TimeDuration.Text = (this.Video.NaturalDuration.TimeSpan - this.Video.Position).ToString(TimeConstants.VideoPositionFormat);
+                this.TimeDuration.Text = this.Video.NaturalDuration.TimeSpan.ToString(TimeConstants.VideoPositionFormat);
                 this.VideoPosition.TickFrequency = this.VideoPosition.Maximum / 10.0;
             }
-            this.TimeFromStart.Text = this.Video.Position.ToString(Constant.Time.VideoPositionFormat);
+            this.TimeFromStart.Text = this.Video.Position.ToString(TimeConstants.VideoPositionFormat);
             this.VideoPosition.Value = this.Video.Position.TotalSeconds;
             this.isProgrammaticUpdate = false;
         }

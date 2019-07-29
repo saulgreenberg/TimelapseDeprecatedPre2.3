@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Diagnostics;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -79,7 +80,7 @@ namespace Timelapse.Database
         public static TimeSpan GetUtcOffsetField(this DataRow row, string column)
         {
             TimeSpan utcOffset = TimeSpan.FromHours((double)row[column]);
-            Debug.Assert(utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
+            Debug.Assert(utcOffset.Ticks % TimeConstants.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             return utcOffset;
         }
 
@@ -119,7 +120,7 @@ namespace Timelapse.Database
 
         public static void SetUtcOffsetField(this DataRow row, string column, TimeSpan value)
         {
-            Debug.Assert(value.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
+            Debug.Assert(value.Ticks % TimeConstants.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             row[column] = value.TotalHours;
         }
     }

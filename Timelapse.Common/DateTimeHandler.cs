@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Timelapse.Util
+namespace Timelapse.Common
 {
     public static class DateTimeHandler
     {
@@ -22,20 +22,20 @@ namespace Timelapse.Util
 
         public static DateTime ParseDatabaseDateTimeString(string dateTimeAsString)
         {
-            return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+            return DateTime.ParseExact(dateTimeAsString, TimeConstants.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         }
 
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
             TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString));
-            if ((utcOffset < Constant.Time.MinimumUtcOffset) ||
-                (utcOffset > Constant.Time.MaximumUtcOffset))
+            if ((utcOffset < TimeConstants.MinimumUtcOffset) ||
+                (utcOffset > TimeConstants.MaximumUtcOffset))
             {
-                throw new ArgumentOutOfRangeException("utcOffsetAsString", String.Format("UTC offset must be between {0} and {1}, inclusive.", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset)));
+                throw new ArgumentOutOfRangeException("utcOffsetAsString", String.Format("UTC offset must be between {0} and {1}, inclusive.", DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset)));
             }
-            if (utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks != 0)
+            if (utcOffset.Ticks % TimeConstants.UtcOffsetGranularity.Ticks != 0)
             {
-                throw new ArgumentOutOfRangeException("utcOffsetAsString", String.Format("UTC offset must be an exact multiple of {0} ({1}).", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.UtcOffsetGranularity), DateTimeHandler.ToDisplayUtcOffsetString(Constant.Time.UtcOffsetGranularity)));
+                throw new ArgumentOutOfRangeException("utcOffsetAsString", String.Format("UTC offset must be an exact multiple of {0} ({1}).", DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.UtcOffsetGranularity), DateTimeHandler.ToDisplayUtcOffsetString(TimeConstants.UtcOffsetGranularity)));
             }
             return utcOffset;
         }
@@ -43,7 +43,7 @@ namespace Timelapse.Util
         // SAULXXX There may be an issue with and attempt to read dates.
         public static bool TryParseDisplayDateTimeString(string dateTimeAsString, out DateTime dateTime)
         {
-            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == true)
+            if (DateTime.TryParseExact(dateTimeAsString, TimeConstants.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == true)
             {
                 return true;
             }
@@ -52,17 +52,17 @@ namespace Timelapse.Util
                 dateTime = DateTime.MinValue;
                 return false;
             }
-            // return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture);
+            // return DateTime.ParseExact(dateTimeAsString, TimeConstants.DateTimeDisplayFormat, CultureInfo.InvariantCulture);
         }
 
         public static string ToDatabaseDateTimeString(DateTimeOffset dateTime)
         {
-            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeDatabaseFormat, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.UtcDateTime.ToString(TimeConstants.DateTimeDatabaseFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDatabaseUtcOffsetString(TimeSpan timeSpan)
         {
-            return timeSpan.TotalHours.ToString(Constant.Time.UtcOffsetDatabaseFormat);
+            return timeSpan.TotalHours.ToString(TimeConstants.UtcOffsetDatabaseFormat);
         }
 
         /// <summary>
@@ -70,24 +70,24 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToDisplayDateString(DateTimeOffset date)
         {
-            return date.DateTime.ToString(Constant.Time.DateFormat, CultureInfo.CreateSpecificCulture("en-US"));
+            return date.DateTime.ToString(TimeConstants.DateFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayDateTimeString(DateTimeOffset dateTime)
         {
-            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.DateTime.ToString(TimeConstants.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayDateTimeUtcOffsetString(DateTimeOffset dateTime)
         {
-            return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US")) + " " + DateTimeHandler.ToDisplayUtcOffsetString(dateTime.Offset);
+            return dateTime.DateTime.ToString(TimeConstants.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US")) + " " + DateTimeHandler.ToDisplayUtcOffsetString(dateTime.Offset);
         }
 
         public static string ToDisplayTimeSpanString(TimeSpan timeSpan)
         {
             // Pretty print the adjustment time, depending upon how many day(s) were included 
             string sign = (timeSpan < TimeSpan.Zero) ? "-" : null;
-            string timeSpanAsString = sign + timeSpan.ToString(Constant.Time.TimeSpanDisplayFormat);
+            string timeSpanAsString = sign + timeSpan.ToString(TimeConstants.TimeSpanDisplayFormat);
 
             TimeSpan duration = timeSpan.Duration();
             if (duration.Days == 0)
@@ -107,12 +107,12 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToDisplayTimeString(DateTimeOffset time)
         {
-            return time.DateTime.ToString(Constant.Time.TimeFormat, CultureInfo.CreateSpecificCulture("en-US"));
+            return time.DateTime.ToString(TimeConstants.TimeFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         public static string ToDisplayUtcOffsetString(TimeSpan utcOffset)
         {
-            string displayString = utcOffset.ToString(Constant.Time.UtcOffsetDisplayFormat);
+            string displayString = utcOffset.ToString(TimeConstants.UtcOffsetDisplayFormat);
             if (utcOffset < TimeSpan.Zero)
             {
                 displayString = "-" + displayString;
@@ -122,7 +122,7 @@ namespace Timelapse.Util
 
         public static bool TryParseDatabaseDateTime(string dateTimeAsString, out DateTime dateTime)
         {
-            return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime);
+            return DateTime.TryParseExact(dateTimeAsString, TimeConstants.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Timelapse.Util
         /// <returns>true if string was in the date time display format, false otherwise</returns>
         public static bool TryParseDisplayDateTime(string dateTimeAsString, out DateTime dateTime)
         {
-            return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime);
+            return DateTime.TryParseExact(dateTimeAsString, TimeConstants.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime);
         }
 
         public static bool TryParseDatabaseUtcOffsetString(string utcOffsetAsString, out TimeSpan utcOffset)
@@ -141,9 +141,9 @@ namespace Timelapse.Util
             if (double.TryParse(utcOffsetAsString, out double utcOffsetAsDouble))
             {
                 utcOffset = TimeSpan.FromHours(utcOffsetAsDouble);
-                return (utcOffset >= Constant.Time.MinimumUtcOffset) &&
-                       (utcOffset <= Constant.Time.MaximumUtcOffset) &&
-                       (utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0);
+                return (utcOffset >= TimeConstants.MinimumUtcOffset) &&
+                       (utcOffset <= TimeConstants.MaximumUtcOffset) &&
+                       (utcOffset.Ticks % TimeConstants.UtcOffsetGranularity.Ticks == 0);
             }
 
             utcOffset = TimeSpan.Zero;
@@ -170,7 +170,7 @@ namespace Timelapse.Util
 
         public static bool TryParseMetadataDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
-            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime) == false)
+            if (DateTime.TryParseExact(dateTimeAsString, TimeConstants.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime) == false)
             {
                 dateTimeOffset = DateTimeOffset.MinValue;
                 return false;
@@ -186,7 +186,7 @@ namespace Timelapse.Util
         public static bool TrySwapDayMonth(DateTimeOffset imageDate, out DateTimeOffset swappedDate)
         {
             swappedDate = DateTimeOffset.MinValue;
-            if (imageDate.Day > Constant.Time.MonthsInYear)
+            if (imageDate.Day > TimeConstants.MonthsInYear)
             {
                 return false;
             }

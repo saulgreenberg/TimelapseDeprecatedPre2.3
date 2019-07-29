@@ -3,6 +3,7 @@ using System.Windows;
 using Timelapse.Database;
 using System.Windows.Controls;
 using Timelapse.Util;
+using Timelapse.Common;
 
 namespace Timelapse.Dialog
 {

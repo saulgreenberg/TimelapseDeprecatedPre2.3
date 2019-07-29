@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Timelapse.Common;
+using Timelapse.Data;
 using Timelapse.Enums;
 using Timelapse.Util;
 
@@ -226,7 +228,7 @@ namespace Timelapse.Database
                 {
                     // The where expression constructed should look something like DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + SqlUtility.QuoteForSql(searchTerm.DatabaseValue.Trim());
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive

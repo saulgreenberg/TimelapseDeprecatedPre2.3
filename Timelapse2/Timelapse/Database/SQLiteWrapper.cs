@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Data;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -134,7 +135,7 @@ namespace Timelapse.Database
                 foreach (ColumnTuple column in columnsToUpdate)
                 {
                     columns += String.Format(" {0}" + Sql.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
-                    values += String.Format(" {0}" + Sql.Comma, Utilities.QuoteForSql(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
+                    values += String.Format(" {0}" + Sql.Comma, SqlUtility.QuoteForSql(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
                 }
                 if (columns.Length > 0)
                 {
@@ -363,7 +364,7 @@ namespace Timelapse.Database
         // Set all rows in a given column to a single value
         public void SetColumnToACommonValue(string tableName, string columnName, string value)
         {
-            string query = Sql.Update + tableName + Sql.Set + columnName + Sql.Equal + Utilities.QuoteForSql(value);
+            string query = Sql.Update + tableName + Sql.Set + columnName + Sql.Equal + SqlUtility.QuoteForSql(value);
             this.ExecuteNonQuery(query);
         }
 
@@ -419,7 +420,7 @@ namespace Timelapse.Database
             // UPDATE table_name SET 
             // columnname = value, 
             string query = Sql.Update + tableName + Sql.Set;
-            query += String.Format(" {0} = {1}", columnToUpdate.Name, Utilities.QuoteForSql(columnToUpdate.Value));
+            query += String.Format(" {0} = {1}", columnToUpdate.Name, SqlUtility.QuoteForSql(columnToUpdate.Value));
             this.ExecuteNonQuery(query);
         }
 
@@ -453,7 +454,7 @@ namespace Timelapse.Database
                 }
                 else
                 {
-                    query += String.Format(" {0} = {1}{2}", column.Name, Utilities.QuoteForSql(column.Value), Sql.Comma);
+                    query += String.Format(" {0} = {1}{2}", column.Name, SqlUtility.QuoteForSql(column.Value), Sql.Comma);
                 }
             }
             query = query.Substring(0, query.Length - Sql.Comma.Length); // Remove the last comma
@@ -1008,7 +1009,7 @@ namespace Timelapse.Database
                         case 4:  // dflt_value (Column has a default value)
                             if (String.IsNullOrEmpty(reader[field].ToString()))
                             {
-                                existingColumnDefinition += Sql.Default + Utilities.QuoteForSql(reader[field].ToString()) + " ";
+                                existingColumnDefinition += Sql.Default + SqlUtility.QuoteForSql(reader[field].ToString()) + " ";
                             }
                             break;
                         case 5:  // pk (Column is part of the primary key)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Timelapse.Common;
 using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
@@ -20,8 +21,8 @@ namespace Timelapse.Controls
 
         public UtcOffsetUpDown()
         {
-            this.Maximum = Constant.Time.MaximumUtcOffset;
-            this.Minimum = Constant.Time.MinimumUtcOffset;
+            this.Maximum = TimeConstants.MaximumUtcOffset;
+            this.Minimum = TimeConstants.MinimumUtcOffset;
         }
 
         protected override void InitializeDateTimeInfoList(TimeSpan? timespan)
@@ -45,7 +46,7 @@ namespace Timelapse.Controls
                     this.Step = 1;
                     break;
                 case DateTimePart.Minute:
-                    this.Step = Constant.Time.UtcOffsetGranularity.Minutes;
+                    this.Step = TimeConstants.UtcOffsetGranularity.Minutes;
                     break;
                 default:
                     this.Step = 0;

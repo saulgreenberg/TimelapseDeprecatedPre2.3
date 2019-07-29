@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Timelapse.Data;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -58,29 +59,29 @@ namespace Timelapse.Database
 
         public void SetWhere(ColumnTuple columnTuple, string field)
         {
-            this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(field));
+            this.Where = String.Format("{0} = {1}", columnTuple.Name, SqlUtility.QuoteForSql(field));
         }
 
         public void SetWhereNotEquals(ColumnTuple columnTuple, string field)
         {
-            this.Where = String.Format("{0} <> {1}", columnTuple.Name, Utilities.QuoteForSql(field));
+            this.Where = String.Format("{0} <> {1}", columnTuple.Name, SqlUtility.QuoteForSql(field));
         }
 
         public void SetWhere(string folder, string relativePath, string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Utilities.QuoteForSql(relativePath));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.Folder, Utilities.QuoteForSql(folder));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, SqlUtility.QuoteForSql(file));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, SqlUtility.QuoteForSql(relativePath));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.Folder, SqlUtility.QuoteForSql(folder));
         }
 
         public void SetWhere(string relativePath, string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Utilities.QuoteForSql(relativePath));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, SqlUtility.QuoteForSql(file));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, SqlUtility.QuoteForSql(relativePath));
         }
         public void SetWhere(string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, SqlUtility.QuoteForSql(file));
         }
     }
 }

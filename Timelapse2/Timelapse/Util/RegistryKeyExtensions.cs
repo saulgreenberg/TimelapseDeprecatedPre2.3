@@ -2,6 +2,7 @@
 using System;
 using System.Globalization;
 using System.Windows;
+using Timelapse.Common;
 
 namespace Timelapse.Util
 {
@@ -30,7 +31,7 @@ namespace Timelapse.Util
                 return defaultValue;
             }
 
-            return DateTime.ParseExact(value, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+            return DateTime.ParseExact(value, TimeConstants.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         }
 
         // Read TimeSpan as seconds
@@ -166,7 +167,7 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, DateTime value)
         {
-            registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseFormat));
+            registryKey.Write(subKeyPath, value.ToString(TimeConstants.DateTimeDatabaseFormat));
         }
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, double value)

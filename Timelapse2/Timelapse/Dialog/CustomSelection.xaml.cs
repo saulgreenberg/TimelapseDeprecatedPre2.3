@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Detection;
@@ -249,7 +250,7 @@ namespace Timelapse.Dialog
                     {
                         FontWeight = FontWeights.Normal,
                         Format = DateTimeFormat.Custom,
-                        FormatString = Constant.Time.DateTimeDisplayFormat,
+                        FormatString = TimeConstants.DateTimeDisplayFormat,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = DefaultControlWidth,
                         CultureInfo = CultureInfo.CreateSpecificCulture("en-US"),
@@ -580,7 +581,7 @@ namespace Timelapse.Dialog
                     DateTime tmpDateTime = DateTime.Parse(searchTerm.DatabaseValue.Trim());
                     DateTimeHandler.TryParseDatabaseUtcOffsetString(utcOffset, out TimeSpan tmpTimeSpan);
                     tmpDateTime.Add(tmpTimeSpan);
-                    value = tmpDateTime.ToString(Constant.Time.DateTimeDisplayFormat);
+                    value = tmpDateTime.ToString(TimeConstants.DateTimeDisplayFormat);
                 }
                 else
                 {

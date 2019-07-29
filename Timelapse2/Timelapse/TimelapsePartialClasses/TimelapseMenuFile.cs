@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -198,8 +199,8 @@ namespace Timelapse
                 messageBox.Message.Solution += "\u2022 Do not change column names" + Environment.NewLine;
                 messageBox.Message.Solution += "\u2022 Do not add or delete rows (those changes will be ignored)" + Environment.NewLine;
                 messageBox.Message.Solution += "\u2022 Restrict modifications as follows:" + Environment.NewLine;
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, DateTime must be in '{0}' format{1}", Constant.Time.DateTimeDatabaseFormat, Environment.NewLine);
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, UtcOffset must be a floating point number between {0} and {1}, inclusive{2}", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), Environment.NewLine);
+                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, DateTime must be in '{0}' format{1}", TimeConstants.DateTimeDatabaseFormat, Environment.NewLine);
+                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, UtcOffset must be a floating point number between {0} and {1}, inclusive{2}", DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset), Environment.NewLine);
                 messageBox.Message.Solution += "    \u2022 Counter data must be zero or a positive integer" + Environment.NewLine;
                 messageBox.Message.Solution += "    \u2022 Flag data must be 'true' or 'false'" + Environment.NewLine;
                 messageBox.Message.Solution += "    \u2022 FixedChoice data must be a string that exactly matches one of the FixedChoice menu options, or empty." + Environment.NewLine;

@@ -7,6 +7,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
