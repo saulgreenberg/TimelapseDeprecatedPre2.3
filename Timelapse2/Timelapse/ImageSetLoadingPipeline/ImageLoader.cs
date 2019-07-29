@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace Timelapse.ImageSetLoadingPipeline
         private FileInfo fileInfo;
         private DataEntryHandler dataHandler;
         private TimelapseState state;
+        private string relativePath;
+        private string initialRootFolderName;
 
         public string FolderPath
         {
@@ -68,20 +71,27 @@ namespace Timelapse.ImageSetLoadingPipeline
             }
         }
 
-        public ImageLoader(FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageLoader(string initialRootFolderName, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
         {
             this.fileInfo = fileInfo;
             this.dataHandler = dataHandler;
             this.state = state;
+            this.initialRootFolderName = initialRootFolderName;
+            this.relativePath = relativePath;
         }
 
         public async Task LoadImageAsync(Action OnImageLoadComplete)
         {
             // First check to see if the file is already in the database. If it is, there's basically nothing to do here.
             // Set the loader's file member.
-            this.RequiresDatabaseInsert = !this.dataHandler.FileDatabase.GetOrCreateFile(this.fileInfo, out ImageRow file);
+            this.RequiresDatabaseInsert = true; // !this.dataHandler.FileDatabase.GetOrCreateFile(this.fileInfo, out ImageRow file);
+            // this.File = file;
 
-            this.File = file;
+            // Skip the per-file call to the database
+            this.File = this.dataHandler.FileDatabase.FileTable.NewRow(this.fileInfo);
+            this.File.Folder = this.initialRootFolderName;
+            this.File.RelativePath = this.relativePath;
+            this.File.SetDateTimeOffsetFromFileInfo(this.FolderPath);
 
             if (this.RequiresDatabaseInsert == true)
             {
@@ -91,6 +101,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 {
                     // By default, file image quality is ok (i.e., not dark)
                     File.ImageQuality = FileSelectionEnum.Ok;
+
                     if (this.state.ClassifyDarkImagesWhenLoading == true && this.BitmapSource != Constant.ImageValues.Corrupt.Value)
                     {
                         // Create the bitmap and determine its quality
@@ -147,8 +158,8 @@ namespace Timelapse.ImageSetLoadingPipeline
                     {
                         // Not opening things to check for dark images at this time, but still need to report some progress.
                         // Let this be done by lazy load when needed
-                        /*var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
-                        this.BitmapSource = loadResult.Item1;*/
+                        //var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        //this.BitmapSource = loadResult.Item1;
                     }
                 }
                 catch (Exception exception)

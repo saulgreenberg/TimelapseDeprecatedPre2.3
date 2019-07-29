@@ -60,16 +60,27 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
-        public ImageSetLoader(IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageSetLoader(string imageFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
         {
             // Avoid enumerating to count and enumerating to set up tasks
             // Order the files by full name, which should sort to the same order as the original pass 2.
-            FileInfo[] fileInfoArray = fileInfos.OrderBy(f => f.FullName).ToArray();
+            //FileInfo[] fileInfoArray = fileInfos.OrderBy(f => f.FullName).ToArray();
+
+            // Filter out anything already in the database here? This would avoid the per-file check
+            HashSet<string> existingPaths = new HashSet<string>(from file in dataHandler.FileDatabase.GetAllFiles()
+                                                                select Path.Combine(imageFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
+
+            FileInfo[] fileInfoArray = (from fileInfo in fileInfos
+                                        where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
+                                        select fileInfo).OrderBy(f => f.FullName).ToArray();
+
             this.ImagesToLoad = fileInfoArray.Length;
 
             // The queue will take image rows ready for insertion to the second pass, the event
             // indicates explicitly when the first pass is done.
             ConcurrentQueue<ImageRow> databaseInsertionQueue = new ConcurrentQueue<ImageRow>();
+
+            string absolutePathPart = imageFolderPath + @"\";
 
             this.pass1 = new Task(() => 
             {
@@ -78,7 +89,9 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // Fan out the loader tasks
                 foreach (FileInfo fileInfo in fileInfoArray)
                 {
-                    ImageLoader loader = new ImageLoader(fileInfo, dataHandler, state);
+                    string relativePath = Path.GetDirectoryName(fileInfo.FullName).Replace(absolutePathPart, string.Empty);
+
+                    ImageLoader loader = new ImageLoader(imageFolderPath, relativePath, fileInfo, dataHandler, state);
 
                     Task loaderTask = loader.LoadImageAsync(() => 
                     {
@@ -102,12 +115,18 @@ namespace Timelapse.ImageSetLoadingPipeline
                     loadTasks.Add(loaderTask);
                 }
 
-                Task[] taskArray = loadTasks.ToArray();
+                /*Task[] taskArray = loadTasks.ToArray();
 
                 // Allow all the tasks to complete. Note that this may complete in a synchronous manner,
                 // or may not, depending on the specifics of the system running this code.
 
-                Task.WaitAll(taskArray);
+                Task.WaitAll(taskArray);*/
+
+                while (loadTasks.Count > 0)
+                {
+                    int completedIndex = Task.WaitAny(loadTasks.ToArray());
+                    loadTasks.RemoveAt(completedIndex);
+                }
             });
             
             

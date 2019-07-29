@@ -383,7 +383,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(filesToAdd, this.dataHandler, this.state);
+                ImageSetLoader loader = new ImageSetLoader(imageFolderPath, filesToAdd, this.dataHandler, this.state);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 
