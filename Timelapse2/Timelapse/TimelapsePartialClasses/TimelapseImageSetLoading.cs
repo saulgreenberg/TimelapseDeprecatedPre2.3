@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -291,6 +292,7 @@ namespace Timelapse
         private bool TryBeginImageFolderLoadAsync(string imageFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
             System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
+            TraceDebug.PrintMessage("Starting load: " + DateTime.Now);
             s.Start();
             // We check for different things if this is the initial first-time load of an image set vs. adding files after the database has been created.
             if (isInitialImageSetLoading)
