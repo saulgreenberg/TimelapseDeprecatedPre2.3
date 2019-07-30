@@ -247,7 +247,16 @@ namespace Timelapse.Database
             // Use only on images, as video files don't contain the desired metadata. 
             try
             {
-                IReadOnlyList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
+                IReadOnlyList<MetadataDirectory> metadataDirectories = null;
+                //IReadOnlyList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
+
+                // Reading in sequential scan, does this speed up? Under the covers, the MetadataExtractor is using a sequential read, allowing skip forward but not random access.
+                // Exif is small, do we need a big block?
+                using (FileStream fS = new FileStream(this.GetFilePath(folderPath), FileMode.Open, FileAccess.Read, FileShare.Read, 64, FileOptions.SequentialScan))
+                {
+                    metadataDirectories = ImageMetadataReader.ReadMetadata(fS);
+                }
+
                 ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (exifSubIfd == null)
                 {
