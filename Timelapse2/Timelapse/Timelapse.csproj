@@ -219,6 +219,8 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImageSetLoadingPipeline\ImageLoader.cs" />
+    <Compile Include="ImageSetLoadingPipeline\ImageSetLoader.cs" />
     <Compile Include="Images\BitmapUtilities.cs" />
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />

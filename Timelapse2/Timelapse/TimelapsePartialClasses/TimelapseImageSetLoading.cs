@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -12,6 +15,7 @@ using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
+using Timelapse.ImageSetLoadingPipeline;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -287,6 +291,9 @@ namespace Timelapse
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoadAsync(string imageFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
+            System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
+            TraceDebug.PrintMessage("Starting load: " + DateTime.Now);
+            s.Start();
             // We check for different things if this is the initial first-time load of an image set vs. adding files after the database has been created.
             if (isInitialImageSetLoading)
             {
@@ -378,196 +385,15 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                // First pass: Examine files to extract their basic properties and build a list of files not already in the database
-                // PERFORMANCE: In prior tests, using two threads in parallel seemed to give the biggest bang for the buck in speeding things up.
-                // Ideally, try to get at least two threads as that captures most of the benefit from parallel operation.  
-                // If dark image checks are enabled, we may want to reduce the pixel stride in image quality calculation.
-                //
-                // Note: the UI thread is free during loading - the user does have the option to switch off dark checking (if its enabled) asynchronously via the Options menu to speed up 
-                // loading.
-                //
-                // Timelapse used to display every image as it was being loaded. This is not necessary, and I changed it to show an image every 500 milliseconds to speed things up. 
-                // An earlier version used a Parallel.Foreach (now commented out), which included a sequential partitioner to display preview images 
-                // to the user in pretty much the same order as they're named. As well, pulling files nearly sequentially may (perhaps)  offer  minor disk performance benefit.                
-                List<ImageRow> filesToInsert = new List<ImageRow>();
-                TimeZoneInfo imageSetTimeZone = this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone();
-                DateTime utcNow = new DateTime();
-                DateTime lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
+                ImageSetLoader loader = new ImageSetLoader(imageFolderPath, filesToAdd, this.dataHandler, this.state);
 
-                // Performance.There was a bug in the Parallel.ForEach somewhere when initially loading files, where it may occassionally duplicate an entry and skip a nearby image.
-                // This may be due to me not using a data structure that manages concurrent access.
-                // It also occassionaly produced an SQLite Database locked error. I have changed the way updates to the databases are done so that SQL lock error may no longer be an issue, but I am not sure. 
-                // While I have kept the call here in case we eventually track down this bug, I have reverted to foreach
-                // Parallel.ForEach(new SequentialPartitioner<FileInfo>(filesToAdd), Utilities.GetParallelOptions(this.state.ClassifyDarkImagesWhenLoading ? 2 : 4), (FileInfo fileInfo) =>
-                int filesProcessed = 0;
-                foreach (FileInfo fileInfo in filesToAdd)
-                {
-                    utcNow = DateTime.UtcNow;
-                    // As GetOrCreateFile inserts the file date as the Date/Time, a later call will examine the bitmap metadata, and - if it exists - over-write the file date  
-                    if (this.dataHandler.FileDatabase.GetOrCreateFile(fileInfo, out ImageRow file))
-                    {
-                        // The image is already in the database. So skip it.
-                        // Even so, provide feedback every LoadingImageDisplayInterval
-                        if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
-                        {
-                            folderLoadProgress.BitmapSource = Constant.ImageValues.FileAlreadyLoaded.Value;
-                            folderLoadProgress.CurrentFile = filesProcessed;
-                            folderLoadProgress.CurrentFileName = file.File;
-                            int percentProgress = (int)(100.0 * filesProcessed / (double)filesToAdd.Count);
-                            backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
+                backgroundWorker.ReportProgress(0, folderLoadProgress);
 
-                            lastUpdateTime = utcNow;
-                            filesProcessed++;
-                            continue;
-                        }
-                    }
-
-                    // The image is not in the database, so add it.
-                    filesProcessed++;
-                    BitmapSource bitmapSource = null;
-                    try
-                    {
-                        // By default, file image quality is ok (i.e., not dark)
-                        file.ImageQuality = FileSelectionEnum.Ok;
-                        if (this.state.ClassifyDarkImagesWhenLoading == true && bitmapSource != Constant.ImageValues.Corrupt.Value)
-                        {
-                            // Create the bitmap and determine its quality
-                            // avoid ImageProperties.LoadImage() here as the create exception needs to surface to set the image quality to corrupt
-                            // framework bug: WriteableBitmap.Metadata returns null rather than metatada offered by the underlying BitmapFrame, so 
-                            // retain the frame and pass its metadata to TryUseImageTaken().
-                            // PERFORMANCE Loading a bitmap is an expensive operation (~24 ms while stepping through the debugger) as it has to be done on every image. 
-                            // If larger images are used, it could be even slower. I'm not sure if there is better way of loading bitmaps. This is also complicated by 
-                            // caching issues: if the loadbitmap keeps a handle to the image, it means that image cannot be deleted later via an Edit|Delete options. 
-                            bitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
-                            file.ImageQuality = FileSelectionEnum.Ok;
-
-                            // Dark Image Classification during loading if the automatically classify dark images option is set  
-                            // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
-                            // likely due to some threading issue that I can't debug.
-                            // This is caught by GetImageQuality, where it signals failure by returning ImageSelection.Corrupted
-                            // As this is a non-deterministic failure (i.e., there may be nothing wrong with the image), we try to resolve this failure by restarting the loop.
-                            // We will do try this at most MAX_RETRIES per image, after which we will just skip it and set the ImageQuality to Ok.
-                            // Yup, its a hack, and there is a small chance that the failure may overwrite some vital memory, but not sure what else to do besides banging my head against the wall.
-                            const int MAX_RETRIES = 3;
-                            int retries_attempted = 0;
-                            // PERFORMANCE: Dark Image Classification slows things down even further, as this method determines whether an image is a dark (nighttime) shot by examining image pixels against a threshold.
-                            // The good news is that most users don't need this - the use case is for those who put their camera on 'timelapse' vs. 'motion detection' mode,
-                            // and want to filter out the night-time shots. Thus while we could get performance gain by optimizing the 'GetImageQuality' method below,
-                            // a better use of time is to optimize the loop in other places. Users can also classify dark images any time later. via an option on the Edit menu
-                            file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-
-                            // We don't check videos for darkness, so set it as Unknown.
-                            if (file.IsVideo)
-                            {
-                                file.ImageQuality = FileSelectionEnum.Ok;
-                            }
-                            else
-                            {
-                                while (file.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
-                                {
-                                    // See what images were retried
-                                    TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
-                                    retries_attempted++;
-                                    file.ImageQuality = bitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
-                                }
-                                if (retries_attempted == MAX_RETRIES && file.ImageQuality == FileSelectionEnum.Corrupted)
-                                {
-                                    // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                    file.ImageQuality = FileSelectionEnum.Ok;
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        // We couldn't manage the image for whatever reason, so mark it as corrupted.
-                        TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", file.File, exception.ToString()));
-                        bitmapSource = Constant.ImageValues.Corrupt.Value;
-                        file.ImageQuality = FileSelectionEnum.Ok;
-                    }
-
-                    // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
-                    // We only do this for files, as videos do not have these metadata fields
-                    // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                    file.TryReadDateTimeOriginalFromMetadata(this.FolderPath, imageSetTimeZone);
-
-                    int filesPendingInsert;
-                    // lock (filesToInsert) // SAULXXX Parallel.ForEach
-                    // {
-                    filesToInsert.Add(file);
-                    filesPendingInsert = filesToInsert.Count;
-                    // }
-
-                    // Display progress on feedback after a given time interval (currently every half second)
-                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
-                    {
-                        // lock (folderLoadProgress) // SAULXXX Parallel.ForEach
-                        // {
-                        if (file.IsVideo)
-                        {
-                            // TODO When Video thumbnails become available, we can use those.
-                            // Show a stock video bitmap image as they won't be retrieved fast enough anyways
-                            folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
-                        }
-                        else if (bitmapSource != null)
-                        {
-                            // if file was already loaded for dark checking, use the resulting bitmap
-                            try
-                            {
-                                folderLoadProgress.BitmapSource = bitmapSource;
-                            }
-                            catch
-                            {
-                                folderLoadProgress.BitmapSource = Constant.ImageValues.Corrupt.Value;
-                            }
-                        }
-                        else
-                        {
-                            // otherwise, load the file for display
-                            folderLoadProgress.BitmapSource = file.LoadBitmap(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing);
-                        }
-                        folderLoadProgress.CurrentFile = filesToInsert.Count;
-                        folderLoadProgress.CurrentFileName = file.File;
-                        int percentProgress = (int)(100.0 * filesToInsert.Count / (double)filesToAdd.Count);
-                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
-                        lastUpdateTime = utcNow;
-                        // Uncomment this to see how many images (if any) are not skipped
-                        //  Console.Write(" ");
-                        // }
-                    }
-                    else
-                    {
-                        // Uncomment this to see how many images (if any) are skipped
-                        // Console.WriteLine(" ");
-                        // Console.WriteLine("Skipped");
-                        folderLoadProgress.BitmapSource = null;
-                    }
-                    // }); // SAULXXX Parallel.ForEach
-                }
-
-                // Second pass: Update database
-                utcNow = DateTime.UtcNow;
-                lastUpdateTime = DateTime.UtcNow - Constant.ThrottleValues.LoadingImageDisplayInterval;  // so the first update check will refresh 
-
-                // PERFORMANCE: this could be a relatively expensie operation with a huge number of files, although I have already optimized it somewhat by batch-inserting the data into the database.
-                filesToInsert = filesToInsert.OrderBy(file => Path.Combine(file.RelativePath, file.File)).ToList();
-                folderLoadProgress.CurrentPass = 2;
-                this.dataHandler.FileDatabase.AddFiles(filesToInsert, (ImageRow file, int fileIndex) =>
-                {
-                    utcNow = DateTime.UtcNow;
-                    if (utcNow - lastUpdateTime >= Constant.ThrottleValues.LoadingImageDisplayInterval)
-                    {
-                        // Don't bother showing images as the user's already seen them imported, and this pass is comparatively fast compared to the previous one.
-                        // That is, only show the percent progress.
-                        folderLoadProgress.BitmapSource = null;
-                        folderLoadProgress.CurrentFile = fileIndex;
-                        folderLoadProgress.CurrentFileName = file.File;
-                        int percentProgress = (int)(100.0 * fileIndex / (double)filesToInsert.Count);
-                        backgroundWorker.ReportProgress(percentProgress, folderLoadProgress);
-                        lastUpdateTime = utcNow;
-                    }
-                });
+                // If the DoWork delegate is async, this is considered finished before the actual image set is loaded.
+                // Instead of an async DoWork and an await here, wait for the loading to finish.
+                loader.LoadAsync(backgroundWorker.ReportProgress, folderLoadProgress, 500).Wait();
             };
+
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
                 // this gets called on the UI thread
@@ -579,6 +405,7 @@ namespace Timelapse
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
             };
+
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
                 // BackgroundWorker aborts execution on an exception and transfers it to completion for handling
@@ -617,6 +444,9 @@ namespace Timelapse
                     }
                 }
                 this.BusyIndicator.IsBusy = false; // Hide the busy indicator
+                s.Stop();
+
+                TraceDebug.PrintMessage("Elapsed load time: " + s.ElapsedMilliseconds);
             };
 
             // Set up the user interface to show feedback
