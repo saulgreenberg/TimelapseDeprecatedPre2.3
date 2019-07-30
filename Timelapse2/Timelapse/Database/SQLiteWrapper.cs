@@ -324,26 +324,32 @@ namespace Timelapse.Database
         }
 
         /// <summary>
-        /// Executes the incoming <see cref="SQLiteCommand"/>.
+        /// Executes the incoming string as a Single SQL command/>.
         /// </summary>
         /// <param name="command">The command to execute.</param>
-        public void ExecuteCommand(SQLiteCommand command)
+        public void ExecuteOneNonQueryCommand(string commandString)
         {
-            if (command != null && !string.IsNullOrEmpty(command.CommandText))
+            if (string.IsNullOrEmpty(commandString))
             {
-                try
+                return;
+            }
+            SQLiteCommand command = new SQLiteCommand
+            {
+                CommandText = commandString
+            };
+
+            try
+            {
+                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
                 {
-                    using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
-                    {
-                        connection.Open();
-                        command.Connection = connection;
-                        command.ExecuteNonQuery();
-                    }
+                    connection.Open();
+                    command.Connection = connection;
+                    command.ExecuteNonQuery();
                 }
-                catch (Exception exception)
-                {
-                    TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", command.CommandText, exception.ToString()));
-                }
+            }
+            catch (Exception exception)
+            {
+                TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
             }
         }
 

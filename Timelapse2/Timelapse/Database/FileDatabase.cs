@@ -207,15 +207,24 @@ namespace Timelapse.Database
         }
 
         #region Adding Files to the Database
+        // Add file rows to the database. This generates an SQLite command in the form of:
+        // INSERT INTO DataTable (columnnames) (imageRow1Values) (imageRow2Values)... for example,
+        // INSERT INTO DataTable ( File, RelativePath, Folder, ... ) VALUES   
+        // ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
+        // ( 'IMG_2.JPG', 'relpath', 'folderfoo', ...)
+        // ...
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
-            StringBuilder queryColumns = new StringBuilder(Sql.InsertInto + Constant.DBTables.FileData + Sql.OpenParenthesis);
             int rowNumber = 0;
+            StringBuilder queryColumns = new StringBuilder(Sql.InsertInto + Constant.DBTables.FileData + Sql.OpenParenthesis); // INSERT INTO DataTable (
+
             Dictionary<string, string> defaultValueLookup = this.GetDefaultControlValueLookup();
 
             // We need to get a list of which columns are counters
             HashSet<string> counterList = new HashSet<string>();
 
+            // Create a comma-separated lists of column names
+            // e.g., ... File, RelativePath, Folder, DateTime, ..., 
             foreach (string columnName in this.FileTable.ColumnNames)
             {
                 if (columnName == Constant.DatabaseColumn.ID)
@@ -223,26 +232,30 @@ namespace Timelapse.Database
                     // skip the ID column as it's not associated with a data label and doesn't need to be set as it's autoincrement
                     continue;
                 }
-
                 queryColumns.Append(columnName);
                 queryColumns.Append(Sql.Comma);
             }
 
-            queryColumns.Remove(queryColumns.Length - 1, 1);
-            queryColumns.Append(Sql.CloseParenthesis + Sql.Values);
-
+            queryColumns.Remove(queryColumns.Length - 2, 2); //Remove trailing ", "
+            queryColumns.Append(Sql.CloseParenthesis + Sql.Values); 
+            
+            // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
             // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
+            // We limit the datalines to RowsPerInsert
             for (int image = 0; image < files.Count; image += Constant.DatabaseValues.RowsPerInsert)
             {
-                // Create a dataline from the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
+                // PERFORMANCE: Reimplement Markers as a foreign key, as many rows will be empty. However, this will break backwards/forwards compatability
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
-                SQLiteCommand command = new SQLiteCommand();
+
+                string command = String.Empty;
+
                 StringBuilder queryValues = new StringBuilder();
                 Dictionary<string, Dictionary<string, string>> parameterLookup = new Dictionary<string, Dictionary<string, string>>();
 
+                // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
-                    queryValues.Append(Sql.OpenParenthesis);
+                    queryValues.Append(Sql.OpenParenthesis);    
 
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
@@ -260,53 +273,54 @@ namespace Timelapse.Database
                         switch (controlType)
                         {
                             case Constant.DatabaseColumn.File:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.RelativePath:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Folder:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Date:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))},");
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))},");
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Time:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.ImageQuality:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DeleteFlag:
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
 
                                 // Default as specified in the template file, which should be "false"
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])}{Sql.Comma}");
                                 break;
 
-                            case Constant.Control.Note:        // Find and then Add the Note or Fixed Choice
+                            // Find and then add the customizable types, populating it with their default values.
+                            case Constant.Control.Note:        
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
 
                             case Constant.Control.Counter:
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 
@@ -316,9 +330,11 @@ namespace Timelapse.Database
                         }
                     }
 
-                    // Remove trailing comma.
-                    queryValues.Remove(queryValues.Length - 1, 1);
+                    // Remove trailing commam then add " ) ,"
+                    queryValues.Remove(queryValues.Length - 2, 2); // Remove ", "
                     queryValues.Append(Sql.CloseParenthesis + Sql.Comma);
+
+                    // The dataline should now be added to the string list of data lines, so go to the next image
                     ++rowNumber;
 
                     if (markerRow.Count > 0)
@@ -328,11 +344,13 @@ namespace Timelapse.Database
                 }
 
                 // Remove trailing comma.
-                queryValues.Remove(queryValues.Length - 1, 1);
-                command.CommandText = queryColumns.ToString() + queryValues.ToString();
+                queryValues.Remove(queryValues.Length - 2, 2); // Remove ", "
+
+                // Create the entire SQL command (limited to RowsPerInsert datalines)
+                command = queryColumns.ToString() + queryValues.ToString();
 
                 this.CreateBackupIfNeeded();
-                this.Database.ExecuteCommand(command);
+                this.Database.ExecuteOneNonQueryCommand(command);
                 this.InsertRows(Constant.DBTables.Markers, markerRows);
 
                 if (onFileAdded != null)
