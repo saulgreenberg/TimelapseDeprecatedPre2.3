@@ -24,7 +24,7 @@ namespace Timelapse.ImageSetLoadingPipeline
         private DataEntryHandler dataHandler;
         private TimelapseState state;
         private string relativePath;
-        private string initialRootFolderName;
+        private string imageSetFolderPath;
 
         public string FolderPath
         {
@@ -71,12 +71,12 @@ namespace Timelapse.ImageSetLoadingPipeline
             }
         }
 
-        public ImageLoader(string initialRootFolderName, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
         {
             this.fileInfo = fileInfo;
             this.dataHandler = dataHandler;
             this.state = state;
-            this.initialRootFolderName = initialRootFolderName;
+            this.imageSetFolderPath = imageSetFolderPath;
             this.relativePath = relativePath;
         }
 
@@ -89,7 +89,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             // Skip the per-file call to the database
             this.File = this.dataHandler.FileDatabase.FileTable.NewRow(this.fileInfo);
-            this.File.Folder = this.initialRootFolderName;
+            this.File.Folder = Path.GetFileName(this.imageSetFolderPath); 
             this.File.RelativePath = this.relativePath;
             this.File.SetDateTimeOffsetFromFileInfo(this.FolderPath);
 

@@ -191,7 +191,7 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, true, out backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath, true, out backgroundWorker);
             }
             else
             {
@@ -289,82 +289,38 @@ namespace Timelapse
 
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
-        private bool TryBeginImageFolderLoadAsync(string imageFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
+        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
             System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
             TraceDebug.PrintMessage("Starting load: " + DateTime.Now);
             s.Start();
-            // We check for different things if this is the initial first-time load of an image set vs. adding files after the database has been created.
-            if (isInitialImageSetLoading)
-            {
-                // We are loading images from the root folder for the first time
-                bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
-                List<string> subFolderPaths = new List<string>();
-                // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown.
-                // Indeed, this whole method should be wrapped in a progress bar, as well as changed to the newer async/await method vs. background worker.
-                Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
 
-                // The else-ifs are stubs in case we want to modify the code to ask the user if she wants to load only images in the root folder, 
-                // or to include subfolders as well.
-                if (subFolderPaths.Count == 0)
-                {
-                    // No images were found in the root folder or subfolders
-                    MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
-                    messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
-                    messageBox.Message.Problem += "\u2022 " + imageFolderPath + Environment.NewLine;
-                    messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
-                    messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
-                    messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
-                    messageBox.Message.Solution = "Timelapse aborted the load operation." + Environment.NewLine;
-                    messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
-                    messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                    messageBox.ShowDialog();
-                    externallyVisibleWorker = null;
-                    return false;
-                }
-                else if (subFolderPaths.Contains(imageFolderPath) && subFolderPaths.Count() == 1)
-                {
-                    // Images found in root folder only
-                    // System.Diagnostics.Debug.Print("Images in root folder only");
-                }
-                else if (subFolderPaths.Contains(imageFolderPath) && subFolderPaths.Count() > 1)
-                {
-                    // Images found in root folder and sub folders
-                    // System.Diagnostics.Debug.Print("Images in root folder and subfolders");
-                }
-                else if (subFolderPaths.Contains(imageFolderPath) == false && subFolderPaths.Count() > 0)
-                {
-                    // Images found in subfolders only
-                    // System.Diagnostics.Debug.Print("Images in sub folders only");
-                }
-            }
-            else
+            List<FileInfo> filesToAdd = new List<FileInfo>();
+            // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
+            // PERFORMANCE - takes modest but noticable time to do if there are a huge number of files. 
+            // TO DO: PUT THIS IN THE SHOW PROGRESS LOOP
+            Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(selectedFolderPath, filesToAdd);
+            s.Stop();
+
+            if (filesToAdd.Count == 0)
             {
-                // We are adding images to an already existing database
-                bool isImagesInRootFolder = Util.FilesFoldersAndPaths.CheckFolderForAtLeastOneImageOrVideoFiles(this.FolderPath);
-                List<string> subFolderPaths = new List<string>();
-                Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo(imageFolderPath, subFolderPaths);
-                if (subFolderPaths.Count == 0)
-                {
-                    // No images were found in the root folder or subfolders
-                    MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
-                    messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
-                    messageBox.Message.Problem += "\u2022 " + imageFolderPath + Environment.NewLine;
-                    messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
-                    messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
-                    messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
-                    messageBox.Message.Solution = "Timelapse did not add any images or files." + Environment.NewLine;
-                    messageBox.Message.Hint = "Try adding a folder that contains (or whose subfolders contain) image or video files ." + Environment.NewLine;
-                    messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                    messageBox.ShowDialog();
-                    externallyVisibleWorker = null;
-                    return false;
-                }
+                // No images were found in the root folder or subfolders, so there is nothing to do
+                MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
+                messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
+                messageBox.Message.Problem += "\u2022 " + selectedFolderPath + Environment.NewLine;
+                messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
+                messageBox.Message.Solution = "Timelapse aborted the load operation." + Environment.NewLine;
+                messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
+                messageBox.Message.Icon = MessageBoxImage.Exclamation;
+                messageBox.ShowDialog();
+                externallyVisibleWorker = null;
+                return false;
             }
-            // Return a list of FileInfo for every single image / video file in the folder path (including subfolders). These become the files to add to the database
-            // PERFORMANCE - takes noticable time to do if there are a huge number of files. If it can't be optimized, a progress bar should at least be shown.
-            // Perhaps merge with above Util.FilesFoldersAndPaths.GetAllFoldersContainingAnImageOrVideo to do it all in one pass.
-            List<FileInfo> filesToAdd = Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(imageFolderPath);
+
+            System.Diagnostics.Debug.Print(s.ElapsedMilliseconds.ToString());
+            s.Start();
 
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
@@ -385,7 +341,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(imageFolderPath, filesToAdd, this.dataHandler, this.state);
+                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, selectedFolderPath, filesToAdd, this.dataHandler, this.state);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 
@@ -423,7 +379,7 @@ namespace Timelapse
 
                 this.OnFolderLoadingComplete(true);
 
-                // Finally, tell the user how many images were loaded, etc.
+                // Do some final things
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
                 bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
                 this.MarkableCanvas.MagnifyingGlassEnabled = false;

@@ -60,38 +60,44 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
-        public ImageSetLoader(string imageFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageSetLoader(string imageSetFolderPath, string selectedFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
         {
-            // Avoid enumerating to count and enumerating to set up tasks
-            // Order the files by full name, which should sort to the same order as the original pass 2.
-            //FileInfo[] fileInfoArray = fileInfos.OrderBy(f => f.FullName).ToArray();
-
-            // Filter out anything already in the database here? This would avoid the per-file check
+            // Don't add a file if it already exists in the database.
+            // Rather than check every file one by one to see if it exists in the database 
+            // - get all the current files in the database (as existing full paths) in a single database call,
+            // - create a new file list (fileInfoArray) that only adds files found in the selectedFolderPath (as fileInfos) that are NOT present in the database. 
             HashSet<string> existingPaths = new HashSet<string>(from file in dataHandler.FileDatabase.GetAllFiles()
-                                                                select Path.Combine(imageFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
+                                                                select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
 
-            FileInfo[] fileInfoArray = (from fileInfo in fileInfos
+            FileInfo[] filesToAddInfoArray = (from fileInfo in fileInfos
                                         where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
                                         select fileInfo).OrderBy(f => f.FullName).ToArray();
 
-            this.ImagesToLoad = fileInfoArray.Length;
+            this.ImagesToLoad = filesToAddInfoArray.Length;
 
-            // The queue will take image rows ready for insertion to the second pass, the event
-            // indicates explicitly when the first pass is done.
+            // The queue will take image rows ready for insertion to the second pass
+            // The eventindicates explicitly when the first pass is done.
             ConcurrentQueue<ImageRow> databaseInsertionQueue = new ConcurrentQueue<ImageRow>();
 
-            string absolutePathPart = imageFolderPath + @"\";
+            string absolutePathPart = imageSetFolderPath + @"\";
 
             this.pass1 = new Task(() => 
             {
                 List<Task> loadTasks = new List<Task>();
 
                 // Fan out the loader tasks
-                foreach (FileInfo fileInfo in fileInfoArray)
+                foreach (FileInfo fileInfo in filesToAddInfoArray)
                 {
-                    string relativePath = Path.GetDirectoryName(fileInfo.FullName).Replace(absolutePathPart, string.Empty);
+                    // Parse the relative path from the full name. 
+                    // As GetDirectoryName does not end with a \ on a file name, we add the' '\' as needed
+                    string directoryName = Path.GetDirectoryName(fileInfo.FullName);
+                    if (directoryName.EndsWith(@"\") == false)
+                    {
+                        directoryName += @"\";
+                    }
+                    string relativePath = directoryName.Replace(absolutePathPart, string.Empty);
 
-                    ImageLoader loader = new ImageLoader(imageFolderPath, relativePath, fileInfo, dataHandler, state);
+                    ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler, state);
 
                     Task loaderTask = loader.LoadImageAsync(() => 
                     {

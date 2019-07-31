@@ -57,10 +57,10 @@ namespace Timelapse
         // Add Images to Image Set 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ShowFolderSelectionDialog(out string folderPath))
+            string foo = this.FolderPath;            if (this.ShowFolderSelectionDialog(out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(folderPath, false, out BackgroundWorker backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath, false, out BackgroundWorker backgroundWorker);
                 Mouse.OverrideCursor = null;
             }
         }
