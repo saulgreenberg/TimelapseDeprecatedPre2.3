@@ -105,14 +105,6 @@ namespace Timelapse
             dialog.ShowDialog();
         }
 
-        // Classify dark images automatically on initial load
-        private void MenuItemClassifyDarkImagesWhenLoading_Click(object sender, RoutedEventArgs e)
-        {
-            DarkImagesClassifyAutomatically darkImagesOptions = new DarkImagesClassifyAutomatically(this.state, this);
-            darkImagesOptions.ShowDialog();
-            this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
-        }
-
         private void MenuItemGenerateVideoThumbnails_Click(object sender, RoutedEventArgs e)
         {
             string[] videoFileExtensions = { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension };

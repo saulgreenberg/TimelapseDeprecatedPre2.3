@@ -232,9 +232,6 @@
     <Compile Include="Dialog\CustomSort.xaml.cs">
       <DependentUpon>CustomSort.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\DarkImagesClassifyAutomatically.xaml.cs">
-      <DependentUpon>DarkImagesClassifyAutomatically.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\DateCorrectAmbiguous.xaml.cs">
       <DependentUpon>DateCorrectAmbiguous.xaml</DependentUpon>
     </Compile>
@@ -409,10 +406,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialog\CustomSort.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\DarkImagesClassifyAutomatically.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -489,9 +489,6 @@ namespace Timelapse
                 // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
                 public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
 
-                // key containing whether to classify dark images when loading
-                public const string ClassifyDarkImagesWhenLoading = "ClassifyDarkImagesWhenLoading";
-
                 // list of most recently image sets opened by Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
 
