@@ -248,7 +248,8 @@ namespace Timelapse.Database
             try
             {
                 IReadOnlyList<MetadataDirectory> metadataDirectories = null;
-                //IReadOnlyList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
+                // PERFORMANCE
+                // IReadOnlyList<MetadataDirectory> metadataDirectories = ImageMetadataReader.ReadMetadata(this.GetFilePath(folderPath));
 
                 // Reading in sequential scan, does this speed up? Under the covers, the MetadataExtractor is using a sequential read, allowing skip forward but not random access.
                 // Exif is small, do we need a big block?
@@ -397,8 +398,6 @@ namespace Timelapse.Database
         /// <summary>
         /// Wrapper for the LoadBitmap method to enable async await use
         /// </summary>
-        /// <param name="baseFolderPath"></param>
-        /// <param name="imageExpectedUsage"></param>
         /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
         public virtual Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
         {
@@ -415,9 +414,6 @@ namespace Timelapse.Database
         /// <summary>
         /// Wrapper for GetBitmapFromFile to allow async await use.
         /// </summary>
-        /// <param name="rootFolderPath"></param>
-        /// <param name="desiredWidth"></param>
-        /// <param name="displayIntent"></param>
         /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
         public Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {

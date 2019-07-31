@@ -236,7 +236,7 @@ namespace Timelapse.Database
                 queryColumns.Append(Sql.Comma);
             }
 
-            queryColumns.Remove(queryColumns.Length - 2, 2); //Remove trailing ", "
+            queryColumns.Remove(queryColumns.Length - 2, 2); // Remove trailing ", "
             queryColumns.Append(Sql.CloseParenthesis + Sql.Values); 
             
             // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
@@ -1865,9 +1865,8 @@ namespace Timelapse.Database
         }
 
         /// <summary>
-        /// Gets a dictionary populated with control default values based on the control data label.
+        /// Returns a dictionary populated with control default values based on the control data label.
         /// </summary>
-        /// <returns></returns>
         private Dictionary<string, string> GetDefaultControlValueLookup()
         {
             Dictionary<string, string> results = new Dictionary<string, string>();
@@ -1892,28 +1891,35 @@ namespace Timelapse.Database
             }
             try
             {
-                // PERFORMANCE Reading in very large json tables is somewhat slow. I am not sure if this can be optimized as the entire file is needed.
-                using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
+                // using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path))) 
+                // That call loads the whole json file into a string, then deserializes it.  
+                // This doubles the RAM requirement.  The .json library can open a file stream instead, as shown below, and deserializes from that directly. 
+                // Thus you never have the whole string in memory:
+                // TODO: SEE DAN MORRIS BRANCH 28 Jul 2019, which shows how to signal progress when reading JSON
+                using (StreamReader sr = new StreamReader(path))
                 {
-                    // If detection population was previously done in this session, resetting these tables to null 
-                    // will force reading the new values into them
-                    this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
-                    this.detectionCategoriesDictionary = null;
-                    this.classificationCategoriesDictionary = null;
-                    this.classificationsDataTable = null;
-
-                    // PERFORMANCE This check is somewhat slow. 
-                    if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                    using (JsonReader reader = new JsonTextReader(sr))
                     {
-                        return false;
+                        JsonSerializer serializer = new JsonSerializer();
+                        Detector detector = serializer.Deserialize<Detector>(reader);
+                        this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                        this.detectionCategoriesDictionary = null;
+                        this.classificationCategoriesDictionary = null;
+                        this.classificationsDataTable = null;
+
+                        // PERFORMANCE This check is somewhat slow. 
+                        if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                        {
+                            return false;
+                        }
+                        // PERFORMANCE This method does two things:
+                        // - it walks through the detector data structure to construct sql insertion statements
+                        // - it invokes the actual insertion in the database.
+                        // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                        // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+                        DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
+                        return true;
                     }
-                    // PERFORMANCE This method does two things:
-                    // - it walks through the detector data structure to construct sql insertion statements
-                    // - it invokes the actual insertion in the database.
-                    // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                    // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
-                    return true;
                 }
             }
             catch

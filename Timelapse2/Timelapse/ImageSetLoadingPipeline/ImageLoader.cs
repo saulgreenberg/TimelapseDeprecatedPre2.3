@@ -82,10 +82,8 @@ namespace Timelapse.ImageSetLoadingPipeline
 
         public async Task LoadImageAsync(Action OnImageLoadComplete)
         {
-            // First check to see if the file is already in the database. If it is, there's basically nothing to do here.
-            // Set the loader's file member.
-            this.RequiresDatabaseInsert = true; // !this.dataHandler.FileDatabase.GetOrCreateFile(this.fileInfo, out ImageRow file);
-            // this.File = file;
+            // Set the loader's file member. 
+            this.RequiresDatabaseInsert = true; 
 
             // Skip the per-file call to the database
             this.File = this.dataHandler.FileDatabase.FileTable.NewRow(this.fileInfo);
@@ -96,11 +94,11 @@ namespace Timelapse.ImageSetLoadingPipeline
             if (this.RequiresDatabaseInsert == true)
             {
                 // The image is not already in the database, load the image from the disk
-
+                // THIS ENTIRE TRY/CATCH TO BE REMOVED WHEN WE NO LONGER ALLOW THE OPTION TO CHECK FOR DARK ON LOAD
                 try
                 {
                     // By default, file image quality is ok (i.e., not dark)
-                    File.ImageQuality = FileSelectionEnum.Ok;
+                    this.File.ImageQuality = FileSelectionEnum.Ok;
 
                     if (this.state.ClassifyDarkImagesWhenLoading == true && this.BitmapSource != Constant.ImageValues.Corrupt.Value)
                     {
@@ -112,11 +110,11 @@ namespace Timelapse.ImageSetLoadingPipeline
                         // If larger images are used, it could be even slower. I'm not sure if there is better way of loading bitmaps. This is also complicated by 
                         // caching issues: if the loadbitmap keeps a handle to the image, it means that image cannot be deleted later via an Edit|Delete options. 
 
-                        var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        var loadResult = await this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
 
                         this.BitmapSource = loadResult.Item1;
 
-                        File.ImageQuality = FileSelectionEnum.Ok;
+                        this.File.ImageQuality = FileSelectionEnum.Ok;
 
                         // Dark Image Classification during loading if the automatically classify dark images option is set  
                         // Bug: invoking GetImageQuality here (i.e., on initial image loading ) would sometimes crash the system on older machines/OS, 
@@ -131,26 +129,26 @@ namespace Timelapse.ImageSetLoadingPipeline
                         // The good news is that most users don't need this - the use case is for those who put their camera on 'timelapse' vs. 'motion detection' mode,
                         // and want to filter out the night-time shots. Thus while we could get performance gain by optimizing the 'GetImageQuality' method below,
                         // a better use of time is to optimize the loop in other places. Users can also classify dark images any time later. via an option on the Edit menu
-                        File.ImageQuality = this.BitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+                        this.File.ImageQuality = this.BitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
 
                         // We don't check videos for darkness, so set it as Unknown.
-                        if (File.IsVideo)
+                        if (this.File.IsVideo)
                         {
-                            File.ImageQuality = FileSelectionEnum.Ok;
+                            this.File.ImageQuality = FileSelectionEnum.Ok;
                         }
                         else
                         {
-                            while (File.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
+                            while (this.File.ImageQuality == FileSelectionEnum.Corrupted && retries_attempted < MAX_RETRIES)
                             {
                                 // See what images were retried
-                                TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + fileInfo);
+                                TraceDebug.PrintMessage("Retrying dark image classification : " + retries_attempted.ToString() + " " + this.fileInfo);
                                 retries_attempted++;
-                                File.ImageQuality = this.BitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
+                                this.File.ImageQuality = this.BitmapSource.AsWriteable().GetImageQuality(this.state.DarkPixelThreshold, this.state.DarkPixelRatioThreshold);
                             }
-                            if (retries_attempted == MAX_RETRIES && File.ImageQuality == FileSelectionEnum.Corrupted)
+                            if (retries_attempted == MAX_RETRIES && this.File.ImageQuality == FileSelectionEnum.Corrupted)
                             {
                                 // We've reached the maximum number of retires. Give up, and just set the image quality (perhaps incorrectly) to ok
-                                File.ImageQuality = FileSelectionEnum.Ok;
+                                this.File.ImageQuality = FileSelectionEnum.Ok;
                             }
                         }
                     }
@@ -158,23 +156,22 @@ namespace Timelapse.ImageSetLoadingPipeline
                     {
                         // Not opening things to check for dark images at this time, but still need to report some progress.
                         // Let this be done by lazy load when needed
-                        //var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
-                        //this.BitmapSource = loadResult.Item1;
+                        // var loadResult = await File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                        // this.BitmapSource = loadResult.Item1;
                     }
                 }
                 catch (Exception exception)
                 {
                     // We couldn't manage the image for whatever reason, so mark it as corrupted.
-                    TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", File.File, exception.ToString()));
+                    TraceDebug.PrintMessage(String.Format("Load of {0} failed as it's likely corrupted, in TryBeginImageFolderLoadAsync. {1}", this.File.File, exception.ToString()));
                     this.BitmapSource = Constant.ImageValues.Corrupt.Value;
-                    File.ImageQuality = FileSelectionEnum.Ok;
+                    this.File.ImageQuality = FileSelectionEnum.Ok;
                 }
 
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
                 // We only do this for files, as videos do not have these metadata fields
                 // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
-
+                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
             }
 
             // This completes processing, but it may be some time before the task is checked for completion.

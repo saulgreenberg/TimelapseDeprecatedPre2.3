@@ -326,7 +326,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Executes the incoming string as a Single SQL command/>.
         /// </summary>
-        /// <param name="command">The command to execute.</param>
+        /// <param name="commandString">The command to execute.</param>
         public void ExecuteOneNonQueryCommand(string commandString)
         {
             if (string.IsNullOrEmpty(commandString))

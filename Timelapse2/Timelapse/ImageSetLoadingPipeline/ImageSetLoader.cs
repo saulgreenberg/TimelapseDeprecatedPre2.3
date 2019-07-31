@@ -95,7 +95,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     {
                         directoryName += @"\";
                     }
-                    string relativePath = directoryName.Replace(absolutePathPart, string.Empty);
+                    string relativePath = directoryName.Replace(absolutePathPart, string.Empty).TrimEnd(Path.DirectorySeparatorChar);
 
                     ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler, state);
 
@@ -135,7 +135,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                 }
             });
             
-            
             this.pass2 = new Task(() =>
             {
                 // This pass2 starts after pass1 is fully complete
@@ -153,7 +152,6 @@ namespace Timelapse.ImageSetLoadingPipeline
         internal async Task LoadAsync(Action<int, FolderLoadProgress> reportProgress, FolderLoadProgress folderLoadProgress, int progressIntervalMilliseconds)
         {
             this.pass1.Start();
-            //this.pass2.Start();
 
             Timer t = new Timer((state) =>
             {
