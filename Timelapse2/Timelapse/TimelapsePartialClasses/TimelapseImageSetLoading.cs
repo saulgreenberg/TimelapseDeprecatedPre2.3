@@ -291,16 +291,11 @@ namespace Timelapse
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
         {
-            System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
-            TraceDebug.PrintMessage("Starting load: " + DateTime.Now);
-            s.Start();
-
             List<FileInfo> filesToAdd = new List<FileInfo>();
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
             // PERFORMANCE - takes modest but noticable time to do if there are a huge number of files. 
             // TO DO: PUT THIS IN THE SHOW PROGRESS LOOP
             Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(selectedFolderPath, filesToAdd);
-            s.Stop();
 
             if (filesToAdd.Count == 0)
             {
@@ -318,9 +313,6 @@ namespace Timelapse
                 externallyVisibleWorker = null;
                 return false;
             }
-
-            System.Diagnostics.Debug.Print(s.ElapsedMilliseconds.ToString());
-            s.Start();
 
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
@@ -354,8 +346,24 @@ namespace Timelapse
             {
                 // this gets called on the UI thread
                 this.ImageSetPane.IsActive = true;
-                string message = (folderLoadProgress.TotalPasses > 1) ? String.Format("Pass {0}/{1}: ", folderLoadProgress.CurrentPass, folderLoadProgress.TotalPasses) : String.Empty;
-                message = String.Format("{0} Analyzing file {1} of {2} ({3})", message, folderLoadProgress.CurrentFile, folderLoadProgress.TotalFiles, folderLoadProgress.CurrentFileName);
+                if (folderLoadProgress.CurrentPass == 1 && folderLoadProgress.CurrentFile == 0)
+                {
+                    // skip the 0th file of the 1st pass, as there is not really much of interest to show
+                    return;
+                }
+                string message = (folderLoadProgress.TotalPasses > 1) ? String.Format("Pass {0}/{1}{2}" , folderLoadProgress.CurrentPass, folderLoadProgress.TotalPasses, Environment.NewLine) : String.Empty;
+                if (folderLoadProgress.CurrentPass == 1 && folderLoadProgress.CurrentFile == folderLoadProgress.TotalFiles)
+                {
+                    message = String.Format("{0}Finalizing analysis of {1} files - could take several minutes ", message,  folderLoadProgress.TotalFiles);
+                }
+
+                else
+                { 
+                    string what = (folderLoadProgress.CurrentPass == 1) ? "Analyzing file" : "Adding files to database";
+                    message = (folderLoadProgress.CurrentPass == 2 && folderLoadProgress.CurrentFile == 0)
+                        ? String.Format("{0}{1} ...", message, what)
+                        : String.Format("{0}{1} {2} of {3} ({4})", message, what, folderLoadProgress.CurrentFile, folderLoadProgress.TotalFiles, folderLoadProgress.CurrentFileName);
+                }
 
                 this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, message);
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
@@ -400,16 +408,14 @@ namespace Timelapse
                     }
                 }
                 this.BusyIndicator.IsBusy = false; // Hide the busy indicator
-                s.Stop();
-
-                TraceDebug.PrintMessage("Elapsed load time: " + s.ElapsedMilliseconds);
             };
 
             // Set up the user interface to show feedback
             this.BusyIndicator.IsBusy = true; // Display the busy indicator
 
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
-            this.UpdateFolderLoadProgress(null, 0, "Loading folders...");
+            // First feedback message
+            this.UpdateFolderLoadProgress(null, 0, String.Format ("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count));
             this.StatusBar.SetMessage("Loading folders...");
             backgroundWorker.RunWorkerAsync();
             externallyVisibleWorker = backgroundWorker;
@@ -431,7 +437,7 @@ namespace Timelapse
             }
             if (textmessage != null)
             {
-                textmessage.Text = message; // "Analyzing data from : " + folderLoadProgress.CurrentFile + "/" + folderLoadProgress.TotalFiles + " files";
+                textmessage.Text = message; 
             }
         }
 

@@ -113,7 +113,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                             // any order. By sorting the file infos above, things that sort first in the database should
                             // be done first, BUT THIS MAY REQUIRE ADDITIONAL FINESSE TO KEEP THE EXPLICIT ORDER CORRECT.
                             databaseInsertionQueue.Enqueue(loader.File);
-
                             Interlocked.Increment(ref imagesToInsert);
                         }
                     });
@@ -121,13 +120,10 @@ namespace Timelapse.ImageSetLoadingPipeline
                     loadTasks.Add(loaderTask);
                 }
 
-                /*Task[] taskArray = loadTasks.ToArray();
-
-                // Allow all the tasks to complete. Note that this may complete in a synchronous manner,
-                // or may not, depending on the specifics of the system running this code.
-
-                Task.WaitAll(taskArray);*/
-
+                // PROGRESS BAR ISSUES...
+                // The progress bar is not updated in this while loop.
+                // When there are many images (e.g., 200,000 ) this means that the user will see a static busy indicator for several minutes, which could be disconcerting.
+                // Is there a way to include this in the busy indicator to show some dynamic updates as its removing tasks? 
                 while (loadTasks.Count > 0)
                 {
                     int completedIndex = Task.WaitAny(loadTasks.ToArray());
@@ -139,7 +135,6 @@ namespace Timelapse.ImageSetLoadingPipeline
             {
                 // This pass2 starts after pass1 is fully complete
                 List<ImageRow> imagesToInsert = databaseInsertionQueue.OrderBy(f => Path.Combine(f.RelativePath, f.File)).ToList();
-
                 dataHandler.FileDatabase.AddFiles(imagesToInsert,
                                                   (ImageRow file, int fileIndex) =>
                                                   {
