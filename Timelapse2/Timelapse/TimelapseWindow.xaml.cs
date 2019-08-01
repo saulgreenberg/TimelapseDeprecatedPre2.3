@@ -90,7 +90,6 @@ namespace Timelapse
             this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
 
             this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
-            this.MenuItemClassifyDarkImagesWhenLoading.IsChecked = this.state.ClassifyDarkImagesWhenLoading;
 
             // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
             // Yup, poor practice but...

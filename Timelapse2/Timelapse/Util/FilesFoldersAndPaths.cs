@@ -32,34 +32,50 @@ namespace Timelapse.Util
             // Reorder the files
             return fileInfoList.OrderBy(file => file.FullName).ToList();
         }
-
-        public static List<FileInfo> GetAllImageAndVideoFilesInFolderAndSubfolders(string rootFolderPath)
+        public static void GetAllImageAndVideoFilesInFolderAndSubfolders(string rootFolderPath, List<FileInfo> fileInfoList)
         {
-            List<string> folderPaths = new List<string>();
-            GetAllFoldersContainingAnImageOrVideo(rootFolderPath, folderPaths);
-                        
-            List<FileInfo> fileInfoList = new List<FileInfo>();
-            foreach (string folderPath in folderPaths)
+            GetAllImageAndVideoFilesInFolderAndSubfolders(rootFolderPath, fileInfoList, 0);
+        }
+        private static void GetAllImageAndVideoFilesInFolderAndSubfolders(string rootFolderPath, List<FileInfo> fileInfoList, int recursionLevel)
+        {
+            int nextRecursionLevel = recursionLevel + 1;
+            if (!Directory.Exists(rootFolderPath))
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
-                foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+                return;
+            }
+
+            DirectoryInfo directoryInfo = new DirectoryInfo(rootFolderPath);
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+            {
+                // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
+                // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX
+                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+            }
+
+            // Recursively descend subfolders
+            DirectoryInfo dirInfo = new DirectoryInfo(rootFolderPath);
+            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            foreach (DirectoryInfo subDir in subDirs)
+            {
+                // Skip the following folders
+                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
                 {
-                    // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
-                    // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX
-                    fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                    continue;
+                }
+                GetAllImageAndVideoFilesInFolderAndSubfolders(subDir.FullName, fileInfoList, nextRecursionLevel);
+            }
+
+            if (recursionLevel == 0)
+            {
+                // After all recursion is complete, do the following (but only on the initial recursion level)
+                // Because of that bug, we need to check for, and remove, any files that don't exactly match the desired extension
+                // At the same time, we also remove MacOSX hidden files, if any
+                FilesRemoveAllButImagesAndVideos(fileInfoList);
+                if (fileInfoList.Count() != 0)
+                {
+                    fileInfoList.OrderBy(file => file.FullName).ToList();
                 }
             }
-            // Because of that bug, we need to check for, and remove, any files that don't exactly match the desired extension
-            // At the same time, we also remove MacOSX hidden files, if any
-            FilesRemoveAllButImagesAndVideos(fileInfoList);
-            if (fileInfoList.Count() == 0)
-            {
-                // There are no files, so just return the empty list
-                return fileInfoList;
-            }
-
-            // Reorder the files
-            return fileInfoList.OrderBy(file => file.FullName).ToList();
         }
 
         // Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file

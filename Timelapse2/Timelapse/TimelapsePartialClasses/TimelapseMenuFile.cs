@@ -61,7 +61,7 @@ namespace Timelapse
             if (this.ShowFolderSelectionDialog(out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(folderPath, false, out BackgroundWorker backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath, false, out BackgroundWorker backgroundWorker);
                 Mouse.OverrideCursor = null;
             }
         }

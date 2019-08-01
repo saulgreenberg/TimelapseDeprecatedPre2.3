@@ -209,15 +209,24 @@ namespace Timelapse.Database
         }
 
         #region Adding Files to the Database
+        // Add file rows to the database. This generates an SQLite command in the form of:
+        // INSERT INTO DataTable (columnnames) (imageRow1Values) (imageRow2Values)... for example,
+        // INSERT INTO DataTable ( File, RelativePath, Folder, ... ) VALUES   
+        // ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
+        // ( 'IMG_2.JPG', 'relpath', 'folderfoo', ...)
+        // ...
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
-            StringBuilder queryColumns = new StringBuilder("insert into DataTable (");
             int rowNumber = 0;
+            StringBuilder queryColumns = new StringBuilder(Sql.InsertInto + Constant.DBTables.FileData + Sql.OpenParenthesis); // INSERT INTO DataTable (
+
             Dictionary<string, string> defaultValueLookup = this.GetDefaultControlValueLookup();
 
             // We need to get a list of which columns are counters
             HashSet<string> counterList = new HashSet<string>();
 
+            // Create a comma-separated lists of column names
+            // e.g., ... File, RelativePath, Folder, DateTime, ..., 
             foreach (string columnName in this.FileTable.ColumnNames)
             {
                 if (columnName == Constant.DatabaseColumn.ID)
@@ -225,26 +234,30 @@ namespace Timelapse.Database
                     // skip the ID column as it's not associated with a data label and doesn't need to be set as it's autoincrement
                     continue;
                 }
-
                 queryColumns.Append(columnName);
-                queryColumns.Append(",");
+                queryColumns.Append(Sql.Comma);
             }
 
-            queryColumns.Remove(queryColumns.Length - 1, 1);
-            queryColumns.Append(") VALUES ");
-
+            queryColumns.Remove(queryColumns.Length - 2, 2); // Remove trailing ", "
+            queryColumns.Append(Sql.CloseParenthesis + Sql.Values); 
+            
+            // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
             // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
+            // We limit the datalines to RowsPerInsert
             for (int image = 0; image < files.Count; image += Constant.DatabaseValues.RowsPerInsert)
             {
-                // Create a dataline from the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
+                // PERFORMANCE: Reimplement Markers as a foreign key, as many rows will be empty. However, this will break backwards/forwards compatability
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
-                SQLiteCommand command = new SQLiteCommand();
+
+                string command = String.Empty;
+
                 StringBuilder queryValues = new StringBuilder();
                 Dictionary<string, Dictionary<string, string>> parameterLookup = new Dictionary<string, Dictionary<string, string>>();
 
+                // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
-                    queryValues.Append("(");
+                    queryValues.Append(Sql.OpenParenthesis);    
 
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
@@ -262,53 +275,54 @@ namespace Timelapse.Database
                         switch (controlType)
                         {
                             case Constant.DatabaseColumn.File:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.File)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.RelativePath:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.RelativePath)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Folder:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Folder)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Date:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Date)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))},");
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))},");
+                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Time:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Time)},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.ImageQuality:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.ImageQuality.ToString())},");
+                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DeleteFlag:
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
 
                                 // Default as specified in the template file, which should be "false"
-                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[dataLabel])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])}{Sql.Comma}");
                                 break;
 
-                            case Constant.Control.Note:        // Find and then Add the Note or Fixed Choice
+                            // Find and then add the customizable types, populating it with their default values.
+                            case Constant.Control.Note:        
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
-                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
 
                             case Constant.Control.Counter:
-                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])},");
+                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 
@@ -318,9 +332,11 @@ namespace Timelapse.Database
                         }
                     }
 
-                    // Remove trailing comma.
-                    queryValues.Remove(queryValues.Length - 1, 1);
-                    queryValues.Append("),");
+                    // Remove trailing commam then add " ) ,"
+                    queryValues.Remove(queryValues.Length - 2, 2); // Remove ", "
+                    queryValues.Append(Sql.CloseParenthesis + Sql.Comma);
+
+                    // The dataline should now be added to the string list of data lines, so go to the next image
                     ++rowNumber;
 
                     if (markerRow.Count > 0)
@@ -330,11 +346,13 @@ namespace Timelapse.Database
                 }
 
                 // Remove trailing comma.
-                queryValues.Remove(queryValues.Length - 1, 1);
-                command.CommandText = queryColumns.ToString() + queryValues.ToString();
+                queryValues.Remove(queryValues.Length - 2, 2); // Remove ", "
+
+                // Create the entire SQL command (limited to RowsPerInsert datalines)
+                command = queryColumns.ToString() + queryValues.ToString();
 
                 this.CreateBackupIfNeeded();
-                this.Database.ExecuteCommand(command);
+                this.Database.ExecuteOneNonQueryCommand(command);
                 this.InsertRows(Constant.DBTables.Markers, markerRows);
 
                 if (onFileAdded != null)
@@ -1849,9 +1867,8 @@ namespace Timelapse.Database
         }
 
         /// <summary>
-        /// Gets a dictionary populated with control default values based on the control data label.
+        /// Returns a dictionary populated with control default values based on the control data label.
         /// </summary>
-        /// <returns></returns>
         private Dictionary<string, string> GetDefaultControlValueLookup()
         {
             Dictionary<string, string> results = new Dictionary<string, string>();
@@ -1876,28 +1893,35 @@ namespace Timelapse.Database
             }
             try
             {
-                // PERFORMANCE Reading in very large json tables is somewhat slow. I am not sure if this can be optimized as the entire file is needed.
-                using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path)))
+                // using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path))) 
+                // That call loads the whole json file into a string, then deserializes it.  
+                // This doubles the RAM requirement.  The .json library can open a file stream instead, as shown below, and deserializes from that directly. 
+                // Thus you never have the whole string in memory:
+                // TODO: SEE DAN MORRIS BRANCH 28 Jul 2019, which shows how to signal progress when reading JSON
+                using (StreamReader sr = new StreamReader(path))
                 {
-                    // If detection population was previously done in this session, resetting these tables to null 
-                    // will force reading the new values into them
-                    this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
-                    this.detectionCategoriesDictionary = null;
-                    this.classificationCategoriesDictionary = null;
-                    this.classificationsDataTable = null;
-
-                    // PERFORMANCE This check is somewhat slow. 
-                    if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                    using (JsonReader reader = new JsonTextReader(sr))
                     {
-                        return false;
+                        JsonSerializer serializer = new JsonSerializer();
+                        Detector detector = serializer.Deserialize<Detector>(reader);
+                        this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                        this.detectionCategoriesDictionary = null;
+                        this.classificationCategoriesDictionary = null;
+                        this.classificationsDataTable = null;
+
+                        // PERFORMANCE This check is somewhat slow. 
+                        if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
+                        {
+                            return false;
+                        }
+                        // PERFORMANCE This method does two things:
+                        // - it walks through the detector data structure to construct sql insertion statements
+                        // - it invokes the actual insertion in the database.
+                        // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                        // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+                        DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
+                        return true;
                     }
-                    // PERFORMANCE This method does two things:
-                    // - it walks through the detector data structure to construct sql insertion statements
-                    // - it invokes the actual insertion in the database.
-                    // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                    // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-                    DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
-                    return true;
                 }
             }
             catch

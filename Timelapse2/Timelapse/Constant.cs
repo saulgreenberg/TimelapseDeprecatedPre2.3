@@ -204,7 +204,7 @@ namespace Timelapse
             public const long InvalidID = -1;
             public const int InvalidRow = -1;
             public const int RelativePathPosition = 2;
-            public const int RowsPerInsert = 500;
+            public const int RowsPerInsert = 5000;
             public const int UtcOffsetPosition = 5;
             public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.Integer + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
             public const string DefaultQuickPasteXML = "<Entries></Entries>";
@@ -488,9 +488,6 @@ namespace Timelapse
 
                 // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
                 public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
-
-                // key containing whether to classify dark images when loading
-                public const string ClassifyDarkImagesWhenLoading = "ClassifyDarkImagesWhenLoading";
 
                 // list of most recently image sets opened by Timelapse
                 public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";

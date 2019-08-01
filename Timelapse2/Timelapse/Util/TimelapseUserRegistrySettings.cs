@@ -45,7 +45,6 @@ namespace Timelapse.Util
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
         public bool UseDetections { get; set; }
-        public bool ClassifyDarkImagesWhenLoading { get; set; }
         #endregion
 
         public TimelapseUserRegistrySettings() :
@@ -70,7 +69,6 @@ namespace Timelapse.Util
                 this.BookmarkScale = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationX, 1.0), registryKey.ReadDouble(Constant.Registry.TimelapseKey.BookmarkTranslationY, 1.0));
                 this.BoundingBoxDisplayThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.BoundingBoxDisplayThreshold, Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault);
-                this.ClassifyDarkImagesWhenLoading = registryKey.ReadBoolean(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.ReadEnum<CustomSelectionOperatorEnum>(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, CustomSelectionOperatorEnum.And);
                 this.DarkPixelRatioThreshold = registryKey.ReadDouble(Constant.Registry.TimelapseKey.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.ReadInteger(Constant.Registry.TimelapseKey.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
@@ -148,7 +146,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.Registry.TimelapseKey.BookmarkTranslationX, this.BookmarkTranslation.X);
                 registryKey.Write(Constant.Registry.TimelapseKey.BookmarkTranslationY, this.BookmarkTranslation.Y);
                 registryKey.Write(Constant.Registry.TimelapseKey.BoundingBoxDisplayThreshold, this.BoundingBoxDisplayThreshold);
-                registryKey.Write(Constant.Registry.TimelapseKey.ClassifyDarkImagesWhenLoading, this.ClassifyDarkImagesWhenLoading);
                 registryKey.Write(Constant.Registry.TimelapseKey.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelRatio, this.DarkPixelRatioThreshold);
                 registryKey.Write(Constant.Registry.TimelapseKey.DarkPixelThreshold, this.DarkPixelThreshold);

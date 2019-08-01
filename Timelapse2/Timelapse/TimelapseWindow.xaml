@@ -72,6 +72,15 @@
                     </MenuItem.Icon>
                 </MenuItem>
 
+                <!-- Export the current image or video _file...-->
+                <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/ImageExport_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
                 <!-- Import data from a .csv file...-->
                 <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data for the selected files in the image set from a CSV (comma separated value) file">
                     <MenuItem.Icon>
@@ -79,21 +88,13 @@
                     </MenuItem.Icon>
                 </MenuItem>
 
-                <!-- Load Detections -->
-                <Separator Name="MenuSeparatorDetections"/>
+                <!-- Import Detections -->
                 <MenuItem Name="MenuItemImportDetectionData" Header="Import image recognition data for this image set" IsEnabled="False" Click="MenuItemImportDetectionData_Click" ToolTip="Import image recognition data for the image set from a Microsoft-supplied .json file">
                     <MenuItem.Icon>
                         <Image Source="Icons/JSONImport_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
 
-                <!-- Export the current image or video _file...-->
-                <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
-                    <MenuItem.Icon>
-                        <Image Source="Icons/ImageExport_32x.png" />
-                    </MenuItem.Icon>
-                </MenuItem>
-                
                 <Separator />
 
                 <!-- Rename the _data file...-->
@@ -157,8 +158,8 @@
                     <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" />
                 </MenuItem>
 
-                <!-- Identify or reclassify dark files...-->
-                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k files now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="(Re-)classify which files are dark vs. light ."  />
+                <!-- Classify dark files...-->
+                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k files now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="Classify (or re-classify) which files are dark (usualy night-time shots)"  />
 
                 <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />
@@ -188,7 +189,6 @@
 
                 <Separator/>
 
-                <MenuItem Name="MenuItemClassifyDarkImagesWhenLoading" IsCheckable="False" IsChecked="False" Header="_Classify dark images automatically on initial load..."  ToolTip="Automatically classify dark images when initially loading an image set for the first time." Click="MenuItemClassifyDarkImagesWhenLoading_Click" />
                 <!--<MenuItem Name="MenuItemGenerateVideoThumbnails" Header="Generate video thumbnails..." Click="MenuItemGenerateVideoThumbnails_Click" IsEnabled="True" ToolTip="Generate image thumbnails for all the videos"/>
                 <MenuItem Name="MenuItemDeleteVideoThumbnails" Header="Delete video thumbnails..." Click="MenuItemDeleteVideoThumbnails_Click" IsEnabled="True" ToolTip="Delete image thumbnails for all the videos"/>-->
 

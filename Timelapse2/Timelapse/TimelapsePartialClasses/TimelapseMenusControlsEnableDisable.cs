@@ -28,7 +28,6 @@ namespace Timelapse
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemImportDetectionData.Visibility = this.state.UseDetections ? Visibility.Visible : Visibility.Collapsed;
             this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable && this.state.UseDetections;
-            this.MenuSeparatorDetections.Visibility = this.MenuItemImportDetectionData.Visibility;
 
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
