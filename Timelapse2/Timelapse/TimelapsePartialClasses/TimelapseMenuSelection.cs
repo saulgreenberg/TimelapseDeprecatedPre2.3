@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -20,35 +21,35 @@ namespace Timelapse
 
             this.MenuItemSelectMissingFiles.IsEnabled = true;
 
-            count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
+            count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionType.MarkedForDeletion);
             this.MenuItemSelectFilesMarkedForDeletion.Header = String.Format("Files marked for d_eletion [{0}]", count);
             this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = count > 0;
 
             // Put a checkmark next to the menu item that matches the stored selection criteria
-            FileSelectionEnum selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            FileSelectionType selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
 
-            this.MenuItemSelectAllFiles.IsChecked = selection == FileSelectionEnum.All;
+            this.MenuItemSelectAllFiles.IsChecked = selection == FileSelectionType.All;
 
-            this.MenuItemSelectDarkFiles.IsChecked = selection == FileSelectionEnum.Dark;
-            this.MenuItemSelectOkFiles.IsChecked = selection == FileSelectionEnum.Ok;
+            this.MenuItemSelectDarkFiles.IsChecked = selection == FileSelectionType.Dark;
+            this.MenuItemSelectOkFiles.IsChecked = selection == FileSelectionType.Ok;
             this.MenuItemSelectByImageQuality.IsChecked = this.MenuItemSelectOkFiles.IsChecked || this.MenuItemSelectDarkFiles.IsChecked;
 
-            this.MenuItemSelectMissingFiles.IsChecked = selection == FileSelectionEnum.Missing;
-            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionEnum.MarkedForDeletion;
-            this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
+            this.MenuItemSelectMissingFiles.IsChecked = selection == FileSelectionType.Missing;
+            this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionType.MarkedForDeletion;
+            this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionType.Custom;
         }
 
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles();
+            Dictionary<FileSelectionType, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles();
             int count;
 
             // Enable only the menu items that can select at least one potential image 
-            count = counts[FileSelectionEnum.Ok];
+            count = counts[FileSelectionType.Ok];
             this.MenuItemSelectOkFiles.IsEnabled = count > 0;
             this.MenuItemSelectOkFiles.Header = String.Format("_Ok files [{0}]", count);
 
-            count = counts[FileSelectionEnum.Dark];
+            count = counts[FileSelectionType.Dark];
             this.MenuItemSelectDarkFiles.Header = String.Format("_Dark files [{0}]", count);
             this.MenuItemSelectDarkFiles.IsEnabled = count > 0;
 
@@ -111,13 +112,13 @@ namespace Timelapse
             // If its select all folders, then just set the selection to all
             if (mi == this.MenuItemSelectAllFolders)
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All);
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionType.All);
                 return;
             }
 
             // Set the search terms to the designated relative path
             this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
-            int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.Custom);
+            int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionType.Custom);
             if (count <= 0)
             {
                 Timelapse.Dialog.MessageBox messageBox = new Timelapse.Dialog.MessageBox("No files in this folder", Application.Current.MainWindow);
@@ -129,7 +130,7 @@ namespace Timelapse
             MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders);  // Go to the first result (i.e., index 0) in the given selection set
+            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionType.Folders);  // Go to the first result (i.e., index 0) in the given selection set
         }
 
         private void MenuItemSelectByFolder_ClearAllCheckmarks()
@@ -145,28 +146,28 @@ namespace Timelapse
         private void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)sender;
-            FileSelectionEnum selection;
+            FileSelectionType selection;
 
             // find out which selection was selected
             if (item == this.MenuItemSelectAllFiles)
             {
-                selection = FileSelectionEnum.All;
+                selection = FileSelectionType.All;
             }
             else if (item == this.MenuItemSelectOkFiles)
             {
-                selection = FileSelectionEnum.Ok;
+                selection = FileSelectionType.Ok;
             }
             else if (item == this.MenuItemSelectMissingFiles)
             {
-                selection = FileSelectionEnum.Missing;
+                selection = FileSelectionType.Missing;
             }
             else if (item == this.MenuItemSelectDarkFiles)
             {
-                selection = FileSelectionEnum.Dark;
+                selection = FileSelectionType.Dark;
             }
             else if (item == this.MenuItemSelectFilesMarkedForDeletion)
             {
-                selection = FileSelectionEnum.MarkedForDeletion;
+                selection = FileSelectionType.MarkedForDeletion;
             }
             else if (item == this.MenuItemSelectByFolder)
             {
@@ -175,7 +176,7 @@ namespace Timelapse
             }
             else
             {
-                selection = FileSelectionEnum.All;   // Just in case
+                selection = FileSelectionType.All;   // Just in case
             }
             this.MenuItemSelectByFolder_ClearAllCheckmarks();
 
@@ -210,7 +211,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionType.Custom);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
                     MenuItemSelectByFolder_ClearAllCheckmarks();

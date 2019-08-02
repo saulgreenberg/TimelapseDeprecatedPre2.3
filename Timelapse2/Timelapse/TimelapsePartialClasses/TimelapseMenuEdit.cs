@@ -121,7 +121,7 @@ namespace Timelapse
         {
             try
             {
-                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
+                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionType.MarkedForDeletion);
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;

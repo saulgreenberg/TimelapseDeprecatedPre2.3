@@ -567,7 +567,6 @@
     <Compile Include="Database\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />
     <Compile Include="Database\ImageRow.cs" />
-    <Compile Include="Enums\FileSelectionEnum.cs" />
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Enums\ControlLabelStyleEnum.cs" />
     <Compile Include="Enums\ControlContentStyleEnum.cs" />

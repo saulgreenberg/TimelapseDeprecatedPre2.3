@@ -144,7 +144,7 @@ namespace Timelapse.Database
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Sql.Text, Constant.DatabaseValues.ImageSetDefaultLog));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Sql.Text, Constant.BooleanValue.True));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Sql.Text));
-            int allImages = (int)FileSelectionEnum.All;
+            int allImages = (int)FileSelectionType.All;
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Sql.Text, allImages));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text));
             columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
@@ -181,7 +181,7 @@ namespace Timelapse.Database
             // create the Files table
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
-            this.SelectFiles(FileSelectionEnum.All);
+            this.SelectFiles(FileSelectionType.All);
 
             // Create the MarkersTable and initialize it from the template table
             columnDefinitions.Clear();
@@ -674,7 +674,7 @@ namespace Timelapse.Database
                 // PERFORMANCE, BUT RARE: We invoke this to update various date/time values on all rows based on existing values. However, its rarely called
                 // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
                 // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
-                this.SelectFiles(FileSelectionEnum.All);
+                this.SelectFiles(FileSelectionType.All);
                 foreach (ImageRow image in this.FileTable)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
@@ -836,7 +836,7 @@ namespace Timelapse.Database
         /// Rebuild the file table with all files in the database table which match the specified selection.
         /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.
         /// </summary>
-        public void SelectFiles(FileSelectionEnum selection)
+        public void SelectFiles(FileSelectionType selection)
         {
             string query = String.Empty;
             bool useStandardQuery = false;
@@ -1089,23 +1089,23 @@ namespace Timelapse.Database
             }
         }
 
-        public Dictionary<FileSelectionEnum, int> GetFileCountsInAllFiles()
+        public Dictionary<FileSelectionType, int> GetFileCountsInAllFiles()
         {
-            Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
+            Dictionary<FileSelectionType, int> counts = new Dictionary<FileSelectionType, int>
             {
-                [FileSelectionEnum.Dark] = this.GetFileCount(FileSelectionEnum.Dark),
-                [FileSelectionEnum.Missing] = this.GetFileCount(FileSelectionEnum.Missing),
-                [FileSelectionEnum.Ok] = this.GetFileCount(FileSelectionEnum.Ok)
+                [FileSelectionType.Dark] = this.GetFileCount(FileSelectionType.Dark),
+                [FileSelectionType.Missing] = this.GetFileCount(FileSelectionType.Missing),
+                [FileSelectionType.Ok] = this.GetFileCount(FileSelectionType.Ok)
             };
             return counts;
         }
 
-        public Dictionary<FileSelectionEnum, int> GetFileCountsInCurrentSelection()
+        public Dictionary<FileSelectionType, int> GetFileCountsInCurrentSelection()
         {
-            Dictionary<FileSelectionEnum, int> counts = new Dictionary<FileSelectionEnum, int>
+            Dictionary<FileSelectionType, int> counts = new Dictionary<FileSelectionType, int>
             {
-                [FileSelectionEnum.Dark] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Dark),
-                [FileSelectionEnum.Ok] = this.FileTable.Count(p => p.ImageQuality == FileSelectionEnum.Ok)
+                [FileSelectionType.Dark] = this.FileTable.Count(p => p.ImageQuality == FileSelectionType.Dark),
+                [FileSelectionType.Ok] = this.FileTable.Count(p => p.ImageQuality == FileSelectionType.Ok)
             };
             return counts;
         }
@@ -1113,11 +1113,11 @@ namespace Timelapse.Database
         // Form examples
         // - Select Count(*) FROM DataTable WHERE ImageQuality='Light'
         // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
-        public int GetFileCount(FileSelectionEnum fileSelection)
+        public int GetFileCount(FileSelectionType fileSelection)
         {
             string query = String.Empty;
             bool skipWhere = false;
-            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+            if (fileSelection == FileSelectionType.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                 query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
@@ -1128,7 +1128,7 @@ namespace Timelapse.Database
                     Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 skipWhere = true;
             }
-            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
+            else if (fileSelection == FileSelectionType.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                 query = Sql.SelectCountStarFrom +
@@ -1150,7 +1150,7 @@ namespace Timelapse.Database
                 {
                     query += where;
                 }
-                if (fileSelection == FileSelectionEnum.Custom && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (fileSelection == FileSelectionType.Custom && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     query += Sql.CloseParenthesis;
                 }
@@ -1177,23 +1177,23 @@ namespace Timelapse.Database
             return this.CustomSelection.GetRelativePathFolder();
         }
 
-        private string GetFilesConditionalExpression(FileSelectionEnum selection)
+        private string GetFilesConditionalExpression(FileSelectionType selection)
         {
             // System.Diagnostics.Debug.Print(selection.ToString());
             switch (selection)
             {
-                case FileSelectionEnum.Corrupted:
-                case FileSelectionEnum.Missing:
+                case FileSelectionType.Corrupted:
+                case FileSelectionType.Missing:
                     return String.Empty;
-                case FileSelectionEnum.All:
+                case FileSelectionType.All:
                     return String.Empty;
-                case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Ok:
+                case FileSelectionType.Dark:
+                case FileSelectionType.Ok:
                     return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + SqlUtility.QuoteForSql(selection.ToString());
-                case FileSelectionEnum.MarkedForDeletion:
+                case FileSelectionType.MarkedForDeletion:
                     return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + SqlUtility.QuoteForSql(Constant.BooleanValue.True);
-                case FileSelectionEnum.Custom:
-                case FileSelectionEnum.Folders:
+                case FileSelectionType.Custom:
+                case FileSelectionType.Folders:
                     return this.CustomSelection.GetFilesWhere();
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));

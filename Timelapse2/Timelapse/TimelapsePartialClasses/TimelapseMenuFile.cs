@@ -91,7 +91,7 @@ namespace Timelapse
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.state.SuppressSelectedCsvExportPrompt == false &&
-                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
+                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionType.All)
             {
                 MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
                 messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
@@ -357,9 +357,9 @@ namespace Timelapse
                 {
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
-                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
+                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionType.Custom)
                     {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionType.All;
                     }
                     if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
                     {

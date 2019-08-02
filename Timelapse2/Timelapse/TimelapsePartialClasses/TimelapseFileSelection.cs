@@ -28,7 +28,7 @@ namespace Timelapse
             return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
         }
 
-        private bool FilesSelectAndShow(FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(FileSelectionType selection, bool forceUpdate)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
@@ -39,14 +39,14 @@ namespace Timelapse
         }
 
         // FilesSelectAndShow: Basic form doesn't force an update
-        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
+        private bool FilesSelectAndShow(long imageID, FileSelectionType selection)
         {
             return FilesSelectAndShow(imageID, selection, false);
         }
 
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
-        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(long imageID, FileSelectionType selection, bool forceUpdate)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
@@ -67,7 +67,7 @@ namespace Timelapse
             // PEFORMANCE - TWO  SLOW OPERATIONS: FilesSelectAndShow invoking this.dataHandler.FileDatabase.SelectFile / .SelectMissingFilesFromCurrentlySelectedFiles
             Mouse.OverrideCursor = Cursors.Wait;
             bool missingFilesExist = false;
-            if (selection == FileSelectionEnum.Missing)
+            if (selection == FileSelectionType.Missing)
             {
                 // PERFORMANCE this can be slow if there are many files, as it checks every single file in the current database selection to see if it exists
                 // However, it is not a mainstream operation so can be considered a lower priority place for optimization
@@ -76,7 +76,7 @@ namespace Timelapse
             else 
             {
                 // If its a folder selection, record it so we can save it later in the image set table 
-                this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
+                this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionType.Folders
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
@@ -84,7 +84,7 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = null;
 
-            if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
+            if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionType.All))
             {
                 // These cases are reached when 
                 // 1) datetime modifications result in no files matching a custom selection
@@ -95,30 +95,30 @@ namespace Timelapse
 
                 switch (selection)
                 {
-                    case FileSelectionEnum.Custom:
+                    case FileSelectionType.Custom:
                         messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
                         messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
                         messageBox.Message.Hint = "Create a different custom selection and apply it view the matching files.";
                         break;
-                    case FileSelectionEnum.Folders:
+                    case FileSelectionType.Folders:
                         messageBox.Message.Problem = "No files and/or image data were found for the selected folder.";
                         messageBox.Message.Reason = "Perhaps they were deleted during this session?";
                         messageBox.Message.Hint = "Try other folders or another selection. ";
                         break;
-                    case FileSelectionEnum.Dark:
+                    case FileSelectionType.Dark:
                         messageBox.Message.Problem = "Dark files were previously selected but no files are currently dark so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Dark.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
                         break;
-                    case FileSelectionEnum.Missing:
+                    case FileSelectionType.Missing:
                         messageBox.Message.Problem = "Missing files were previously selected. However, none of the files appear to be missing, so nothing can be shown.";
                         break;
-                    case FileSelectionEnum.MarkedForDeletion:
+                    case FileSelectionType.MarkedForDeletion:
                         messageBox.Message.Problem = "Files marked for deletion were previously selected but no files are currently marked so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
                         messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
                         break;
-                    case FileSelectionEnum.Ok:
+                    case FileSelectionType.Ok:
                         messageBox.Message.Problem = "Light files were previously selected but no files are currently marked 'Light' so nothing can be shown.";
                         messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Light.";
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Light', set their 'ImageQuality' field to 'Light' and then reselect Light files.";
@@ -129,7 +129,7 @@ namespace Timelapse
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 messageBox.ShowDialog();
 
-                selection = FileSelectionEnum.All;
+                selection = FileSelectionType.All;
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
                 this.dataHandler.FileDatabase.SelectFiles(selection);
             }
@@ -139,25 +139,25 @@ namespace Timelapse
             string status;
             switch (selection)
             {
-                case FileSelectionEnum.All:
+                case FileSelectionType.All:
                     status = "All files";
                     break;
-                case FileSelectionEnum.Custom:
+                case FileSelectionType.Custom:
                     status = "Custom selection";
                     break;
-                case FileSelectionEnum.Dark:
+                case FileSelectionType.Dark:
                     status = "Dark files";
                     break;
-                case FileSelectionEnum.MarkedForDeletion:
+                case FileSelectionType.MarkedForDeletion:
                     status = "Files marked for deletion";
                     break;
-                case FileSelectionEnum.Folders:
+                case FileSelectionType.Folders:
                     status = "Files in a specific folder";
                     break;
-                case FileSelectionEnum.Missing:
+                case FileSelectionType.Missing:
                     status = "Missing files";
                     break;
-                case FileSelectionEnum.Ok:
+                case FileSelectionType.Ok:
                     status = "Non-dark files";
                     break;
                 default:

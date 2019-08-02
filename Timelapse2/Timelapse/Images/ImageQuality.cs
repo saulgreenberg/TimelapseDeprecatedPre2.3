@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -11,8 +12,8 @@ namespace Timelapse.Images
         public double DarkPixelRatioFound { get; set; }
         public string FileName { get; set; }
         public bool IsColor { get; set; }
-        public Nullable<FileSelectionEnum> NewImageQuality { get; set; }
-        public FileSelectionEnum OldImageQuality { get; set; }
+        public Nullable<FileSelectionType> NewImageQuality { get; set; }
+        public FileSelectionType OldImageQuality { get; set; }
 
         public ImageQuality(ImageRow image)
         {

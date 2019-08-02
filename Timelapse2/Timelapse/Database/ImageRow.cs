@@ -66,21 +66,21 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.File, value); }
         }
 
-        public FileSelectionEnum ImageQuality
+        public FileSelectionType ImageQuality
         {
             get
             {
-                return this.Row.GetEnumField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality);
+                return this.Row.GetEnumField<FileSelectionType>(Constant.DatabaseColumn.ImageQuality);
             }
             set
             {
                 switch (value)
                 {
-                    case FileSelectionEnum.Corrupted:
-                    case FileSelectionEnum.Missing:
-                    case FileSelectionEnum.Ok:
-                    case FileSelectionEnum.Dark:
-                        this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
+                    case FileSelectionType.Corrupted:
+                    case FileSelectionType.Missing:
+                    case FileSelectionType.Ok:
+                    case FileSelectionType.Dark:
+                        this.Row.SetField<FileSelectionType>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:
                         TraceDebug.PrintMessage(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
@@ -187,7 +187,7 @@ namespace Timelapse.Database
                     this.UtcOffset = DateTimeHandler.ParseDatabaseUtcOffsetString(value);
                     break;
                 case Constant.DatabaseColumn.ImageQuality:
-                    this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
+                    this.ImageQuality = (FileSelectionType)Enum.Parse(typeof(FileSelectionType), value);
                     break;
                 default:
                     this.Row.SetField(dataLabel, value);
