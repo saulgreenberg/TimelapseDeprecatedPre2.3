@@ -81,6 +81,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             string absolutePathPart = imageSetFolderPath + @"\";
 
+            // Pass 1
             this.pass1 = new Task(() => 
             {
                 List<Task> loadTasks = new List<Task>();
@@ -116,21 +117,13 @@ namespace Timelapse.ImageSetLoadingPipeline
                             Interlocked.Increment(ref imagesToInsert);
                         }
                     });
-
                     loadTasks.Add(loaderTask);
                 }
-
-                // PROGRESS BAR ISSUES...
-                // The progress bar is not updated in this while loop.
-                // When there are many images (e.g., 200,000 ) this means that the user will see a static busy indicator for several minutes, which could be disconcerting.
-                // Is there a way to include this in the busy indicator to show some dynamic updates as its removing tasks? 
-                while (loadTasks.Count > 0)
-                {
-                    int completedIndex = Task.WaitAny(loadTasks.ToArray());
-                    loadTasks.RemoveAt(completedIndex);
-                }
+                Task.WaitAll(loadTasks.ToArray());
             });
-            
+            // End Pass 1
+
+            // Pass 2
             this.pass2 = new Task(() =>
             {
                 // This pass2 starts after pass1 is fully complete
@@ -142,6 +135,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                                                       this.LastIndexInsertComplete = fileIndex;
                                                   });
             });
+            // End Pass 2
         }
 
         internal async Task LoadAsync(Action<int, FolderLoadProgress> reportProgress, FolderLoadProgress folderLoadProgress, int progressIntervalMilliseconds)
