@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;

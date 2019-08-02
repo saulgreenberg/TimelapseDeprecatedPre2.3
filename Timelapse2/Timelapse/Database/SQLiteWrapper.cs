@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Common;
 using Timelapse.Data;
 using Timelapse.Util;
 

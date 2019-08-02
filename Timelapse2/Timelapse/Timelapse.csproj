@@ -332,7 +332,6 @@
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
     <Compile Include="Util\TimelapseAvalonExtensions.cs" />
-    <Compile Include="Util\TraceDebug.cs" />
     <Compile Include="Util\VersionClient.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Database\CustomSelection.cs" />

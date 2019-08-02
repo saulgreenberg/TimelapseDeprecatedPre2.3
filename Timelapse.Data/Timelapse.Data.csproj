@@ -41,8 +41,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileData\FileDataStore.cs" />
+    <Compile Include="FileData\FileModel.cs" />
+    <Compile Include="FileData\IFileDataStore.cs" />
+    <Compile Include="ITimelapseDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlUtility.cs" />
+    <Compile Include="TimelapseDatabase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Timelapse.Common\Timelapse.Common.csproj">
+      <Project>{93E7FF16-232C-446B-886C-0FEDF353DE11}</Project>
+      <Name>Timelapse.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

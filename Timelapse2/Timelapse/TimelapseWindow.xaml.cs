@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;

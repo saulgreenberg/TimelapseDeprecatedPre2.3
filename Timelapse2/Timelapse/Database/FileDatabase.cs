@@ -275,42 +275,42 @@ namespace Timelapse.Database
                         switch (controlType)
                         {
                             case Constant.DatabaseColumn.File:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.File)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.RelativePath:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.RelativePath)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Folder:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Folder)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Date:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Date)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Time:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.Time)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.ImageQuality:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DeleteFlag:
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
 
                                 // Default as specified in the template file, which should be "false"
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[dataLabel])}{Sql.Comma}");
                                 break;
 
                             // Find and then add the customizable types, populating it with their default values.
@@ -318,11 +318,11 @@ namespace Timelapse.Database
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
 
                             case Constant.Control.Counter:
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
+                                queryValues.Append($"{SqlUtility.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 

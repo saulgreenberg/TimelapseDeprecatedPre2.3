@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
