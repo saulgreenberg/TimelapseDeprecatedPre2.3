@@ -234,6 +234,10 @@
     <Resource Include="Icons\TemplateEditor.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Timelapse.Common\Timelapse.Common.csproj">
+      <Project>{93e7ff16-232c-446b-886c-0fedf353de11}</Project>
+      <Name>Timelapse.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Timelapse2\Timelapse\Timelapse.csproj">
       <Project>{f223a2f9-f2c2-47a8-80f3-472349176579}</Project>
       <Name>Timelapse</Name>

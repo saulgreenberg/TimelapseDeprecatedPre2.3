@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
+using Timelapse.Common;
 
 namespace Timelapse.Dialog
 {
@@ -400,13 +401,13 @@ namespace Timelapse.Dialog
                         if (isCorruptOrMissing)
                         {
                             // If we can't read the image, just set its quality to OK
-                            imageQuality.NewImageQuality = FileSelectionEnum.Ok; 
+                            imageQuality.NewImageQuality = FileSelectionType.Ok; 
                         }
                         else
                         { 
                             // Set the image quality. Note that videos are always classified as Ok.
                             imageQuality.NewImageQuality = file.IsVideo
-                                ? FileSelectionEnum.Ok
+                                ? FileSelectionType.Ok
                                 : imageQuality.Bitmap.IsDark(this.darkPixelThreshold, this.darkPixelRatio, out this.darkPixelRatioFound, out this.isColor);
                         }
                         imageQuality.IsColor = this.isColor;
@@ -420,7 +421,7 @@ namespace Timelapse.Dialog
                     catch (Exception exception)
                     {
                         // file isn't there?
-                        imageQuality.NewImageQuality = FileSelectionEnum.Ok;
+                        imageQuality.NewImageQuality = FileSelectionType.Ok;
                         Debug.Fail("Exception while assessing image quality.", exception.ToString());
                     }
 

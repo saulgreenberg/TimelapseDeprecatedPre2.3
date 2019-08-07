@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using Timelapse.Common;
 using Timelapse.Enums;
 
 namespace Timelapse.Database
@@ -14,9 +15,9 @@ namespace Timelapse.Database
         {
         }
 
-        public FileSelectionEnum FileSelection
+        public FileSelectionType FileSelection
         {
-            get { return (FileSelectionEnum)this.Row.GetIntegerField(Constant.DatabaseColumn.Selection); }
+            get { return (FileSelectionType)this.Row.GetIntegerField(Constant.DatabaseColumn.Selection); }
             set { this.Row.SetField(Constant.DatabaseColumn.Selection, (int)value); }
         }
 

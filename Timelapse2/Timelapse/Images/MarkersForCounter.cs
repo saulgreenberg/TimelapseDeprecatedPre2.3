@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Images

@@ -6,10 +6,10 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Detection;
 using Timelapse.Images;
-using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
 using MessageBox = Timelapse.Dialog.MessageBox;
 
@@ -74,9 +74,9 @@ namespace Timelapse.Controls
         {
             dateTimePicker.AutoCloseCalendar = true;
             dateTimePicker.Format = DateTimeFormat.Custom;
-            dateTimePicker.FormatString = Constant.Time.DateTimeDisplayFormat;
+            dateTimePicker.FormatString = TimeConstants.DateTimeDisplayFormat;
             dateTimePicker.TimeFormat = DateTimeFormat.Custom;
-            dateTimePicker.TimeFormatString = Constant.Time.TimeFormat;
+            dateTimePicker.TimeFormatString = TimeConstants.TimeFormat;
             dateTimePicker.CultureInfo = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             dateTimePicker.Value = defaultValue;
         }
@@ -462,7 +462,7 @@ namespace Timelapse.Controls
             // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
             // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
             // Otherwise, if the dates differe, update using the new date.
-            if (Util.DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out DateTime newDateTime) &&
+            if (DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out DateTime newDateTime) &&
                 (oldDateTime != newDateTime))
             {
                 this.DateTimeUpdate(dateTimePicker, newDateTime);

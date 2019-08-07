@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -84,7 +85,7 @@ namespace Timelapse.Controls
                 else if (control.Type == Constant.DatabaseColumn.ImageQuality)
                 {
                     DataEntryChoice choiceControl = new DataEntryChoice(control, this);
-                    choiceControl.HideItems(new List<string> { FileSelectionEnum.Corrupted.ToString(), FileSelectionEnum.Missing.ToString() });
+                    choiceControl.HideItems(new List<string> { FileSelectionType.Corrupted.ToString(), FileSelectionType.Missing.ToString() });
                     controlToAdd = choiceControl;
                 }
                 else if (control.Type == Constant.DatabaseColumn.UtcOffset)

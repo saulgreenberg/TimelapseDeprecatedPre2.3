@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Database

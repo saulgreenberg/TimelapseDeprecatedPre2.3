@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Util;
 

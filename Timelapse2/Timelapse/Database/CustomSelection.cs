@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Timelapse.Common;
+using Timelapse.Data;
 using Timelapse.Enums;
 using Timelapse.Util;
 
@@ -121,11 +123,11 @@ namespace Timelapse.Database
 
         // Whenever a shortcut selection is done (other than a custom selection),
         // set the custom selection search terms to mirror that.
-        public void SetCustomSearchFromSelection(FileSelectionEnum selection, string relativePath)
+        public void SetCustomSearchFromSelection(FileSelectionType selection, string relativePath)
         {
             // Don't do anything if the selection was a custom selection
             // Note that FileSelectonENum.Folders is set elsewhere (in MenuItemSelectFOlder_Click) so we don't have to do it here.
-            if (this.SearchTerms == null || selection == FileSelectionEnum.Custom)
+            if (this.SearchTerms == null || selection == FileSelectionType.Custom)
             {
                 return;
             }
@@ -133,22 +135,22 @@ namespace Timelapse.Database
             SearchTerm searchTerm;
             switch (selection)
             {
-                case FileSelectionEnum.All:
+                case FileSelectionType.All:
                     // Clearing all use fields is the same as selecting All Files
                     this.ClearCustomSearchUses();
                     return;
-                case FileSelectionEnum.Corrupted:
-                case FileSelectionEnum.Missing:
-                case FileSelectionEnum.Ok:
-                case FileSelectionEnum.Dark:
+                case FileSelectionType.Corrupted:
+                case FileSelectionType.Missing:
+                case FileSelectionType.Ok:
+                case FileSelectionType.Dark:
                     this.ClearCustomSearchUses();
                     // Set the use field for Image Quality, and its value to one of the three possibilities
                     searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.ImageQuality);
-                    if (selection == FileSelectionEnum.Ok)
+                    if (selection == FileSelectionType.Ok)
                     {
                         searchTerm.DatabaseValue = Constant.ImageQuality.Ok;
                     }
-                    else if (selection == FileSelectionEnum.Dark)
+                    else if (selection == FileSelectionType.Dark)
                     {
                         searchTerm.DatabaseValue = Constant.ImageQuality.Dark;
                     }
@@ -159,14 +161,14 @@ namespace Timelapse.Database
                     }
                     searchTerm.UseForSearching = true;
                     break;
-                case FileSelectionEnum.MarkedForDeletion:
+                case FileSelectionType.MarkedForDeletion:
                     this.ClearCustomSearchUses();
                     // Set the use field for DeleteFlag, and its value to true
                     searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
                     searchTerm.DatabaseValue = Constant.BooleanValue.True;
                     searchTerm.UseForSearching = true;
                     break;
-                case FileSelectionEnum.Folders:
+                case FileSelectionType.Folders:
                     this.SetRelativePathSearchTerm(relativePath);
                     break;
                 default:
@@ -226,7 +228,7 @@ namespace Timelapse.Database
                 {
                     // The where expression constructed should look something like DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Utilities.QuoteForSql(searchTerm.DatabaseValue.Trim());
+                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + SqlUtility.QuoteForSql(searchTerm.DatabaseValue.Trim());
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive

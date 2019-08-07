@@ -1,6 +1,6 @@
-﻿namespace Timelapse.Enums
+﻿namespace Timelapse.Common
 {
-    public enum FileSelectionEnum : int
+    public enum FileSelectionType : int
     {
         // file selections also used as image qualities
         Ok = 0,
@@ -12,6 +12,6 @@
         All = 4,
         MarkedForDeletion = 5,
         Custom = 6,
-        Folders = 7     
+        Folders = 7
     }
 }

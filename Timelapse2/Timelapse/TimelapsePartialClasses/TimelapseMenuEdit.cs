@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -120,7 +121,7 @@ namespace Timelapse
         {
             try
             {
-                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
+                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionType.MarkedForDeletion);
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;

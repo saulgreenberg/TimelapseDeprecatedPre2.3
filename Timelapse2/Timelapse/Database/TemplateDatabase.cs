@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Controls;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Database

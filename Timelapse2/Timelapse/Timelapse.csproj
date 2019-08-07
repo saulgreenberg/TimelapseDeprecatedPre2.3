@@ -307,8 +307,6 @@
     <Compile Include="TimelapsePartialClasses\TimelapseMenuWindow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Util\DataGridExtensions.cs" />
-    <Compile Include="Util\DateTimeExtensions.cs" />
-    <Compile Include="Util\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="Util\GlobalReferences.cs" />
     <Compile Include="Util\ImageMetadata.cs" />
@@ -335,7 +333,6 @@
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
     <Compile Include="Util\TimelapseAvalonExtensions.cs" />
-    <Compile Include="Util\TraceDebug.cs" />
     <Compile Include="Util\VersionClient.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Database\CustomSelection.cs" />
@@ -571,7 +568,6 @@
     <Compile Include="Database\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />
     <Compile Include="Database\ImageRow.cs" />
-    <Compile Include="Enums\FileSelectionEnum.cs" />
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Enums\ControlLabelStyleEnum.cs" />
     <Compile Include="Enums\ControlContentStyleEnum.cs" />
@@ -599,7 +595,6 @@
       <DependentUpon>HelpUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Images\MarkableCanvas.cs" />
-    <Compile Include="Util\DateTimeHandler.cs" />
     <Compile Include="Util\UserRegistrySettings.cs" />
     <Compile Include="Controls\DataEntryControls.xaml.cs">
       <DependentUpon>DataEntryControls.xaml</DependentUpon>
@@ -770,6 +765,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\JSONImport_32x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Timelapse.Common\Timelapse.Common.csproj">
+      <Project>{93E7FF16-232C-446B-886C-0FEDF353DE11}</Project>
+      <Name>Timelapse.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Timelapse.Data\Timelapse.Data.csproj">
+      <Project>{0E38D2D6-152E-4301-BEAD-7076E78FDBD2}</Project>
+      <Name>Timelapse.Data</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.111.0\build\net45\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.111.0\build\net45\System.Data.SQLite.Core.targets')" />

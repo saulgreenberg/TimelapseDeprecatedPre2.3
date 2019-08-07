@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Timelapse.Util
+namespace Timelapse.Common
 {
-    internal static class DateTimeOffsetExtensions
+    public static class DateTimeOffsetExtensions
     {
         public static DateTimeOffset SetOffset(this DateTimeOffset dateTime, TimeSpan offset)
         {

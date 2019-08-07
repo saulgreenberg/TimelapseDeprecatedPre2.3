@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -519,8 +520,8 @@ namespace Timelapse
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
-            FileSelectionEnum fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
-            if (fileSelection == FileSelectionEnum.Folders)
+            FileSelectionType fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            if (fileSelection == FileSelectionType.Folders)
             {
                 // Compose a custom search term for the relative path
                 this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.dataHandler.FileDatabase.ImageSet.SelectedFolder);

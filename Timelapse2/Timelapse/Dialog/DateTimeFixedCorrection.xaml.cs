@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -61,7 +62,7 @@ namespace Timelapse.Dialog
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
 
                 // Pretty print the adjustment time
-                if (adjustment.Duration() >= Constant.Time.DateTimeDatabaseResolution)
+                if (adjustment.Duration() >= TimeConstants.DateTimeDatabaseResolution)
                 {
                     difference = DateTimeHandler.ToDisplayTimeSpanString(adjustment);
                     status = "Pending";

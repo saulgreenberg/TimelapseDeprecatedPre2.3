@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
@@ -180,17 +181,17 @@ namespace Timelapse
                 (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0))
             {
                 // save image set properties to the database
-                if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
+                if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionType.Custom)
                 {
                     // don't save custom selections, revert to All 
-                    this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                    this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionType.All;
                 }
-                else if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
+                else if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionType.Folders)
                 {
                     // If the last selection was a non-empty folder, save it as the folder selection
                     if (String.IsNullOrEmpty(this.dataHandler.FileDatabase.ImageSet.SelectedFolder))
                     {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionType.All;
                     }
                     string folder = this.dataHandler.FileDatabase.ImageSet.SelectedFolder;
                     //System.Diagnostics.Debug.Print(folder);
@@ -876,8 +877,8 @@ namespace Timelapse
             }
 
             // Show the counts in the selected files only
-            // Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles(); // This would show counts over all files
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInCurrentSelection();
+            // Dictionary<FileSelectionType, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles(); // This would show counts over all files
+            Dictionary<FileSelectionType, int> counts = this.dataHandler.FileDatabase.GetFileCountsInCurrentSelection();
             FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
             if (onFileLoading)
             {
@@ -921,7 +922,7 @@ namespace Timelapse
         private bool MaybePromptToApplyOperationIfPartialSelection(bool userOptedOutOfMessage, string operationDescription, Action<bool> persistOptOut)
         {
             // if showing all images then no need for showing the warning message
-            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.All)
+            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionType.All)
             {
                 return true;
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Timelapse.Data;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -40,7 +41,7 @@ namespace Timelapse.Database
             string columnDefinition = String.Format("{0} {1}", this.Name, this.Type);
             if (this.DefaultValue != null)
             {
-                columnDefinition += " DEFAULT " + Utilities.QuoteForSql(this.DefaultValue);
+                columnDefinition += " DEFAULT " + SqlUtility.QuoteForSql(this.DefaultValue);
             }
             return columnDefinition;
         }

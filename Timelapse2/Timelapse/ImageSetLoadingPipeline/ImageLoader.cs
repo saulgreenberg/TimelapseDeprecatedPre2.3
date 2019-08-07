@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
@@ -92,7 +93,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             this.File.SetDateTimeOffsetFromFileInfo(this.FolderPath);
 
             // By default, file image quality is ok (i.e., not dark)
-            this.File.ImageQuality = FileSelectionEnum.Ok;
+            this.File.ImageQuality = FileSelectionType.Ok;
 
             return Task.Run(() =>
             {

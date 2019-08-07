@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;

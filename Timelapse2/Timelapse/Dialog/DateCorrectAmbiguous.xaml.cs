@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Util;
 
@@ -82,7 +83,7 @@ namespace Timelapse.Dialog
             {
                 ImageRow image = this.database.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
-                if (imageDateTime.Day <= Constant.Time.MonthsInYear)
+                if (imageDateTime.Day <= TimeConstants.MonthsInYear)
                 {
                     return index; // If the date is ambiguous, return the row index. 
                 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Timelapse.Common;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -49,14 +50,14 @@ namespace Timelapse.Database
 
         public ColumnTuple(string column, TimeSpan utcOffset)
         {
-            if ((utcOffset < Constant.Time.MinimumUtcOffset) ||
-                (utcOffset > Constant.Time.MaximumUtcOffset))
+            if ((utcOffset < TimeConstants.MinimumUtcOffset) ||
+                (utcOffset > TimeConstants.MaximumUtcOffset))
             {
-                throw new ArgumentOutOfRangeException("utcOffset", String.Format("UTC offset must be between {0} and {1}, inclusive.", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset)));
+                throw new ArgumentOutOfRangeException("utcOffset", String.Format("UTC offset must be between {0} and {1}, inclusive.", DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.MinimumUtcOffset)));
             }
-            if (utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks != 0)
+            if (utcOffset.Ticks % TimeConstants.UtcOffsetGranularity.Ticks != 0)
             {
-                throw new ArgumentOutOfRangeException("utcOffset", String.Format("UTC offset must be an exact multiple of {0} ({1}).", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.UtcOffsetGranularity), DateTimeHandler.ToDisplayUtcOffsetString(Constant.Time.UtcOffsetGranularity)));
+                throw new ArgumentOutOfRangeException("utcOffset", String.Format("UTC offset must be an exact multiple of {0} ({1}).", DateTimeHandler.ToDatabaseUtcOffsetString(TimeConstants.UtcOffsetGranularity), DateTimeHandler.ToDisplayUtcOffsetString(TimeConstants.UtcOffsetGranularity)));
             }
 
             this.Name = column;

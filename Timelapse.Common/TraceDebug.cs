@@ -1,26 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-
-namespace Timelapse.Util
+﻿namespace Timelapse.Common
 {
-    // Various forms for printing out trace infromation containing a message and a stack trace of the method names 
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Runtime.CompilerServices;
+
+    // Various forms for printing out trace infromation containing a message and a stack trace of the method names
     public static class TraceDebug
     {
-        // Print a message and stack trace to a file
-        public static void PrintStackTraceToFile(string message)
-        {
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(Path.Combine(Util.GlobalReferences.MainWindow.FolderPath, Constant.File.TraceFile), true))
-            {
-                file.WriteLine(GetMethodNameStack(message, 5));
-                file.WriteLine("----");
-            }
-        }
-
         // Insert these call into the beginning of a method name with the TRACE flag set in properties
         [Conditional("TRACE")]
         // Option to print various failure messagesfor debugging
@@ -47,11 +34,19 @@ namespace Timelapse.Util
             Debug.Print(GetMethodNameStack(message, level));
         }
 
+        // Print a message and stack trace to a file
+        public static void PrintStackTraceToFile(string message, string mainWindowFolderPath, string traceFile)
+        {
+            using (StreamWriter file = new StreamWriter(Path.Combine(mainWindowFolderPath, traceFile), true))
+            {
+                file.WriteLine(GetMethodNameStack(message, 5));
+                file.WriteLine("----");
+            }
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
-        // Return the order and number of calls on a method, i.e., to illustrate the method calling stack.
-        // The optional message string can be anything you want included in the output.
-        // The optional level is the depth of the stack that should be printed 
-        // (1 returns the current method name; 2 adds the caller name of that method, etc.)
+        // Return the order and number of calls on a method, i.e., to illustrate the method calling stack. The optional message string can be anything you want included in the output. The optional level is the depth of the stack that should be printed (1 returns the current method name; 2 adds the
+        // caller name of that method, etc.)
         private static string GetMethodNameStack(string message = "", int level = 1)
         {
             StackTrace st = new StackTrace(true);

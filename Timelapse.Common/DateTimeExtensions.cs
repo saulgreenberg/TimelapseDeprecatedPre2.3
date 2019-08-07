@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Timelapse.Util
+namespace Timelapse.Common
 {
-    internal static class DateTimeExtensions
+    public static class DateTimeExtensions
     {
         public static DateTime AsUnspecifed(this DateTime dateTime)
         {
