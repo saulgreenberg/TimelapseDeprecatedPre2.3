@@ -35,7 +35,7 @@ namespace Timelapse.QuickPaste
 
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase, DataEntryControls dataEntryControls)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.QuickPasteEntry = quickPasteEntry;
             this.fileDatabase = fileDatabase;
             this.dataEntryControls = dataEntryControls;
@@ -50,10 +50,10 @@ namespace Timelapse.QuickPaste
 
             // Display the title of the QuickPasteEntry
             this.QuickPasteTitle.Text = this.QuickPasteEntry.Title;
-            this.QuickPasteTitle.TextChanged += QuickPasteTitle_TextChanged;
+            this.QuickPasteTitle.TextChanged += this.QuickPasteTitle_TextChanged;
 
             // Build the grid rows, each displaying successive items in the QuickPasteItems list
-            BuildRows();
+            this.BuildRows();
         }
 
         // Build a row displaying each QuickPaste item
@@ -70,7 +70,7 @@ namespace Timelapse.QuickPaste
                     Height = GridLength.Auto
                 };
                 this.QuickPasteGridRows.RowDefinitions.Add(gridRow);
-                BuildRow(quickPasteItem, gridRow, gridRowIndex);
+                this.BuildRow(quickPasteItem, gridRow, gridRowIndex);
             }
         }
 
@@ -89,8 +89,8 @@ namespace Timelapse.QuickPaste
                 IsChecked = quickPasteItem.Use,
                 Tag = quickPasteItem
             };
-            useCurrentRow.Checked += UseCurrentRow_CheckChanged;
-            useCurrentRow.Unchecked += UseCurrentRow_CheckChanged;
+            useCurrentRow.Checked += this.UseCurrentRow_CheckChanged;
+            useCurrentRow.Unchecked += this.UseCurrentRow_CheckChanged;
 
             Grid.SetRow(useCurrentRow, gridRowIndex);
             Grid.SetColumn(useCurrentRow, GridColumnUse);

@@ -16,7 +16,7 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
             this.Owner = owner;
             this.SelectedFolder = String.Empty;
-            FolderPathsListbox.ItemsSource = candidateFolders;
+            this.FolderPathsListbox.ItemsSource = candidateFolders;
             this.Message.Problem = "The detection file was run on a folder called '" + truncatedTerm + "' that contained many sub-folders with images." + Environment.NewLine;
             this.Message.Problem += "The folder containing your image set is one of those sub-folders." + Environment.NewLine;
             this.Message.Problem += "The problem is that several sub-folders in the detection data match your subfolder's name." + Environment.NewLine;

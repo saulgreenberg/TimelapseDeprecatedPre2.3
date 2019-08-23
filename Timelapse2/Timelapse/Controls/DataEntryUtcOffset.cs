@@ -39,8 +39,8 @@ namespace Timelapse.Controls
             base(control, styleProvider, ControlContentStyleEnum.UTCOffsetBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // Callback to change the look of the control whenever it gets the focus
-            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
-            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
+            this.ContentControl.GotKeyboardFocus += this.ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
             // configure the various elements
         }
 

@@ -16,7 +16,7 @@ namespace Timelapse.Dialog
 
         public FindMissingImageFolder(Window owner, string folderPath, string missingFolderName)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.Owner = owner;
             this.folderPath = folderPath;
             this.missingFolderName = missingFolderName;

@@ -275,7 +275,7 @@ namespace Timelapse.Images
 
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)
         {
-            return TryGetBitmap(fileRow, false, out bitmap);
+            return this.TryGetBitmap(fileRow, false, out bitmap);
         }
 
         private bool TryGetBitmap(ImageRow fileRow, bool forceUpdate, out BitmapSource bitmap)

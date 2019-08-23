@@ -35,7 +35,7 @@ namespace Timelapse
         // FilesSelectAndShow: Basic form doesn't force an update
         private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
         {
-            return FilesSelectAndShow(imageID, selection, false);
+            return this.FilesSelectAndShow(imageID, selection, false);
         }
 
         // FilesSelectAndShow: Full version

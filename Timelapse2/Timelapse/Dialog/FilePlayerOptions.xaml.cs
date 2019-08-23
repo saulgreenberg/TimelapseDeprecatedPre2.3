@@ -23,23 +23,23 @@ namespace Timelapse.Dialog
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
-            this.SlowSpeedSlider.Minimum = playSlowMinimum;
+            this.SlowSpeedSlider.Minimum = this.playSlowMinimum;
             this.SlowSpeedSlider.Maximum = Constant.FilePlayerValues.PlaySlowMaximum.TotalSeconds;
             this.SlowSpeedSlider.Value = this.state.FilePlayerSlowValue;
-            this.SlowSpeedSlider.ValueChanged += SlowSpeedSlider_ValueChanged;
+            this.SlowSpeedSlider.ValueChanged += this.SlowSpeedSlider_ValueChanged;
 
             this.FastSpeedSlider.Minimum = Constant.FilePlayerValues.PlayFastMinimum.TotalSeconds;
-            this.FastSpeedSlider.Maximum = playFastMaximum;
+            this.FastSpeedSlider.Maximum = this.playFastMaximum;
             this.FastSpeedSlider.Value = this.state.FilePlayerFastValue;
-            this.FastSpeedSlider.ValueChanged += FastSpeedSlider_ValueChanged;
+            this.FastSpeedSlider.ValueChanged += this.FastSpeedSlider_ValueChanged;
 
-            DisplayFeedback();
+            this.DisplayFeedback();
         }
 
         private void SlowSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
-            DisplayFeedback();
+            this.DisplayFeedback();
         }
 
         private void DisplayFeedback()
@@ -75,7 +75,7 @@ namespace Timelapse.Dialog
         private void FastSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.state.FilePlayerFastValue = this.FastSpeedSlider.Value;
-            DisplayFeedback();
+            this.DisplayFeedback();
         }
 
         private void ResetFastSpeedSlider_Click(object sender, RoutedEventArgs e)

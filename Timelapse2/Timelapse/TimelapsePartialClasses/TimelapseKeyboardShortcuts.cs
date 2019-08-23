@@ -122,7 +122,7 @@ namespace Timelapse
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = DirectionEnum.Previous;
                         this.FilePlayer_ScrollRow();
@@ -134,7 +134,7 @@ namespace Timelapse
                     }
                     break;
                 case Key.Down:              // show visual difference to previous image
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = DirectionEnum.Next;
                         this.FilePlayer_ScrollRow();
@@ -169,7 +169,7 @@ namespace Timelapse
                 case Key.PageDown:
                 case Key.PageUp:
                     direction = currentKey.Key == Key.PageDown ? DirectionEnum.Next : DirectionEnum.Previous;
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = direction;
                         this.FilePlayer_ScrollPage();

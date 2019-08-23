@@ -960,7 +960,7 @@ namespace Timelapse.Editor
                             {
                                 checkbox.IsEnabled = false;
                             }
-                            else if ((controlType == Constant.DatabaseColumn.ImageQuality) && TemplateDataGrid.Columns[column].Header.Equals("List"))
+                            else if ((controlType == Constant.DatabaseColumn.ImageQuality) && this.TemplateDataGrid.Columns[column].Header.Equals("List"))
                             {
                                 cell.IsEnabled = false; // Don't let users edit the ImageQuality menu
                             }

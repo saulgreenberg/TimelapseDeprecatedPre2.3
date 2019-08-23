@@ -313,7 +313,7 @@ namespace Timelapse.Dialog
         private void NextPreviousButton_Click(object sender, RoutedEventArgs e)
         {
             Button direction = sender as Button;
-            bool result = this.MoveToAmbiguousDate(direction == NextDate);
+            bool result = this.MoveToAmbiguousDate(direction == this.NextDate);
             this.UpdateDisplay(result);
         }
 

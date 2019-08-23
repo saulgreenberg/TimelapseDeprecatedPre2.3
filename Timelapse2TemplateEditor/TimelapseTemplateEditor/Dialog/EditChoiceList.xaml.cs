@@ -56,7 +56,7 @@ namespace Timelapse.Editor.Dialog
         {
             this.ChoiceList.Text = this.TrimLinesAndRemoveEmptyLines(this.ChoiceList.Text);
 
-            if (IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
+            if (this.IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
             {
                 // Include the empty choice at the end if it doesn't already exist
                 if (this.ChoiceList.Text.EndsWith(Constant.ControlMiscellaneous.EmptyChoiceItem) == false)

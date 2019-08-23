@@ -15,7 +15,7 @@ namespace Timelapse
         {
             if (e.Key == Key.Enter)
             {
-                FindBox_FindImage(true);
+                this.FindBox_FindImage(true);
             }
         }
 
@@ -30,7 +30,7 @@ namespace Timelapse
         // Close
         private void FindBoxClose_Click(object sender, RoutedEventArgs e)
         {
-            FindBoxSetVisibility(false);
+            this.FindBoxSetVisibility(false);
         }
 
         // Helper methods

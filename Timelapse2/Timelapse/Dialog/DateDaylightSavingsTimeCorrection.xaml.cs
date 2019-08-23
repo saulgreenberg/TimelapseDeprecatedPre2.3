@@ -42,7 +42,7 @@ namespace Timelapse.Dialog
         {
             try
             {
-                bool forward = (bool)rbForward.IsChecked;
+                bool forward = (bool)this.rbForward.IsChecked;
                 int startRow;
                 int endRow;
                 if (forward)
@@ -57,7 +57,7 @@ namespace Timelapse.Dialog
                 }
 
                 // Update the database
-                int hours = (bool)rbAddHour.IsChecked ? 1 : -1;
+                int hours = (bool)this.rbAddHour.IsChecked ? 1 : -1;
                 TimeSpan daylightSavingsAdjustment = new TimeSpan(hours, 0, 0);
                 this.database.AdjustFileTimes(daylightSavingsAdjustment, startRow, endRow); // For all rows...
                 this.DialogResult = true;
@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
         // Examine the checkboxes to see what state our selection is in, and provide feedback as appropriate
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            if ((bool)rbAddHour.IsChecked || (bool)rbSubtractHour.IsChecked)
+            if ((bool)this.rbAddHour.IsChecked || (bool)this.rbSubtractHour.IsChecked)
             {
                 if (DateTimeHandler.TryParseDisplayDateTime((string)this.OriginalDate.Content, out DateTime dateTime) == false)
                 {
@@ -85,12 +85,12 @@ namespace Timelapse.Dialog
                     this.OkButton.IsEnabled = false;
                     return;
                 }
-                int hours = ((bool)rbAddHour.IsChecked) ? 1 : -1;
+                int hours = ((bool)this.rbAddHour.IsChecked) ? 1 : -1;
                 TimeSpan daylightSavingsAdjustment = new TimeSpan(hours, 0, 0);
                 dateTime = dateTime.Add(daylightSavingsAdjustment);
                 this.NewDate.Content = DateTimeHandler.ToDisplayDateTimeString(dateTime);
             }
-            if (((bool)rbAddHour.IsChecked || (bool)rbSubtractHour.IsChecked) && ((bool)rbBackwards.IsChecked || (bool)rbForward.IsChecked))
+            if (((bool)this.rbAddHour.IsChecked || (bool)this.rbSubtractHour.IsChecked) && ((bool)this.rbBackwards.IsChecked || (bool)this.rbForward.IsChecked))
             {
                 this.OkButton.IsEnabled = true;
             }

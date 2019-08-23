@@ -147,7 +147,7 @@ namespace Timelapse.Controls
             // add the label and content to the stack panel
             this.Container.Children.Add(this.LabelControl);
             this.Container.Children.Add(this.ContentControl);
-            this.Container.PreviewKeyDown += Container_PreviewKeyDown;
+            this.Container.PreviewKeyDown += this.Container_PreviewKeyDown;
         }
 
         // We want to capture the Shift/Arrow key presses so we can navigate images. However, both the UTCOffset and the DateTime picker consume 
@@ -269,7 +269,7 @@ namespace Timelapse.Controls
                 Interval = TimeSpan.FromSeconds(.4),
                 Tag = popupText,
             };
-            timer.Tick += FlashFontTimer_Tick;
+            timer.Tick += this.FlashFontTimer_Tick;
 
             // Animate the color from white back to its current color
             ColorAnimation animation;

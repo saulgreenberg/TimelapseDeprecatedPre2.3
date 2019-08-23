@@ -190,7 +190,7 @@ namespace Timelapse
         // Get and display the episode text if various conditions are met
         private void DisplayEpisodeTextIfWarranted(int fileIndex)
         {
-            if (Episodes.ShowEpisodes && IsDisplayingSingleImage())
+            if (Episodes.ShowEpisodes && this.IsDisplayingSingleImage())
             {
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
@@ -217,7 +217,7 @@ namespace Timelapse
         // Refresh the image
         private bool TryFileShowWithoutSliderCallback()
         {
-            return TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
+            return this.TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
@@ -240,7 +240,7 @@ namespace Timelapse
             // {
             //    increment *= 10;
             // }
-            return TryFileShowWithoutSliderCallback(direction, increment);
+            return this.TryFileShowWithoutSliderCallback(direction, increment);
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, int increment)

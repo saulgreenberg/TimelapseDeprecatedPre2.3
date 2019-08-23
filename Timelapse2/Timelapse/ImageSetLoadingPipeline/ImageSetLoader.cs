@@ -100,7 +100,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     {
                         // Both of these operations are atomic, the specific number and the specific loader at any given
                         // time may not coorespond.
-                        Interlocked.Increment(ref imagesLoaded);
+                        Interlocked.Increment(ref this.imagesLoaded);
                         this.LastLoadComplete = loader;
 
                         if (loader.RequiresDatabaseInsert)
@@ -110,7 +110,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                             // any order. By sorting the file infos above, things that sort first in the database should
                             // be done first, BUT THIS MAY REQUIRE ADDITIONAL FINESSE TO KEEP THE EXPLICIT ORDER CORRECT.
                             databaseInsertionQueue.Enqueue(loader.File);
-                            Interlocked.Increment(ref imagesToInsert);
+                            Interlocked.Increment(ref this.imagesToInsert);
                         }
                     });
                     loadTasks.Add(loaderTask);

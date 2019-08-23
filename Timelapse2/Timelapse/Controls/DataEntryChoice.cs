@@ -91,7 +91,7 @@ namespace Timelapse.Controls
             {
                 return;
             }
-            foreach (ComboBoxItem cbi in ContentControl.Items)
+            foreach (ComboBoxItem cbi in this.ContentControl.Items)
             {
                 if (itemsToHide.Contains((string)cbi.Content))
                 {

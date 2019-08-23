@@ -35,24 +35,24 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             // Get the sort terms. 
-            sortTermList = Database.SortTerms.GetSortTerms(database);
+            this.sortTermList = Database.SortTerms.GetSortTerms(this.database);
 
             // We need the labels of the File and Date datalabels, as we will check to see if they are seleccted in the combo box
             foreach (SortTerm sortTerm in this.sortTermList)
             {
                 if (sortTerm.DataLabel == Constant.DatabaseColumn.File)
                 {
-                    fileDisplayLabel = sortTerm.DisplayLabel;
+                    this.fileDisplayLabel = sortTerm.DisplayLabel;
                 }
                 else if (sortTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
-                    dateDisplayLabel = sortTerm.DisplayLabel;
+                    this.dateDisplayLabel = sortTerm.DisplayLabel;
                 }
             }
 
             // Create the combo box entries showing the sort terms
             // As a side effect, PopulatePrimaryComboBox() invokes PrimaryComboBox_SelectionChanged, which then populates the secondary combo bo
-            PopulatePrimaryUIElements();
+            this.PopulatePrimaryUIElements();
         }
 
         #region Populate ComboBoxes
@@ -64,7 +64,7 @@ namespace Timelapse.Dialog
             // Populate the Primary combo box with choices
             // By default, we select sort by ID unless its over-ridden
             this.PrimaryComboBox.SelectedIndex = 0;
-            SortTerm sortTermDB = database.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
+            SortTerm sortTermDB = this.database.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
             foreach (SortTerm sortTerm in this.sortTermList)
             {
                 this.PrimaryComboBox.Items.Add(sortTerm.DisplayLabel);
@@ -91,12 +91,12 @@ namespace Timelapse.Dialog
             this.SecondaryComboBox.Items.Add(Constant.SortTermValues.NoneDisplayLabel);
             this.SecondaryComboBox.SelectedIndex = 0;
 
-            SortTerm sortTermDB = database.ImageSet.GetSortTerm(1); // Get the 2nd sort term from the database
+            SortTerm sortTermDB = this.database.ImageSet.GetSortTerm(1); // Get the 2nd sort term from the database
             foreach (SortTerm sortTerm in this.sortTermList)
             {
                 // If the current sort term is the one already selected in the primary combo box, skip it
                 // as it doesn't make sense to sort again on the same term
-                if (sortTerm.DisplayLabel == (string)PrimaryComboBox.SelectedItem)
+                if (sortTerm.DisplayLabel == (string)this.PrimaryComboBox.SelectedItem)
                 {
                     continue;
                 }
@@ -118,7 +118,7 @@ namespace Timelapse.Dialog
         // Whenever the primary combobox changes, repopulated the secondary combo box to make sure it excludes the currently selected item
         private void PrimaryComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            PopulateSecondaryUIElements();
+            this.PopulateSecondaryUIElements();
         }
 
         #region Ok/Cancel buttons
@@ -155,14 +155,14 @@ namespace Timelapse.Dialog
             {
                 foreach (SortTerm sortTerm in this.sortTermList)
                 {
-                    if (selectedSecondaryItem == fileDisplayLabel)
+                    if (selectedSecondaryItem == this.fileDisplayLabel)
                     {
                         this.SortTerm2.DataLabel = Constant.DatabaseColumn.File;
                         this.SortTerm2.DisplayLabel = this.fileDisplayLabel;
                         this.SortTerm2.ControlType = String.Empty;
                         this.SortTerm2.IsAscending = (this.SecondaryAscending.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
                     }
-                    else if (selectedSecondaryItem == dateDisplayLabel)
+                    else if (selectedSecondaryItem == this.dateDisplayLabel)
                     {
                         this.SortTerm2.DataLabel = Constant.DatabaseColumn.DateTime;
                         this.SortTerm2.DisplayLabel = this.dateDisplayLabel;

@@ -68,14 +68,14 @@ namespace Timelapse
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
-            this.MarkableCanvas.ClickableImagesGrid.DoubleClick += ClickableImagesGrid_DoubleClick;
-            this.MarkableCanvas.ClickableImagesGrid.SelectionChanged += ClickableImagesGrid_SelectionChanged;
-            this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += SwitchedToClickableImagesGrid;
-            this.MarkableCanvas.SwitchedToSingleImageViewEventAction += SwitchedToSingleImagesView;
+            this.MarkableCanvas.ClickableImagesGrid.DoubleClick += this.ClickableImagesGrid_DoubleClick;
+            this.MarkableCanvas.ClickableImagesGrid.SelectionChanged += this.ClickableImagesGrid_SelectionChanged;
+            this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += this.SwitchedToClickableImagesGrid;
+            this.MarkableCanvas.SwitchedToSingleImageViewEventAction += this.SwitchedToSingleImagesView;
 
             // Save/restore the focus whenever we leave / enter the control grid (which contains controls pluse the copy previous button, or the file navigator
-            this.ControlGrid.MouseEnter += FocusRestoreOn_MouseEnter;
-            this.ControlGrid.MouseLeave += FocusSaveOn_MouseLeave;
+            this.ControlGrid.MouseEnter += this.FocusRestoreOn_MouseEnter;
+            this.ControlGrid.MouseLeave += this.FocusSaveOn_MouseLeave;
 
             // Set the window's title
             this.Title = Constant.MainWindowBaseTitle;
@@ -112,9 +112,9 @@ namespace Timelapse
             this.FileNavigatorSliderReset();
 
             // Timer activated / deactivated by Video Autoplay media control buttons
-            FilePlayerTimer.Tick += FilePlayerTimer_Tick;
+            this.FilePlayerTimer.Tick += this.FilePlayerTimer_Tick;
 
-            this.DataGridSelectionsTimer.Tick += DataGridSelectionsTimer_Tick;
+            this.DataGridSelectionsTimer.Tick += this.DataGridSelectionsTimer_Tick;
             this.DataGridSelectionsTimer.Interval = Constant.ThrottleValues.DataGridTimerInterval;
 
             // Get the window and its size from its previous location
@@ -420,7 +420,7 @@ namespace Timelapse
         // to ensure the FilePlayer is stopped when the user clicks into it
         private void ContentControl_MouseDown(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace Timelapse
             {
                 this.TrySetKeyboardFocusToMarkableCanvas(false, eventArgs);
                 eventArgs.Handled = true;
-                FilePlayer_Stop(); // In case the FilePlayer is going
+                this.FilePlayer_Stop(); // In case the FilePlayer is going
             }
             // The 'empty else' means don't check to see if a textbox or control has the focus, as we want to reset the focus elsewhere
         }
@@ -456,7 +456,7 @@ namespace Timelapse
         {
             e.Handled = (Utilities.IsDigits(e.Text) || String.IsNullOrWhiteSpace(e.Text)) ? false : true;
             this.OnPreviewTextInput(e);
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         /// <summary>Click callback: When the user selects a counter, refresh the markers, which will also readjust the colors and emphasis</summary>
@@ -465,7 +465,7 @@ namespace Timelapse
         private void CounterControl_Click(object sender, RoutedEventArgs e)
         {
             this.MarkableCanvas_UpdateMarkers();
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         /// <summary>Highlight the markers associated with a counter when the mouse enters it</summary>
@@ -689,7 +689,7 @@ namespace Timelapse
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()
         {
-            return IsDisplayingSingleImage() && this.ImageSetPane.IsActive;
+            return this.IsDisplayingSingleImage() && this.ImageSetPane.IsActive;
         }
 
         // Check to see if we are displaying at least one image (not in the overview), regardless of whether the ImageSetPane is active

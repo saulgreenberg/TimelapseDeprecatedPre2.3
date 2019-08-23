@@ -11,7 +11,7 @@ namespace Timelapse
         // View sub-menu opening
         private void View_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
 
             bool state = this.IsDisplayingActiveSingleImage();
             this.MenuItemViewDifferencesCycleThrough.IsEnabled = state;

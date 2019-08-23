@@ -230,7 +230,7 @@ namespace Timelapse
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
         private void DateTimePickerLatestDateTime_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            DateTimePicker_ValueChanged(null, null);
+            this.DateTimePicker_ValueChanged(null, null);
         }
     }
 }

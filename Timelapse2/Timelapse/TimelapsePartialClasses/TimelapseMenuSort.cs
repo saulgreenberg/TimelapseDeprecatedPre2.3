@@ -12,7 +12,7 @@ namespace Timelapse
         // Sort sub-menu opening
         private void Sort_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         // Sort callback: handles all standard menu sorting items
@@ -77,7 +77,7 @@ namespace Timelapse
             else
             {
                 // Ensure the checkmark appears next to the correct menu item 
-                ShowSortFeedback(true);
+                this.ShowSortFeedback(true);
             }
         }
 

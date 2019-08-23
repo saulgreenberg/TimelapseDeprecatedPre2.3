@@ -11,7 +11,7 @@ namespace Timelapse
         // Help sub-menu opening
         private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         // Timelapse web page (via your browser): Timelapse home page

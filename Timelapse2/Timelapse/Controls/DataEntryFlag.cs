@@ -52,7 +52,7 @@ namespace Timelapse.Controls
             : base(control, styleProvider, ControlContentStyleEnum.FlagCheckBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // Callback used to allow Enter to select the highlit item
-            this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
+            this.ContentControl.PreviewKeyDown += this.ContentControl_PreviewKeyDown;
         }
 
         #region Event Handlers

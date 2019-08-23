@@ -117,10 +117,10 @@ namespace Timelapse.Database
         {
             int index = (whichOne == 0) ? 0 : 4;
             return new SortTerm(
-                GetSortTermAtPosition(index),
-                GetSortTermAtPosition(index + 1),
-                GetSortTermAtPosition(index + 2),
-                GetSortTermAtPosition(index + 3));
+                this.GetSortTermAtPosition(index),
+                this.GetSortTermAtPosition(index + 1),
+                this.GetSortTermAtPosition(index + 2),
+                this.GetSortTermAtPosition(index + 3));
         }
 
         public void SetSortTerm(SortTerm sortTerm1, SortTerm sortTerm2)
@@ -131,7 +131,7 @@ namespace Timelapse.Database
         // Return a particular  term at the index position in the sort term
         private string GetSortTermAtPosition(int termIndex)
         {
-            string[] sortcriteria = SortTerms.Split(',');
+            string[] sortcriteria = this.SortTerms.Split(',');
             if (termIndex < sortcriteria.Length)
             {
                 return sortcriteria[termIndex].Trim();

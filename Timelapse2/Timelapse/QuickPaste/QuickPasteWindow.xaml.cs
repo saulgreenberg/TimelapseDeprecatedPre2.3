@@ -21,8 +21,8 @@ namespace Timelapse.QuickPaste
 
         public List<QuickPasteEntry> QuickPasteEntries
         {
-            get { return quickPasteEntries; }
-            set { quickPasteEntries = value; }
+            get { return this.quickPasteEntries; }
+            set { this.quickPasteEntries = value; }
         }
 
         // Position of the window, so we can save/restore it between sessions
@@ -33,7 +33,7 @@ namespace Timelapse.QuickPaste
 
         public QuickPasteWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         // When the window is loaded
@@ -51,10 +51,10 @@ namespace Timelapse.QuickPaste
                 this.Left = this.Position.Left;
             }
             this.SetPosition();
-            this.LocationChanged += QuickPasteWindow_LocationChanged;
+            this.LocationChanged += this.QuickPasteWindow_LocationChanged;
 
             // Build the window contents
-            Refresh(this.quickPasteEntries);
+            this.Refresh(this.quickPasteEntries);
         }
 
         public void Refresh(List<QuickPasteEntry> quickPasteEntries)
@@ -131,7 +131,7 @@ namespace Timelapse.QuickPaste
                     Header = "Edit",
                     Tag = quickPasteEntry
                 };
-                editItem.Click += EditItem_Click;
+                editItem.Click += this.EditItem_Click;
                 contextMenu.Items.Add(editItem);
 
                 MenuItem deleteItem = new MenuItem()
@@ -139,12 +139,12 @@ namespace Timelapse.QuickPaste
                     Header = "Delete",
                     Tag = quickPasteEntry
                 };
-                deleteItem.Click += DeleteItem_Click;
+                deleteItem.Click += this.DeleteItem_Click;
                 contextMenu.Items.Add(deleteItem);
 
-                quickPasteControl.Click += QuickPasteControl_Click;
-                quickPasteControl.MouseEnter += QuickPasteControl_MouseEnter;
-                quickPasteControl.MouseLeave += QuickPasteControl_MouseLeave;
+                quickPasteControl.Click += this.QuickPasteControl_Click;
+                quickPasteControl.MouseEnter += this.QuickPasteControl_MouseEnter;
+                quickPasteControl.MouseLeave += this.QuickPasteControl_MouseLeave;
 
                 // Create a grid row and add the QuickPaste control to it
                 RowDefinition gridRow = new RowDefinition()

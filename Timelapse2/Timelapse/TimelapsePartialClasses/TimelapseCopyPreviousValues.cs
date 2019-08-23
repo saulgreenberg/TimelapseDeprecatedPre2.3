@@ -17,7 +17,7 @@ namespace Timelapse
         // determine if the copyable control should glow, have highlighted previews of the values to be copied, or just be left in its orignal state     
         private void CopyPreviousValues_MouseEnterOrLeave(object sender, MouseEventArgs e)
         {
-            CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
         }
 
         private void CopyPreviousValues_LostFocus(object sender, RoutedEventArgs e)

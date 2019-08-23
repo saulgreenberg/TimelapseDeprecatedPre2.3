@@ -15,8 +15,8 @@ namespace Timelapse
             switch (args.Selection)
             {
                 case FilePlayerSelectionEnum.First:
-                    FilePlayer_Stop();
-                    FileNavigatorSlider.Value = 1;
+                    this.FilePlayer_Stop();
+                    this.FileNavigatorSlider.Value = 1;
                     break;
                 case FilePlayerSelectionEnum.Page:
                     this.FilePlayer_ScrollPage();
@@ -25,22 +25,22 @@ namespace Timelapse
                     this.FilePlayer_ScrollRow();
                     break;
                 case FilePlayerSelectionEnum.Last:
-                    FilePlayer_Stop();
-                    FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
+                    this.FilePlayer_Stop();
+                    this.FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;
                     break;
                 case FilePlayerSelectionEnum.Step:
-                    FilePlayer_Stop();
-                    FilePlayerTimer_Tick(null, null);
+                    this.FilePlayer_Stop();
+                    this.FilePlayerTimer_Tick(null, null);
                     break;
                 case FilePlayerSelectionEnum.PlayFast:
-                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
+                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
                     break;
                 case FilePlayerSelectionEnum.PlaySlow:
-                    FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
+                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
                     break;
                 case FilePlayerSelectionEnum.Stop:
                 default:
-                    FilePlayer_Stop();
+                    this.FilePlayer_Stop();
                     break;
             }
         }
@@ -80,7 +80,7 @@ namespace Timelapse
             // Stop the timer if the image reaches the beginning or end of the image set
             if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))
             {
-                FilePlayer_Stop();
+                this.FilePlayer_Stop();
             }
         }
     }

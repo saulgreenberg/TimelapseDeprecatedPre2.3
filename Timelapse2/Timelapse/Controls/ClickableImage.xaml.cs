@@ -58,13 +58,13 @@ namespace Timelapse.Controls
         {
             get
             {
-                return isSelected;
+                return this.isSelected;
             }
             set
             {
-                isSelected = value;
+                this.isSelected = value;
                 // Show or hide the checkmark 
-                if (isSelected)
+                if (this.isSelected)
                 {
                     this.Cell.Background = this.selectedBrush;
                     this.Checkmark.Text = "\u2713"; // Checkmark in unicode

@@ -12,7 +12,7 @@ namespace Timelapse
         // Options sub-menu opening
         private void Options_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         // Audio feedback: toggle on / off
@@ -63,7 +63,7 @@ namespace Timelapse
         private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
         {
             Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
-            MenuItemEpisodeShowHide.IsChecked = Episodes.ShowEpisodes;
+            this.MenuItemEpisodeShowHide.IsChecked = Episodes.ShowEpisodes;
 
             if (this.IsDisplayingMultipleImagesInOverview())
             {

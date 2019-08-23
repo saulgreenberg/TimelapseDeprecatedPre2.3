@@ -17,12 +17,12 @@ namespace Timelapse.Controls
         {
             get
             {
-                return autoToolTipContent;
+                return this.autoToolTipContent;
             }
             set
             {
-                autoToolTipContent = value;
-                FormatAutoToolTipContent();
+                this.autoToolTipContent = value;
+                this.FormatAutoToolTipContent();
             }
         }
 

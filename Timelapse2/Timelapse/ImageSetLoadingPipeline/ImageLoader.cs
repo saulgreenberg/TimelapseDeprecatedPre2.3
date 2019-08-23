@@ -93,7 +93,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
                 // We only do this for files, as videos do not have these metadata fields
                 // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
+                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
 
                 // This completes processing, but it may be some time before the task is checked for completion.
                 // for purposes of reporting progress, call the completion delegate provided.

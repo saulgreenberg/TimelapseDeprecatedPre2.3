@@ -9,7 +9,7 @@ namespace Timelapse.Dialog
     {
         public SkipHiddenFiles(Window owner)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.Owner = owner;
         }
 

@@ -422,7 +422,7 @@ namespace Timelapse.Database
                 // Note to bridge the gap between the out parameter and the requirements of the task, this uses
                 // a tuple to carry both.
                 bool isCorruptOrMissing = false;
-                BitmapSource bitmap = GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out isCorruptOrMissing);
+                BitmapSource bitmap = this.GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out isCorruptOrMissing);
                 return Tuple.Create(bitmap, isCorruptOrMissing);
             });
         }

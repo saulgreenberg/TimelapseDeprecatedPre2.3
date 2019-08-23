@@ -504,7 +504,7 @@ namespace Timelapse
             this.DataEntryControlPanel.IsVisible = true;
 
             // Show the File Player
-            FilePlayer.Visibility = Visibility.Visible;
+            this.FilePlayer.Visibility = Visibility.Visible;
 
             // Set whether detections actually exist at this point.
             GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
@@ -546,7 +546,7 @@ namespace Timelapse
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {
-                DataGridPane_IsActiveChanged(null, null);
+                this.DataGridPane_IsActiveChanged(null, null);
             }
         }
     }

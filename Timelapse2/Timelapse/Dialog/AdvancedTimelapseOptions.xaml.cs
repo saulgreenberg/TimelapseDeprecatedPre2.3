@@ -99,14 +99,14 @@ namespace Timelapse.Dialog
         // Reset to the Default, i.e. manual deletion
         private void ResetDeletedFileManagement_Click(object sender, RoutedEventArgs e)
         {
-            RadioButtonManualDelete.IsChecked = true;
+            this.RadioButtonManualDelete.IsChecked = true;
             this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
         }
         #endregion
         #region Tab Controls to Include / Exclude
         private void CheckBoxTabOrder_Click(object sender, RoutedEventArgs e)
         {
-            SetTabOrder();
+            this.SetTabOrder();
         }
 
         private void ResetTabOrder_Click(object sender, RoutedEventArgs e)
@@ -114,7 +114,7 @@ namespace Timelapse.Dialog
             this.CheckBoxTabOrderDateTime.IsChecked = false;
             this.CheckBoxTabOrderImageQuality.IsChecked = false;
             this.CheckBoxTabOrderDeleteFlag.IsChecked = false;
-            SetTabOrder();
+            this.SetTabOrder();
         }
 
         private void SetTabOrder()
@@ -170,13 +170,13 @@ namespace Timelapse.Dialog
         // Detection settings
         private void CheckBoxUseDetections_Click(object sender, RoutedEventArgs e)
         {
-            this.timelapseState.UseDetections = CheckBoxUseDetections.IsChecked == true;
+            this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
         }
 
         private void ResetDetections_Click(object sender, RoutedEventArgs e)
         {
-            CheckBoxUseDetections.IsChecked = false;
+            this.CheckBoxUseDetections.IsChecked = false;
             this.timelapseState.UseDetections = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
             this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;

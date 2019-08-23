@@ -843,7 +843,7 @@ namespace Timelapse.Database
             }
             else
             {
-                this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
+                this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
                     // PERFORMANCE Creates what seems to be a slow query on large databases
@@ -2077,7 +2077,7 @@ namespace Timelapse.Database
                 }
 
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                return detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+                return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
             {
@@ -2107,9 +2107,9 @@ namespace Timelapse.Database
         {
             try
             {
-                CreateDetectionCategoriesDictionaryIfNeeded();
+                this.CreateDetectionCategoriesDictionaryIfNeeded();
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                string myKey = detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
                 return myKey ?? String.Empty;
             }
             catch
@@ -2122,7 +2122,7 @@ namespace Timelapse.Database
         public List<string> GetDetectionLabels()
         {
             List<string> labels = new List<string>();
-            CreateDetectionCategoriesDictionaryIfNeeded();
+            this.CreateDetectionCategoriesDictionaryIfNeeded();
             foreach (KeyValuePair<string, string> entry in this.detectionCategoriesDictionary)
             {
                 labels.Add(entry.Value);
@@ -2159,10 +2159,10 @@ namespace Timelapse.Database
         {
             try
             {
-                CreateClassificationCategoriesDictionaryIfNeeded();
+                this.CreateClassificationCategoriesDictionaryIfNeeded();
 
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                return classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+                return this.classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
             {
