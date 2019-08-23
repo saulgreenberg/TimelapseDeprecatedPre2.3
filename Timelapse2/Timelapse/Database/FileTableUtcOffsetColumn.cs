@@ -9,8 +9,7 @@
 
         public override bool IsContentValid(string value)
         {
-            double utcOffset;
-            return double.TryParse(value, out utcOffset);
+            return double.TryParse(value, out double utcOffset);
         }
     }
 }

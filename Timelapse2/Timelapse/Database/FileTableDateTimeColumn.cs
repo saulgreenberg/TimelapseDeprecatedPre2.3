@@ -12,8 +12,7 @@ namespace Timelapse.Database
 
         public override bool IsContentValid(string value)
         {
-            DateTime dateTime;
-            return DateTimeHandler.TryParseDatabaseDateTime(value, out dateTime);
+            return DateTimeHandler.TryParseDatabaseDateTime(value, out DateTime dateTime);
         }
     }
 }

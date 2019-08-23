@@ -51,12 +51,11 @@ namespace Timelapse
                 }
             }
 
-            bool isCorruptOrMissing;
             // At this point, we should have succeeded getting the oldest and newest data/time
             // Configure feedback for earliest date and its image
             this.earliestImageName.Content = earliestImageRow.File;
             this.earliestImageDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.earliestImageDateTime);
-            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out isCorruptOrMissing);
+            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // Configure feedback for latest date (in datetime picker) and its image
             this.latestImageName.Content = latestImageRow.File;
