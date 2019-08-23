@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
 using Timelapse.Images;
-using Timelapse.Util;
 namespace Timelapse.Database
 {
     // A VideoRow is an ImageRow specialized to videos instead of images.

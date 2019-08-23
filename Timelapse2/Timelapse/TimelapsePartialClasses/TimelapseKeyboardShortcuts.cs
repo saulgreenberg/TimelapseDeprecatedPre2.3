@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse
 {

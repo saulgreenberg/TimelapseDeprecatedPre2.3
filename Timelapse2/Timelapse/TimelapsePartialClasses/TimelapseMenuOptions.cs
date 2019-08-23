@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Input;
 using Timelapse.Dialog;
 using Timelapse.Images;
 using Timelapse.Util;

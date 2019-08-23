@@ -1,20 +1,19 @@
-﻿using Timelapse.Database;
-using Timelapse.Images;
-using Timelapse.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Images;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

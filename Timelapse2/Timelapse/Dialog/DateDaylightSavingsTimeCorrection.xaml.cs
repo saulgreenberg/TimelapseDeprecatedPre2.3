@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using Timelapse.Database;
 using Timelapse.Util;

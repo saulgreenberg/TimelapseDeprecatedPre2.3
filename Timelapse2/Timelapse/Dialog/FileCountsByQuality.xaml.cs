@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
-using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

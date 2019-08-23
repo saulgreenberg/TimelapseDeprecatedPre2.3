@@ -5,9 +5,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Threading;
 using Timelapse.Util;
 
 namespace Timelapse.Database

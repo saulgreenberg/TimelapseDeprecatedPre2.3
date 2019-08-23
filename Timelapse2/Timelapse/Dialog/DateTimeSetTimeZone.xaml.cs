@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
-using Timelapse.Database;
 using System.Windows.Controls;
+using Timelapse.Database;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog

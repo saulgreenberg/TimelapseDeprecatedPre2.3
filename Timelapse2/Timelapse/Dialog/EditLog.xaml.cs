@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

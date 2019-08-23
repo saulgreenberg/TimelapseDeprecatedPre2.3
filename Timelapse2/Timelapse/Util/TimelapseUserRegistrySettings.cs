@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using Timelapse.Database;
 using System;
 using System.Windows;
 using Timelapse.Enums;

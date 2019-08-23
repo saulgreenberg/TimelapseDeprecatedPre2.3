@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Timelapse.Database;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

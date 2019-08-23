@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Xml;
-using Timelapse;
 using Timelapse.Database;
 
 namespace Timelapse.Editor.Util

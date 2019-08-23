@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Images;
 using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline

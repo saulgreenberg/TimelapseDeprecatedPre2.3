@@ -2,7 +2,6 @@
 using System.Runtime.ExceptionServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Timelapse.Database;
 using Timelapse.Enums;
 
 namespace Timelapse.Images
