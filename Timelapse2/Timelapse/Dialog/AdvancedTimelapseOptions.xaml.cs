@@ -8,8 +8,8 @@ namespace Timelapse.Dialog
 {
     public partial class AdvancedTimelapseOptions : Window
     {
-        private MarkableCanvas markableCanvas;
-        private TimelapseState timelapseState;
+        private readonly MarkableCanvas markableCanvas;
+        private readonly TimelapseState timelapseState;
 
         public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner)
         {

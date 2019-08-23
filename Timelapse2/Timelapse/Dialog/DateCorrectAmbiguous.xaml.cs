@@ -14,9 +14,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DateCorrectAmbiguous : Window
     {
-        private List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
+        private readonly List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
         private int ambiguousDatesListIndex;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private bool displayingPreview;
 
         // Whether the operation is aborted, ie., because there are no ambiguous dates

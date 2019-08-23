@@ -1,5 +1,7 @@
 ﻿namespace Timelapse
 {
+    // Create SQL commands using constants rather than typing the SQL keywords. 
+    // This really helps avoid typos, bugs due to spacing such as not having spaces inbetween keywords, etc.
     public static class Sql
     {
         public const string AddColumn = " ADD COLUMN ";
@@ -11,9 +13,7 @@
         public const string Ascending = " ASC ";
         public const string Descending = " DESC ";
         public const string Dot = ".";
-
         public const string DotStar = Sql.Dot + Sql.Star;
-
         public const string BeginTransaction = " BEGIN TRANSACTION ";
         public const string Between = " BETWEEN ";
         public const string Cast = " CAST ";

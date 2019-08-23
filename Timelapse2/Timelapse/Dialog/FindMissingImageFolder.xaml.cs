@@ -9,8 +9,8 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class FindMissingImageFolder : Window
     {
-        private string folderPath;
-        private string missingFolderName;
+        private readonly string folderPath;
+        private readonly string missingFolderName;
 
         public string NewFolderName { get; set; }
 

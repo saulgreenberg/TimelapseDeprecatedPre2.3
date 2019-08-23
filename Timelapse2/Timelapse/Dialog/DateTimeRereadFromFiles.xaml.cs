@@ -13,7 +13,7 @@ namespace Timelapse.Dialog
 {
     public partial class DateTimeRereadFromFiles : Window
     {
-        private FileDatabase database;
+        private readonly FileDatabase database;
 
         public DateTimeRereadFromFiles(FileDatabase database, Window owner)
         {

@@ -19,7 +19,7 @@ namespace Timelapse
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
         private bool displayingPreview = false;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
 
         // Create the interface
         public DateTimeLinearCorrection(FileDatabase fileDatabase, Window owner)

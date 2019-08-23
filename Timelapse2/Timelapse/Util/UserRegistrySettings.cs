@@ -7,7 +7,7 @@ namespace Timelapse.Util
     /// </summary>
     public class UserRegistrySettings
     {
-        private string keyPath;
+        private readonly string keyPath;
 
         public UserRegistrySettings(string keyPath)
         {

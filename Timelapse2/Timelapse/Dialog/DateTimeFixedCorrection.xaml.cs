@@ -14,7 +14,7 @@ namespace Timelapse.Dialog
     public partial class DateTimeFixedCorrection : Window
     {
         private bool displayingPreview;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
         private DateTimeOffset initialDate;
 
         public DateTimeFixedCorrection(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)

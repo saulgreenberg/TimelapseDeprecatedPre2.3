@@ -11,8 +11,8 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DateDaylightSavingsTimeCorrection : Window
     {
-        private int currentImageRow;
-        private FileDatabase database;
+        private readonly int currentImageRow;
+        private readonly FileDatabase database;
 
         public DateDaylightSavingsTimeCorrection(FileDatabase database, FileTableEnumerator fileEnumerator, Window owner)
         {

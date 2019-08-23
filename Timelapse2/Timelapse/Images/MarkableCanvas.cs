@@ -990,7 +990,7 @@ namespace Timelapse.Images
         }
         #endregion
 
-        private Canvas bboxCanvas = new Canvas();
+        private readonly Canvas bboxCanvas = new Canvas();
         #region Draw Bounding Box
         /// <summary>
         /// Remove all and then draw all the markers

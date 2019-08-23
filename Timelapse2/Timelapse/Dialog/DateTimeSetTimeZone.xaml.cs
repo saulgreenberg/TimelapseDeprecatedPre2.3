@@ -9,7 +9,7 @@ namespace Timelapse.Dialog
     public partial class DateTimeSetTimeZone : Window
     {
         private bool displayingPreview;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
 
         public DateTimeSetTimeZone(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)
         {

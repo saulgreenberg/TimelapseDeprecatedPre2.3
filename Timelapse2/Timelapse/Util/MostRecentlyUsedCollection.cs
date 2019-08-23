@@ -6,8 +6,8 @@ namespace Timelapse.Util
     // Maintain a list of the most recently opened/used files
     public class MostRecentlyUsedCollection<TElement> : IEnumerable<TElement>
     {
-        private LinkedList<TElement> list;
-        private int maximumItems;
+        private readonly LinkedList<TElement> list;
+        private readonly int maximumItems;
 
         public MostRecentlyUsedCollection(int maximumItems)
         {

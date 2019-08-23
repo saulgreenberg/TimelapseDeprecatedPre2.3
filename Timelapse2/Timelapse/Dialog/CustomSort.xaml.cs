@@ -14,7 +14,7 @@ namespace Timelapse.Dialog
         private List<SortTerm> sortTermList;
         private string fileDisplayLabel = String.Empty;
         private string dateDisplayLabel = String.Empty;
-        private FileDatabase database;
+        private readonly FileDatabase database;
 
         public SortTerm SortTerm1 { get; set; }
         public SortTerm SortTerm2 { get; set; }

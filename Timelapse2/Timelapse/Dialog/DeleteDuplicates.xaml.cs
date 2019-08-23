@@ -8,7 +8,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DeleteDuplicates : Window
     {
-        private List<string> fileNames;
+        private readonly List<string> fileNames;
         public DeleteDuplicates(Window owner, List<string> filenames)
         {
             this.InitializeComponent();

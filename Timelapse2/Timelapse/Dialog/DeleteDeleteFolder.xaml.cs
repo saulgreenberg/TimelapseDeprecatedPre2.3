@@ -8,7 +8,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DeleteDeleteFolder : Window
     {
-        private int howManyDeleteFiles = 0;
+        private readonly int howManyDeleteFiles = 0;
 
         public DeleteDeleteFolder(int howManyDeleteFiles)
         {

@@ -102,8 +102,8 @@ namespace Timelapse.Controls
 
         #region Private Variables
         private Point point = new Point(0, 0);
-        private Brush unselectedBrush = Brushes.Black;
-        private Brush selectedBrush = Brushes.LightBlue;
+        private readonly Brush unselectedBrush = Brushes.Black;
+        private readonly Brush selectedBrush = Brushes.LightBlue;
         #endregion
 
         // Constructors: Width is the desired width of the image

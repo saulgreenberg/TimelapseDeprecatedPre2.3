@@ -10,8 +10,8 @@ namespace Timelapse.Controls
     public partial class VideoPlayer : UserControl
     {
         private bool isProgrammaticUpdate;
-        private DispatcherTimer positionUpdateTimer;
-        private DispatcherTimer autoPlayDelayTimer;
+        private readonly DispatcherTimer positionUpdateTimer;
+        private readonly DispatcherTimer autoPlayDelayTimer;
         // TODO: Setup up video so a mouse click starts and stops it, i.e., as does the space bar.
         public VideoPlayer()
         {

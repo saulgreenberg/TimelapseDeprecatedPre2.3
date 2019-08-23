@@ -16,9 +16,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class NewVersionNotification : Window
     {
-        private string applicationName;
-        private Version currentVersionNumber;
-        private Version lastestVersionNumber;
+        private readonly string applicationName;
+        private readonly Version currentVersionNumber;
+        private readonly Version lastestVersionNumber;
 
         public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latest_version_number)
         {

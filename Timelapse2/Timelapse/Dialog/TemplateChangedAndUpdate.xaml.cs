@@ -15,14 +15,14 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TemplateChangedAndUpdate : Window
     {
-        private string actionAdd = "Add";
-        private string actionDelete = "Delete";
+        private readonly string actionAdd = "Add";
+        private readonly string actionDelete = "Delete";
         private bool dontClose = false;
 
-        private Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
-        private Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
-        private List<ComboBox> comboBoxes = new List<ComboBox>();
-        private List<int> actionRows = new List<int>();
+        private readonly Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
+        private readonly List<ComboBox> comboBoxes = new List<ComboBox>();
+        private readonly List<int> actionRows = new List<int>();
 
         private TemplateSyncResults TemplateSyncResults { get; set; }
 

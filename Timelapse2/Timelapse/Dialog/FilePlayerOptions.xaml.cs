@@ -8,9 +8,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class FilePlayerOptions : Window
     {
-        private double playSlowMinimum = Constant.FilePlayerValues.PlaySlowMinimum.TotalSeconds;
-        private double playFastMaximum = Constant.FilePlayerValues.PlayFastMaximum.TotalSeconds;
-        private TimelapseState state;
+        private readonly double playSlowMinimum = Constant.FilePlayerValues.PlaySlowMinimum.TotalSeconds;
+        private readonly double playFastMaximum = Constant.FilePlayerValues.PlayFastMaximum.TotalSeconds;
+        private readonly TimelapseState state;
 
         public FilePlayerOptions(TimelapseState state, Window owner)
         {

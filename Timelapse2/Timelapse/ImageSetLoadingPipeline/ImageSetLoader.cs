@@ -20,9 +20,9 @@ namespace Timelapse.ImageSetLoadingPipeline
         private int imagesLoaded = 0;
         private int imagesToInsert = 0;
 
-        private Task pass1 = null;
+        private readonly Task pass1 = null;
 
-        private Task pass2 = null;
+        private readonly Task pass2 = null;
 
         public ImageLoader LastLoadComplete
         {

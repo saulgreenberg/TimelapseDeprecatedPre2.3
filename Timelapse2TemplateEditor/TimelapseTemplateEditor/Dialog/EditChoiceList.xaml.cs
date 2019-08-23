@@ -8,8 +8,8 @@ namespace Timelapse.Editor.Dialog
     public partial class EditChoiceList : Window
     {
         private static readonly string[] NewLineDelimiter = { Environment.NewLine };
-        private UIElement positionReference;
-        private bool includesEmptyChoice;
+        private readonly UIElement positionReference;
+        private readonly bool includesEmptyChoice;
 
         public List<string> Choices { get; private set; }
 

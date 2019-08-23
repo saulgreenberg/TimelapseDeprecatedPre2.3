@@ -21,7 +21,7 @@ namespace Timelapse.Controls
         public string Column3Name { get; set; }
         public string Column4Name { get; set; }
         // This collection will hold tuples, where each tuple contains the contents for a row that will be shown in the datagrid  
-        private ObservableCollection<FeedbackRowTuple> feedbackRows;
+        private readonly ObservableCollection<FeedbackRowTuple> feedbackRows;
 
         // Initialization: Bind the collection to the datagrid, where any change in the collection will be displayed in the datagrid
         public DateChangesFeedbackControl()

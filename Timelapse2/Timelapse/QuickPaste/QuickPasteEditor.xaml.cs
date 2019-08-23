@@ -30,8 +30,8 @@ namespace Timelapse.QuickPaste
         // UI Constants
         private const double ValuesWidth = 80;
         private const double ValuesHeight = 22;
-        private FileDatabase fileDatabase;
-        private DataEntryControls dataEntryControls;
+        private readonly FileDatabase fileDatabase;
+        private readonly DataEntryControls dataEntryControls;
 
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase, DataEntryControls dataEntryControls)
         {

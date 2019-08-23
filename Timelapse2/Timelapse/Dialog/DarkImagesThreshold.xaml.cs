@@ -25,13 +25,13 @@ namespace Timelapse.Dialog
         private int darkPixelThreshold;
         private double darkPixelRatio;
         private double darkPixelRatioFound;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private bool disposed;
-        private FileTableEnumerator imageEnumerator;
+        private readonly FileTableEnumerator imageEnumerator;
         private bool isColor;
         private bool updateImageQualityForAllSelectedImagesStarted;
-        private bool stop;
-        private TimelapseUserRegistrySettings userSettings;
+        private readonly bool stop;
+        private readonly TimelapseUserRegistrySettings userSettings;
 
         public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, TimelapseWindow owner)
         {

@@ -11,10 +11,10 @@ namespace Timelapse.Images
 {
     public class ImageCache : FileTableEnumerator
     {
-        private Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
-        private MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
-        private ConcurrentDictionary<long, Task> prefetechesByID;
-        private ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
+        private readonly Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
+        private readonly MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
+        private readonly ConcurrentDictionary<long, Task> prefetechesByID;
+        private readonly ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
 
         public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
 

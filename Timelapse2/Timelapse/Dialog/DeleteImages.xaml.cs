@@ -17,9 +17,9 @@ namespace Timelapse.Dialog
     public partial class DeleteImages : Window
     {
         // these variables will hold the values of the passed in parameters
-        private bool deleteImageAndData;
-        private List<ImageRow> filesToDelete;
-        private FileDatabase database;
+        private readonly bool deleteImageAndData;
+        private readonly List<ImageRow> filesToDelete;
+        private readonly FileDatabase database;
         private int maxPathLength = 45;
 
         /// <summary>

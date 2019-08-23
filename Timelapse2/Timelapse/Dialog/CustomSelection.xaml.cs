@@ -36,14 +36,14 @@ namespace Timelapse.Dialog
         private const string GreaterThan = "\u2265";
         private const string Between = "Between";
 
-        private FileDatabase database;
-        private DataEntryControls dataEntryControls;
-        private TimeZoneInfo imageSetTimeZone;
-        private bool excludeUTCOffset;
+        private readonly FileDatabase database;
+        private readonly DataEntryControls dataEntryControls;
+        private readonly TimeZoneInfo imageSetTimeZone;
+        private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
         private bool dontUpdateRangeSlider = false;
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
-        private DispatcherTimer countTimer = new DispatcherTimer();
+        private readonly DispatcherTimer countTimer = new DispatcherTimer();
 
         // Detections variables
         private bool dontInvoke = false;

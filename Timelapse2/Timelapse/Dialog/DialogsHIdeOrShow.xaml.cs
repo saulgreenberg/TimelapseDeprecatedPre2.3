@@ -9,7 +9,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DialogsHideOrShow : Window
     {
-        private TimelapseState state;
+        private readonly TimelapseState state;
         public DialogsHideOrShow(TimelapseState state, Window owner)
         {
             this.InitializeComponent();

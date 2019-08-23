@@ -28,12 +28,12 @@ namespace Timelapse.Editor
     public partial class EditorWindow : Window
     {
         // state tracking
-        private EditorControls controls;
+        private readonly EditorControls controls;
         private bool dataGridBeingUpdatedByCode;
-        private EditorUserRegistrySettings userSettings;
+        private readonly EditorUserRegistrySettings userSettings;
 
         // These variables support the drag/drop of controls
-        private UIElement dummyMouseDragSource;
+        private readonly UIElement dummyMouseDragSource;
         private bool isMouseDown;
         private bool isMouseDragging;
         private Point mouseDownStartPosition;

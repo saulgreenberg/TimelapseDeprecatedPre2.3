@@ -6,7 +6,7 @@ namespace Timelapse.Dialog
 {
     public partial class RenameFileDatabaseFile : Window
     {
-        private string currentFileName;
+        private readonly string currentFileName;
         public string NewFilename { get; private set; }
 
         public RenameFileDatabaseFile(string fileName, Window owner)

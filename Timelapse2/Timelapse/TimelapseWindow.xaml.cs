@@ -35,7 +35,7 @@ namespace Timelapse
         private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
         private string mostRecentFileAddFolderPath;
-        private SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
+        private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
         public TimelapseState state;                                    // Status information concerning the state of the UI
         private TemplateDatabase templateDatabase;                      // The database that holds the template
         private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
@@ -44,12 +44,11 @@ namespace Timelapse
         private QuickPasteWindow quickPasteWindow = null;
 
         // Timer for periodically updating images as the ImageNavigator slider is being used
-        private DispatcherTimer timerFileNavigator;
+        private readonly DispatcherTimer timerFileNavigator;
 
         // Timer used to AutoPlay images via MediaControl buttons
-        DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
-
-        DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
+        readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
+        readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
 
         public string FolderPath
         {

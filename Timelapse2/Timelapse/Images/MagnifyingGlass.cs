@@ -12,9 +12,9 @@ namespace Timelapse.Images
     {
         // current angle of the lens only
         private double lensAngle;
-        private Canvas lensCanvas;
+        private readonly Canvas lensCanvas;
 
-        private Ellipse magnifierLens;
+        private readonly Ellipse magnifierLens;
         // current angle of the entire magnifying glass
         private double magnifyingGlassAngle;
 

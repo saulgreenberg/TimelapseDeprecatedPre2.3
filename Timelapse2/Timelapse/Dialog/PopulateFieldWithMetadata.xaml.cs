@@ -19,12 +19,12 @@ namespace Timelapse.Dialog
     public partial class PopulateFieldWithMetadata : Window
     {
         private bool clearIfNoMetadata;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private string dataFieldLabel;
         private bool dataFieldSelected;
         private Dictionary<string, ImageMetadata> metadataDictionary;
-        private Dictionary<string, string> dataLabelByLabel;
-        private string filePath;
+        private readonly Dictionary<string, string> dataLabelByLabel;
+        private readonly string filePath;
         private string metadataFieldName;
         private bool metadataFieldSelected;
         private bool noMetadataAvailable;

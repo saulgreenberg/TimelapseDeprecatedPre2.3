@@ -14,11 +14,11 @@ namespace Timelapse.ImageSetLoadingPipeline
     /// </summary>
     public class ImageLoader
     {
-        private FileInfo fileInfo;
-        private DataEntryHandler dataHandler;
-        private TimelapseState state;
-        private string relativePath;
-        private string imageSetFolderPath;
+        private readonly FileInfo fileInfo;
+        private readonly DataEntryHandler dataHandler;
+        private readonly TimelapseState state;
+        private readonly string relativePath;
+        private readonly string imageSetFolderPath;
 
         public string FolderPath
         {

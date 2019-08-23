@@ -6,8 +6,8 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class UpdateRootFolder : Window
     {
-        private string dbfoldername;
-        private string actualFolderName;
+        private readonly string dbfoldername;
+        private readonly string actualFolderName;
         public UpdateRootFolder(Window owner, string dbfoldername, string actualFolderName)
         {
             this.InitializeComponent();

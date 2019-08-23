@@ -4,8 +4,8 @@ namespace Timelapse.Database
 {
     public class FileTableChoiceColumn : FileTableColumn
     {
-        private List<string> choices;
-        private string defaultValue;
+        private readonly List<string> choices;
+        private readonly string defaultValue;
 
         public FileTableChoiceColumn(ControlRow control)
             : base(control)
