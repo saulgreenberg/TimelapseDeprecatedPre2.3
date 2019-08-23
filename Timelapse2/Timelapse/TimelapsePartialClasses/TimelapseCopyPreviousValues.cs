@@ -100,7 +100,7 @@ namespace Timelapse
                 };
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         control.Container.Effect = effect;
@@ -112,7 +112,7 @@ namespace Timelapse
                 // Remove the glow around the copyable controls
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     control.Container.ClearValue(Control.EffectProperty);
                 }
             }
@@ -131,7 +131,7 @@ namespace Timelapse
                 // Show the previews on the copyable controls
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         string previewValue = this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel);
@@ -144,7 +144,7 @@ namespace Timelapse
                 // Remove the preview from each control
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         control.HidePreviewControlValue();

@@ -158,7 +158,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
                 folderLoadProgress.CurrentFile = this.ImagesLoaded;
                 folderLoadProgress.CurrentFileName = this.LastLoadComplete?.File.File;
-                int percentProgress = (int)(100.0 * this.ImagesLoaded / (double)this.ImagesToLoad);
+                int percentProgress = (int)(100.0 * this.ImagesLoaded / this.ImagesToLoad);
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 
@@ -176,7 +176,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 folderLoadProgress.BitmapSource = null;
                 folderLoadProgress.CurrentFile = this.LastIndexInsertComplete;
                 folderLoadProgress.CurrentFileName = this.LastInsertComplete?.File;
-                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / (double)this.imagesToInsert);
+                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / this.imagesToInsert);
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 

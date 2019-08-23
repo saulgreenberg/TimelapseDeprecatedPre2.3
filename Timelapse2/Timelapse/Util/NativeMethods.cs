@@ -141,8 +141,8 @@ namespace Timelapse.Util
 
                 ReleaseDC(IntPtr.Zero, hDc);
 
-                widthInDeviceIndependentPixels = (double)(96 * widthInPixels / (double)dpiX);
-                heightInDeviceIndependentPixels = (double)(96 * heightInPixels / (double)dpiY);
+                widthInDeviceIndependentPixels = 96 * widthInPixels / (double)dpiX;
+                heightInDeviceIndependentPixels = 96 * heightInPixels / (double)dpiY;
             }
             else
             {

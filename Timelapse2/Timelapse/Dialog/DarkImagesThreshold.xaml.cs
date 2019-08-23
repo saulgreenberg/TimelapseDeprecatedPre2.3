@@ -431,7 +431,7 @@ namespace Timelapse.Dialog
                         {
                             if (utcNow - previousImageRender > desiredRenderInterval)
                             {
-                                backgroundWorker.ReportProgress((int)(100.0 * (double)currentFileIndex / (double)selectedFiles.Count), imageQuality);
+                                backgroundWorker.ReportProgress((int)(100.0 * currentFileIndex / selectedFiles.Count), imageQuality);
                             }
                         }
                     }
@@ -473,7 +473,7 @@ namespace Timelapse.Dialog
                 this.RectDarkPixelRatioFound.Height = this.FeedbackCanvas.ActualHeight;
 
                 // update image scroll bar position
-                this.ScrollImages.Value = Math.Min((double)ea.ProgressPercentage / 100.0 * selectedFiles.Count, selectedFiles.Count - 1);
+                this.ScrollImages.Value = Math.Min(ea.ProgressPercentage / 100.0 * selectedFiles.Count, selectedFiles.Count - 1);
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {

@@ -183,7 +183,7 @@ namespace Timelapse.Controls
             // This is not reliable at small focus scopes, possibly due to interaction with TimelapseWindow's focus management, but seems reasonably
             // well behaved at application scope.
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
-            return (IInputElement)this.ContentControl;
+            return this.ContentControl;
         }
 
         #region Visual Effects and Popup Previews

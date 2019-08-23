@@ -41,7 +41,7 @@ namespace Timelapse.Controls
         public void AddFeedbackRow(string fileName, string status, string oldDateTime, string newDateTime, string difference)
         {
             FeedbackRowTuple row = new FeedbackRowTuple(fileName, status, oldDateTime, newDateTime, difference);
-            this.feedbackRows.Add((FeedbackRowTuple)row);
+            this.feedbackRows.Add(row);
             this.feedbackGrid.ScrollIntoView(this.feedbackGrid.Items[this.feedbackGrid.Items.Count - 1]);
         }
 

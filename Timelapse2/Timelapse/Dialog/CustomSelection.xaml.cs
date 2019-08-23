@@ -691,7 +691,7 @@ namespace Timelapse.Dialog
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
             this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
 
-            this.DetectionGroupBox.IsEnabled = !(bool)this.database.CustomSelection.ShowMissingDetections;
+            this.DetectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
             this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
 
             if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked ||

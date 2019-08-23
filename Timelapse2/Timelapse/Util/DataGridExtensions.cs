@@ -61,7 +61,7 @@ namespace Timelapse.Util
             foreach (Tuple<long, int> idRowIndex in idRowIndexes)
             {
                 currentID = (int)idRowIndex.Item1;
-                currentRowIndexThatMayContainID = (int)idRowIndex.Item2;
+                currentRowIndexThatMayContainID = idRowIndex.Item2;
 
                 // Get the row indicated by rowIndex (after first checking that such a row exists)
                 if (dataGrid.Items.Count < currentRowIndexThatMayContainID)

@@ -85,7 +85,7 @@ namespace Timelapse.Database
                 int pixelHeight = mediaPlayer.NaturalVideoHeight;
                 if (desiredWidth.HasValue)
                 {
-                    double scaling = (double)desiredWidth.Value / (double)pixelWidth;
+                    double scaling = desiredWidth.Value / (double)pixelWidth;
                     pixelWidth = (int)(scaling * pixelWidth);
                     pixelHeight = (int)(scaling * pixelHeight);
                 }
