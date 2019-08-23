@@ -134,7 +134,7 @@ namespace Timelapse
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-             // Abort if some of the required dependencies are missing
+            // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
                 Dependencies.ShowMissingBinariesDialog(Constant.ApplicationName);
@@ -195,7 +195,7 @@ namespace Timelapse
                     string folder = this.dataHandler.FileDatabase.ImageSet.SelectedFolder;
                     //System.Diagnostics.Debug.Print(folder);
                 }
-                
+
                 // sync image set properties
                 if (this.MarkableCanvas != null)
                 {
@@ -290,7 +290,7 @@ namespace Timelapse
                 {
                     Owner = this
                 };
-                 deleteTheDeletedFolder = deleteDeletedFolders.ShowDialog() == true ? true : false;
+                deleteTheDeletedFolder = deleteDeletedFolders.ShowDialog() == true ? true : false;
             }
             if (deleteTheDeletedFolder == true)
             {
@@ -684,7 +684,7 @@ namespace Timelapse
             return false;
         }
         #endregion
-      
+
         #region Single vs Multiple Image View
         // Check to see if we are displaying at least one image in an active image set pane (not in the overview)
         private bool IsDisplayingActiveSingleImage()

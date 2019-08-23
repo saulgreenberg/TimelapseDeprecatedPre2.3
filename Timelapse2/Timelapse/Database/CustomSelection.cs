@@ -38,7 +38,7 @@ namespace Timelapse.Database
                 string controlType = control.Type;
                 if (controlType == Constant.DatabaseColumn.Date ||
                     controlType == Constant.DatabaseColumn.Folder ||
-                    controlType == Constant.DatabaseColumn.Time) 
+                    controlType == Constant.DatabaseColumn.Time)
                 {
                     continue;
                 }
@@ -84,7 +84,7 @@ namespace Timelapse.Database
                 else if (controlType == Constant.DatabaseColumn.UtcOffset)
                 {
                     // the first time it's popped CustomSelection dialog changes this default to the date time of the current image
-                    searchTerm.SetDatabaseValue(Constant.ControlDefault.DateTimeValue.Offset); 
+                    searchTerm.SetDatabaseValue(Constant.ControlDefault.DateTimeValue.Offset);
                 }
                 // else use default values above
             }
@@ -182,7 +182,7 @@ namespace Timelapse.Database
                 searchTerm.UseForSearching = false;
             }
             if (GlobalReferences.DetectionsExists && this.DetectionSelections != null)
-            { 
+            {
                 this.DetectionSelections.ClearAllDetectionsUses();
             }
             this.ShowMissingDetections = false;
@@ -242,7 +242,7 @@ namespace Timelapse.Database
                         numberOfDateTimesSearchTerms = 0;
                     }
                     else
-                    { 
+                    {
                         switch (this.TermCombiningOperator)
                         {
                             case CustomSelectionOperatorEnum.And:

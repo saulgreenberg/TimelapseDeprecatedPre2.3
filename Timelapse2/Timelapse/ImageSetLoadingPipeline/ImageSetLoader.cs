@@ -23,7 +23,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     {
         private int imagesLoaded = 0;
         private int imagesToInsert = 0;
-        
+
         private Task pass1 = null;
 
         private Task pass2 = null;
@@ -70,8 +70,8 @@ namespace Timelapse.ImageSetLoadingPipeline
                                                                 select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
 
             FileInfo[] filesToAddInfoArray = (from fileInfo in fileInfos
-                                        where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
-                                        select fileInfo).OrderBy(f => f.FullName).ToArray();
+                                              where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
+                                              select fileInfo).OrderBy(f => f.FullName).ToArray();
 
             this.ImagesToLoad = filesToAddInfoArray.Length;
 
@@ -82,7 +82,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             string absolutePathPart = imageSetFolderPath + @"\";
 
             // Pass 1
-            this.pass1 = new Task(() => 
+            this.pass1 = new Task(() =>
             {
                 List<Task> loadTasks = new List<Task>();
 
@@ -100,7 +100,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
                     ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler, state);
 
-                    Task loaderTask = loader.LoadImageAsync(() => 
+                    Task loaderTask = loader.LoadImageAsync(() =>
                     {
                         // Both of these operations are atomic, the specific number and the specific loader at any given
                         // time may not coorespond.

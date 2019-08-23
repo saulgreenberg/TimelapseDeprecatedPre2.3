@@ -115,7 +115,7 @@ namespace Timelapse.Dialog
             this.dontInvoke = false;
             this.dontCount = false;
             if (GlobalReferences.DetectionsExists)
-            { 
+            {
                 this.SetDetectionCriteria();
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
             }
@@ -471,7 +471,7 @@ namespace Timelapse.Dialog
                 // Because of the bug in the DateTimePicker, we have to get the changed value from the string
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
-                { 
+                {
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
                     this.UpdateSearchCriteriaFeedback();
                 }
@@ -584,7 +584,7 @@ namespace Timelapse.Dialog
                 }
                 else
                 {
-                    value = searchTerm.DatabaseValue.Trim();   
+                    value = searchTerm.DatabaseValue.Trim();
                 }
                 if (value.Length == 0)
                 {
@@ -601,7 +601,7 @@ namespace Timelapse.Dialog
                         searchCriteriaText += " " + CustomSelectionOperatorEnum.And;
                     }
                     else
-                    { 
+                    {
                         searchCriteriaText += " " + this.database.CustomSelection.TermCombiningOperator.ToString();
                     }
                 }
@@ -818,7 +818,7 @@ namespace Timelapse.Dialog
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
             if (GlobalReferences.DetectionsExists)
-            { 
+            {
                 this.SetDetectionCriteria();
             }
             this.DialogResult = true;

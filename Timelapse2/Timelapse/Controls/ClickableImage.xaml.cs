@@ -123,19 +123,19 @@ namespace Timelapse.Controls
 
             // Render the episode text if needed
             this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex, state);
-            
+
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
             // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.
             if (bf == Constant.ImageValues.FileNoLongerAvailable.Value || bf == Constant.ImageValues.Corrupt.Value)
             {
-                this.Image.Height = 0.75 * width; 
+                this.Image.Height = 0.75 * width;
             }
             else
             {
                 this.Image.Height = bf.PixelHeight;
             }
-            return this.Image.Height; 
+            return this.Image.Height;
         }
 
         // Get and display the episode text if various conditions are met
@@ -161,7 +161,7 @@ namespace Timelapse.Controls
                     this.EpisodeText.Text = "\u221E";
                 }
                 else
-                { 
+                {
                     this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
                 }
                 this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;

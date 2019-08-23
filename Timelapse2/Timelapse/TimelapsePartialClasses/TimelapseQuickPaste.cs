@@ -49,7 +49,7 @@ namespace Timelapse
 
             // Finally, show the window if it makes sense to do so
             if (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
-            { 
+            {
                 this.quickPasteWindow.Show();
             }
         }
@@ -280,10 +280,10 @@ namespace Timelapse
                         {
                             counter.SetBogusCounterContentAndTooltip();
                         }
-       
+
                         control.SetContentAndTooltip(item.Value);
                         if (flash == FlashEnums.FlashPreview)
-                        { 
+                        {
                             control.FlashPreviewControlValue();
                         }
                         else

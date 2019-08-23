@@ -22,7 +22,7 @@ namespace Timelapse.Controls
         public abstract UIElement GetContentControl { get; }
 
         public abstract bool IsContentControlEnabled { get; }
-        
+
         /// <summary>Gets the value of the control</summary>
         public abstract string Content { get; }
 
@@ -117,7 +117,7 @@ namespace Timelapse.Controls
             }
         }
 
-        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) : 
+        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) :
             base(control, styleProvider)
         {
             this.ContentControl = new TContent()
@@ -274,14 +274,14 @@ namespace Timelapse.Controls
             // Animate the color from white back to its current color
             ColorAnimation animation;
             animation = new ColorAnimation()
-            { 
+            {
                 From = Colors.White,
                 AutoReverse = false,
                 Duration = new Duration(TimeSpan.FromSeconds(.6)),
                 EasingFunction = new ExponentialEase()
                 {
                     EasingMode = EasingMode.EaseIn
-                },  
+                },
             };
 
             // Get it all going

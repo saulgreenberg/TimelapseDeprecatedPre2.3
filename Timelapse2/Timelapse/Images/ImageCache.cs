@@ -241,7 +241,7 @@ namespace Timelapse.Images
             {
                 // cache the bitmap, replacing any existing bitmap with the one passed
                 this.unalteredBitmapsByID.AddOrUpdate(id,
-                    (long newID) => 
+                    (long newID) =>
                     {
                         // if the bitmap cache is full make room for the incoming bitmap
                         if (this.mostRecentlyUsedIDs.IsFull())
@@ -255,7 +255,7 @@ namespace Timelapse.Images
                         // indicate to add the bitmap
                         return bitmap;
                     },
-                    (long existingID, BitmapSource newBitmap) => 
+                    (long existingID, BitmapSource newBitmap) =>
                     {
                         // indicate to update the bitmap
                         return newBitmap;
@@ -298,7 +298,7 @@ namespace Timelapse.Images
                     // System.Diagnostics.Debug.Print("Loaded as forceUpdate " + fileRow.FileName);
                 }
                 else if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == true)
-                {    
+                {
                     // There is a cached bitmap, so we are now using it (in out bitmap)
                     // System.Diagnostics.Debug.Print("Prefetched immediate " + fileRow.FileName);
                 }

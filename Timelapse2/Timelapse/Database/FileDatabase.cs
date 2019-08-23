@@ -237,8 +237,8 @@ namespace Timelapse.Database
             }
 
             queryColumns.Remove(queryColumns.Length - 2, 2); // Remove trailing ", "
-            queryColumns.Append(Sql.CloseParenthesis + Sql.Values); 
-            
+            queryColumns.Append(Sql.CloseParenthesis + Sql.Values);
+
             // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
             // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
             // We limit the datalines to RowsPerInsert
@@ -255,7 +255,7 @@ namespace Timelapse.Database
                 // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
-                    queryValues.Append(Sql.OpenParenthesis);    
+                    queryValues.Append(Sql.OpenParenthesis);
 
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
@@ -312,7 +312,7 @@ namespace Timelapse.Database
                                 break;
 
                             // Find and then add the customizable types, populating it with their default values.
-                            case Constant.Control.Note:        
+                            case Constant.Control.Note:
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults

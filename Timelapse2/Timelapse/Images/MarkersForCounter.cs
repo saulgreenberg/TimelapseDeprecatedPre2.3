@@ -17,7 +17,7 @@ namespace Timelapse.Images
 
         // the list of markers associated with the counter
         public List<Marker> Markers { get; private set; }
-        
+
         public MarkersForCounter(string dataLabel)
         {
             this.DataLabel = dataLabel;
@@ -34,7 +34,7 @@ namespace Timelapse.Images
         public void AddMarker(Point point)
         {
             this.AddMarker(new Marker(this.DataLabel, point));
-        } 
+        }
 
         public string GetPointList()
         {
@@ -106,7 +106,7 @@ namespace Timelapse.Images
         {
             int index = this.Markers.IndexOf(marker);
             if (index == -1)
-            { 
+            {
                 TraceDebug.PrintMessage("RemoveMarker: Expected marker to be present in list, but its not there.");
                 return;
             }

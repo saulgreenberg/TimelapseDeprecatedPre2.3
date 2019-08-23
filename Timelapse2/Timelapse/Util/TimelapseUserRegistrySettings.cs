@@ -121,7 +121,7 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return registryKey.ReadRect(key, new Rect(0.0, 0.0, Constant.AvalonDock.DefaultTimelapseWindowWidth, Constant.AvalonDock.DefaultTimelapseWindowHeight)); 
+                return registryKey.ReadRect(key, new Rect(0.0, 0.0, Constant.AvalonDock.DefaultTimelapseWindowWidth, Constant.AvalonDock.DefaultTimelapseWindowHeight));
             }
         }
 

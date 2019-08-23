@@ -170,7 +170,7 @@ namespace Timelapse.Controls
                 }
             }
             else
-                {
+            {
                 // We have a valid value, so reset the control and watermark
                 this.ContentControl.AllowSpin = true;
                 if (textBox != null)
@@ -236,7 +236,7 @@ namespace Timelapse.Controls
         public override void HidePreviewControlValue()
         {
             if (this.PopupPreview != null)
-            { 
+            {
                 this.HidePopupPreview();
             }
         }

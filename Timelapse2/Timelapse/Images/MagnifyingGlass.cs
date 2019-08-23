@@ -157,10 +157,10 @@ namespace Timelapse.Images
         public void RedrawIfVisible(Point mouseLocation, Canvas canvasToMagnify)
         {
             // nothing to draw
-            if ((this.IsEnabled == false) || 
-                (this.IsVisible == false) || 
-                (this.Visibility != Visibility.Visible) || 
-                (canvasToMagnify == null) || 
+            if ((this.IsEnabled == false) ||
+                (this.IsVisible == false) ||
+                (this.Visibility != Visibility.Visible) ||
+                (canvasToMagnify == null) ||
                 (this.Parent.ImageToMagnify.Source == null))
             {
                 return;

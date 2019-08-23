@@ -26,7 +26,7 @@ namespace Timelapse.Dialog
             {
                 messageWarningLabel = (errors.Count > 0) ? "Additional warnings" : "Warnings";
             }
-            
+
             if (errors.Count == 0 && warnings.Count > 0)
             {
                 // Warning dialog only. Show all buttons
@@ -89,7 +89,7 @@ namespace Timelapse.Dialog
 
         private void OpenUsingOldTemplate_Click(object sender, RoutedEventArgs e)
         {
-            this.UseNewTemplate = false; 
+            this.UseNewTemplate = false;
             this.DialogResult = true;
         }
 

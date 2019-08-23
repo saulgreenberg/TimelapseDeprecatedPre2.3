@@ -20,7 +20,7 @@ namespace Timelapse.Util
             // This happens when the relativeTo  is deleted when we are still trying to get the magnifying glass position.
             if (PresentationSource.FromVisual(relativeTo) == null)
             {
-                return new Point(0, 0); 
+                return new Point(0, 0);
             }
             return relativeTo.PointFromScreen(new Point(w32Mouse.X, w32Mouse.Y));
         }

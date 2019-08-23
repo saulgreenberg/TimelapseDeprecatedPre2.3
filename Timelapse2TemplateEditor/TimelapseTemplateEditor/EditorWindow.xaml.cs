@@ -74,7 +74,7 @@ namespace Timelapse.Editor
             // Populate the most recent databases list
             this.MenuFileRecentTemplates_Refresh(true);
         }
-        
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Check for updates only once on every calendar day
@@ -133,7 +133,7 @@ namespace Timelapse.Editor
             this.InstructionPane.IsActive = !templateIsLoaded;
         }
         #endregion
-        
+
         #region File Menu Callbacks
         /// <summary>
         /// Creates a new database file of a user chosen name in a user chosen location.
@@ -601,7 +601,7 @@ namespace Timelapse.Editor
 
             this.dataGridBeingUpdatedByCode = true;
 
-            this.templateDatabase.AddUserDefinedControl(controlType);  
+            this.templateDatabase.AddUserDefinedControl(controlType);
             this.TemplateDataGrid.DataContext = this.templateDatabase.Controls;
             this.TemplateDataGrid.ScrollIntoView(this.TemplateDataGrid.Items[this.TemplateDataGrid.Items.Count - 1]);
 
@@ -648,7 +648,7 @@ namespace Timelapse.Editor
         private void ApplyPendingEdits()
         {
             this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); 
+            this.TemplateDataGrid.CommitEdit();
         }
         #endregion Datagrid Row Modifyiers listeners and methods
 
@@ -787,7 +787,7 @@ namespace Timelapse.Editor
                     break;
                 default:
                     // no restrictions on any of the other editable coumns
-                    break;  
+                    break;
             }
         }
 
@@ -1275,7 +1275,7 @@ namespace Timelapse.Editor
                 if (control.Type == Constant.DatabaseColumn.DateTime)
                 {
                     dateTimeControl = control;
-                } 
+                }
                 else if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
                     utcOffsetControl = control;

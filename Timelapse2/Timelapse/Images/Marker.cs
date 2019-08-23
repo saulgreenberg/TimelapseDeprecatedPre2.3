@@ -37,11 +37,11 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets or sets a value indicating whether to show the label next to the marker
         /// </summary>
-        public bool ShowLabel { get; set; }      
-          
+        public bool ShowLabel { get; set; }
+
         /// <summary>
         /// Gets or sets the marker's tooltip text 
-       /// </summary>
+        /// </summary>
         public string Tooltip { get; set; } // the label (not data label) associated with this marker.
 
         /// <summary>

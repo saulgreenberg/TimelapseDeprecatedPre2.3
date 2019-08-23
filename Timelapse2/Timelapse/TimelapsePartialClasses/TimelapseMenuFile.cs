@@ -226,7 +226,7 @@ namespace Timelapse
             if (Utilities.TryGetFileFromUser(
                                  "Select a .csv file to merge into the current image set",
                                  Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
-                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension), 
+                                 String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
                                  Constant.File.CsvFileExtension,
                                  out string csvFilePath) == false)
             {

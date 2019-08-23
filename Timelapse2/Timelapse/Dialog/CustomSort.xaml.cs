@@ -52,7 +52,7 @@ namespace Timelapse.Dialog
 
             // Create the combo box entries showing the sort terms
             // As a side effect, PopulatePrimaryComboBox() invokes PrimaryComboBox_SelectionChanged, which then populates the secondary combo bo
-            PopulatePrimaryUIElements(); 
+            PopulatePrimaryUIElements();
         }
 
         #region Populate ComboBoxes

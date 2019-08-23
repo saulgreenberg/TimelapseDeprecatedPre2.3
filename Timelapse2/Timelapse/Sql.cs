@@ -19,7 +19,7 @@ namespace Timelapse
         public const string Dot = ".";
 
         public const string DotStar = Sql.Dot + Sql.Star;
-        
+
         public const string BeginTransaction = " BEGIN TRANSACTION ";
         public const string Between = " BETWEEN ";
         public const string Cast = " CAST ";

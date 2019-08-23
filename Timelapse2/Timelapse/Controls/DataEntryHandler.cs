@@ -80,7 +80,7 @@ namespace Timelapse.Controls
             dateTimePicker.CultureInfo = System.Globalization.CultureInfo.CreateSpecificCulture("en-US");
             dateTimePicker.Value = defaultValue;
         }
-        
+
         /// <summary>
         /// Add data event handler callbacks for (possibly invisible) controls
         /// </summary>
@@ -124,7 +124,7 @@ namespace Timelapse.Controls
                         // We need to access the calendar part of the DateTImePicker, but 
                         // we can't do that until the control is loaded.
                         dateTime.ContentControl.Loaded += this.DateTimePicker_Loaded;
- 
+
                         // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
                         // dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave; 
                         break;
@@ -332,7 +332,7 @@ namespace Timelapse.Controls
         {
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
-            
+
             string displayValueToCopy = control.Content;
 
             if (ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
@@ -380,7 +380,7 @@ namespace Timelapse.Controls
             return (nearestRowWithCopyableValue >= 0) ? true : false;
         }
         #endregion
-      
+
         #region Confirmation Dialogs for Copy Forward/Backwards, etc
         // Ask the user to confirm value propagation from the last value
         private static bool? ConfirmCopyForward(string text, int imagesAffected, bool checkForZero)
@@ -501,7 +501,7 @@ namespace Timelapse.Controls
                     timepicker.Value = dateTimePicker.Value.Value;
                     // System.Diagnostics.Debug.Print("Setting Time pickker");
                 }
-                 this.IsProgrammaticControlUpdate = false;
+                this.IsProgrammaticControlUpdate = false;
             }
             // else
             // {
@@ -586,7 +586,7 @@ namespace Timelapse.Controls
 
             // Note that  trailing whitespace is removed only from the database as further edits may use it.
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
-         }
+        }
 
         // When the number in a particular counter box changes, update the particular counter field(s) in the database
         private void CounterControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -602,7 +602,7 @@ namespace Timelapse.Controls
             control.SetContentAndTooltip(integerUpDown.Value.ToString());
             this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
         }
-        
+
         // When a choice changes, update the particular choice field(s) in the database
         private void ChoiceControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -737,7 +737,7 @@ namespace Timelapse.Controls
             // There used to be a bug in this code, which resulted from this being invoked in SwitchToClickableGridView() when the grid was already being displayed.
             //  I have kept the try/catch in just in case it rears its ugly head elsewhere. Commented out Debug statements are here just in case we need to reexamine it.
             try
-            {              
+            {
                 // If there are no file ids, there is nothing to show
                 if (fileIds.Count() == 0)
                 {
@@ -751,7 +751,7 @@ namespace Timelapse.Controls
                 // System.Diagnostics.Debug.Print("Success: " + dataLabel + ": " + fileIds[0]);
 
                 string contents = imageRow.GetValueDisplayString(dataLabel);
-                contents = contents.Trim(); 
+                contents = contents.Trim();
 
                 // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
                 // then return that as they all have a common value. Otherwise return an empty string.
@@ -777,5 +777,5 @@ namespace Timelapse.Controls
             }
         }
         #endregion
-        }
     }
+}

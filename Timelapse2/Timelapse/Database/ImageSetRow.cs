@@ -7,7 +7,7 @@ namespace Timelapse.Database
 {
     public class ImageSetRow : DataRowBackedObject
     {
-        private const int MaxSortTerms = 8;           
+        private const int MaxSortTerms = 8;
 
         public ImageSetRow(DataRow row)
             : base(row)
@@ -118,8 +118,8 @@ namespace Timelapse.Database
             int index = (whichOne == 0) ? 0 : 4;
             return new SortTerm(
                 GetSortTermAtPosition(index),
-                GetSortTermAtPosition(index + 1), 
-                GetSortTermAtPosition(index + 2), 
+                GetSortTermAtPosition(index + 1),
+                GetSortTermAtPosition(index + 2),
                 GetSortTermAtPosition(index + 3));
         }
 

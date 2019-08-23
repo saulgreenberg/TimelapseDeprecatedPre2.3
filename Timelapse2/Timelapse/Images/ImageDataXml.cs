@@ -46,7 +46,7 @@ namespace Timelapse.Images
                         noteControlNames.Add(control.DataLabel);
                         break;
                     default:
-                        
+
                         break;
                 }
             }
@@ -74,7 +74,7 @@ namespace Timelapse.Images
                 // warn the user that the new path will be substituted in its place
                 // This gets the folderName in the Xml file, but we still ahve to get the folderName as it currently exists.
                 // string folderName = node[Constant.ImageXml.Folder].InnerText;
-              
+
                 // Date - We use the original date, as the analyst may have adjusted them 
                 string date = node[Constant.ImageXml.Date].InnerText;
                 columnsToUpdate.Add(new ColumnTuple(Constant.DatabaseColumn.Date, date));

@@ -1012,7 +1012,7 @@ namespace Timelapse.Images
             // Max Confidence is over all bounding boxes, regardless of the categories.
             // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
             if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
-            { 
+            {
                 return;
             }
 
@@ -1117,7 +1117,7 @@ namespace Timelapse.Images
             }
         }
         #endregion
- 
+
         #region ClickableImages Grid
 
         // Zoom in (or out) of single image and/or overview 
@@ -1126,7 +1126,7 @@ namespace Timelapse.Images
             lock (this)
             {
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {    
+                {
                     if (this.ClickableImagesState >= 3)
                     {
                         // State: zoomed out maximum allowable steps on clickable grid

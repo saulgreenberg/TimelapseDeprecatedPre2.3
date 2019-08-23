@@ -47,7 +47,7 @@ namespace Timelapse
                         control.FlashPreviewControlValue();
                     }
                     else
-                    { 
+                    {
                         control.FlashContentControl();
                     }
                 }
@@ -60,7 +60,7 @@ namespace Timelapse
         {
             if (eventArgs.Key == Key.Space)
             {
-               eventArgs.Handled = true;
+                eventArgs.Handled = true;
             }
         }
         #endregion
@@ -84,7 +84,7 @@ namespace Timelapse
         private void CopyPreviousValuesSetGlowAsNeeded(int previousRow)
         {
             if (this.IsDisplayingSingleImage() &&
-                this.CopyPreviousValuesButton != null && 
+                this.CopyPreviousValuesButton != null &&
                 this.CopyPreviousValuesButton.IsFocused &&
                 this.CopyPreviousValuesButton.IsEnabled == true &&
                 this.CopyPreviousValuesButton.IsMouseOver == false &&
@@ -124,9 +124,9 @@ namespace Timelapse
         private void CopyPreviousValueSetPreviewsAsNeeded(int previousRow)
         {
             if (this.IsDisplayingSingleImage() &&
-                this.CopyPreviousValuesButton != null && 
-                this.CopyPreviousValuesButton.IsEnabled == true && 
-                this.CopyPreviousValuesButton.IsMouseOver && 
+                this.CopyPreviousValuesButton != null &&
+                this.CopyPreviousValuesButton.IsEnabled == true &&
+                this.CopyPreviousValuesButton.IsMouseOver &&
                 previousRow >= 0)
             {
                 // Show the previews on the copyable controls

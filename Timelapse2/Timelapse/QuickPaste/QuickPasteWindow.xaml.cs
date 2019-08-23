@@ -20,7 +20,7 @@ namespace Timelapse.QuickPaste
         #endregion
 
         public List<QuickPasteEntry> QuickPasteEntries
-        { 
+        {
             get { return quickPasteEntries; }
             set { quickPasteEntries = value; }
         }
@@ -41,7 +41,7 @@ namespace Timelapse.QuickPaste
         {
             // Adjust this dialog window position, and add an event handler to signal when the position has changed 
             if (this.Position.Left == 0 && this.Position.Top == 0)
-            { 
+            {
                 // 0,0 signals that there is no saved window position
                 Dialogs.SetDefaultDialogPosition(this);
             }
@@ -87,7 +87,7 @@ namespace Timelapse.QuickPaste
                 // Compose the button content: a title and shortcut key
                 TextBlock textblockTitle = new TextBlock()
                 {
-                    HorizontalAlignment = HorizontalAlignment.Left,    
+                    HorizontalAlignment = HorizontalAlignment.Left,
                 };
                 textblockTitle.Inlines.Add(quickPasteEntry.Title);
 
@@ -99,7 +99,7 @@ namespace Timelapse.QuickPaste
 
                 // We can't have more than 9 shortcut keys... one for each digit (except 0)
                 if (shortcutKey < 10)
-                { 
+                {
                     textblockShortcut.Inlines.Add("ctrl-" + shortcutKey++);
                 }
                 DockPanel dockPanel = new DockPanel();
@@ -154,7 +154,7 @@ namespace Timelapse.QuickPaste
                 this.QuickPasteGrid.RowDefinitions.Add(gridRow);
                 Grid.SetRow(quickPasteControl, gridRowIndex);
                 Grid.SetColumn(quickPasteControl, gridRowIndex);
-                this.QuickPasteGrid.Children.Add(quickPasteControl); 
+                this.QuickPasteGrid.Children.Add(quickPasteControl);
                 gridRowIndex++;
             }
         }
@@ -162,7 +162,7 @@ namespace Timelapse.QuickPaste
         // Check if the mouse is over any of the quickPasteControl buttons
         // If so, we should refresh the preview with that button's quickpaste entry
         public void RefreshQuickPasteWindowPreviewAsNeeded()
-        { 
+        {
             // If the quickPaste Window is visible
             if (this.IsEnabled == false && this.IsLoaded == false)
             {
@@ -206,7 +206,7 @@ namespace Timelapse.QuickPaste
         {
             MenuItem menuItem = sender as MenuItem;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)menuItem.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Delete)); 
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Delete));
         }
 
         // Generate Event: MouseEnter on the quickpaste control
@@ -214,7 +214,7 @@ namespace Timelapse.QuickPaste
         {
             Button button = sender as Button;
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.MouseEnter)); 
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.MouseEnter));
         }
 
         // Generate Event: MouseLeave on the quickpaste control

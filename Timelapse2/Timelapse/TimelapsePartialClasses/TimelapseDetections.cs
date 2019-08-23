@@ -48,7 +48,7 @@ namespace Timelapse
                     {
                         conf = (double)classificationRow[Constant.DetectionColumns.Conf];
                         if (conf > 0.1)
-                        { 
+                        {
                             classificationCategoryLabel = this.dataHandler.FileDatabase.GetClassificationLabelFromCategory((string)classificationRow[Constant.ClassificationColumns.Category]);
                             classifications.Add(new KeyValuePair<string, string>(classificationCategoryLabel, conf.ToString()));
                         }
@@ -61,4 +61,4 @@ namespace Timelapse
         }
         // END BOundingBoxes
     }
-    }
+}

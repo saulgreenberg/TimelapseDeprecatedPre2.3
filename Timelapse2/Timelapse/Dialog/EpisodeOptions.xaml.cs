@@ -24,7 +24,7 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum;
-            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum; 
+            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum;
             this.TimeThresholdSlider.ValueChanged += TimeThresholdSlider_ValueChanged;
             this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalMinutes;
             DisplayFeedback();

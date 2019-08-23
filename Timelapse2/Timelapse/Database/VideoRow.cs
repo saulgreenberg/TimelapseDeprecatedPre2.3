@@ -132,7 +132,7 @@ namespace Timelapse.Database
                 }
                 throw new ApplicationException(String.Format("Limit of {0} render attempts was reached.", Constant.ThrottleValues.MaximumRenderAttempts));
             }
-            catch 
+            catch
             {
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));

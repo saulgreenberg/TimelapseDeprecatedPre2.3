@@ -221,7 +221,7 @@ namespace Timelapse.Dialog
             }
             else
             {
-                sv.LineDown(); 
+                sv.LineDown();
             }
         }
 
@@ -230,7 +230,7 @@ namespace Timelapse.Dialog
         {
             this.OkButton.IsEnabled = (bool)this.chkboxConfirm.IsChecked;
         }
-        
+
         // Cancel button selected
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {

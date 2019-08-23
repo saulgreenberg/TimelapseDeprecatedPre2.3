@@ -24,7 +24,7 @@ namespace Timelapse.Dialog
 
         private WriteableBitmap bitmap;
         private int darkPixelThreshold;
-        private double darkPixelRatio; 
+        private double darkPixelRatio;
         private double darkPixelRatioFound;
         private FileDatabase database;
         private bool disposed;
@@ -400,10 +400,10 @@ namespace Timelapse.Dialog
                         if (isCorruptOrMissing)
                         {
                             // If we can't read the image, just set its quality to OK
-                            imageQuality.NewImageQuality = FileSelectionEnum.Ok; 
+                            imageQuality.NewImageQuality = FileSelectionEnum.Ok;
                         }
                         else
-                        { 
+                        {
                             // Set the image quality. Note that videos are always classified as Ok.
                             imageQuality.NewImageQuality = file.IsVideo
                                 ? FileSelectionEnum.Ok

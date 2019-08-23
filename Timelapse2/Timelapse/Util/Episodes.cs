@@ -59,7 +59,7 @@ namespace Timelapse
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex)
         {
             if (Episodes.EpisodesDictionary == null)
-            { 
+            {
                 Episodes.Reset();
             }
             int index = fileTableIndex;
@@ -85,7 +85,7 @@ namespace Timelapse
         }
 
         // Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
-        private static bool EpisodeGetAroundIndex(FileTable files, int index,  out int first, out int last, out int count)
+        private static bool EpisodeGetAroundIndex(FileTable files, int index, out int first, out int last, out int count)
         {
             DateTime date1;
             DateTime date2;

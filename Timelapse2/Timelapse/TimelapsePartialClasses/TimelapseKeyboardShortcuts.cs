@@ -54,7 +54,7 @@ namespace Timelapse
         }
 
         public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
-        { 
+        {
             // First, try to interpret key as a possible valid quickpaste shortcut key. 
             // If so, send it to the Quickpaste window and mark the event as handled.
             if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) &&
@@ -73,7 +73,7 @@ namespace Timelapse
                         this.quickPasteWindow.TryQuickPasteShortcut(shortcutIndex);
                         currentKey.Handled = true;
                     }
-                } 
+                }
                 return;
             }
 
@@ -119,7 +119,7 @@ namespace Timelapse
                 case Key.Left:              // previous image
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
                     direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
-                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount  % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
                         this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
                     }

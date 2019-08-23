@@ -59,7 +59,7 @@ namespace Timelapse.Controls
                 string helpText = reader.ReadToEnd();
 
                 // Write the help text to a stream
-                MemoryStream stream = new MemoryStream();    
+                MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
                 writer.Write(helpText);
                 writer.Flush();

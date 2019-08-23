@@ -31,8 +31,8 @@ namespace Timelapse.Editor.Dialog
         // After the interface is loaded, try to adjust the position of the dialog box
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-           Dialogs.SetDefaultDialogPosition(this);
-           Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         #region Datagrid callbacks

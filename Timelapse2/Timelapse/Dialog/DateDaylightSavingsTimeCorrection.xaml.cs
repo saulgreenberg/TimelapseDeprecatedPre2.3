@@ -78,7 +78,7 @@ namespace Timelapse.Dialog
         // Examine the checkboxes to see what state our selection is in, and provide feedback as appropriate
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
-            if ((bool)rbAddHour.IsChecked || (bool)rbSubtractHour.IsChecked) 
+            if ((bool)rbAddHour.IsChecked || (bool)rbSubtractHour.IsChecked)
             {
                 if (DateTimeHandler.TryParseDisplayDateTime((string)this.OriginalDate.Content, out DateTime dateTime) == false)
                 {

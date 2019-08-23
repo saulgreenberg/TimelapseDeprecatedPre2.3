@@ -52,11 +52,11 @@ namespace Timelapse.Util
                 dataGrid.UnselectAll();
                 return;
             }
-           
+
             int topmostRowIndex = int.MaxValue; // Keeps track of the topmost row index, as this is the one we will want to scroll too
             DataRowView currentRow;                   // The current row being examined
-            List<int> rowIndexesToSelect = new List<int>(); 
-            long currentID = 0;        
+            List<int> rowIndexesToSelect = new List<int>();
+            long currentID = 0;
             int currentRowIndexThatMayContainID = 0;
 
             foreach (Tuple<long, int> idRowIndex in idRowIndexes)
@@ -106,13 +106,13 @@ namespace Timelapse.Util
                     }
                 }
             }
-            #if DeBUG
+#if DeBUG
             // We don't expect these to fail, but just in case
             if (rowIndexesToSelect.Count != IdRowIndexes.Count || topmostRowIndex == int.MaxValue)
             {
                 System.Diagnostics.Debug.Print("RowIndexes and ID counts don't match: " + rowIndexesToSelect.Count + ", " + IdRowIndexes.Count);
             }
-            #endif
+#endif
 
             // Select the items (which highlights those rows)
             bool indexIncreasing = topmostRowIndex > dataGrid.SelectedIndex;
@@ -224,14 +224,14 @@ namespace Timelapse.Util
             {
                 DependencyObject child = VisualTreeHelper.GetChild(obj, i);
                 if (child != null && child is T)
-                { 
+                {
                     return (T)child;
                 }
                 else
                 {
                     T childOfChild = FindVisualChild<T>(child);
                     if (childOfChild != null)
-                    { 
+                    {
                         return childOfChild;
                     }
                 }

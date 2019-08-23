@@ -99,7 +99,7 @@ namespace Timelapse.Dialog
                         bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
                         bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
                         bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
- 
+
                         if (sameDate && sameTime && sameUTCOffset)
                         {
                             // Nothing needs changing

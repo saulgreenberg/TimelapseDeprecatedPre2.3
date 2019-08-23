@@ -56,7 +56,7 @@ namespace Timelapse.Dialog
                     // Changed items that can be renamed
                     int inTemplateCount = this.inTemplateOnly.ContainsKey(type) ? this.inTemplateOnly[type].Count : 0;
                     int inImageOnlyCount = this.inImageOnly.ContainsKey(type) ? this.inImageOnly[type].Count : 0;
-              
+
                     if (inTemplateCount > 0 && inImageOnlyCount > 0)
                     {
                         // Iterated throught the datalabels that can be added or renamed
@@ -100,8 +100,8 @@ namespace Timelapse.Dialog
             if (templateSyncResults.ControlSynchronizationWarnings.Count > 0)
             {
                 this.TextBlockDetails.Inlines.Add(Environment.NewLine);
-                    this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
-                
+                this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
+
                 foreach (string warning in templateSyncResults.ControlSynchronizationWarnings)
                 {
                     this.TextBlockDetails.Inlines.Add(Environment.NewLine);
@@ -336,7 +336,7 @@ namespace Timelapse.Dialog
                 }
             }
             if (problemDataLabels.Count > 0)
-            { 
+            {
                 // notify the user concerning the problem data labels
                 MessageBox messageBox = new MessageBox("Select the new name for your 'Renamed' fields ", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;

@@ -125,7 +125,7 @@ namespace Timelapse
             this.EnableOrDisableMenusAndControls();
 
             if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
-            { 
+            {
                 // If we aren't using detections, then hide their existence even if detection data may be present
                 GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
             }

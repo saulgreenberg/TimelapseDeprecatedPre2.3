@@ -90,7 +90,7 @@ namespace Timelapse.Util
             if (currentVersionNumber < latestVersionNumber)
             {
                 NewVersionNotification newVersionNotification = new NewVersionNotification(this.window, this.applicationName, currentVersionNumber, latestVersionNumber);
-                
+
                 bool? result = newVersionNotification.ShowDialog();
                 if (result == true)
                 {

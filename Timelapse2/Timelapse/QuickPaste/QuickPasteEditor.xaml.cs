@@ -18,7 +18,7 @@ namespace Timelapse.QuickPaste
     public partial class QuickPasteEditor : Window
     {
         public QuickPasteEntry QuickPasteEntry { get; set; }
-        
+
         // Columns where fields will be placed in the grid
         private const int GridColumnUse = 1;
         private const int GridColumnLabel = 2;
@@ -68,7 +68,7 @@ namespace Timelapse.QuickPaste
                 ++gridRowIndex;
                 RowDefinition gridRow = new RowDefinition()
                 {
-                     Height = GridLength.Auto
+                    Height = GridLength.Auto
                 };
                 this.QuickPasteGridRows.RowDefinitions.Add(gridRow);
                 BuildRow(quickPasteItem, gridRow, gridRowIndex);
@@ -192,7 +192,7 @@ namespace Timelapse.QuickPaste
         {
             this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
         }
-        
+
         // Invoke when the user clicks the checkbox to enable or disable the data row
         private void UseCurrentRow_CheckChanged(object sender, RoutedEventArgs e)
         {

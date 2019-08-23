@@ -351,14 +351,14 @@ namespace Timelapse
                     // skip the 0th file of the 1st pass, as there is not really much of interest to show
                     return;
                 }
-                string message = (folderLoadProgress.TotalPasses > 1) ? String.Format("Pass {0}/{1}{2}" , folderLoadProgress.CurrentPass, folderLoadProgress.TotalPasses, Environment.NewLine) : String.Empty;
+                string message = (folderLoadProgress.TotalPasses > 1) ? String.Format("Pass {0}/{1}{2}", folderLoadProgress.CurrentPass, folderLoadProgress.TotalPasses, Environment.NewLine) : String.Empty;
                 if (folderLoadProgress.CurrentPass == 1 && folderLoadProgress.CurrentFile == folderLoadProgress.TotalFiles)
                 {
-                    message = String.Format("{0}Finalizing analysis of {1} files - could take several minutes ", message,  folderLoadProgress.TotalFiles);
+                    message = String.Format("{0}Finalizing analysis of {1} files - could take several minutes ", message, folderLoadProgress.TotalFiles);
                 }
 
                 else
-                { 
+                {
                     string what = (folderLoadProgress.CurrentPass == 1) ? "Analyzing file" : "Adding files to database";
                     message = (folderLoadProgress.CurrentPass == 2 && folderLoadProgress.CurrentFile == 0)
                         ? String.Format("{0}{1} ...", message, what)
@@ -415,7 +415,7 @@ namespace Timelapse
 
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             // First feedback message
-            this.UpdateFolderLoadProgress(null, 0, String.Format ("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count));
+            this.UpdateFolderLoadProgress(null, 0, String.Format("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count));
             this.StatusBar.SetMessage("Loading folders...");
             backgroundWorker.RunWorkerAsync();
             externallyVisibleWorker = backgroundWorker;
@@ -437,7 +437,7 @@ namespace Timelapse
             }
             if (textmessage != null)
             {
-                textmessage.Text = message; 
+                textmessage.Text = message;
             }
         }
 

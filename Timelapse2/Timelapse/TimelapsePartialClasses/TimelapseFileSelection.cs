@@ -72,7 +72,7 @@ namespace Timelapse
                 // However, it is not a mainstream operation so can be considered a lower priority place for optimization
                 missingFilesExist = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
-            else 
+            else
             {
                 // If its a folder selection, record it so we can save it later in the image set table 
                 this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders

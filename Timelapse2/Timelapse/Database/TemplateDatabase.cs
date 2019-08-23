@@ -282,7 +282,7 @@ namespace Timelapse.Database
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
         }
-       
+
         // Update all ControlOrder and SpreadsheetOrder column entries in the template database to match their in-memory counterparts
         public void SyncTemplateTableControlAndSpreadsheetOrderToDatabase()
         {
@@ -840,7 +840,7 @@ namespace Timelapse.Database
                 // limiting how the template file is manipulated. The actual failure happens before this, but this
                 // is where it is caught.
                 Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
-                throw custom_e;   
+                throw custom_e;
             }
         }
 

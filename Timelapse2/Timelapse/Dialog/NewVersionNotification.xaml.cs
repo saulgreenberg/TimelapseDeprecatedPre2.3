@@ -40,7 +40,7 @@ namespace Timelapse.Dialog
 
             // Construct the template message
             this.Title = String.Format("A new version of {0} is available.", this.applicationName);
-    
+
             this.Message.Title = this.Title;
             this.Message.What = String.Format("A new {0} version is available: {1}", this.applicationName, this.lastestVersionNumber);
             this.Message.What += Environment.NewLine;
@@ -80,7 +80,7 @@ namespace Timelapse.Dialog
                 this.SubscribeToAllHyperlinks(content);
 
                 // Add the document to the FlowDocumentScollViewer
-                this.ChangeDescription.Document = content;  
+                this.ChangeDescription.Document = content;
             }
             catch
             {
@@ -113,7 +113,7 @@ namespace Timelapse.Dialog
         {
             var hyperlinks = GetVisuals(flowDocument).OfType<Hyperlink>();
             foreach (var link in hyperlinks)
-            { 
+            {
                 link.RequestNavigate += new System.Windows.Navigation.RequestNavigateEventHandler(this.Link_RequestNavigate);
             }
         }
@@ -124,7 +124,7 @@ namespace Timelapse.Dialog
             {
                 yield return child;
                 foreach (var descendants in GetVisuals(child))
-                { 
+                {
                     yield return descendants;
                 }
             }

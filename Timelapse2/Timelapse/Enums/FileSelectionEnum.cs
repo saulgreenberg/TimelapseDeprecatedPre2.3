@@ -12,6 +12,6 @@
         All = 4,
         MarkedForDeletion = 5,
         Custom = 6,
-        Folders = 7     
+        Folders = 7
     }
 }

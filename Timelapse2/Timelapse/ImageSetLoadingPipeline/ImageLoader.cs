@@ -62,7 +62,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     var loadResult = task.Result;
                     this.bitmapSource = loadResult.Item1;
                 }
-                
+
                 return this.bitmapSource;
             }
             private set

@@ -82,7 +82,7 @@ namespace Timelapse.Editor.Dialog
             List<string> trimmedchoices = new List<string>();
             string trimmedchoice;
             List<string> choices = new List<string>(textlist.Split(EditChoiceList.NewLineDelimiter, StringSplitOptions.RemoveEmptyEntries));
-            
+
             foreach (string choice in choices)
             {
                 trimmedchoice = choice.Trim();

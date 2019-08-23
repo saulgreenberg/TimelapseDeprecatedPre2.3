@@ -185,7 +185,7 @@ namespace Timelapse
                 FilesSelectAndShow(selection, true);
             }
             else
-            { 
+            {
                 this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }

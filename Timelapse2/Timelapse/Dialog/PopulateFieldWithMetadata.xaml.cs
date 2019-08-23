@@ -135,7 +135,7 @@ namespace Timelapse.Dialog
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = false;
                 this.PopulateButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
-            } 
+            }
         }
 
         // Listbox Callback indicating the user has selected a data field. 

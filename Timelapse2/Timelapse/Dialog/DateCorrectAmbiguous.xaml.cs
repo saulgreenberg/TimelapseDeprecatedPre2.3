@@ -115,7 +115,7 @@ namespace Timelapse.Dialog
                 // Parse the date for the given row.
                 image = this.database.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
-               
+
                 if (desiredDateTime.Date == imageDateTime.Date)
                 {
                     lastMatchingDate = index;

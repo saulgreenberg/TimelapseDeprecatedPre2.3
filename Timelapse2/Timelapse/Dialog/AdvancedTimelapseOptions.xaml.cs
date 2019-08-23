@@ -58,7 +58,7 @@ namespace Timelapse.Dialog
 
         #region Delete Folder Management
         // Check the appropriate radio button to match the state
-            private void RadioButtonDeletionManagement_Set(DeleteFolderManagementEnum deleteFolderManagement)
+        private void RadioButtonDeletionManagement_Set(DeleteFolderManagementEnum deleteFolderManagement)
         {
             switch (deleteFolderManagement)
             {
