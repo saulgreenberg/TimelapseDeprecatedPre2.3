@@ -1768,15 +1768,58 @@ namespace Timelapse.Database
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
+        // Add a new row to the marker list. Return true if we had to, otherwise false 
+        public bool TryAddNewMarkerRow(long imageID)
+        {
+            if (this.Markers.Find(imageID) != null)
+            {
+                // There should already be a row for this, so don't creat one
+                return false;
+            }
+            List<ColumnTuple> columns = new List<ColumnTuple>()
+            {
+                new ColumnTuple(Constant.DatabaseColumn.ID, imageID.ToString())
+            };
+            List<ColumnTuple> values = new List<ColumnTuple>()
+            {
+                new ColumnTuple(Constant.Control.Counter, String.Empty )
+            };
+            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
+            {
+                columns, values
+            };
+            this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
+            this.GetMarkers(); // Update the markers list to include this new row
+            return true;
+        }
+
         /// <summary>
         /// Set the list of marker points on the current row in the marker table. 
         /// </summary>
         public void SetMarkerPositions(long imageID, MarkersForCounter markersForCounter)
         {
+
             // Find the current row number
             MarkerRow marker = this.Markers.Find(imageID);
             if (marker == null)
             {
+                ////SAULXX
+                //List<ColumnTuple> columns = new List<ColumnTuple>()
+                //{
+                //    new ColumnTuple(Constant.DatabaseColumn.ID, Constant.Control.Counter)
+                //};
+                //List<ColumnTuple> values = new List<ColumnTuple>()
+                //{
+                //    new ColumnTuple(imageID.ToString(), markersForCounter.GetPointList() )
+                //};
+                //List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
+                //{
+                //    columns, values
+                //};
+                    
+                //this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
+                //this.GetMarkers();
+                //marker = this.Markers.Find(imageID);
                 TraceDebug.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
                 return;
             }

@@ -118,6 +118,21 @@ namespace Timelapse
 
             // Find the MarkersForCounters associated with this particular control so we can add a marker to it
             MarkersForCounter markersForCounter = null;
+
+            // PERFORMANCE: This was a quick hack to insert markers into the MarkersTable if it didn't already exist.
+            // It sucks as it means we have to rebuild in memory the entire markers table every time we add a new counter (if there is no row in it)
+            // Need to revisit this later and do it far more efficiently.
+            if (this.markersOnCurrentFile.Count == 0)
+            {
+                // SAULXXX - If there is no row in the marker table, add one
+                if (this.dataHandler.FileDatabase.TryAddNewMarkerRow(this.dataHandler.ImageCache.Current.ID))
+                {
+                    // We added a new marker row, so we need to update this to reflect that
+                    markersForCounter = new MarkersForCounter(counter.DataLabel);
+                    this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+                }
+            }
+
             foreach (MarkersForCounter markers in this.markersOnCurrentFile)
             {
                 if (markers.DataLabel == counter.DataLabel)
