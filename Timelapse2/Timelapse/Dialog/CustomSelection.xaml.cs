@@ -666,10 +666,16 @@ namespace Timelapse.Dialog
             {
                 return;
             }
+
             this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
             if (this.DetectionSelections.UseDetectionCategory)
             {
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                if ((string)this.DetectionCategoryComboBox.SelectedItem == "Empty") 
+                {
+                    // Set the confidence checkbox to false if the selected item is empty
+                    this.UseDetectionConfidenceCheckbox.IsChecked = false;
+                }
             }
 
             this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;

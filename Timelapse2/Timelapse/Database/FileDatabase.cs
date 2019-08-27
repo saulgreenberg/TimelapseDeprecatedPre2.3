@@ -1768,7 +1768,8 @@ namespace Timelapse.Database
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
-        // Add a new row to the marker list. Return true if we had to, otherwise false 
+        // Add an empty new row to the marker list if it isnt there. Return true if we added it, otherwise false 
+        // Columns will be automatically set to NULL
         public bool TryAddNewMarkerRow(long imageID)
         {
             if (this.Markers.Find(imageID) != null)
@@ -1780,13 +1781,9 @@ namespace Timelapse.Database
             {
                 new ColumnTuple(Constant.DatabaseColumn.ID, imageID.ToString())
             };
-            List<ColumnTuple> values = new List<ColumnTuple>()
-            {
-                new ColumnTuple(Constant.Control.Counter, String.Empty )
-            };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
             {
-                columns, values
+                columns
             };
             this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
             this.GetMarkers(); // Update the markers list to include this new row
