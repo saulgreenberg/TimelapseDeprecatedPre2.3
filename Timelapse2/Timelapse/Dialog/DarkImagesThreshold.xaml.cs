@@ -10,9 +10,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Common;
+using Timelapse.Images;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

@@ -20,7 +20,6 @@ using Timelapse.Dialog;
 using Timelapse.Editor.Dialog;
 using Timelapse.Editor.Util;
 using Timelapse.Util;
-
 using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Editor
