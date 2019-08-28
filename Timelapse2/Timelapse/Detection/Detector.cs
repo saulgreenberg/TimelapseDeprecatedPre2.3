@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Timelapse.Detection
 {
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Reviewed.")]
-    #pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
+#pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
     // The Detector class holds data produced by Microsoft's Megadetector
     // Property names and structures follow the Microsoft Megadetetor JSON attribut names
     // in order to allow the JSON data to be deserialized into the Detector data structure

@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Xceed.Wpf.Toolkit;
@@ -44,8 +43,8 @@ namespace Timelapse.Controls
         {
             // configure the various elements
             DataEntryHandler.Configure(this.ContentControl, null);
-            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
-            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
+            this.ContentControl.GotKeyboardFocus += this.ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
         }
 
         #region Event Handlers

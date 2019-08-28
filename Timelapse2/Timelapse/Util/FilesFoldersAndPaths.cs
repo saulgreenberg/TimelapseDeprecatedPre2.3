@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Timelapse.Util
 {
@@ -28,7 +26,7 @@ namespace Timelapse.Util
             // Because of that bug, we need to check for, and remove, any files that don't exactly match the desired extension
             // At the same time, we also remove MacOSX hidden files, if any
             FilesRemoveAllButImagesAndVideos(fileInfoList);
-           
+
             // Reorder the files
             return fileInfoList.OrderBy(file => file.FullName).ToList();
         }
@@ -86,7 +84,7 @@ namespace Timelapse.Util
                 return;
             }
             // Add a folder only if it contains one of the desired extensions
-            
+
             DirectoryInfo directoryInfo = new DirectoryInfo(folderRoot);
 
             if (CheckFolderForAtLeastOneImageOrVideoFiles(folderRoot) == true)

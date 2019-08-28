@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
-using Timelapse.Database;
 using System.Windows.Controls;
+using Timelapse.Database;
 using Timelapse.Util;
 using Timelapse.Common;
 
@@ -10,7 +10,7 @@ namespace Timelapse.Dialog
     public partial class DateTimeSetTimeZone : Window
     {
         private bool displayingPreview;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
 
         public DateTimeSetTimeZone(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)
         {

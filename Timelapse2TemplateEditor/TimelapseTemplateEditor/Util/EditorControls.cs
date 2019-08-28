@@ -168,7 +168,7 @@ namespace Timelapse.Editor.Util
                 DefaultValue = null,
                 UpdateValueOnEnterKey = true,
                 Style = styleProvider.FindResource(ControlContentStyleEnum.CounterTextBox.ToString()) as Style
-            }; 
+            };
             return integerUpDown;
         }
 
@@ -210,7 +210,7 @@ namespace Timelapse.Editor.Util
             List<string> choices = control.GetChoices(out bool includesEmptyChoice);
             foreach (string choice in choices)
             {
-                    comboBox.Items.Add(choice);
+                comboBox.Items.Add(choice);
             }
             if (includesEmptyChoice)
             {

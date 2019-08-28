@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -38,14 +37,14 @@ namespace Timelapse.Dialog
         private const string GreaterThan = "\u2265";
         private const string Between = "Between";
 
-        private FileDatabase database;
-        private DataEntryControls dataEntryControls;
-        private TimeZoneInfo imageSetTimeZone;
-        private bool excludeUTCOffset;
+        private readonly FileDatabase database;
+        private readonly DataEntryControls dataEntryControls;
+        private readonly TimeZoneInfo imageSetTimeZone;
+        private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
         private bool dontUpdateRangeSlider = false;
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
-        private DispatcherTimer countTimer = new DispatcherTimer();
+        private readonly DispatcherTimer countTimer = new DispatcherTimer();
 
         // Detections variables
         private bool dontInvoke = false;
@@ -63,8 +62,8 @@ namespace Timelapse.Dialog
             this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
-            countTimer.Interval = TimeSpan.FromMilliseconds(500);
-            countTimer.Tick += CountTimer_Tick;
+            this.countTimer.Interval = TimeSpan.FromMilliseconds(500);
+            this.countTimer.Tick += this.CountTimer_Tick;
 
             // Detections-specific
             if (GlobalReferences.DetectionsExists)
@@ -105,7 +104,7 @@ namespace Timelapse.Dialog
                 {
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
-                this.DetectionCategoryComboBox.SelectedValue = database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+                this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
                 this.SetDetectionSpinnerEnable();
             }
             else
@@ -116,7 +115,7 @@ namespace Timelapse.Dialog
             this.dontInvoke = false;
             this.dontCount = false;
             if (GlobalReferences.DetectionsExists)
-            { 
+            {
                 this.SetDetectionCriteria();
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
             }
@@ -165,7 +164,7 @@ namespace Timelapse.Dialog
                 useCurrentRow.Unchecked += this.Select_CheckedOrUnchecked;
                 Grid.SetRow(useCurrentRow, gridRowIndex);
                 Grid.SetColumn(useCurrentRow, CustomSelection.SelectColumn);
-                SearchTerms.Children.Add(useCurrentRow);
+                this.SearchTerms.Children.Add(useCurrentRow);
 
                 // LABEL column: The label associated with the control (Note: not the data label)
                 TextBlock controlLabel = new TextBlock()
@@ -472,7 +471,7 @@ namespace Timelapse.Dialog
                 // Because of the bug in the DateTimePicker, we have to get the changed value from the string
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
-                { 
+                {
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
                     this.UpdateSearchCriteriaFeedback();
                 }
@@ -585,7 +584,7 @@ namespace Timelapse.Dialog
                 }
                 else
                 {
-                    value = searchTerm.DatabaseValue.Trim();   
+                    value = searchTerm.DatabaseValue.Trim();
                 }
                 if (value.Length == 0)
                 {
@@ -602,7 +601,7 @@ namespace Timelapse.Dialog
                         searchCriteriaText += " " + CustomSelectionOperatorEnum.And;
                     }
                     else
-                    { 
+                    {
                         searchCriteriaText += " " + this.database.CustomSelection.TermCombiningOperator.ToString();
                     }
                 }
@@ -656,7 +655,7 @@ namespace Timelapse.Dialog
                 return;
             }
             // Enable or disable the controls depending on the various checkbox states
-            SetDetectionSpinnerEnable();
+            this.SetDetectionSpinnerEnable();
 
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
@@ -668,10 +667,16 @@ namespace Timelapse.Dialog
             {
                 return;
             }
+
             this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
             if (this.DetectionSelections.UseDetectionCategory)
             {
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                if ((string)this.DetectionCategoryComboBox.SelectedItem == "Empty") 
+                {
+                    // Set the confidence checkbox to false if the selected item is empty
+                    this.UseDetectionConfidenceCheckbox.IsChecked = false;
+                }
             }
 
             this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;
@@ -693,7 +698,7 @@ namespace Timelapse.Dialog
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
             this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
 
-            this.DetectionGroupBox.IsEnabled = !(bool)this.database.CustomSelection.ShowMissingDetections;
+            this.DetectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
             this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
 
             if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
@@ -717,16 +722,16 @@ namespace Timelapse.Dialog
         private bool ignoreSpinnerUpdates = false;
         private void DetectionConfidenceSpinner1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (this.IsLoaded == false || ignoreSpinnerUpdates)
+            if (this.IsLoaded == false || this.ignoreSpinnerUpdates)
             {
                 return;
             }
 
             if (this.DetectionConfidenceSpinner1.Value > this.DetectionConfidenceSpinner2.Value)
             {
-                ignoreSpinnerUpdates = true;
+                this.ignoreSpinnerUpdates = true;
                 this.DetectionConfidenceSpinner2.Value = this.DetectionConfidenceSpinner1.Value;
-                ignoreSpinnerUpdates = false;
+                this.ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
             if (this.dontUpdateRangeSlider == false)
@@ -735,23 +740,23 @@ namespace Timelapse.Dialog
             }
             else
             {
-                dontUpdateRangeSlider = false;
+                this.dontUpdateRangeSlider = false;
             }
             this.InitiateShowCountsOfMatchingFiles();
         }
 
         private void DetectionConfidenceSpinner2_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (this.IsLoaded == false || ignoreSpinnerUpdates)
+            if (this.IsLoaded == false || this.ignoreSpinnerUpdates)
             {
                 return;
             }
 
             if (this.DetectionConfidenceSpinner2.Value < this.DetectionConfidenceSpinner1.Value)
             {
-                ignoreSpinnerUpdates = true;
+                this.ignoreSpinnerUpdates = true;
                 this.DetectionConfidenceSpinner2.Value = this.DetectionConfidenceSpinner1.Value;
-                ignoreSpinnerUpdates = false;
+                this.ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
             if (this.dontUpdateRangeSlider == false)
@@ -760,20 +765,20 @@ namespace Timelapse.Dialog
             }
             else
             {
-                dontUpdateRangeSlider = false;
+                this.dontUpdateRangeSlider = false;
             }
             this.InitiateShowCountsOfMatchingFiles();
         }
 
         private void DetectionRangeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
         {
-            this.DetectionConfidenceSpinner2.Value = DetectionRangeSlider.HigherValue;
+            this.DetectionConfidenceSpinner2.Value = this.DetectionRangeSlider.HigherValue;
             this.dontUpdateRangeSlider = true;
         }
 
         private void DetectionRangeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
         {
-            this.DetectionConfidenceSpinner1.Value = DetectionRangeSlider.LowerValue;
+            this.DetectionConfidenceSpinner1.Value = this.DetectionRangeSlider.LowerValue;
         }
 
         // Depending on what comparision operator is used, set the visibility of particular spinners and labels
@@ -797,7 +802,7 @@ namespace Timelapse.Dialog
         #region Common
         private void CountTimer_Tick(object sender, EventArgs e)
         {
-            countTimer.Stop();
+            this.countTimer.Stop();
             // This is set everytime a selectin is made
             if (this.dontCount == true)
             {
@@ -811,15 +816,15 @@ namespace Timelapse.Dialog
         // Start the timere that will show how many files match the current selection
         private void InitiateShowCountsOfMatchingFiles()
         {
-            countTimer.Stop();
-            countTimer.Start();
+            this.countTimer.Stop();
+            this.countTimer.Start();
         }
 
         // Apply the selection if the Ok button is clicked
         private void OkButton_Click(object sender, RoutedEventArgs args)
         {
             if (GlobalReferences.DetectionsExists)
-            { 
+            {
                 this.SetDetectionCriteria();
             }
             this.DialogResult = true;
@@ -834,7 +839,7 @@ namespace Timelapse.Dialog
 
         private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
         {
-            this.database.CustomSelection.ShowMissingDetections = (bool)ShowMissingDetectionsCheckbox.IsChecked;
+            this.database.CustomSelection.ShowMissingDetections = (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }

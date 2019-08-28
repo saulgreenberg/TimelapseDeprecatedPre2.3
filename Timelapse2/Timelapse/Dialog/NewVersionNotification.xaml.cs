@@ -4,18 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -25,9 +16,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class NewVersionNotification : Window
     {
-        private string applicationName;
-        private Version currentVersionNumber;
-        private Version lastestVersionNumber;
+        private readonly string applicationName;
+        private readonly Version currentVersionNumber;
+        private readonly Version lastestVersionNumber;
 
         public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latest_version_number)
         {
@@ -40,7 +31,7 @@ namespace Timelapse.Dialog
 
             // Construct the template message
             this.Title = String.Format("A new version of {0} is available.", this.applicationName);
-    
+
             this.Message.Title = this.Title;
             this.Message.What = String.Format("A new {0} version is available: {1}", this.applicationName, this.lastestVersionNumber);
             this.Message.What += Environment.NewLine;
@@ -80,7 +71,7 @@ namespace Timelapse.Dialog
                 this.SubscribeToAllHyperlinks(content);
 
                 // Add the document to the FlowDocumentScollViewer
-                this.ChangeDescription.Document = content;  
+                this.ChangeDescription.Document = content;
             }
             catch
             {
@@ -113,7 +104,7 @@ namespace Timelapse.Dialog
         {
             var hyperlinks = GetVisuals(flowDocument).OfType<Hyperlink>();
             foreach (var link in hyperlinks)
-            { 
+            {
                 link.RequestNavigate += new System.Windows.Navigation.RequestNavigateEventHandler(this.Link_RequestNavigate);
             }
         }
@@ -124,7 +115,7 @@ namespace Timelapse.Dialog
             {
                 yield return child;
                 foreach (var descendants in GetVisuals(child))
-                { 
+                {
                     yield return descendants;
                 }
             }

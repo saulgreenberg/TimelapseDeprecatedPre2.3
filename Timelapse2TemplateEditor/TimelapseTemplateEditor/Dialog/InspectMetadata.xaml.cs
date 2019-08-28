@@ -16,11 +16,11 @@ namespace Timelapse.Editor.Dialog
     {
         private Dictionary<string, ImageMetadata> metadataDictionary;
         private string metadataName = String.Empty;
-        private string noteLabel = String.Empty;
-        private string noteDataLabel = String.Empty;
+        private readonly string noteLabel = String.Empty;
+        private readonly string noteDataLabel = String.Empty;
 
         private string imageFilePath;
-        private string folderPath = String.Empty;
+        private readonly string folderPath = String.Empty;
 
         public InspectMetadata(Window owner)
         {
@@ -31,8 +31,8 @@ namespace Timelapse.Editor.Dialog
         // After the interface is loaded, try to adjust the position of the dialog box
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-           Dialogs.SetDefaultDialogPosition(this);
-           Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.SetDefaultDialogPosition(this);
+            Dialogs.TryFitDialogWindowInWorkingArea(this);
         }
 
         #region Datagrid callbacks

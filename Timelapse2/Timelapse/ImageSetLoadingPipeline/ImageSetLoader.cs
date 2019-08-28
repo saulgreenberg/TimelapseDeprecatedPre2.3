@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Images;
@@ -23,10 +19,10 @@ namespace Timelapse.ImageSetLoadingPipeline
     {
         private int imagesLoaded = 0;
         private int imagesToInsert = 0;
-        
-        private Task pass1 = null;
 
-        private Task pass2 = null;
+        private readonly Task pass1 = null;
+
+        private readonly Task pass2 = null;
 
         public ImageLoader LastLoadComplete
         {
@@ -70,8 +66,8 @@ namespace Timelapse.ImageSetLoadingPipeline
                                                                 select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
 
             FileInfo[] filesToAddInfoArray = (from fileInfo in fileInfos
-                                        where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
-                                        select fileInfo).OrderBy(f => f.FullName).ToArray();
+                                              where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
+                                              select fileInfo).OrderBy(f => f.FullName).ToArray();
 
             this.ImagesToLoad = filesToAddInfoArray.Length;
 
@@ -82,7 +78,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             string absolutePathPart = imageSetFolderPath + @"\";
 
             // Pass 1
-            this.pass1 = new Task(() => 
+            this.pass1 = new Task(() =>
             {
                 List<Task> loadTasks = new List<Task>();
 
@@ -100,11 +96,11 @@ namespace Timelapse.ImageSetLoadingPipeline
 
                     ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler, state);
 
-                    Task loaderTask = loader.LoadImageAsync(() => 
+                    Task loaderTask = loader.LoadImageAsync(() =>
                     {
                         // Both of these operations are atomic, the specific number and the specific loader at any given
                         // time may not coorespond.
-                        Interlocked.Increment(ref imagesLoaded);
+                        Interlocked.Increment(ref this.imagesLoaded);
                         this.LastLoadComplete = loader;
 
                         if (loader.RequiresDatabaseInsert)
@@ -114,7 +110,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                             // any order. By sorting the file infos above, things that sort first in the database should
                             // be done first, BUT THIS MAY REQUIRE ADDITIONAL FINESSE TO KEEP THE EXPLICIT ORDER CORRECT.
                             databaseInsertionQueue.Enqueue(loader.File);
-                            Interlocked.Increment(ref imagesToInsert);
+                            Interlocked.Increment(ref this.imagesToInsert);
                         }
                     });
                     loadTasks.Add(loaderTask);
@@ -162,7 +158,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
                 folderLoadProgress.CurrentFile = this.ImagesLoaded;
                 folderLoadProgress.CurrentFileName = this.LastLoadComplete?.File.File;
-                int percentProgress = (int)(100.0 * this.ImagesLoaded / (double)this.ImagesToLoad);
+                int percentProgress = (int)(100.0 * this.ImagesLoaded / this.ImagesToLoad);
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 
@@ -180,7 +176,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 folderLoadProgress.BitmapSource = null;
                 folderLoadProgress.CurrentFile = this.LastIndexInsertComplete;
                 folderLoadProgress.CurrentFileName = this.LastInsertComplete?.File;
-                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / (double)this.imagesToInsert);
+                int percentProgress = (int)(100.0 * folderLoadProgress.CurrentFile / this.imagesToInsert);
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 

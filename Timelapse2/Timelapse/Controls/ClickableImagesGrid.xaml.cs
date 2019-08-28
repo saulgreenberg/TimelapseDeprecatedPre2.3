@@ -36,7 +36,7 @@ namespace Timelapse.Controls
 
         // DataEntryControls needs to be set externally
         public DataEntryControls DataEntryControls { private get; set; }
-        
+
         // FileTable needs to be set externally
         public FileTable FileTable { private get; set; }
 
@@ -98,7 +98,7 @@ namespace Timelapse.Controls
         public bool Refresh(double desiredWidth, Size availableSize, bool forceUpdate, int state)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
-            if (FileTable == null || FileTable.Count() == 0 || desiredWidth == 0)
+            if (this.FileTable == null || this.FileTable.Count() == 0 || desiredWidth == 0)
             {
                 return false;
             }
@@ -110,7 +110,7 @@ namespace Timelapse.Controls
             this.Grid.Children.Clear();
 
             // Calculated the number of columns that can fit into the available space,
-            
+
             int columnCount = Convert.ToInt32(Math.Floor(availableSize.Width / desiredWidth));
             if (columnCount == 0)
             {
@@ -121,7 +121,7 @@ namespace Timelapse.Controls
 
             // Add as many columns of the desired width as can fit into the grid's available space
             for (int thisColumn = 0; thisColumn < columnCount; thisColumn++)
-            { 
+            {
                 this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(desiredWidth, GridUnitType.Pixel) });
             }
 
@@ -132,14 +132,14 @@ namespace Timelapse.Controls
             // - the new row does't fit the available space
             int rowNumber = 0;
             int fileTableIndex = this.FileTableStartIndex;
-            
+
             Double imageHeight = 0;
             Double maxImageHeight = 0;
             Double combinedRowHeight = 0;
             ClickableImage ci;
             this.clickableImagesList = new List<ClickableImage>();
             List<ClickableImage> clickableImagesRow = new List<ClickableImage>();
-            
+
             // If forceUpdate is true, remove the cache so that images have to be regenerated
             if (forceUpdate && this.cachedImageList != null)
             {
@@ -150,7 +150,7 @@ namespace Timelapse.Controls
             {
                 // For each row: 
                 // Collect potential images, while tracking the maximum height of each image, which is used to determine the row height needed
-                for (int columnIndex = 0; columnIndex < columnCount && fileTableIndex < FileTable.Count(); columnIndex++)
+                for (int columnIndex = 0; columnIndex < columnCount && fileTableIndex < this.FileTable.Count(); columnIndex++)
                 {
                     // Process each image. As we do this, 
                     // - check the cache to see if the image is already there, 
@@ -176,7 +176,7 @@ namespace Timelapse.Controls
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
                                 // Rerender the episode text in case it has changed
-                                ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex, state); 
+                                ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex, state);
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
@@ -250,7 +250,7 @@ namespace Timelapse.Controls
                     maxImageHeight = 0;
                 }
                 // If we've gone beyond the last image in the image set, then we are done.
-                if (fileTableIndex >= FileTable.Count())
+                if (fileTableIndex >= this.FileTable.Count())
                 {
                     break;
                 }
@@ -274,7 +274,7 @@ namespace Timelapse.Controls
             Mouse.OverrideCursor = null;
 
             // Return false if we can't even fit in a single row
-            return (Grid.RowDefinitions.Count < 1) ? false : true;
+            return (this.Grid.RowDefinitions.Count < 1) ? false : true;
         }
 
         // Invalidate the clickable images cache.
@@ -291,8 +291,8 @@ namespace Timelapse.Controls
         private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             ClickableImage ci;
-            this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(Grid));
-            RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+            this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(this.Grid));
+            RowColumn currentCell = this.GetCellFromPoint(Mouse.GetPosition(this.Grid));
             this.cellWithLastMouseOver = currentCell;
 
             if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
@@ -301,7 +301,7 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = true;
                 if (Equals(this.cellChosenOnMouseDown, currentCell))
                 {
-                    ci = GetClickableImageFromCell(currentCell);
+                    ci = this.GetClickableImageFromCell(currentCell);
                     if (ci != null)
                     {
                         ci.IsSelected = !ci.IsSelected;
@@ -322,14 +322,14 @@ namespace Timelapse.Controls
                 if (ci != null)
                 {
                     this.SelectNone();
-                    ci.IsSelected = true; 
+                    ci.IsSelected = true;
                 }
             }
 
             // If this is a double click, raise the Double click event, e.g., so that the calling app can navigate to that image.
             if (e.ClickCount == 2)
             {
-                ci = GetClickableImageFromCell(currentCell);
+                ci = this.GetClickableImageFromCell(currentCell);
                 ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci?.ImageRow);
                 this.OnDoubleClick(eventArgs);
                 e.Handled = true; // Stops the double click from generating a marker on the MarkableImageCanvas
@@ -349,7 +349,7 @@ namespace Timelapse.Controls
             }
 
             // Get the cell under the mouse pointer
-            RowColumn currentCell = GetCellFromPoint(Mouse.GetPosition(Grid));
+            RowColumn currentCell = this.GetCellFromPoint(Mouse.GetPosition(this.Grid));
 
             // Ignore if the cell has already been handled in the last mouse down or move event,
             if (Equals(currentCell, this.cellWithLastMouseOver))
@@ -413,7 +413,7 @@ namespace Timelapse.Controls
             this.SelectNone(); // Clear the selections
 
             // Determine which cell is 
-            DetermineTopLeftBottomRightCells(cellChosenOnMouseDown, currentCell, out RowColumn startCell, out RowColumn endCell);
+            DetermineTopLeftBottomRightCells(this.cellChosenOnMouseDown, currentCell, out RowColumn startCell, out RowColumn endCell);
 
             // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
             RowColumn indexCell = startCell;
@@ -421,7 +421,7 @@ namespace Timelapse.Controls
             ClickableImage ci;
             while (true)
             {
-                ci = GetClickableImageFromCell(indexCell);
+                ci = this.GetClickableImageFromCell(indexCell);
                 // If the cell doesn't contain a ClickableImage, then we are at the end.
                 if (ci == null)
                 {
@@ -430,9 +430,9 @@ namespace Timelapse.Controls
                 ci.IsSelected = true;
 
                 // If there is no next cell, then we are at the end.
-                if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
+                if (this.GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
                 {
-                   break;
+                    break;
                 }
                 indexCell = nextCell;
             }
@@ -451,7 +451,7 @@ namespace Timelapse.Controls
             ClickableImage ci;
             while (true)
             {
-                ci = GetClickableImageFromCell(indexCell);
+                ci = this.GetClickableImageFromCell(indexCell);
                 // This shouldn't happen, but ensure that the cell contains a ClickableImage.
                 if (ci == null)
                 {
@@ -460,7 +460,7 @@ namespace Timelapse.Controls
                 ci.IsSelected = true;
 
                 // If there is no next cell, then we are at the end.
-                if (GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
+                if (this.GridGetNextCell(indexCell, endCell, out RowColumn nextCell) == false)
                 {
                     break;
                 }
@@ -473,16 +473,16 @@ namespace Timelapse.Controls
         private void SelectExtendSelectionFrom(RowColumn currentCell)
         {
             // If there is no previous cell, then we are at the end.
-            if (GridGetPreviousSelectedCell(currentCell, out RowColumn previousCell) == true)
-            { 
-                SelectFromTo(previousCell, currentCell);
+            if (this.GridGetPreviousSelectedCell(currentCell, out RowColumn previousCell) == true)
+            {
+                this.SelectFromTo(previousCell, currentCell);
             }
-            else if (GridGetNextSelectedCell(currentCell, out RowColumn nextCell) == true)
-            { 
-                SelectFromTo(currentCell, nextCell);
+            else if (this.GridGetNextSelectedCell(currentCell, out RowColumn nextCell) == true)
+            {
+                this.SelectFromTo(currentCell, nextCell);
             }
         }
-      
+
         // Get the Selected times as a list of file table indexes to the current displayed selection of files (note these are not the IDs)
         public List<int> GetSelected()
         {
@@ -504,7 +504,7 @@ namespace Timelapse.Controls
 
         public int SelectedCount()
         {
-            return GetSelected().Count;
+            return this.GetSelected().Count;
         }
         #endregion
 
@@ -514,12 +514,12 @@ namespace Timelapse.Controls
             RowColumn lastCell = new RowColumn(this.Grid.RowDefinitions.Count - 1, this.Grid.ColumnDefinitions.Count - 1);
             ClickableImage ci;
 
-            while (GridGetNextCell(cell, lastCell, out nextCell))
+            while (this.GridGetNextCell(cell, lastCell, out nextCell))
             {
-                ci = GetClickableImageFromCell(nextCell);
+                ci = this.GetClickableImageFromCell(nextCell);
 
                 // If there is no cell, we've reached the end, 
-                if (ci == null) 
+                if (ci == null)
                 {
                     return false;
                 }
@@ -538,9 +538,9 @@ namespace Timelapse.Controls
             RowColumn lastCell = new RowColumn(0, 0);
             ClickableImage ci;
 
-            while (GridGetPreviousCell(cell, lastCell, out previousCell))
+            while (this.GridGetPreviousCell(cell, lastCell, out previousCell))
             {
-                ci = GetClickableImageFromCell(previousCell);
+                ci = this.GetClickableImageFromCell(previousCell);
 
                 // If there is no cell, terminate as we've reached the beginning
                 if (ci == null)
@@ -599,7 +599,7 @@ namespace Timelapse.Controls
             return true;
         }
         #endregion
-  
+
         #region Cell Calculation methods
 
         // Given two cells, determine which one is the start vs the end cell
@@ -611,7 +611,7 @@ namespace Timelapse.Controls
             startCell = (cell1.X < cell2.X || (cell1.X == cell2.X && cell1.Y <= cell2.Y)) ? cell1 : cell2;
             endCell = Equals(startCell, cell1) ? cell2 : cell1;
         }
-    
+
         // Given a mouse point, return a point that indicates the (row, column) of the grid that the mouse point is over
         private RowColumn GetCellFromPoint(Point mousePoint)
         {
@@ -620,7 +620,7 @@ namespace Timelapse.Controls
             double accumulatedWidth = 0.0;
 
             // Calculate which row the mouse was over
-            foreach (var rowDefinition in Grid.RowDefinitions)
+            foreach (var rowDefinition in this.Grid.RowDefinitions)
             {
                 accumulatedHeight += rowDefinition.ActualHeight;
                 if (accumulatedHeight >= mousePoint.Y)
@@ -631,11 +631,11 @@ namespace Timelapse.Controls
             }
 
             // Calculate which column the mouse was over
-            foreach (var columnDefinition in Grid.ColumnDefinitions)
+            foreach (var columnDefinition in this.Grid.ColumnDefinitions)
             {
                 accumulatedWidth += columnDefinition.ActualWidth;
                 if (accumulatedWidth >= mousePoint.X)
-                { 
+                {
                     break;
                 }
                 cell.Y++;
@@ -646,7 +646,7 @@ namespace Timelapse.Controls
         // Get the clickable image held by the Grid's specified row,column coordinates 
         private ClickableImage GetClickableImageFromCell(RowColumn cell)
         {
-            return Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
+            return this.Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
         }
         #endregion
 
@@ -664,7 +664,7 @@ namespace Timelapse.Controls
             }
         }
         #endregion
-        
+
         #region Events
         public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
         public event EventHandler<ClickableImagesGridEventArgs> SelectionChanged;

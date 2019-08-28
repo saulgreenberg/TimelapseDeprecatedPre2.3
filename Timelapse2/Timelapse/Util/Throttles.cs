@@ -26,7 +26,7 @@ namespace Timelapse.Util
             // Ensure that the renders per second is within range. 
             // If not, and depending what it is set to, set it to either the lower or upper bound
             if (rendersPerSecond < Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound)
-            { 
+            {
                 rendersPerSecond = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound;
             }
             else if (rendersPerSecond > Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound)
@@ -37,7 +37,7 @@ namespace Timelapse.Util
 
             this.DesiredImageRendersPerSecond = rendersPerSecond;
             this.DesiredIntervalBetweenRenders = TimeSpan.FromSeconds(1.0 / rendersPerSecond);
-            this.RepeatedKeyAcceptanceInterval = (int)(((double)SystemParameters.KeyboardSpeed + 0.5 * rendersPerSecond) / rendersPerSecond);
+            this.RepeatedKeyAcceptanceInterval = (int)((SystemParameters.KeyboardSpeed + 0.5 * rendersPerSecond) / rendersPerSecond);
         }
     }
 }

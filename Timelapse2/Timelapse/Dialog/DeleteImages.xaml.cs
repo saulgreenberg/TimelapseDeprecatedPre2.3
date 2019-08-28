@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Util;
 
@@ -19,9 +17,9 @@ namespace Timelapse.Dialog
     public partial class DeleteImages : Window
     {
         // these variables will hold the values of the passed in parameters
-        private bool deleteImageAndData;
-        private List<ImageRow> filesToDelete;
-        private FileDatabase database;
+        private readonly bool deleteImageAndData;
+        private readonly List<ImageRow> filesToDelete;
+        private readonly FileDatabase database;
         private int maxPathLength = 45;
 
         /// <summary>
@@ -83,7 +81,7 @@ namespace Timelapse.Dialog
             this.Height = 600;
             this.MinHeight = 600;
             this.ImageViewer.Margin = new Thickness(20, 0, 0, 0);
-            this.ImageViewer.Source = imageRow.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumnnailWidthWhenNavigating, out bool isCorruptOrMissing);
+            this.ImageViewer.Source = imageRow.LoadBitmap(this.database.FolderPath, Constant.ImageValues.ThumnnailWidthWhenNavigating, out bool isCorruptOrMissing);
 
             // Show  the deleted file name and image in the interface
             this.maxPathLength = 70;
@@ -101,7 +99,7 @@ namespace Timelapse.Dialog
             this.Message.What = String.Format("Deletes the current {0} if it exists", imageOrVideo);
             this.Message.Result = String.Format("\u2022 The deleted {0} will be backed up in a sub-folder named {1}.{2}", imageOrVideo, Constant.File.DeletedFilesFolder, Environment.NewLine);
             this.Message.Hint = String.Format("\u2022 Restore the deleted {0} by manually moving it ", imageOrVideo);
-            if (deleteImageAndData == false)
+            if (this.deleteImageAndData == false)
             {
                 // Case 1: Delete the current image, but not its data.
                 this.Message.Title += " but not its data.";
@@ -151,8 +149,8 @@ namespace Timelapse.Dialog
                     ToolTip = Path.Combine(imageProperties.RelativePath, imageProperties.File),
                     Tag = imageProperties
                 };
-                lbi.MouseEnter += Lbi_MouseEnter;
-                lbi.MouseLeave += Lbi_MouseLeave;
+                lbi.MouseEnter += this.Lbi_MouseEnter;
+                lbi.MouseLeave += this.Lbi_MouseLeave;
                 this.DeletedFilesListBox.Items.Add(lbi);
             }
 
@@ -160,7 +158,7 @@ namespace Timelapse.Dialog
             ScrollViewer sv = Utilities.GetVisualChild<ScrollViewer>(this.DeletedFilesListBox);
             if (sv != null)
             {
-                sv.PreviewMouseWheel += Sv_PreviewMouseWheel;
+                sv.PreviewMouseWheel += this.Sv_PreviewMouseWheel;
             }
 
             this.Message.Title = String.Format("Delete {0} files(s) ", numberOfImagesToDelete.ToString());
@@ -168,7 +166,7 @@ namespace Timelapse.Dialog
             this.Message.Result = String.Empty;
             this.Message.Hint = "\u2022 Restore deleted files by manually moving them ";
             this.Message.Result += String.Format("\u2022 The deleted file will be backed up in a sub-folder named {0}.{1}", Constant.File.DeletedFilesFolder, Environment.NewLine);
-            if (deleteImageAndData == false)
+            if (this.deleteImageAndData == false)
             {
                 // Case 3: Delete the images that have the delete flag set, but not their data
                 this.Message.Title += "but not their data";
@@ -196,7 +194,7 @@ namespace Timelapse.Dialog
         {
             ListBoxItem lbi = sender as ListBoxItem;
             ImageRow ir = (ImageRow)lbi.Tag;
-            this.ImageViewer.Source = ir.LoadBitmap(database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing);
+            this.ImageViewer.Source = ir.LoadBitmap(this.database.FolderPath, Constant.ImageValues.ThumbnailWidth, out bool isCorruptOrMissing);
             this.MouseOverMessageTextBlock.Visibility = Visibility.Collapsed;
             this.ImageViewer.Visibility = Visibility.Visible;
         }
@@ -221,7 +219,7 @@ namespace Timelapse.Dialog
             }
             else
             {
-                sv.LineDown(); 
+                sv.LineDown();
             }
         }
 
@@ -230,7 +228,7 @@ namespace Timelapse.Dialog
         {
             this.OkButton.IsEnabled = (bool)this.chkboxConfirm.IsChecked;
         }
-        
+
         // Cancel button selected
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {

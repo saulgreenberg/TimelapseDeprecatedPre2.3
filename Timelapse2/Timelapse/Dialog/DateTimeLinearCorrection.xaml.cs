@@ -20,7 +20,7 @@ namespace Timelapse
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
         private bool displayingPreview = false;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
 
         // Create the interface
         public DateTimeLinearCorrection(FileDatabase fileDatabase, Window owner)
@@ -52,12 +52,11 @@ namespace Timelapse
                 }
             }
 
-            bool isCorruptOrMissing;
             // At this point, we should have succeeded getting the oldest and newest data/time
             // Configure feedback for earliest date and its image
             this.earliestImageName.Content = earliestImageRow.File;
             this.earliestImageDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.earliestImageDateTime);
-            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out isCorruptOrMissing);
+            this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // Configure feedback for latest date (in datetime picker) and its image
             this.latestImageName.Content = latestImageRow.File;
@@ -99,7 +98,7 @@ namespace Timelapse
                 }
                 else
                 {
-                    imagePositionInInterval = (double)(imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
+                    imagePositionInInterval = (imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
                 }
 
                 TimeSpan adjustment = TimeSpan.FromTicks((long)(imagePositionInInterval * newestImageAdjustment.Ticks));
@@ -181,7 +180,7 @@ namespace Timelapse
                 this.fileDatabase.AdjustFileTimes(
                    (DateTimeOffset imageDateTime) =>
                    {
-                       double imagePositionInInterval = (double)(imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
+                       double imagePositionInInterval = (imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
                        Debug.Assert((-0.0000001 < imagePositionInInterval) && (imagePositionInInterval < 1.0000001), String.Format("Interval position {0} is not between 0.0 and 1.0.", imagePositionInInterval));
                        TimeSpan adjustment = TimeSpan.FromTicks((long)(imagePositionInInterval * newestImageAdjustment.Ticks)); // Used to have a  .5 increment, I think to force rounding upwards
                                                                                                                                 // TimeSpan.Duration means we do these checks on the absolute value (positive) of the Timespan, as slow clocks will have negative adjustments.
@@ -231,7 +230,7 @@ namespace Timelapse
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
         private void DateTimePickerLatestDateTime_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            DateTimePicker_ValueChanged(null, null);
+            this.DateTimePicker_ValueChanged(null, null);
         }
     }
 }

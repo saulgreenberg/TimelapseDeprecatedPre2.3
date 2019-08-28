@@ -1,19 +1,16 @@
-﻿using Timelapse.Database;
-using Timelapse.Images;
-using Timelapse.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Common;
 
@@ -25,15 +22,15 @@ namespace Timelapse.Dialog
 
         private WriteableBitmap bitmap;
         private int darkPixelThreshold;
-        private double darkPixelRatio; 
+        private double darkPixelRatio;
         private double darkPixelRatioFound;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private bool disposed;
-        private FileTableEnumerator imageEnumerator;
+        private readonly FileTableEnumerator imageEnumerator;
         private bool isColor;
         private bool updateImageQualityForAllSelectedImagesStarted;
-        private bool stop;
-        private TimelapseUserRegistrySettings userSettings;
+        private readonly bool stop;
+        private readonly TimelapseUserRegistrySettings userSettings;
 
         public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, TimelapseWindow owner)
         {
@@ -404,7 +401,7 @@ namespace Timelapse.Dialog
                             imageQuality.NewImageQuality = FileSelectionType.Ok; 
                         }
                         else
-                        { 
+                        {
                             // Set the image quality. Note that videos are always classified as Ok.
                             imageQuality.NewImageQuality = file.IsVideo
                                 ? FileSelectionType.Ok
@@ -433,7 +430,7 @@ namespace Timelapse.Dialog
                         {
                             if (utcNow - previousImageRender > desiredRenderInterval)
                             {
-                                backgroundWorker.ReportProgress((int)(100.0 * (double)currentFileIndex / (double)selectedFiles.Count), imageQuality);
+                                backgroundWorker.ReportProgress((int)(100.0 * currentFileIndex / selectedFiles.Count), imageQuality);
                             }
                         }
                     }
@@ -475,7 +472,7 @@ namespace Timelapse.Dialog
                 this.RectDarkPixelRatioFound.Height = this.FeedbackCanvas.ActualHeight;
 
                 // update image scroll bar position
-                this.ScrollImages.Value = Math.Min((double)ea.ProgressPercentage / 100.0 * selectedFiles.Count, selectedFiles.Count - 1);
+                this.ScrollImages.Value = Math.Min(ea.ProgressPercentage / 100.0 * selectedFiles.Count, selectedFiles.Count - 1);
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {

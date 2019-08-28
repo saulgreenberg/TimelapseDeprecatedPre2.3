@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Common;
 using Timelapse.Controls;
-using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -41,7 +36,7 @@ namespace Timelapse
         // FilesSelectAndShow: Basic form doesn't force an update
         private bool FilesSelectAndShow(long imageID, FileSelectionType selection)
         {
-            return FilesSelectAndShow(imageID, selection, false);
+            return this.FilesSelectAndShow(imageID, selection, false);
         }
 
         // FilesSelectAndShow: Full version
@@ -73,7 +68,7 @@ namespace Timelapse
                 // However, it is not a mainstream operation so can be considered a lower priority place for optimization
                 missingFilesExist = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
             }
-            else 
+            else
             {
                 // If its a folder selection, record it so we can save it later in the image set table 
                 this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionType.Folders

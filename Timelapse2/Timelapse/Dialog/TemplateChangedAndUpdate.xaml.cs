@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Timelapse.Database;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -17,14 +15,14 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TemplateChangedAndUpdate : Window
     {
-        private string actionAdd = "Add";
-        private string actionDelete = "Delete";
+        private readonly string actionAdd = "Add";
+        private readonly string actionDelete = "Delete";
         private bool dontClose = false;
 
-        private Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
-        private Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
-        private List<ComboBox> comboBoxes = new List<ComboBox>();
-        private List<int> actionRows = new List<int>();
+        private readonly Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
+        private readonly List<ComboBox> comboBoxes = new List<ComboBox>();
+        private readonly List<int> actionRows = new List<int>();
 
         private TemplateSyncResults TemplateSyncResults { get; set; }
 
@@ -56,7 +54,7 @@ namespace Timelapse.Dialog
                     // Changed items that can be renamed
                     int inTemplateCount = this.inTemplateOnly.ContainsKey(type) ? this.inTemplateOnly[type].Count : 0;
                     int inImageOnlyCount = this.inImageOnly.ContainsKey(type) ? this.inImageOnly[type].Count : 0;
-              
+
                     if (inTemplateCount > 0 && inImageOnlyCount > 0)
                     {
                         // Iterated throught the datalabels that can be added or renamed
@@ -100,8 +98,8 @@ namespace Timelapse.Dialog
             if (templateSyncResults.ControlSynchronizationWarnings.Count > 0)
             {
                 this.TextBlockDetails.Inlines.Add(Environment.NewLine);
-                    this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
-                
+                this.TextBlockDetails.Inlines.Add(new Run { FontWeight = FontWeights.Bold, Text = "Additional Warnings" });
+
                 foreach (string warning in templateSyncResults.ControlSynchronizationWarnings)
                 {
                     this.TextBlockDetails.Inlines.Add(Environment.NewLine);
@@ -336,7 +334,7 @@ namespace Timelapse.Dialog
                 }
             }
             if (problemDataLabels.Count > 0)
-            { 
+            {
                 // notify the user concerning the problem data labels
                 MessageBox messageBox = new MessageBox("Select the new name for your 'Renamed' fields ", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;

@@ -1,13 +1,12 @@
 ﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
     public partial class RenameFileDatabaseFile : Window
     {
-        private string currentFileName;
+        private readonly string currentFileName;
         public string NewFilename { get; private set; }
 
         public RenameFileDatabaseFile(string fileName, Window owner)

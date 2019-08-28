@@ -14,7 +14,7 @@ namespace Timelapse
             LayoutAnchorable la = sender as LayoutAnchorable;
             if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
             {
-                 DockingManager_FloatingDataEntryWindowLimitSize();
+                this.DockingManager_FloatingDataEntryWindowLimitSize();
             }
             // SAULXXX NOT SURE WHY I ADDED THIS HERE< BUT IT SEEMS TO HIDE THE FINDBOX WHEN THE USER FIRST INVOKES IT
             // IF IT BEHAVES OK< DELETE THIS COMMENTED OUT LINE

@@ -310,11 +310,11 @@ namespace Timelapse.Images
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
-            this.timerResize.Tick += TimerResize_Tick;
+            this.timerResize.Tick += this.TimerResize_Tick;
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
-            this.timerSlider.Tick += TimerSlider_Tick;
+            this.timerSlider.Tick += this.TimerSlider_Tick;
 
             // Default to the image view, as it will be all black
             this.ImageToDisplay.Visibility = Visibility.Visible;
@@ -517,7 +517,7 @@ namespace Timelapse.Images
             if (this.RefreshClickableImagesGrid(this.ClickableImagesState) == false)
             {
                 // We couldn't show at least one image in the overview, so go back to the normal view
-                SwitchToImageView();
+                this.SwitchToImageView();
             }
         }
 
@@ -990,7 +990,7 @@ namespace Timelapse.Images
         }
         #endregion
 
-        private Canvas bboxCanvas = new Canvas();
+        private readonly Canvas bboxCanvas = new Canvas();
         #region Draw Bounding Box
         /// <summary>
         /// Remove all and then draw all the markers
@@ -1006,13 +1006,13 @@ namespace Timelapse.Images
         public void DrawBoundingBox(Size canvasRenderSize)
         {
             // Remove existing bounding boxes, if any.
-            bboxCanvas.Children.Clear();
-            this.Children.Remove(bboxCanvas);
+            this.bboxCanvas.Children.Clear();
+            this.Children.Remove(this.bboxCanvas);
 
             // Max Confidence is over all bounding boxes, regardless of the categories.
             // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
             if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
-            { 
+            {
                 return;
             }
 
@@ -1020,8 +1020,8 @@ namespace Timelapse.Images
             {
                 return;
             }
-            bboxCanvas.Width = canvasRenderSize.Width;
-            bboxCanvas.Height = canvasRenderSize.Height;
+            this.bboxCanvas.Width = canvasRenderSize.Width;
+            this.bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
                 if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
@@ -1071,13 +1071,13 @@ namespace Timelapse.Images
                 // Now add the rectangle to the canvas
                 Canvas.SetLeft(rect, screenPositionTopLeft.X);
                 Canvas.SetTop(rect, screenPositionTopLeft.Y);
-                bboxCanvas.Children.Add(rect);
-                bboxCanvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
+                this.bboxCanvas.Children.Add(rect);
+                this.bboxCanvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
             }
-            Canvas.SetLeft(bboxCanvas, 0);
-            Canvas.SetTop(bboxCanvas, 0);
-            Canvas.SetZIndex(bboxCanvas, 1);
-            this.Children.Add(bboxCanvas);
+            Canvas.SetLeft(this.bboxCanvas, 0);
+            Canvas.SetTop(this.bboxCanvas, 0);
+            Canvas.SetZIndex(this.bboxCanvas, 1);
+            this.Children.Add(this.bboxCanvas);
         }
         #endregion
 
@@ -1117,7 +1117,7 @@ namespace Timelapse.Images
             }
         }
         #endregion
- 
+
         #region ClickableImages Grid
 
         // Zoom in (or out) of single image and/or overview 
@@ -1126,7 +1126,7 @@ namespace Timelapse.Images
             lock (this)
             {
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {    
+                {
                     if (this.ClickableImagesState >= 3)
                     {
                         // State: zoomed out maximum allowable steps on clickable grid
@@ -1143,7 +1143,7 @@ namespace Timelapse.Images
                     {
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming out another step
-                        TryZoomInOrOut(zoomIn, mousePosition);
+                        this.TryZoomInOrOut(zoomIn, mousePosition);
                     }
                     if (isInitialSwitchToClickableImagesGrid)
                     {
@@ -1162,7 +1162,7 @@ namespace Timelapse.Images
                     {
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming in another step
-                        TryZoomInOrOut(zoomIn, mousePosition);
+                        this.TryZoomInOrOut(zoomIn, mousePosition);
                     }
                 }
                 else if (this.IsClickableImagesGridVisible == true)
@@ -1205,7 +1205,7 @@ namespace Timelapse.Images
         {
             // when called without a forceUpdate argument, assume
             // that we don't need to force the update of all images
-            return RefreshClickableImagesGrid(state, false);
+            return this.RefreshClickableImagesGrid(state, false);
         }
 
         private bool RefreshClickableImagesGrid(int state, bool forceUpdate)

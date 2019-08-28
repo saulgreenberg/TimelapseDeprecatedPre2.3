@@ -1,16 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Timelapse.Dialog
 {
@@ -26,7 +16,7 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
             this.Owner = owner;
             this.SelectedFolder = String.Empty;
-            FolderPathsListbox.ItemsSource = candidateFolders;
+            this.FolderPathsListbox.ItemsSource = candidateFolders;
             this.Message.Problem = "The detection file was run on a folder called '" + truncatedTerm + "' that contained many sub-folders with images." + Environment.NewLine;
             this.Message.Problem += "The folder containing your image set is one of those sub-folders." + Environment.NewLine;
             this.Message.Problem += "The problem is that several sub-folders in the detection data match your subfolder's name." + Environment.NewLine;

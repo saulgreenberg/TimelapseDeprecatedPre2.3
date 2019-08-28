@@ -17,7 +17,7 @@ namespace Timelapse
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             int count = 0;
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
 
             this.MenuItemSelectMissingFiles.IsEnabled = true;
 
@@ -67,15 +67,15 @@ namespace Timelapse
             }
 
             // Repopulate the menu if needed. Get the folders from the database, and create a menu item representing it
-            MenuItemSelectByFolder_ResetFolderList();
+            this.MenuItemSelectByFolder_ResetFolderList();
         }
         // Populate the menu. Get the folders from the database, and create a menu item representing it
         private void MenuItemSelectByFolder_ResetFolderList()
         {
             // Clear the list, excepting the first menu item all folders, which should be kept.
-            MenuItem item = (MenuItem)MenuItemSelectByFolder.Items[0];
-            MenuItemSelectByFolder.Items.Clear();
-            MenuItemSelectByFolder.Items.Add(item);
+            MenuItem item = (MenuItem)this.MenuItemSelectByFolder.Items[0];
+            this.MenuItemSelectByFolder.Items.Clear();
+            this.MenuItemSelectByFolder.Items.Add(item);
 
             // Populate the menu . Get the folders from the database, and create a menu item representing it
             int i = 1;
@@ -96,8 +96,8 @@ namespace Timelapse
                     IsCheckable = true,
                     ToolTip = "Show only files in the folder: " + header
                 };
-                menuitemFolder.Click += MenuItemSelectFolder_Click;
-                MenuItemSelectByFolder.Items.Insert(i++, menuitemFolder);
+                menuitemFolder.Click += this.MenuItemSelectFolder_Click;
+                this.MenuItemSelectByFolder.Items.Insert(i++, menuitemFolder);
             }
         }
 
@@ -127,7 +127,7 @@ namespace Timelapse
                 messageBox.Message.Hint = String.Format("Perhaps you removed these files and its data during this session?", mi.Header);
                 messageBox.ShowDialog();
             }
-            MenuItemSelectByFolder_ClearAllCheckmarks();
+            this.MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
             this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionType.Folders);  // Go to the first result (i.e., index 0) in the given selection set
@@ -136,7 +136,7 @@ namespace Timelapse
         private void MenuItemSelectByFolder_ClearAllCheckmarks()
         {
             this.MenuItemSelectByFolder.IsChecked = false;
-            foreach (MenuItem mi in MenuItemSelectByFolder.Items)
+            foreach (MenuItem mi in this.MenuItemSelectByFolder.Items)
             {
                 mi.IsChecked = false;
             }
@@ -183,10 +183,10 @@ namespace Timelapse
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             if (this.dataHandler.ImageCache.Current == null)
             {
-                FilesSelectAndShow(selection, true);
+                this.FilesSelectAndShow(selection, true);
             }
             else
-            { 
+            {
                 this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }
@@ -214,7 +214,7 @@ namespace Timelapse
                 this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionType.Custom);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
-                    MenuItemSelectByFolder_ClearAllCheckmarks();
+                    this.MenuItemSelectByFolder_ClearAllCheckmarks();
                 }
             }
             else

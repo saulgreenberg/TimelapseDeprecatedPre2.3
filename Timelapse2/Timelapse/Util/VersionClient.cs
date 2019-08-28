@@ -11,9 +11,9 @@ namespace Timelapse.Util
     // Check if the version currently being run is the latest version
     public class VersionClient
     {
-        private Uri latestVersionAddress; // The url of the timelapse_template_version timelapse_version xml file containing the versioo information
-        private string applicationName;  // Either Timelapse or TimelapseEditor
-        private Window window;
+        private readonly Uri latestVersionAddress; // The url of the timelapse_template_version timelapse_version xml file containing the versioo information
+        private readonly string applicationName;  // Either Timelapse or TimelapseEditor
+        private readonly Window window;
 
         public VersionClient(Window window, string applicationName, Uri latestVersionAddress)
         {
@@ -90,7 +90,7 @@ namespace Timelapse.Util
             if (currentVersionNumber < latestVersionNumber)
             {
                 NewVersionNotification newVersionNotification = new NewVersionNotification(this.window, this.applicationName, currentVersionNumber, latestVersionNumber);
-                
+
                 bool? result = newVersionNotification.ShowDialog();
                 if (result == true)
                 {

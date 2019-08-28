@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using Timelapse.Util;
 namespace Timelapse.Dialog
 {
     /// <summary>
@@ -7,11 +6,11 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class UpdateRootFolder : Window
     {
-        private string dbfoldername;
-        private string actualFolderName;
+        private readonly string dbfoldername;
+        private readonly string actualFolderName;
         public UpdateRootFolder(Window owner, string dbfoldername, string actualFolderName)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.Owner = owner;
             this.dbfoldername = dbfoldername;
             this.actualFolderName = actualFolderName;
@@ -20,8 +19,8 @@ namespace Timelapse.Dialog
         {
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
-            this.Message.What = "A root folder location saved in your database (.ddb)  file is '" + dbfoldername + "'. However, your template is currently located in a different root folder '" + actualFolderName + "'.";
-            this.Message.Solution = "Clicking Update will update the root folder location that is saved in your database from '" + dbfoldername + "' to '" + actualFolderName + "'.";
+            this.Message.What = "A root folder location saved in your database (.ddb)  file is '" + this.dbfoldername + "'. However, your template is currently located in a different root folder '" + this.actualFolderName + "'.";
+            this.Message.Solution = "Clicking Update will update the root folder location that is saved in your database from '" + this.dbfoldername + "' to '" + this.actualFolderName + "'.";
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

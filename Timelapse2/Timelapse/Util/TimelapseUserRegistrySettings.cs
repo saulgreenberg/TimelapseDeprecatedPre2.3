@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using Timelapse.Database;
 using System;
 using System.Windows;
 using Timelapse.Enums;
@@ -121,7 +120,7 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return registryKey.ReadRect(key, new Rect(0.0, 0.0, Constant.AvalonDock.DefaultTimelapseWindowWidth, Constant.AvalonDock.DefaultTimelapseWindowHeight)); 
+                return registryKey.ReadRect(key, new Rect(0.0, 0.0, Constant.AvalonDock.DefaultTimelapseWindowWidth, Constant.AvalonDock.DefaultTimelapseWindowHeight));
             }
         }
 

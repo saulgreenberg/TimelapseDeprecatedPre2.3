@@ -60,7 +60,7 @@ namespace Timelapse.Database
         public static bool TryImportFromCsv(string filePath, FileDatabase fileDatabase, out List<string> importErrors)
         {
             importErrors = new List<string>();
-            
+
             List<string> dataLabels = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
             using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {

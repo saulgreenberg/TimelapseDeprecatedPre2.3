@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.Controls;
-using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
 
@@ -192,7 +190,7 @@ namespace Timelapse
         // Get and display the episode text if various conditions are met
         private void DisplayEpisodeTextIfWarranted(int fileIndex)
         {
-            if (Episodes.ShowEpisodes && IsDisplayingSingleImage())
+            if (Episodes.ShowEpisodes && this.IsDisplayingSingleImage())
             {
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
@@ -204,7 +202,7 @@ namespace Timelapse
                     this.EpisodeText.Text = "Episode \u221E";
                 }
                 else
-                { 
+                {
                     this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("Episode {0}/{1}", episode.Item1, episode.Item2);
                 }
                 this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
@@ -219,7 +217,7 @@ namespace Timelapse
         // Refresh the image
         private bool TryFileShowWithoutSliderCallback()
         {
-            return TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
+            return this.TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
@@ -242,7 +240,7 @@ namespace Timelapse
             // {
             //    increment *= 10;
             // }
-            return TryFileShowWithoutSliderCallback(direction, increment);
+            return this.TryFileShowWithoutSliderCallback(direction, increment);
         }
 
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, int increment)
@@ -266,7 +264,7 @@ namespace Timelapse
                     desiredRow = this.dataHandler.ImageCache.CurrentRow;
                     break;
             }
-           
+
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
             if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
             {

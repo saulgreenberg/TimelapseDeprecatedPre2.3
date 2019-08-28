@@ -1,10 +1,8 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -67,7 +65,7 @@ namespace Timelapse.Util
             displayname = cultureInfo.DisplayName;
             return language == "en" && (culturename == "en-US" || culturename == "en-CA");
         }
-        
+
         // This isn't used yet, but we could use it when we switch to .Net 4.5 or higher
         public static string GetDotNetVersion()
         {

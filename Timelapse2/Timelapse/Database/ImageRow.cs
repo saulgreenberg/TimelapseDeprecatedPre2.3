@@ -29,7 +29,7 @@ namespace Timelapse.Database
         }
 
         #region Properties - retrieve fields from the image row
-        public string Date  
+        public string Date
         {
             get { return this.Row.GetStringField(Constant.DatabaseColumn.Date); }
             private set { this.Row.SetField(Constant.DatabaseColumn.Date, value); }
@@ -47,7 +47,7 @@ namespace Timelapse.Database
         {
             get { return DateTimeHandler.ToDisplayDateTimeString(this.DateTimeIncorporatingOffset); }
         }
-        
+
         // Get the date/time with the UTC offset added into it
         public DateTimeOffset DateTimeIncorporatingOffset
         {
@@ -148,7 +148,7 @@ namespace Timelapse.Database
         {
             // see RelativePath remarks in constructor
             return String.IsNullOrEmpty(this.RelativePath)
-                ? Path.Combine(rootFolderPath, this.File) 
+                ? Path.Combine(rootFolderPath, this.File)
                 : Path.Combine(rootFolderPath, this.RelativePath, this.File);
         }
 
@@ -369,7 +369,7 @@ namespace Timelapse.Database
             }
         }
         #endregion
-     
+
         #region LoadBitmap - Various Forms
         // Load defaults to full size image, and to Persistent (as its safer)
         public BitmapSource LoadBitmap(string baseFolderPath, out bool isCorruptOrMissing)
@@ -403,7 +403,7 @@ namespace Timelapse.Database
         public virtual Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
         {
             return this.GetBitmapFromFileAsync(baseFolderPath,
-                                               imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null, 
+                                               imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null,
                                                imageExpectedUsage);
         }
 
@@ -422,8 +422,7 @@ namespace Timelapse.Database
             {
                 // Note to bridge the gap between the out parameter and the requirements of the task, this uses
                 // a tuple to carry both.
-                bool isCorruptOrMissing = false;
-                BitmapSource bitmap = GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out isCorruptOrMissing);
+                BitmapSource bitmap = this.GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out bool isCorruptOrMissing);
                 return Tuple.Create(bitmap, isCorruptOrMissing);
             });
         }

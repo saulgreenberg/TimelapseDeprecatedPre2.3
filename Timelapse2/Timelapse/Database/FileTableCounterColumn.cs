@@ -11,8 +11,7 @@ namespace Timelapse.Database
 
         public override bool IsContentValid(string value)
         {
-            long result;
-            return Int64.TryParse(value, out result);
+            return Int64.TryParse(value, out long result);
         }
     }
 }

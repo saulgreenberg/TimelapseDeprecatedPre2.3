@@ -180,7 +180,7 @@ namespace Timelapse.Controls
         // when the markable canvas is zoomed out to display multiple images
         public void SetEnableState(ControlsEnableStateEnum controlsToEnable, int imagesSelected)
         {
-             if (this.dataEntryHandler.ImageCache.Current == null)
+            if (this.dataEntryHandler.ImageCache.Current == null)
             {
                 return;
             }
@@ -221,7 +221,7 @@ namespace Timelapse.Controls
                         // Multiple images view
                         // When one image is selected, display it as enabled (but not editable) and show its value, otherwise disabled
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
-                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);   
+                        string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(utcOffset.DataLabel);
                         utcOffset.IsEnabled = false; // We currently don't allow editing of utcOffset in the overview. To fix, start here: utcOffset.IsEnabled = (imagesSelected == -1) ? true : false; 
                         utcOffset.SetContentAndTooltip(contentAndTooltip);
                     }

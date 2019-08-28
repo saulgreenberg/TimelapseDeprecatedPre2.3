@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using Timelapse.Dialog;
 
 namespace Timelapse.Editor.Dialog
@@ -11,8 +8,8 @@ namespace Timelapse.Editor.Dialog
     public partial class EditChoiceList : Window
     {
         private static readonly string[] NewLineDelimiter = { Environment.NewLine };
-        private UIElement positionReference;
-        private bool includesEmptyChoice;
+        private readonly UIElement positionReference;
+        private readonly bool includesEmptyChoice;
 
         public List<string> Choices { get; private set; }
 
@@ -59,7 +56,7 @@ namespace Timelapse.Editor.Dialog
         {
             this.ChoiceList.Text = this.TrimLinesAndRemoveEmptyLines(this.ChoiceList.Text);
 
-            if (IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
+            if (this.IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
             {
                 // Include the empty choice at the end if it doesn't already exist
                 if (this.ChoiceList.Text.EndsWith(Constant.ControlMiscellaneous.EmptyChoiceItem) == false)
@@ -82,7 +79,7 @@ namespace Timelapse.Editor.Dialog
             List<string> trimmedchoices = new List<string>();
             string trimmedchoice;
             List<string> choices = new List<string>(textlist.Split(EditChoiceList.NewLineDelimiter, StringSplitOptions.RemoveEmptyEntries));
-            
+
             foreach (string choice in choices)
             {
                 trimmedchoice = choice.Trim();

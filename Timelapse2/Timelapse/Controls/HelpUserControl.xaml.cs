@@ -59,20 +59,20 @@ namespace Timelapse.Controls
                 string helpText = reader.ReadToEnd();
 
                 // Write the help text to a stream
-                MemoryStream stream = new MemoryStream();    
+                MemoryStream stream = new MemoryStream();
                 StreamWriter writer = new StreamWriter(stream);
                 writer.Write(helpText);
                 writer.Flush();
 
                 // Load the entire text into the Flow Document
-                TextRange textRange = new TextRange(flowDocument.ContentStart, flowDocument.ContentEnd);
+                TextRange textRange = new TextRange(this.flowDocument.ContentStart, this.flowDocument.ContentEnd);
                 textRange.Load(stream, DataFormats.Rtf);
             }
             catch
             {
                 // We couldn't get the help file. Display a generic message instead
-                flowDocument.FontFamily = new FontFamily("Segui UI");
-                flowDocument.FontSize = 14;
+                this.flowDocument.FontFamily = new FontFamily("Segui UI");
+                this.flowDocument.FontSize = 14;
                 Paragraph p1 = new Paragraph();
                 p1.Inlines.Add("Brief instructions are currently unavailable.");
                 p1.Inlines.Add(Environment.NewLine + Environment.NewLine);
@@ -82,11 +82,11 @@ namespace Timelapse.Controls
                 h1.NavigateUri = Constant.UserManualAddress;
                 h1.RequestNavigate += this.Link_RequestNavigate;
                 p1.Inlines.Add(h1);
-                flowDocument.Blocks.Add(p1);
+                this.flowDocument.Blocks.Add(p1);
             }
             // Add the document to the FlowDocumentScollViewer, converting hyperlinks to active links
-            this.SubscribeToAllHyperlinks(flowDocument);
-            this.ScrollViewer.Document = flowDocument;
+            this.SubscribeToAllHyperlinks(this.flowDocument);
+            this.ScrollViewer.Document = this.flowDocument;
         }
 
         // Insert a warning into the beginning of the document about possible region issues. 
@@ -145,7 +145,7 @@ namespace Timelapse.Controls
             p1.Inlines.Add(run5);
             p1.Inlines.Add(run6);
 
-            flowDocument.Blocks.InsertBefore(flowDocument.Blocks.FirstBlock, p1);
+            this.flowDocument.Blocks.InsertBefore(this.flowDocument.Blocks.FirstBlock, p1);
         }
 
         #region Activate all hyperlinks in the flow document

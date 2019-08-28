@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
 using Timelapse.Database;
@@ -43,7 +42,7 @@ namespace Timelapse.QuickPaste
             };
             foreach (ControlRow row in fileDatabase.Controls)
             {
-                string value = fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel); 
+                string value = fileDatabase.FileTable[rowIndex].GetValueDisplayString(row.DataLabel);
                 if (value == null)
                 {
                     value = String.Empty;
@@ -57,8 +56,8 @@ namespace Timelapse.QuickPaste
                     case Constant.Control.Flag:
                     case Constant.Control.Counter:
                         quickPasteEntry.Items.Add(new QuickPasteItem(
-                            row.DataLabel, 
-                            row.Label, 
+                            row.DataLabel,
+                            row.Label,
                             value,
                             row.Copyable,
                             row.Type));
@@ -139,7 +138,7 @@ namespace Timelapse.QuickPaste
             foreach (QuickPasteEntry oldQuickPasteEntry in originalQuickPasteEntries)
             {
                 bool oneOrMoreItemsCopied = false;
-                bool isUsed = false; 
+                bool isUsed = false;
 
                 // Create a new entry with the same title as the old entry, and with an empty Items list
                 QuickPasteEntry newQuickPasteEntry = new QuickPasteEntry()
@@ -183,7 +182,7 @@ namespace Timelapse.QuickPaste
                             break;
                         default:
                             break;
-                     }
+                    }
                 }
 
                 // Add the entry if there is at least one item copied from the old entry to the new entry, and if at least one attribute is marked as 'Used'

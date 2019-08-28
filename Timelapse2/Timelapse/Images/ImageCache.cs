@@ -12,10 +12,10 @@ namespace Timelapse.Images
 {
     public class ImageCache : FileTableEnumerator
     {
-        private Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
-        private MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
-        private ConcurrentDictionary<long, Task> prefetechesByID;
-        private ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
+        private readonly Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
+        private readonly MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
+        private readonly ConcurrentDictionary<long, Task> prefetechesByID;
+        private readonly ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
 
         public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
 
@@ -242,7 +242,7 @@ namespace Timelapse.Images
             {
                 // cache the bitmap, replacing any existing bitmap with the one passed
                 this.unalteredBitmapsByID.AddOrUpdate(id,
-                    (long newID) => 
+                    (long newID) =>
                     {
                         // if the bitmap cache is full make room for the incoming bitmap
                         if (this.mostRecentlyUsedIDs.IsFull())
@@ -256,7 +256,7 @@ namespace Timelapse.Images
                         // indicate to add the bitmap
                         return bitmap;
                     },
-                    (long existingID, BitmapSource newBitmap) => 
+                    (long existingID, BitmapSource newBitmap) =>
                     {
                         // indicate to update the bitmap
                         return newBitmap;
@@ -276,7 +276,7 @@ namespace Timelapse.Images
 
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)
         {
-            return TryGetBitmap(fileRow, false, out bitmap);
+            return this.TryGetBitmap(fileRow, false, out bitmap);
         }
 
         private bool TryGetBitmap(ImageRow fileRow, bool forceUpdate, out BitmapSource bitmap)
@@ -299,7 +299,7 @@ namespace Timelapse.Images
                     // System.Diagnostics.Debug.Print("Loaded as forceUpdate " + fileRow.FileName);
                 }
                 else if (this.unalteredBitmapsByID.TryGetValue(fileRow.ID, out bitmap) == true)
-                {    
+                {
                     // There is a cached bitmap, so we are now using it (in out bitmap)
                     // System.Diagnostics.Debug.Print("Prefetched immediate " + fileRow.FileName);
                 }

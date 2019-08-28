@@ -1,7 +1,6 @@
 ﻿using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Windows;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -10,14 +9,14 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class FindMissingImageFolder : Window
     {
-        private string folderPath;
-        private string missingFolderName;
+        private readonly string folderPath;
+        private readonly string missingFolderName;
 
         public string NewFolderName { get; set; }
 
         public FindMissingImageFolder(Window owner, string folderPath, string missingFolderName)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.Owner = owner;
             this.folderPath = folderPath;
             this.missingFolderName = missingFolderName;

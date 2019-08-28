@@ -22,7 +22,7 @@ namespace Timelapse.Controls
         public abstract UIElement GetContentControl { get; }
 
         public abstract bool IsContentControlEnabled { get; }
-        
+
         /// <summary>Gets the value of the control</summary>
         public abstract string Content { get; }
 
@@ -117,7 +117,7 @@ namespace Timelapse.Controls
             }
         }
 
-        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) : 
+        protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) :
             base(control, styleProvider)
         {
             this.ContentControl = new TContent()
@@ -147,7 +147,7 @@ namespace Timelapse.Controls
             // add the label and content to the stack panel
             this.Container.Children.Add(this.LabelControl);
             this.Container.Children.Add(this.ContentControl);
-            this.Container.PreviewKeyDown += Container_PreviewKeyDown;
+            this.Container.PreviewKeyDown += this.Container_PreviewKeyDown;
         }
 
         // We want to capture the Shift/Arrow key presses so we can navigate images. However, both the UTCOffset and the DateTime picker consume 
@@ -183,7 +183,7 @@ namespace Timelapse.Controls
             // This is not reliable at small focus scopes, possibly due to interaction with TimelapseWindow's focus management, but seems reasonably
             // well behaved at application scope.
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
-            return (IInputElement)this.ContentControl;
+            return this.ContentControl;
         }
 
         #region Visual Effects and Popup Previews
@@ -269,19 +269,19 @@ namespace Timelapse.Controls
                 Interval = TimeSpan.FromSeconds(.4),
                 Tag = popupText,
             };
-            timer.Tick += FlashFontTimer_Tick;
+            timer.Tick += this.FlashFontTimer_Tick;
 
             // Animate the color from white back to its current color
             ColorAnimation animation;
             animation = new ColorAnimation()
-            { 
+            {
                 From = Colors.White,
                 AutoReverse = false,
                 Duration = new Duration(TimeSpan.FromSeconds(.6)),
                 EasingFunction = new ExponentialEase()
                 {
                     EasingMode = EasingMode.EaseIn
-                },  
+                },
             };
 
             // Get it all going

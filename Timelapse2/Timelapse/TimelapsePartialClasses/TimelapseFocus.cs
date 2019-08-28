@@ -16,7 +16,7 @@ namespace Timelapse
         // Whenever the user clicks on the image, reset the image focus to the image control 
         private void MarkableCanvas_PreviewMouseDown(object sender, MouseButtonEventArgs eventArgs)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
             this.TrySetKeyboardFocusToMarkableCanvas(true, eventArgs);
         }
 
@@ -57,7 +57,7 @@ namespace Timelapse
                 }
                 else
                 {
-                    Keyboard.Focus(lastControlWithFocus);
+                    Keyboard.Focus(this.lastControlWithFocus);
                     this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
                 }
             }
@@ -93,11 +93,11 @@ namespace Timelapse
             // it is sufficient to check one always visible item from each top level menu (file, edit, etc.)
             // NOTE: this must be kept in sync with the menu definitions in XAML
             if (this.MenuItemExit.IsVisible ||
-                this.MenuItemCopyPreviousValues.IsVisible || 
-                this.MenuItemAudioFeedback.IsVisible ||   
-                this.MenuItemViewNextImage.IsVisible ||   
-                this.MenuItemSelectAllFiles.IsVisible ||  
-                this.MenuItemAbout.IsVisible)             
+                this.MenuItemCopyPreviousValues.IsVisible ||
+                this.MenuItemAudioFeedback.IsVisible ||
+                this.MenuItemViewNextImage.IsVisible ||
+                this.MenuItemSelectAllFiles.IsVisible ||
+                this.MenuItemAbout.IsVisible)
             {
                 return true;
             }
@@ -118,7 +118,7 @@ namespace Timelapse
                 // send all keys to controls by default except
                 // - escape as that's a natural way to back out of a control (the user can also hit enter)
                 // - tab as that's the Windows keyboard navigation standard for moving between controls
-                FilePlayer_Stop(); // In case the FilePlayer is going
+                this.FilePlayer_Stop(); // In case the FilePlayer is going
                 return eventData.Key != Key.Escape && eventData.Key != Key.Tab;
             }
             return false;
@@ -140,11 +140,11 @@ namespace Timelapse
 
                 // If we are moving the focus from outside to one of the controls in the data panel or the copy previous button,
                 // then try to restore the focus to the last control that had the focus.
-                if (Constant.Control.KeyboardInputTypes.Contains(type) == false && focusedElement != CopyPreviousValuesButton)
+                if (Constant.Control.KeyboardInputTypes.Contains(type) == false && focusedElement != this.CopyPreviousValuesButton)
                 {
                     if (this.lastControlWithFocus != null && this.lastControlWithFocus.IsEnabled == true)
                     {
-                        Keyboard.Focus(lastControlWithFocus);
+                        Keyboard.Focus(this.lastControlWithFocus);
                         this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
                         return;
                     }

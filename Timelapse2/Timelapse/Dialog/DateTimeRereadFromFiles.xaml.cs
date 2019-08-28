@@ -14,7 +14,7 @@ namespace Timelapse.Dialog
 {
     public partial class DateTimeRereadFromFiles : Window
     {
-        private FileDatabase database;
+        private readonly FileDatabase database;
 
         public DateTimeRereadFromFiles(FileDatabase database, Window owner)
         {
@@ -100,7 +100,7 @@ namespace Timelapse.Dialog
                         bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
                         bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
                         bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
- 
+
                         if (sameDate && sameTime && sameUTCOffset)
                         {
                             // Nothing needs changing
@@ -137,13 +137,13 @@ namespace Timelapse.Dialog
                 {
                     imagesToUpdate.Add(image.GetDateTimeColumnTuples());
                 }
-                database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
+                this.database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
                 backgroundWorker.ReportProgress(0, new DateTimeRereadFeedbackTuple(null, "Done."));
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
                 feedbackRows.Add((DateTimeRereadFeedbackTuple)ea.UserState);
-                this.FeedbackGrid.ScrollIntoView(FeedbackGrid.Items[FeedbackGrid.Items.Count - 1]);
+                this.FeedbackGrid.ScrollIntoView(this.FeedbackGrid.Items[this.FeedbackGrid.Items.Count - 1]);
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {

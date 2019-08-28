@@ -21,7 +21,7 @@ namespace Timelapse.Controls
             StatusBarItem item = (StatusBarItem)statusBar.Items[1];
             item.Content = currentImage.ToString();
         }
-        
+
         // Set the total counts in the total counts portion of the status bar
         public static void SetCount(this StatusBar statusBar, int selectedImageCount)
         {

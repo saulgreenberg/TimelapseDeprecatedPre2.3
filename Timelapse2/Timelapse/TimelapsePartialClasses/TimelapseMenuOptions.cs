@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Input;
 using Timelapse.Dialog;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -13,7 +12,7 @@ namespace Timelapse
         // Options sub-menu opening
         private void Options_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
 
         // Audio feedback: toggle on / off
@@ -64,7 +63,7 @@ namespace Timelapse
         private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
         {
             Episodes.ShowEpisodes = !Episodes.ShowEpisodes;
-            MenuItemEpisodeShowHide.IsChecked = Episodes.ShowEpisodes;
+            this.MenuItemEpisodeShowHide.IsChecked = Episodes.ShowEpisodes;
 
             if (this.IsDisplayingMultipleImagesInOverview())
             {
@@ -125,7 +124,7 @@ namespace Timelapse
             this.EnableOrDisableMenusAndControls();
 
             if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
-            { 
+            {
                 // If we aren't using detections, then hide their existence even if detection data may be present
                 GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
             }

@@ -57,10 +57,10 @@ namespace Timelapse.Controls
             this.LabelControl.GroupName = "DataEntryCounter";
             this.LabelControl.Click += this.LabelControl_Click;
             this.ContentControl.Width += 18; // to account for the width of the spinner
-            this.ContentControl.PreviewKeyDown += ContentControl_PreviewKeyDown;
-            this.ContentControl.PreviewTextInput += ContentControl_PreviewTextInput;
-            this.ContentControl.GotKeyboardFocus += ContentControl_GotKeyboardFocus;
-            this.ContentControl.LostKeyboardFocus += ContentControl_LostKeyboardFocus;
+            this.ContentControl.PreviewKeyDown += this.ContentControl_PreviewKeyDown;
+            this.ContentControl.PreviewTextInput += this.ContentControl_PreviewTextInput;
+            this.ContentControl.GotKeyboardFocus += this.ContentControl_GotKeyboardFocus;
+            this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
         }
 
         #region Event Handlers
@@ -144,7 +144,7 @@ namespace Timelapse.Controls
         // ValueChanged event will be triggered. Inefficient, but seems to work.
         public void SetBogusCounterContentAndTooltip()
         {
-            SetContentAndTooltip(int.MaxValue.ToString());
+            this.SetContentAndTooltip(int.MaxValue.ToString());
         }
 
         // If value is null, then show and ellipsis. If its a number, show that. Otherwise blank.
@@ -170,7 +170,7 @@ namespace Timelapse.Controls
                 }
             }
             else
-                {
+            {
                 // We have a valid value, so reset the control and watermark
                 this.ContentControl.AllowSpin = true;
                 if (textBox != null)
@@ -236,7 +236,7 @@ namespace Timelapse.Controls
         public override void HidePreviewControlValue()
         {
             if (this.PopupPreview != null)
-            { 
+            {
                 this.HidePopupPreview();
             }
         }

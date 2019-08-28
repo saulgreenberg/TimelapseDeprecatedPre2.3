@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Util;
-using Directory = MetadataExtractor.Directory;
 
 namespace Timelapse.Dialog
 {
@@ -21,12 +20,12 @@ namespace Timelapse.Dialog
     public partial class PopulateFieldWithMetadata : Window
     {
         private bool clearIfNoMetadata;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private string dataFieldLabel;
         private bool dataFieldSelected;
         private Dictionary<string, ImageMetadata> metadataDictionary;
-        private Dictionary<string, string> dataLabelByLabel;
-        private string filePath;
+        private readonly Dictionary<string, string> dataLabelByLabel;
+        private readonly string filePath;
         private string metadataFieldName;
         private bool metadataFieldSelected;
         private bool noMetadataAvailable;
@@ -136,7 +135,7 @@ namespace Timelapse.Dialog
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = false;
                 this.PopulateButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
-            } 
+            }
         }
 
         // Listbox Callback indicating the user has selected a data field. 
@@ -184,10 +183,10 @@ namespace Timelapse.Dialog
                 string dataLabelToUpdate = this.dataLabelByLabel[this.dataFieldLabel];
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
                 TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
-                for (int imageIndex = 0; imageIndex < database.CurrentlySelectedFileCount; ++imageIndex)
+                for (int imageIndex = 0; imageIndex < this.database.CurrentlySelectedFileCount; ++imageIndex)
                 {
-                    ImageRow image = database.FileTable[imageIndex];
-                    Dictionary<string, ImageMetadata> metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(database.FolderPath));
+                    ImageRow image = this.database.FileTable[imageIndex];
+                    Dictionary<string, ImageMetadata> metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.database.FolderPath));
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
                         if (this.clearIfNoMetadata)
@@ -243,7 +242,7 @@ namespace Timelapse.Dialog
                 }
 
                 backgroundWorker.ReportProgress(0, new FeedbackMessage("Writing the data...", "Please wait..."));
-                database.UpdateFiles(imagesToUpdate);
+                this.database.UpdateFiles(imagesToUpdate);
                 backgroundWorker.ReportProgress(0, new FeedbackMessage("Done", "Done"));
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
@@ -253,12 +252,12 @@ namespace Timelapse.Dialog
                 keyValueList.Add(new KeyValuePair<string, string>(message.FileName, message.Message));
 
                 // Scrolls so the last object added is visible
-                this.FeedbackGrid.ScrollIntoView(FeedbackGrid.Items[FeedbackGrid.Items.Count - 1]);
+                this.FeedbackGrid.ScrollIntoView(this.FeedbackGrid.Items[this.FeedbackGrid.Items.Count - 1]);
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
-                btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
-                btnCancel.IsEnabled = true;
+                this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
+                this.btnCancel.IsEnabled = true;
             };
             backgroundWorker.RunWorkerAsync();
         }
@@ -277,13 +276,13 @@ namespace Timelapse.Dialog
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = ((string)btnCancel.Content == "Cancel") ? false : true;
+            this.DialogResult = ((string)this.btnCancel.Content == "Cancel") ? false : true;
         }
 
         // This checkbox sets the state as to whether the data field should be cleared or left alone if there is no metadata
         private void ClearIfNoMetadata_Checked(object sender, RoutedEventArgs e)
         {
-            this.clearIfNoMetadata = (ClearIfNoMetadata.IsChecked == true) ? true : false;
+            this.clearIfNoMetadata = (this.ClearIfNoMetadata.IsChecked == true) ? true : false;
         }
 
         // Classes that tracks our progress as we load the images

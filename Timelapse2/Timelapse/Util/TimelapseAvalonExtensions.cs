@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,7 +23,7 @@ namespace Timelapse.Util
         {
             bool isResourceFile = false;
             string layoutName = String.Empty;
-            
+
             // Layouts are loaded from either the registry or from a resource file
             // If from the registry, then the registry lookup key is the the layoutKey
             // If from the resource file, then we have to use the path of the resource file
@@ -103,7 +102,7 @@ namespace Timelapse.Util
                     {
                         // We set the DataEntry Control Panel top / left as it remembers the values (i.e. so the layout will be saved correctly later)
                         // If we set the floating window top/left directly, it won't remember those values as its just the view.
-                        timelapse.DataEntryControlPanel.FloatingTop = timelapse.Top + 100; 
+                        timelapse.DataEntryControlPanel.FloatingTop = timelapse.Top + 100;
                         timelapse.DataEntryControlPanel.FloatingLeft = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
                     }
                     // This cause the above values to 'stick'
@@ -133,7 +132,7 @@ namespace Timelapse.Util
             // Deserializa and load the layout
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             using (StreamReader streamReader = new StreamReader(layoutAsStream))
-            { 
+            {
                 serializer.Deserialize(streamReader);
             }
             return true;
@@ -352,7 +351,7 @@ namespace Timelapse.Util
             try
             {
                 using (Stream stream = System.Windows.Application.GetResourceStream(uri).Stream)
-                { 
+                {
                     serializer.Deserialize(stream);
                 }
             }
@@ -408,7 +407,7 @@ namespace Timelapse.Util
             // Serialize the layout into a string
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             using (StringWriter stream = new StringWriter())
-            { 
+            {
                 serializer.Serialize(xmlWriter);
             }
             if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))

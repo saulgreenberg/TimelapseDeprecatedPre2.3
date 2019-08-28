@@ -4,7 +4,6 @@ using System.Windows;
 using Timelapse.Common;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

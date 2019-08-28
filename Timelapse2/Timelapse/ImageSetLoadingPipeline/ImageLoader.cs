@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Common;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Images;
 using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline
@@ -21,11 +15,11 @@ namespace Timelapse.ImageSetLoadingPipeline
     /// </summary>
     public class ImageLoader
     {
-        private FileInfo fileInfo;
-        private DataEntryHandler dataHandler;
-        private TimelapseState state;
-        private string relativePath;
-        private string imageSetFolderPath;
+        private readonly FileInfo fileInfo;
+        private readonly DataEntryHandler dataHandler;
+        private readonly TimelapseState state;
+        private readonly string relativePath;
+        private readonly string imageSetFolderPath;
 
         public string FolderPath
         {
@@ -63,7 +57,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     var loadResult = task.Result;
                     this.bitmapSource = loadResult.Item1;
                 }
-                
+
                 return this.bitmapSource;
             }
             private set
@@ -100,7 +94,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
                 // We only do this for files, as videos do not have these metadata fields
                 // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
+                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
 
                 // This completes processing, but it may be some time before the task is checked for completion.
                 // for purposes of reporting progress, call the completion delegate provided.

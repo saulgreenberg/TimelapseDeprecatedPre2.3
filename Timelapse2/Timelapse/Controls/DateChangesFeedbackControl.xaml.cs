@@ -21,7 +21,7 @@ namespace Timelapse.Controls
         public string Column3Name { get; set; }
         public string Column4Name { get; set; }
         // This collection will hold tuples, where each tuple contains the contents for a row that will be shown in the datagrid  
-        private ObservableCollection<FeedbackRowTuple> feedbackRows;
+        private readonly ObservableCollection<FeedbackRowTuple> feedbackRows;
 
         // Initialization: Bind the collection to the datagrid, where any change in the collection will be displayed in the datagrid
         public DateChangesFeedbackControl()
@@ -41,8 +41,8 @@ namespace Timelapse.Controls
         public void AddFeedbackRow(string fileName, string status, string oldDateTime, string newDateTime, string difference)
         {
             FeedbackRowTuple row = new FeedbackRowTuple(fileName, status, oldDateTime, newDateTime, difference);
-            this.feedbackRows.Add((FeedbackRowTuple)row);
-            this.feedbackGrid.ScrollIntoView(this.feedbackGrid.Items[feedbackGrid.Items.Count - 1]);
+            this.feedbackRows.Add(row);
+            this.feedbackGrid.ScrollIntoView(this.feedbackGrid.Items[this.feedbackGrid.Items.Count - 1]);
         }
 
         // Label the datagrid feedback columns with the appropriate headers

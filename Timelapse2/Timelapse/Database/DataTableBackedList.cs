@@ -8,7 +8,7 @@ namespace Timelapse.Database
 {
     public class DataTableBackedList<TRow> : IDisposable, IEnumerable<TRow> where TRow : DataRowBackedObject
     {
-        private Func<DataRow, TRow> createRow;
+        private readonly Func<DataRow, TRow> createRow;
         private bool disposed;
 
         protected DataTable DataTable { get; private set; }

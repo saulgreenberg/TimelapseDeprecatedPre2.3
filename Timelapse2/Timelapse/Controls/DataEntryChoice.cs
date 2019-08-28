@@ -81,7 +81,7 @@ namespace Timelapse.Controls
                 Content = Constant.Unicode.Ellipsis
             };
             this.ContentControl.Items.Insert(0, cbi);
-            ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;     
+            ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;
             this.ContentControl.SelectedIndex = 1;
         }
 
@@ -91,7 +91,7 @@ namespace Timelapse.Controls
             {
                 return;
             }
-            foreach (ComboBoxItem cbi in ContentControl.Items)
+            foreach (ComboBoxItem cbi in this.ContentControl.Items)
             {
                 if (itemsToHide.Contains((string)cbi.Content))
                 {
@@ -129,7 +129,7 @@ namespace Timelapse.Controls
                     }
                 }
             }
-            else if (keyEvent.Key == Key.Up  || keyEvent.Key == Key.Down  || keyEvent.Key == Key.Home)
+            else if (keyEvent.Key == Key.Up || keyEvent.Key == Key.Down || keyEvent.Key == Key.Home)
             {
                 // Because we have inserted an invisible ellipses into the list, we have to skip over it when a 
                 // user navigates the combobox with the keyboard using the arrow keys

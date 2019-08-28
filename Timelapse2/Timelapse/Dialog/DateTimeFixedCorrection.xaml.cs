@@ -15,9 +15,9 @@ namespace Timelapse.Dialog
     public partial class DateTimeFixedCorrection : Window
     {
         private bool displayingPreview;
-        private FileDatabase fileDatabase;
+        private readonly FileDatabase fileDatabase;
         private DateTimeOffset initialDate;
-  
+
         public DateTimeFixedCorrection(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)
         {
             this.InitializeComponent();
@@ -123,7 +123,7 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
-        
+
         private void DateTimePicker_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             // Because of the bug in the DateTimePicker, we have to get the changed value from the string
@@ -140,7 +140,7 @@ namespace Timelapse.Dialog
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed
         private void DateTimePicker_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-             DateTimePicker_ValueChanged(null, null);
+            this.DateTimePicker_ValueChanged(null, null);
         }
     }
 }

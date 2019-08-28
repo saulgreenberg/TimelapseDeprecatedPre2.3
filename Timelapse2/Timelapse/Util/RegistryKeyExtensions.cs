@@ -95,7 +95,7 @@ namespace Timelapse.Util
         public static Rect ReadRect(this RegistryKey registryKey, string subKeyPath, Rect defaultValue)
         {
             string rectAsString = registryKey.ReadString(subKeyPath);
-           
+
             if (rectAsString == null)
             {
                 return defaultValue;
@@ -104,7 +104,7 @@ namespace Timelapse.Util
             {
                 Rect rectangle = Rect.Parse(rectAsString);
             }
-            catch 
+            catch
             {
                 // The parse can fail if the number format was saved as a non-American number, eg, Portugese uses , vs. as the decimal place.
                 // This shouldn't happen as I have used an invarient to save numbers, but just in case...

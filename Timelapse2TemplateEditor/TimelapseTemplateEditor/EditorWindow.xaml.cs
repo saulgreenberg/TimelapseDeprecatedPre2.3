@@ -29,12 +29,12 @@ namespace Timelapse.Editor
     public partial class EditorWindow : Window
     {
         // state tracking
-        private EditorControls controls;
+        private readonly EditorControls controls;
         private bool dataGridBeingUpdatedByCode;
-        private EditorUserRegistrySettings userSettings;
+        private readonly EditorUserRegistrySettings userSettings;
 
         // These variables support the drag/drop of controls
-        private UIElement dummyMouseDragSource;
+        private readonly UIElement dummyMouseDragSource;
         private bool isMouseDown;
         private bool isMouseDragging;
         private Point mouseDownStartPosition;
@@ -75,7 +75,7 @@ namespace Timelapse.Editor
             // Populate the most recent databases list
             this.MenuFileRecentTemplates_Refresh(true);
         }
-        
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Check for updates only once on every calendar day
@@ -134,7 +134,7 @@ namespace Timelapse.Editor
             this.InstructionPane.IsActive = !templateIsLoaded;
         }
         #endregion
-        
+
         #region File Menu Callbacks
         /// <summary>
         /// Creates a new database file of a user chosen name in a user chosen location.
@@ -602,7 +602,7 @@ namespace Timelapse.Editor
 
             this.dataGridBeingUpdatedByCode = true;
 
-            this.templateDatabase.AddUserDefinedControl(controlType);  
+            this.templateDatabase.AddUserDefinedControl(controlType);
             this.TemplateDataGrid.DataContext = this.templateDatabase.Controls;
             this.TemplateDataGrid.ScrollIntoView(this.TemplateDataGrid.Items[this.TemplateDataGrid.Items.Count - 1]);
 
@@ -649,7 +649,7 @@ namespace Timelapse.Editor
         private void ApplyPendingEdits()
         {
             this.dataGridBeingUpdatedByCode = false;
-            this.TemplateDataGrid.CommitEdit(); 
+            this.TemplateDataGrid.CommitEdit();
         }
         #endregion Datagrid Row Modifyiers listeners and methods
 
@@ -788,7 +788,7 @@ namespace Timelapse.Editor
                     break;
                 default:
                     // no restrictions on any of the other editable coumns
-                    break;  
+                    break;
             }
         }
 
@@ -961,7 +961,7 @@ namespace Timelapse.Editor
                             {
                                 checkbox.IsEnabled = false;
                             }
-                            else if ((controlType == Constant.DatabaseColumn.ImageQuality) && TemplateDataGrid.Columns[column].Header.Equals("List"))
+                            else if ((controlType == Constant.DatabaseColumn.ImageQuality) && this.TemplateDataGrid.Columns[column].Header.Equals("List"))
                             {
                                 cell.IsEnabled = false; // Don't let users edit the ImageQuality menu
                             }
@@ -1276,7 +1276,7 @@ namespace Timelapse.Editor
                 if (control.Type == Constant.DatabaseColumn.DateTime)
                 {
                     dateTimeControl = control;
-                } 
+                }
                 else if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
                     utcOffsetControl = control;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows;
 using Timelapse.Database;
 
@@ -7,8 +6,8 @@ namespace Timelapse.Dialog
 {
     public partial class AdvancedImageSetOptions : Window
     {
-        private TimeZoneInfo currentImageSetTimeZone;
-        private FileDatabase database;
+        private readonly TimeZoneInfo currentImageSetTimeZone;
+        private readonly FileDatabase database;
 
         public AdvancedImageSetOptions(FileDatabase database, Window owner)
         {

@@ -7,7 +7,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
 using Timelapse.Images;
-using Timelapse.Util;
 namespace Timelapse.Database
 {
     // A VideoRow is an ImageRow specialized to videos instead of images.
@@ -86,7 +85,7 @@ namespace Timelapse.Database
                 int pixelHeight = mediaPlayer.NaturalVideoHeight;
                 if (desiredWidth.HasValue)
                 {
-                    double scaling = (double)desiredWidth.Value / (double)pixelWidth;
+                    double scaling = desiredWidth.Value / (double)pixelWidth;
                     pixelWidth = (int)(scaling * pixelWidth);
                     pixelHeight = (int)(scaling * pixelHeight);
                 }
@@ -132,7 +131,7 @@ namespace Timelapse.Database
                 }
                 throw new ApplicationException(String.Format("Limit of {0} render attempts was reached.", Constant.ThrottleValues.MaximumRenderAttempts));
             }
-            catch 
+            catch
             {
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));

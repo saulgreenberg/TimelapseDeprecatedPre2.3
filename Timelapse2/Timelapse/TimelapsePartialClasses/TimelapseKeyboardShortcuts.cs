@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse
 {
@@ -54,7 +51,7 @@ namespace Timelapse
         }
 
         public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
-        { 
+        {
             // First, try to interpret key as a possible valid quickpaste shortcut key. 
             // If so, send it to the Quickpaste window and mark the event as handled.
             if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) &&
@@ -73,7 +70,7 @@ namespace Timelapse
                         this.quickPasteWindow.TryQuickPasteShortcut(shortcutIndex);
                         currentKey.Handled = true;
                     }
-                } 
+                }
                 return;
             }
 
@@ -119,13 +116,13 @@ namespace Timelapse
                 case Key.Left:              // previous image
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
                     direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
-                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount  % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
                         this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = DirectionEnum.Previous;
                         this.FilePlayer_ScrollRow();
@@ -137,7 +134,7 @@ namespace Timelapse
                     }
                     break;
                 case Key.Down:              // show visual difference to previous image
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = DirectionEnum.Next;
                         this.FilePlayer_ScrollRow();
@@ -172,7 +169,7 @@ namespace Timelapse
                 case Key.PageDown:
                 case Key.PageUp:
                     direction = currentKey.Key == Key.PageDown ? DirectionEnum.Next : DirectionEnum.Previous;
-                    if (IsDisplayingMultipleImagesInOverview())
+                    if (this.IsDisplayingMultipleImagesInOverview())
                     {
                         this.FilePlayer.Direction = direction;
                         this.FilePlayer_ScrollPage();

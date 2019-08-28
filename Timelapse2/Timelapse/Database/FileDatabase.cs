@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -239,8 +238,8 @@ namespace Timelapse.Database
             }
 
             queryColumns.Remove(queryColumns.Length - 2, 2); // Remove trailing ", "
-            queryColumns.Append(Sql.CloseParenthesis + Sql.Values); 
-            
+            queryColumns.Append(Sql.CloseParenthesis + Sql.Values);
+
             // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
             // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
             // We limit the datalines to RowsPerInsert
@@ -257,7 +256,7 @@ namespace Timelapse.Database
                 // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
-                    queryValues.Append(Sql.OpenParenthesis);    
+                    queryValues.Append(Sql.OpenParenthesis);
 
                     List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
@@ -314,7 +313,7 @@ namespace Timelapse.Database
                                 break;
 
                             // Find and then add the customizable types, populating it with their default values.
-                            case Constant.Control.Note:        
+                            case Constant.Control.Note:
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
@@ -846,7 +845,7 @@ namespace Timelapse.Database
             }
             else
             {
-                this.CustomSelection.SetCustomSearchFromSelection(selection, GetSelectedFolder());
+                this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
                     // PERFORMANCE Creates what seems to be a slow query on large databases
@@ -1771,15 +1770,55 @@ namespace Timelapse.Database
             this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
         }
 
+        // Add an empty new row to the marker list if it isnt there. Return true if we added it, otherwise false 
+        // Columns will be automatically set to NULL
+        public bool TryAddNewMarkerRow(long imageID)
+        {
+            if (this.Markers.Find(imageID) != null)
+            {
+                // There should already be a row for this, so don't creat one
+                return false;
+            }
+            List<ColumnTuple> columns = new List<ColumnTuple>()
+            {
+                new ColumnTuple(Constant.DatabaseColumn.ID, imageID.ToString())
+            };
+            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
+            {
+                columns
+            };
+            this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
+            this.GetMarkers(); // Update the markers list to include this new row
+            return true;
+        }
+
         /// <summary>
         /// Set the list of marker points on the current row in the marker table. 
         /// </summary>
         public void SetMarkerPositions(long imageID, MarkersForCounter markersForCounter)
         {
+
             // Find the current row number
             MarkerRow marker = this.Markers.Find(imageID);
             if (marker == null)
             {
+                ////SAULXX
+                //List<ColumnTuple> columns = new List<ColumnTuple>()
+                //{
+                //    new ColumnTuple(Constant.DatabaseColumn.ID, Constant.Control.Counter)
+                //};
+                //List<ColumnTuple> values = new List<ColumnTuple>()
+                //{
+                //    new ColumnTuple(imageID.ToString(), markersForCounter.GetPointList() )
+                //};
+                //List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
+                //{
+                //    columns, values
+                //};
+                    
+                //this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
+                //this.GetMarkers();
+                //marker = this.Markers.Find(imageID);
                 TraceDebug.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
                 return;
             }
@@ -2080,7 +2119,7 @@ namespace Timelapse.Database
                 }
 
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                return detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+                return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
             {
@@ -2110,9 +2149,9 @@ namespace Timelapse.Database
         {
             try
             {
-                CreateDetectionCategoriesDictionaryIfNeeded();
+                this.CreateDetectionCategoriesDictionaryIfNeeded();
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                string myKey = detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
                 return myKey ?? String.Empty;
             }
             catch
@@ -2125,7 +2164,7 @@ namespace Timelapse.Database
         public List<string> GetDetectionLabels()
         {
             List<string> labels = new List<string>();
-            CreateDetectionCategoriesDictionaryIfNeeded();
+            this.CreateDetectionCategoriesDictionaryIfNeeded();
             foreach (KeyValuePair<string, string> entry in this.detectionCategoriesDictionary)
             {
                 labels.Add(entry.Value);
@@ -2162,10 +2201,10 @@ namespace Timelapse.Database
         {
             try
             {
-                CreateClassificationCategoriesDictionaryIfNeeded();
+                this.CreateClassificationCategoriesDictionaryIfNeeded();
 
                 // At this point, a lookup dictionary already exists, so just return the category value.
-                return classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+                return this.classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
             {

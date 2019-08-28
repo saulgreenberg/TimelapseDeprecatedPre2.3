@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Timelapse.Database
 {
@@ -33,7 +32,7 @@ namespace Timelapse.Database
                 // - Exclude Date, Time, Folder (they shouldn't be in the SearchTerm list, but just in case)               
                 if (searchTerm.DataLabel == Constant.DatabaseColumn.Folder ||
                     searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath ||
-                    searchTerm.DataLabel == Constant.DatabaseColumn.Date || 
+                    searchTerm.DataLabel == Constant.DatabaseColumn.Date ||
                     searchTerm.DataLabel == Constant.DatabaseColumn.Time ||
                     searchTerm.DataLabel == Constant.DatabaseColumn.UtcOffset)
                 {

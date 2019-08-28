@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Common;
 using Timelapse.Util;
@@ -13,8 +12,8 @@ namespace Timelapse.Controls
     public partial class VideoPlayer : UserControl
     {
         private bool isProgrammaticUpdate;
-        private DispatcherTimer positionUpdateTimer;
-        private DispatcherTimer autoPlayDelayTimer;
+        private readonly DispatcherTimer positionUpdateTimer;
+        private readonly DispatcherTimer autoPlayDelayTimer;
         // TODO: Setup up video so a mouse click starts and stops it, i.e., as does the space bar.
         public VideoPlayer()
         {

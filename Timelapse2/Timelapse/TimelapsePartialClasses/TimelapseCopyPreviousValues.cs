@@ -6,7 +6,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using Timelapse.Controls;
-using Timelapse.Enums;
 
 namespace Timelapse
 {
@@ -18,7 +17,7 @@ namespace Timelapse
         // determine if the copyable control should glow, have highlighted previews of the values to be copied, or just be left in its orignal state     
         private void CopyPreviousValues_MouseEnterOrLeave(object sender, MouseEventArgs e)
         {
-            CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
+            this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
         }
 
         private void CopyPreviousValues_LostFocus(object sender, RoutedEventArgs e)
@@ -47,7 +46,7 @@ namespace Timelapse
                         control.FlashPreviewControlValue();
                     }
                     else
-                    { 
+                    {
                         control.FlashContentControl();
                     }
                 }
@@ -60,7 +59,7 @@ namespace Timelapse
         {
             if (eventArgs.Key == Key.Space)
             {
-               eventArgs.Handled = true;
+                eventArgs.Handled = true;
             }
         }
         #endregion
@@ -84,7 +83,7 @@ namespace Timelapse
         private void CopyPreviousValuesSetGlowAsNeeded(int previousRow)
         {
             if (this.IsDisplayingSingleImage() &&
-                this.CopyPreviousValuesButton != null && 
+                this.CopyPreviousValuesButton != null &&
                 this.CopyPreviousValuesButton.IsFocused &&
                 this.CopyPreviousValuesButton.IsEnabled == true &&
                 this.CopyPreviousValuesButton.IsMouseOver == false &&
@@ -101,7 +100,7 @@ namespace Timelapse
                 };
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         control.Container.Effect = effect;
@@ -113,7 +112,7 @@ namespace Timelapse
                 // Remove the glow around the copyable controls
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     control.Container.ClearValue(Control.EffectProperty);
                 }
             }
@@ -124,15 +123,15 @@ namespace Timelapse
         private void CopyPreviousValueSetPreviewsAsNeeded(int previousRow)
         {
             if (this.IsDisplayingSingleImage() &&
-                this.CopyPreviousValuesButton != null && 
-                this.CopyPreviousValuesButton.IsEnabled == true && 
-                this.CopyPreviousValuesButton.IsMouseOver && 
+                this.CopyPreviousValuesButton != null &&
+                this.CopyPreviousValuesButton.IsEnabled == true &&
+                this.CopyPreviousValuesButton.IsMouseOver &&
                 previousRow >= 0)
             {
                 // Show the previews on the copyable controls
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         string previewValue = this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel);
@@ -145,7 +144,7 @@ namespace Timelapse
                 // Remove the preview from each control
                 foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
                 {
-                    DataEntryControl control = (DataEntryControl)pair.Value;
+                    DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
                         control.HidePreviewControlValue();

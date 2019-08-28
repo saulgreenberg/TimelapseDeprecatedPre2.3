@@ -12,9 +12,9 @@ namespace Timelapse.Images
     {
         // current angle of the lens only
         private double lensAngle;
-        private Canvas lensCanvas;
+        private readonly Canvas lensCanvas;
 
-        private Ellipse magnifierLens;
+        private readonly Ellipse magnifierLens;
         // current angle of the entire magnifying glass
         private double magnifyingGlassAngle;
 
@@ -157,10 +157,10 @@ namespace Timelapse.Images
         public void RedrawIfVisible(Point mouseLocation, Canvas canvasToMagnify)
         {
             // nothing to draw
-            if ((this.IsEnabled == false) || 
-                (this.IsVisible == false) || 
-                (this.Visibility != Visibility.Visible) || 
-                (canvasToMagnify == null) || 
+            if ((this.IsEnabled == false) ||
+                (this.IsVisible == false) ||
+                (this.Visibility != Visibility.Visible) ||
+                (canvasToMagnify == null) ||
                 (this.Parent.ImageToMagnify.Source == null))
             {
                 return;

@@ -15,9 +15,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DateCorrectAmbiguous : Window
     {
-        private List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
+        private readonly List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
         private int ambiguousDatesListIndex;
-        private FileDatabase database;
+        private readonly FileDatabase database;
         private bool displayingPreview;
 
         // Whether the operation is aborted, ie., because there are no ambiguous dates
@@ -116,7 +116,7 @@ namespace Timelapse.Dialog
                 // Parse the date for the given row.
                 image = this.database.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
-               
+
                 if (desiredDateTime.Date == imageDateTime.Date)
                 {
                     lastMatchingDate = index;
@@ -314,7 +314,7 @@ namespace Timelapse.Dialog
         private void NextPreviousButton_Click(object sender, RoutedEventArgs e)
         {
             Button direction = sender as Button;
-            bool result = this.MoveToAmbiguousDate(direction == NextDate);
+            bool result = this.MoveToAmbiguousDate(direction == this.NextDate);
             this.UpdateDisplay(result);
         }
 

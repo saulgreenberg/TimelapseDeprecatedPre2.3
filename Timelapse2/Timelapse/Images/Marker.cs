@@ -37,11 +37,11 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets or sets a value indicating whether to show the label next to the marker
         /// </summary>
-        public bool ShowLabel { get; set; }      
-          
+        public bool ShowLabel { get; set; }
+
         /// <summary>
         /// Gets or sets the marker's tooltip text 
-       /// </summary>
+        /// </summary>
         public string Tooltip { get; set; } // the label (not data label) associated with this marker.
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Timelapse.Images
         // Calculate the point as a ratio of its position on the image, so we can locate it regardless of the actual image size
         public static Point ConvertPointToRatio(Point p, double width, double height)
         {
-            Point ratio = new Point((double)p.X / (double)width, (double)p.Y / (double)height);
+            Point ratio = new Point(p.X / width, p.Y / height);
             return ratio;
         }
 

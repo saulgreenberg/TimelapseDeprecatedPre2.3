@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -13,7 +12,7 @@ namespace Timelapse.Dialog
 
         public EpisodeOptions(TimeSpan timeDifferenceThreshold, Window owner)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.Owner = owner;
             this.EpisodeTimeThreshold = timeDifferenceThreshold;
         }
@@ -24,17 +23,17 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogWindowInWorkingArea(this);
 
             this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum;
-            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum; 
-            this.TimeThresholdSlider.ValueChanged += TimeThresholdSlider_ValueChanged;
+            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum;
+            this.TimeThresholdSlider.ValueChanged += this.TimeThresholdSlider_ValueChanged;
             this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalMinutes;
-            DisplayFeedback();
+            this.DisplayFeedback();
         }
 
         private void TimeThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             // this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
-            DisplayFeedback();
-            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(TimeThresholdSlider.Value);
+            this.DisplayFeedback();
+            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
         }
 
         private void DisplayFeedback()

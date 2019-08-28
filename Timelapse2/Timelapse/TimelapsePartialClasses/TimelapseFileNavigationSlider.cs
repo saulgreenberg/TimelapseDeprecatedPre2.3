@@ -11,7 +11,7 @@ namespace Timelapse
         // Drag Started callback
         private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
             this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
             this.state.FileNavigatorSliderDragging = true;
         }
@@ -19,7 +19,7 @@ namespace Timelapse
         // Drag Completed callback
         private void FileNavigatorSlider_DragCompleted(object sender, DragCompletedEventArgs args)
         {
-            FilePlayer_Stop(); // In case the FilePlayer is going
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
             this.state.FileNavigatorSliderDragging = false;
             this.FileShow(this.FileNavigatorSlider);
             this.timerFileNavigator.Stop();

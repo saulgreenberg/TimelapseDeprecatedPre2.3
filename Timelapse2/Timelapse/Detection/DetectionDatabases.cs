@@ -16,7 +16,7 @@ namespace Timelapse.Detection
             List<ColumnDefinition> columnDefinitions;
             // Create the various tables used to hold detection data
 
-           // Info: Create or clear table 
+            // Info: Create or clear table 
             if (database.TableExists(Constant.DBTables.Info))
             {
                 // all the data tables were previously created. 
@@ -178,7 +178,7 @@ namespace Timelapse.Detection
                 // We will use that to search for the file index.
                 string query = Sql.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Sql.From + Constant.DBTables.FileData;
                 DataTable dataTable = detectionDB.GetDataTableFromSelect(query);
-                dataTable.PrimaryKey = new DataColumn[] 
+                dataTable.PrimaryKey = new DataColumn[]
                 {
                     dataTable.Columns[Constant.DatabaseColumn.File],
                     dataTable.Columns[Constant.DatabaseColumn.RelativePath],
@@ -237,7 +237,7 @@ namespace Timelapse.Detection
                         System.Diagnostics.Debug.Print("Invalid index: " + rows[0][0].ToString());
                         continue;
                     }
-                    
+
                     // Populate the detections table per image.
                     // If there are no detections, we populate it with values that indicate that.
                     if (image.detections.Count == 0)
