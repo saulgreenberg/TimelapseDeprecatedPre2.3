@@ -46,21 +46,32 @@ namespace Timelapse.Util
                     break;
             }
 
+            
             bool result;
-            if (isResourceFile)
+            try
             {
-                // Load thelayout from the resource file
-                result = timelapse.AvalonLayout_TryLoadFromResource(layoutName);
-            }
-            else
-            {
-                // Load both the layout and the window position/size from the registry 
-                result = timelapse.AvalonLayout_TryLoadFromRegistry(layoutName);
-                if (result)
+                if (isResourceFile)
                 {
-                    timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
-                    timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+                    // Load thelayout from the resource file
+                    result = timelapse.AvalonLayout_TryLoadFromResource(layoutName);
                 }
+                else
+                {
+                    // Load both the layout and the window position/size from the registry 
+                    result = timelapse.AvalonLayout_TryLoadFromRegistry(layoutName);
+                    if (result)
+                    {
+                        timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
+                        timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+                    }
+                }
+            }
+            catch
+            {
+                // If for some reason loading the avalon layout fails, catch that and then reload from scratch.
+                // Note that if this is the result of a corrupt registry entry, 
+                // that will self-correct as that entry will be over-written with new values after we load and image set and exit.
+                result = false;
             }
             if (result == false)
             {
