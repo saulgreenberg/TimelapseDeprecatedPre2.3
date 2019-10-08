@@ -1005,6 +1005,7 @@ namespace Timelapse.Images
 
         public void DrawBoundingBox(Size canvasRenderSize)
         {
+            int stroke_thickness = 5;
             // Remove existing bounding boxes, if any.
             this.bboxCanvas.Children.Clear();
             this.Children.Remove(this.bboxCanvas);
@@ -1054,7 +1055,7 @@ namespace Timelapse.Images
                         break;
                 }
                 rect.Stroke = brush;
-                rect.StrokeThickness = 5;
+                rect.StrokeThickness = stroke_thickness;
                 rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
                 foreach (KeyValuePair<string, string> classification in bbox.Classifications)
                 {
@@ -1065,12 +1066,16 @@ namespace Timelapse.Images
                 Point screenPositionTopLeft = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height));
                 Point screenPositionBottomRight = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height));
                 Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
-                rect.Width = screenPostionWidthHeight.X;
-                rect.Height = screenPostionWidthHeight.Y;
+               
+                // We also adjust the rect width and height to take into account the stroke thickness, which
+                // gives the effect the at inside part of the border defines the bounding box (otherwise the border thickness would overlap with the 
+                // entity in the bounding box)
+                rect.Width = screenPostionWidthHeight.X + (2 * stroke_thickness);
+                rect.Height = screenPostionWidthHeight.Y + (2 * stroke_thickness);
 
-                // Now add the rectangle to the canvas
-                Canvas.SetLeft(rect, screenPositionTopLeft.X);
-                Canvas.SetTop(rect, screenPositionTopLeft.Y);
+                // Now add the rectangle to the canvas, also adjusting for the stroke thickness.
+                Canvas.SetLeft(rect, screenPositionTopLeft.X - stroke_thickness);
+                Canvas.SetTop(rect, screenPositionTopLeft.Y - stroke_thickness);
                 this.bboxCanvas.Children.Add(rect);
                 this.bboxCanvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
             }
