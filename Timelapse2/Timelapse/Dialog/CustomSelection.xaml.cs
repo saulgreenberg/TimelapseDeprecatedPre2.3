@@ -706,6 +706,13 @@ namespace Timelapse.Dialog
             {
                 this.ResetToAllImagesButton.IsEnabled = true;
             }
+
+            // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+            // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+            // show bounding boxes when the confidence is .4 or more. 
+            Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseDetectionConfidenceThreshold
+                ? this.DetectionSelections.DetectionConfidenceThreshold1
+                : 0;
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

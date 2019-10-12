@@ -1012,8 +1012,12 @@ namespace Timelapse.Images
 
             // Max Confidence is over all bounding boxes, regardless of the categories.
             // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
-            if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
+            if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
             {
+                // Ignore any bounding box that is below the desired confidence threshold for displaying it.
+                // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+                // determined in the select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+                // show bounding boxes when the confidence is .4 or more.
                 return;
             }
 
@@ -1025,9 +1029,12 @@ namespace Timelapse.Images
             this.bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
-                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold)
+                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
                 {
                     // Ignore any bounding box that is below the desired confidence threshold for displaying it.
+                    // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+                    // determined in the select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+                    // show bounding boxes when the confidence is .4 or more.
                     continue;
                 }
                 // Create a bounding box 

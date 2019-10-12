@@ -2181,7 +2181,7 @@ namespace Timelapse.Database
                 // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
                 // its important to show detection and category data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
                 // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
-                if (this.detectionCategoriesDictionary == null)
+                if (this.classificationCategoriesDictionary == null)
                 {
                     this.classificationCategoriesDictionary = new Dictionary<string, string>();
                 }

@@ -342,7 +342,7 @@
             </MenuItem>
         </Menu>
 
-        <xcad:DockingManager Name="DockingManager" AllowMixedOrientation="True" BorderBrush="Black" BorderThickness="1" Grid.Row="1" LayoutUpdated="DockingManager_LayoutUpdated">
+        <xcad:DockingManager x:Name="DockingManager" AllowMixedOrientation="True" BorderBrush="Black" BorderThickness="1" Grid.Row="1" LayoutUpdated="DockingManager_LayoutUpdated">
             <xcad:DockingManager.DocumentHeaderTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">

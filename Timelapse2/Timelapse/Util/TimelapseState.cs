@@ -22,6 +22,8 @@ namespace Timelapse.Util
 
         public bool FirstTimeFileLoading { get; set; }
 
+        public double BoundingBoxThresholdOveride { get; set; }
+
         public TimelapseState()
         {
             this.FirstTimeFileLoading = true;
@@ -34,6 +36,7 @@ namespace Timelapse.Util
             this.FileNavigatorSliderDragging = false;
             this.MouseOverCounter = null;
             this.MostRecentDragEvent = DateTime.UtcNow - this.Throttles.DesiredIntervalBetweenRenders;
+            this.BoundingBoxThresholdOveride = 0;
             this.ResetKeyRepeat();
         }
 
