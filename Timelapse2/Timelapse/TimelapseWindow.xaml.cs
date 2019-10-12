@@ -52,7 +52,18 @@ namespace Timelapse
 
         public string FolderPath
         {
-            get { return this.dataHandler.FileDatabase.FolderPath; }
+            get {
+                if (this.dataHandler == null)
+                {
+                    System.Diagnostics.Debug.Print("Weird error in FolderPath - datahandler is null");
+                    return String.Empty;
+                }
+                else
+                { 
+                    return this.dataHandler.FileDatabase.FolderPath;
+                }
+            }
+
         }
         #endregion
 
