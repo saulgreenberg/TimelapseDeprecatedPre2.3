@@ -431,11 +431,16 @@ namespace Timelapse.Images
                 // Get the current point, and create a marker on it.
                 Point position = e.GetPosition(this.ImageToDisplay);
                 position = Marker.ConvertPointToRatio(position, this.ImageToDisplay.ActualWidth, this.ImageToDisplay.ActualHeight);
-                Marker marker = new Marker(null, position);
+                if (Marker.IsPointValidRatio(position))
+                {
+                    // Add the marker if its between 0,0 and 1,1. This should always be the case, but there was one case
+                    // where it was recorded in the database as Ininity, INfinity, so this should guard against that.
+                    Marker marker = new Marker(null, position);
 
-                // don't add marker to the marker list
-                // Main window is responsible for filling in remaining properties and adding it.
-                this.SendMarkerEvent(new MarkerEventArgs(marker, true));
+                    // don't add marker to the marker list
+                    // Main window is responsible for filling in remaining properties and adding it.
+                    this.SendMarkerEvent(new MarkerEventArgs(marker, true));
+                }
             }
             // Show the magnifying glass if its enables, as it may have been hidden during other mouseDown operations
             this.ShowMagnifierIfEnabledOtherwiseHide();
@@ -932,12 +937,20 @@ namespace Timelapse.Images
             }
 
             // Get the point from the marker, and convert it so that the marker will be in the right place
+            if (Marker.IsPointValidRatio(marker.Position) == false)
+            {
+                // We had one case where the marker point was recorded as Infinity,Infinity. Not sure why.
+                // As a workaround, we just make sure the marker is a valid ration. If it isn't we just put the marker in the middle
+                // Yup, a hack, but its a very rare bug and thus this is good enough. 
+                // While we can instead repair the database, its not really worth the bother of coding that.
+                marker.Position = new Point(.5,.5);
+            }
             Point screenPosition = Marker.ConvertRatioToPoint(marker.Position, canvasRenderSize.Width, canvasRenderSize.Height);
             if (doTransform)
             {
                 screenPosition = this.transformGroup.Transform(screenPosition);
             }
-
+            
             Canvas.SetLeft(markerCanvas, screenPosition.X - markerCanvas.Width / 2.0);
             Canvas.SetTop(markerCanvas, screenPosition.Y - markerCanvas.Height / 2.0);
             Canvas.SetZIndex(markerCanvas, 0);

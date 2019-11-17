@@ -71,5 +71,11 @@ namespace Timelapse.Images
             Point point = new Point(p.X * width, p.Y * height);
             return point;
         }
+
+        // Return true if the point is between 0,0 and 1,1
+        public static bool IsPointValidRatio(Point p)
+        {
+            return (p.X >= 0 && p.Y >= 0 && p.X <= 1 && p.Y <= 1);
+        }
     }
 }
