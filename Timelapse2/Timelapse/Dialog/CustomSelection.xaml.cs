@@ -712,7 +712,7 @@ namespace Timelapse.Dialog
             // show bounding boxes when the confidence is .4 or more. 
             Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseDetectionConfidenceThreshold
                 ? this.DetectionSelections.DetectionConfidenceThreshold1
-                : 100;
+                : 1;
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

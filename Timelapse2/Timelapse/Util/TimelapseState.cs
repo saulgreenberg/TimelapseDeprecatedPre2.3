@@ -36,7 +36,7 @@ namespace Timelapse.Util
             this.FileNavigatorSliderDragging = false;
             this.MouseOverCounter = null;
             this.MostRecentDragEvent = DateTime.UtcNow - this.Throttles.DesiredIntervalBetweenRenders;
-            this.BoundingBoxThresholdOveride = 0;
+            this.BoundingBoxThresholdOveride = 1;
             this.ResetKeyRepeat();
         }
 

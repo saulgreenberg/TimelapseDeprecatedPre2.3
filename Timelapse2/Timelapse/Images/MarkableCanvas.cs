@@ -1018,11 +1018,19 @@ namespace Timelapse.Images
 
         public void DrawBoundingBox(Size canvasRenderSize)
         {
-            int stroke_thickness = 5;
             // Remove existing bounding boxes, if any.
+            // Note that we do this even if detections may not exist, as we need to clear things if the user had just toggled
+            // detections off
             this.bboxCanvas.Children.Clear();
             this.Children.Remove(this.bboxCanvas);
 
+            if (GlobalReferences.DetectionsExists == false)
+            {
+                // As detection don't exist, there won't be any bounding boxes to draw.
+                return;
+            }
+
+            int stroke_thickness = 5;
             // Max Confidence is over all bounding boxes, regardless of the categories.
             // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
             if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
@@ -1034,10 +1042,6 @@ namespace Timelapse.Images
                 return;
             }
 
-            if (GlobalReferences.DetectionsExists == false)
-            {
-                return;
-            }
             this.bboxCanvas.Width = canvasRenderSize.Width;
             this.bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
@@ -1050,6 +1054,7 @@ namespace Timelapse.Images
                     // show bounding boxes when the confidence is .4 or more.
                     continue;
                 }
+
                 // Create a bounding box 
                 Rectangle rect = new Rectangle();
                 byte transparency = (byte)Math.Round(255 * bbox.Confidence);
