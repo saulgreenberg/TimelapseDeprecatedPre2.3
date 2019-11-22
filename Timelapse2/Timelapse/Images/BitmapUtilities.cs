@@ -31,13 +31,14 @@ namespace Timelapse.Images
             if (File.Exists(path) == false)
             {
                 return false;
-            }
+            }  
             try
             {
                 // we assume its a valid path
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
                 bitmap.DecodePixelWidth = 1; // We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
+                bitmap.DecodePixelHeight = 1; // We try to generate a trivial thumbnail, as that suffices to know if this is a valid jpg;
                 // TODO Check this, as we changed the bitmap cache options from Default to OnLoad to ensure file deletions would work
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.UriSource = new Uri(path);

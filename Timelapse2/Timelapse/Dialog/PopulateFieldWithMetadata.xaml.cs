@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
+using Timelapse.ExifTool;
 
 namespace Timelapse.Dialog
 {
@@ -26,14 +27,14 @@ namespace Timelapse.Dialog
         private readonly Dictionary<string, string> dataLabelByLabel;
         private readonly string filePath;
         private string metadataFieldName;
+
         private bool metadataFieldSelected;
         private bool noMetadataAvailable;
+        private ExifToolWrapper exifTool;
 
-        public PopulateFieldWithMetadata(FileDatabase database, string filePath, Window owner)
+        public PopulateFieldWithMetadata(FileDatabase database, string filePath)
         {
             this.InitializeComponent();
-            this.Owner = owner;
-
             this.clearIfNoMetadata = false;
             this.database = database;
             this.dataFieldLabel = String.Empty;
@@ -55,11 +56,45 @@ namespace Timelapse.Dialog
 
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
+
+            // Construct a list showing the available note fields
+            foreach (ControlRow control in this.database.Controls)
+            {
+                if (control.Type == Constant.Control.Note)
+                {
+                    this.dataLabelByLabel.Add(control.Label, control.DataLabel);
+                    this.DataFields.Items.Add(control.Label);
+                }
+            }
+            // Show the metadata of the current image, depending on the kind of tool selected
+            this.MetadataToolType_Checked(null, null);
+            
+            // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
+            this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;
+            this.ExifToolRB.Checked += this.MetadataToolType_Checked;
+        }
+
+        private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
+        {
+            if (this.MetadataExtractorRB.IsChecked == true)
+            { 
+                this.MetadataExtractorShowImageMetadata();
+            }
+            else
+            {
+                this.ExifToolShowImageMetadata();
+            }
+        }
+
+        #region MetadataExtractor-specific methods
+        // Retrieve and show a single image's metadata in the datagrid
+        private void MetadataExtractorShowImageMetadata()
+        {
             this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.filePath);
             // If there is no metadata, this is an easy way to inform the user
             if (this.metadataDictionary.Count == 0)
             {
-                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found", String.Empty));
+                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the currently displayed image", "Navigate to a displayable image"));
                 this.noMetadataAvailable = true;
             }
             else
@@ -74,16 +109,46 @@ namespace Timelapse.Dialog
                 metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
             }
             this.dataGrid.ItemsSource = metadataList;
-
-            foreach (ControlRow control in this.database.Controls)
-            {
-                if (control.Type == Constant.Control.Note)
-                {
-                    this.dataLabelByLabel.Add(control.Label, control.DataLabel);
-                    this.DataFields.Items.Add(control.Label);
-                }
-            }
         }
+        #endregion
+
+        #region ExifTool-specific methods
+        private void ExifToolShowImageMetadata()
+        {
+            // Clear the dictionary so we get fresh contents
+            this.metadataDictionary.Clear();
+
+            // Start the exifTool process if its not already started
+            if (this.exifTool == null)
+            {
+                this.exifTool = new ExifToolWrapper();
+                this.exifTool.Start();
+            }
+            
+            // Fetch the exif data using ExifTool
+            Dictionary<string, string> exifDictionary = this.exifTool.FetchExifFrom(this.filePath);
+
+            // If there is no metadata, inform the user by setting bogus dictionary values which will appear on the grid
+            if (exifDictionary.Count == 0)
+            {
+                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the currently displayed image", "Navigate to a displayable image"));
+                this.noMetadataAvailable = true;
+            }
+            else
+            {
+                this.noMetadataAvailable = false;
+            }
+
+            // In order to populate the metadataDictionary and datagrid , we have to unpack the ExifTool dictionary, recreate the dictionary, and create a list containing four values
+            List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
+            foreach (KeyValuePair<string, string> metadata in exifDictionary)
+            {
+                this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
+                metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
+            }
+            this.dataGrid.ItemsSource = metadataList;
+        }
+        #endregion
 
         // Label the column headers
         private void Datagrid_AutoGeneratedColumns(object sender, EventArgs e)
@@ -94,7 +159,8 @@ namespace Timelapse.Dialog
             this.dataGrid.Columns[3].Header = "Example value from current file";
             this.dataGrid.SortByColumnAscending(2);
             this.dataGrid.Columns[0].Visibility = Visibility.Collapsed;
-            this.dataGrid.Columns[1].Width = 130;
+            this.dataGrid.Columns[1].Visibility = Visibility.Collapsed;
+            // this.dataGrid.Columns[1].Width = 130;
         }
 
         // The user has selected a row. Get the metadata from that row, and make it the selected metadata.
@@ -155,16 +221,17 @@ namespace Timelapse.Dialog
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<KeyValuePair<string, string>> keyValueList = new ObservableCollection<KeyValuePair<string, string>>();
-            this.FeedbackGrid.ItemsSource = keyValueList;
+            bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
 
             // Update the UI to show the feedback datagrid, 
-            this.PopulatingMessage.Text = "Populating the data field '" + this.dataFieldLabel + "' from each file's '" + this.metadataFieldName + "' metadata ";
+            this.PopulatingMessage.Text = "Populating '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
             this.PopulateButton.Visibility = Visibility.Collapsed; // Hide the populate button, as we are now in the act of populating things
             this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
             this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
             this.DataFields.Visibility = Visibility.Collapsed;
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.PanelHeader.Visibility = Visibility.Collapsed;
+            this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
 
             BackgroundWorker backgroundWorker = new BackgroundWorker() { WorkerReportsProgress = true };
             backgroundWorker.DoWork += (ow, ea) =>
@@ -174,7 +241,7 @@ namespace Timelapse.Dialog
                 this.Dispatcher.Invoke(new Action(() =>
                 {
                 }));
-
+                
                 // For each row in the database, get the image filename and try to extract the chosen metadata value.
                 // If we can't decide if we want to leave the data field alone or to clear it depending on the state of the isClearIfNoMetadata (set via the checkbox)
                 // Report progress as needed.
@@ -182,10 +249,32 @@ namespace Timelapse.Dialog
                 string dataLabelToUpdate = this.dataLabelByLabel[this.dataFieldLabel];
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
                 TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
+                int progress = 0;
+
+                double totalImages = this.database.CurrentlySelectedFileCount;
+                Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
                 for (int imageIndex = 0; imageIndex < this.database.CurrentlySelectedFileCount; ++imageIndex)
                 {
+
                     ImageRow image = this.database.FileTable[imageIndex];
-                    Dictionary<string, ImageMetadata> metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.database.FolderPath));
+                    if (metadataExtractorRBIsChecked == true)
+                    {   // MetadataExtractor specific code
+                        metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.database.FolderPath));
+                    }
+                    else
+                    {
+                        // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
+                        string[] tags = { this.metadataFieldName };
+                        metadata.Clear(); 
+                        Dictionary<string, string> exifData = this.exifTool.FetchExifFrom(image.GetFilePath(this.database.FolderPath), tags);
+                        if (exifData.ContainsKey (tags[0]))
+                        {
+                            metadata.Add(tags[0], new Timelapse.Util.ImageMetadata(String.Empty, tags[0], exifData[tags[0]]));
+                        }
+                    }
+                    progress = Convert.ToInt32((double)imageIndex / totalImages * 100.0);
+                    backgroundWorker.ReportProgress(progress, new FeedbackMessage(String.Format("{0}/{1} images. Processing ", imageIndex, totalImages), image.File));
+
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
                         if (this.clearIfNoMetadata)
@@ -195,19 +284,20 @@ namespace Timelapse.Dialog
                             {
                                 image.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);
                                 imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - date/time reread from file"));
+                                keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - date/time reread from file"));
                             }
                             else
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(this.dataLabelByLabel[this.dataFieldLabel], String.Empty) };
                                 imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - data field is cleared"));
+                                keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - data field is cleared"));
                             }
                         }
                         else
                         {
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, "No metadata found - data field remains unaltered"));
+                            keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - data field remains unaltered"));
                         }
+                        
                         continue;
                     }
 
@@ -219,18 +309,18 @@ namespace Timelapse.Dialog
                         {
                             image.SetDateTimeOffset(metadataDateTime);
                             imageUpdate = image.GetDateTimeColumnTuples();
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, metadataValue));
+                            keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
                         }
                         else
                         {
-                            backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, String.Format("'{0}' - data field remains unaltered - not a valid date/time.", metadataValue)));
+                            keyValueList.Add(new KeyValuePair<string, string>(image.File, String.Format("'{0}' - data field remains unaltered - not a valid date/time.", metadataValue)));
                             continue;
                         }
                     }
                     else
                     {
                         imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                        backgroundWorker.ReportProgress(0, new FeedbackMessage(image.File, metadataValue));
+                        keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
                     }
                     imagesToUpdate.Add(imageUpdate);
 
@@ -239,26 +329,48 @@ namespace Timelapse.Dialog
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime); // Put in a short delay every now and then, as otherwise the UI may not update.
                     }
                 }
-
-                backgroundWorker.ReportProgress(0, new FeedbackMessage("Writing the data...", "Please wait..."));
+                backgroundWorker.ReportProgress(progress, new FeedbackMessage("Writing the data...", "Please wait..."));
                 this.database.UpdateFiles(imagesToUpdate);
-                backgroundWorker.ReportProgress(0, new FeedbackMessage("Done", "Done"));
+                backgroundWorker.ReportProgress(progress, new FeedbackMessage("Done", String.Empty));
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
-                // Get the message and add it to the data structure 
+                // Update the progress bar with a message
                 FeedbackMessage message = (FeedbackMessage)ea.UserState;
-                keyValueList.Add(new KeyValuePair<string, string>(message.FileName, message.Message));
-
-                // Scrolls so the last object added is visible
-                this.FeedbackGrid.ScrollIntoView(this.FeedbackGrid.Items[this.FeedbackGrid.Items.Count - 1]);
+                this.UpdateMetadataLoadProgress(ea.ProgressPercentage, message.Message + message.FileName);
             };
             backgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
+                // Show the results
+                this.FeedbackGrid.ItemsSource = keyValueList;
                 this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
                 this.btnCancel.IsEnabled = true;
+                this.BusyIndicator.IsBusy = false;
+                this.PopulatingMessage.Text = "Populated '" +  this.MetadataDisplayText.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
+                if (this.exifTool != null)
+                {
+                    this.exifTool.Stop();
+                    this.exifTool.Dispose();
+                }
             };
+            this.BusyIndicator.IsBusy = true;
+
+            // Set up the user interface to show the progress bar
             backgroundWorker.RunWorkerAsync();
+        }
+
+        private void UpdateMetadataLoadProgress(int percent, string message)
+        {
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
+            if (bar != null)
+            {
+                bar.Value = percent;
+            }
+            if (textmessage != null)
+            {
+                textmessage.Text = message;
+            }
         }
 
         // Ensures that the columns will have appropriate header names. Can't be set directly in code otherwise
@@ -291,7 +403,7 @@ namespace Timelapse.Dialog
             public string FileName { get; set; }
             public string Message { get; set; }
 
-            public FeedbackMessage(string fileName, string message)
+            public FeedbackMessage(string message, string fileName)
             {
                 this.FileName = fileName;
                 this.Message = message;

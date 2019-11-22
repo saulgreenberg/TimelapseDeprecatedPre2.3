@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Timelapse.Controls"
+        xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:Timelapse"
         mc:Ignorable="d"
         Title="Populate a data field with metadata" 
@@ -18,14 +19,21 @@
                             Title="Populate a Data Field with Metadata of your Choosing"
                             What="Images often embed metadata, some of which may be useful to capture as data."
                             Solution="For all your files, you can choose and populate one of your data fields with metadata of your choosing.
-&#10;1. Select a data field from the left list (only Note fields and the DateTime field can be populated)
-&#10;2. Select a metadata field from the right list (which illustrates sample values taken from the current image)
-&#10;3. (Optional) If some images or videos are missing that metatdata, you can use the checkbox below to specify clearing the old data or leave it as is.
-&#10;4. Click the Populate button to apply the above selections to your files. 
-&#10;5. Be patient: if you have a large number of files as it does take time to do this!"
+&#10;1. Check the metadata found by MetadataExtractor (fast) vs. ExifTool (better at finding all metadata fields but 15x slower).
+&#10;2. Select a data field from the left list (only Note fields and the DateTime field can be populated)
+&#10;3. Select a metadata field from the right list, which illustrates sample values taken from the current image
+&#10;4. If some images are missing that metatdata, set the checkbox at the bottom to clear the existing data or leave it as is.
+&#10;5. Click the Populate button to apply the above selections to your files. 
+&#10;6. Be patient: if you have a large number of files as it does take time to do this!"
                             Result="For each file, the chosen data field will be filled in with the chosen metadata from that image."
                             ShowExplanationVisibility="True" />
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
+            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
+            <StackPanel Name="ToolSelectionPanel" Orientation="Horizontal">
+                <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
+                <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
+                <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
+            </StackPanel>
             <Rectangle Fill="#FF868686" Height="2"></Rectangle>
             <Grid Name="PanelHeader">
                 <Grid.ColumnDefinitions>
@@ -47,12 +55,12 @@
 
         <DockPanel LastChildFill="True" >
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                <CheckBox x:Name="ClearIfNoMetadata"  VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,50,0" Margin="10,0,0,0" Checked="ClearIfNoMetadata_Checked">Clear the data field if the image file cannot be read or that file is missing the specified metadata</CheckBox>
+                <CheckBox x:Name="ClearIfNoMetadata"  VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,50,0" Margin="10,0,0,0" Checked="ClearIfNoMetadata_Checked">Clear the data field if the image file cannot be read or if it is missing that metadata field</CheckBox>
                 <Button x:Name="btnCancel" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
                 <Button x:Name="PopulateButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="PopulateButton_Click">_Populate</Button>
             </StackPanel>
 
-            <Grid Name="PrimaryPanel">
+            <Grid Name="PrimaryPanel" Visibility="Visible">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="147*" />
@@ -71,6 +79,7 @@
                     Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3">
                 </DataGrid>
                 <ListBox Name="DataFields" Margin="10,0,9.983,0" Grid.Column="0" Grid.Row="1" SelectionChanged="NoteFieldsListBox_SelectionChanged"/>
+
             </Grid>
             <Grid Name="FeedbackPanel" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
@@ -80,12 +89,31 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock Name="PopulatingMessage" FontWeight="Bold" Text="--" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10,10,10,0" />
+                <TextBlock Name="PopulatingMessage" FontWeight="Bold" Text="--" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" Margin="10,10,10,0" />
                 <DataGrid Name="FeedbackGrid" Margin="0,0,10,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     AutoGenerateColumns="True" SelectionUnit="FullRow" SelectionMode="Single" 
                     AutoGeneratedColumns="FeedbackDatagrid_AutoGeneratedColumns" 
                     Grid.Column="0" Grid.Row="1">
                 </DataGrid>
+
+                <!-- Busy Indicator-->
+                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" >
+                    <xceed:BusyIndicator.BusyContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
+                                <StackPanel Margin="4,0,4,0">
+                                    <Label Name="foo" Content="Please wait..." />
+                                    <ProgressBar Name="bar" Value="0" Height="15" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </xceed:BusyIndicator.BusyContentTemplate>
+                    <xceed:BusyIndicator.ProgressBarStyle>
+                        <Style TargetType="ProgressBar">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Style>
+                    </xceed:BusyIndicator.ProgressBarStyle>
+                </xceed:BusyIndicator>
             </Grid>
         </DockPanel>
     </DockPanel>

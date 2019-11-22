@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -88,19 +89,16 @@ namespace Timelapse
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
-            {
-                int firstFileDisplayable = this.dataHandler.FileDatabase.GetCurrentOrNextDisplayableFile(this.dataHandler.ImageCache.CurrentRow);
-                if (firstFileDisplayable == -1)
-                {
-                    // There are no displayable images, and thus no metadata to choose from, so abort
-                    MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
-                    messageBox.Message.Problem = "Timelapse can't extract any metadata, as there are no valid displayable file." + Environment.NewLine;
-                    messageBox.Message.Reason += "Timelapse must have at least one valid file in order to get its metadata. However, the image files are either missing (not available) or corrupted.";
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.ShowDialog();
-                    return;
-                }
+            if (this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.Corrupt.Value || this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.FileNoLongerAvailable.Value)
+            { 
+                // There are no displayable images, and thus no metadata to choose from, so abort
+                MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
+                messageBox.Message.Problem = "Timelapse can't extract any metadata, as the currently displayed image or video is missing or corrupted." + Environment.NewLine;
+                messageBox.Message.Reason = "Timelapse tries to examines the currently displayed image or video for its metadata.";
+                messageBox.Message.Hint = "Navigate to a displayable image or video, and try again.";
+                messageBox.Message.Icon = MessageBoxImage.Error;
+                messageBox.ShowDialog();
+                return;
             }
 
             if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt,
@@ -110,7 +108,7 @@ namespace Timelapse
                                                                    this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-                PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath), this);
+                PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
                 this.ShowBulkImageEditDialog(populateField, false);
             }
         }
@@ -445,7 +443,6 @@ namespace Timelapse
         private void ShowBulkImageEditDialog(Window dialog, bool forceUpdate)
         {
             dialog.Owner = this;
-            long currentFileID = this.dataHandler.ImageCache.Current.ID;
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
