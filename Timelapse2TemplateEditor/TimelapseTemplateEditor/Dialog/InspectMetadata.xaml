@@ -28,6 +28,13 @@
                             ShowExplanationVisibility="True"/>
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
             <Rectangle Fill="#FF868686" Height="2"></Rectangle>
+            <StackPanel Name="ToolSelectionPanel" Orientation="Horizontal">
+                <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
+                <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
+                <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
+            </StackPanel>
+            <Rectangle Fill="#FF868686" Height="2">
+            </Rectangle>
             <Grid Name="PanelHeader">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -36,6 +43,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition MinWidth="80" Width="Auto" />
                 </Grid.ColumnDefinitions>
+
                 <Button Name="OpenFile" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="10" Margin="10,10,5,10"  Click="OpenFile_Click">Open _File</Button>
                 <Label Content="File currently open:" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="1"/>
                 <Label Content="--" Name="ImageName" MinWidth="100" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Grid.Column="2"/>

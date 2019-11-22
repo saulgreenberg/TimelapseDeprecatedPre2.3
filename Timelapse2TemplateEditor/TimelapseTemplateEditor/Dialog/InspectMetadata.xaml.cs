@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Dialog;
 using Timelapse.Util;
+using Timelapse.ExifTool;
 
 namespace Timelapse.Editor.Dialog
 {
@@ -14,13 +15,12 @@ namespace Timelapse.Editor.Dialog
     // Note: There are lots of commonalities between this dialog and DialogPopulate, but its not clear if it's worth the effort of factoring the two.
     public partial class InspectMetadata : Window
     {
-        private Dictionary<string, ImageMetadata> metadataDictionary;
+        private Dictionary<string, ImageMetadata> metadataDictionary = new Dictionary<string, ImageMetadata>();
         private string metadataName = String.Empty;
-        private readonly string noteLabel = String.Empty;
-        private readonly string noteDataLabel = String.Empty;
+
 
         private string imageFilePath;
-        private readonly string folderPath = String.Empty;
+        private ExifToolWrapper exifTool;
 
         public InspectMetadata(Window owner)
         {
@@ -33,7 +33,65 @@ namespace Timelapse.Editor.Dialog
         {
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
+
+            // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
+            this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;
+            this.ExifToolRB.Checked += this.MetadataToolType_Checked;
         }
+
+        #region MetadataExtractor-specific methods
+        // Retrieve and show a single image's metadata in the datagrid
+        private void MetadataExtractorShowImageMetadata()
+        {
+            this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);
+            // If there is no metadata, this is an easy way to inform the user
+            if (this.metadataDictionary.Count == 0)
+            {
+                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the chosen image", String.Empty));
+            }
+
+            // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
+            List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
+            foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
+            {
+                metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
+            }
+            this.dataGrid.ItemsSource = metadataList;
+        }
+        #endregion
+
+        #region ExifTool-specific methods
+        private void ExifToolShowImageMetadata()
+        {
+            // Clear the dictionary so we get fresh contents
+            this.metadataDictionary.Clear();
+
+            // Start the exifTool process if its not already started
+            if (this.exifTool == null)
+            {
+                this.exifTool = new ExifToolWrapper();
+                this.exifTool.Start();
+            }
+
+            // Fetch the exif data using ExifTool
+            Dictionary<string, string> exifDictionary = this.exifTool.FetchExifFrom(this.imageFilePath);
+
+            // If there is no metadata, inform the user by setting bogus dictionary values which will appear on the grid
+            if (exifDictionary.Count == 0)
+            {
+                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the currently displayed image", "Navigate to a displayable image"));
+            }
+
+            // In order to populate the metadataDictionary and datagrid , we have to unpack the ExifTool dictionary, recreate the dictionary, and create a list containing four values
+            List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
+            foreach (KeyValuePair<string, string> metadata in exifDictionary)
+            {
+                this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
+                metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
+            }
+            this.dataGrid.ItemsSource = metadataList;
+        }
+        #endregion
 
         #region Datagrid callbacks
         // Configuring the data grid appearance and select the first row
@@ -96,22 +154,41 @@ namespace Timelapse.Editor.Dialog
             {
                 this.ImageName.Content = Path.GetFileName(this.imageFilePath);
                 this.ImageName.ToolTip = this.ImageName.Content;
-
-                // Retrieve the metadata
-                this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);
-                // If there is no metadata, this is an easy way to inform the user
-                if (this.metadataDictionary.Count == 0)
+                if (this.MetadataExtractorRB.IsChecked == true)
                 {
-                    this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found", String.Empty));
+                    this.MetadataExtractorShowImageMetadata();
                 }
-
-                // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
-                List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
-                foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
+                else
                 {
-                    metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
+                    ExifToolShowImageMetadata();
                 }
-                this.dataGrid.ItemsSource = metadataList;
+                //// Retrieve the metadata
+                //this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);
+                //// If there is no metadata, this is an easy way to inform the user
+                //if (this.metadataDictionary.Count == 0)
+                //{
+                //    this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found", String.Empty));
+                //}
+
+                //// In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
+                //List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
+                //foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
+                //{
+                //    metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
+                //}
+                //this.dataGrid.ItemsSource = metadataList;
+            }
+        }
+
+        private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
+        {
+            if (this.MetadataExtractorRB.IsChecked == true)
+            {
+                this.MetadataExtractorShowImageMetadata();
+            }
+            else
+            {
+                this.ExifToolShowImageMetadata();
             }
         }
 
