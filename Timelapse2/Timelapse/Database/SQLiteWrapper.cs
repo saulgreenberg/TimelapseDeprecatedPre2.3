@@ -820,12 +820,36 @@ namespace Timelapse.Database
         /// <param name="tableName">the name of the table</param>
         private static void DropTable(SQLiteConnection connection, string tableName)
         {
+            // Turn foreign keys oof, do the operaton, then turn it backon. 
+            // This is because if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
+            // as otherwise it will delete the foreign key table contents.
+            SQLiteWrapper.ForeignKeys(connection, false);
+
+            // Drop the table
             string sql = Sql.DropTable + tableName;
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
             }
+
+            SQLiteWrapper.ForeignKeys(connection, true);
         }
+
+        // Turn foreign keys on or off. 
+        // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
+        // as otherwise it will delete the foreign key table contents.
+        private static void ForeignKeys(SQLiteConnection connection, bool state)
+        {
+            // Syntax is: PRAGMA foreign_keys = OFF;
+            // Syntax is: PRAGMA foreign_keys = On;
+            string sql = "PRAGMA foreign_keys = ";
+            sql += state ? "ON;" : "Off;";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
 
         public void DropTable(string tableName)
         {

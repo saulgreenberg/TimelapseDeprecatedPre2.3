@@ -346,7 +346,7 @@ namespace Timelapse.Dialog
                 this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
                 this.btnCancel.IsEnabled = true;
                 this.BusyIndicator.IsBusy = false;
-                this.PopulatingMessage.Text = "Populated '" +  this.MetadataDisplayText.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
+                this.PopulatingMessage.Text = "Populated '" +  this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
                 if (this.exifTool != null)
                 {
                     this.exifTool.Stop();

@@ -103,6 +103,7 @@ namespace Timelapse.Editor.Dialog
             this.dataGrid.Columns[3].Header = "Example value from current file";
             this.dataGrid.SortByColumnAscending(2);
             this.dataGrid.Columns[0].Visibility = Visibility.Collapsed;
+            this.dataGrid.Columns[1].Visibility = Visibility.Collapsed;
             this.dataGrid.Columns[1].Width = 130;
 
             // Select the first row
