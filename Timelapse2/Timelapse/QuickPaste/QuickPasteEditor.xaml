@@ -17,7 +17,8 @@
                             What="The checked items below form a quickpaste entry.  
                                       &#10;You will be able to paste these values into the corresponding data controls with a single button click."
                              Hint="&#x2022;  create a meaningful title
-                                      &#10;&#x2022;  check 'Use' to select items to be quick-pasted into data controls"
+                                      &#10;&#x2022;  check 'Use' to select items to be quick-pasted into data controls
+                                      &#10;&#x2022;  if desired, use the buttons to select or clear all 'Use' checkboxes"
                             Result="A new quick paste button will be added to the QuickPaste window"
                             ShowExplanationVisibility="False"/>
 
@@ -39,6 +40,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -47,10 +49,19 @@
 
                 <Label Content="Title:" FontWeight="Bold" Grid.Row="0" Grid.Column="0"/>
                 <TextBox Name="QuickPasteTitle"  Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="Give this a meaningful title" VerticalContentAlignment="Center" Width="150" />
-
+                <!--<StackPanel Orientation="Horizontal" Grid.Row= "0" Grid.Column="4" Margin="10,0,0,0">
+                    <TextBlock Text="Use: " VerticalAlignment="Center" FontWeight="Bold"/>
+                    <Button Name="UseAll" Content="Select all" Margin="0,0,5,0" Click="SetUses" />
+                    <Button Name="UseClear" Content="Clear all" Click="SetUses"/>
+                </StackPanel>-->
                 <Label Content="Use"   FontWeight="Bold" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="1"/>
                 <Label Content="Label" FontWeight="Bold" Grid.Row="1" Grid.Column="2"/>
                 <Label Content="Value" FontWeight="Bold" Grid.Row="1" Grid.Column="3"/>
+                <StackPanel Orientation="Horizontal" Grid.Row= "1" Grid.Column="4" Margin="10,0,0,0">
+                    <Button Name="UseAll" Content="Select" Margin="0,0,5,0" Click="SetUses" FontStyle="Italic"/>
+                    <Button Name="UseClear" Content="Clear" Click="SetUses" FontStyle="Italic"/>
+                    <TextBlock Text="all Use checkboxes " VerticalAlignment="Center" Margin="5,0,0,0" FontStyle="Italic"/>
+                </StackPanel>
             </Grid>
         </ScrollViewer>
     </DockPanel>

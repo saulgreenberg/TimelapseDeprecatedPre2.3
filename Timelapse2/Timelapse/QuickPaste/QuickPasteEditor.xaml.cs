@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -26,6 +27,9 @@ namespace Timelapse.QuickPaste
         // The initial grid row. We start adding rows after this one.
         // the 1st two grid rows are already filled.
         private const int GridRowInitialRow = 1;
+
+        // For simplicity, create a list with all 'Use' checkboxes in it so we can set or clear all of them
+        List<CheckBox> UseCheckboxes = new List<CheckBox>();
 
         // UI Constants
         private const double ValuesWidth = 80;
@@ -91,6 +95,7 @@ namespace Timelapse.QuickPaste
             };
             useCurrentRow.Checked += this.UseCurrentRow_CheckChanged;
             useCurrentRow.Unchecked += this.UseCurrentRow_CheckChanged;
+            this.UseCheckboxes.Add(useCurrentRow);
 
             Grid.SetRow(useCurrentRow, gridRowIndex);
             Grid.SetColumn(useCurrentRow, GridColumnUse);
@@ -292,5 +297,19 @@ namespace Timelapse.QuickPaste
             this.DialogResult = false;
         }
         #endregion
+
+        private void SetUses(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button == null)
+            {
+                return;
+            }
+            bool useState = button.Name == "UseAll";
+            foreach (CheckBox cb in this.UseCheckboxes)
+            {
+                cb.IsChecked = useState;
+            }
+        }
     }
 }
