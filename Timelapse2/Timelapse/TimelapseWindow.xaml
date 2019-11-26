@@ -585,7 +585,7 @@
             <StatusBarItem  Grid.Column="11" Content="---" HorizontalAlignment="Right" HorizontalContentAlignment="Stretch"/>
         </StatusBar>
         
-        <!-- Busy Indicator-->
+        <!-- Busy Indicator with Progress Bar-->
         <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" >
             <xceed:BusyIndicator.BusyContentTemplate>
                 <DataTemplate>
@@ -602,6 +602,10 @@
                     <Setter Property="Visibility" Value="Collapsed"/>
                 </Style>
             </xceed:BusyIndicator.ProgressBarStyle>
+        </xceed:BusyIndicator>
+        
+        <!-- Random Busy Indicator -->
+        <xceed:BusyIndicator Name="BusyIndicatorRandom" IsBusy="False" Grid.Row="1" >
         </xceed:BusyIndicator>
     </Grid>
 </Window>

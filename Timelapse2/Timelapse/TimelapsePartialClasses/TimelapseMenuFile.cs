@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -66,7 +67,7 @@ namespace Timelapse
         }
 
         // Import Detection data
-        private void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
             if (Utilities.TryGetFileFromUser(
@@ -78,9 +79,16 @@ namespace Timelapse
             {
                 return;
             }
-            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             List<string> dbMissingFolders = new List<string>();
-            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath, dbMissingFolders);
+
+            // Show the random busy indicator
+            this.BusyIndicatorRandom.BusyContent = "Importing recogition data. Please be patient.";
+            this.BusyIndicatorRandom.IsBusy = true;
+            bool result = await Task.Run(() =>
+            {
+                return this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath, dbMissingFolders);
+            });
+            this.BusyIndicatorRandom.IsBusy = false;
             if (result == false)
             {
                 // No matching folders in the DB and the detector
@@ -128,7 +136,6 @@ namespace Timelapse
                 GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
                 this.FilesSelectAndShow(true);
             }
-            Mouse.OverrideCursor = null;
         }
 
         // Export data for this image set as a .csv file
