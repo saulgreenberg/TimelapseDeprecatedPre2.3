@@ -79,9 +79,55 @@ namespace Timelapse
                 return;
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
-            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath);
-            GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
-            this.FilesSelectAndShow(true);
+            List<string> dbMissingFolders = new List<string>();
+            bool result = this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath, dbMissingFolders);
+            if (result == false)
+            {
+                // No matching folders in the DB and the detector
+                MessageBox messageBox = new MessageBox("Recognition data not imported.", this);
+                messageBox.Message.Problem = "No recognition information was imported, as none of its image folder paths were found in your Database file." + Environment.NewLine;
+                messageBox.Message.Problem += "Thus no recognition information could be assigned to your images.";
+                messageBox.Message.Reason = "The recognizer may have been run on a folder containing various image sets, each in a sub-folder. " + Environment.NewLine;
+                messageBox.Message.Reason += "For example, if the recognizer was run on 'AllFolders/Camera1/' but your template and database is in 'Camera1/'," + Environment.NewLine;
+                messageBox.Message.Reason += "the folder paths won't match, since AllFolders/Camera1/ \u2260 Camera1/.";
+                messageBox.Message.Solution = "Microsoft provides a program to extract a subset of recognitions in the Recognition file" + Environment.NewLine;
+                messageBox.Message.Solution += "that you can use to extract recognitions matching your sub-folder: " + Environment.NewLine;
+                messageBox.Message.Solution += "  http://aka.ms/cameratraps-detectormismatch";
+                messageBox.Message.Result = "Recognition information was not imported.";
+                messageBox.ShowDialog();
+            }
+            else if (dbMissingFolders.Count > 0)
+            {
+                // Some folders missing - show which folder paths in the DB are not in the detector
+                string listAsLines = string.Join(", \u2022 ", dbMissingFolders.ToArray());         
+                MessageBox messageBox = new MessageBox("Recognition data imported for only some of your folders.", this);
+                messageBox.Message.Icon = MessageBoxImage.Information;
+                messageBox.Message.Problem = "Some of the sub-folders in your image set's Database file have no corresponding entries in the Recognition file." + Environment.NewLine;
+                messageBox.Message.Problem += "While not an error, we just wanted to bring it to your attention.";
+                messageBox.Message.Reason = "In particular, you may have added, moved, or renamed the folders belows since supplying the originals to the recognizer:"  + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 " + listAsLines;
+                messageBox.Message.Result = "Recognition data will still be imported for the other folders.";
+                messageBox.Message.Hint = "You can also view which images are missing recognition data by choosing" + Environment.NewLine;
+                messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+                messageBox.ShowDialog();
+            }
+            else
+            {
+                // Detections successfully imported message
+                MessageBox messageBox = new MessageBox("Recognitions imported.", this);
+                messageBox.Message.Icon = MessageBoxImage.Information;
+                messageBox.Message.Result = "Recognition data imported. You can select images matching particular recognitions by choosing 'Select|Custom Selection...'";
+                messageBox.Message.Hint = "You can also view which images (if any) are missing recognition data by choosing" + Environment.NewLine;
+                messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+                messageBox.ShowDialog();
+            }
+   
+            if (result)
+            {
+                // Only reset these if we actually imported some detections, as otherwise nothing has changed.
+                GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                this.FilesSelectAndShow(true);
+            }
             Mouse.OverrideCursor = null;
         }
 

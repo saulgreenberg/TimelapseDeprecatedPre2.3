@@ -406,7 +406,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatability(templateDatabase);
+            this.UpgradeDatabasesForBackwardsCompatability();
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -508,7 +508,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability(TemplateDatabase templateDatabase)
+        private void UpgradeDatabasesForBackwardsCompatability()
         {
             // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
             // Instead, we operate directly on the database. There is only one exception (updating DateTime),
@@ -969,7 +969,6 @@ namespace Timelapse.Database
             {
                 return count;
             }
-            string filepath = String.Empty;
             foreach (ImageRow image in this.FileTable)
             {
                 if (!File.Exists(Path.Combine(this.FolderPath, image.RelativePath, image.File)))
@@ -1921,9 +1920,8 @@ namespace Timelapse.Database
         }
 
         #region DETECTION INTEGRATION
-        public bool PopulateDetectionTables(string path)
+        public bool PopulateDetectionTables(string path, List<string> dbMissingFolders)
         {
-            DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
             if (File.Exists(path) == false)
             {
                 return false;
@@ -1941,22 +1939,29 @@ namespace Timelapse.Database
                     {
                         JsonSerializer serializer = new JsonSerializer();
                         Detector detector = serializer.Deserialize<Detector>(reader);
-                        this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+
+                        // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
+                        if (this.CompareDetectorAndDBFolders(detector, dbMissingFolders) == false)
+                        {
+                            // No folders in the detections match folders in the databases. Abort without doing anything.
+                            return false;
+                        }
+
+                        // Forces repopulating the data structure if it already exists.
+                        this.detectionDataTable = null; 
                         this.detectionCategoriesDictionary = null;
                         this.classificationCategoriesDictionary = null;
                         this.classificationsDataTable = null;
 
-                        // PERFORMANCE This check is somewhat slow. 
-                        if (this.TryGetPathPrefixForTruncation(detector, out string pathPrefixForTruncation) == false)
-                        {
-                            return false;
-                        }
+                        // Prepare the detection tables. If they already exist, clear them
+                        DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+
                         // PERFORMANCE This method does two things:
                         // - it walks through the detector data structure to construct sql insertion statements
                         // - it invokes the actual insertion in the database.
                         // Both steps are very slow with a very large JSON of detections that matches folders of images.
                         // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-                        DetectionDatabases.PopulateTables(detector, this, this.Database, pathPrefixForTruncation);
+                        DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
                         return true;
                     }
                 }
@@ -1966,6 +1971,78 @@ namespace Timelapse.Database
                 System.Diagnostics.Debug.Print("Could not populate detection data");
                 return false;
             }
+        }
+
+        // Return true if there is at least one match between a detector folder and a DB folder
+        // Return a list of folder paths missing in the DB but present in the detector
+        private bool CompareDetectorAndDBFolders(Detector detector, List<string>missingDBFoldersList)
+        {
+            List<string> FoldersInDBListButNotInJSon = new List<string>();
+            List<string> FoldersInInJsonButNotInDB = new List<string>();
+
+            string folderpath;
+
+            if (detector.images.Count <= 0)
+            {
+                // No point continuing if there are no detector entries
+                return false;
+            }
+
+            // Get all distinct folders in the database
+            // This operation could b somewhat slow, but ...
+            List<string> FoldersInDBList = this.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath).Select(i => i.ToString()).ToList();
+            if (FoldersInDBList.Count == 0)
+            {
+                // No point continuing if there are no folders in the database (i.e., no images)
+                return false;
+            }
+
+            // Get all distinct folders in the Detector 
+            // We add a closing slash onto the imageFilePath to terminate any matches
+            // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
+            SortedSet<string> foldersInDetectorList = new SortedSet<string>();
+            foreach (image image in detector.images)
+            {
+                folderpath = Path.GetDirectoryName(image.file);
+                if (folderpath != String.Empty)
+                {
+                    folderpath += "\\";
+                }
+                if (foldersInDetectorList.Contains(folderpath) == false)
+                {
+                    foldersInDetectorList.Add(folderpath);   
+                }
+            }
+
+            // Compare each folder in the DB against the folders in the detector );
+            bool atLeastOneMatch = false;
+            foreach (string originalFolderDB in FoldersInDBList)
+            {
+                // Add a closing slash to the folderDB for the same reasons described above
+                string modifedFolderDB = String.Empty;
+                if (originalFolderDB != String.Empty)
+                {
+                    modifedFolderDB = originalFolderDB + "\\";
+                }
+                if (foldersInDetectorList.Contains(modifedFolderDB))
+                {
+                    System.Diagnostics.Debug.Print(String.Format("Matching folder: '{0}'", modifedFolderDB));
+                    atLeastOneMatch = true;
+                }
+                else
+                {
+                    // System.Diagnostics.Debug.Print(String.Format("Missing folder: '{0}'", folderDB));
+                    if (originalFolderDB == String.Empty)
+                    {
+                        missingDBFoldersList.Add("<root folder>"); 
+                    }
+                    else
+                    { 
+                        missingDBFoldersList.Add(originalFolderDB);
+                    }
+                }
+            }
+            return atLeastOneMatch;
         }
 
         // Its possible that the folder where the .tdb file is located is either:
@@ -1983,91 +2060,91 @@ namespace Timelapse.Database
         // the two possible locations would be A/B/C/Y/Z and A/B/D/Y/Z
         // The code below would present those two to the user and ask the user to choose which one is the correct one.
         // Later, any detecton image not matching A/B/C will be ignored, and for the ones matching A/B/C will be trimmed off the path
-        private bool TryGetPathPrefixForTruncation(Detector detector, out string pathPrefixForTruncation)
-        {
-            pathPrefixForTruncation = String.Empty;
-            string folderpath;
-            if (detector.images.Count <= 0)
-            {
-                // No point continuing as there are no detector images
-                return false;
-            }
+        //private bool TryGetPathPrefixForTruncation(Detector detector, out string pathPrefixForTruncation)
+        //{
+        //    pathPrefixForTruncation = String.Empty;
+        //    string folderpath;
+        //    if (detector.images.Count <= 0)
+        //    {
+        //        // No point continuing as there are no detector images
+        //        return false;
+        //    }
 
-            // Get an example file for comparing its path against the detector paths
-            int fileindex = this.GetCurrentOrNextDisplayableFile(0);
-            if (fileindex < 0)
-            {
-                // No point continuing as there are no files to process
-                return false;
-            }
+        //    // Get an example file for comparing its path against the detector paths
+        //    int fileindex = this.GetCurrentOrNextDisplayableFile(0);
+        //    if (fileindex < 0)
+        //    {
+        //        // No point continuing as there are no files to process
+        //        return false;
+        //    }
 
-            // First step. Get all the unique folder paths from the detector images
-            string imageFilePath = this.FileTable[fileindex].RelativePath;
-            string imageFileName = this.FileTable[fileindex].File;
-            SortedSet<string> folders = new SortedSet<string>();
-            foreach (image image in detector.images)
-            {
-                folderpath = Path.GetDirectoryName(image.file);
-                if (folderpath != String.Empty)
-                {
-                    folderpath += "\\";
-                }
-                if (folders.Contains(folderpath) == false)
-                {
-                    folders.Add(folderpath);
-                }
-            }
+        //    // First step. Get all the unique folder paths from the detector images
+        //    string imageFilePath = this.FileTable[fileindex].RelativePath;
+        //    string imageFileName = this.FileTable[fileindex].File;
+        //    SortedSet<string> folders = new SortedSet<string>();
+        //    foreach (image image in detector.images)
+        //    {
+        //        folderpath = Path.GetDirectoryName(image.file);
+        //        if (folderpath != String.Empty)
+        //        {
+        //            folderpath += "\\";
+        //        }
+        //        if (folders.Contains(folderpath) == false)
+        //        {
+        //            folders.Add(folderpath);
+        //        }
+        //    }
 
-            // Add a closing slash onto the imageFilePath to terminate any matches
-            // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
-            if (imageFilePath != String.Empty)
-            {
-                imageFilePath += "\\";
-            }
+        //    // Add a closing slash onto the imageFilePath to terminate any matches
+        //    // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
+        //    if (imageFilePath != String.Empty)
+        //    {
+        //        imageFilePath += "\\";
+        //    }
 
-            // Second Step. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
-            // and create a 
-            int shortestIndex = int.MaxValue;
-            int currentIndex;
-            string highestFoldermatch = String.Empty;
-            foreach (string folder in folders)
-            {
-                currentIndex = folder.IndexOf(imageFilePath);
-                if ((currentIndex < shortestIndex) && (currentIndex >= 0))
-                {
-                    shortestIndex = folder.IndexOf(imageFilePath);
-                    highestFoldermatch = folder;
-                }
-            }
-            currentIndex = highestFoldermatch.IndexOf(imageFilePath);
-            pathPrefixForTruncation = highestFoldermatch.Substring(0, currentIndex);
-            List<string> candidateFolders = new List<string>();
-            foreach (string folder in folders)
-            {
-                if (folder.IndexOf(imageFilePath) != -1)
-                {
-                    candidateFolders.Add(folder);
-                }
-            }
+        //    // Second Step. For all folder paths in the detections, find the minimum prefix that matches the sampleimage file path 
+        //    // and create a 
+        //    int shortestIndex = int.MaxValue;
+        //    int currentIndex;
+        //    string highestFoldermatch = String.Empty;
+        //    foreach (string folder in folders)
+        //    {
+        //        currentIndex = folder.IndexOf(imageFilePath);
+        //        if ((currentIndex < shortestIndex) && (currentIndex >= 0))
+        //        {
+        //            shortestIndex = folder.IndexOf(imageFilePath);
+        //            highestFoldermatch = folder;
+        //        }
+        //    }
+        //    currentIndex = highestFoldermatch.IndexOf(imageFilePath);
+        //    pathPrefixForTruncation = highestFoldermatch.Substring(0, currentIndex);
+        //    List<string> candidateFolders = new List<string>();
+        //    foreach (string folder in folders)
+        //    {
+        //        if (folder.IndexOf(imageFilePath) != -1)
+        //        {
+        //            candidateFolders.Add(folder);
+        //        }
+        //    }
 
-            // Third step. If there is more than one candidate folder that may have contained the image set, 
-            // ask the user to disambiguate which one it is.
-            if (candidateFolders.Count > 1)
-            {
-                ChooseDetectorFilePath chooseDetectorFilePath = new ChooseDetectorFilePath(candidateFolders, pathPrefixForTruncation, Path.Combine(imageFilePath, imageFileName), GlobalReferences.MainWindow);
-                if (chooseDetectorFilePath.ShowDialog() == true)
-                {
-                    currentIndex = chooseDetectorFilePath.SelectedFolder.IndexOf(imageFilePath);
-                    pathPrefixForTruncation = chooseDetectorFilePath.SelectedFolder.Substring(0, currentIndex).Replace('\\', '/');
-                }
-                else
-                {
-                    // The user has aborted detections, likely because they didn't know which folder to choose
-                    return false;
-                }
-            }
-            return true;
-        }
+        //    // Third step. If there is more than one candidate folder that may have contained the image set, 
+        //    // ask the user to disambiguate which one it is.
+        //    if (candidateFolders.Count > 1)
+        //    {
+        //        ChooseDetectorFilePath chooseDetectorFilePath = new ChooseDetectorFilePath(candidateFolders, pathPrefixForTruncation, Path.Combine(imageFilePath, imageFileName), GlobalReferences.MainWindow);
+        //        if (chooseDetectorFilePath.ShowDialog() == true)
+        //        {
+        //            currentIndex = chooseDetectorFilePath.SelectedFolder.IndexOf(imageFilePath);
+        //            pathPrefixForTruncation = chooseDetectorFilePath.SelectedFolder.Substring(0, currentIndex).Replace('\\', '/');
+        //        }
+        //        else
+        //        {
+        //            // The user has aborted detections, likely because they didn't know which folder to choose
+        //            return false;
+        //        }
+        //    }
+        //    return true;
+        //}
 
         // Get the detections associated with the current file, if any
         // As part of the, create a DetectionTable in memory that mirrors the database table
