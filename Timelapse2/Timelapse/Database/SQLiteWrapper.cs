@@ -1086,20 +1086,25 @@ namespace Timelapse.Database
             {
                 return;
             }
-            List<string> queries = new List<string>();                      // A list of SQL queries
+            string queries = String.Empty;                      // A list of SQL queries
+
+            // Turn pragma foreign_key off before the delete, as otherwise it takes forever on largish tables
+            // Notice that we do not wrap this in a begin / end, as the pragma does not work within that.
+            queries += Sql.PragmaForeignKeysOff + "; " ;
 
             // Construct a list containing queries of the form DELETE FROM table_name
             foreach (string table in tables)
             {
                 string query = Sql.DeleteFrom + table;     // DELETE FROM tablename
                 query += "; ";
-                queries.Add(query);
+                queries += query;
             }
+
+            // Now turn pragma foreign_key on again after the delete
+            queries += Sql.PragmaForeignKeysOn + ";";
+
             // Invoke the batched queries
-            if (queries.Count > 0)
-            {
-                this.ExecuteNonQueryWrappedInBeginEnd(queries);
-            }
+            this.ExecuteNonQuery(queries);
         }
 
         public bool TableExists(string tableName)
@@ -1107,7 +1112,9 @@ namespace Timelapse.Database
             // DETECTIONS: Move statements into constants
             string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
             DataTable datatable = this.GetDataTableFromSelect(query);
-            return datatable.Rows.Count != 0;
+            bool rowsExist = datatable.Rows.Count != 0;
+            datatable.Dispose();
+            return rowsExist;
         }
 
         public bool TableExistsAndNotEmpty(string tableName)
@@ -1117,8 +1124,10 @@ namespace Timelapse.Database
             DataTable datatable = this.GetDataTableFromSelect(query);
             if (datatable.Rows.Count == 0)
             {
+                datatable.Dispose();
                 return false;
             }
+            datatable.Dispose();
             query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
             return this.GetCountFromSelect(query) != 0;
         }

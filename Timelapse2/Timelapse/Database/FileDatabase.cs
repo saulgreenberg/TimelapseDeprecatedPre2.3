@@ -1722,6 +1722,7 @@ namespace Timelapse.Database
             string imageSetQuery = Sql.SelectStarFrom + Constant.DBTables.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
+            imageSetTable.Dispose();
         }
 
         /// <summary>
@@ -2026,12 +2027,10 @@ namespace Timelapse.Database
                 }
                 if (foldersInDetectorList.Contains(modifedFolderDB))
                 {
-                    System.Diagnostics.Debug.Print(String.Format("Matching folder: '{0}'", modifedFolderDB));
                     atLeastOneMatch = true;
                 }
                 else
                 {
-                    // System.Diagnostics.Debug.Print(String.Format("Missing folder: '{0}'", folderDB));
                     if (originalFolderDB == String.Empty)
                     {
                         missingDBFoldersList.Add("<root folder>"); 

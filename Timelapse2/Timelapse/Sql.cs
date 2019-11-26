@@ -57,7 +57,9 @@
         public const string Or = " OR ";
         public const string OrderBy = " ORDER BY ";
         public const string PragmaTableInfo = " PRAGMA TABLE_INFO ";
-        public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1";
+        public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1 ";
+        public const string PragmaForeignKeysOff = " PRAGMA foreign_keys = OFF ";
+        public const string PragmaForeignKeysOn = " PRAGMA foreign_keys = ON ";
         public const string PrimaryKey = " PRIMARY KEY ";
         public const string RenameTo = " RENAME TO ";
         public const string Select = " SELECT ";
