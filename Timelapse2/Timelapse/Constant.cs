@@ -660,6 +660,7 @@ namespace Timelapse
         {
             public const string NoDetectionCategory = "0";
             public const string NoDetectionLabel = "Empty";
+            public const string AllDetectionLabel = "All";
         }
 
         public static class ClassificationColumns

@@ -54,6 +54,11 @@ namespace Timelapse.Database
                     List = control.GetChoices(true),
                     UseForSearching = false
                 };
+                if (searchTerm.List.Count > 0)
+                {
+                    // Add the empty string to the beginning of the search list, which allows the option of searching for empty items
+                    searchTerm.List.Insert(0, String.Empty);
+                }
                 this.SearchTerms.Add(searchTerm);
 
                 // Create a new search term for each row, where each row specifies a particular control and how it can be searched
@@ -266,42 +271,94 @@ namespace Timelapse.Database
 
             // Add the Detection selection terms
             // Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
-            // Form ... WHERE Detections.category = 1
-            bool addAnd = true;
-            if (where == String.Empty && this.DetectionSelections.UseDetectionCategory == true)
+
+
+            // There are three basic forms to come up as follows, which determines whether we should include add 'WHERE'
+            // The first uses the detection category (i.e., any category but All Detections)
+            // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
+            // The second does not use a detection category (i.e., All Detections chosen)
+            // - GROUP BY ...
+            // The third uses both
+            // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
+            // - GROUP BY...
+
+            // Form: WHERE
+            // Add only if we are using the first form 
+            if (where == String.Empty && this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
                 where += Sql.Where;
-                addAnd = false;
-            }
-            else
-            {
-                addAnd = true;
             }
 
-            if (this.DetectionSelections.UseDetectionCategory)
+            // FORM: Detections.category = <DetectionCategory> 
+            // Only added if we are using a category (i.e., any category but All Detections)
+            if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
-                if (addAnd)
-                {
-                    where += Sql.And;
-                }
-                // Form: Detections.category = <DetectionCategory>
                 where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
             }
-            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
-            {
-                // Form:  ...Group By Detections.Id Having Max  (Detections.conf )  ...
-                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
-                    Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
-                // BETWEEN .80 AND .90
-                where += Sql.Between +
-                         this.DetectionSelections.DetectionConfidenceThreshold1.ToString() + Sql.And +
-                         this.DetectionSelections.DetectionConfidenceThreshold2.ToString();
-            }
-            else if (this.DetectionSelections.UseDetectionCategory)
-            {
-                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
-            }
+
+            // Form:  ...Group By Detections.Id Having Max (Detections.conf )  BETWEEN <LOWER BOUND> AND <UPPER BOUND>
+            // We always use confidence. 
+            // Note that a confidence of 0 captures empty items with 0 confidence i.e., images with no detections in them
+            // For the All category, we really don't wan't to include those, so we just bump up the confidence to slightly above 0
+            // For the Empty category, we invert the confidence
+            where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
+                     Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+
+            Tuple<double, double> confidenceBounds = this.DetectionSelections.DetectionConfidenceThresholdForSelect;
+            where += Sql.Between +
+                     confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
+
+            System.Diagnostics.Debug.Print("Where: " + where);
             return where;
+
+            //// Add the Detection selection terms
+            //// Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
+            //// Form ... WHERE Detections.category = 1
+            //bool addAnd = true;
+            //// if (where == String.Empty && this.DetectionSelections.UseDetectionCategory == true)
+            //if (where == String.Empty && this.DetectionSelections.AllDetections == false) 
+            //{
+            //    // Add where for anything except ALL DETECTIONS
+            //    where += Sql.Where;
+            //    addAnd = false;
+            //}
+            //else
+            //{
+            //    addAnd = true;
+            //}
+            //// if (this.DetectionSelections.UseDetectionCategory)
+            
+            //if (this.DetectionSelections.AllDetections == false)
+            //// Add this for anything except ALL DETECTIONS
+            //{
+            //    if (addAnd)
+            //    {
+            //        where += Sql.And;
+            //    }
+            //    // Form: Detections.category = <DetectionCategory>
+            //    where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
+            //}
+
+            //// We always use confidence. 
+            //// Note that confidence of 0 captures empty items with 0 confidence i.e., images with no detections in them
+            //if (this.DetectionSelections.UseDetections)
+            //{
+            //    // Form:  ...Group By Detections.Id Having Max (Detections.conf )  ...
+            //    where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
+            //        Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+            //    // BETWEEN .80 AND .90
+            //    where += Sql.Between +
+            //             this.DetectionSelections.DetectionConfidenceThreshold1ForSelect.ToString() + Sql.And +
+            //             this.DetectionSelections.DetectionConfidenceThreshold2ForSelect.ToString();
+            //}
+            //// else if (this.DetectionSelections.UseDetectionCategory)
+            //// I DONT THINK THIS CAN CURRENTLY EVER BE TRIGGERED - CHECK WHAT IT DOES
+            //else if (this.DetectionSelections.AllDetections == false)
+            //{
+            //    where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+            //}
+            //System.Diagnostics.Debug.Print("Where: " + where);
+            //return where;
         }
 
         public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime, TimeZoneInfo imageSetTimeZone)

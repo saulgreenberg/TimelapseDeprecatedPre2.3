@@ -32,56 +32,50 @@
                 <Button Name="OkButton" Grid.Column="1" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
             </StackPanel>
         </DockPanel>
+
         <!--Detection Panel-->
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
-            <GroupBox Name="DetectionGroupBox" Header="Image Recognition" FontWeight="Bold" Height="Auto"  Margin="10,5,5,0">
-                <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="10,0,0,0">
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" >
+            <GroupBox Name="DetectionGroupBox" Header="Image Recognition" FontWeight="Bold" Height="Auto"  Width="350" Margin="10,5,5,0">
+                <Grid Width="Auto" Height="Auto" DockPanel.Dock="Bottom" Margin="5,0,0,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="23" />
+                        <ColumnDefinition Width="92" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" MinHeight="20" />
-                        <RowDefinition Height="Auto" MinHeight="20" />
-                        <RowDefinition Height="Auto" MinHeight="20"/>
+                        <RowDefinition Height="Auto" MinHeight="25" />
+                        <RowDefinition Height="Auto" MinHeight="25" />
+                        <RowDefinition Height="Auto" MinHeight="25" />
+                        <RowDefinition Height="Auto" MinHeight="25" />
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
 
                     <!--Row 0-->
-                    <TextBlock Text="Select" FontWeight="Bold" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    <TextBlock Text="Criteria" FontWeight="Bold"   Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    <TextBlock Text="Value" FontWeight="Bold" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0"/>
+                    <CheckBox Name="UseDetectionsCheckbox" Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Checked="UseDetections_CheckedChanged" Unchecked="UseDetections_CheckedChanged"/>
+                    <TextBlock Text="Use Detections" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="5" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Left" Width="200" />
 
                     <!--Row 1-->
-                    <CheckBox Name="UseDetectionCategoryCheckbox" IsChecked="False" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="0,0,10,0"/>
-                    <TextBlock Name="CategoryLabel" Text="Category" FontWeight="DemiBold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"/>
-                    <ComboBox Name="DetectionCategoryComboBox" FontWeight="Normal" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="10,0,10,0" SelectionChanged="DetectionCategoryComboBox_SelectionChanged" Width="180" HorizontalAlignment="Center"/>
+                    <TextBlock Name="CategoryLabel" Text="Detected entity:" FontWeight="DemiBold" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
+                    <ComboBox Name="DetectionCategoryComboBox" FontWeight="Normal" Width="215" MinWidth="195" SelectedIndex="1" Grid.Row="1" Grid.Column="2" IsEnabled="False" Margin="0,0,0,0" HorizontalAlignment="Left" />
 
                     <!--Row 2-->
-                    <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Margin="0,0,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" MinHeight="20" />
-                            <RowDefinition Height="Auto" MinHeight="20" />
-                            <RowDefinition Height="Auto" MinHeight="20"/>
-                        </Grid.RowDefinitions>
-                        <CheckBox Name="UseDetectionConfidenceCheckbox" IsChecked="False" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Center" Checked="UseCriteria_CheckedChanged" Unchecked="UseCriteria_CheckedChanged" Margin="8,6,10,0"/>
-                        <TextBlock Name="ConfidenceLabel" Text="Confidence" FontWeight="DemiBold" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="15,10,0,0"/>
-                        <Label Name="FromLabel" Grid.Row="0" Grid.Column="2" FontWeight="DemiBold" Content="from " Margin="20,6,0,0"/>
-                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1" Grid.Row="0" Grid.Column="3"  FontWeight="Normal" Value="0"  FormatString="F2" Increment="0.05"  Maximum="1" Minimum="0" IsEnabled="true" Margin="0,6,10,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
-                        <Label Name="ToLabel"  Grid.Row="0" Grid.Column="4"  FontWeight="DemiBold" Content="to " Margin="0,6,0,0"/>
-                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2"  Grid.Row="0" Grid.Column="5"  FontWeight="Normal" Value="1" FormatString="F2" Increment="0.05" Maximum="1" Minimum="0" IsEnabled="true" Margin="10,6,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
-                        <xceed:RangeSlider Name="DetectionRangeSlider" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="4" Margin="0,5,10,0"  IsEnabled="True"
-                                       HigherValue="1" LowerValue=".8" Maximum="1" Minimum="0" Step="0.01" HigherValueChanged="DetectionRangeSlider_HigherValueChanged" LowerValueChanged="DetectionRangeSlider_LowerValueChanged" HigherRangeBackground="WhiteSmoke" RangeBackground="Gold" LowerRangeBackground="WhiteSmoke"/>
-                    </Grid>
+                    <TextBlock Name="ConfidenceLabel" Text="Confidence:" FontWeight="DemiBold" Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,5,0"/>
+
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" Margin="51,0,0,0" >
+                        <Label Name="FromLabel" FontWeight="Normal" FontStyle="Italic" Content="from " Margin="0,0,0,0" HorizontalAlignment="Left"/>
+                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1" Height="20" FontWeight="Normal" Value="0"  FormatString="F2" Increment="0.05"  Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,5,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
+                        <Label Name="ToLabel"  FontWeight="Normal" FontStyle="Italic" Content="to" HorizontalAlignment="Center" Margin="0,0,5,0"/>
+                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2"  Height="20" FontWeight="Normal" Value="1" FormatString="F2" Increment="0.05" Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
+                    </StackPanel>
+
+                    <!--Row 3-->
+                    <Border BorderThickness="1" BorderBrush="LightGray" Grid.Row="3" Grid.Column="2" Margin="0,0,0,0" Width="215" Height="23"  HorizontalAlignment="Left">
+                        <xceed:RangeSlider Name="DetectionRangeSlider"  IsEnabled="True" HorizontalAlignment="Left"  VerticalAlignment="Center"
+                                       HigherValue="1" LowerValue=".8" Maximum="1" Minimum="0" Step="0.01" 
+                                       Width="212" 
+                                       HigherValueChanged="DetectionRangeSlider_HigherValueChanged" LowerValueChanged="DetectionRangeSlider_LowerValueChanged" 
+                                       HigherRangeBackground="WhiteSmoke" RangeBackground="Gold" LowerRangeBackground="WhiteSmoke"/>
+                    </Border>
                 </Grid>
             </GroupBox>
             <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no recognition data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>

@@ -31,23 +31,20 @@ namespace Timelapse.Dialog
         private const int ValueColumn = 3;
         private const int SearchCriteriaColumn = 4;
 
-        // Detection Constants
-        private const string LessThan = "\u2264";
-        private const string GreaterThan = "\u2265";
-        private const string Between = "Between";
+        // Detections variables
+        private bool dontInvoke = false;
+        private bool dontCount;
+        private bool dontUpdateRangeSlider = false;
 
+        // Variables
         private readonly FileDatabase database;
         private readonly DataEntryControls dataEntryControls;
         private readonly TimeZoneInfo imageSetTimeZone;
         private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
-        private bool dontUpdateRangeSlider = false;
+
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
         private readonly DispatcherTimer countTimer = new DispatcherTimer();
-
-        // Detections variables
-        private bool dontInvoke = false;
-        private bool dontCount;
 
         private DetectionSelections DetectionSelections { get; set; }
 
@@ -87,24 +84,23 @@ namespace Timelapse.Dialog
             {
                 this.DetectionGroupBox.Visibility = Visibility.Visible;
                 this.ShowMissingDetectionsCheckbox.Visibility = Visibility.Visible;
-                this.UseDetectionCategoryCheckbox.IsChecked = this.DetectionSelections.UseDetectionCategory;
-                this.UseDetectionConfidenceCheckbox.IsChecked = this.DetectionSelections.UseDetectionConfidenceThreshold;
-                this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
-                this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
+                this.UseDetectionsCheckbox.IsChecked = this.DetectionSelections.UseDetections;
 
-                this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1;
-                this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2;
-                this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1;
-                this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2;
+                this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
+                this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2ForUI;
+                this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
+                this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2ForUI;
 
-                // Put Detection categories in as human-readable labels and set it to the last used one.
+                // Put Detection categories in as human-readable labels, adding All detectins to that list.
+                // Then set it to the last used one.
                 List<string> labels = this.database.GetDetectionLabels();
+                this.DetectionCategoryComboBox.Items.Add(Constant.DetectionValues.AllDetectionLabel);
                 foreach (string label in labels)
                 {
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
                 this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-                this.SetDetectionSpinnerEnable();
+                this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
             }
             else
             {
@@ -119,6 +115,8 @@ namespace Timelapse.Dialog
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
             }
             this.InitiateShowCountsOfMatchingFiles();
+            this.DetectionCategoryComboBox.SelectionChanged += DetectionCategoryComboBox_SelectionChanged;
+
 
             // Selection-specific
             this.dontUpdate = true;
@@ -511,8 +509,8 @@ namespace Timelapse.Dialog
                 CheckBox select = this.GetGridElement<CheckBox>(CustomSelection.SelectColumn, row);
                 select.IsChecked = false;
             }
-            this.UseDetectionCategoryCheckbox.IsChecked = false;
-            this.UseDetectionConfidenceCheckbox.IsChecked = false;
+            //this.UseDetectionCategoryCheckbox.IsChecked = false;
+            //this.UseDetectionConfidenceCheckbox.IsChecked = false;
             this.ShowMissingDetectionsCheckbox.IsChecked = false;
         }
 
@@ -609,9 +607,9 @@ namespace Timelapse.Dialog
             }
             this.InitiateShowCountsOfMatchingFiles();
             this.ResetToAllImagesButton.IsEnabled = lastExpression == false ||
-                (bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
-                (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
-                (bool)this.UseDetectionCategoryCheckbox.IsChecked;
+                (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+                //|| (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
+                //(bool)this.UseDetectionCategoryCheckbox.IsChecked;
         }
         #endregion
 
@@ -646,15 +644,16 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Detection-specific methos and callbacks
-        private void UseCriteria_CheckedChanged(object sender, RoutedEventArgs e)
+        #region Detection-specific methods and callbacks
+
+        private void UseDetections_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (this.dontInvoke)
             {
                 return;
             }
             // Enable or disable the controls depending on the various checkbox states
-            this.SetDetectionSpinnerEnable();
+            this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
 
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
@@ -667,52 +666,36 @@ namespace Timelapse.Dialog
                 return;
             }
 
-            this.DetectionSelections.UseDetectionCategory = this.UseDetectionCategoryCheckbox.IsChecked == true;
-            if (this.DetectionSelections.UseDetectionCategory)
+            this.DetectionSelections.UseDetections = this.UseDetectionsCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseDetections)
             {
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                if ((string)this.DetectionCategoryComboBox.SelectedItem == "Empty") 
+                if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel) 
                 {
-                    // Set the confidence checkbox to false if the selected item is empty
-                    this.UseDetectionConfidenceCheckbox.IsChecked = false;
+                    // SAUL ALL? WHAT DO IT DO HERE? 
+                    // SAUL EMPTY INVERT CONFIDENCE???
                 }
+                this.DetectionSelections.DetectionConfidenceThreshold1ForUI = (double)this.DetectionConfidenceSpinner1.Value;
+                this.DetectionSelections.DetectionConfidenceThreshold2ForUI = (double)this.DetectionConfidenceSpinner2.Value;
+
+                // The BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+                // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+                // show bounding boxes when the confidence is .4 or more. 
+                Tuple<double, double> confidenceBounds = this.DetectionSelections.DetectionConfidenceThresholdForSelect;
+                Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseDetections
+                    ? confidenceBounds.Item1
+                    : 1;
             }
 
-            this.DetectionSelections.UseDetectionConfidenceThreshold = this.UseDetectionConfidenceCheckbox.IsChecked == true;
-            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
-            {
-                this.DetectionSelections.DetectionConfidenceThreshold1 = (double)this.DetectionConfidenceSpinner1.Value;
-            }
+            // Enable / alter looks and behavour of detecion UI to match whether detections should be used
+            this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
+        }
 
-            if (this.DetectionSelections.UseDetectionConfidenceThreshold)
-            {
-                this.DetectionSelections.DetectionConfidenceThreshold2 = (double)this.DetectionConfidenceSpinner2.Value;
-            }
-            this.CategoryLabel.FontWeight = this.DetectionSelections.UseDetectionCategory ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ConfidenceLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
-            this.FromLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ToLabel.FontWeight = this.DetectionSelections.UseDetectionConfidenceThreshold ? FontWeights.DemiBold : FontWeights.Normal;
-            this.DetectionRangeSlider.RangeBackground = this.DetectionSelections.UseDetectionConfidenceThreshold ? Brushes.Gold : Brushes.LightGoldenrodYellow;
-
-            this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
-            this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
-
-            this.DetectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
-            this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
-
-            if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked ||
-                (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
-                (bool)this.UseDetectionCategoryCheckbox.IsChecked)
-            {
-                this.ResetToAllImagesButton.IsEnabled = true;
-            }
-
-            // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
-            // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
-            // show bounding boxes when the confidence is .4 or more. 
-            Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseDetectionConfidenceThreshold
-                ? this.DetectionSelections.DetectionConfidenceThreshold1
-                : 1;
+        private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            this.database.CustomSelection.ShowMissingDetections = (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -721,6 +704,25 @@ namespace Timelapse.Dialog
             {
                 return;
             }
+            if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
+            {
+                // If its empty, we want different defaults
+                // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
+                this.DetectionSelections.EmptyDetections = true;
+                this.DetectionSelections.AllDetections = false;
+                this.DetectionConfidenceSpinner1.Value = 1.0;
+                this.DetectionConfidenceSpinner2.Value = 1.0;
+            }
+            else
+            {
+                // Not empty: reset it to these defaults
+                this.DetectionSelections.EmptyDetections = false;
+                // Set a flag if all detections was selected  
+                this.DetectionSelections.AllDetections = ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel);
+                this.DetectionConfidenceSpinner1.Value = 0.8;
+                this.DetectionConfidenceSpinner2.Value = 1.0;
+            }
+          
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
@@ -733,13 +735,17 @@ namespace Timelapse.Dialog
                 return;
             }
 
+            // If the user has set the upper spinner to less than the lower spinner,
+            // reset it to the value of the lower spinner. That is, don't allow the user to 
+            // go below the lower spinner value.
             if (this.DetectionConfidenceSpinner1.Value > this.DetectionConfidenceSpinner2.Value)
             {
                 this.ignoreSpinnerUpdates = true;
-                this.DetectionConfidenceSpinner2.Value = this.DetectionConfidenceSpinner1.Value;
+                this.DetectionConfidenceSpinner1.Value = this.DetectionConfidenceSpinner2.Value;
                 this.ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
+
             if (this.dontUpdateRangeSlider == false)
             {
                 this.DetectionRangeSlider.LowerValue = (double)this.DetectionConfidenceSpinner1.Value;
@@ -758,6 +764,9 @@ namespace Timelapse.Dialog
                 return;
             }
 
+            // If the user has set the upper spinner to less than the lower spinner,
+            // reset it to the value of the lower spinner. That is, don't allow the user to 
+            // go below the lower spinner value.
             if (this.DetectionConfidenceSpinner2.Value < this.DetectionConfidenceSpinner1.Value)
             {
                 this.ignoreSpinnerUpdates = true;
@@ -765,6 +774,7 @@ namespace Timelapse.Dialog
                 this.ignoreSpinnerUpdates = false;
             }
             this.SetDetectionCriteria();
+
             if (this.dontUpdateRangeSlider == false)
             {
                 this.DetectionRangeSlider.HigherValue = (double)this.DetectionConfidenceSpinner2.Value;
@@ -776,36 +786,61 @@ namespace Timelapse.Dialog
             this.InitiateShowCountsOfMatchingFiles();
         }
 
+        // Detection range slider callback - Upper range
         private void DetectionRangeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
         {
-            this.DetectionConfidenceSpinner2.Value = this.DetectionRangeSlider.HigherValue;
-            this.dontUpdateRangeSlider = true;
+            // Round up the value to the nearest 2 decimal places,
+            // and update the spinner (also in two decimal places) only if the value differs
+            // This stops the spinner from updated if values change in the 3rd decimal place and beyone
+            double value = Math.Round(this.DetectionRangeSlider.HigherValue, 2);
+            if (value != this.DetectionConfidenceSpinner2.Value)
+            {
+                this.DetectionConfidenceSpinner2.Value = value;
+            }
         }
 
+        // Detection range slider callback - Lower range
         private void DetectionRangeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
         {
-            this.DetectionConfidenceSpinner1.Value = this.DetectionRangeSlider.LowerValue;
+            // Round up the value to the nearest 2 decimal places,
+            // and update the spinner (also in two decimal places) only if the value differs
+            // This stops the spinner from updated if values change in the 3rd decimal place and beyone
+            double value = Math.Round(this.DetectionRangeSlider.LowerValue, 2);
+            if (value != this.DetectionConfidenceSpinner1.Value)
+            {
+                this.DetectionConfidenceSpinner1.Value = value;
+            }
         }
 
-        // Depending on what comparision operator is used, set the visibility of particular spinners and labels
-        private void SetDetectionSpinnerVisibility(ComparisonEnum comparisonEnum)
+        // Enable or disable the controls depending on the parameter
+        private void EnableDetectionControls(bool isEnabled)
         {
-            this.DetectionConfidenceSpinner2.Visibility = Visibility.Visible;
-            this.FromLabel.Visibility = Visibility.Visible;
-            this.ToLabel.Visibility = Visibility.Visible;
-        }
+            this.DetectionConfidenceSpinner1.IsEnabled = isEnabled;
+            this.DetectionConfidenceSpinner2.IsEnabled = isEnabled;
+            this.DetectionCategoryComboBox.IsEnabled = isEnabled;
+            this.DetectionRangeSlider.IsEnabled = isEnabled;
 
-        private void SetDetectionSpinnerEnable()
-        {
-            // Enable or disable the controls depending on the various checkbox states
-            this.DetectionConfidenceSpinner1.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
-            this.DetectionConfidenceSpinner2.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
-            this.DetectionCategoryComboBox.IsEnabled = this.UseDetectionCategoryCheckbox.IsChecked == true;
-            this.DetectionRangeSlider.IsEnabled = this.UseDetectionConfidenceCheckbox.IsChecked == true;
+            this.CategoryLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ConfidenceLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.FromLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ToLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.DetectionRangeSlider.RangeBackground = isEnabled ? Brushes.Gold : Brushes.LightGoldenrodYellow;
+
+            // CHECK THE ONES BELOW TO SEE IF THIS IS THE BEST WAY TO DO THESE
+            this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
+            this.SelectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
+
+            this.DetectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
+            this.DetectionGroupBox.Background = this.database.CustomSelection.ShowMissingDetections ? Brushes.LightGray : Brushes.White;
+
+            if ((bool)this.ShowMissingDetectionsCheckbox.IsChecked || (bool)this.UseDetectionsCheckbox.IsChecked)
+            {
+                this.ResetToAllImagesButton.IsEnabled = true;
+            }
         }
         #endregion
 
-        #region Common
+        #region Common to Selections and Detections
         private void CountTimer_Tick(object sender, EventArgs e)
         {
             this.countTimer.Stop();
@@ -843,11 +878,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
-        {
-            this.database.CustomSelection.ShowMissingDetections = (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
-            this.SetDetectionCriteria();
-            this.InitiateShowCountsOfMatchingFiles();
-        }
+
+
     }
 }
