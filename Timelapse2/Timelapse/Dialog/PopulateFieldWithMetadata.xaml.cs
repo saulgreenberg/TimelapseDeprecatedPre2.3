@@ -7,8 +7,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
-using Timelapse.Util;
 using Timelapse.ExifTool;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -68,7 +68,7 @@ namespace Timelapse.Dialog
             }
             // Show the metadata of the current image, depending on the kind of tool selected
             this.MetadataToolType_Checked(null, null);
-            
+
             // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
             this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;
             this.ExifToolRB.Checked += this.MetadataToolType_Checked;
@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
         private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
         {
             if (this.MetadataExtractorRB.IsChecked == true)
-            { 
+            {
                 this.MetadataExtractorShowImageMetadata();
             }
             else
@@ -124,7 +124,7 @@ namespace Timelapse.Dialog
                 this.exifTool = new ExifToolWrapper();
                 this.exifTool.Start();
             }
-            
+
             // Fetch the exif data using ExifTool
             Dictionary<string, string> exifDictionary = this.exifTool.FetchExifFrom(this.filePath);
 
@@ -241,7 +241,7 @@ namespace Timelapse.Dialog
                 this.Dispatcher.Invoke(new Action(() =>
                 {
                 }));
-                
+
                 // For each row in the database, get the image filename and try to extract the chosen metadata value.
                 // If we can't decide if we want to leave the data field alone or to clear it depending on the state of the isClearIfNoMetadata (set via the checkbox)
                 // Report progress as needed.
@@ -265,14 +265,14 @@ namespace Timelapse.Dialog
                     {
                         // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
                         string[] tags = { this.metadataFieldName };
-                        metadata.Clear(); 
+                        metadata.Clear();
                         Dictionary<string, string> exifData = this.exifTool.FetchExifFrom(image.GetFilePath(this.database.FolderPath), tags);
-                        if (exifData.ContainsKey (tags[0]))
+                        if (exifData.ContainsKey(tags[0]))
                         {
                             metadata.Add(tags[0], new Timelapse.Util.ImageMetadata(String.Empty, tags[0], exifData[tags[0]]));
                         }
                     }
-                    progress = Convert.ToInt32((double)imageIndex / totalImages * 100.0);
+                    progress = Convert.ToInt32(imageIndex / totalImages * 100.0);
                     backgroundWorker.ReportProgress(progress, new FeedbackMessage(String.Format("{0}/{1} images. Processing ", imageIndex, totalImages), image.File));
 
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
@@ -297,7 +297,7 @@ namespace Timelapse.Dialog
                         {
                             keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - data field remains unaltered"));
                         }
-                        
+
                         continue;
                     }
 
@@ -346,7 +346,7 @@ namespace Timelapse.Dialog
                 this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
                 this.btnCancel.IsEnabled = true;
                 this.BusyIndicator.IsBusy = false;
-                this.PopulatingMessage.Text = "Populated '" +  this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
+                this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
                 if (this.exifTool != null)
                 {
                     this.exifTool.Stop();

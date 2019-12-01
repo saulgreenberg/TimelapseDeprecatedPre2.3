@@ -6,6 +6,6 @@ namespace Timelapse.ExifTool
     public class ExifToolException : Exception
     {
         public ExifToolException(string msg) : base(msg)
-        {}
+        { }
     }
 }

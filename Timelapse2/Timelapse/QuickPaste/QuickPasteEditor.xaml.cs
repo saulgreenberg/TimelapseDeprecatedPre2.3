@@ -29,7 +29,7 @@ namespace Timelapse.QuickPaste
         private const int GridRowInitialRow = 1;
 
         // For simplicity, create a list with all 'Use' checkboxes in it so we can set or clear all of them
-        List<CheckBox> UseCheckboxes = new List<CheckBox>();
+        readonly List<CheckBox> UseCheckboxes = new List<CheckBox>();
 
         // UI Constants
         private const double ValuesWidth = 80;

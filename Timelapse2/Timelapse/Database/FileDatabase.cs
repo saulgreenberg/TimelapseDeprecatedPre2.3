@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 using Timelapse.Detection;
-using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
@@ -219,9 +218,6 @@ namespace Timelapse.Database
 
             Dictionary<string, string> defaultValueLookup = this.GetDefaultControlValueLookup();
 
-            // We need to get a list of which columns are counters
-            HashSet<string> counterList = new HashSet<string>();
-
             // Create a comma-separated lists of column names
             // e.g., ... File, RelativePath, Folder, DateTime, ..., 
             foreach (string columnName in this.FileTable.ColumnNames)
@@ -246,17 +242,15 @@ namespace Timelapse.Database
                 // PERFORMANCE: Reimplement Markers as a foreign key, as many rows will be empty. However, this will break backwards/forwards compatability
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
 
-                string command = String.Empty;
+                string command;
 
                 StringBuilder queryValues = new StringBuilder();
-                Dictionary<string, Dictionary<string, string>> parameterLookup = new Dictionary<string, Dictionary<string, string>>();
 
                 // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
                 for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
                 {
                     queryValues.Append(Sql.OpenParenthesis);
 
-                    List<ColumnTuple> imageRow = new List<ColumnTuple>();
                     List<ColumnTuple> markerRow = new List<ColumnTuple>();
                     foreach (string columnName in this.FileTable.ColumnNames)
                     {
@@ -821,12 +815,15 @@ namespace Timelapse.Database
 
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
-            FileTable temporaryTable = new FileTable(images);
-            if (temporaryTable.RowCount != 1)
+            using (FileTable temporaryTable = new FileTable(images))
             {
-                return null;
+                if (temporaryTable.RowCount != 1)
+                {
+                    temporaryTable.Dispose();
+                    return null;
+                }
+                return temporaryTable[0];
             }
-            return temporaryTable[0];
         }
 
         /// <summary> 
@@ -1039,15 +1036,6 @@ namespace Timelapse.Database
             return new FileTable(images);
         }
 
-        // SAULXXX: TEMPORARY - TO FIX DUPLICATE BUG. TO BE REMOVED IN FUTURE VERSIONS
-        // Delete duplicate rows from the database, identified by identical File and RelativePath contents.
-        public void DeleteDuplicateFiles()
-        {
-            string query = Sql.DeleteFrom + Constant.DBTables.FileData + Sql.WhereIDNotIn;
-            query += Sql.OpenParenthesis + Sql.Select + " MIN(Id) " + Sql.From + Constant.DBTables.FileData + Sql.GroupBy + "RelativePath, File)";
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-        }
-
         /// <summary>
         /// Get the row matching the specified image or create a new image.  The caller is responsible for adding newly created images the database and data table.
         /// </summary>
@@ -1111,7 +1099,7 @@ namespace Timelapse.Database
         // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
         public int GetFileCount(FileSelectionEnum fileSelection)
         {
-            string query = String.Empty;
+            string query;
             bool skipWhere = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
@@ -1431,7 +1419,6 @@ namespace Timelapse.Database
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             ImageRow firstImage = this.FileTable[startRow];
             ImageRow lastImage = null;
-            TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
             DateTimeOffset mostRecentOriginalDateTime = DateTime.MinValue;
             DateTimeOffset mostRecentReversedDateTime = DateTime.MinValue;
             for (int row = startRow; row <= endRow; row++)
@@ -1814,7 +1801,7 @@ namespace Timelapse.Database
                 //{
                 //    columns, values
                 //};
-                    
+
                 //this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
                 //this.GetMarkers();
                 //marker = this.Markers.Find(imageID);
@@ -1950,7 +1937,7 @@ namespace Timelapse.Database
                         }
 
                         // Forces repopulating the data structure if it already exists.
-                        this.detectionDataTable = null; 
+                        this.detectionDataTable = null;
                         this.detectionCategoriesDictionary = null;
                         this.classificationCategoriesDictionary = null;
                         this.classificationsDataTable = null;
@@ -1977,7 +1964,7 @@ namespace Timelapse.Database
 
         // Return true if there is at least one match between a detector folder and a DB folder
         // Return a list of folder paths missing in the DB but present in the detector
-        private bool CompareDetectorAndDBFolders(Detector detector, List<string>missingDBFoldersList)
+        private bool CompareDetectorAndDBFolders(Detector detector, List<string> missingDBFoldersList)
         {
             List<string> FoldersInDBListButNotInJSon = new List<string>();
             List<string> FoldersInInJsonButNotInDB = new List<string>();
@@ -2012,7 +1999,7 @@ namespace Timelapse.Database
                 }
                 if (foldersInDetectorList.Contains(folderpath) == false)
                 {
-                    foldersInDetectorList.Add(folderpath);   
+                    foldersInDetectorList.Add(folderpath);
                 }
             }
 
@@ -2034,10 +2021,10 @@ namespace Timelapse.Database
                 {
                     if (originalFolderDB == String.Empty)
                     {
-                        missingDBFoldersList.Add("<root folder>"); 
+                        missingDBFoldersList.Add("<root folder>");
                     }
                     else
-                    { 
+                    {
                         missingDBFoldersList.Add(originalFolderDB);
                     }
                 }
@@ -2179,22 +2166,19 @@ namespace Timelapse.Database
         // Return the label that matches the detection category 
         public string GetDetectionLabelFromCategory(string category)
         {
+            this.detectionCategoriesDictionary = new Dictionary<string, string>();
             try
             {
-                // Null means we have never tried to create the dictionary. Try to do so.
-
+                using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
                 {
-                    this.detectionCategoriesDictionary = new Dictionary<string, string>();
-                    DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
                     for (int i = 0; i < dataTable.Rows.Count; i++)
                     {
                         DataRow row = dataTable.Rows[i];
                         this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
                     }
+                    // At this point, a lookup dictionary already exists, so just return the category value.
+                    return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
                 }
-
-                // At this point, a lookup dictionary already exists, so just return the category value.
-                return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
             {
@@ -2216,6 +2200,7 @@ namespace Timelapse.Database
                     DataRow row = dataTable.Rows[i];
                     this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
                 }
+                dataTable.Dispose();
             }
         }
 
@@ -2268,6 +2253,7 @@ namespace Timelapse.Database
                     DataRow row = dataTable.Rows[i];
                     this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
                 }
+                dataTable.Dispose();
             }
         }
 

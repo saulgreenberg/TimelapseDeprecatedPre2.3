@@ -196,7 +196,7 @@ namespace Timelapse.Dialog
             this.BoundingBoxThresholdDisplayValue.Text = slider.Value.ToString("0.00");
             if (slider.Value == 0)
             {
-                this.BoundingBoxThresholdDisplayText.Text = "This setting will display all bounding boxes"; 
+                this.BoundingBoxThresholdDisplayText.Text = "This setting will display all bounding boxes";
             }
             else if (slider.Value == 1)
             {

@@ -943,14 +943,14 @@ namespace Timelapse.Images
                 // As a workaround, we just make sure the marker is a valid ration. If it isn't we just put the marker in the middle
                 // Yup, a hack, but its a very rare bug and thus this is good enough. 
                 // While we can instead repair the database, its not really worth the bother of coding that.
-                marker.Position = new Point(.5,.5);
+                marker.Position = new Point(.5, .5);
             }
             Point screenPosition = Marker.ConvertRatioToPoint(marker.Position, canvasRenderSize.Width, canvasRenderSize.Height);
             if (doTransform)
             {
                 screenPosition = this.transformGroup.Transform(screenPosition);
             }
-            
+
             Canvas.SetLeft(markerCanvas, screenPosition.X - markerCanvas.Width / 2.0);
             Canvas.SetTop(markerCanvas, screenPosition.Y - markerCanvas.Height / 2.0);
             Canvas.SetZIndex(markerCanvas, 0);
@@ -1091,7 +1091,7 @@ namespace Timelapse.Images
                 Point screenPositionTopLeft = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height));
                 Point screenPositionBottomRight = this.transformGroup.Transform(BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height));
                 Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
-               
+
                 // We also adjust the rect width and height to take into account the stroke thickness, which
                 // gives the effect the at inside part of the border defines the bounding box (otherwise the border thickness would overlap with the 
                 // entity in the bounding box)

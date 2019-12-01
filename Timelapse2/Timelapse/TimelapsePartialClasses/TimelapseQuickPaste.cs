@@ -177,7 +177,6 @@ namespace Timelapse
 
             if (quickPasteEditor.ShowDialog() == true)
             {
-                quickPasteEntry = quickPasteEditor.QuickPasteEntry;
                 this.QuickPasteRefreshWindowAndXML();
             }
 

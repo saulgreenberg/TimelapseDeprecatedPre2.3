@@ -4,8 +4,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Dialog;
-using Timelapse.Util;
 using Timelapse.ExifTool;
+using Timelapse.Util;
 
 namespace Timelapse.Editor.Dialog
 {
@@ -161,7 +161,7 @@ namespace Timelapse.Editor.Dialog
                 }
                 else
                 {
-                    ExifToolShowImageMetadata();
+                    this.ExifToolShowImageMetadata();
                 }
                 //// Retrieve the metadata
                 //this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);

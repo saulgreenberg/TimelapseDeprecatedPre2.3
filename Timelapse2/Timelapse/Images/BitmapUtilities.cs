@@ -31,7 +31,7 @@ namespace Timelapse.Images
             if (File.Exists(path) == false)
             {
                 return false;
-            }  
+            }
             try
             {
                 // we assume its a valid path

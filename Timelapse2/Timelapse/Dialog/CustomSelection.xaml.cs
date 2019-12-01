@@ -106,7 +106,7 @@ namespace Timelapse.Dialog
                     // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
                     this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
                 }
-                this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
+                this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
             }
             else
             {
@@ -121,7 +121,7 @@ namespace Timelapse.Dialog
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
             }
             this.InitiateShowCountsOfMatchingFiles();
-            this.DetectionCategoryComboBox.SelectionChanged += DetectionCategoryComboBox_SelectionChanged;
+            this.DetectionCategoryComboBox.SelectionChanged += this.DetectionCategoryComboBox_SelectionChanged;
 
 
             // Selection-specific
@@ -613,8 +613,8 @@ namespace Timelapse.Dialog
             this.InitiateShowCountsOfMatchingFiles();
             this.ResetToAllImagesButton.IsEnabled = lastExpression == false ||
                 (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
-                //|| (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
-                //(bool)this.UseDetectionCategoryCheckbox.IsChecked;
+            //|| (bool)this.UseDetectionConfidenceCheckbox.IsChecked ||
+            //(bool)this.UseDetectionCategoryCheckbox.IsChecked;
         }
         #endregion
 
@@ -693,7 +693,7 @@ namespace Timelapse.Dialog
             }
 
             // Enable / alter looks and behavour of detecion UI to match whether detections should be used
-            this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
+            this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
         }
 
         private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)

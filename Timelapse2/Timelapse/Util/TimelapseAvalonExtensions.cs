@@ -46,7 +46,7 @@ namespace Timelapse.Util
                     break;
             }
 
-            
+
             bool result;
             try
             {

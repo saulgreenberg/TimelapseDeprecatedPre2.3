@@ -107,12 +107,12 @@ namespace Timelapse
             else if (dbMissingFolders.Count > 0)
             {
                 // Some folders missing - show which folder paths in the DB are not in the detector
-                string listAsLines = string.Join(", \u2022 ", dbMissingFolders.ToArray());         
+                string listAsLines = string.Join(", \u2022 ", dbMissingFolders.ToArray());
                 MessageBox messageBox = new MessageBox("Recognition data imported for only some of your folders.", this);
                 messageBox.Message.Icon = MessageBoxImage.Information;
                 messageBox.Message.Problem = "Some of the sub-folders in your image set's Database file have no corresponding entries in the Recognition file." + Environment.NewLine;
                 messageBox.Message.Problem += "While not an error, we just wanted to bring it to your attention.";
-                messageBox.Message.Reason = "In particular, you may have added, moved, or renamed the folders belows since supplying the originals to the recognizer:"  + Environment.NewLine;
+                messageBox.Message.Reason = "In particular, you may have added, moved, or renamed the folders belows since supplying the originals to the recognizer:" + Environment.NewLine;
                 messageBox.Message.Reason += "\u2022 " + listAsLines;
                 messageBox.Message.Result = "Recognition data will still be imported for the other folders.";
                 messageBox.Message.Hint = "You can also view which images are missing recognition data by choosing" + Environment.NewLine;
@@ -129,7 +129,7 @@ namespace Timelapse
                 messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
                 messageBox.ShowDialog();
             }
-   
+
             if (result)
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
@@ -217,7 +217,7 @@ namespace Timelapse
                     process.StartInfo.FileName = csvFilePath;
                     process.Start();
                 }
-                catch 
+                catch
                 {
                     // Can't open excel
                     MessageBox messageBox = new MessageBox("Can't open Excel.", this);

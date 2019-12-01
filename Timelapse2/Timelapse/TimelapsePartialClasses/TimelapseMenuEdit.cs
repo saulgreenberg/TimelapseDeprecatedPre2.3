@@ -5,7 +5,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -90,7 +89,7 @@ namespace Timelapse
             // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
             if (this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.Corrupt.Value || this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.FileNoLongerAvailable.Value)
-            { 
+            {
                 // There are no displayable images, and thus no metadata to choose from, so abort
                 MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
                 messageBox.Message.Problem = "Timelapse can't extract any metadata, as the currently displayed image or video is missing or corrupted." + Environment.NewLine;

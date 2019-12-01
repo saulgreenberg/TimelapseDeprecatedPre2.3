@@ -8,7 +8,7 @@ namespace Timelapse.Detection
         {
             get
             {
-                return this.UseDetections ;
+                return this.UseDetections;
             }
         }
 
@@ -23,7 +23,7 @@ namespace Timelapse.Detection
 
         // Transform the confidence threshold as needed
 
-        public Tuple<double,double> DetectionConfidenceThresholdForSelect
+        public Tuple<double, double> DetectionConfidenceThresholdForSelect
         {
             get
             {
@@ -48,7 +48,7 @@ namespace Timelapse.Detection
                 {
                     // We don't want All detections to include images with no detections (i.e., Confidence range includes 0), so if we see a zero, we 
                     // alter that to just above zero.
-                    lowerBound = this.DetectionConfidenceThreshold1ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold1ForUI; 
+                    lowerBound = this.DetectionConfidenceThreshold1ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold1ForUI;
                     upperBound = this.DetectionConfidenceThreshold2ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold2ForUI;
                 }
                 else
@@ -57,7 +57,7 @@ namespace Timelapse.Detection
                     upperBound = this.DetectionConfidenceThreshold2ForUI;
                 }
                 return new Tuple<double, double>(lowerBound, upperBound);
-            }  
+            }
         }
 
         public string CategoryCategory { get; set; }

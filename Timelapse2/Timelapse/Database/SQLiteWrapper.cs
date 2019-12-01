@@ -930,8 +930,10 @@ namespace Timelapse.Database
         private static SQLiteDataReader GetSchema(SQLiteConnection connection, string tableName)
         {
             string sql = Sql.PragmaTableInfo + Sql.OpenParenthesis + tableName + Sql.CloseParenthesis; // Syntax is: PRAGMA TABLE_INFO (tableName)
-            SQLiteCommand command = new SQLiteCommand(sql, connection);
-            return command.ExecuteReader();
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                return command.ExecuteReader();
+            }
         }
 
         /// <summary>
@@ -1059,7 +1061,7 @@ namespace Timelapse.Database
 
             // Turn pragma foreign_key off before the delete, as otherwise it takes forever on largish tables
             // Notice that we do not wrap this in a begin / end, as the pragma does not work within that.
-            queries += Sql.PragmaForeignKeysOff + "; " ;
+            queries += Sql.PragmaForeignKeysOff + "; ";
 
             // Construct a list containing queries of the form DELETE FROM table_name
             foreach (string table in tables)
@@ -1103,7 +1105,7 @@ namespace Timelapse.Database
         #endregion
 
         #region Unused methods
-        #pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE0051 // Remove unused private members
         /// <summary>
         /// CURRENTLY UNUSED
         /// Add a column to the end of the database table 
@@ -1138,7 +1140,7 @@ namespace Timelapse.Database
             }
             AddColumnToEndOfTable(connection, tableName, columnDefinition);
         }
-        #pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
     }
