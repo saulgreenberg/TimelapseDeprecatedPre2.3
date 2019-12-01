@@ -516,8 +516,6 @@ namespace Timelapse.Dialog
                 CheckBox select = this.GetGridElement<CheckBox>(CustomSelection.SelectColumn, row);
                 select.IsChecked = false;
             }
-            //this.UseDetectionCategoryCheckbox.IsChecked = false;
-            //this.UseDetectionConfidenceCheckbox.IsChecked = false;
             this.ShowMissingDetectionsCheckbox.IsChecked = false;
         }
 
@@ -711,14 +709,16 @@ namespace Timelapse.Dialog
             {
                 return;
             }
+
+            // Reset defaults to reasonable settings whenever the selected item changes
             if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
             {
                 // If its empty, we want to default to 1.0, i.e.,to only show images where the recognizer has not found any detections.
                 // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
                 this.DetectionSelections.EmptyDetections = true;
                 this.DetectionSelections.AllDetections = false;
-                this.DetectionConfidenceSpinner1.Value = 1.0;
-                this.DetectionConfidenceSpinner2.Value = 1.0;
+                this.DetectionRangeSlider.HigherValue = 1.0;
+                this.DetectionRangeSlider.LowerValue = 1.0;
             }
             else
             {
@@ -727,10 +727,10 @@ namespace Timelapse.Dialog
 
                 // Set a flag if all detections was selected  
                 this.DetectionSelections.AllDetections = ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel);
-                this.DetectionConfidenceSpinner1.Value = 0.8;
-                this.DetectionConfidenceSpinner2.Value = 1.0;
+                this.DetectionRangeSlider.HigherValue = 1.0;
+                this.DetectionRangeSlider.LowerValue = 0.8;
             }
-          
+
             this.SetDetectionCriteria();
             this.InitiateShowCountsOfMatchingFiles();
         }
