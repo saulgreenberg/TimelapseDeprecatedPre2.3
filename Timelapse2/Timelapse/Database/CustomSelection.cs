@@ -307,58 +307,7 @@ namespace Timelapse.Database
             Tuple<double, double> confidenceBounds = this.DetectionSelections.DetectionConfidenceThresholdForSelect;
             where += Sql.Between +
                      confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
-
-            System.Diagnostics.Debug.Print("Where: " + where);
             return where;
-
-            //// Add the Detection selection terms
-            //// Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
-            //// Form ... WHERE Detections.category = 1
-            //bool addAnd = true;
-            //// if (where == String.Empty && this.DetectionSelections.UseDetectionCategory == true)
-            //if (where == String.Empty && this.DetectionSelections.AllDetections == false) 
-            //{
-            //    // Add where for anything except ALL DETECTIONS
-            //    where += Sql.Where;
-            //    addAnd = false;
-            //}
-            //else
-            //{
-            //    addAnd = true;
-            //}
-            //// if (this.DetectionSelections.UseDetectionCategory)
-            
-            //if (this.DetectionSelections.AllDetections == false)
-            //// Add this for anything except ALL DETECTIONS
-            //{
-            //    if (addAnd)
-            //    {
-            //        where += Sql.And;
-            //    }
-            //    // Form: Detections.category = <DetectionCategory>
-            //    where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
-            //}
-
-            //// We always use confidence. 
-            //// Note that confidence of 0 captures empty items with 0 confidence i.e., images with no detections in them
-            //if (this.DetectionSelections.UseDetections)
-            //{
-            //    // Form:  ...Group By Detections.Id Having Max (Detections.conf )  ...
-            //    where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
-            //        Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
-            //    // BETWEEN .80 AND .90
-            //    where += Sql.Between +
-            //             this.DetectionSelections.DetectionConfidenceThreshold1ForSelect.ToString() + Sql.And +
-            //             this.DetectionSelections.DetectionConfidenceThreshold2ForSelect.ToString();
-            //}
-            //// else if (this.DetectionSelections.UseDetectionCategory)
-            //// I DONT THINK THIS CAN CURRENTLY EVER BE TRIGGERED - CHECK WHAT IT DOES
-            //else if (this.DetectionSelections.AllDetections == false)
-            //{
-            //    where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
-            //}
-            //System.Diagnostics.Debug.Print("Where: " + where);
-            //return where;
         }
 
         public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime, TimeZoneInfo imageSetTimeZone)

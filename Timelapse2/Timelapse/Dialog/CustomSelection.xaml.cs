@@ -100,6 +100,11 @@ namespace Timelapse.Dialog
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
                 this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+                if (this.DetectionSelections.DetectionCategory == String.Empty || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
+                {
+                    // Because All is a bogus detection category, we have to set it explicitly
+                    this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
+                }
                 this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
             }
             else
@@ -670,11 +675,12 @@ namespace Timelapse.Dialog
             if (this.DetectionSelections.UseDetections)
             {
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel) 
+                if (this.DetectionSelections.DetectionCategory == String.Empty)
                 {
-                    // SAUL ALL? WHAT DO IT DO HERE? 
-                    // SAUL EMPTY INVERT CONFIDENCE???
+                    // Because All is a bogus detection category, we have to set it explicitly
+                    this.DetectionSelections.DetectionCategory = Constant.DetectionValues.AllDetectionLabel;
                 }
+
                 this.DetectionSelections.DetectionConfidenceThreshold1ForUI = (double)this.DetectionConfidenceSpinner1.Value;
                 this.DetectionSelections.DetectionConfidenceThreshold2ForUI = (double)this.DetectionConfidenceSpinner2.Value;
 
