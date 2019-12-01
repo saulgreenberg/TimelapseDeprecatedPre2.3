@@ -1151,7 +1151,8 @@ namespace Timelapse.Database
                     query += Sql.CloseParenthesis;
                 }
             }
-            System.Diagnostics.Debug.Print("Count: " + query);
+            // Uncommment this to see the actual complete query
+            // System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
             return this.Database.GetCountFromSelect(query);
         }
         #endregion

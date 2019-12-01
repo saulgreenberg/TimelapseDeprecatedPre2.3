@@ -78,7 +78,13 @@
                     </Border>
                 </Grid>
             </GroupBox>
-            <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no recognition data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
+            <StackPanel Orientation="Vertical">
+                <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no recognition data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
+                <StackPanel Orientation="Horizontal" Margin="10,75,0,0">
+                    <TextBlock Name="QueryMatches2" Text="{Binding ElementName=QueryMatches,Path=Text }"  FontWeight="DemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text=" files match your query" VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
 
         </StackPanel>
         <!--Selection Panel-->

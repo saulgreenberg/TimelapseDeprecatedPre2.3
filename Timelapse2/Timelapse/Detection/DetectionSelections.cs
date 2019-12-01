@@ -22,26 +22,34 @@ namespace Timelapse.Detection
         public double DetectionConfidenceThreshold2ForUI { get; set; }
 
         // Transform the confidence threshold as needed
-        // For Empty category, we want to invert the confidence 
-        // e.g confidence of 1 is returned as confidence of 0
-        // But note that we actually return the confidence of the different threshold in this case, as normally #1 <= #2
-        // Doing so keeps that relationship after the inversion is done.
+
         public Tuple<double,double> DetectionConfidenceThresholdForSelect
         {
             get
             {
+                const double justAboveZero = 0.00001;
                 double lowerBound;
                 double upperBound;
                 if (this.EmptyDetections)
                 {
-                    // Invert the lower/uppder bound to keep one less than the other
-                    lowerBound = 1.0 - this.DetectionConfidenceThreshold2ForUI;
+                    // For Empty category, we want to invert the confidence 
+                    // e.g confidence of 1 is returned as confidence of 0
+                    // But note that we actually return the confidence of the different threshold in this case, as normally #1 <= #2
+                    // Doing so keeps that relationship after the inversion is done.
+                    // We also swap the lower/uppder bound to keep one less than the other
+                    // If Threshold2 is .99 in the UI for empty items, we invert that, but to just above 0
+                    // so we capture all the non-zero items (i.e., all images with detections in that range) as otherwise it could
+                    //  omit the rare image with a max detection between 0 and .01
+                    lowerBound = (this.DetectionConfidenceThreshold2ForUI == 0.99) ? justAboveZero : 1.0 - this.DetectionConfidenceThreshold2ForUI;
                     upperBound = 1.0 - this.DetectionConfidenceThreshold1ForUI;
+
                 }
-                else if (this.AllDetections && DetectionConfidenceThreshold1ForUI == 0)
+                else if (this.AllDetections)
                 {
-                    lowerBound = 0.000001; 
-                    upperBound = this.DetectionConfidenceThreshold2ForUI;
+                    // We don't want All detections to include images with no detections (i.e., Confidence range includes 0), so if we see a zero, we 
+                    // alter that to just above zero.
+                    lowerBound = this.DetectionConfidenceThreshold1ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold1ForUI; 
+                    upperBound = this.DetectionConfidenceThreshold2ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold2ForUI;
                 }
                 else
                 {
