@@ -348,6 +348,7 @@ namespace Timelapse.Database
             {
                 TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
             }
+            command.Dispose();
         }
 
         // Trims all the white space from the data held in the list of column_names in table_name
@@ -740,39 +741,7 @@ namespace Timelapse.Database
             }
         }
 
-        /// <summary>
-        /// Add a column to the end of the database table 
-        /// This does NOT require the table to be cloned.
-        /// Note: Some of the AddColumnToEndOfTable methods are currently not referenced, but may be handy in the future.
-        /// </summary>
-        /// <param name="connection">the open and valid connection to the database</param> 
-        /// <param name="tableName">the name of the  table</param> 
-        /// <param name="name">the name of the new column</param> 
-        /// <param name="type">the type of the new column</param> 
-        private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type)
-        {
-            string columnDefinition = name + " " + type;
-            AddColumnToEndOfTable(connection, tableName, columnDefinition);
-        }
 
-        /// <summary>
-        /// Add a column to the end of the database table. 
-        /// This does NOT require the table to be cloned.
-        /// </summary>
-        /// <param name="connection">the open and valid connection to the database</param> 
-        /// <param name="tableName">the name of the  table</param> 
-        /// <param name="name">the name of the new column</param> 
-        /// <param name="type">the type of the new column</param> 
-        /// <param name="otherOptions">space-separated options such as PRIMARY KEY AUTOINCREMENT, NULL or NOT NULL etc</param>
-        private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type, string otherOptions)
-        {
-            string columnDefinition = name + " " + type;
-            if (String.IsNullOrEmpty(otherOptions))
-            {
-                columnDefinition += " " + otherOptions;
-            }
-            AddColumnToEndOfTable(connection, tableName, columnDefinition);
-        }
 
         private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string columnDefinition)
         {
@@ -1075,7 +1044,7 @@ namespace Timelapse.Database
         // Its an obscur bug and solution reported by others: sqlite doesn't really document that argument very well. But it seems to fix it.
         private SQLiteConnection GetNewSqliteConnection(string connectionString)
         {
-            return new SQLiteConnection(this.connectionString, true);
+            return new SQLiteConnection(connectionString, true);
         }
         #endregion
 
@@ -1132,5 +1101,45 @@ namespace Timelapse.Database
             return this.GetCountFromSelect(query) != 0;
         }
         #endregion
+
+        #region Unused methods
+        #pragma warning disable IDE0051 // Remove unused private members
+        /// <summary>
+        /// CURRENTLY UNUSED
+        /// Add a column to the end of the database table 
+        /// This does NOT require the table to be cloned.
+        /// Note: Some of the AddColumnToEndOfTable methods are currently not referenced, but may be handy in the future.
+        /// </summary>
+        /// <param name="connection">the open and valid connection to the database</param> 
+        /// <param name="tableName">the name of the  table</param> 
+        /// <param name="name">the name of the new column</param> 
+        /// <param name="type">the type of the new column</param> 
+        private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type)
+        {
+            string columnDefinition = name + " " + type;
+            AddColumnToEndOfTable(connection, tableName, columnDefinition);
+        }
+
+        /// <summary>
+        /// Add a column to the end of the database table. 
+        /// This does NOT require the table to be cloned.
+        /// </summary>
+        /// <param name="connection">the open and valid connection to the database</param> 
+        /// <param name="tableName">the name of the  table</param> 
+        /// <param name="name">the name of the new column</param> 
+        /// <param name="type">the type of the new column</param> 
+        /// <param name="otherOptions">space-separated options such as PRIMARY KEY AUTOINCREMENT, NULL or NOT NULL etc</param>
+        private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type, string otherOptions)
+        {
+            string columnDefinition = name + " " + type;
+            if (String.IsNullOrEmpty(otherOptions))
+            {
+                columnDefinition += " " + otherOptions;
+            }
+            AddColumnToEndOfTable(connection, tableName, columnDefinition);
+        }
+        #pragma warning restore IDE0051 // Remove unused private members
+        #endregion
+
     }
 }

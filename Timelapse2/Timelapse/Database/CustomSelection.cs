@@ -282,17 +282,37 @@ namespace Timelapse.Database
             // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
             // - GROUP BY...
 
-            // Form: WHERE
-            // Add only if we are using the first form 
+            // Form: WHERE or AND/OR
+            // Add Where if we are using the first form, otherwise AND
+            bool addAndOr = false;
             if (where == String.Empty && this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
                 where += Sql.Where;
+            }
+            else
+            {
+                addAndOr = true;
             }
 
             // FORM: Detections.category = <DetectionCategory> 
             // Only added if we are using a category (i.e., any category but All Detections)
             if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
+                if (addAndOr)
+                {
+                    // Choose whether to use And or Or
+                    switch (this.TermCombiningOperator)
+                    {
+                        case CustomSelectionOperatorEnum.And:
+                            where += Sql.And;
+                            break;
+                        case CustomSelectionOperatorEnum.Or:
+                            where += Sql.Or;
+                            break;
+                        default:
+                            throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
+                    }
+                }
                 where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
             }
 

@@ -91,7 +91,7 @@ namespace Timelapse.Dialog
                 this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
                 this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2ForUI;
 
-                // Put Detection categories in as human-readable labels, adding All detectins to that list.
+                // Put Detection categories in as human-readable labels, adding All detections to that list.
                 // Then set it to the last used one.
                 List<string> labels = this.database.GetDetectionLabels();
                 this.DetectionCategoryComboBox.Items.Add(Constant.DetectionValues.AllDetectionLabel);
@@ -102,7 +102,8 @@ namespace Timelapse.Dialog
                 this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
                 if (this.DetectionSelections.DetectionCategory == String.Empty || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
                 {
-                    // Because All is a bogus detection category, we have to set it explicitly
+                    // We need an 'All' detection category, which is the union of all categories (except empty).
+                    // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
                     this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
                 }
                 this.EnableDetectionControls((bool) this.UseDetectionsCheckbox.IsChecked);
@@ -509,6 +510,7 @@ namespace Timelapse.Dialog
         // When this button is pressed, all the search terms checkboxes are cleared, which is equivalent to showing all images
         private void ResetToAllImagesButton_Click(object sender, RoutedEventArgs e)
         {
+            this.UseDetectionsCheckbox.IsChecked = false;
             for (int row = 1; row <= this.database.CustomSelection.SearchTerms.Count; row++)
             {
                 CheckBox select = this.GetGridElement<CheckBox>(CustomSelection.SelectColumn, row);
@@ -650,7 +652,6 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Detection-specific methods and callbacks
-
         private void UseDetections_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (this.dontInvoke)
@@ -712,7 +713,7 @@ namespace Timelapse.Dialog
             }
             if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
             {
-                // If its empty, we want different defaults
+                // If its empty, we want to default to 1.0, i.e.,to only show images where the recognizer has not found any detections.
                 // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
                 this.DetectionSelections.EmptyDetections = true;
                 this.DetectionSelections.AllDetections = false;
@@ -721,8 +722,9 @@ namespace Timelapse.Dialog
             }
             else
             {
-                // Not empty: reset it to these defaults
+                // Not empty: reset it to these defaults. We use .8 - 1.0, as this range is one where the recognizer is reasonably accurate
                 this.DetectionSelections.EmptyDetections = false;
+
                 // Set a flag if all detections was selected  
                 this.DetectionSelections.AllDetections = ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel);
                 this.DetectionConfidenceSpinner1.Value = 0.8;
