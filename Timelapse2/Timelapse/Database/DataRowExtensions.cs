@@ -30,7 +30,15 @@ namespace Timelapse.Database
             {
                 return default(TEnum);
             }
-            return (TEnum)Enum.Parse(typeof(TEnum), fieldAsString);
+            try
+            {
+                TEnum result = (TEnum)Enum.Parse(typeof(TEnum), fieldAsString);
+                return result;
+            }
+            catch
+            {
+                return default(TEnum);
+            }
         }
 
         public static long GetID(this DataRow row)
