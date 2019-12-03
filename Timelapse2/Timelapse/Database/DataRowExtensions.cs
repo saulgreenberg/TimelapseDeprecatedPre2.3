@@ -32,11 +32,21 @@ namespace Timelapse.Database
             }
             try
             {
-                TEnum result = (TEnum)Enum.Parse(typeof(TEnum), fieldAsString);
-                return result;
+                //TEnum result = (TEnum)Enum.Parse(typeof(TEnum), fieldAsString);
+                if (Enum.TryParse(fieldAsString, out TEnum result))
+                {
+                    // The parse succeeded, where the TEnum result is in result
+                    return result;
+                }
+                else
+                {
+                    // The parse dis not succeeded. The TEnum result contains the default enum value, ie, the same as returning default(TEnum)
+                    return result;
+                }
             }
             catch
             {
+                // Shouldn't get here as we used a tryParse, but just in case
                 return default(TEnum);
             }
         }
