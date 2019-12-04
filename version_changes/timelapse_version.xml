@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <timelapse>
-  <version>2.2.3.0</version>
+  <version>2.2.3.1</version>
   <url>http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.Download2</url>
-  <changes>2.2.3.0:
+  <changes>2.2.3.1:
 Update strongly recommended. You are now running a quite old version of Timelapse. There have been many fixes and improvements since then. See http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.TimelapseVersions for a list of changes.</changes>
 </timelapse>
