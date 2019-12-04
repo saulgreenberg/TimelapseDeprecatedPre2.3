@@ -1033,7 +1033,9 @@ namespace Timelapse.Images
             int stroke_thickness = 5;
             // Max Confidence is over all bounding boxes, regardless of the categories.
             // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
-            if (this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && this.BoundingBoxes.MaxConfidence < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
+            // Also, add a slight correction value to the MaxConfidence, so confidences near the threshold will still appear.
+            double correction = 0.005;
+            if (this.BoundingBoxes.MaxConfidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && this.BoundingBoxes.MaxConfidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
             {
                 // Ignore any bounding box that is below the desired confidence threshold for displaying it.
                 // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
@@ -1046,7 +1048,7 @@ namespace Timelapse.Images
             this.bboxCanvas.Height = canvasRenderSize.Height;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
-                if (bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && bbox.Confidence < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
+                if (bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
                 {
                     // Ignore any bounding box that is below the desired confidence threshold for displaying it.
                     // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold

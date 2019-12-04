@@ -1134,7 +1134,7 @@ namespace Timelapse.Database
                 {
                     query += where;
                 }
-                if (fileSelection == FileSelectionEnum.Custom && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections== true && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     query += Sql.CloseParenthesis;
                 }

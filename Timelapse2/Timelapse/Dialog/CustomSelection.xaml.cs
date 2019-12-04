@@ -83,7 +83,7 @@ namespace Timelapse.Dialog
             if (GlobalReferences.DetectionsExists)
             {
                 this.DetectionGroupBox.Visibility = Visibility.Visible;
-                this.ShowMissingDetectionsCheckbox.Visibility = Visibility.Visible;
+                this.Detections2Panel.Visibility = Visibility.Visible;
                 this.UseDetectionsCheckbox.IsChecked = this.DetectionSelections.UseDetections;
 
                 this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
@@ -111,7 +111,11 @@ namespace Timelapse.Dialog
             else
             {
                 this.DetectionGroupBox.Visibility = Visibility.Collapsed;
-                this.ShowMissingDetectionsCheckbox.Visibility = Visibility.Collapsed;
+                this.Detections2Panel.Visibility = Visibility.Collapsed;
+                if (this.DetectionSelections != null)
+                {
+                    this.DetectionSelections.ClearAllDetectionsUses();
+                }
             }
             this.dontInvoke = false;
             this.dontCount = false;
@@ -885,8 +889,5 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
-
-
-
     }
 }

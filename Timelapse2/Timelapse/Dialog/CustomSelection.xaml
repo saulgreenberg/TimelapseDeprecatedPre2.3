@@ -51,7 +51,7 @@
                     </Grid.RowDefinitions>
 
                     <!--Row 0-->
-                    <CheckBox Name="UseDetectionsCheckbox" Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" Checked="UseDetections_CheckedChanged" Unchecked="UseDetections_CheckedChanged"/>
+                    <CheckBox Name="UseDetectionsCheckbox" Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" VerticalAlignment="Center" IsChecked="False" Checked="UseDetections_CheckedChanged" Unchecked="UseDetections_CheckedChanged"/>
                     <TextBlock Text="Use Detections" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="5" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Left" Width="200" />
 
                     <!--Row 1-->
@@ -78,9 +78,9 @@
                     </Border>
                 </Grid>
             </GroupBox>
-            <StackPanel Orientation="Vertical">
+            <StackPanel Name="Detections2Panel" Orientation="Vertical">
                 <CheckBox Name="ShowMissingDetectionsCheckbox" Content="Show all files with no recognition data"  IsChecked="False" VerticalAlignment="Top" Margin="10,15,0,0" Checked="ShowMissingDetectionsCheckbox_CheckedChanged" Unchecked="ShowMissingDetectionsCheckbox_CheckedChanged"/>
-                <StackPanel Orientation="Horizontal" Margin="10,75,0,0">
+                <StackPanel  Orientation="Horizontal" Margin="10,75,0,0">
                     <TextBlock Name="QueryMatches2" Text="{Binding ElementName=QueryMatches,Path=Text }"  FontWeight="DemiBold" VerticalAlignment="Center" />
                     <TextBlock Text=" files match your query" VerticalAlignment="Center"/>
                 </StackPanel>
