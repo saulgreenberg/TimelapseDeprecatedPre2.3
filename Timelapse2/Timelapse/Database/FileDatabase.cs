@@ -1303,11 +1303,11 @@ namespace Timelapse.Database
 
             if (fromIndex < 0)
             {
-                throw new ArgumentOutOfRangeException("fromIndex");
+                throw new ArgumentOutOfRangeException(nameof(fromIndex));
             }
             if (toIndex < fromIndex || toIndex > this.CurrentlySelectedFileCount - 1)
             {
-                throw new ArgumentOutOfRangeException("toIndex");
+                throw new ArgumentOutOfRangeException(nameof(toIndex));
             }
 
             string value = valueSource.GetValueDatabaseString(dataLabel);
@@ -1373,7 +1373,7 @@ namespace Timelapse.Database
         {
             if (adjustment.Milliseconds != 0)
             {
-                throw new ArgumentOutOfRangeException("adjustment", "The current format of the time column does not support milliseconds.");
+                throw new ArgumentOutOfRangeException(nameof(adjustment), "The current format of the time column does not support milliseconds.");
             }
             this.AdjustFileTimes((DateTimeOffset imageTime) => { return imageTime + adjustment; }, startRow, endRow);
         }
@@ -1384,15 +1384,15 @@ namespace Timelapse.Database
         {
             if (this.IsFileRowInRange(startRow) == false)
             {
-                throw new ArgumentOutOfRangeException("startRow");
+                throw new ArgumentOutOfRangeException(nameof(startRow));
             }
             if (this.IsFileRowInRange(endRow) == false)
             {
-                throw new ArgumentOutOfRangeException("endRow");
+                throw new ArgumentOutOfRangeException(nameof(endRow));
             }
             if (endRow < startRow)
             {
-                throw new ArgumentOutOfRangeException("endRow", "endRow must be greater than or equal to startRow.");
+                throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be greater than or equal to startRow.");
             }
             if (this.CurrentlySelectedFileCount == 0)
             {
@@ -1455,15 +1455,15 @@ namespace Timelapse.Database
         {
             if (this.IsFileRowInRange(startRow) == false)
             {
-                throw new ArgumentOutOfRangeException("startRow");
+                throw new ArgumentOutOfRangeException(nameof(startRow));
             }
             if (this.IsFileRowInRange(endRow) == false)
             {
-                throw new ArgumentOutOfRangeException("endRow");
+                throw new ArgumentOutOfRangeException(nameof(endRow));
             }
             if (endRow < startRow)
             {
-                throw new ArgumentOutOfRangeException("endRow", "endRow must be greater than or equal to startRow.");
+                throw new ArgumentOutOfRangeException(nameof(endRow), "endRow must be greater than or equal to startRow.");
             }
             if (this.CurrentlySelectedFileCount == 0)
             {

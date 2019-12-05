@@ -386,7 +386,7 @@ namespace Timelapse.Database
                 int expectedOrder = control + 1;
                 if (uniqueOrderValues[control] != expectedOrder)
                 {
-                    throw new ArgumentOutOfRangeException("newOrderByDataLabel", String.Format("Control order must be a ones based count.  An order of {0} was passed instead of the expected order {1} for '{2}'.", uniqueOrderValues[0], expectedOrder, orderColumnName));
+                    throw new ArgumentOutOfRangeException(nameof(newOrderByDataLabel), String.Format("Control order must be a ones based count.  An order of {0} was passed instead of the expected order {1} for '{2}'.", uniqueOrderValues[0], expectedOrder, orderColumnName));
                 }
             }
 
@@ -699,7 +699,7 @@ namespace Timelapse.Database
         {
             if ((order < 1) || (order > this.Controls.RowCount))
             {
-                throw new ArgumentOutOfRangeException("order", "Control and spreadsheet orders must be contiguous ones based values.");
+                throw new ArgumentOutOfRangeException(nameof(order), "Control and spreadsheet orders must be contiguous ones based values.");
             }
 
             Dictionary<string, long> newControlOrderByDataLabel = new Dictionary<string, long>();

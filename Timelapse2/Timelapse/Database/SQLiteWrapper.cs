@@ -682,7 +682,7 @@ namespace Timelapse.Database
                     // Check if a column named Name already exists in the source Table. If so, abort as we cannot add duplicate column names
                     if (columnNames.Contains(columnDefinition.Name))
                     {
-                        throw new ArgumentException(String.Format("Column '{0}' is already present in table '{1}'.", columnDefinition.Name, tableName), "columnDefinition");
+                        throw new ArgumentException(String.Format("Column '{0}' is already present in table '{1}'.", columnDefinition.Name, tableName), nameof(columnDefinition));
                     }
 
                     // If columnNumber would result in the column being inserted at the end of the table, then use the more efficient method to do so.
@@ -786,11 +786,11 @@ namespace Timelapse.Database
             // Some basic error checking to make sure we can do the operation
             if (String.IsNullOrWhiteSpace(currentColumnName))
             {
-                throw new ArgumentOutOfRangeException("currentColumnName");
+                throw new ArgumentOutOfRangeException(nameof(currentColumnName));
             }
             if (String.IsNullOrWhiteSpace(newColumnName))
             {
-                throw new ArgumentOutOfRangeException("newColumnName");
+                throw new ArgumentOutOfRangeException(nameof(newColumnName));
             }
 
             try
@@ -801,11 +801,11 @@ namespace Timelapse.Database
                     List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
                     if (currentColumnNames.Contains(currentColumnName) == false)
                     {
-                        throw new ArgumentException(String.Format("No column named '{0}' exists to rename.", currentColumnName), "currentColumnName");
+                        throw new ArgumentException(String.Format("No column named '{0}' exists to rename.", currentColumnName), nameof(currentColumnName));
                     }
                     if (currentColumnNames.Contains(newColumnName) == true)
                     {
-                        throw new ArgumentException(String.Format("Column '{0}' is already in use.", newColumnName), "newColumnName");
+                        throw new ArgumentException(String.Format("Column '{0}' is already in use.", newColumnName), nameof(newColumnName));
                     }
 
                     string newSchema = CloneSchemaButRenameColumn(connection, sourceTable, currentColumnName, newColumnName);

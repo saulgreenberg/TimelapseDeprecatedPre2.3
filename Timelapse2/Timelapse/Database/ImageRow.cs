@@ -22,6 +22,8 @@ namespace Timelapse.Database
     /// </summary>
     public class ImageRow : DataRowBackedObject
     {
+        private const string ParamName = "value";
+
         public ImageRow(DataRow row)
             : base(row)
         {
@@ -83,7 +85,7 @@ namespace Timelapse.Database
                         break;
                     default:
                         TraceDebug.PrintMessage(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
-                        throw new ArgumentOutOfRangeException("value", String.Format("{0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
+                        throw new ArgumentOutOfRangeException(ParamName, String.Format("{0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
                 }
             }
         }

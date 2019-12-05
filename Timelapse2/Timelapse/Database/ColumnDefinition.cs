@@ -23,11 +23,11 @@ namespace Timelapse.Database
         {
             if (String.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentOutOfRangeException("name");
+                throw new ArgumentOutOfRangeException(nameof(name));
             }
             if (String.IsNullOrWhiteSpace(type))
             {
-                throw new ArgumentOutOfRangeException("type");
+                throw new ArgumentOutOfRangeException(nameof(type));
             }
 
             this.DefaultValue = defaultValue;

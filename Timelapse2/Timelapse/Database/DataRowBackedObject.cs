@@ -23,12 +23,12 @@ namespace Timelapse.Database
         public int GetIndex(DataTable dataTable)
         {
             //// Check the arguments for null 
-            //if (dataTable == null)
-            //{
-            //    // this should not happen
-            //    TraceDebug.PrintStackTrace(1);
-            //    throw new ArgumentNullException(nameof(dataTable));
-            //}
+            if (dataTable == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dataTable));
+            }
 
             return dataTable.Rows.IndexOf(this.Row);
         }

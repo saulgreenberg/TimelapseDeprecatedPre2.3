@@ -14,12 +14,12 @@ namespace Timelapse.Dialog
         {
             if (String.IsNullOrWhiteSpace(title))
             {
-                throw new ArgumentException("A title must be specified for the message box.", "title");
+                throw new ArgumentException("A title must be specified for the message box.", nameof(title));
             }
 
             if (owner == null)
             {
-                throw new ArgumentNullException("owner");
+                throw new ArgumentNullException(nameof(owner));
             }
 
             this.InitializeComponent();
@@ -44,7 +44,7 @@ namespace Timelapse.Dialog
                     break;
                 case MessageBoxButton.YesNoCancel:
                 default:
-                    throw new ArgumentOutOfRangeException("buttonType", String.Format("Unhandled button type {0}.", buttonType));
+                    throw new ArgumentOutOfRangeException(nameof(buttonType), String.Format("Unhandled button type {0}.", buttonType));
             }
         }
 
