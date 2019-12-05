@@ -68,7 +68,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>Timelapse.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -82,6 +82,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>Timelapse.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>0744795F13F850C9EC610B9A48630CB31A2D2F1D</ManifestCertificateThumbprint>
@@ -660,6 +661,7 @@
     </None>
     <AppDesigner Include="Properties\" />
     <None Include="StrongNameKeyFile.snk" />
+    <None Include="Timelapse.ruleset" />
     <Resource Include="Resources\AvalonLayout_DataEntryFloating.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnSide.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnTop.config" />
