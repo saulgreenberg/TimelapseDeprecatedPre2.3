@@ -819,7 +819,6 @@ namespace Timelapse.Database
             {
                 if (temporaryTable.RowCount != 1)
                 {
-                    temporaryTable.Dispose();
                     return null;
                 }
                 return temporaryTable[0];
@@ -1134,7 +1133,7 @@ namespace Timelapse.Database
                 {
                     query += where;
                 }
-                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections== true && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     query += Sql.CloseParenthesis;
                 }

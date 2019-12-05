@@ -1247,8 +1247,7 @@ namespace Timelapse.Images
                 return false;
             }
             this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
-
-            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
+            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out _);
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate, state);
         }
 
