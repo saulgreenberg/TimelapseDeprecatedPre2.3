@@ -105,7 +105,7 @@ namespace Timelapse.Database
 
                         // assemble set of column values to update
                         string imageFileName = null;
-                        string folder = null;
+                        // string folder = null; // Folder isn't used - but I just kept it in just in case as I haven't tested what happens on import CSV
                         string relativePath = null;
                         ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
                         for (int field = 0; field < row.Count; ++field)
@@ -122,7 +122,8 @@ namespace Timelapse.Database
                             }
                             else if (dataLabel == Constant.DatabaseColumn.Folder)
                             {
-                                folder = value;
+                                // folder = value;
+                                continue;
                             }
                             else if (dataLabel == Constant.DatabaseColumn.RelativePath)
                             {

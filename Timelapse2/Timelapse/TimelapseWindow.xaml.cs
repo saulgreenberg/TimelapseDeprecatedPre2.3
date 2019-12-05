@@ -168,7 +168,7 @@ namespace Timelapse
                 this.state.FirstTimeFileLoading = false;
             }
 
-            if (!Util.Utilities.CheckAndGetLangaugeAndCulture(out string language, out string culturename, out string displayname))
+            if (!Util.Utilities.CheckAndGetLangaugeAndCulture(out _, out _, out string displayname))
             {
                 this.HelpDocument.WarningRegionLanguage = displayname;
             }
@@ -203,8 +203,6 @@ namespace Timelapse
                     {
                         this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                     }
-                    string folder = this.dataHandler.FileDatabase.ImageSet.SelectedFolder;
-                    //System.Diagnostics.Debug.Print(folder);
                 }
 
                 // sync image set properties
@@ -857,7 +855,7 @@ namespace Timelapse
         {
             if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
-                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out BackgroundWorker backgroundWorker) == false)
+                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out _) == false)
                 {
                     this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
                     this.RecentFileSets_Refresh();
