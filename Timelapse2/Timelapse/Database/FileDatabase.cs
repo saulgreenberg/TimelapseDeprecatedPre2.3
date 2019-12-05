@@ -916,7 +916,7 @@ namespace Timelapse.Database
                     sortTerm[i] = this.ImageSet.GetSortTerm(i);
 
                     // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
-                    if (sortTerm[i].DataLabel == String.Empty)
+                    if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
                     {
                         break;
                     }
@@ -1011,7 +1011,7 @@ namespace Timelapse.Database
             commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
             this.FileTable = this.GetFilesInDataTableById(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-            return (commaSeparatedListOfIDs == String.Empty) ? false : true;
+            return (string.IsNullOrEmpty(commaSeparatedListOfIDs)) ? false : true;
         }
 
         public FileTable GetFilesMarkedForDeletion()
@@ -2026,7 +2026,7 @@ namespace Timelapse.Database
             foreach (image image in detector.images)
             {
                 folderpath = Path.GetDirectoryName(image.file);
-                if (folderpath != String.Empty)
+                if (!string.IsNullOrEmpty(folderpath))
                 {
                     folderpath += "\\";
                 }
@@ -2042,7 +2042,7 @@ namespace Timelapse.Database
             {
                 // Add a closing slash to the folderDB for the same reasons described above
                 string modifedFolderDB = String.Empty;
-                if (originalFolderDB != String.Empty)
+                if (!string.IsNullOrEmpty(originalFolderDB))
                 {
                     modifedFolderDB = originalFolderDB + "\\";
                 }
@@ -2052,7 +2052,7 @@ namespace Timelapse.Database
                 }
                 else
                 {
-                    if (originalFolderDB == String.Empty)
+                    if (string.IsNullOrEmpty(originalFolderDB))
                     {
                         missingDBFoldersList.Add("<root folder>");
                     }

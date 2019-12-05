@@ -15,7 +15,7 @@ namespace Timelapse.QuickPaste
         {
             List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
             string xml = FileDatabase.TryGetQuickPasteXMLFromDatabase(ddbFile);
-            if (xml.Trim() == String.Empty)
+            if (string.IsNullOrEmpty(xml.Trim()))
             {
                 return new List<QuickPasteEntry>();
             }

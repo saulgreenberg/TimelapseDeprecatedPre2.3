@@ -132,15 +132,15 @@ namespace Timelapse
             this.MenuItemSortCustom.IsChecked = false;
 
             // Determine which selection best fits the sort terms (e.g., a custom selection on just ID will be ID rather than Custom)
-            if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && string.IsNullOrEmpty(sortTerm[1].DataLabel))
             {
                 this.MenuItemSortByDateTime.IsChecked = true;
             }
-            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && string.IsNullOrEmpty(sortTerm[1].DataLabel))
             {
                 this.MenuItemSortById.IsChecked = true;
             }
-            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.File && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == String.Empty)
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.File && sortTerm[0].IsAscending == Constant.BooleanValue.True && string.IsNullOrEmpty(sortTerm[1].DataLabel))
             {
                 this.MenuItemSortByFileName.IsChecked = true;
             }

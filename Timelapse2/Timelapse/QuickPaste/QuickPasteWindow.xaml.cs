@@ -76,7 +76,7 @@ namespace Timelapse.QuickPaste
                 {
                     if (item.Use)
                     {
-                        if (tooltipText != String.Empty)
+                        if (!string.IsNullOrEmpty(tooltipText))
                         {
                             tooltipText += Environment.NewLine;
                         }

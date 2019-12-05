@@ -165,7 +165,7 @@ namespace Timelapse.Controls
                 this.ContentControl.AllowSpin = false;
                 if (textBox != null)
                 {
-                    textBox.Watermark = textBox.Text != String.Empty ? Constant.Unicode.Ellipsis : String.Empty;
+                    textBox.Watermark = !string.IsNullOrEmpty(textBox.Text) ? Constant.Unicode.Ellipsis : String.Empty;
                     textBox.Text = String.Empty;
                 }
             }

@@ -83,7 +83,7 @@ namespace Timelapse
             List<object> folderList = this.dataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
-                if (header == String.Empty)
+                if (string.IsNullOrEmpty(header))
                 {
                     // An empty header is actually the root folder. Since we already have an entry representng all files, we don't need it.
                     continue;

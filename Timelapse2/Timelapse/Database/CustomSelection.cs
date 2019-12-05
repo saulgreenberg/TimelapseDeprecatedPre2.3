@@ -212,7 +212,7 @@ namespace Timelapse.Database
             // WHERE a=b AND c=d ... for multiple terms
             foreach (SearchTerm searchTerm in this.SearchTerms.Where(term => term.UseForSearching))
             {
-                if (where == String.Empty)
+                if (string.IsNullOrEmpty(where))
                 {
                     // Because there is at least one search term, we will need the WHERE clause
                     where += Sql.Where;
@@ -291,7 +291,7 @@ namespace Timelapse.Database
             // Form: WHERE or AND/OR
             // Add Where if we are using the first form, otherwise AND
             bool addAndOr = false;
-            if (where == String.Empty && this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
+            if (string.IsNullOrEmpty(where) && this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
                 where += Sql.Where;
             }

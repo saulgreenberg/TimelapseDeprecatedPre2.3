@@ -25,7 +25,7 @@ namespace Timelapse
                 foreach (DataRow detectionRow in dataRows)
                 {
                     string coords = (string)detectionRow[3];
-                    if (coords == String.Empty)
+                    if (string.IsNullOrEmpty(coords))
                     {
                         // This shouldn't happen, but...
                         continue;

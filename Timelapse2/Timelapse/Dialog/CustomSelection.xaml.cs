@@ -103,7 +103,7 @@ namespace Timelapse.Dialog
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
                 this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-                if (this.DetectionSelections.DetectionCategory == String.Empty || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
+                if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
                 {
                     // We need an 'All' detection category, which is the union of all categories (except empty).
                     // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
@@ -681,7 +681,7 @@ namespace Timelapse.Dialog
             if (this.DetectionSelections.UseDetections)
             {
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                if (this.DetectionSelections.DetectionCategory == String.Empty)
+                if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
                 {
                     // Because All is a bogus detection category, we have to set it explicitly
                     this.DetectionSelections.DetectionCategory = Constant.DetectionValues.AllDetectionLabel;

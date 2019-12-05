@@ -206,7 +206,7 @@ namespace Timelapse.Detection
                     // It occurs when the actual images were in a subfolder, where that subfolder was read in separately as a datafile
                     // That is, the .tdb file was located in an image subfolder, rather than in the root folder where the detections were done
                     string imageFile = String.Empty;
-                    if (pathPrefixForTruncation == String.Empty)
+                    if (string.IsNullOrEmpty(pathPrefixForTruncation))
                     {
                         imageFile = image.file;
                     }

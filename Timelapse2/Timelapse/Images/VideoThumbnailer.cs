@@ -117,7 +117,7 @@ namespace Timelapse.Images
 
                     // If we can't compose an ffmpeg command, then just bail as its because ffmpeg.exe cannot be found
                     string ffmpegCommand = FfmpegComposeThumbnailCommand(file, thumbnailFilePath);
-                    if (ffmpegCommand == String.Empty)
+                    if (string.IsNullOrEmpty(ffmpegCommand))
                     {
                         return;
                     }

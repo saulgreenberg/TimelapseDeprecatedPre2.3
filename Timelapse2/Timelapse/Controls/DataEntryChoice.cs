@@ -193,7 +193,7 @@ namespace Timelapse.Controls
             }
             // For some reason, the empty item was not setting the selected index to the item with the blank entry. 
             // This is needed to set it explicitly.
-            if (value == String.Empty)
+            if (string.IsNullOrEmpty(value))
             {
                 this.ContentControl.SelectedIndex = 1;
             }
