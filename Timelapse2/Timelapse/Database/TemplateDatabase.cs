@@ -380,8 +380,10 @@ namespace Timelapse.Database
             // update in memory table with new order
             foreach (ControlRow control in this.Controls)
             {
-                string dataLabel = control.DataLabel;
+                // Redundant check for null, as for some reason the CA1062 warning was still showing up
+                ThrowIf.IsNullArgument(newOrderByDataLabel, nameof(newOrderByDataLabel));
 
+                string dataLabel = control.DataLabel;
                 // Because we don't show all controls, we skip the ones that are missing.
                 if (newOrderByDataLabel.ContainsKey(dataLabel) == false)
                 {

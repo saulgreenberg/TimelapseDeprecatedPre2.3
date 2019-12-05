@@ -108,6 +108,8 @@ namespace Timelapse.Controls
                 this.Controls.Add(controlToAdd);
                 this.ControlsByDataLabel.Add(control.DataLabel, controlToAdd);
             }
+            // Redundant check as for some reason CA1062 was still showing up as a warning.
+            ThrowIf.IsNullArgument(dataEntryPropagator, nameof(dataEntryPropagator));
             dataEntryPropagator.SetDataEntryCallbacks(this.ControlsByDataLabel);
             this.dataEntryHandler = dataEntryPropagator;
         }

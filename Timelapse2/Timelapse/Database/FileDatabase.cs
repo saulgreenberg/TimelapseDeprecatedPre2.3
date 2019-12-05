@@ -694,7 +694,7 @@ namespace Timelapse.Database
             // Check the arguments for null 
             ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
-            
+
             // Perform TemplateTable initializations.
             base.OnExistingDatabaseOpened(templateDatabase, null);
 
@@ -734,6 +734,8 @@ namespace Timelapse.Database
                 // Condition 2: The image template table had contained one or more controls not found in the template table.
                 // That is, the .ddb DataTable contains data columns that now have no corresponding control 
                 // Action: Delete those data columns
+                // Redundant check for null, as for some reason the CA1062 warning was still showing up
+                ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
                 foreach (string dataLabel in templateSyncResults.DataLabelsToDelete)
                 {
                     this.Database.DeleteColumn(Constant.DBTables.FileData, dataLabel);
@@ -768,6 +770,8 @@ namespace Timelapse.Database
 
                 // Condition 4: There are non-critical updates in the template's row (e.g., that only change the UI). 
                 // Synchronize the image database's TemplateTable with the template database's TemplateTable 
+                // Redundant check for null, as for some reason the CA1062 warning was still showing up
+                ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
                 if (templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer)
                 {
                     foreach (string dataLabel in dataLabels)
@@ -1831,6 +1835,8 @@ namespace Timelapse.Database
             }
 
             // Update the database and datatable
+            // Note that I repeated the null check here, as for some reason it was still coming up as a CA1062 warning
+            ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
             marker[markersForCounter.DataLabel] = markersForCounter.GetPointList();
             this.SyncMarkerToDatabase(marker);
         }
