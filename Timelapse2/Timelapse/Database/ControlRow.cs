@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -155,6 +156,14 @@ namespace Timelapse.Database
         }
         public bool Synchronize(ControlRow other)
         {
+            // Check the arguments for null 
+            if (other == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(other));
+            }
+
             bool synchronizationMadeChanges = false;
             if (this.Copyable != other.Copyable)
             {

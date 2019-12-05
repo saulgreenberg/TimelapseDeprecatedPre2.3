@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -10,8 +12,15 @@ namespace Timelapse.Database
         /// While a bit of a hack and less efficient, its easier than re-implementing what we can already get from customSelect.
         /// Note that each sort term is a triplet indicating the Data Label, Label, and a string flag on whether the sort should be ascending (default) or descending.
         /// </summary>
-        public static List<SortTerm> GetSortTerms(FileDatabase database)
+        public static List<SortTerm> GetSortTerms(List<SearchTerm> searchTerms)
         {
+            // Check the arguments for null 
+            if (searchTerms == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(searchTerms));
+            }
             List<SortTerm> sortTerms = new List<SortTerm>();
 
             // Constraints. 
@@ -25,7 +34,7 @@ namespace Timelapse.Database
             bool firstDateTimeSeen = false;
             sortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID, Sql.Integer, Constant.BooleanValue.True));
 
-            foreach (SearchTerm searchTerm in database.CustomSelection.SearchTerms)
+            foreach (SearchTerm searchTerm in searchTerms)
             {
                 // Necessary modifications:
                 // - Exclude UtcOffset, RelativePath

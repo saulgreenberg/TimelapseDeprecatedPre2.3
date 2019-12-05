@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using Timelapse.Database;
+using Timelapse.Util;
 
 namespace Timelapse.QuickPaste
 {
@@ -29,7 +30,8 @@ namespace Timelapse.QuickPaste
         public static QuickPasteEntry TryGetQuickPasteItemFromDataFields(FileDatabase fileDatabase, int rowIndex, string title)
         {
             // If the row isn't valid, we can't make a quickpaste entry out of it
-            if (fileDatabase.IsFileRowInRange(rowIndex) == false)
+            // Note that fileDatabase should never be null, but we do want to Check the arguments for null 
+            if (fileDatabase == null || fileDatabase.IsFileRowInRange(rowIndex) == false)
             {
                 return null;
             }
@@ -73,6 +75,15 @@ namespace Timelapse.QuickPaste
         // Delete the quickPasteEntry from the quickPasteEntries list
         public static List<QuickPasteEntry> DeleteQuickPasteEntry(List<QuickPasteEntry> quickPasteEntries, QuickPasteEntry quickPasteEntry)
         {
+            // Check the arguments for null 
+            if (quickPasteEntries == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(quickPasteEntries));
+                // Perhaps we should just return an empty QuickPasteEntry list instead, for example:
+                // return new List<QuickPasteEntry>()
+            }
             quickPasteEntries.RemoveAll(x => x.Equals(quickPasteEntry));
             return quickPasteEntries;
         }
@@ -97,6 +108,17 @@ namespace Timelapse.QuickPaste
         // Compare it to the actual controls, and alter the data structure if needed
         public static List<QuickPasteEntry> QuickPasteEntriesFromXML(FileDatabase fileDatabase, string xml)
         {
+            List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
+            // Check the arguments for null 
+            if (fileDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                return quickPasteEntries;
+                // Not sure if the above return is effective. We could do the following instead
+                // throw new ArgumentNullException(nameof(fileDatabase));
+            }
+
             XDocument xDocument = XDocument.Parse(xml);
 
             IEnumerable entries =
@@ -115,7 +137,7 @@ namespace Timelapse.QuickPaste
                              }).ToList()
                 };
 
-            List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
+           
             foreach (QuickPasteEntry quickPasteEntry in entries)
             {
                 quickPasteEntries.Add(quickPasteEntry);

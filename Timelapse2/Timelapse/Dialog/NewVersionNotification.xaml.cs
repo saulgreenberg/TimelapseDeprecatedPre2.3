@@ -20,14 +20,14 @@ namespace Timelapse.Dialog
         private readonly Version currentVersionNumber;
         private readonly Version lastestVersionNumber;
 
-        public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latest_version_number)
+        public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latestVersionMumber)
         {
             this.InitializeComponent();
 
             this.Owner = owner;
             this.applicationName = applicationName;
             this.currentVersionNumber = currentVersionNumber;
-            this.lastestVersionNumber = latest_version_number;
+            this.lastestVersionNumber = latestVersionMumber;
 
             // Construct the template message
             this.Title = String.Format("A new version of {0} is available.", this.applicationName);
@@ -52,7 +52,7 @@ namespace Timelapse.Dialog
                 TextRange textRange = new TextRange(content.ContentStart, content.ContentEnd);
 
                 // Try to load the rtf file pointed at by the URI as a string
-                string filename = Constant.LatestVersionFileNamePrefix + latest_version_number.ToString() + Constant.LatestVersionFileNameSuffix;
+                string filename = Constant.LatestVersionFileNamePrefix + String.Format("{0}", latestVersionMumber) + Constant.LatestVersionFileNameSuffix;
                 Uri uri = new Uri(Constant.LatestVersionBaseAddress, filename);
                 WebResponse response = WebRequest.Create(uri).GetResponse();
                 Stream streamfromuri = response.GetResponseStream();

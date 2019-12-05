@@ -14,6 +14,16 @@ namespace Timelapse.Util
         // Sort the given data grid by the given column number in ascending order
         public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
         {
+            // Check the arguments for null 
+            if (dataGrid == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dataGrid));
+                // Not sure if the following would work
+                // return null
+            }
+
             // Clear current sort descriptions
             dataGrid.Items.SortDescriptions.Clear();
 
@@ -45,6 +55,16 @@ namespace Timelapse.Util
         // we can quickly highlight those rows.  Otherwise we need to search the datagrid for each ID
         public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes)
         {
+            // Check the arguments for null 
+            if (dataGrid == null || idRowIndexes == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(idRowIndexes) + " or " nameof(dataGrid));
+                // Not sure what the consequences of this empty return is, but ...
+                return;
+            }
+
             // If there are no selections, just unselect everything
             if (idRowIndexes.Count.Equals(0))
             {

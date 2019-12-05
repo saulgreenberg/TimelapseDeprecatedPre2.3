@@ -46,6 +46,8 @@ namespace Timelapse.Controls
         public DataEntryChoice(ControlRow control, DataEntryControls styleProvider)
             : base(control, styleProvider, ControlContentStyleEnum.ChoiceComboBox, ControlLabelStyleEnum.DefaultLabel)
         {
+
+
             // The behaviour of the combo box
             this.ContentControl.Focusable = true;
             this.ContentControl.IsEditable = false;
@@ -55,7 +57,20 @@ namespace Timelapse.Controls
             this.ContentControl.PreviewKeyDown += this.ContentCtl_PreviewKeyDown;
 
             // Add items to the combo box. If we have an  EmptyChoiceItem, then  add an 'empty string' to the end 
-            List<string> choiceList = control.GetChoices(out bool includesEmptyChoice);
+            // Check the arguments for null 
+            List<string> choiceList;
+            bool includesEmptyChoice;
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                choiceList = new List<string>();
+                includesEmptyChoice = true;
+            }
+            else
+            { 
+                choiceList =  control.GetChoices(out includesEmptyChoice);
+            }
             ComboBoxItem cbi;
             foreach (string choice in choiceList)
             {
@@ -87,7 +102,7 @@ namespace Timelapse.Controls
 
         public void HideItems(List<String> itemsToHide)
         {
-            if (this.ContentControl == null || this.ContentControl.Items == null)
+            if (this.ContentControl == null || this.ContentControl.Items == null || itemsToHide == null)
             {
                 return;
             }

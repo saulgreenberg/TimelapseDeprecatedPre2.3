@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Documents;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -15,6 +16,21 @@ namespace Timelapse.Dialog
         {
             this.InitializeComponent();
             this.Owner = owner;
+
+            // Check the arguments for null 
+            if (errors == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(errors));
+            }
+            // Check the arguments for null 
+            if (warnings == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(warnings));
+            }
 
             string messageUsingNewTemplate = Environment.NewLine + " o 'Open using New Template':   uses the new template, but will have the issues below.";
             string messageUsingOldTemplate = Environment.NewLine + " o Open using Old Template:'   ignores the new template, where it uses the original version of your template.";

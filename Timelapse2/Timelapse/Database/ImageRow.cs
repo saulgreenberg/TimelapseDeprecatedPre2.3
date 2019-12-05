@@ -186,7 +186,17 @@ namespace Timelapse.Database
                     this.UtcOffset = DateTimeHandler.ParseDatabaseUtcOffsetString(value);
                     break;
                 case Constant.DatabaseColumn.ImageQuality:
-                    this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
+                    if (Enum.TryParse(value, out FileSelectionEnum result))
+                    {
+                        // The parse succeeded, where the  result is in result
+                        this.ImageQuality = result;
+                    }
+                    else
+                    {
+                        // The parse did not succeeded. The result contains the default enum value, ie, the same as returning default(Enum)
+                        this.ImageQuality = default;
+                    }
+                   // this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
                     break;
                 default:
                     this.Row.SetField(dataLabel, value);

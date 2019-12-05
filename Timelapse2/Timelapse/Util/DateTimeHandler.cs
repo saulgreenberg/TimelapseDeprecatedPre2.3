@@ -7,7 +7,7 @@ namespace Timelapse.Util
     {
         public static DateTimeOffset CreateDateTimeOffset(DateTime dateTime, TimeZoneInfo imageSetTimeZone)
         {
-            if (dateTime.Kind == DateTimeKind.Unspecified)
+            if (imageSetTimeZone != null && dateTime.Kind == DateTimeKind.Unspecified)
             {
                 TimeSpan utcOffset = imageSetTimeZone.GetUtcOffset(dateTime);
                 return new DateTimeOffset(dateTime, utcOffset);

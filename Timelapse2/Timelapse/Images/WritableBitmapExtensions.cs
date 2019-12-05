@@ -3,6 +3,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Images
 {
@@ -18,6 +19,28 @@ namespace Timelapse.Images
         // and the main image and a second image.
         public static unsafe WriteableBitmap CombinedDifference(this WriteableBitmap unaltered, WriteableBitmap previous, WriteableBitmap next, byte threshold)
         {
+            // Check the arguments for null 
+            if (unaltered == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(unaltered));
+            }
+            // Check the arguments for null 
+            if (previous == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(previous));
+            }
+            // Check the arguments for null 
+            if (next == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(next));
+            }
+
             if (WritableBitmapExtensions.BitmapsMismatched(unaltered, previous) ||
                 WritableBitmapExtensions.BitmapsMismatched(unaltered, next))
             {
@@ -82,6 +105,14 @@ namespace Timelapse.Images
         [HandleProcessCorruptedStateExceptions] // Necessary for unsafe code to implement try/catch
         public static unsafe FileSelectionEnum IsDark(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio, out double darkPixelFraction, out bool isColor)
         {
+            // Check the arguments for null 
+            if (image == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(image));
+            }
+
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
             WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
@@ -169,6 +200,13 @@ namespace Timelapse.Images
         // checks whether the image is completely black
         public static unsafe bool IsBlack(this WriteableBitmap image)
         {
+            // Check the arguments for null 
+            if (image == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(image));
+            }
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
             WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
@@ -197,6 +235,21 @@ namespace Timelapse.Images
         // Given two images, return an image containing the visual difference between them
         public static unsafe WriteableBitmap Subtract(this WriteableBitmap image1, WriteableBitmap image2)
         {
+            // Check the arguments for null 
+            if (image1 == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(image1));
+            }
+            // Check the arguments for null 
+            if (image2 == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(image2));
+            }
+
             if (WritableBitmapExtensions.BitmapsMismatched(image1, image2))
             {
                 return null;

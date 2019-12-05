@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -14,6 +15,14 @@ namespace Timelapse.Dialog
 
         public ChooseFileDatabaseFile(string[] fileDatabasePaths, string templateDatabasePath, Window owner)
         {
+            // Check the arguments for null 
+            if (fileDatabasePaths == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileDatabasePaths));
+            }
+
             this.InitializeComponent();
             this.Owner = owner;
             this.SelectedFile = String.Empty;

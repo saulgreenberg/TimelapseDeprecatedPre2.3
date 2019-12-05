@@ -396,6 +396,22 @@ namespace Timelapse.Database
 
         protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
+            // Check the arguments for null 
+            if (templateDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateDatabase));
+            }
+
+            // Check the arguments for null 
+            if (templateSyncResults == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateSyncResults));
+            }
+
             // perform TemplateTable initializations and migrations, then check for synchronization issues
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
@@ -687,6 +703,22 @@ namespace Timelapse.Database
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
         protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
+            // Check the arguments for null 
+            if (templateDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateDatabase));
+            }
+
+            // Check the arguments for null 
+            if (templateSyncResults == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateSyncResults));
+            }
+            
             // Perform TemplateTable initializations.
             base.OnExistingDatabaseOpened(templateDatabase, null);
 
@@ -819,7 +851,6 @@ namespace Timelapse.Database
             {
                 if (temporaryTable.RowCount != 1)
                 {
-                    temporaryTable.Dispose();
                     return null;
                 }
                 return temporaryTable[0];
@@ -1042,6 +1073,14 @@ namespace Timelapse.Database
         /// <returns>true if the image is already in the database</returns>
         public bool GetOrCreateFile(FileInfo fileInfo, out ImageRow file)
         {
+            // Check the arguments for null 
+            if (fileInfo == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileInfo));
+            }
+
             // Path.GetFileName strips the last folder of the folder path,which in this case gives us the root folder..
             string initialRootFolderName = Path.GetFileName(this.FolderPath);
 
@@ -1134,7 +1173,7 @@ namespace Timelapse.Database
                 {
                     query += where;
                 }
-                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections== true && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
                     query += Sql.CloseParenthesis;
                 }
@@ -1254,6 +1293,14 @@ namespace Timelapse.Database
         // Updates are applied to both the datatable (so the user sees the updates immediately) and the database
         public void UpdateFiles(ImageRow valueSource, string dataLabel, int fromIndex, int toIndex)
         {
+            // Check the arguments for null 
+            if (valueSource == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(valueSource));
+            }
+
             if (fromIndex < 0)
             {
                 throw new ArgumentOutOfRangeException("fromIndex");
@@ -1285,6 +1332,14 @@ namespace Timelapse.Database
         // Updates are applied to both the datatable (so the user sees the updates immediately) and the database
         public void UpdateFiles(List<int> fileIndexes, string dataLabel, string value)
         {
+            // Check the arguments for null 
+            if (fileIndexes == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileIndexes));
+            }
+
             if (fileIndexes.Count == 0)
             {
                 return;
@@ -1456,6 +1511,13 @@ namespace Timelapse.Database
         // Delete the data (including markers associated with the images identified by the list of IDs.
         public void DeleteFilesAndMarkers(List<long> fileIDs)
         {
+            // Check the arguments for null 
+            if (fileIDs == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileIDs));
+            }
             if (fileIDs.Count < 1)
             {
                 // nothing to do
@@ -1783,6 +1845,13 @@ namespace Timelapse.Database
         /// </summary>
         public void SetMarkerPositions(long imageID, MarkersForCounter markersForCounter)
         {
+            // Check the arguments for null 
+            if (markersForCounter == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(markersForCounter));
+            }
 
             // Find the current row number
             MarkerRow marker = this.Markers.Find(imageID);
@@ -1823,6 +1892,14 @@ namespace Timelapse.Database
 
         public void SyncMarkerToDatabase(MarkerRow marker)
         {
+            // Check the arguments for null 
+            if (marker == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(marker));
+            }
+
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DBTables.Markers, marker.GetColumnTuples());
         }
@@ -1911,6 +1988,14 @@ namespace Timelapse.Database
         #region DETECTION INTEGRATION
         public bool PopulateDetectionTables(string path, List<string> dbMissingFolders)
         {
+            // Check the arguments for null 
+            if (dbMissingFolders == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dbMissingFolders));
+            }
+
             if (File.Exists(path) == false)
             {
                 return false;

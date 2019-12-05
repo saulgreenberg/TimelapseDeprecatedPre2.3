@@ -629,7 +629,8 @@ namespace Timelapse.Images
 
         public void SetNewVideo(FileInfo videoFile, List<Marker> markers)
         {
-            if (videoFile.Exists == false)
+            // Check the arguments for null 
+            if (videoFile == null || videoFile.Exists == false)
             {
                 this.SetNewImage(Constant.ImageValues.FileNoLongerAvailable.Value, markers);
                 this.displayingImage = true;
@@ -1247,8 +1248,7 @@ namespace Timelapse.Images
                 return false;
             }
             this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
-
-            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out double unitY);
+            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out _);
             return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate, state);
         }
 

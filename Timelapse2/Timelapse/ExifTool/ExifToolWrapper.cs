@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Timelapse.Util;
 
 namespace Timelapse.ExifTool
 {
@@ -15,10 +16,22 @@ namespace Timelapse.ExifTool
         public bool IsSuccess { get; }
         public string Result { get; }
 
-        public ExifToolResponse(string r)
+        public ExifToolResponse(string response)
         {
-            this.IsSuccess = r.ToLowerInvariant().Contains(ExifToolWrapper.SuccessMessage);
-            this.Result = r;
+            // Check the arguments for null 
+            if (response == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(response));
+                // Treat it as a failure case?
+                this.IsSuccess = false;
+                this.Result = String.Empty;
+                return;
+            }
+
+            this.IsSuccess = response.ToLowerInvariant().Contains(ExifToolWrapper.SuccessMessage);
+            this.Result = response;
         }
 
         public ExifToolResponse(bool b, string r)
@@ -308,8 +321,20 @@ namespace Timelapse.ExifTool
 
         public ExifToolResponse SetExifInto(string path, Dictionary<string, string> data, bool overwriteOriginal = true)
         {
+            // Check the arguments for null 
+            if (data == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(data));
+                // try this to indicate the failure case
+                return new ExifToolResponse(false, "data dictionary is null");
+            }
+
             if (!File.Exists(path))
+            { 
                 return new ExifToolResponse(false, $"'{path}' not found");
+            }
 
             var cmd = new StringBuilder();
             foreach (KeyValuePair<string, string> kv in data)
@@ -318,7 +343,9 @@ namespace Timelapse.ExifTool
             }
 
             if (overwriteOriginal)
+            { 
                 cmd.Append("-overwrite_original\n");
+            }
 
             cmd.Append(path);
             var cmdRes = this.SendCommand(cmd.ToString());
@@ -332,13 +359,17 @@ namespace Timelapse.ExifTool
             var res = new Dictionary<string, string>();
 
             if (!File.Exists(path))
+            { 
                 return res;
+            }
 
             var tagsTable = tagsToKeep?.ToDictionary(x => x, x => 1);
             bool filter = tagsTable != null && tagsTable.Count > 0;
             var cmdRes = this.SendCommand(path);
             if (!cmdRes)
+            { 
                 return res;
+            }
 
             foreach (string s in cmdRes.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -346,14 +377,15 @@ namespace Timelapse.ExifTool
                 Debug.Assert(kv.Length == 2, $"Can not parse line :'{s}'");
 
                 if (kv.Length != 2 || (!keepKeysWithEmptyValues && string.IsNullOrEmpty(kv[1])))
+                { 
                     continue;
-
+                }
                 if (filter && !tagsTable.ContainsKey(kv[0]))
+                { 
                     continue;
-
+                }
                 res[kv[0]] = kv[1];
             }
-
             return res;
         }
 
@@ -362,14 +394,17 @@ namespace Timelapse.ExifTool
             var res = new List<string>();
 
             if (!File.Exists(path))
+            { 
                 return res;
+            }
 
             var tagsTable = tagsToKeep?.ToDictionary(x => x, x => 1);
             bool filter = tagsTable?.Count > 0;
             var cmdRes = this.SendCommand(path);
             if (!cmdRes)
+            { 
                 return res;
-
+            }
             foreach (string s in cmdRes.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string[] kv = s.Split('\t');

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Timelapse.Util;
 
 namespace Timelapse.Images
 {
@@ -14,6 +15,16 @@ namespace Timelapse.Images
         // - for each video generate a thumbnail and place it in that folder
         public static void GenerateVideoThumbnailsInAllFolders(string root, string thumbnailFolderName, string[] videoSuffixes)
         {
+            // Check the arguments for null 
+            if (videoSuffixes == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(videoSuffixes));
+                // Make it a no-op
+                return;
+            }
+
             // Generate the thumbnails for this folder
             if (!Directory.Exists(root))
             {

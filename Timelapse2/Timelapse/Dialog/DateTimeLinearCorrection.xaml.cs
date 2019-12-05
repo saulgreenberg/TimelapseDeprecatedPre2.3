@@ -24,6 +24,14 @@ namespace Timelapse
         // Create the interface
         public DateTimeLinearCorrection(FileDatabase fileDatabase, Window owner)
         {
+            // Check the arguments for null 
+            if (fileDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileDatabase));
+            }
+
             this.InitializeComponent();
             this.Owner = owner;
             this.fileDatabase = fileDatabase;

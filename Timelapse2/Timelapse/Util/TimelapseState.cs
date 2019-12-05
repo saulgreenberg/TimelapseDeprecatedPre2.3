@@ -52,7 +52,7 @@ namespace Timelapse.Util
             // check mostRecentKey for null as key delivery is not entirely deterministic
             // it's possible WPF will send the first key as a repeat if the user holds a key down or starts typing while the main window is opening
             // Note that we check the isrepeat from both the key event, and the IsKeyRepeat key that we track due to bugs in how AvalonDock returns erroneous IsRepeat values.
-            if (key.IsRepeat && this.IsKeyRepeat && this.mostRecentKey != null && this.mostRecentKey.IsRepeat && (key.Key == this.mostRecentKey.Key))
+            if (key != null && key.IsRepeat && this.IsKeyRepeat && this.mostRecentKey != null && this.mostRecentKey.IsRepeat && (key.Key == this.mostRecentKey.Key))
             {
                 ++this.keyRepeatCount;
             }

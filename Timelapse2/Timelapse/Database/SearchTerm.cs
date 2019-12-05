@@ -30,6 +30,14 @@ namespace Timelapse.Database
 
         public SearchTerm(SearchTerm other)
         {
+            // Check the arguments for null 
+            if (other == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(other));
+            }
+
             this.ControlType = other.ControlType;
             this.DatabaseValue = other.DatabaseValue;
             this.DataLabel = other.DataLabel;
@@ -75,6 +83,14 @@ namespace Timelapse.Database
 
         public void SetDatabaseValue(Nullable<DateTime> dateTime, TimeZoneInfo imageSetTimeZone)
         {
+            // Check the arguments for null 
+            if (imageSetTimeZone == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(imageSetTimeZone));
+            }
+
             if (dateTime.HasValue)
             {
                 TimeSpan utcOffset = imageSetTimeZone.GetUtcOffset(dateTime.Value);

@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -148,7 +149,7 @@ namespace Timelapse.Controls
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
                 string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.File);
-                filename = this.ShortenFileNameIfNeeded(filename, state);
+                filename = ClickableImage.ShortenFileNameIfNeeded(filename, state);
                 this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
@@ -199,8 +200,16 @@ namespace Timelapse.Controls
         // Return a shortened version of the file name so that it fits in the available space 
         // Note that we left trim it, and we show an ellipsis on the left side if it doesn't fit.
         // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
-        public string ShortenFileNameIfNeeded(string filename, int state)
+        public static string ShortenFileNameIfNeeded(string filename, int state)
         {
+            // Check the arguments for null 
+            if (filename == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                return "Unknown file name";
+            }
+
             string ellipsis = "\u2026";
             switch (state)
             {

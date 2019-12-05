@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using Timelapse.Database;
+using Timelapse.Util;
 
 namespace Timelapse.Detection
 {
@@ -13,6 +14,14 @@ namespace Timelapse.Detection
         // Create all Detection Database Tables
         public static void CreateOrRecreateTablesAndColumns(SQLiteWrapper database)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
+
             List<ColumnDefinition> columnDefinitions;
             // Create the various tables used to hold detection data
 
@@ -84,6 +93,13 @@ namespace Timelapse.Detection
 
         public static void ClearDetectionTables(SQLiteWrapper database)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
             List<string> detectionTables = new List<string>
             {
                 Constant.DBTables.ClassificationCategories,
@@ -97,6 +113,35 @@ namespace Timelapse.Detection
         // Populate the various Detection Database Tables from the detection data structure.
         public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string pathPrefixForTruncation)
         {
+            // Check the arguments for null 
+            if (detector == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(detector));
+            }
+            // Check the arguments for null 
+            if (fileDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileDatabase));
+            }
+            // Check the arguments for null 
+            if (detectionDB == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(detectionDB));
+            }
+            // Check the arguments for null 
+            if (pathPrefixForTruncation == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(pathPrefixForTruncation));
+            }
+
             // Updating many rows is made hugely more efficient if we create an index for File and Relative Path
             // as otherwise each update is in linear time to the table rows vs log time. 
             // Because we will not need these indexes later, we will drop them after the updates are done

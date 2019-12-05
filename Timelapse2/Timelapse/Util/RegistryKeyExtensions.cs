@@ -71,6 +71,15 @@ namespace Timelapse.Util
 
         public static int ReadInteger(this RegistryKey registryKey, string subKeyPath, int defaultValue)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(registryKey));
+                return defaultValue;
+            }
+
             object value = registryKey.GetValue(subKeyPath);
             if (value == null)
             {
@@ -135,12 +144,27 @@ namespace Timelapse.Util
         // read a REG_SZ key's value from the registry
         public static string ReadString(this RegistryKey registryKey, string subKeyPath)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
             return (string)registryKey.GetValue(subKeyPath);
         }
 
         // read a series of REG_SZ keys' values from the registry
         public static MostRecentlyUsedCollection<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
+
             RegistryKey subKey = registryKey.OpenSubKey(subKeyPath);
             MostRecentlyUsedCollection<string> values = new MostRecentlyUsedCollection<string>(Constant.NumberOfMostRecentDatabasesToTrack);
 
@@ -176,6 +200,13 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, MostRecentlyUsedCollection<string> values)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
             if (values != null)
             {
                 // create the key whose values represent elements of the list
@@ -204,6 +235,13 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, int value)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
             registryKey.SetValue(subKeyPath, value, RegistryValueKind.DWord);
         }
 
@@ -219,12 +257,26 @@ namespace Timelapse.Util
 
         public static void Write(this RegistryKey registryKey, string subKeyPath, string value)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
             registryKey.SetValue(subKeyPath, value, RegistryValueKind.String);
         }
 
         // Save Timespan as seconds
         public static void Write(this RegistryKey registryKey, string subKeyPath, TimeSpan value)
         {
+            // Check the arguments for null 
+            if (registryKey == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(registryKey));
+            }
             registryKey.SetValue(subKeyPath, value.TotalSeconds.ToString(), RegistryValueKind.String);
         }
     }
