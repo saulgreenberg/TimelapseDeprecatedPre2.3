@@ -8,8 +8,6 @@ namespace Timelapse.Database
 {
     public class ImageSetRow : DataRowBackedObject
     {
-        private const int MaxSortTerms = 8;
-
         public ImageSetRow(DataRow row)
             : base(row)
         {

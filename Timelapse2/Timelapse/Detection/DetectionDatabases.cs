@@ -38,38 +38,38 @@ namespace Timelapse.Detection
             }
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.InfoColumns.Detector,  Sql.String),
-                new ColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.String),
-                new ColumnDefinition(Constant.InfoColumns.Classifier,  Sql.String),
-                new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.String)
+                new ColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.InfoColumns.Detector,  Sql.StringType),
+                new ColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.StringType),
+                new ColumnDefinition(Constant.InfoColumns.Classifier,  Sql.StringType),
+                new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.StringType)
             };
             database.CreateTable(Constant.DBTables.Info, columnDefinitions);
 
             // DetectionCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.String),
+                new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.StringType),
             };
             database.CreateTable(Constant.DBTables.DetectionCategories, columnDefinitions);
 
             // ClassificationCategories: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.String + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.String),
+                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.StringType),
             };
             database.CreateTable(Constant.DBTables.ClassificationCategories, columnDefinitions);
 
             // Detections: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey),
-                new ColumnDefinition(Constant.DetectionColumns.Category,  Sql.String),
+                new ColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
+                new ColumnDefinition(Constant.DetectionColumns.Category,  Sql.StringType),
                 new ColumnDefinition(Constant.DetectionColumns.Conf,  Sql.Real),
-                new ColumnDefinition(Constant.DetectionColumns.BBox,  Sql.String), // Will need to parse it into new new double[4]
-                new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.Integer), // Foreign key: ImageID
+                new ColumnDefinition(Constant.DetectionColumns.BBox,  Sql.StringType), // Will need to parse it into new new double[4]
+                new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
                 new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DBTables.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTables.Detections, columnDefinitions);
@@ -77,10 +77,10 @@ namespace Timelapse.Detection
             // Classifications: create or clear table 
             columnDefinitions = new List<ColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Sql.Integer + Timelapse.Sql.PrimaryKey),
-                new ColumnDefinition(Constant.ClassificationColumns.Category, Sql.String),
+                new ColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
+                new ColumnDefinition(Constant.ClassificationColumns.Category, Sql.StringType),
                 new ColumnDefinition(Constant.ClassificationColumns.Conf,  Sql.Real),
-                new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.Integer), // Foreign key: ImageID
+                new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
                 new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTables.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTables.Classifications, columnDefinitions);

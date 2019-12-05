@@ -456,8 +456,8 @@ namespace Timelapse.Database
             List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
             {
                 new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
-                new ColumnDefinition(Constant.Control.ControlOrder, Sql.Integer),
-                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.Integer),
+                new ColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
+                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.IntegerType),
                 new ColumnDefinition(Constant.Control.Type, Sql.Text),
                 new ColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
                 new ColumnDefinition(Constant.Control.Label, Sql.Text),

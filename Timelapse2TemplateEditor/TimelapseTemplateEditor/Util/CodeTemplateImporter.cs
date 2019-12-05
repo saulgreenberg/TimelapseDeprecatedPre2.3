@@ -84,7 +84,7 @@ namespace Timelapse.Editor.Util
             if (EditorControls.IsStandardControlType(typeWanted) == false)
             {
                 controlType = GetColumn(selectedData, Constant.Control.DataLabel);
-                if (controlType.Trim().Equals(String.Empty))
+                if (String.IsNullOrWhiteSpace(controlType))
                 {
                     controlType = label; // If there is no data label, use the label's value into it. 
                 }
@@ -137,7 +137,7 @@ namespace Timelapse.Editor.Util
                 // If the data label was empty, the priority is to use the non-empty label contents
                 // otherwise we stay with the default contents of the data label filled in previously 
                 label = Regex.Replace(label, @"\s+", String.Empty);
-                if (label != String.Empty)
+                if (!string.IsNullOrEmpty(label))
                 {
                     control.DataLabel = label;
                 }

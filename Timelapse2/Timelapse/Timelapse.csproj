@@ -189,7 +189,7 @@
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
-    <Compile Include="Enums\FlashEnums.cs" />
+    <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />

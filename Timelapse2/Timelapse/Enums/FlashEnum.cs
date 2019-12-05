@@ -1,6 +1,6 @@
 ﻿namespace Timelapse.Enums
 {
-    public enum FlashEnums
+    public enum FlashEnum
     {
         FlashBackground,
         FlashPreview

@@ -27,7 +27,7 @@ namespace Timelapse.Database
             // - Remove the 2nd DateTiime
             // - Add Id as it is missing
             bool firstDateTimeSeen = false;
-            sortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID, Sql.Integer, Constant.BooleanValue.True));
+            sortTerms.Add(new SortTerm(Constant.DatabaseColumn.ID, Constant.DatabaseColumn.ID, Sql.IntegerType, Constant.BooleanValue.True));
 
             foreach (SearchTerm searchTerm in searchTerms)
             {

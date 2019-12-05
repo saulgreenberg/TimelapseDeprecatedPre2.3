@@ -97,10 +97,10 @@ namespace Timelapse
                     this.QuickPasteDataControlsUnHighlight(e.QuickPasteEntry);
                     break;
                 case QuickPasteEventIdentifierEnum.Paste:
-                    this.QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnums.FlashPreview);
+                    this.QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnum.FlashPreview);
                     break;
                 case QuickPasteEventIdentifierEnum.ShortcutPaste:
-                    this.QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnums.FlashBackground);
+                    this.QuickPasteEntryPasteIntoDataControls(e.QuickPasteEntry, FlashEnum.FlashBackground);
                     break;
                 case QuickPasteEventIdentifierEnum.PositionChanged:
                     this.state.QuickPasteWindowPosition = this.quickPasteWindow.Position;
@@ -249,7 +249,7 @@ namespace Timelapse
         }
 
         // Quickpast the given entry into the data control
-        private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnums flash)
+        private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnum flash)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             int row = this.dataHandler.ImageCache.CurrentRow;
@@ -281,7 +281,7 @@ namespace Timelapse
                         }
 
                         control.SetContentAndTooltip(item.Value);
-                        if (flash == FlashEnums.FlashPreview)
+                        if (flash == FlashEnum.FlashPreview)
                         {
                             control.FlashPreviewControlValue();
                         }

@@ -41,7 +41,7 @@
         public const string In = " In ";
         public const string InnerJoin = " INNER JOIN ";
         public const string InsertInto = " INSERT INTO ";
-        public const string Integer = " INTEGER ";
+        public const string IntegerType = " INTEGER ";
         public const string IsNull = " IS NULL ";
         public const string LeftJoin = " LEFT JOIN ";
         public const string LessThanEqual = " <= ";
@@ -70,7 +70,7 @@
         public const string Semicolon = " ; ";
         public const string Set = " SET ";
         public const string Star = "*";
-        public const string String = " STRING ";
+        public const string StringType = " STRING ";
         public const string MasterTableList = "sqlite_master";
         public const string Real = " REAL ";
         public const string Text = "TEXT";

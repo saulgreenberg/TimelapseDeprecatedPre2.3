@@ -15,12 +15,11 @@ namespace Timelapse
         // Select sub-menu opening
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            int count = 0;
             this.FilePlayer_Stop(); // In case the FilePlayer is going
 
             this.MenuItemSelectMissingFiles.IsEnabled = true;
 
-            count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
+            int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
             this.MenuItemSelectFilesMarkedForDeletion.Header = String.Format("Files marked for d_eletion [{0}]", count);
             this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = count > 0;
 
@@ -123,7 +122,7 @@ namespace Timelapse
                 Timelapse.Dialog.MessageBox messageBox = new Timelapse.Dialog.MessageBox("No files in this folder", Application.Current.MainWindow);
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.Message.Reason = String.Format("While the folder {0} exists, no image data is associated with any files in it.", mi.Header);
-                messageBox.Message.Hint = String.Format("Perhaps you removed these files and its data during this session?", mi.Header);
+                messageBox.Message.Hint = String.Format("Perhaps you removed these files and its data during this session?");
                 messageBox.ShowDialog();
             }
             this.MenuItemSelectByFolder_ClearAllCheckmarks();

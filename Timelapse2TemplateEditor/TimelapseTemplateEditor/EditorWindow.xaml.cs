@@ -673,7 +673,7 @@ namespace Timelapse.Editor
             if (result == true)
             {
                 // Ensure that non-empty default values matches an entry on the edited choice menu
-                if (choiceControl.DefaultValue != String.Empty && choiceListDialog.Choices.Contains(choiceControl.DefaultValue) == false)
+                if (!string.IsNullOrEmpty(choiceControl.DefaultValue) && choiceListDialog.Choices.Contains(choiceControl.DefaultValue) == false)
                 {
                     this.ShowMessageBox_DefaultChoiceValuesMustMatchChoiceLists(choiceControl.DefaultValue);
                     choiceControl.DefaultValue = String.Empty;
