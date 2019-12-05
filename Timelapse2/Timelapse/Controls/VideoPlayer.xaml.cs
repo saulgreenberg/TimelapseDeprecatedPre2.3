@@ -86,7 +86,7 @@ namespace Timelapse.Controls
             // If the source and the thumbnail exists, show that as the background. This avoids the annoying black frames that otherwise appear for a few moments.
             string thumbnailpath = String.Empty;
             if (source != null)
-            { 
+            {
                 thumbnailpath = Path.Combine(Path.GetDirectoryName(source.LocalPath), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(source.LocalPath) + Constant.File.JpgFileExtension);
             }
 

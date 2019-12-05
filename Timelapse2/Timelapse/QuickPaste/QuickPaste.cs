@@ -131,7 +131,7 @@ namespace Timelapse.QuickPaste
                              }).ToList()
                 };
 
-           
+
             foreach (QuickPasteEntry quickPasteEntry in entries)
             {
                 quickPasteEntries.Add(quickPasteEntry);

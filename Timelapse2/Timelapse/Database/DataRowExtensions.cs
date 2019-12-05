@@ -21,7 +21,7 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
-            
+
             DateTime dateTime = (DateTime)row[column];
             Debug.Assert(dateTime.Kind == DateTimeKind.Utc, String.Format("Unexpected kind {0} for date time {1}.", dateTime.Kind, dateTime));
             return dateTime;
@@ -83,7 +83,7 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
-            
+
             return (long)row[column];
         }
 
@@ -91,7 +91,7 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
-            
+
             // throws ArgumentException if column is not present in table
             object field = row[columnName];
 
@@ -107,7 +107,7 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
-            
+
             TimeSpan utcOffset = TimeSpan.FromHours((double)row[column]);
             Debug.Assert(utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             return utcOffset;

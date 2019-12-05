@@ -87,14 +87,14 @@ namespace Timelapse.Controls
         public void SetDataEntryCallbacks(Dictionary<string, DataEntryControl> controlsByDataLabel)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(controlsByDataLabel, nameof(controlsByDataLabel)); 
+            ThrowIf.IsNullArgument(controlsByDataLabel, nameof(controlsByDataLabel));
 
             // Add data entry callbacks to all editable controls. When the user changes a file's attribute using a particular control,
             // the callback updates the matching field for that file in the database.
             foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
             {
 
-                
+
                 if (pair.Value.ContentReadOnly)
                 {
                     continue;
@@ -282,7 +282,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
-            
+
             bool checkForZero = control is DataEntryCounter;
             bool isFlag = control is DataEntryFlag;
 
@@ -340,7 +340,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
-            
+
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
 
@@ -375,7 +375,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
-            
+
             bool checkForZero = control is DataEntryCounter;
             int nearestRowWithCopyableValue = -1;
             for (int fileIndex = this.ImageCache.CurrentRow - 1; fileIndex >= 0; fileIndex--)
@@ -676,7 +676,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(sender, nameof(sender));
-            
+
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             control.SetContentAndTooltip(this.CopyFromLastNonEmptyValue(control));
         }
@@ -686,7 +686,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(sender, nameof(sender));
-            
+
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             this.CopyToAll(control);
         }
@@ -696,7 +696,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(sender, nameof(sender));
-            
+
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             this.CopyForward(control.DataLabel, control is DataEntryCounter);
         }
@@ -706,7 +706,7 @@ namespace Timelapse.Controls
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(sender, nameof(sender));
-            
+
             StackPanel stackPanel = (StackPanel)sender;
             DataEntryControl control = (DataEntryControl)stackPanel.Tag;
 

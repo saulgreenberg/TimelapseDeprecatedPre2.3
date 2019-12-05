@@ -142,7 +142,7 @@ namespace Timelapse.Controls
             Popup popup = new Popup
             {
                 Width = width,
-                Height = (control==null) ? Double.NaN : control.Height,
+                Height = (control == null) ? Double.NaN : control.Height,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Placement = PlacementMode.Center,

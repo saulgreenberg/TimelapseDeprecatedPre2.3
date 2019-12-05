@@ -332,7 +332,7 @@ namespace Timelapse.ExifTool
             }
 
             if (!File.Exists(path))
-            { 
+            {
                 return new ExifToolResponse(false, $"'{path}' not found");
             }
 
@@ -343,7 +343,7 @@ namespace Timelapse.ExifTool
             }
 
             if (overwriteOriginal)
-            { 
+            {
                 cmd.Append("-overwrite_original\n");
             }
 
@@ -359,7 +359,7 @@ namespace Timelapse.ExifTool
             var res = new Dictionary<string, string>();
 
             if (!File.Exists(path))
-            { 
+            {
                 return res;
             }
 
@@ -367,7 +367,7 @@ namespace Timelapse.ExifTool
             bool filter = tagsTable != null && tagsTable.Count > 0;
             var cmdRes = this.SendCommand(path);
             if (!cmdRes)
-            { 
+            {
                 return res;
             }
 
@@ -377,11 +377,11 @@ namespace Timelapse.ExifTool
                 Debug.Assert(kv.Length == 2, $"Can not parse line :'{s}'");
 
                 if (kv.Length != 2 || (!keepKeysWithEmptyValues && string.IsNullOrEmpty(kv[1])))
-                { 
+                {
                     continue;
                 }
                 if (filter && !tagsTable.ContainsKey(kv[0]))
-                { 
+                {
                     continue;
                 }
                 res[kv[0]] = kv[1];
@@ -394,7 +394,7 @@ namespace Timelapse.ExifTool
             var res = new List<string>();
 
             if (!File.Exists(path))
-            { 
+            {
                 return res;
             }
 
@@ -402,7 +402,7 @@ namespace Timelapse.ExifTool
             bool filter = tagsTable?.Count > 0;
             var cmdRes = this.SendCommand(path);
             if (!cmdRes)
-            { 
+            {
                 return res;
             }
             foreach (string s in cmdRes.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))

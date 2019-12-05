@@ -117,7 +117,7 @@ namespace Timelapse.Controls
         public void AutocompletionPopulateAllNotesWithFileTableValues(FileDatabase database)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(database, nameof(database)); 
+            ThrowIf.IsNullArgument(database, nameof(database));
 
             foreach (DataEntryControl control in this.Controls)
             {

@@ -35,7 +35,7 @@ namespace Timelapse
         // Layout Updated 
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
         {
-            if (this.DockingManager.FloatingWindows.Any() )
+            if (this.DockingManager.FloatingWindows.Any())
             {
                 this.DockingManager_FloatingDataEntryWindowTopmost(false);
             }

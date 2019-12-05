@@ -68,8 +68,8 @@ namespace Timelapse.Controls
                 includesEmptyChoice = true;
             }
             else
-            { 
-                choiceList =  control.GetChoices(out includesEmptyChoice);
+            {
+                choiceList = control.GetChoices(out includesEmptyChoice);
             }
             ComboBoxItem cbi;
             foreach (string choice in choiceList)

@@ -198,7 +198,7 @@ namespace Timelapse.Database
                         // The parse did not succeeded. The result contains the default enum value, ie, the same as returning default(Enum)
                         this.ImageQuality = default;
                     }
-                   // this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
+                    // this.ImageQuality = (FileSelectionEnum)Enum.Parse(typeof(FileSelectionEnum), value);
                     break;
                 default:
                     this.Row.SetField(dataLabel, value);
