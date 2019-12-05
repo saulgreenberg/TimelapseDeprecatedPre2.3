@@ -27,8 +27,8 @@ namespace Timelapse.Controls
         public void CreateControls(FileDatabase database, DataEntryHandler dataEntryPropagator)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(database, nameof(database));
             ThrowIf.IsNullArgument(dataEntryPropagator, nameof(dataEntryPropagator));
+            ThrowIf.IsNullArgument(database, nameof(database));
 
             // Depending on how the user interacts with the file import process image set loading can be aborted after controls are generated and then
             // another image set loaded.  Any existing controls therefore need to be cleared.

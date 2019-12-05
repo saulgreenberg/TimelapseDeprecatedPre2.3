@@ -15,7 +15,7 @@ namespace Timelapse.Dialog
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
-            ThrowIf.IsNullArgument(fileDatabase, nameof(imageToCorrect));
+            ThrowIf.IsNullArgument(imageToCorrect, nameof(imageToCorrect));
 
             this.InitializeComponent();
             this.displayingPreview = false;
