@@ -232,7 +232,7 @@ namespace Timelapse.Detection
                          Path.GetDirectoryName(imageFile));
 
                     DataRow[] rows = dataTable.Select(queryFileRelativePath);
-                    if (rows.Count() == 0)
+                    if (rows.Length == 0)
                     {
                         // Couldn't find the image. This could happen if that image and its data was deleted.
                         // This isn't a bug, as all we would do is skip that image.

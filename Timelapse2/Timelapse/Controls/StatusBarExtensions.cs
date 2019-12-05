@@ -41,8 +41,10 @@ namespace Timelapse.Controls
         public static void SetSort(this StatusBar statusBar, string primarySortTerm, bool primarySortTermIsAscending, string secondarySortTerm, bool secondarySortTermIsAscending)
         {
             StatusBarItem item = (StatusBarItem)statusBar.Items[9];
-            TextBlock message = new TextBlock();
-            message.Text = String.Empty;
+            TextBlock message = new TextBlock
+            {
+                Text = String.Empty
+            };
 
             // If there is no primary sort string, then we don't know what the sorting criteria is.
             // Note that this should not happen

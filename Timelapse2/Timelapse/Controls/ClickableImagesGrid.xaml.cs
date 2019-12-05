@@ -98,7 +98,7 @@ namespace Timelapse.Controls
         public bool Refresh(double desiredWidth, Size availableSize, bool forceUpdate, int state)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
-            if (this.FileTable == null || this.FileTable.Count() == 0 || desiredWidth == 0)
+            if (this.FileTable == null || !this.FileTable.Any() || desiredWidth == 0)
             {
                 return false;
             }
@@ -133,7 +133,7 @@ namespace Timelapse.Controls
             int rowNumber = 0;
             int fileTableIndex = this.FileTableStartIndex;
 
-            Double imageHeight = 0;
+            Double imageHeight;
             Double maxImageHeight = 0;
             Double combinedRowHeight = 0;
             ClickableImage ci;
@@ -383,7 +383,7 @@ namespace Timelapse.Controls
         public void SelectInitialCellOnly()
         {
             this.SelectNone(); // Clear the selections
-            if (this.clickableImagesList.Count() > 0)
+            if (this.clickableImagesList.Any())
             {
                 ClickableImage ci = this.clickableImagesList[0];
                 ci.IsSelected = true;
@@ -563,7 +563,7 @@ namespace Timelapse.Controls
             nextCell = new RowColumn(cell.X, cell.Y);
             // Try to go to the next column or wrap around to the next row if we are at the end of the row
             nextCell.Y++;
-            if (nextCell.Y == this.Grid.ColumnDefinitions.Count())
+            if (nextCell.Y == this.Grid.ColumnDefinitions.Count)
             {
                 // start a new row
                 nextCell.Y = 0;
@@ -587,7 +587,7 @@ namespace Timelapse.Controls
             if (previousCell.Y < 0)
             {
                 // go to the previous row
-                previousCell.Y = this.Grid.ColumnDefinitions.Count() - 1;
+                previousCell.Y = this.Grid.ColumnDefinitions.Count - 1;
                 previousCell.X--;
             }
 
@@ -605,9 +605,6 @@ namespace Timelapse.Controls
         // Given two cells, determine which one is the start vs the end cell
         private static void DetermineTopLeftBottomRightCells(RowColumn cell1, RowColumn cell2, out RowColumn startCell, out RowColumn endCell)
         {
-            startCell = new RowColumn();
-            endCell = new RowColumn();
-
             startCell = (cell1.X < cell2.X || (cell1.X == cell2.X && cell1.Y <= cell2.Y)) ? cell1 : cell2;
             endCell = Equals(startCell, cell1) ? cell2 : cell1;
         }

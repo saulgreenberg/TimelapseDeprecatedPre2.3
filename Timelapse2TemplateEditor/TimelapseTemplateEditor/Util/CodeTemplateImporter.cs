@@ -89,8 +89,8 @@ namespace Timelapse.Editor.Util
                     controlType = label; // If there is no data label, use the label's value into it. 
                 }
 
-                string dataLabel = Regex.Replace(controlType, @"\s+", String.Empty);    // remove any white space that may be there
-                dataLabel = Regex.Replace(controlType, "[^a-zA-Z0-9_]", String.Empty);  // only allow alphanumeric and '_'. 
+                // string dataLabel = Regex.Replace(controlType, @"\s+", String.Empty);    // remove any white space that may be there
+                string dataLabel = Regex.Replace(controlType, "[^a-zA-Z0-9_]", String.Empty);  // only allow alphanumeric and '_'. 
                 if (!dataLabel.Equals(controlType))
                 {
                     errorMessages.Add("illicit characters: '" + controlType + "' changed to '" + dataLabel + "'");

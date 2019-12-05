@@ -110,7 +110,7 @@ namespace Timelapse.Util
             // Note that this assumes there is just a single floating window (which should be the case for this configuration)
             if (layoutKey == Constant.AvalonLayoutTags.DataEntryFloating)
             {
-                if (timelapse.DockingManager.FloatingWindows.Count() > 0)
+                if (timelapse.DockingManager.FloatingWindows.Any())
                 {
                     foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
                     {

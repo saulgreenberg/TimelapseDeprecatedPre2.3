@@ -765,7 +765,7 @@ namespace Timelapse.Controls
             try
             {
                 // If there are no file ids, there is nothing to show
-                if (fileIds.Count() == 0)
+                if (fileIds.Count == 0)
                 {
                     return null;
                 }
@@ -781,7 +781,7 @@ namespace Timelapse.Controls
 
                 // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
                 // then return that as they all have a common value. Otherwise return an empty string.
-                for (int i = 1; i < fileIds.Count(); i++)
+                for (int i = 1; i < fileIds.Count; i++)
                 {
                     imageRow = this.FileDatabase.FileTable[fileIds[i]];
                     string new_contents = imageRow.GetValueDisplayString(dataLabel);
