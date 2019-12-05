@@ -18,12 +18,7 @@ namespace Timelapse.Images
         public ImageQuality(ImageRow image)
         {
             // Check the arguments for null 
-            if (image == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(image));
-            }
+            ThrowIf.IsNullArgument(image, nameof(image));
 
             this.Bitmap = null;
             this.DarkPixelRatioFound = 0;

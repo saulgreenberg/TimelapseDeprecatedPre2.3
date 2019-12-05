@@ -22,13 +22,7 @@ namespace Timelapse.Util
         public static bool AvalonLayout_TryLoad(this TimelapseWindow timelapse, string layoutKey)
         {
             // Check the arguments for null 
-            if (timelapse == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(timelapse));
-            }
-
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
 
             bool isResourceFile = false;
             string layoutName = String.Empty;
@@ -136,12 +130,8 @@ namespace Timelapse.Util
         public static bool AvalonLayout_TryLoadFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             // Check the arguments for null 
-            if (timelapse == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(timelapse));
-            }
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
             // Retrieve the layout configuration from the registry
             string layoutAsString = timelapse.state.ReadFromRegistryString(registryKey);
             if (string.IsNullOrEmpty(layoutAsString))
@@ -428,13 +418,8 @@ namespace Timelapse.Util
         public static bool AvalonLayout_TrySave(this TimelapseWindow timelapse, string registryKey)
         {
             // Check the arguments for null 
-            if (timelapse == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(timelapse));
-            }
-            
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
             // Serialization normally creates a stream, so we have to do a few contortions to transform that stream into a string  
             StringBuilder xmlText = new StringBuilder();
             XmlWriter xmlWriter = XmlWriter.Create(xmlText);
@@ -461,13 +446,8 @@ namespace Timelapse.Util
         public static void AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(this TimelapseWindow timelapse, string registryKey)
         {
             // Check the arguments for null 
-            if (timelapse == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(timelapse));
-            }
-            
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
             timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDock.WindowRegistryKeySuffix);
             timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
         }

@@ -15,14 +15,7 @@ namespace Timelapse.Util
         public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
         {
             // Check the arguments for null 
-            if (dataGrid == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dataGrid));
-                // Not sure if the following would work
-                // return null
-            }
+            ThrowIf.IsNullArgument(dataGrid, nameof(dataGrid));
 
             // Clear current sort descriptions
             dataGrid.Items.SortDescriptions.Clear();

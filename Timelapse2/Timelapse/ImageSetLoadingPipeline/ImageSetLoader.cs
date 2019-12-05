@@ -59,12 +59,7 @@ namespace Timelapse.ImageSetLoadingPipeline
         public ImageSetLoader(string imageSetFolderPath, string selectedFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
         {
             // Check the arguments for null 
-            if (dataHandler == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dataHandler));
-            }
+            ThrowIf.IsNullArgument(dataHandler, nameof(dataHandler));
 
             // Don't add a file if it already exists in the database.
             // Rather than check every file one by one to see if it exists in the database 

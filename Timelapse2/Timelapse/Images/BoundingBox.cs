@@ -33,12 +33,7 @@ namespace Timelapse.Images
         public BoundingBox(string coordinates, float confidence, string detectionCategory, string detectionLabel, List<KeyValuePair<string, string>> classifications)
         {
             // Check the arguments for null 
-            if (coordinates == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(coordinates));
-            }
+            ThrowIf.IsNullArgument(coordinates, nameof(coordinates));
 
             float[] coords = Array.ConvertAll(coordinates.Split(','), float.Parse);
             this.SetValues(coords[0], coords[1], coords[2], coords[3], confidence, detectionCategory, detectionLabel, classifications);

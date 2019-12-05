@@ -127,19 +127,8 @@ namespace Timelapse.Database
         public void SetSortTerm(SortTerm sortTerm1, SortTerm sortTerm2)
         {
             // Check the arguments for null 
-            if (sortTerm1 == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sortTerm1));
-            }
-            // Check the arguments for null 
-            if (sortTerm2 == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sortTerm2));
-            }
+            ThrowIf.IsNullArgument(sortTerm1, nameof(sortTerm1));
+            ThrowIf.IsNullArgument(sortTerm2, nameof(sortTerm2));
 
             this.SortTerms = String.Join(",", sortTerm1.DataLabel, sortTerm1.DisplayLabel, sortTerm1.ControlType, sortTerm1.IsAscending, sortTerm2.DataLabel, sortTerm2.DisplayLabel, sortTerm2.ControlType, sortTerm2.IsAscending);
         }

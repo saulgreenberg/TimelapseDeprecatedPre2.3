@@ -18,19 +18,8 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // Check the arguments for null 
-            if (timelapseState == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(timelapseState));
-            }
-            // Check the arguments for null 
-            if (markableCanvas == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(markableCanvas));
-            }
+            ThrowIf.IsNullArgument(timelapseState, nameof(timelapseState));
+            ThrowIf.IsNullArgument(markableCanvas, nameof(markableCanvas));
 
             this.markableCanvas = markableCanvas;
             this.timelapseState = timelapseState;

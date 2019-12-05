@@ -70,12 +70,8 @@ namespace Timelapse.Controls
         public static void Configure(DateTimePicker dateTimePicker, Nullable<DateTime> defaultValue)
         {
             // Check the arguments for null 
-            if (dateTimePicker == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dateTimePicker));
-            }
+            ThrowIf.IsNullArgument(dateTimePicker, nameof(dateTimePicker));
+
             dateTimePicker.AutoCloseCalendar = true;
             dateTimePicker.Format = DateTimeFormat.Custom;
             dateTimePicker.FormatString = Constant.Time.DateTimeDisplayFormat;
@@ -91,12 +87,8 @@ namespace Timelapse.Controls
         public void SetDataEntryCallbacks(Dictionary<string, DataEntryControl> controlsByDataLabel)
         {
             // Check the arguments for null 
-            if (controlsByDataLabel == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(controlsByDataLabel));
-            }
+            ThrowIf.IsNullArgument(controlsByDataLabel, nameof(controlsByDataLabel)); 
+
             // Add data entry callbacks to all editable controls. When the user changes a file's attribute using a particular control,
             // the callback updates the matching field for that file in the database.
             foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
@@ -289,12 +281,7 @@ namespace Timelapse.Controls
         public string CopyFromLastNonEmptyValue(DataEntryControl control)
         {
             // Check the arguments for null 
-            if (control == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(control));
-            }
+            ThrowIf.IsNullArgument(control, nameof(control));
             
             bool checkForZero = control is DataEntryCounter;
             bool isFlag = control is DataEntryFlag;
@@ -352,12 +339,7 @@ namespace Timelapse.Controls
         public void CopyToAll(DataEntryControl control)
         {
             // Check the arguments for null 
-            if (control == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(control));
-            }
+            ThrowIf.IsNullArgument(control, nameof(control));
             
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
@@ -392,12 +374,7 @@ namespace Timelapse.Controls
         public bool IsCopyFromLastNonEmptyValuePossible(DataEntryControl control)
         {
             // Check the arguments for null 
-            if (control == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(control));
-            }
+            ThrowIf.IsNullArgument(control, nameof(control));
             
             bool checkForZero = control is DataEntryCounter;
             int nearestRowWithCopyableValue = -1;
@@ -698,12 +675,7 @@ namespace Timelapse.Controls
         protected virtual void MenuItemPropagateFromLastValue_Click(object sender, RoutedEventArgs e)
         {
             // Check the arguments for null 
-            if (sender == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sender));
-            }
+            ThrowIf.IsNullArgument(sender, nameof(sender));
             
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             control.SetContentAndTooltip(this.CopyFromLastNonEmptyValue(control));
@@ -713,12 +685,7 @@ namespace Timelapse.Controls
         protected virtual void MenuItemCopyCurrentValue_Click(object sender, RoutedEventArgs e)
         {
             // Check the arguments for null 
-            if (sender == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sender));
-            }
+            ThrowIf.IsNullArgument(sender, nameof(sender));
             
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             this.CopyToAll(control);
@@ -728,12 +695,7 @@ namespace Timelapse.Controls
         protected virtual void MenuItemPropagateForward_Click(object sender, RoutedEventArgs e)
         {
             // Check the arguments for null 
-            if (sender == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sender));
-            }
+            ThrowIf.IsNullArgument(sender, nameof(sender));
             
             DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
             this.CopyForward(control.DataLabel, control is DataEntryCounter);
@@ -743,12 +705,7 @@ namespace Timelapse.Controls
         protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             // Check the arguments for null 
-            if (sender == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(sender));
-            }
+            ThrowIf.IsNullArgument(sender, nameof(sender));
             
             StackPanel stackPanel = (StackPanel)sender;
             DataEntryControl control = (DataEntryControl)stackPanel.Tag;

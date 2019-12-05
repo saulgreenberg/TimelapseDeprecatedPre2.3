@@ -20,19 +20,8 @@ namespace Timelapse.Dialog
         public DateTimeFixedCorrection(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)
         {
             // Check the arguments for null 
-            if (fileDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileDatabase));
-            }
-            // Check the arguments for null 
-            if (imageToCorrect == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(imageToCorrect));
-            }
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
+            ThrowIf.IsNullArgument(imageToCorrect, nameof(imageToCorrect));
 
             this.InitializeComponent();
             this.displayingPreview = false;

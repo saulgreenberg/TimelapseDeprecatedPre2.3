@@ -14,19 +14,8 @@ namespace Timelapse.Dialog
         public DateTimeSetTimeZone(FileDatabase fileDatabase, ImageRow imageToCorrect, Window owner)
         {
             // Check the arguments for null 
-            if (imageToCorrect == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(imageToCorrect));
-            }
-            // Check the arguments for null 
-            if (fileDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileDatabase));
-            }
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
+            ThrowIf.IsNullArgument(fileDatabase, nameof(imageToCorrect));
 
             this.InitializeComponent();
             this.displayingPreview = false;

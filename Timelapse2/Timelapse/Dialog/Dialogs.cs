@@ -19,7 +19,6 @@ namespace Timelapse.Dialog
             {
                 // this should not happen
                 TraceDebug.PrintStackTrace("Window's owner property is null. Is a set of it prior to calling ShowDialog() missing?", 1);
-                // throw new ArgumentNullException(nameof(window));
                 // Treat it as a no-op
                 return;
             }

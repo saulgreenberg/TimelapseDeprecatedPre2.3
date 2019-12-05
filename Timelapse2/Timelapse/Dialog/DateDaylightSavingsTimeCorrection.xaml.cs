@@ -17,19 +17,8 @@ namespace Timelapse.Dialog
         public DateDaylightSavingsTimeCorrection(FileDatabase database, FileTableEnumerator fileEnumerator, Window owner)
         {
             // Check the arguments for null 
-            if (database == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(database));
-            }
-            // Check the arguments for null 
-            if (fileEnumerator == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileEnumerator));
-            }
+            ThrowIf.IsNullArgument(database, nameof(database));
+            ThrowIf.IsNullArgument(fileEnumerator, nameof(fileEnumerator));
 
             this.InitializeComponent();
             this.currentImageRow = fileEnumerator.CurrentRow;

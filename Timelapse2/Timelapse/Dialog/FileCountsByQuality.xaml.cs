@@ -20,12 +20,7 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             // Check the arguments for null 
-            if (counts == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(counts));
-            }
+            ThrowIf.IsNullArgument(counts, nameof(counts));
 
             // Fill in the counts
             int ok = counts[FileSelectionEnum.Ok];

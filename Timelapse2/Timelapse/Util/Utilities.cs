@@ -48,19 +48,8 @@ namespace Timelapse.Util
         public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
         {
             // Check the arguments for null 
-            if (dictionary1 == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dictionary1));
-            }
-            // Check the arguments for null 
-            if (dictionary2 == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dictionary2));
-            }
+            ThrowIf.IsNullArgument(dictionary1, nameof(dictionary1));
+            ThrowIf.IsNullArgument(dictionary2, nameof(dictionary2));
 
             Dictionary<string, string> dictionaryDifferences = new Dictionary<string, string>();
             List<string> differencesByKeys = dictionary1.Keys.Except(dictionary2.Keys).ToList();
@@ -236,12 +225,7 @@ namespace Timelapse.Util
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
         {
             // Check the arguments for null 
-            if (dragEvent == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dragEvent));
-            }
+            ThrowIf.IsNullArgument(dragEvent, nameof(dragEvent));
 
             if (Utilities.IsSingleTemplateFileDrag(dragEvent, out string templateDatabaseFilePath))
             {
@@ -257,12 +241,7 @@ namespace Timelapse.Util
         public static void ShowExceptionReportingDialog(string programName, UnhandledExceptionEventArgs e, Window owner)
         {
             // Check the arguments for null 
-            if (e == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(e));
-            }
+            ThrowIf.IsNullArgument(e, nameof(e));
 
             // once .NET 4.5+ is used it's meaningful to also report the .NET release version
             // See https://msdn.microsoft.com/en-us/library/hh925568.aspx.

@@ -43,12 +43,7 @@ namespace Timelapse.Util
         public static bool AreRequiredBinariesPresent(string applicationName, Assembly executingAssembly)
         {
             // Check the arguments for null 
-            if (executingAssembly == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(executingAssembly));
-            }
+            ThrowIf.IsNullArgument(executingAssembly, nameof(executingAssembly));
 
             string directoryContainingCurrentExecutable = Path.GetDirectoryName(executingAssembly.Location);
             foreach (string binaryName in Dependencies.CommonRequiredBinaries)

@@ -29,17 +29,12 @@ namespace Timelapse.Dialog
 
         public TemplateChangedAndUpdate(TemplateSyncResults templateSyncResults, Window owner)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
+
             this.InitializeComponent();
             this.TemplateSyncResults = templateSyncResults;
             this.Owner = owner;
-
-            // Check the arguments for null 
-            if (templateSyncResults == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(templateSyncResults));
-            }
 
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
             if (this.TemplateSyncResults.SyncRequiredAsDataLabelsDiffer)

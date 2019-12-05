@@ -36,12 +36,7 @@ namespace Timelapse.Dialog
         public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, TimelapseWindow owner)
         {
             // Check the arguments for null 
-            if (state == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(state));
-            }
+            ThrowIf.IsNullArgument(state, nameof(state));
 
             this.InitializeComponent();
             this.Owner = owner;

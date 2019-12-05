@@ -397,20 +397,8 @@ namespace Timelapse.Database
         protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Check the arguments for null 
-            if (templateDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(templateDatabase));
-            }
-
-            // Check the arguments for null 
-            if (templateSyncResults == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(templateSyncResults));
-            }
+            ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
+            ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
 
             // perform TemplateTable initializations and migrations, then check for synchronization issues
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
@@ -704,20 +692,8 @@ namespace Timelapse.Database
         protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Check the arguments for null 
-            if (templateDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(templateDatabase));
-            }
-
-            // Check the arguments for null 
-            if (templateSyncResults == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(templateSyncResults));
-            }
+            ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
+            ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
             
             // Perform TemplateTable initializations.
             base.OnExistingDatabaseOpened(templateDatabase, null);
@@ -1074,12 +1050,7 @@ namespace Timelapse.Database
         public bool GetOrCreateFile(FileInfo fileInfo, out ImageRow file)
         {
             // Check the arguments for null 
-            if (fileInfo == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileInfo));
-            }
+            ThrowIf.IsNullArgument(fileInfo, nameof(fileInfo));
 
             // Path.GetFileName strips the last folder of the folder path,which in this case gives us the root folder..
             string initialRootFolderName = Path.GetFileName(this.FolderPath);
@@ -1294,12 +1265,7 @@ namespace Timelapse.Database
         public void UpdateFiles(ImageRow valueSource, string dataLabel, int fromIndex, int toIndex)
         {
             // Check the arguments for null 
-            if (valueSource == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(valueSource));
-            }
+            ThrowIf.IsNullArgument(valueSource, nameof(valueSource));
 
             if (fromIndex < 0)
             {
@@ -1333,12 +1299,7 @@ namespace Timelapse.Database
         public void UpdateFiles(List<int> fileIndexes, string dataLabel, string value)
         {
             // Check the arguments for null 
-            if (fileIndexes == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileIndexes));
-            }
+            ThrowIf.IsNullArgument(fileIndexes, nameof(fileIndexes));
 
             if (fileIndexes.Count == 0)
             {
@@ -1512,12 +1473,8 @@ namespace Timelapse.Database
         public void DeleteFilesAndMarkers(List<long> fileIDs)
         {
             // Check the arguments for null 
-            if (fileIDs == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileIDs));
-            }
+            ThrowIf.IsNullArgument(fileIDs, nameof(fileIDs));
+
             if (fileIDs.Count < 1)
             {
                 // nothing to do
@@ -1846,12 +1803,7 @@ namespace Timelapse.Database
         public void SetMarkerPositions(long imageID, MarkersForCounter markersForCounter)
         {
             // Check the arguments for null 
-            if (markersForCounter == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(markersForCounter));
-            }
+            ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
 
             // Find the current row number
             MarkerRow marker = this.Markers.Find(imageID);
@@ -1893,12 +1845,7 @@ namespace Timelapse.Database
         public void SyncMarkerToDatabase(MarkerRow marker)
         {
             // Check the arguments for null 
-            if (marker == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(marker));
-            }
+            ThrowIf.IsNullArgument(marker, nameof(marker));
 
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DBTables.Markers, marker.GetColumnTuples());
@@ -1989,12 +1936,7 @@ namespace Timelapse.Database
         public bool PopulateDetectionTables(string path, List<string> dbMissingFolders)
         {
             // Check the arguments for null 
-            if (dbMissingFolders == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(dbMissingFolders));
-            }
+            ThrowIf.IsNullArgument(dbMissingFolders, nameof(dbMissingFolders));
 
             if (File.Exists(path) == false)
             {

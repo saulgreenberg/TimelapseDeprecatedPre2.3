@@ -14,23 +14,12 @@ namespace Timelapse.Dialog
         public bool UseNewTemplate { get; private set; }
         public TemplateSynchronization(List<string> errors, List<string> warnings, Window owner)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(errors, nameof(errors));
+            ThrowIf.IsNullArgument(warnings, nameof(warnings));
+
             this.InitializeComponent();
             this.Owner = owner;
-
-            // Check the arguments for null 
-            if (errors == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(errors));
-            }
-            // Check the arguments for null 
-            if (warnings == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(warnings));
-            }
 
             string messageUsingNewTemplate = Environment.NewLine + " o 'Open using New Template':   uses the new template, but will have the issues below.";
             string messageUsingOldTemplate = Environment.NewLine + " o Open using Old Template:'   ignores the new template, where it uses the original version of your template.";

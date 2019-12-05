@@ -20,12 +20,7 @@ namespace Timelapse.Database
         public static DateTime GetDateTimeField(this DataRow row, string column)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             
             DateTime dateTime = (DateTime)row[column];
             Debug.Assert(dateTime.Kind == DateTimeKind.Utc, String.Format("Unexpected kind {0} for date time {1}.", dateTime.Kind, dateTime));
@@ -87,12 +82,7 @@ namespace Timelapse.Database
         public static long GetLongField(this DataRow row, string column)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             
             return (long)row[column];
         }
@@ -100,12 +90,7 @@ namespace Timelapse.Database
         public static string GetStringField(this DataRow row, string columnName)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             
             // throws ArgumentException if column is not present in table
             object field = row[columnName];
@@ -121,12 +106,7 @@ namespace Timelapse.Database
         public static TimeSpan GetUtcOffsetField(this DataRow row, string column)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             
             TimeSpan utcOffset = TimeSpan.FromHours((double)row[column]);
             Debug.Assert(utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
@@ -136,26 +116,16 @@ namespace Timelapse.Database
         public static void SetField(this DataRow row, string column, bool value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
-            
+            ThrowIf.IsNullArgument(row, nameof(row));
+
             row[column] = String.Format("{0}", value).ToLowerInvariant();
         }
 
         public static void SetField(this DataRow row, string column, DateTime value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
-            
+            ThrowIf.IsNullArgument(row, nameof(row));
+
             if (value.Kind != DateTimeKind.Utc)
             {
                 throw new ArgumentOutOfRangeException(nameof(value));
@@ -166,36 +136,22 @@ namespace Timelapse.Database
         public static void SetField(this DataRow row, string column, int value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             row[column] = value.ToString();
         }
 
         public static void SetField(this DataRow row, string column, long value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             row[column] = value;
         }
 
         public static void SetField(this DataRow row, string column, string value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
+
             row[column] = value;
         }
 
@@ -207,12 +163,8 @@ namespace Timelapse.Database
         public static void SetUtcOffsetField(this DataRow row, string column, TimeSpan value)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
+
             Debug.Assert(value.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             row[column] = value.TotalHours;
         }

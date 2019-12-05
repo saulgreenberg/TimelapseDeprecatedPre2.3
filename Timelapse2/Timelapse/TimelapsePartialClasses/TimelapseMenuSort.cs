@@ -18,6 +18,7 @@ namespace Timelapse
         // Sort callback: handles all standard menu sorting items
         private void MenuItemSort_Click(object sender, RoutedEventArgs e)
         {
+
             // While this should never happen, don't do anything if we don's have any data
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {

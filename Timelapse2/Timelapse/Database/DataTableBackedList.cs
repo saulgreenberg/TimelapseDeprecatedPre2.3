@@ -92,12 +92,7 @@ namespace Timelapse.Database
         public int IndexOf(DataRowBackedObject row)
         {
             // Check the arguments for null 
-            if (row == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(row));
-            }
+            ThrowIf.IsNullArgument(row, nameof(row));
             return row.GetIndex(this.DataTable);
         }
 

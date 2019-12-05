@@ -54,12 +54,7 @@ namespace Timelapse
         public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
         {
             // Check the arguments for null 
-            if (currentKey == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(currentKey));
-            }
+            ThrowIf.IsNullArgument(currentKey, nameof(currentKey));
 
             // First, try to interpret key as a possible valid quickpaste shortcut key. 
             // If so, send it to the Quickpaste window and mark the event as handled.

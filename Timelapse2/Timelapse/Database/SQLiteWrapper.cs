@@ -41,22 +41,17 @@ namespace Timelapse.Database
         /// <summary>
         /// A simplified table creation routine. It expects the column definitions to be supplied
         /// as a column_name, data type key value pair. 
+        // The table creation syntax supported is:
+        // CREATE TABLE table_name (
+        //     column1name datatype,       e.g.,   Id INT PRIMARY KEY OT NULL,
+        //     column2name datatype,               NAME TEXT NOT NULL,
+        //     ...                                 ...
+        //     columnNname datatype);              SALARY REAL);
         /// </summary>
         public void CreateTable(string tableName, List<ColumnDefinition> columnDefinitions)
         {
-            // The table creation syntax supported is:
-            // CREATE TABLE table_name (
-            //     column1name datatype,       e.g.,   Id INT PRIMARY KEY OT NULL,
-            //     column2name datatype,               NAME TEXT NOT NULL,
-            //     ...                                 ...
-            //     columnNname datatype);              SALARY REAL);
             // Check the arguments for null 
-            if (columnDefinitions == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnDefinitions));
-            }
+            ThrowIf.IsNullArgument(columnDefinitions, nameof(columnDefinitions));
 
             string query = Sql.CreateTable + tableName + Sql.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (
             foreach (ColumnDefinition column in columnDefinitions)
@@ -123,20 +118,16 @@ namespace Timelapse.Database
             }
         }
 
+        // Construct each individual query in the form 
+        // INSERT INTO table_name
+        //      colname1, colname12, ... colnameN VALUES
+        //      ('value1', 'value2', ... 'valueN');
         public void Insert(string tableName, List<List<ColumnTuple>> insertionStatements)
         {
             // Check the arguments for null 
-            if (insertionStatements == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(insertionStatements));
-            }
+            ThrowIf.IsNullArgument(insertionStatements, nameof(insertionStatements));
 
-            // Construct each individual query in the form 
-            // INSERT INTO table_name
-            //      colname1, colname12, ... colnameN VALUES
-            //      ('value1', 'value2', ... 'valueN');
+
             List<string> queries = new List<string>();
             foreach (List<ColumnTuple> columnsToUpdate in insertionStatements)
             {
@@ -275,23 +266,18 @@ namespace Timelapse.Database
         /// <summary>
         /// Given a list of complete queries, wrap up to 500 of them in a BEGIN/END statement so they are all executed in one go for efficiency
         /// Continue for the next up to 500, and so on.
+        // BEGIN
+        //      query1
+        //      query2
+        //      ...
+        //      queryn
+        // END
         /// </summary>
         public void ExecuteNonQueryWrappedInBeginEnd(List<string> statements)
         {
             // Check the arguments for null 
-            if (statements == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(statements));
-            }
+            ThrowIf.IsNullArgument(statements, nameof(statements));
 
-            // BEGIN
-            //      query1
-            //      query2
-            //      ...
-            //      queryn
-            // END
             const int MaxStatementCount = 50000;
             string mostRecentStatement = null;
             try
@@ -380,12 +366,8 @@ namespace Timelapse.Database
         public void TrimWhitespace(string tableName, List<string> columnNames)
         {
             // Check the arguments for null 
-            if (columnNames == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnNames));
-            }
+            ThrowIf.IsNullArgument(columnNames, nameof(columnNames));
+
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
             {
@@ -408,12 +390,7 @@ namespace Timelapse.Database
         public void ChangeNullToEmptyString(string tableName, List<string> columnNames)
         {
             // Check the arguments for null 
-            if (columnNames == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnNames));
-            }
+            ThrowIf.IsNullArgument(columnNames, nameof(columnNames));
 
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
@@ -427,12 +404,8 @@ namespace Timelapse.Database
         public void Update(string tableName, List<ColumnTuplesWithWhere> updateQueryList)
         {
             // Check the arguments for null 
-            if (updateQueryList == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(updateQueryList));
-            }
+            ThrowIf.IsNullArgument(updateQueryList, nameof(updateQueryList));
+
             List<string> queries = new List<string>();
             foreach (ColumnTuplesWithWhere updateQuery in updateQueryList)
             {
@@ -451,39 +424,29 @@ namespace Timelapse.Database
         /// </summary>
         /// <param name="tableName">The table to update.</param>
         /// <param name="columnsToUpdate">The column names and their new values.</param>
+        // UPDATE table_name SET 
+        // colname1 = value1, 
+        // colname2 = value2,
+        // ...
+        // colnameN = valueN
+        // WHERE
+        // <condition> e.g., ID=1;
         public void Update(string tableName, ColumnTuplesWithWhere columnsToUpdate)
         {
             // Check the arguments for null 
-            if (columnsToUpdate == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnsToUpdate));
-            }
+            ThrowIf.IsNullArgument(columnsToUpdate, nameof(columnsToUpdate));
 
-            // UPDATE table_name SET 
-            // colname1 = value1, 
-            // colname2 = value2,
-            // ...
-            // colnameN = valueN
-            // WHERE
-            // <condition> e.g., ID=1;
             string query = CreateUpdateQuery(tableName, columnsToUpdate);
             this.ExecuteNonQuery(query);
         }
 
+        // UPDATE table_name SET 
+        // columnname = value, 
         public void Update(string tableName, ColumnTuple columnToUpdate)
         {
             // Check the arguments for null 
-            if (columnToUpdate == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnToUpdate));
-            }
+            ThrowIf.IsNullArgument(columnToUpdate, nameof(columnToUpdate));
 
-            // UPDATE table_name SET 
-            // columnname = value, 
             string query = Sql.Update + tableName + Sql.Set;
             query += String.Format(" {0} = {1}", columnToUpdate.Name, Utilities.QuoteForSql(columnToUpdate.Value));
             this.ExecuteNonQuery(query);
@@ -548,12 +511,7 @@ namespace Timelapse.Database
         public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
         {
             // Check the arguments for null 
-            if (columnDefinition == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnDefinition));
-            }
+            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
 
             this.ExecuteNonQuery(Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition.ToString());
         }
@@ -582,12 +540,7 @@ namespace Timelapse.Database
         public void Delete(string tableName, List<string> whereClauses)
         {
             // Check the arguments for null 
-            if (whereClauses == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(whereClauses));
-            }
+            ThrowIf.IsNullArgument(whereClauses, nameof(whereClauses));
 
             List<string> queries = new List<string>();                      // A list of SQL queries
 
@@ -663,12 +616,7 @@ namespace Timelapse.Database
         public void AddColumnToTable(string tableName, int columnNumber, ColumnDefinition columnDefinition)
         {
             // Check the arguments for null 
-            if (columnDefinition == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnDefinition));
-            }
+            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
 
             try
             {
@@ -728,12 +676,7 @@ namespace Timelapse.Database
         public bool DeleteColumn(string sourceTable, string columnName)
         {
             // Check the arguments for null 
-            if (columnName == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(columnName));
-            }
+            ThrowIf.IsNullArgument(columnName, nameof(columnName));
 
             try
             {

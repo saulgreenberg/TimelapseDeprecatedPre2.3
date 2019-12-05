@@ -76,14 +76,8 @@ namespace Timelapse.QuickPaste
         public static List<QuickPasteEntry> DeleteQuickPasteEntry(List<QuickPasteEntry> quickPasteEntries, QuickPasteEntry quickPasteEntry)
         {
             // Check the arguments for null 
-            if (quickPasteEntries == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(quickPasteEntries));
-                // Perhaps we should just return an empty QuickPasteEntry list instead, for example:
-                // return new List<QuickPasteEntry>()
-            }
+            ThrowIf.IsNullArgument(quickPasteEntries, nameof(quickPasteEntries));
+
             quickPasteEntries.RemoveAll(x => x.Equals(quickPasteEntry));
             return quickPasteEntries;
         }

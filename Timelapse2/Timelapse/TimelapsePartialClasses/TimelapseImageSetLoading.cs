@@ -207,6 +207,7 @@ namespace Timelapse
                 // this should not happen
                 // System.Diagnostics.Debug.Print("The fielDatabase was null and it shouldn't be");
                 TraceDebug.PrintStackTrace(1);
+                // No-op
                 return;
             }
             List<object> allRootFolderPaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.Folder);
@@ -248,12 +249,7 @@ namespace Timelapse
         public void CheckAndCorrectForMissingFolders(FileDatabase fileDatabase)
         {
             // Check the arguments for null 
-            if (fileDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileDatabase));
-            }
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
 
             List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             List<string> missingRelativePaths = new List<string>();

@@ -15,12 +15,8 @@ namespace Timelapse.Database
         public static List<SortTerm> GetSortTerms(List<SearchTerm> searchTerms)
         {
             // Check the arguments for null 
-            if (searchTerms == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(searchTerms));
-            }
+            ThrowIf.IsNullArgument(searchTerms, nameof(searchTerms));
+
             List<SortTerm> sortTerms = new List<SortTerm>();
 
             // Constraints. 

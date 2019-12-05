@@ -48,18 +48,9 @@ namespace Timelapse.Controls
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
             // Check the arguments for null 
-            if (control == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(control));
-            }
-            if (styleProvider == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(styleProvider));
-            }
+            ThrowIf.IsNullArgument(control, nameof(control));
+            ThrowIf.IsNullArgument(styleProvider, nameof(styleProvider));
+
             // populate properties from database definition of control
             // this.Content and Tooltip can't be set, however, as the caller hasn't instantiated the content control yet
             this.Copyable = control.Copyable;
@@ -134,6 +125,10 @@ namespace Timelapse.Controls
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) :
             base(control, styleProvider)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(control, nameof(control));
+            ThrowIf.IsNullArgument(styleProvider, nameof(styleProvider));
+
             this.ContentControl = new TContent()
             {
                 IsTabStop = true
