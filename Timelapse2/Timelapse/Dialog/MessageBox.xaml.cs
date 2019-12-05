@@ -17,14 +17,9 @@ namespace Timelapse.Dialog
                 throw new ArgumentException("A title must be specified for the message box.", nameof(title));
             }
 
-            if (owner == null)
-            {
-                throw new ArgumentNullException(nameof(owner));
-            }
-
             this.InitializeComponent();
             this.Message.Title = title;
-            this.Owner = owner;
+            this.Owner = owner ?? throw new ArgumentNullException(nameof(owner));
             this.Title = title;
 
             switch (buttonType)
