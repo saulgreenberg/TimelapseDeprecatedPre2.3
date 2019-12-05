@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -17,6 +18,14 @@ namespace Timelapse.Dialog
         {
             this.InitializeComponent();
             this.Owner = owner;
+
+            // Check the arguments for null 
+            if (counts == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(counts));
+            }
 
             // Fill in the counts
             int ok = counts[FileSelectionEnum.Ok];

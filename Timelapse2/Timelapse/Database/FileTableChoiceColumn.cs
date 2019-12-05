@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -10,6 +12,14 @@ namespace Timelapse.Database
         public FileTableChoiceColumn(ControlRow control)
             : base(control)
         {
+            // Check the arguments for null 
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(control));
+            }
+
             this.choices = control.GetChoices(false);
             this.defaultValue = control.DefaultValue;
         }

@@ -26,6 +26,21 @@ namespace Timelapse.Controls
 
         public void CreateControls(FileDatabase database, DataEntryHandler dataEntryPropagator)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
+            // Check the arguments for null 
+            if (dataEntryPropagator == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dataEntryPropagator));
+            }
+
             // Depending on how the user interacts with the file import process image set loading can be aborted after controls are generated and then
             // another image set loaded.  Any existing controls therefore need to be cleared.
             this.Controls.Clear();
@@ -110,6 +125,14 @@ namespace Timelapse.Controls
 
         public void AutocompletionPopulateAllNotesWithFileTableValues(FileDatabase database)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
+
             foreach (DataEntryControl control in this.Controls)
             {
                 // no point in autocompleting if its read-only

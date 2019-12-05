@@ -9,6 +9,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
@@ -46,6 +47,19 @@ namespace Timelapse.Controls
 
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
+            // Check the arguments for null 
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(control));
+            }
+            if (styleProvider == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(styleProvider));
+            }
             // populate properties from database definition of control
             // this.Content and Tooltip can't be set, however, as the caller hasn't instantiated the content control yet
             this.Copyable = control.Copyable;
@@ -190,12 +204,14 @@ namespace Timelapse.Controls
 
         protected virtual Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
         {
-            // Creatre a textblock and align it so the text is exactly at the same position as the control's text
+
+            // Create a textblock and align it so the text is exactly at the same position as the control's text
+            // Note that the null check for control (which should not happen) gives it an auto value 'just in case'
             TextBlock popupText = new TextBlock
             {
                 Text = String.Empty,
                 Width = width,
-                Height = control.Height,
+                Height = (control == null) ? Double.NaN : control.Height,
                 Padding = padding,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
@@ -214,7 +230,7 @@ namespace Timelapse.Controls
             Popup popup = new Popup
             {
                 Width = width,
-                Height = control.Height,
+                Height = (control == null) ? Double.NaN : control.Height,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Placement = PlacementMode.Center,

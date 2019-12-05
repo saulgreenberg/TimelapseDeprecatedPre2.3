@@ -51,6 +51,14 @@ namespace Timelapse.Dialog
         #region Constructors and Loading
         public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
+
             this.InitializeComponent();
 
             this.database = database;

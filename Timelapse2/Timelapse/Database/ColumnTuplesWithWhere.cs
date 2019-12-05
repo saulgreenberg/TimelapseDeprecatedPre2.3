@@ -58,11 +58,26 @@ namespace Timelapse.Database
 
         public void SetWhere(ColumnTuple columnTuple, string field)
         {
+            // Check the arguments for null 
+            if (columnTuple == null)
+            {
+                // this should not happen. But if it does, maybe modify it to set where to String.Empty? 
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnTuple));
+            }
+
             this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(field));
         }
 
         public void SetWhereNotEquals(ColumnTuple columnTuple, string field)
         {
+            // Check the arguments for null 
+            if (columnTuple == null)
+            {
+                // this should not happen. But if it does, maybe modify it to set where to String.Empty? 
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnTuple));
+            }
             this.Where = String.Format("{0} <> {1}", columnTuple.Name, Utilities.QuoteForSql(field));
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -33,6 +34,14 @@ namespace Timelapse.Database
 
         public ImageRow NewRow(FileInfo file)
         {
+            // Check the arguments for null 
+            if (file == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(file));
+            }
+
             DataRow row = this.DataTable.NewRow();
             row[Constant.DatabaseColumn.File] = file.Name;
             return FileTable.CreateRow(row);

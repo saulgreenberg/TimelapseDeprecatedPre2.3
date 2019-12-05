@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Timelapse.Database;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -31,6 +32,14 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
             this.TemplateSyncResults = templateSyncResults;
             this.Owner = owner;
+
+            // Check the arguments for null 
+            if (templateSyncResults == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateSyncResults));
+            }
 
             // Build the interface showing datalabels in terms of whether they can be added and renamed, added only, or deleted only.
             if (this.TemplateSyncResults.SyncRequiredAsDataLabelsDiffer)

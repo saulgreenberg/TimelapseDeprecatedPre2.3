@@ -213,6 +213,14 @@ namespace Timelapse.Database
 
         public void RemoveUserDefinedControl(ControlRow controlToRemove)
         {
+            // Check the arguments for null 
+            if (controlToRemove == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(controlToRemove));
+            }
+
             this.CreateBackupIfNeeded();
 
             string controlType;
@@ -276,6 +284,14 @@ namespace Timelapse.Database
 
         public void SyncControlToDatabase(ControlRow control)
         {
+            // Check the arguments for null 
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(control));
+            }
+
             this.CreateBackupIfNeeded();
             this.Database.Update(Constant.DBTables.Controls, control.GetColumnTuples());
 
@@ -342,6 +358,14 @@ namespace Timelapse.Database
 
         public void UpdateDisplayOrder(string orderColumnName, Dictionary<string, long> newOrderByDataLabel)
         {
+            // Check the arguments for null 
+            if (newOrderByDataLabel == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(newOrderByDataLabel));
+            }
+
             // Utilities.PrintMethodName();
 
             // argument validation. Only ControlOrder and SpreadsheetOrder are orderable columns

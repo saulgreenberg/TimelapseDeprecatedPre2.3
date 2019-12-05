@@ -12,6 +12,14 @@ namespace Timelapse.Util
         public static List<FileInfo> GetAllImageAndVideoFilesInFolders(IEnumerable<string> folderPaths)
         {
             List<FileInfo> fileInfoList = new List<FileInfo>();
+            if (folderPaths == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(folderPaths));
+                // Not sure if this will work, but worth a shot
+                return fileInfoList;
+            }
             foreach (string folderPath in folderPaths)
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
@@ -36,6 +44,16 @@ namespace Timelapse.Util
         }
         private static void GetAllImageAndVideoFilesInFolderAndSubfolders(string rootFolderPath, List<FileInfo> fileInfoList, int recursionLevel)
         {
+            // Check the arguments for null 
+            if (fileInfoList == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // Not show what happens if we return with a null fileInfoList, but its worth a shot
+                // throw new ArgumentNullException(nameof(control));
+                return;
+            }
+
             int nextRecursionLevel = recursionLevel + 1;
             if (!Directory.Exists(rootFolderPath))
             {
@@ -79,6 +97,16 @@ namespace Timelapse.Util
         // Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
         public static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths)
         {
+            // Check the arguments for null 
+            if (folderPaths == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(folderPaths));
+                // Not sure what happens if we have a null folderPaths, but we may as well try it.
+                return;
+            }
+
             if (!Directory.Exists(folderRoot))
             {
                 return;

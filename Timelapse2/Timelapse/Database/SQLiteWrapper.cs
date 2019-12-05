@@ -50,6 +50,14 @@ namespace Timelapse.Database
             //     column2name datatype,               NAME TEXT NOT NULL,
             //     ...                                 ...
             //     columnNname datatype);              SALARY REAL);
+            // Check the arguments for null 
+            if (columnDefinitions == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnDefinitions));
+            }
+
             string query = Sql.CreateTable + tableName + Sql.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (
             foreach (ColumnDefinition column in columnDefinitions)
             {
@@ -117,6 +125,14 @@ namespace Timelapse.Database
 
         public void Insert(string tableName, List<List<ColumnTuple>> insertionStatements)
         {
+            // Check the arguments for null 
+            if (insertionStatements == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(insertionStatements));
+            }
+
             // Construct each individual query in the form 
             // INSERT INTO table_name
             //      colname1, colname12, ... colnameN VALUES
@@ -262,6 +278,14 @@ namespace Timelapse.Database
         /// </summary>
         public void ExecuteNonQueryWrappedInBeginEnd(List<string> statements)
         {
+            // Check the arguments for null 
+            if (statements == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(statements));
+            }
+
             // BEGIN
             //      query1
             //      query2
@@ -355,6 +379,13 @@ namespace Timelapse.Database
         // Note: this is needed as earlier versions didn't trim the white space from the data. This allows us to trim it in the database after the fact.
         public void TrimWhitespace(string tableName, List<string> columnNames)
         {
+            // Check the arguments for null 
+            if (columnNames == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnNames));
+            }
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
             {
@@ -376,6 +407,14 @@ namespace Timelapse.Database
         // As I don't handle nulls well, its possible that this could introduce crashes.
         public void ChangeNullToEmptyString(string tableName, List<string> columnNames)
         {
+            // Check the arguments for null 
+            if (columnNames == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnNames));
+            }
+
             List<string> queries = new List<string>();
             foreach (string columnName in columnNames)
             {
@@ -387,6 +426,13 @@ namespace Timelapse.Database
 
         public void Update(string tableName, List<ColumnTuplesWithWhere> updateQueryList)
         {
+            // Check the arguments for null 
+            if (updateQueryList == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(updateQueryList));
+            }
             List<string> queries = new List<string>();
             foreach (ColumnTuplesWithWhere updateQuery in updateQueryList)
             {
@@ -407,6 +453,14 @@ namespace Timelapse.Database
         /// <param name="columnsToUpdate">The column names and their new values.</param>
         public void Update(string tableName, ColumnTuplesWithWhere columnsToUpdate)
         {
+            // Check the arguments for null 
+            if (columnsToUpdate == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnsToUpdate));
+            }
+
             // UPDATE table_name SET 
             // colname1 = value1, 
             // colname2 = value2,
@@ -420,6 +474,14 @@ namespace Timelapse.Database
 
         public void Update(string tableName, ColumnTuple columnToUpdate)
         {
+            // Check the arguments for null 
+            if (columnToUpdate == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnToUpdate));
+            }
+
             // UPDATE table_name SET 
             // columnname = value, 
             string query = Sql.Update + tableName + Sql.Set;
@@ -485,6 +547,14 @@ namespace Timelapse.Database
         // It assumes that the value, if not empty, should be treated as the default value for that column
         public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
         {
+            // Check the arguments for null 
+            if (columnDefinition == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnDefinition));
+            }
+
             this.ExecuteNonQuery(Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition.ToString());
         }
 
@@ -511,6 +581,14 @@ namespace Timelapse.Database
         /// <param name="whereClauses">The where clauses for the row to delete (e.g., ID=1 ID=3 etc</param>
         public void Delete(string tableName, List<string> whereClauses)
         {
+            // Check the arguments for null 
+            if (whereClauses == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(whereClauses));
+            }
+
             List<string> queries = new List<string>();                      // A list of SQL queries
 
             // Construct a list containing queries of the form DELETE FROM table_name WHERE where
@@ -584,6 +662,14 @@ namespace Timelapse.Database
         /// </summary>
         public void AddColumnToTable(string tableName, int columnNumber, ColumnDefinition columnDefinition)
         {
+            // Check the arguments for null 
+            if (columnDefinition == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnDefinition));
+            }
+
             try
             {
                 using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
@@ -641,6 +727,14 @@ namespace Timelapse.Database
 
         public bool DeleteColumn(string sourceTable, string columnName)
         {
+            // Check the arguments for null 
+            if (columnName == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(columnName));
+            }
+
             try
             {
                 using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))

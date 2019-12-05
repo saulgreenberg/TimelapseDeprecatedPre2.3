@@ -47,6 +47,21 @@ namespace Timelapse.Util
         // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
         public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
         {
+            // Check the arguments for null 
+            if (dictionary1 == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dictionary1));
+            }
+            // Check the arguments for null 
+            if (dictionary2 == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dictionary2));
+            }
+
             Dictionary<string, string> dictionaryDifferences = new Dictionary<string, string>();
             List<string> differencesByKeys = dictionary1.Keys.Except(dictionary2.Keys).ToList();
             foreach (string key in differencesByKeys)
@@ -122,7 +137,8 @@ namespace Timelapse.Util
 
         public static bool IsSingleTemplateFileDrag(DragEventArgs dragEvent, out string templateDatabasePath)
         {
-            if (dragEvent.Data.GetDataPresent(DataFormats.FileDrop))
+            // Check the arguments for null 
+            if (dragEvent != null && dragEvent.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 string[] droppedFiles = (string[])dragEvent.Data.GetData(DataFormats.FileDrop);
                 if (droppedFiles != null && droppedFiles.Length == 1)
@@ -144,6 +160,15 @@ namespace Timelapse.Util
         /// </summary>
         public static bool IsDigits(string value)
         {
+            // Check the arguments for null 
+            if (value == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(value));
+                return false;
+            }
+
             foreach (char character in value)
             {
                 if (!Char.IsDigit(character))
@@ -159,6 +184,15 @@ namespace Timelapse.Util
         /// </summary>
         public static bool IsLetterOrDigit(string str)
         {
+            // Check the arguments for null 
+            if (str == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                //throw new ArgumentNullException(nameof(str));
+                return false;
+            }
+
             foreach (char c in str)
             {
                 if (!Char.IsLetterOrDigit(c))
@@ -174,16 +208,41 @@ namespace Timelapse.Util
         /// </summary>
         public static bool IsPathLengthTooLong(string str)
         {
+            // Check the arguments for null 
+            if (str == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(str));
+                return false;
+            }
+
             return str.Length > Constant.File.MaxPathLength;
         }
 
         public static bool IsBackupPathLengthTooLong(string str)
         {
+            // Check the arguments for null 
+            if (str == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(str));
+                return false;
+            }
             return str.Length + Constant.File.MaxAdditionalLengthOfBackupFiles > Constant.File.MaxPathLength;
         }
 
         public static void OnHelpDocumentPreviewDrag(DragEventArgs dragEvent)
         {
+            // Check the arguments for null 
+            if (dragEvent == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(dragEvent));
+            }
+
             if (Utilities.IsSingleTemplateFileDrag(dragEvent, out string templateDatabaseFilePath))
             {
                 dragEvent.Effects = DragDropEffects.All;
@@ -197,6 +256,14 @@ namespace Timelapse.Util
 
         public static void ShowExceptionReportingDialog(string programName, UnhandledExceptionEventArgs e, Window owner)
         {
+            // Check the arguments for null 
+            if (e == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(e));
+            }
+
             // once .NET 4.5+ is used it's meaningful to also report the .NET release version
             // See https://msdn.microsoft.com/en-us/library/hh925568.aspx.
             string title = programName + " needs to close. Please report this error.";

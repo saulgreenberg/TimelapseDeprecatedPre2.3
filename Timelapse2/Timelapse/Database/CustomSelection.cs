@@ -24,6 +24,14 @@ namespace Timelapse.Database
         /// </summary>
         public CustomSelection(DataTableBackedList<ControlRow> templateTable, CustomSelectionOperatorEnum termCombiningOperator)
         {
+            // Check the arguments for null 
+            if (templateTable == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(templateTable));
+            }
+
             this.DetectionSelections = new Detection.DetectionSelections();
             this.SearchTerms = new List<SearchTerm>();
             this.TermCombiningOperator = termCombiningOperator;
@@ -97,6 +105,13 @@ namespace Timelapse.Database
 
         public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
         {
+            // Check the arguments for null 
+            if (imageSetTimeZone == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(imageSetTimeZone));
+            }
             DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
             return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
         }

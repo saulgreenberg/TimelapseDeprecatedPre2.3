@@ -115,10 +115,11 @@ namespace Timelapse.Controls
             Style style = (Style)this.ContentControl.FindResource(ControlContentStyleEnum.FlagCheckBox.ToString());
 
             // Creatre a textblock and align it so the text is exactly at the same position as the control's text
+            // Note that if control is null (which shouldn't happen) we use an autoheight
             CheckBox popupText = new CheckBox
             {
                 Width = width,
-                Height = control.Height,
+                Height = (control == null) ? Double.NaN : control.Height,
                 Padding = padding,
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -141,7 +142,7 @@ namespace Timelapse.Controls
             Popup popup = new Popup
             {
                 Width = width,
-                Height = control.Height,
+                Height = (control==null) ? Double.NaN : control.Height,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Placement = PlacementMode.Center,
@@ -157,6 +158,12 @@ namespace Timelapse.Controls
         }
         public override void ShowPreviewControlValue(string value)
         {
+            if (value == null)
+            {
+                // This should not happen
+                value = String.Empty;
+            }
+
             // Create the popup overlay
             if (this.PopupPreview == null)
             {

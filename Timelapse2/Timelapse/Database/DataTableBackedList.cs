@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Windows.Controls;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -90,6 +91,13 @@ namespace Timelapse.Database
 
         public int IndexOf(DataRowBackedObject row)
         {
+            // Check the arguments for null 
+            if (row == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(row));
+            }
             return row.GetIndex(this.DataTable);
         }
 

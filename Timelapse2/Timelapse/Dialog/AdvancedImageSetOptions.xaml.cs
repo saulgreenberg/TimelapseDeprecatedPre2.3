@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using Timelapse.Database;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -11,6 +12,14 @@ namespace Timelapse.Dialog
 
         public AdvancedImageSetOptions(FileDatabase database, Window owner)
         {
+            // Check the arguments for null 
+            if (database == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(database));
+            }
+
             this.InitializeComponent();
             this.Owner = owner;
             this.database = database;

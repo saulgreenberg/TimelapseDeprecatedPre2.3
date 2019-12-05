@@ -1,4 +1,5 @@
 ﻿using System;
+using Timelapse.Util;
 
 namespace Timelapse.Database
 {
@@ -6,6 +7,14 @@ namespace Timelapse.Database
     {
         protected FileTableColumn(ControlRow control)
         {
+            // Check the arguments for null 
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(control));
+            }
+
             this.ControlType = control.Type;
             this.DataLabel = control.DataLabel;
         }
@@ -18,6 +27,14 @@ namespace Timelapse.Database
 
         public static FileTableColumn Create(ControlRow control)
         {
+            // Check the arguments for null 
+            if (control == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(control));
+            }
+
             switch (control.Type)
             {
                 case Constant.Control.Note:

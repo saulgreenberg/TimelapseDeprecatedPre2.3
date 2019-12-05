@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -15,6 +16,22 @@ namespace Timelapse.Dialog
         {
             this.InitializeComponent();
             this.Owner = owner;
+
+            // Check the arguments for null 
+            if (timelapseState == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(timelapseState));
+            }
+            // Check the arguments for null 
+            if (markableCanvas == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(markableCanvas));
+            }
+
             this.markableCanvas = markableCanvas;
             this.timelapseState = timelapseState;
 

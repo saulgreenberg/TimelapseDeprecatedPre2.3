@@ -629,7 +629,8 @@ namespace Timelapse.Images
 
         public void SetNewVideo(FileInfo videoFile, List<Marker> markers)
         {
-            if (videoFile.Exists == false)
+            // Check the arguments for null 
+            if (videoFile == null || videoFile.Exists == false)
             {
                 this.SetNewImage(Constant.ImageValues.FileNoLongerAvailable.Value, markers);
                 this.displayingImage = true;

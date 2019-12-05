@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using Timelapse.Util;
 using Xceed.Wpf.AvalonDock.Controls;
 using Xceed.Wpf.AvalonDock.Layout;
 namespace Timelapse
@@ -11,6 +12,16 @@ namespace Timelapse
         // Property changing callback
         public void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
         {
+            // Check the arguments for null 
+            if (sender == null || e == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(sender));
+                // Try treating this as a no-op instead of a throw
+                return;
+            }
+
             LayoutAnchorable la = sender as LayoutAnchorable;
             if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
             {
@@ -24,7 +35,7 @@ namespace Timelapse
         // Layout Updated 
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
         {
-            if (this.DockingManager.FloatingWindows.Count() > 0)
+            if (this.DockingManager.FloatingWindows.Any() )
             {
                 this.DockingManager_FloatingDataEntryWindowTopmost(false);
             }

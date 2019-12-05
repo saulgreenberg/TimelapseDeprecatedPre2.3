@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Forms;
+using Timelapse.Util;
 using Clipboard = System.Windows.Clipboard;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -13,7 +14,16 @@ namespace Timelapse.Dialog
         // Position the dialog box within its owner's window
         public static void SetDefaultDialogPosition(Window window)
         {
-            Debug.Assert(window.Owner != null, "Window's owner property is null.  Is a set of it prior to calling ShowDialog() missing?");
+            // Check the arguments for null 
+            if (window == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace("Window's owner property is null. Is a set of it prior to calling ShowDialog() missing?", 1);
+                // throw new ArgumentNullException(nameof(window));
+                // Treat it as a no-op
+                return;
+            }
+
             window.Left = window.Owner.Left + (window.Owner.Width - window.ActualWidth) / 2; // Center it horizontally
             window.Top = window.Owner.Top + 20; // Offset it from the windows'top by 20 pixels downwards
         }
