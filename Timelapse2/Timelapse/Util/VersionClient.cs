@@ -29,11 +29,13 @@ namespace Timelapse.Util
             string url = String.Empty; // THE URL where the new version is located
             Version latestVersionNumber = null;  // if a new version is available, store the new version number here  
 
-            XmlTextReader reader = null;
+            XmlReader reader = null; 
             try
             {
+                // This pattern follows recommended correction to CA3075: Insecure DTD Processing
                 // provide the XmlTextReader with the URL of our xml document  
-                reader = new XmlTextReader(this.latestVersionAddress.AbsoluteUri);
+                XmlReaderSettings settings = new XmlReaderSettings() { XmlResolver = null };
+                reader = XmlReader.Create(this.latestVersionAddress.AbsoluteUri, settings);
                 reader.MoveToContent(); // skip the junk at the beginning  
 
                 // As the XmlTextReader moves only forward, we save current xml element name in elementName variable. 
