@@ -444,83 +444,83 @@ namespace Timelapse.Constant
         public static readonly double MarkingVsPanningDistanceThreshold = 2.0;
     }
 
-    public static class Registry
+    // Various keys used to access and save state in the Windows Registry
+    public static class WindowRegistryKeys
     {
-        // Various keys used to save state in the Windows Registry
-        public static class TimelapseKey
-        {
-            // Various Recognition-related values
-            public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";
-            public const string SpeciesDetectedThreshold = "SpeciesDetectedThreshold";
+        // Defines the KEY path under HKEY_CURRENT_USER where Timelapse registry information is stored
+        public const string RootKey = @"Software\Greenberg Consulting\Timelapse\2.0";   
 
-            // whether audio feedback is enabled
-            public const string AudioFeedback = "AudioFeedback";
+        // Avalon doc state
+        public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
 
-            // key containing the top left location of the Timelapse Window, as a point
-            public const string TimelapseWindowLocation = "TimelapseWindowLocation";
-            // key containing the size of the Timelapse Window, as a Height
-            public const string TimelapseWindowSize = "TimelapseWindowSize";
-            public const string TimelapseWindowPosition = "TimelapseWindowPosition";
+        // Various Recognition-related values
+        public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";
+        public const string SpeciesDetectedThreshold = "SpeciesDetectedThreshold";
+        public const string UseDetections = "UseDetections";
 
-            // key containing the position of the QuickPaste window, as a rect
-            public const string QuickPasteWindowPosition = "QuickPasteWindowPosition";
+        // whether audio feedback is enabled
+        public const string AudioFeedback = "AudioFeedback";
 
-            // most recently used operator for custom selections
-            public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";
+        // key containing the top left location of the Timelapse Window, as a point
+        public const string TimelapseWindowLocation = "TimelapseWindowLocation";
+        // key containing the size of the Timelapse Window, as a Height
+        public const string TimelapseWindowSize = "TimelapseWindowSize";
+        public const string TimelapseWindowPosition = "TimelapseWindowPosition";
 
-            // DarkPixelThreshold and Ratio used to determine image darkness
-            public const string DarkPixelThreshold = "DarkPixelThreshold";
-            public const string DarkPixelRatio = "DarkPixelRatio";
+        // key containing the position of the QuickPaste window, as a rect
+        public const string QuickPasteWindowPosition = "QuickPasteWindowPosition";
 
-            // How the DeleteFolder is managed (e.g.,manual, by asking, or automatic deletion)
-            public const string DeleteFolderManagementValue = "DeleteFolderManagement";
+        // most recently used operator for custom selections
+        public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";
 
-            public const string EpisodeTimeThreshold = "EpisodeTimeThreshold";
+        // DarkPixelThreshold and Ratio used to determine image darkness
+        public const string DarkPixelThreshold = "DarkPixelThreshold";
+        public const string DarkPixelRatio = "DarkPixelRatio";
 
-            // File Player play speeds (slow and fast)
-            public const string FilePlayerSlowValue = "FilePlayerSlowValue";
-            public const string FilePlayerFastValue = "FilePlayerFastValue";
+        // How the DeleteFolder is managed (e.g.,manual, by asking, or automatic deletion)
+        public const string DeleteFolderManagementValue = "DeleteFolderManagement";
 
-            // Rendering image speed
-            public const string DesiredImageRendersPerSecond = "DesiredImageRendersPerSecond";
+        public const string EpisodeTimeThreshold = "EpisodeTimeThreshold";
 
-            // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
-            public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
+        // File Player play speeds (slow and fast)
+        public const string FilePlayerSlowValue = "FilePlayerSlowValue";
+        public const string FilePlayerFastValue = "FilePlayerFastValue";
 
-            // list of most recently image sets opened by Timelapse
-            public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
+        // Rendering image speed
+        public const string DesiredImageRendersPerSecond = "DesiredImageRendersPerSecond";
 
-            // Set Bookmark scale and transform coordinates
-            public const string BookmarkScaleX = "BookmarkScaleX";
-            public const string BookmarkScaleY = "BookmarkScaleY";
-            public const string BookmarkTranslationX = "BookmarkTransformX";
-            public const string BookmarkTranslationY = "BookmarkTransformY";
+        // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
+        public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
 
-            // dialog opt outs
-            public const string SuppressAmbiguousDatesDialog = "SuppressAmbiguousDatesDialog";
-            public const string SuppressCsvExportDialog = "SuppressCsvExportDialog";
-            public const string SuppressCsvImportPrompt = "SuppressCsvImportPrompt";
-            public const string SuppressFileCountOnImportDialog = "SuppressFileCountOnImportDialog";
-            public const string SuppressSelectedAmbiguousDatesPrompt = "SuppressSelectedAmbiguousDatesPrompt";
-            public const string SuppressSelectedCsvExportPrompt = "SuppressSelectedCsvExportPrompt";
-            public const string SuppressSelectedDarkThresholdPrompt = "SuppressSelectedDarkThresholdPrompt";
-            public const string SuppressSelectedDateTimeFixedCorrectionPrompt = "SuppressSelectedDateTimeFixedCorrectionPrompt";
-            public const string SuppressSelectedDateTimeLinearCorrectionPrompt = "SuppressSelectedDateTimeLinearCorrectionPrompt";
-            public const string SuppressSelectedDaylightSavingsCorrectionPrompt = "SuppressSelectedDaylightSavingsCorrectionPrompt";
-            public const string SuppressSelectedPopulateFieldFromMetadataPrompt = "SuppressSelectedPopulateFieldFromMetadataPrompt";
-            public const string SuppressSelectedRereadDatesFromFilesPrompt = "SuppressSelectedRereadDatesFromFilesPrompt";
-            public const string SuppressSelectedSetTimeZonePrompt = "SuppressSelectedSetTimeZonePrompt";
+        // list of most recently image sets opened by Timelapse
+        public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
 
-            // TabOrderInclude
-            public const string TabOrderIncludeDateTime = "TabOrderIncludeDateTime";
-            public const string TabOrderIncludeDeleteFlag = "TabOrderIncludeDeleteFlag";
-            public const string TabOrderIncludeImageQuality = "TabOrderIncludeImageQuality";
+        // Set Bookmark scale and transform coordinates
+        public const string BookmarkScaleX = "BookmarkScaleX";
+        public const string BookmarkScaleY = "BookmarkScaleY";
+        public const string BookmarkTranslationX = "BookmarkTransformX";
+        public const string BookmarkTranslationY = "BookmarkTransformY";
 
-            public const string UseDetections = "UseDetections";
-            // Avalon doc state
-            public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
-        }
-        public const string RootKey = @"Software\Greenberg Consulting\Timelapse\2.0";   // Defines the KEY path under HKEY_CURRENT_USER
+        // dialog opt outs
+        public const string SuppressAmbiguousDatesDialog = "SuppressAmbiguousDatesDialog";
+        public const string SuppressCsvExportDialog = "SuppressCsvExportDialog";
+        public const string SuppressCsvImportPrompt = "SuppressCsvImportPrompt";
+        public const string SuppressFileCountOnImportDialog = "SuppressFileCountOnImportDialog";
+        public const string SuppressSelectedAmbiguousDatesPrompt = "SuppressSelectedAmbiguousDatesPrompt";
+        public const string SuppressSelectedCsvExportPrompt = "SuppressSelectedCsvExportPrompt";
+        public const string SuppressSelectedDarkThresholdPrompt = "SuppressSelectedDarkThresholdPrompt";
+        public const string SuppressSelectedDateTimeFixedCorrectionPrompt = "SuppressSelectedDateTimeFixedCorrectionPrompt";
+        public const string SuppressSelectedDateTimeLinearCorrectionPrompt = "SuppressSelectedDateTimeLinearCorrectionPrompt";
+        public const string SuppressSelectedDaylightSavingsCorrectionPrompt = "SuppressSelectedDaylightSavingsCorrectionPrompt";
+        public const string SuppressSelectedPopulateFieldFromMetadataPrompt = "SuppressSelectedPopulateFieldFromMetadataPrompt";
+        public const string SuppressSelectedRereadDatesFromFilesPrompt = "SuppressSelectedRereadDatesFromFilesPrompt";
+        public const string SuppressSelectedSetTimeZonePrompt = "SuppressSelectedSetTimeZonePrompt";
+
+        // TabOrderInclude
+        public const string TabOrderIncludeDateTime = "TabOrderIncludeDateTime";
+        public const string TabOrderIncludeDeleteFlag = "TabOrderIncludeDeleteFlag";
+        public const string TabOrderIncludeImageQuality = "TabOrderIncludeImageQuality";
+
     }
 
     public static class SearchTermOperator
