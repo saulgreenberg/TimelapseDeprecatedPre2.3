@@ -26,7 +26,7 @@ namespace Timelapse.Util
         // Code from: http://techiethings.blogspot.com/2010/05/get-wpf-datagrid-row-and-cell.html
         public static T GetVisualChild<T>(Visual parent) where T : Visual
         {
-            T child = default(T);
+            T child = default;
             int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
             for (int i = 0; i < numVisuals; i++)
             {
@@ -226,8 +226,7 @@ namespace Timelapse.Util
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(dragEvent, nameof(dragEvent));
-
-            if (Utilities.IsSingleTemplateFileDrag(dragEvent, out string templateDatabaseFilePath))
+            if (Utilities.IsSingleTemplateFileDrag(dragEvent, out _))
             {
                 dragEvent.Effects = DragDropEffects.All;
             }

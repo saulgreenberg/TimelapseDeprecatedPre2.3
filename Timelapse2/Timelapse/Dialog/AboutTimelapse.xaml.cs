@@ -20,9 +20,9 @@ namespace Timelapse.Dialog
         {
             Dialogs.SetDefaultDialogPosition(this);
             Dialogs.TryFitDialogWindowInWorkingArea(this);
-            this.NavigateVersionUrl.NavigateUri = Constant.VersionChangesAddress;
-            this.NavigateCreativeCommonLicense.NavigateUri = Constant.CreativeCommonsLicense;
-            this.NavigateAdditionalLicenseDetails.NavigateUri = Constant.AdditionalLicenseDetails;
+            this.NavigateVersionUrl.NavigateUri = Constant.ExternalLinks.TimlapseVersionChangesLink;
+            this.NavigateCreativeCommonLicense.NavigateUri = Constant.ExternalLinks.CreativeCommonsLicenseLink;
+            this.NavigateAdditionalLicenseDetails.NavigateUri = Constant.ExternalLinks.AdditionalLicenseDetailsLink;
 
             Version curVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             this.Version.Text = curVersion.ToString();
@@ -37,7 +37,7 @@ namespace Timelapse.Dialog
 
         private void CheckForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
-            VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
+            VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
             if (updater.TryGetAndParseVersion(true))
             {
                 // PERHAPS. This isn't quite right, as the most recent check for update data is (I think) set only if there is a new release

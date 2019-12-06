@@ -52,8 +52,8 @@ namespace Timelapse.Dialog
                 TextRange textRange = new TextRange(content.ContentStart, content.ContentEnd);
 
                 // Try to load the rtf file pointed at by the URI as a string
-                string filename = Constant.LatestVersionFileNamePrefix + String.Format("{0}", latestVersionMumber) + Constant.LatestVersionFileNameSuffix;
-                Uri uri = new Uri(Constant.LatestVersionBaseAddress, filename);
+                string filename = Constant.VersionUpdates.LatestVersionFileNamePrefix + String.Format("{0}", latestVersionMumber) + Constant.VersionUpdates.LatestVersionFileNameSuffix;
+                Uri uri = new Uri(Constant.VersionUpdates.LatestVersionBaseAddress, filename);
                 WebResponse response = WebRequest.Create(uri).GetResponse();
                 Stream streamfromuri = response.GetResponseStream();
                 StreamReader reader = new StreamReader(streamfromuri);
@@ -85,7 +85,7 @@ namespace Timelapse.Dialog
                 p1.Inlines.Add("See version change details at: ");
                 Hyperlink h1 = new Hyperlink();
                 h1.Inlines.Add("Timelapse Version History Page");
-                h1.NavigateUri = Constant.VersionChangesAddress;
+                h1.NavigateUri = Constant.ExternalLinks.TimlapseVersionChangesLink;
                 h1.RequestNavigate += this.Link_RequestNavigate;
                 p1.Inlines.Add(h1);
                 content.Blocks.Add(p1);

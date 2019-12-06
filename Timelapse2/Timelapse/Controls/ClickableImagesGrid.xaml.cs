@@ -184,7 +184,6 @@ namespace Timelapse.Controls
                             ci.AdjustMargin(state);
                             clickableImagesRow.Add(ci);
                             inCache = true;
-                            cachedImageListIndex++;
                             if (maxImageHeight < imageHeight)
                             {
                                 maxImageHeight = imageHeight;

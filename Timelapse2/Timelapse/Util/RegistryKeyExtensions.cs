@@ -157,7 +157,7 @@ namespace Timelapse.Util
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
 
             RegistryKey subKey = registryKey.OpenSubKey(subKeyPath);
-            MostRecentlyUsedCollection<string> values = new MostRecentlyUsedCollection<string>(Constant.NumberOfMostRecentDatabasesToTrack);
+            MostRecentlyUsedCollection<string> values = new MostRecentlyUsedCollection<string>(Constant.Defaults.NumberOfMostRecentDatabasesToTrack);
 
             if (subKey != null)
             {

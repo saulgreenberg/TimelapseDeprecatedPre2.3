@@ -172,7 +172,7 @@ namespace Timelapse
             this.dataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
             this.dataHandler.MarkableCanvas = this.MarkableCanvas;
 
-            this.Title = Constant.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
+            this.Title = Constant.Defaults.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
             this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);
             this.RecentFileSets_Refresh();
 

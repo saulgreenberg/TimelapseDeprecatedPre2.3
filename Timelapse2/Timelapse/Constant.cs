@@ -15,23 +15,7 @@ namespace Timelapse
     [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1203:ConstantsMustAppearBeforeFields", Justification = "Reviewed.")]
     public static class Constant
     {
-        // Default Settings
-        public const string MainWindowBaseTitle = "Timelapse: Helping You Analyze Images and Videos Captured from Field Cameras";
-        public const int NumberOfMostRecentDatabasesToTrack = 9;
-        public const string StandardColour = "Gold";
-        public const string SelectionColour = "MediumBlue";
 
-        // Update Information, for checking for updates in the timelapse xml file stored on the web site
-        public const string ApplicationName = "Timelapse";
-        public static readonly Uri LatestVersionBaseAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/timelapse_version.xml");
-        public static readonly string LatestVersionFileNamePrefix = "timelapse_version_";
-        public static readonly string LatestVersionFileNameSuffix = ".rtf";
-        public static readonly Uri LatestVersionFileNameXML = new Uri(LatestVersionBaseAddress, "timelapse_version.xml");
-
-        public static readonly Uri VersionChangesAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.TimelapseVersions");
-        public static readonly Uri UserManualAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
-        public static readonly Uri CreativeCommonsLicense = new Uri("https://creativecommons.org/licenses/by-nc-sa/4.0/");
-        public static readonly Uri AdditionalLicenseDetails = new Uri("https://github.com/saulgreenberg/TimelapseImageAnalyzer/blob/master/LICENSE.md");
 
         public static class AvalonDock
         {
@@ -268,6 +252,15 @@ namespace Timelapse
             public const string Classifications = "Classifications";
         }
 
+        // Default Settings
+        public static class Defaults
+        {
+            public const string MainWindowBaseTitle = "Timelapse: Helping You Analyze Images and Videos Captured from Field Cameras";
+            public const int NumberOfMostRecentDatabasesToTrack = 9;
+            public const string StandardColour = "Gold";
+            public const string SelectionColour = "MediumBlue";
+        }
+
         public static class EpisodeDefaults
         {
             public static readonly double TimeThresholdDefault = 2; // 2 Minutes
@@ -279,6 +272,15 @@ namespace Timelapse
         public static class ExceptionTypes
         {
             public const string TemplateReadWriteException = "TemplateReadWriteException";
+        }
+
+        // External URLs
+        public static class ExternalLinks
+        {
+            public static readonly Uri TimlapseVersionChangesLink = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.TimelapseVersions");
+            public static readonly Uri UserManualLink = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
+            public static readonly Uri CreativeCommonsLicenseLink = new Uri("https://creativecommons.org/licenses/by-nc-sa/4.0/");
+            public static readonly Uri AdditionalLicenseDetailsLink = new Uri("https://github.com/saulgreenberg/TimelapseImageAnalyzer/blob/master/LICENSE.md");
         }
 
         public static class File
@@ -614,6 +616,16 @@ namespace Timelapse
             public const string DownArrow = "\u2193";
             public const string Ellipsis = "\u2026";
             public const string UpArrow = "\u2191";
+        }
+
+        // Update Information, for checking for updates in the timelapse xml file stored on the web site
+        public static class VersionUpdates
+        {
+            public const string ApplicationName = "Timelapse";
+            public static readonly Uri LatestVersionBaseAddress = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/timelapse_version.xml");
+            public static readonly string LatestVersionFileNamePrefix = "timelapse_version_";
+            public static readonly string LatestVersionFileNameSuffix = ".rtf";
+            public static readonly Uri LatestVersionFileNameXML = new Uri(VersionUpdates.LatestVersionBaseAddress, "timelapse_version.xml");
         }
 
         public static class VersionXml

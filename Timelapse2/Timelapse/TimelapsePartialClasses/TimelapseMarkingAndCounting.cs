@@ -207,11 +207,11 @@ namespace Timelapse
 
                     if (selectedCounter != null && currentCounter.DataLabel == selectedCounter.DataLabel)
                     {
-                        marker.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.SelectionColour);
+                        marker.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.Defaults.SelectionColour);
                     }
                     else
                     {
-                        marker.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.StandardColour);
+                        marker.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.Defaults.StandardColour);
                     }
 
                     marker.Emphasise = emphasize;

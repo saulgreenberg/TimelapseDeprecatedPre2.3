@@ -54,7 +54,7 @@ namespace Timelapse.Util
                 }
             }
 
-            if (applicationName == Constant.ApplicationName)
+            if (applicationName == Constant.VersionUpdates.ApplicationName)
             {
                 foreach (string binaryName in Dependencies.TimelapseRequiredBinaries)
                 {

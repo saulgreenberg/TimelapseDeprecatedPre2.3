@@ -79,7 +79,7 @@ namespace Timelapse.Controls
                 p1.Inlines.Add("If you need help, please download and read the ");
                 Hyperlink h1 = new Hyperlink();
                 h1.Inlines.Add("Timelapse Tutorial Manual");
-                h1.NavigateUri = Constant.UserManualAddress;
+                h1.NavigateUri = Constant.ExternalLinks.UserManualLink;
                 h1.RequestNavigate += this.Link_RequestNavigate;
                 p1.Inlines.Add(h1);
                 this.flowDocument.Blocks.Add(p1);

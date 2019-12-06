@@ -49,7 +49,7 @@ namespace Timelapse.Images
         /// </summary>
         public Marker(string dataLabel, Point point)
         {
-            this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.StandardColour);
+            this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.Defaults.StandardColour);
             this.DataLabel = dataLabel;
             this.Emphasise = false;
             this.LabelShownPreviously = true;

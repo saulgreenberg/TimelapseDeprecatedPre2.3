@@ -89,7 +89,7 @@ namespace Timelapse
             this.ControlGrid.MouseLeave += this.FocusSaveOn_MouseLeave;
 
             // Set the window's title
-            this.Title = Constant.MainWindowBaseTitle;
+            this.Title = Constant.Defaults.MainWindowBaseTitle;
 
             // Create the speech synthesiser
             this.speechSynthesizer = new SpeechSynthesizer();
@@ -146,9 +146,9 @@ namespace Timelapse
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Abort if some of the required dependencies are missing
-            if (Dependencies.AreRequiredBinariesPresent(Constant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
+            if (Dependencies.AreRequiredBinariesPresent(Constant.VersionUpdates.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
-                Dependencies.ShowMissingBinariesDialog(Constant.ApplicationName);
+                Dependencies.ShowMissingBinariesDialog(Constant.VersionUpdates.ApplicationName);
                 Application.Current.Shutdown();
             }
 
@@ -157,7 +157,7 @@ namespace Timelapse
                 DateTime.Now.Month != this.state.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.state.MostRecentCheckForUpdates.Day)
             {
-                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
+                VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
             }

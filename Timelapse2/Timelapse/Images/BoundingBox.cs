@@ -47,7 +47,7 @@ namespace Timelapse.Images
 
         private void SetValues(float x1, float y1, float width, float height, float confidence, string detectionCategory, string detectionlabel, List<KeyValuePair<string, string>> classifications)
         {
-            this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.StandardColour);
+            this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.Defaults.StandardColour);
             this.Rectangle = new Rect(new Point(x1, y1), new Point(x1 + width, y1 + height));
             this.Confidence = confidence;
             this.DetectionCategory = detectionCategory;

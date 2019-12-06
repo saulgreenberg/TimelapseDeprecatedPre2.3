@@ -81,7 +81,7 @@ namespace Timelapse.Editor
                 DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
             {
-                VersionClient updater = new VersionClient(this, Constant.ApplicationName, Constant.LatestVersionFileNameXML);
+                VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.userSettings.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
