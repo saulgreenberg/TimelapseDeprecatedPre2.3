@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Timelapse.Database;
@@ -19,8 +20,11 @@ namespace Timelapse.Editor.Util
             List<string> dataLabels = new List<string>();
 
             // Load the XML document (the code template file)
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(filePath);
+            // Follows CA3075  pattern for loading
+            XmlDocument xmlDoc = new XmlDocument() { XmlResolver = null };
+            System.IO.StringReader sreader = new System.IO.StringReader(File.ReadAllText(filePath));
+            XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null });
+            xmlDoc.Load(reader);
 
             // merge standard controls which existed in code templates
             // MarkForDeletion and Relative path weren't available in code templates
@@ -64,6 +68,7 @@ namespace Timelapse.Editor.Util
                 ControlRow counter = templateDatabase.AddUserDefinedControl(Constant.Control.Counter);
                 this.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Counter, counter, ref conversionErrors, ref dataLabels);
             }
+            reader.Dispose();
         }
 
         private void UpdateControl(XmlNode selectedNode, TemplateDatabase templateDatabase, string typeWanted, ControlRow control, ref List<string> errorMessages, ref List<string> dataLabels)

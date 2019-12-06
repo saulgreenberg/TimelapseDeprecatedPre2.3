@@ -13,7 +13,7 @@ namespace Timelapse.Images
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
         public static void Read(string filePath, FileDatabase imageDatabase)
         {
-            // XML Preparation
+            // XML Preparation - follows CA3075  pattern for loading
             XmlDocument xmlDoc = new XmlDocument() { XmlResolver = null };
             System.IO.StringReader sreader = new System.IO.StringReader(File.ReadAllText(filePath));
             XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null });
