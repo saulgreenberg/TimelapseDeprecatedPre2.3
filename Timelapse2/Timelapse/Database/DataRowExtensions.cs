@@ -32,26 +32,20 @@ namespace Timelapse.Database
             string fieldAsString = row.GetStringField(column);
             if (String.IsNullOrEmpty(fieldAsString))
             {
-                return default(TEnum);
+                // This should not happen
+                return default;
             }
-            try
+
+            // WHile the code below returns the same result value, it is left as is to help future debugging, if needed.
+            if (Enum.TryParse(fieldAsString, out TEnum result))
             {
-                //TEnum result = (TEnum)Enum.Parse(typeof(TEnum), fieldAsString);
-                if (Enum.TryParse(fieldAsString, out TEnum result))
-                {
-                    // The parse succeeded, where the TEnum result is in result
-                    return result;
-                }
-                else
-                {
-                    // The parse dis not succeeded. The TEnum result contains the default enum value, ie, the same as returning default(TEnum)
-                    return result;
-                }
+                // The parse succeeded, where the TEnum result is in result
+                return result;
             }
-            catch
+            else
             {
-                // Shouldn't get here as we used a tryParse, but just in case
-                return default(TEnum);
+                // The parse did not succeeded. The TEnum result contains the default enum value, ie, the same as returning default(TEnum)
+                return result;
             }
         }
 
