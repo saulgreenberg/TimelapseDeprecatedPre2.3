@@ -23,7 +23,7 @@ namespace Timelapse
             }
 
             LayoutAnchorable la = sender as LayoutAnchorable;
-            if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDock.FloatingWindowFloatingWidthProperty))
+            if (la.ContentId == "ContentIDDataEntryControlPanel" && (e.PropertyName == Constant.AvalonDockValues.FloatingWindowFloatingHeightProperty || e.PropertyName == Constant.AvalonDockValues.FloatingWindowFloatingWidthProperty))
             {
                 this.DockingManager_FloatingDataEntryWindowLimitSize();
             }
@@ -59,8 +59,8 @@ namespace Timelapse
                     floatingWindow.ShowInTaskbar = true;
                     continue;
                 }
-                floatingWindow.MinHeight = Constant.AvalonDock.FloatingWindowMinimumHeight;
-                floatingWindow.MinWidth = Constant.AvalonDock.FloatingWindowMinimumWidth;
+                floatingWindow.MinHeight = Constant.AvalonDockValues.FloatingWindowMinimumHeight;
+                floatingWindow.MinWidth = Constant.AvalonDockValues.FloatingWindowMinimumWidth;
 
                 if (topMost)
                 {
@@ -97,11 +97,11 @@ namespace Timelapse
                 {
                     if (floatingWindow.Height > this.DataEntryScrollViewer.ActualHeight)
                     {
-                        floatingWindow.Height = this.DataEntryScrollViewer.ActualHeight + Constant.AvalonDock.FloatingWindowLimitSizeHeightCorrection;
+                        floatingWindow.Height = this.DataEntryScrollViewer.ActualHeight + Constant.AvalonDockValues.FloatingWindowLimitSizeHeightCorrection;
                     }
                     if (floatingWindow.Width > this.DataEntryScrollViewer.ActualWidth)
                     {
-                        floatingWindow.Width = this.DataEntryScrollViewer.ActualWidth + Constant.AvalonDock.FloatingWindowLimitSizeWidthCorrection;
+                        floatingWindow.Width = this.DataEntryScrollViewer.ActualWidth + Constant.AvalonDockValues.FloatingWindowLimitSizeWidthCorrection;
                     }
                     break;
                 }

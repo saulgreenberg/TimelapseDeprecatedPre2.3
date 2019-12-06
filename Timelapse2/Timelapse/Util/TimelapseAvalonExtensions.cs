@@ -64,8 +64,8 @@ namespace Timelapse.Util
                     result = timelapse.AvalonLayout_TryLoadFromRegistry(layoutName);
                     if (result)
                     {
-                        timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
-                        timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+                        timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDockValues.WindowRegistryKeySuffix);
+                        timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDockValues.WindowMaximizeStateRegistryKeySuffix);
                     }
                 }
             }
@@ -81,8 +81,8 @@ namespace Timelapse.Util
                 // We are trying to load the last-used layout, but there isn't one. As a fallback, 
                 // we use the default configuration as specified in the XAML: - all tiled with the data entry on top. 
                 // Eve so, we check to see if the window position and size were saved; if they aren't there, it defaults to a reasonable size and position.
-                timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDock.WindowRegistryKeySuffix);
-                timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+                timelapse.AvalonLayout_LoadWindowPositionAndSizeFromRegistry(layoutName + Constant.AvalonDockValues.WindowRegistryKeySuffix);
+                timelapse.AvalonLayout_LoadWindowMaximizeStateFromRegistry(layoutName + Constant.AvalonDockValues.WindowMaximizeStateRegistryKeySuffix);
                 return result;
             }
 
@@ -448,8 +448,8 @@ namespace Timelapse.Util
             // Check the arguments for null 
             ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
 
-            timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDock.WindowRegistryKeySuffix);
-            timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDock.WindowMaximizeStateRegistryKeySuffix);
+            timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDockValues.WindowRegistryKeySuffix);
+            timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDockValues.WindowMaximizeStateRegistryKeySuffix);
         }
 
         // Save the current timelapse window position and size to the registry
