@@ -28,7 +28,7 @@ namespace Timelapse.Editor.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.WindowRegistryKeys.TimelapseKey.MostRecentCheckForUpdates, DateTime.UtcNow);
+                this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentTemplates = registryKey.ReadMostRecentlyUsedList(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates);
                 this.ShowUtcOffset = registryKey.ReadBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);
             }
@@ -38,7 +38,7 @@ namespace Timelapse.Editor.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                registryKey.Write(Constant.WindowRegistryKeys.TimelapseKey.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
+                registryKey.Write(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates, this.MostRecentTemplates);
                 registryKey.Write(EditorConstant.Registry.EditorKey.ShowUtcOffset, this.ShowUtcOffset);
             }

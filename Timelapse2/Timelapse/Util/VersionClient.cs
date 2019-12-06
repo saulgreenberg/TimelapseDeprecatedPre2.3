@@ -33,7 +33,7 @@ namespace Timelapse.Util
             try
             {
                 // This pattern follows recommended correction to CA3075: Insecure DTD Processing
-                // provide the XmlTextReader with the URL of our xml document  
+                // provide the XmlReader with the URL of our xml document  
                 XmlReaderSettings settings = new XmlReaderSettings() { XmlResolver = null };
                 reader = XmlReader.Create(this.latestVersionAddress.AbsoluteUri, settings);
                 reader.MoveToContent(); // skip the junk at the beginning  

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -13,8 +14,10 @@ namespace Timelapse.Images
         public static void Read(string filePath, FileDatabase imageDatabase)
         {
             // XML Preparation
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(filePath);
+            XmlDocument xmlDoc = new XmlDocument() { XmlResolver = null };
+            System.IO.StringReader sreader = new System.IO.StringReader(File.ReadAllText(filePath));
+            XmlReader reader = XmlReader.Create(sreader, new XmlReaderSettings() { XmlResolver = null });
+            xmlDoc.Load(reader);
 
             // Import the old log (if any)
             XmlNodeList logNodes = xmlDoc.SelectNodes(Constant.ImageXml.Images + Constant.ImageXml.Slash + Constant.DatabaseColumn.Log);
@@ -161,6 +164,7 @@ namespace Timelapse.Images
             // batch update both tables
             imageDatabase.UpdateFiles(imagesToUpdate);
             imageDatabase.UpdateMarkers(markersToUpdate);
+            reader.Dispose();
         }
     }
 }
