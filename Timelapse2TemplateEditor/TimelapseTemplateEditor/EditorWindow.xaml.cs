@@ -243,7 +243,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuFileConvertTemplate_Click(object sender, RoutedEventArgs e)
         {
-            string codeTemplateFileName = String.Empty;  // The code template file name
+            string codeTemplateFileName;  // The code template file name
 
             this.ApplyPendingEdits();
 
@@ -789,7 +789,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
-            if (this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false)
+            if (this.TryGetCurrentCell(out DataGridCell currentCell, out _) == false)
             {
                 return;
             }
@@ -807,7 +807,7 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataGrid_CurrentCellChanged(object sender, EventArgs e)
         {
-            if (this.TryGetCurrentCell(out DataGridCell currentCell, out DataGridRow currentRow) == false)
+            if (this.TryGetCurrentCell(out DataGridCell currentCell, out _) == false)
             {
                 return;
             }
@@ -1407,7 +1407,7 @@ namespace Timelapse.Editor
                 }
                 if (dropTargetIndex != -1)
                 {
-                    if (!(this.realMouseDragSource is StackPanel tsp))
+                    if (!(this.realMouseDragSource is StackPanel))
                     {
                         StackPanel parent = FindVisualParent<StackPanel>(this.realMouseDragSource);
                         this.realMouseDragSource = parent;
