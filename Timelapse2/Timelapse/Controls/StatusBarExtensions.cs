@@ -55,7 +55,7 @@ namespace Timelapse.Controls
             }
 
             // Add the primary first key
-            message.Text += SetSortAlterTextAsNeeded(primarySortTerm, secondarySortTermIsAscending);
+            message.Text += SetSortAlterTextAsNeeded(primarySortTerm, primarySortTermIsAscending);
 
             // Add the secomdary first key if it exists
             if (!String.IsNullOrEmpty(secondarySortTerm))

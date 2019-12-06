@@ -380,20 +380,17 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuViewShowAllColumns_Click(object sender, RoutedEventArgs e)
         {
-            MenuItem mi = sender as MenuItem;
-            if (mi == null)
+            if (sender is MenuItem mi)
             {
-                return;
-            }
-
-            Visibility visibility = mi.IsChecked ? Visibility.Visible : Visibility.Collapsed;
-            foreach (DataGridColumn column in this.TemplateDataGrid.Columns)
-            {
-                if (column.Header.Equals(EditorConstant.ColumnHeader.ID) ||
-                    column.Header.Equals(EditorConstant.ColumnHeader.ControlOrder) ||
-                    column.Header.Equals(EditorConstant.ColumnHeader.SpreadsheetOrder))
+                Visibility visibility = mi.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+                foreach (DataGridColumn column in this.TemplateDataGrid.Columns)
                 {
-                    column.Visibility = visibility;
+                    if (column.Header.Equals(EditorConstant.ColumnHeader.ID) ||
+                        column.Header.Equals(EditorConstant.ColumnHeader.ControlOrder) ||
+                        column.Header.Equals(EditorConstant.ColumnHeader.SpreadsheetOrder))
+                    {
+                        column.Visibility = visibility;
+                    }
                 }
             }
         }
@@ -575,15 +572,15 @@ namespace Timelapse.Editor
         /// </summary>
         private void TemplateDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            DataRowView selectedRowView = this.TemplateDataGrid.SelectedItem as DataRowView;
-            if (selectedRowView == null)
+            if (this.TemplateDataGrid.SelectedItem is DataRowView selectedRowView)
+            {
+                ControlRow control = new ControlRow(selectedRowView.Row);
+                this.RemoveControlButton.IsEnabled = !Constant.Control.StandardTypes.Contains(control.Type);
+            }
+            else
             {
                 this.RemoveControlButton.IsEnabled = false;
-                return;
             }
-
-            ControlRow control = new ControlRow(selectedRowView.Row);
-            this.RemoveControlButton.IsEnabled = !Constant.Control.StandardTypes.Contains(control.Type);
         }
 
         /// <summary>
@@ -620,26 +617,21 @@ namespace Timelapse.Editor
             // Likely not needed as this row will be removed anyways, but just in case.
             this.ApplyPendingEdits();
 
-            DataRowView selectedRowView = this.TemplateDataGrid.SelectedItem as DataRowView;
-            if (selectedRowView == null || selectedRowView.Row == null)
+            if (this.TemplateDataGrid.SelectedItem is DataRowView selectedRowView && selectedRowView.Row != null)
             {
-                // nothing to do
-                return;
+                ControlRow control = new ControlRow(selectedRowView.Row);
+                if (EditorControls.IsStandardControlType(control.Type))
+                {
+                    // standard controls cannot be removed
+                    return;
+                }
+                this.dataGridBeingUpdatedByCode = true;
+                // remove the control, then update the view so it reflects the current values in the database
+                this.templateDatabase.RemoveUserDefinedControl(new ControlRow(selectedRowView.Row));
+                this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+                this.GenerateSpreadsheet();
+                this.dataGridBeingUpdatedByCode = false;
             }
-
-            ControlRow control = new ControlRow(selectedRowView.Row);
-            if (EditorControls.IsStandardControlType(control.Type))
-            {
-                // standard controls cannot be removed
-                return;
-            }
-
-            this.dataGridBeingUpdatedByCode = true;
-            // remove the control, then update the view so it reflects the current values in the database
-            this.templateDatabase.RemoveUserDefinedControl(new ControlRow(selectedRowView.Row));
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
-            this.GenerateSpreadsheet();
-            this.dataGridBeingUpdatedByCode = false;
         }
 
         // Apply and commit any pending edits that may be pending 
@@ -1415,8 +1407,7 @@ namespace Timelapse.Editor
                 }
                 if (dropTargetIndex != -1)
                 {
-                    StackPanel tsp = this.realMouseDragSource as StackPanel;
-                    if (tsp == null)
+                    if (!(this.realMouseDragSource is StackPanel tsp))
                     {
                         StackPanel parent = FindVisualParent<StackPanel>(this.realMouseDragSource);
                         this.realMouseDragSource = parent;
@@ -1452,8 +1443,7 @@ namespace Timelapse.Editor
             long controlOrder = 1;
             foreach (UIElement element in this.ControlsPanel.Children)
             {
-                StackPanel stackPanel = element as StackPanel;
-                if (stackPanel == null)
+                if (!(element is StackPanel stackPanel))
                 {
                     continue;
                 }
