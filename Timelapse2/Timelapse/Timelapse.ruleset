@@ -6,10 +6,17 @@
     <Rule Id="CA1304" Action="None" />
     <Rule Id="CA1305" Action="None" />
     <Rule Id="CA1707" Action="None" />
+    <Rule Id="CA1710" Action="None" />
+    <Rule Id="CA1724" Action="None" />
     <Rule Id="CA2227" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
+    <Rule Id="CS1710" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
     <Rule Id="CA1707" Action="None" />
+    <Rule Id="CA1710" Action="None" />
+    <Rule Id="CA1724" Action="None" />
     <Rule Id="CA2227" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.NetCore.Analyzers" RuleNamespace="Microsoft.NetCore.Analyzers">

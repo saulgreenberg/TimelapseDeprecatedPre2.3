@@ -139,7 +139,7 @@ namespace Timelapse.Util
                 int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
                 int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
 
-                ReleaseDC(IntPtr.Zero, hDc);
+                _ = ReleaseDC(IntPtr.Zero, hDc);
 
                 widthInDeviceIndependentPixels = 96 * widthInPixels / (double)dpiX;
                 heightInDeviceIndependentPixels = 96 * heightInPixels / (double)dpiY;
