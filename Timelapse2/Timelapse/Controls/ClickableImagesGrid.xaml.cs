@@ -35,17 +35,17 @@ namespace Timelapse.Controls
         #region Public properties
 
         // DataEntryControls needs to be set externally
-        public DataEntryControls DataEntryControls { private get; set; }
+        public DataEntryControls DataEntryControls { get; set; }
 
         // FileTable needs to be set externally
-        public FileTable FileTable { private get; set; }
+        public FileTable FileTable { set; get; }
 
         // FileTableStartIndex needs to be set externally
-        public int FileTableStartIndex { private get; set; }
+        public int FileTableStartIndex { get; set; }
 
         // FoldePath needs to be set externally
         // The root folder containing the template
-        public string FolderPath { private get; set; }
+        public string FolderPath { get; set; }
 
         // The number of images that currently exist in a row
         public int ImagesInRow
