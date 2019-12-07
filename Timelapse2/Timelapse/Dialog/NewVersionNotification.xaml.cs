@@ -56,22 +56,26 @@ namespace Timelapse.Dialog
                 Uri uri = new Uri(Constant.VersionUpdates.LatestVersionBaseAddress, filename);
                 WebResponse response = WebRequest.Create(uri).GetResponse();
                 Stream streamfromuri = response.GetResponseStream();
-                StreamReader reader = new StreamReader(streamfromuri);
-                string s = reader.ReadToEnd();
+                using (StreamReader reader = new StreamReader(streamfromuri))
+                {
+                    string s = reader.ReadToEnd();
 
-                // Convert the string to a stream
-                MemoryStream stream = new MemoryStream();
-                StreamWriter writer = new StreamWriter(stream);
-                writer.Write(s);
-                writer.Flush();
-                stream.Position = 0;
+                    // Convert the string to a stream
+                    MemoryStream stream = new MemoryStream();
+                    using (StreamWriter writer = new StreamWriter(stream))
+                    {
+                        writer.Write(s);
+                        writer.Flush();
+                        stream.Position = 0;
 
-                // Load the stream into the Flow Document, converting hyperlinks to active links
-                textRange.Load(stream, DataFormats.Rtf);
-                this.SubscribeToAllHyperlinks(content);
+                        // Load the stream into the Flow Document, converting hyperlinks to active links
+                        textRange.Load(stream, DataFormats.Rtf);
+                        this.SubscribeToAllHyperlinks(content);
 
-                // Add the document to the FlowDocumentScollViewer
-                this.ChangeDescription.Document = content;
+                        // Add the document to the FlowDocumentScollViewer
+                        this.ChangeDescription.Document = content;
+                    }
+                }
             }
             catch
             {

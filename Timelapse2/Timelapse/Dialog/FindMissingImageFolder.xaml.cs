@@ -36,26 +36,28 @@ namespace Timelapse.Dialog
         // Folder dialog where the user can only select a sub-folder of the root folder path
         private void LocateFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            using (CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
             {
                 Title = "Select one or more folders ...",
                 DefaultDirectory = this.folderPath,
                 IsFolderPicker = true,
                 Multiselect = false
-            };
-            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
-            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
-            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            })
             {
-                // Trim the root folder path from the folder name to produce a relative path. Insert it into the textbox for feedback
-                this.NewFolderName = (folderSelectionDialog.FileName.Length > this.folderPath.Length) ? folderSelectionDialog.FileName.Substring(this.folderPath.Length + 1) : String.Empty;
-                this.TextBoxNewFolderName.Text = this.NewFolderName;
-                this.OkButton.IsEnabled = !String.IsNullOrWhiteSpace(this.NewFolderName);
-            }
-            else
-            {
-                this.NewFolderName = String.Empty;
-                this.OkButton.IsEnabled = false;
+                folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+                folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
+                if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    // Trim the root folder path from the folder name to produce a relative path. Insert it into the textbox for feedback
+                    this.NewFolderName = (folderSelectionDialog.FileName.Length > this.folderPath.Length) ? folderSelectionDialog.FileName.Substring(this.folderPath.Length + 1) : String.Empty;
+                    this.TextBoxNewFolderName.Text = this.NewFolderName;
+                    this.OkButton.IsEnabled = !String.IsNullOrWhiteSpace(this.NewFolderName);
+                }
+                else
+                {
+                    this.NewFolderName = String.Empty;
+                    this.OkButton.IsEnabled = false;
+                }
             }
         }
 

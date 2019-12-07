@@ -208,12 +208,13 @@ namespace Timelapse
                 {
                     // Show the file in excel
                     // Create a process that will try to show the file
-                    Process process = new Process();
-
-                    process.StartInfo.UseShellExecute = true;
-                    process.StartInfo.RedirectStandardOutput = false;
-                    process.StartInfo.FileName = csvFilePath;
-                    process.Start();
+                    using (Process process = new Process())
+                    {
+                        process.StartInfo.UseShellExecute = true;
+                        process.StartInfo.RedirectStandardOutput = false;
+                        process.StartInfo.FileName = csvFilePath;
+                        process.Start();
+                    }
                 }
                 catch
                 {
@@ -363,33 +364,34 @@ namespace Timelapse
             string sourceFile = this.dataHandler.ImageCache.Current.File;
 
             // Set up a Folder Browser with some instructions
-            SaveFileDialog dialog = new SaveFileDialog()
+            using (SaveFileDialog dialog = new SaveFileDialog()
             {
                 Title = "Export a copy of the currently displayed file",
                 Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.File)),
                 FileName = sourceFile,
                 OverwritePrompt = true
-            };
-
-            // Display the Folder Browser dialog
-            DialogResult result = dialog.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            })
             {
-                // Set the source and destination file names, including the complete path
-                string sourcePath = this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath);
-                string destFileName = dialog.FileName;
+                // Display the Folder Browser dialog
+                DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    // Set the source and destination file names, including the complete path
+                    string sourcePath = this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath);
+                    string destFileName = dialog.FileName;
 
-                // Try to copy the source file to the destination, overwriting the destination file if it already exists.
-                // And giving some feedback about its success (or failure) 
-                try
-                {
-                    File.Copy(sourcePath, destFileName, true);
-                    this.StatusBar.SetMessage(sourceFile + " copied to " + destFileName);
-                }
-                catch (Exception exception)
-                {
-                    TraceDebug.PrintMessage(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
-                    this.StatusBar.SetMessage(String.Format("Copy failed with {0} in MenuItemExportThisImage_Click.", exception.GetType().Name));
+                    // Try to copy the source file to the destination, overwriting the destination file if it already exists.
+                    // And giving some feedback about its success (or failure) 
+                    try
+                    {
+                        File.Copy(sourcePath, destFileName, true);
+                        this.StatusBar.SetMessage(sourceFile + " copied to " + destFileName);
+                    }
+                    catch (Exception exception)
+                    {
+                        TraceDebug.PrintMessage(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
+                        this.StatusBar.SetMessage(String.Format("Copy failed with {0} in MenuItemExportThisImage_Click.", exception.GetType().Name));
+                    }
                 }
             }
         }

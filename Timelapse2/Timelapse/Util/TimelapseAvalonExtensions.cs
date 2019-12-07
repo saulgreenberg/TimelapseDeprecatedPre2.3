@@ -141,18 +141,20 @@ namespace Timelapse.Util
 
             // Convert the string to a stream 
             MemoryStream layoutAsStream = new MemoryStream();
-            StreamWriter writer = new StreamWriter(layoutAsStream);
-            writer.Write(layoutAsString);
-            writer.Flush();
-            layoutAsStream.Position = 0;
-
-            // Deserializa and load the layout
-            XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
-            using (StreamReader streamReader = new StreamReader(layoutAsStream))
+            using (StreamWriter writer = new StreamWriter(layoutAsStream))
             {
-                serializer.Deserialize(streamReader);
+                writer.Write(layoutAsString);
+                writer.Flush();
+                layoutAsStream.Position = 0;
+
+                // Deserializa and load the layout
+                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
+                using (StreamReader streamReader = new StreamReader(layoutAsStream))
+                {
+                    serializer.Deserialize(streamReader);
+                }
+                return true;
             }
-            return true;
         }
 
         // Load the window position and size from the registry
@@ -422,24 +424,26 @@ namespace Timelapse.Util
 
             // Serialization normally creates a stream, so we have to do a few contortions to transform that stream into a string  
             StringBuilder xmlText = new StringBuilder();
-            XmlWriter xmlWriter = XmlWriter.Create(xmlText);
+            using (XmlWriter xmlWriter = XmlWriter.Create(xmlText))
+            {
 
-            // Serialize the layout into a string
-            XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
-            using (StringWriter stream = new StringWriter())
-            {
-                serializer.Serialize(xmlWriter);
-            }
-            if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))
-            {
-                // Write the string to the registry under the given key name
-                timelapse.state.WriteToRegistry(registryKey, xmlText.ToString());
-                AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
-                return true;
-            }
-            else
-            {
-                return false;
+                // Serialize the layout into a string
+                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
+                using (StringWriter stream = new StringWriter())
+                {
+                    serializer.Serialize(xmlWriter);
+                }
+                if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))
+                {
+                    // Write the string to the registry under the given key name
+                    timelapse.state.WriteToRegistry(registryKey, xmlText.ToString());
+                    AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 

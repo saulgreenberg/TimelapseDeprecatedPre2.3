@@ -85,34 +85,33 @@ namespace Timelapse.Util
                         release = (int)releaseAsObject;
                     }
                 }
-            }
 
-            if (release >= 394802)
-            {
-                return "4.6.2 or later";
+                if (release >= 394802)
+                {
+                    return "4.6.2 or later";
+                }
+                if (release >= 394254)
+                {
+                    return "4.6.1";
+                }
+                if (release >= 393295)
+                {
+                    return "4.6";
+                }
+                if (release >= 379893)
+                {
+                    return "4.5.2";
+                }
+                if (release >= 378675)
+                {
+                    return "4.5.1";
+                }
+                if (release >= 378389)
+                {
+                    return "4.5";
+                }
+                return "4.5 or later not detected";
             }
-            if (release >= 394254)
-            {
-                return "4.6.1";
-            }
-            if (release >= 393295)
-            {
-                return "4.6";
-            }
-            if (release >= 379893)
-            {
-                return "4.5.2";
-            }
-            if (release >= 378675)
-            {
-                return "4.5.1";
-            }
-            if (release >= 378389)
-            {
-                return "4.5";
-            }
-
-            return "4.5 or later not detected";
         }
 
         public static ParallelOptions GetParallelOptions(int maximumDegreeOfParallelism)
@@ -282,7 +281,7 @@ namespace Timelapse.Util
         public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
         {
             // Get the template file, which should be located where the images reside
-            OpenFileDialog openFileDialog = new OpenFileDialog()
+            using (OpenFileDialog openFileDialog = new OpenFileDialog()
             {
                 Title = title,
                 CheckFileExists = true,
@@ -293,25 +292,27 @@ namespace Timelapse.Util
                 // Set filter for file extension and default file extension 
                 DefaultExt = defaultExtension,
                 Filter = filter
-            };
-            if (String.IsNullOrWhiteSpace(defaultFilePath))
+            })
             {
-                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            }
-            else
-            {
-                openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
-                openFileDialog.FileName = Path.GetFileName(defaultFilePath);
-            }
+                if (String.IsNullOrWhiteSpace(defaultFilePath))
+                {
+                    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
+                else
+                {
+                    openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
+                    openFileDialog.FileName = Path.GetFileName(defaultFilePath);
+                }
 
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                selectedFilePath = openFileDialog.FileName;
-                return true;
-            }
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    selectedFilePath = openFileDialog.FileName;
+                    return true;
+                }
 
-            selectedFilePath = null;
-            return false;
+                selectedFilePath = null;
+                return false;
+            }
         }
 
         /// <summary>
