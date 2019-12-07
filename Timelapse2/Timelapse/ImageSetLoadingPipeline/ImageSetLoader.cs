@@ -56,7 +56,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
-        public ImageSetLoader(string imageSetFolderPath, string selectedFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageSetLoader(string imageSetFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(dataHandler, nameof(dataHandler));
@@ -64,7 +64,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             // Don't add a file if it already exists in the database.
             // Rather than check every file one by one to see if it exists in the database 
             // - get all the current files in the database (as existing full paths) in a single database call,
-            // - create a new file list (fileInfoArray) that only adds files found in the selectedFolderPath (as fileInfos) that are NOT present in the database. 
+            // - create a new file list (fileInfoArray) that only adds files (as fileInfos) that are NOT present in the database. 
             HashSet<string> existingPaths = new HashSet<string>(from file in dataHandler.FileDatabase.GetAllFiles()
                                                                 select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
 

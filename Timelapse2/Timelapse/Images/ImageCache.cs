@@ -117,7 +117,7 @@ namespace Timelapse.Images
             }
 
             // determine which image to use for differencing
-            WriteableBitmap comparisonBitmap = null;
+            WriteableBitmap comparisonBitmap;
             if (this.CurrentDifferenceState == ImageDifferenceEnum.Previous)
             {
                 if (this.TryGetPreviousBitmapAsWriteable(out comparisonBitmap) == false)
@@ -190,7 +190,7 @@ namespace Timelapse.Images
                 this.Reset();
             }
 
-            this.unalteredBitmapsByID.TryRemove(id, out BitmapSource bitmapForID);
+            this.unalteredBitmapsByID.TryRemove(id, out _);
             lock (this.mostRecentlyUsedIDs)
             {
                 return this.mostRecentlyUsedIDs.TryRemove(id);
@@ -199,7 +199,7 @@ namespace Timelapse.Images
 
         public override bool TryMoveToFile(int fileIndex)
         {
-            return this.TryMoveToFile(fileIndex, false, out bool ignored);
+            return this.TryMoveToFile(fileIndex, false, out _);
         }
 
         public bool TryMoveToFile(int fileIndex, bool forceUpdate, out bool newFileToDisplay)

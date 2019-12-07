@@ -188,7 +188,7 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath, true, out backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath, out backgroundWorker);
             }
             else
             {
@@ -298,7 +298,7 @@ namespace Timelapse
 
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
-        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath, bool isInitialImageSetLoading, out BackgroundWorker externallyVisibleWorker)
+        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath, out BackgroundWorker externallyVisibleWorker)
         {
             List<FileInfo> filesToAdd = new List<FileInfo>();
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
@@ -342,7 +342,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, selectedFolderPath, filesToAdd, this.dataHandler, this.state);
+                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.dataHandler, this.state);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 

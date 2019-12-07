@@ -75,7 +75,7 @@ namespace Timelapse.Images
         // (where r=g=b, with a bit of slop added) and then check that against a threshold.
         public static FileSelectionEnum GetImageQuality(this WriteableBitmap image, int darkPixelThreshold, double darkPixelRatio)
         {
-            return image.IsDark(darkPixelThreshold, darkPixelRatio, out double ignored1, out bool ignored2);
+            return image.IsDark(darkPixelThreshold, darkPixelRatio, out _, out _);
         }
 
         // Return whether the image is mostly dark. This is done by counting the number of pixels that are

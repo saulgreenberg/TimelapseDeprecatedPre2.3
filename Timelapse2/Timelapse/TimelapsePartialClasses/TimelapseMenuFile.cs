@@ -61,7 +61,7 @@ namespace Timelapse
             if (this.ShowFolderSelectionDialog(out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath, false, out BackgroundWorker backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath, out BackgroundWorker backgroundWorker);
                 Mouse.OverrideCursor = null;
             }
         }
@@ -309,7 +309,6 @@ namespace Timelapse
                 this.StatusBar.SetMessage("No data file backup was made.");
             }
 
-            CsvReaderWriter csvReader = new CsvReaderWriter();
             try
             {
                 if (CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
