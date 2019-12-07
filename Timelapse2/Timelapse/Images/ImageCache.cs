@@ -346,19 +346,6 @@ namespace Timelapse.Images
             }
         }
 
-        private bool TryGetBitmap(int fileRow, out BitmapSource bitmap)
-        {
-            // get properties for the image to retrieve
-            if (this.TryGetImage(fileRow, out ImageRow file) == false)
-            {
-                bitmap = null;
-                return false;
-            }
-
-            // get the associated bitmap
-            return this.TryGetBitmap(file, out bitmap);
-        }
-
         private bool TryGetBitmapAsWriteable(int fileRow, out WriteableBitmap bitmap)
         {
             if (this.TryGetImage(fileRow, out ImageRow file) == false)

@@ -185,7 +185,6 @@ namespace Timelapse
                 this.StatusBar.SetMessage("No csv file backup was made.");
             }
 
-            CsvReaderWriter csvWriter = new CsvReaderWriter();
             try
             {
                 CsvReaderWriter.ExportToCsv(this.dataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
