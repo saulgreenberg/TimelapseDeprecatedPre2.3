@@ -34,7 +34,7 @@ namespace Timelapse
         private bool disposed;
         private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
-        private string mostRecentFileAddFolderPath;
+        // private string mostRecentFileAddFolderPath;
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
         public TimelapseState state;                                    // Status information concerning the state of the UI
         private TemplateDatabase templateDatabase;                      // The database that holds the template
@@ -563,57 +563,31 @@ namespace Timelapse
 
         #region Folder Selection Dialogs
         // Open a dialog where the user selects one or more folders that contain the image set(s)
-        private bool ShowFolderSelectionDialog(out IEnumerable<string> folderPaths)
+        private bool ShowFolderSelectionDialog(string rootFolderPath, out string selectedFolderPath)
         {
-            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
-            {
-                Title = "Select one or more folders ...",
-                DefaultDirectory = this.FolderPath,
-                IsFolderPicker = true,
-                Multiselect = true
-            };
-            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
-            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
-            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
-            {
-                folderPaths = folderSelectionDialog.FileNames;
-
-                // remember the parent of the selected folder path to save the user clicks and scrolling in case images from additional 
-                // directories are added
-                this.mostRecentFileAddFolderPath = Path.GetDirectoryName(folderPaths.First());
-                return true;
-            }
-
-            folderPaths = null;
-            return false;
-        }
-
-        // Open a dialog where the user selects one or more folders that contain the image set(s)
-        private bool ShowFolderSelectionDialog(out string folderPath)
-        {
-            CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            using (CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
             {
                 Title = "Select a folder ...",
-                DefaultDirectory = this.FolderPath,
+                DefaultDirectory = rootFolderPath,
                 IsFolderPicker = true,
                 Multiselect = false
-            };
-            folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
-            folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
-            if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+            })
             {
-                IEnumerable<string> folderPaths = folderSelectionDialog.FileNames;
-                folderPath = folderPaths.First();
-                // remember the parent of the selected folder path to save the user clicks and scrolling in case images from additional 
-                // directories are added
-                this.mostRecentFileAddFolderPath = Path.GetDirectoryName(folderPaths.First());
-                return true;
+                folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+                folderSelectionDialog.FolderChanging += this.FolderSelectionDialog_FolderChanging;
+                if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    IEnumerable<string> folderPaths = folderSelectionDialog.FileNames;
+                    selectedFolderPath = folderPaths.First();
+                    return true;
+                }
+                selectedFolderPath = null;
+                return false;
             }
-            folderPath = null;
-            return false;
         }
         /// <summary>
-        /// File menu helper function:
+        /// File menu helper function.
+        /// Note that it accesses this.FolderPath
         /// </summary>
         private void FolderSelectionDialog_FolderChanging(object sender, CommonFileDialogFolderChangeEventArgs e)
         {
@@ -665,20 +639,6 @@ namespace Timelapse
             return false;
         }
 
-        private bool IsUTCOffsetInDatabase()
-        {
-            // Find the Utcoffset control
-            foreach (ControlRow control in this.templateDatabase.Controls)
-            {
-                string controlType = control.Type;
-                if (controlType == Constant.DatabaseColumn.UtcOffset)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private bool IsUTCOffsetVisible()
         {
             // Find the Utcoffset control
@@ -692,6 +652,22 @@ namespace Timelapse
             }
             return false;
         }
+
+        #pragma warning disable IDE0051 // Remove unused private members
+        private bool IsUTCOffsetInDatabase()
+        {
+            // Find the Utcoffset control
+            foreach (ControlRow control in this.templateDatabase.Controls)
+            {
+                string controlType = control.Type;
+                if (controlType == Constant.DatabaseColumn.UtcOffset)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        #pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
         #region Single vs Multiple Image View
@@ -855,7 +831,7 @@ namespace Timelapse
         {
             if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
-                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath, out _) == false)
+                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath) == false)
                 {
                     this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
                     this.RecentFileSets_Refresh();

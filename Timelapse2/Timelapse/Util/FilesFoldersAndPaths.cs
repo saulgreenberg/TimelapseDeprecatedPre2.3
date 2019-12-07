@@ -168,7 +168,9 @@ namespace Timelapse.Util
         #region Unused methods
         // Return true if any of the files in the fileInfo list could be a MacOSX Hidden file, 
         // i.e., prefixed by '._'
+        #pragma warning disable IDE0051 // Remove unused private members
         private static bool CheckForMacOSXHiddenFiles(List<FileInfo> fileInfoList)
+
         {
             return fileInfoList.Any(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
         }
@@ -179,6 +181,7 @@ namespace Timelapse.Util
         {
             fileInfoList.RemoveAll(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
         }
+        #pragma warning restore IDE0051 // Remove unused private members
         #endregion
     }
 }

@@ -37,7 +37,7 @@ namespace Timelapse
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath, out BackgroundWorker backgroundWorker);
+                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath);
                 Mouse.OverrideCursor = null;
             }
         }
@@ -47,7 +47,7 @@ namespace Timelapse
         {
             string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
             Mouse.OverrideCursor = Cursors.Wait;
-            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath, out BackgroundWorker backgroundWorker) == false)
+            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath) == false)
             {
                 this.state.MostRecentImageSets.TryRemove(recentDatabasePath);
                 this.RecentFileSets_Refresh();
@@ -58,10 +58,10 @@ namespace Timelapse
         // Add Images to Image Set 
         private void MenuItemAddImagesToImageSet_Click(object sender, RoutedEventArgs e)
         {
-            if (this.ShowFolderSelectionDialog(out string folderPath))
+            if (this.ShowFolderSelectionDialog(this.FolderPath, out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath, out BackgroundWorker backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath);
                 Mouse.OverrideCursor = null;
             }
         }

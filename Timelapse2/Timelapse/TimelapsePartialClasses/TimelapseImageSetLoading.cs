@@ -48,10 +48,8 @@ namespace Timelapse
         // Load the specified database template and then the associated images. 
         // templateDatabasePath is the Fully qualified path to the template database file.
         // Returns true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise
-        private bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath, out BackgroundWorker backgroundWorker)
+        private bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath)
         {
-            backgroundWorker = null;
-
             // Try to create or open the template database
             // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
             if (Utilities.IsPathLengthTooLong(templateDatabasePath))
@@ -188,7 +186,7 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath, out backgroundWorker);
+                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath);
             }
             else
             {
@@ -298,7 +296,7 @@ namespace Timelapse
 
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
-        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath, out BackgroundWorker externallyVisibleWorker)
+        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath)
         {
             List<FileInfo> filesToAdd = new List<FileInfo>();
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
@@ -319,7 +317,6 @@ namespace Timelapse
                 messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.ShowDialog();
-                externallyVisibleWorker = null;
                 return false;
             }
 
@@ -427,7 +424,6 @@ namespace Timelapse
             this.UpdateFolderLoadProgress(null, 0, String.Format("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count));
             this.StatusBar.SetMessage("Loading folders...");
             backgroundWorker.RunWorkerAsync();
-            externallyVisibleWorker = backgroundWorker;
             return true;
         }
 
