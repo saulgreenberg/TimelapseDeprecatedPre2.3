@@ -23,12 +23,22 @@ namespace Timelapse.Detection
             this.images = new List<image>();
         }
 
+        // Dispose implemented to follow pattern described in CA1816
         public void Dispose()
         {
-            this.info = null;
-            this.detection_categories = null;
-            this.classification_categories = null;
-            this.images = null;
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.info = null;
+                this.detection_categories = null;
+                this.classification_categories = null;
+                this.images = null;
+            }
         }
 
         // Defaults are just used when reading in current csv files, as that file does not include the category definitions
@@ -92,14 +102,26 @@ namespace Timelapse.Detection
         public int detectionID { get; set; }
         public string category { get; set; }
         public float conf { get; set; }
-        public double[] bbox { get; set; }
+
+        private double[] bbox1;
+
+        public double[] Getbbox()
+        {
+            return this.bbox1;
+        }
+
+        public void Setbbox(double[] value)
+        {
+            this.bbox1 = value;
+        }
+
         public List<Object[]> classifications { get; set; }
         public detection()
         {
             this.category = String.Empty;
             this.conf = 0;
             this.classifications = new List<Object[]>();
-            this.bbox = new double[4];
+            this.Setbbox(new double[4]);
         }
     }
 }
