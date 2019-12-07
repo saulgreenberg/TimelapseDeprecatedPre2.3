@@ -300,10 +300,10 @@ namespace Timelapse.Editor
             this.dataGridBeingUpdatedByCode = true;
 
             CodeTemplateImporter importer = new CodeTemplateImporter();
-            importer.Import(codeTemplateFileName, this.templateDatabase, out List<string> conversionErrors);
+            CodeTemplateImporter.Import(codeTemplateFileName, this.templateDatabase, out List<string> conversionErrors);
 
             // Now that we have new contents of the datatable, update the user interface to match that
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+            this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
 
             this.dataGridBeingUpdatedByCode = false;
@@ -426,7 +426,7 @@ namespace Timelapse.Editor
                 }
             }
             this.userSettings.ShowUtcOffset = mi.IsChecked ? true : false;
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+            this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
         }
 
@@ -527,7 +527,7 @@ namespace Timelapse.Editor
             this.templateDatabase.BindToEditorDataGrid(this.TemplateDataGrid, this.TemplateDataTable_RowChanged);
 
             // Update the user interface specified by the contents of the table
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+            this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
 
             // Enable/disable the various UI elements as needed.
@@ -545,7 +545,7 @@ namespace Timelapse.Editor
             this.dataGridBeingUpdatedByCode = true;
 
             this.templateDatabase.SyncControlToDatabase(control);
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+            this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
 
             this.dataGridBeingUpdatedByCode = false;
@@ -628,7 +628,7 @@ namespace Timelapse.Editor
                 this.dataGridBeingUpdatedByCode = true;
                 // remove the control, then update the view so it reflects the current values in the database
                 this.templateDatabase.RemoveUserDefinedControl(new ControlRow(selectedRowView.Row));
-                this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls);
+                this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
                 this.GenerateSpreadsheet();
                 this.dataGridBeingUpdatedByCode = false;
             }
@@ -1453,7 +1453,7 @@ namespace Timelapse.Editor
             this.dataGridBeingUpdatedByCode = true;
             this.templateDatabase.UpdateDisplayOrder(Constant.Control.ControlOrder, newControlOrderByDataLabel);
             this.dataGridBeingUpdatedByCode = false;
-            this.controls.Generate(this, this.ControlsPanel, this.templateDatabase.Controls); // Ensures that the controls panel updates itself
+            this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls); // Ensures that the controls panel updates itself
         }
         #endregion
 

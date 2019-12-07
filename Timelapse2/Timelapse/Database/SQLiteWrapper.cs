@@ -87,7 +87,7 @@ namespace Timelapse.Database
             try
             {
                 // Open the connection
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     SQLiteDataReader reader = GetSchema(connection, tableName);
@@ -170,7 +170,7 @@ namespace Timelapse.Database
             try
             {
                 // Open the connection
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -194,7 +194,7 @@ namespace Timelapse.Database
 
         public List<object> GetDistinctValuesInColumn(string tableName, string columnName)
         {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+            using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
             {
                 connection.Open();
                 using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -222,7 +222,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -249,7 +249,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
@@ -284,7 +284,7 @@ namespace Timelapse.Database
             string mostRecentStatement = null;
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
@@ -351,7 +351,7 @@ namespace Timelapse.Database
 
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     command.Connection = connection;
@@ -576,7 +576,7 @@ namespace Timelapse.Database
             {
                 // Create an empty table with the schema based on columnDefinitions
                 this.CreateTable(destTable, columnDefinitions);
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
@@ -599,7 +599,7 @@ namespace Timelapse.Database
         {
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
@@ -624,7 +624,7 @@ namespace Timelapse.Database
 
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
@@ -684,7 +684,7 @@ namespace Timelapse.Database
 
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     // Some basic error checking to make sure we can do the operation
@@ -742,7 +742,7 @@ namespace Timelapse.Database
 
             try
             {
-                using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
                     List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
@@ -863,7 +863,7 @@ namespace Timelapse.Database
 
         public void DropTable(string tableName)
         {
-            using (SQLiteConnection connection = this.GetNewSqliteConnection(this.connectionString))
+            using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
             {
                 connection.Open();
                 DropTable(connection, tableName);
@@ -1085,7 +1085,7 @@ namespace Timelapse.Database
         // Note that the 2nd argument is ParseViaFramework. This is included to resolve an issue that occurs
         // when users try to open a network file on some VPNs, eg., Cisco VPN and perhaps other network file systems
         // Its an obscur bug and solution reported by others: sqlite doesn't really document that argument very well. But it seems to fix it.
-        private SQLiteConnection GetNewSqliteConnection(string connectionString)
+        private static SQLiteConnection GetNewSqliteConnection(string connectionString)
         {
             return new SQLiteConnection(connectionString, true);
         }

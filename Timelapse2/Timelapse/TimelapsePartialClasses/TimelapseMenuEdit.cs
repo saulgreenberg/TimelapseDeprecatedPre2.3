@@ -208,7 +208,7 @@ namespace Timelapse
                     // First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
                     if (currentFileID == image.ID)
                     {
-                        this.dataHandler.ImageCache.Current.ClearBitmap();
+                        ImageRow.ClearBitmap();
                     }
                     // Second, release the image cache   
                     this.dataHandler.ImageCache.TryInvalidate(image.ID);

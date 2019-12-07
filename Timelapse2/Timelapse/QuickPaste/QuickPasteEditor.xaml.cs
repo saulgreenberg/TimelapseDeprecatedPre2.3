@@ -74,14 +74,14 @@ namespace Timelapse.QuickPaste
                     Height = GridLength.Auto
                 };
                 this.QuickPasteGridRows.RowDefinitions.Add(gridRow);
-                this.BuildRow(quickPasteItem, gridRow, gridRowIndex);
+                this.BuildRow(quickPasteItem, gridRowIndex);
             }
         }
 
         // Given a quickPasteItem (essential the information representing a single data control and its value),
         // - add a row to the grid with controls that display that information,
         // - add a checkbox that can be selected to indicate whether that information should be included in a paste operation
-        private void BuildRow(QuickPasteItem quickPasteItem, RowDefinition gridRow, int gridRowIndex)
+        private void BuildRow(QuickPasteItem quickPasteItem, int gridRowIndex)
         {
             // USE Column: A checkbox to indicate whether the current search row should be used as part of the search
             Thickness thickness = new Thickness(0, 2, 0, 2);

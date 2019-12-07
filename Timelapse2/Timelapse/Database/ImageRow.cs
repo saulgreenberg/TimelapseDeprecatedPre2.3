@@ -418,7 +418,7 @@ namespace Timelapse.Database
                                                imageExpectedUsage);
         }
 
-        public BitmapSource ClearBitmap()
+        public static BitmapSource ClearBitmap()
         {
             return Constant.ImageValues.FileNoLongerAvailable.Value;
         }

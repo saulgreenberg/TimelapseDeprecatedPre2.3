@@ -18,7 +18,7 @@ namespace Timelapse.Editor.Util
     /// </remarks>
     internal class EditorControls
     {
-        public void Generate(EditorWindow mainWindow, WrapPanel parent, DataTableBackedList<ControlRow> templateTable)
+        public void Generate(WrapPanel parent, DataTableBackedList<ControlRow> templateTable)
         {
             // used for styling all content and label controls except ComboBoxes since the combo box style is commented out in DataEntryControls.xaml
             // and defined instead in MainWindow.xaml as an exception workaround
@@ -37,40 +37,40 @@ namespace Timelapse.Editor.Util
                     case Constant.DatabaseColumn.Folder:
                     case Constant.DatabaseColumn.RelativePath:
                     case Constant.DatabaseColumn.Time:
-                        Label noteLabel = this.CreateLabel(styleProvider, control);
-                        TextBox noteContent = this.CreateTextBox(styleProvider, control);
-                        stackPanel = this.CreateStackPanel(styleProvider, noteLabel, noteContent);
+                        Label noteLabel = EditorControls.CreateLabel(styleProvider, control);
+                        TextBox noteContent = EditorControls.CreateTextBox(styleProvider, control);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, noteLabel, noteContent);
                         break;
                     case Constant.Control.Counter:
-                        RadioButton counterLabel = this.CreateCounterLabelButton(styleProvider, control);
-                        IntegerUpDown counterContent = this.CreateIntegerUpDown(styleProvider, control);
-                        stackPanel = this.CreateStackPanel(styleProvider, counterLabel, counterContent);
+                        RadioButton counterLabel = EditorControls.CreateCounterLabelButton(styleProvider, control);
+                        IntegerUpDown counterContent = EditorControls.CreateIntegerUpDown(styleProvider, control);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, counterLabel, counterContent);
                         counterLabel.IsTabStop = false;
                         counterContent.GotFocus += this.Control_GotFocus;
                         counterContent.LostFocus += this.Control_LostFocus;
                         break;
                     case Constant.Control.Flag:
                     case Constant.DatabaseColumn.DeleteFlag:
-                        Label flagLabel = this.CreateLabel(styleProvider, control);
+                        Label flagLabel = EditorControls.CreateLabel(styleProvider, control);
                         CheckBox flagContent = this.CreateFlag(styleProvider, control);
                         flagContent.IsChecked = String.Equals(control.DefaultValue, Constant.BooleanValue.True, StringComparison.OrdinalIgnoreCase) ? true : false;
-                        stackPanel = this.CreateStackPanel(styleProvider, flagLabel, flagContent);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, flagLabel, flagContent);
                         break;
                     case Constant.Control.FixedChoice:
                     case Constant.DatabaseColumn.ImageQuality:
-                        Label choiceLabel = this.CreateLabel(styleProvider, control);
-                        ComboBox choiceContent = this.CreateComboBox(styleProvider, control);
-                        stackPanel = this.CreateStackPanel(styleProvider, choiceLabel, choiceContent);
+                        Label choiceLabel = EditorControls.CreateLabel(styleProvider, control);
+                        ComboBox choiceContent = EditorControls.CreateComboBox(styleProvider, control);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, choiceLabel, choiceContent);
                         break;
                     case Constant.DatabaseColumn.DateTime:
-                        Label dateTimeLabel = this.CreateLabel(styleProvider, control);
+                        Label dateTimeLabel = EditorControls.CreateLabel(styleProvider, control);
                         DateTimePicker dateTimeContent = this.CreateDateTimePicker(control);
-                        stackPanel = this.CreateStackPanel(styleProvider, dateTimeLabel, dateTimeContent);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, dateTimeLabel, dateTimeContent);
                         break;
                     case Constant.DatabaseColumn.UtcOffset:
-                        Label utcOffsetLabel = this.CreateLabel(styleProvider, control);
+                        Label utcOffsetLabel = EditorControls.CreateLabel(styleProvider, control);
                         UtcOffsetUpDown utcOffsetContent = this.CreateUtcOffsetPicker(control);
-                        stackPanel = this.CreateStackPanel(styleProvider, utcOffsetLabel, utcOffsetContent);
+                        stackPanel = EditorControls.CreateStackPanel(styleProvider, utcOffsetLabel, utcOffsetContent);
                         break;
                     default:
                         throw new NotSupportedException(String.Format("Unhandled control type {0}.", control.Type));
@@ -109,7 +109,7 @@ namespace Timelapse.Editor.Util
         // Returns a stack panel containing two controls
         // The stack panel ensures that controls are layed out as a single unit with certain spatial characteristcs 
         // i.e.,  a given height, right margin, where contents will not be broken durring (say) panel wrapping
-        private StackPanel CreateStackPanel(DataEntryControls styleProvider, Control label, Control content)
+        private static StackPanel CreateStackPanel(DataEntryControls styleProvider, Control label, Control content)
         {
             StackPanel stackPanel = new StackPanel();
             stackPanel.Children.Add(label);
@@ -133,7 +133,7 @@ namespace Timelapse.Editor.Util
             return utcOffsetPicker;
         }
 
-        private Label CreateLabel(DataEntryControls styleProvider, ControlRow control)
+        private static Label CreateLabel(DataEntryControls styleProvider, ControlRow control)
         {
             Label label = new Label()
             {
@@ -144,7 +144,7 @@ namespace Timelapse.Editor.Util
             return label;
         }
 
-        private TextBox CreateTextBox(DataEntryControls styleProvider, ControlRow control)
+        private static TextBox CreateTextBox(DataEntryControls styleProvider, ControlRow control)
         {
             TextBox textBox = new TextBox()
             {
@@ -156,7 +156,7 @@ namespace Timelapse.Editor.Util
             return textBox;
         }
 
-        private IntegerUpDown CreateIntegerUpDown(DataEntryControls styleProvider, ControlRow control)
+        private static IntegerUpDown CreateIntegerUpDown(DataEntryControls styleProvider, ControlRow control)
         {
             IntegerUpDown integerUpDown = new IntegerUpDown()
             {
@@ -172,7 +172,7 @@ namespace Timelapse.Editor.Util
             return integerUpDown;
         }
 
-        private RadioButton CreateCounterLabelButton(DataEntryControls styleProvider, ControlRow control)
+        private static RadioButton CreateCounterLabelButton(DataEntryControls styleProvider, ControlRow control)
         {
             RadioButton radioButton = new RadioButton()
             {
@@ -197,7 +197,7 @@ namespace Timelapse.Editor.Util
             return checkBox;
         }
 
-        private ComboBox CreateComboBox(DataEntryControls styleProvider, ControlRow control)
+        private static ComboBox CreateComboBox(DataEntryControls styleProvider, ControlRow control)
         {
             ComboBox comboBox = new ComboBox()
             {

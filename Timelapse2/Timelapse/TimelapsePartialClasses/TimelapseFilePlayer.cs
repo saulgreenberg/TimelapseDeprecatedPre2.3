@@ -75,7 +75,7 @@ namespace Timelapse
         // TimerTick: On every tick, try to show the next/previous file as indicated by the direction
         private void FilePlayerTimer_Tick(object sender, EventArgs e)
         {
-            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, ModifierKeys.None);
+            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction);
 
             // Stop the timer if the image reaches the beginning or end of the image set
             if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))

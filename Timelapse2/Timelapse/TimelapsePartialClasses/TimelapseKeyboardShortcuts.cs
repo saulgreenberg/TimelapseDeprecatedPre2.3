@@ -122,7 +122,7 @@ namespace Timelapse
                     direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
                     if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
-                        this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
+                        this.TryFileShowWithoutSliderCallback(direction);
                     }
                     break;
                 case Key.Up:                // show visual difference to next image
@@ -183,7 +183,7 @@ namespace Timelapse
                         this.FilePlayer_Stop();      // In case the FilePlayer is going
                         if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
                         {
-                            this.TryFileShowWithoutSliderCallback(direction, Keyboard.Modifiers);
+                            this.TryFileShowWithoutSliderCallback(direction);
                         }
                     }
                     break;

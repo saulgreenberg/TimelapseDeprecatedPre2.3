@@ -215,12 +215,12 @@ namespace Timelapse
         }
 
         // Refresh the image
-        private bool TryFileShowWithoutSliderCallback()
-        {
-            return this.TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
-        }
+        //private bool TryFileShowWithoutSliderCallback()
+        //{
+        //    return this.TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
+        //}
 
-        private bool TryFileShowWithoutSliderCallback(DirectionEnum direction, ModifierKeys modifiers)
+        private bool TryFileShowWithoutSliderCallback(DirectionEnum direction)
         {
             // Check to see if there are any images to show, 
             if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
@@ -229,17 +229,6 @@ namespace Timelapse
             }
             // determine how far to move and in which direction
             int increment = 1;
-            // DEPRACATED: Timelapse used to skip images when the Shift or Control key was pressed.
-            // This has been removed as we want to use SHIFT-L/R Arrow to always move between images even when 
-            // we are in a data control
-            // if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
-            // {
-            //    increment *= 5;
-            // }
-            // if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
-            // {
-            //    increment *= 10;
-            // }
             return this.TryFileShowWithoutSliderCallback(direction, increment);
         }
 

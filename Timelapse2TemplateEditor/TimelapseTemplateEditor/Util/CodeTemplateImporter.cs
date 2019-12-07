@@ -13,7 +13,7 @@ namespace Timelapse.Editor.Util
     // and converts it into a data template database.
     public class CodeTemplateImporter
     {
-        public void Import(string filePath, TemplateDatabase templateDatabase, out List<string> conversionErrors)
+        public static void Import(string filePath, TemplateDatabase templateDatabase, out List<string> conversionErrors)
         {
             ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             conversionErrors = new List<string>();
@@ -32,19 +32,19 @@ namespace Timelapse.Editor.Util
             // MarkForDeletion and Relative path weren't available in code templates
             // NOTE THAT WE NEED TO UPDATE THIS TO NEWER DELETEFLAG
             XmlNodeList selectedNodes = xmlDoc.SelectNodes(Constant.ImageXml.FilePath); // Convert the File type 
-            this.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.File, ref conversionErrors, ref dataLabels);
+            CodeTemplateImporter.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.File, ref conversionErrors, ref dataLabels);
 
             selectedNodes = xmlDoc.SelectNodes(Constant.ImageXml.FolderPath); // Convert the Folder type
-            this.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Folder, ref conversionErrors, ref dataLabels);
+            CodeTemplateImporter.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Folder, ref conversionErrors, ref dataLabels);
 
             selectedNodes = xmlDoc.SelectNodes(Constant.ImageXml.DatePath); // Convert the Date type
-            this.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Date, ref conversionErrors, ref dataLabels);
+            CodeTemplateImporter.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Date, ref conversionErrors, ref dataLabels);
 
             selectedNodes = xmlDoc.SelectNodes(Constant.ImageXml.TimePath); // Convert the Time type
-            this.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Time, ref conversionErrors, ref dataLabels);
+            CodeTemplateImporter.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.Time, ref conversionErrors, ref dataLabels);
 
             selectedNodes = xmlDoc.SelectNodes(Constant.ImageXml.ImageQualityPath); // Convert the Image Quality type
-            this.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.ImageQuality, ref conversionErrors, ref dataLabels);
+            CodeTemplateImporter.UpdateStandardControl(selectedNodes, templateDatabase, Constant.DatabaseColumn.ImageQuality, ref conversionErrors, ref dataLabels);
 
             // no flag controls to import
             // import notes
@@ -52,7 +52,7 @@ namespace Timelapse.Editor.Util
             for (int index = 0; index < selectedNodes.Count; index++)
             {
                 ControlRow note = templateDatabase.AddUserDefinedControl(Constant.Control.Note);
-                this.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Note, note, ref conversionErrors, ref dataLabels);
+                CodeTemplateImporter.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Note, note, ref conversionErrors, ref dataLabels);
             }
 
             // import choices
@@ -60,7 +60,7 @@ namespace Timelapse.Editor.Util
             for (int index = 0; index < selectedNodes.Count; index++)
             {
                 ControlRow choice = templateDatabase.AddUserDefinedControl(Constant.Control.FixedChoice);
-                this.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.FixedChoice, choice, ref conversionErrors, ref dataLabels);
+                CodeTemplateImporter.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.FixedChoice, choice, ref conversionErrors, ref dataLabels);
             }
 
             // import counters
@@ -68,12 +68,12 @@ namespace Timelapse.Editor.Util
             for (int index = 0; index < selectedNodes.Count; index++)
             {
                 ControlRow counter = templateDatabase.AddUserDefinedControl(Constant.Control.Counter);
-                this.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Counter, counter, ref conversionErrors, ref dataLabels);
+                CodeTemplateImporter.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Counter, counter, ref conversionErrors, ref dataLabels);
             }
             reader.Dispose();
         }
 
-        private void UpdateControl(XmlNode selectedNode, TemplateDatabase templateDatabase, string typeWanted, ControlRow control, ref List<string> errorMessages, ref List<string> dataLabels)
+        private static void UpdateControl(XmlNode selectedNode, TemplateDatabase templateDatabase, string typeWanted, ControlRow control, ref List<string> errorMessages, ref List<string> dataLabels)
         {
             XmlNodeList selectedData = selectedNode.SelectNodes(Constant.ImageXml.Data);
             control.DefaultValue = GetColumn(selectedData, Constant.Control.DefaultValue); // Default
@@ -199,7 +199,7 @@ namespace Timelapse.Editor.Util
             templateDatabase.SyncControlToDatabase(control);
         }
 
-        private void UpdateStandardControl(XmlNodeList selectedNodes, TemplateDatabase templateDatabase, string typeWanted, ref List<string> errorMessages, ref List<string> dataLabels)
+        private static void UpdateStandardControl(XmlNodeList selectedNodes, TemplateDatabase templateDatabase, string typeWanted, ref List<string> errorMessages, ref List<string> dataLabels)
         {
             Debug.Assert(selectedNodes != null && selectedNodes.Count == 1, "Row update is supported for only a single XML element.");
 
@@ -208,7 +208,7 @@ namespace Timelapse.Editor.Util
             {
                 if (control.Type == typeWanted)
                 {
-                    this.UpdateControl(selectedNodes[0], templateDatabase, typeWanted, control, ref errorMessages, ref dataLabels);
+                    CodeTemplateImporter.UpdateControl(selectedNodes[0], templateDatabase, typeWanted, control, ref errorMessages, ref dataLabels);
                     return;
                 }
             }
