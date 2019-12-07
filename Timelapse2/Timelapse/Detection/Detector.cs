@@ -22,6 +22,7 @@ namespace Timelapse.Detection
             this.info = new info();
             this.images = new List<image>();
         }
+
         public void Dispose()
         {
             this.info = null;

@@ -67,6 +67,9 @@ namespace Timelapse.Controls
                 // Load the entire text into the Flow Document
                 TextRange textRange = new TextRange(this.flowDocument.ContentStart, this.flowDocument.ContentEnd);
                 textRange.Load(stream, DataFormats.Rtf);
+
+                reader.Dispose();
+                writer.Dispose();
             }
             catch
             {
