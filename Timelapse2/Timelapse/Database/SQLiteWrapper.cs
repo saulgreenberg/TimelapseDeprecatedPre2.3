@@ -227,7 +227,9 @@ namespace Timelapse.Database
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
+                        #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                         command.CommandText = query;
+                        #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                         return command.ExecuteScalar();
                     }
                 }
@@ -342,7 +344,9 @@ namespace Timelapse.Database
             }
             SQLiteCommand command = new SQLiteCommand
             {
+                #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                 CommandText = commandString
+                #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             };
 
             try
