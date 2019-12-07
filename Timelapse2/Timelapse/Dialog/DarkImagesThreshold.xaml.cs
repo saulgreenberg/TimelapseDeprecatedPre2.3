@@ -169,7 +169,7 @@ namespace Timelapse.Dialog
         // Utility routine for calling a typical sequence of UI update actions
         private void DisplayImageAndDetails()
         {
-            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing).AsWriteable();
+            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath, out _).AsWriteable();
             this.Image.Source = this.bitmap;
             this.FileName.Content = this.imageEnumerator.Current.File;
             this.FileName.ToolTip = this.imageEnumerator.Current.File;

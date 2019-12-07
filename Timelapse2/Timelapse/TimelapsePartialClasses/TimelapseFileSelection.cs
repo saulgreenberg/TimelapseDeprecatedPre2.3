@@ -40,7 +40,11 @@ namespace Timelapse
 
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
+        // Note. forceUpdate isn't currently used. However,
+        // I kept it in in case I want to use it in the future.
+#pragma warning disable IDE0060 // Remove unused parameter
         private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
+        #pragma warning restore IDE0060 // Remove unused parameter
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
