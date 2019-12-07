@@ -822,7 +822,7 @@ namespace Timelapse.Database
         {
             if (String.IsNullOrWhiteSpace(where))
             {
-                throw new ArgumentOutOfRangeException("FileDatabase: 'where' clause is empty or null");
+                throw new ArgumentOutOfRangeException(nameof(where));
             }
 
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;

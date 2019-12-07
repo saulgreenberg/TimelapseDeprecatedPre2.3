@@ -3,7 +3,7 @@ using Timelapse.Util;
 
 namespace Timelapse.Editor
 {
-    public class EditorWindowExtensions
+    public static class EditorWindowExtensions
     {
         private static readonly DependencyProperty ChoiceListProperty =
             DependencyProperty.RegisterAttached("ChoiceList", typeof(string), typeof(EditorWindowExtensions), new PropertyMetadata(default(string)));

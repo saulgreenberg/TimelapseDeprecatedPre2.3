@@ -11,7 +11,7 @@ namespace Timelapse.Editor.Util
 {
     // This clase reads in the code_template.xml file (the old way that we used to specify the template) 
     // and converts it into a data template database.
-    public class CodeTemplateImporter
+    public static class CodeTemplateImporter
     {
         public static void Import(string filePath, TemplateDatabase templateDatabase, out List<string> conversionErrors)
         {

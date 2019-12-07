@@ -356,13 +356,13 @@ namespace Timelapse.Database
             // argument validation. Only ControlOrder and SpreadsheetOrder are orderable columns
             if (orderColumnName != Constant.Control.ControlOrder && orderColumnName != Constant.Control.SpreadsheetOrder)
             {
-                throw new ArgumentOutOfRangeException("column", String.Format("'{0}' is not a control order column.  Only '{1}' and '{2}' are order columns.", orderColumnName, Constant.Control.ControlOrder, Constant.Control.SpreadsheetOrder));
+                throw new ArgumentOutOfRangeException(nameof(orderColumnName), String.Format("column '{0}' is not a control order column.  Only '{1}' and '{2}' are order columns.", orderColumnName, Constant.Control.ControlOrder, Constant.Control.SpreadsheetOrder));
             }
 
             List<long> uniqueOrderValues = newOrderByDataLabel.Values.Distinct().ToList();
             if (uniqueOrderValues.Count != newOrderByDataLabel.Count)
             {
-                throw new ArgumentException("newOrderByDataLabel", String.Format("Each control must have a unique value for its order.  {0} duplicate values were passed for '{1}'.", newOrderByDataLabel.Count - uniqueOrderValues.Count, orderColumnName));
+                throw new ArgumentException(String.Format("newOrderByDataLabel: Each control must have a unique value for its order.  {0} duplicate values were passed for '{1}'.", newOrderByDataLabel.Count - uniqueOrderValues.Count, orderColumnName), nameof(newOrderByDataLabel));
             }
 
             uniqueOrderValues.Sort();
