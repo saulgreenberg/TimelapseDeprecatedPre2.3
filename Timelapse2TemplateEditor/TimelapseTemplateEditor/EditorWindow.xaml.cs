@@ -299,7 +299,6 @@ namespace Timelapse.Editor
             Mouse.OverrideCursor = Cursors.Wait;
             this.dataGridBeingUpdatedByCode = true;
 
-            CodeTemplateImporter importer = new CodeTemplateImporter();
             CodeTemplateImporter.Import(codeTemplateFileName, this.templateDatabase, out List<string> conversionErrors);
 
             // Now that we have new contents of the datatable, update the user interface to match that

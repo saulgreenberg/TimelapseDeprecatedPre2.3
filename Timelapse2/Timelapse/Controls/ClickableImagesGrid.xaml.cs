@@ -180,7 +180,7 @@ namespace Timelapse.Controls
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
-                            ci.TextFontSize = desiredWidth / fontSizeCorrectionFactor;
+                            ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
                             ci.AdjustMargin(state);
                             clickableImagesRow.Add(ci);
                             inCache = true;
@@ -205,7 +205,7 @@ namespace Timelapse.Controls
                         imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, fileTableIndex);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
                         int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
-                        ci.TextFontSize = desiredWidth / fontSizeCorrectionFactor;
+                        ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
                         ci.AdjustMargin(state);
                         clickableImagesRow.Add(ci);
                         if (maxImageHeight < imageHeight)

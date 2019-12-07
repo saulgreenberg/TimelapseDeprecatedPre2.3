@@ -300,16 +300,14 @@ namespace Timelapse.QuickPaste
 
         private void SetUses(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            if (button == null)
+            if (sender is Button button)
             {
-                return;
-            }
-            bool useState = button.Name == "UseAll";
-            foreach (CheckBox cb in this.UseCheckboxes)
-            {
-                cb.IsChecked = useState;
-            }
+                bool useState = button.Name == "UseAll";
+                foreach (CheckBox cb in this.UseCheckboxes)
+                {
+                    cb.IsChecked = useState;
+                }
+            }       
         }
     }
 }

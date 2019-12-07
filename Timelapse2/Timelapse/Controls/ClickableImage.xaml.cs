@@ -91,14 +91,6 @@ namespace Timelapse.Controls
 
         public string RootFolder { get; set; }
 
-        public double TextFontSize
-        {
-            set
-            {
-                this.ImageNameText.FontSize = value;
-                this.EpisodeText.FontSize = value;
-            }
-        }
         #endregion
 
         #region Private Variables
@@ -115,11 +107,17 @@ namespace Timelapse.Controls
             this.RootFolder = String.Empty;
         }
 
+        public void SetTextFontSize(double value)
+        {
+            this.ImageNameText.FontSize = value;
+            this.EpisodeText.FontSize = value;
+        }
+
         // Rerender the image to the given width
         public Double Rerender(FileTable fileTable, double width, int state, int fileIndex)
         {
             this.DesiredRenderWidth = width;
-            BitmapSource bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing);
+            BitmapSource bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent, out _);
             this.Image.Source = bf;
 
             // Render the episode text if needed
@@ -178,7 +176,7 @@ namespace Timelapse.Controls
         // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
         public void AdjustMargin(int state)
         {
-            int margin = 0;
+            int margin;
             switch (state)
             {
                 case 2:
