@@ -29,7 +29,7 @@ namespace Timelapse.Util
             string url = String.Empty; // THE URL where the new version is located
             Version latestVersionNumber = null;  // if a new version is available, store the new version number here  
 
-            XmlReader reader = null; 
+            XmlReader reader = null;
             try
             {
                 // This pattern follows recommended correction to CA3075: Insecure DTD Processing

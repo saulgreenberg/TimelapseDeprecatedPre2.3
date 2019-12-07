@@ -653,7 +653,7 @@ namespace Timelapse
             return false;
         }
 
-        #pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable IDE0051 // Remove unused private members
         private bool IsUTCOffsetInDatabase()
         {
             // Find the Utcoffset control
@@ -667,7 +667,7 @@ namespace Timelapse
             }
             return false;
         }
-        #pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
         #region Single vs Multiple Image View

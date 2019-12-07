@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Timelapse.Database;
+using Timelapse.Util;
 
 namespace Timelapse.Editor.Util
 {
@@ -14,6 +15,7 @@ namespace Timelapse.Editor.Util
     {
         public void Import(string filePath, TemplateDatabase templateDatabase, out List<string> conversionErrors)
         {
+            ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             conversionErrors = new List<string>();
 
             // Collect all the data labels as we come across them, as we have to ensure that a new data label doesn't have the same name as an existing one

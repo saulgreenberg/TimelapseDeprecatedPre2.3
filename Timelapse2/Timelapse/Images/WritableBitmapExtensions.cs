@@ -163,9 +163,9 @@ namespace Timelapse.Images
                 }
                 return FileSelectionEnum.Dark;
             }
-            #pragma warning disable CA2153 // Do Not Catch Corrupted State Exceptions
+#pragma warning disable CA2153 // Do Not Catch Corrupted State Exceptions
             catch
-            #pragma warning restore CA2153 // Do Not Catch Corrupted State Exceptions
+#pragma warning restore CA2153 // Do Not Catch Corrupted State Exceptions
             {
                 // Without this catch, Timelapse will crash on some machines and OS during loads (see notes in method comments) 
                 // Note that we have to set isColor and darkPixelFraction to some value, although these are nonsensical as 

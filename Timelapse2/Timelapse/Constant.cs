@@ -370,14 +370,14 @@ namespace Timelapse.Constant
         {
             return new Lazy<BitmapImage>(() =>
             {
-                    // if the requested image is available as an application resource, prefer that
-                    if (Application.Current != null && Application.Current.Resources.Contains(fileName))
+                // if the requested image is available as an application resource, prefer that
+                if (Application.Current != null && Application.Current.Resources.Contains(fileName))
                 {
                     return (BitmapImage)Application.Current.Resources[fileName];
                 }
 
-                    // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
-                    BitmapImage image = new BitmapImage();
+                // if it's not (editor, resource not listed in App.xaml) fall back to loading from the resources assembly
+                BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.UriSource = new Uri("pack://application:,,/Resources/" + fileName);
                 image.EndInit();
@@ -448,7 +448,7 @@ namespace Timelapse.Constant
     public static class WindowRegistryKeys
     {
         // Defines the KEY path under HKEY_CURRENT_USER where Timelapse registry information is stored
-        public const string RootKey = @"Software\Greenberg Consulting\Timelapse\2.0";   
+        public const string RootKey = @"Software\Greenberg Consulting\Timelapse\2.0";
 
         // Avalon doc state
         public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";

@@ -57,7 +57,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
-    <CodeAnalysisRuleSet>TimelapseTemplateEditor.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\..\Timelapse2\Timelapse\Timelapse.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -161,6 +161,7 @@
     <Compile Include="Dialog\InspectMetadata.xaml.cs">
       <DependentUpon>InspectMetadata.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Util\CodeTemplateImporter.cs" />
     <Compile Include="EditorConstant.cs" />
     <Compile Include="Dialog\EditChoiceList.xaml.cs">
@@ -210,7 +211,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include=".editorconfig" />
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
