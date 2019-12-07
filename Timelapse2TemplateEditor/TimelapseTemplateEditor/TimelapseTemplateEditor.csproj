@@ -166,7 +166,6 @@
     <Compile Include="Dialog\EditChoiceList.xaml.cs">
       <DependentUpon>EditChoiceList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\CallerMemberNameAttribute.cs" />
     <Compile Include="CellTextBlockConverter.cs" />
     <Compile Include="Util\EditorControls.cs" />
     <Compile Include="EditorWindowExtensions.cs" />
