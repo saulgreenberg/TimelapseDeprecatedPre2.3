@@ -75,42 +75,45 @@ namespace Timelapse.Util
         {
             // adapted from https://msdn.microsoft.com/en-us/library/hh925568.aspx.
             int release = 0;
-            using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
+            using (RegistryKey tempRegKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             {
-                if (ndpKey != null)
+                using (RegistryKey ndpKey = tempRegKey.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
                 {
-                    object releaseAsObject = ndpKey.GetValue("Release");
-                    if (releaseAsObject != null)
+                    if (ndpKey != null)
                     {
-                        release = (int)releaseAsObject;
+                        object releaseAsObject = ndpKey.GetValue("Release");
+                        if (releaseAsObject != null)
+                        {
+                            release = (int)releaseAsObject;
+                        }
                     }
-                }
 
-                if (release >= 394802)
-                {
-                    return "4.6.2 or later";
+                    if (release >= 394802)
+                    {
+                        return "4.6.2 or later";
+                    }
+                    if (release >= 394254)
+                    {
+                        return "4.6.1";
+                    }
+                    if (release >= 393295)
+                    {
+                        return "4.6";
+                    }
+                    if (release >= 379893)
+                    {
+                        return "4.5.2";
+                    }
+                    if (release >= 378675)
+                    {
+                        return "4.5.1";
+                    }
+                    if (release >= 378389)
+                    {
+                        return "4.5";
+                    }
+                    return "4.5 or later not detected";
                 }
-                if (release >= 394254)
-                {
-                    return "4.6.1";
-                }
-                if (release >= 393295)
-                {
-                    return "4.6";
-                }
-                if (release >= 379893)
-                {
-                    return "4.5.2";
-                }
-                if (release >= 378675)
-                {
-                    return "4.5.1";
-                }
-                if (release >= 378389)
-                {
-                    return "4.5";
-                }
-                return "4.5 or later not detected";
             }
         }
 
