@@ -406,7 +406,7 @@ namespace Timelapse.Images
                 return false;
             }
 
-            Task prefetch = Task.Factory.StartNew(() =>
+            Task prefetch = Task.Run(() => //Task.Factory.StartNew(() => SEE CA2008. Replacing this with Task.Run is recommended
             {
                 BitmapSource nextBitmap = nextFile.LoadBitmap(this.Database.FolderPath, out bool isCorruptOrMissing);
                 this.CacheBitmap(nextFile.ID, nextBitmap);
