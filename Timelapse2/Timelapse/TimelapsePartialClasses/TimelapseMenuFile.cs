@@ -83,10 +83,12 @@ namespace Timelapse
             // Show the random busy indicator
             this.BusyIndicatorRandom.BusyContent = "Importing recogition data. Please be patient.";
             this.BusyIndicatorRandom.IsBusy = true;
+            #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task. Rejected, as it crashes the system.
             bool result = await Task.Run(() =>
             {
                 return this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath, dbMissingFolders);
             });
+            #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
             this.BusyIndicatorRandom.IsBusy = false;
             if (result == false)
             {
