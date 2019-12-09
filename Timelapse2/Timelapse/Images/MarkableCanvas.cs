@@ -83,7 +83,7 @@ namespace Timelapse.Images
         public int ClickableImagesState { get; private set; }
 
         // The FilePlayer should be set from TimelapseWindow.cs, as we need a handle to it in order to manipulate it.
-        public FilePlayer FilePlayer { private get; set; }
+        public FilePlayer FilePlayer { get; set; }
 
         // Gets the image displayed across the MarkableCanvas for image files
         public Image ImageToDisplay { get; private set; }
@@ -145,30 +145,31 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets or sets the amount we should zoom (scale) the image in the magnifying glass
         /// </summary>
-        private double MagnifyingGlassZoom
+        private double GetMagnifyingGlassZoom()
         {
-            get
-            {
-                return this.magnifyingGlass.Zoom;
-            }
-            set
-            {
-                // clamp the value
-                if (value < Constant.MarkableCanvas.MagnifyingGlassMaximumZoom)
-                {
-                    value = Constant.MarkableCanvas.MagnifyingGlassMaximumZoom;
-                }
-                else if (value > Constant.MarkableCanvas.MagnifyingGlassMinimumZoom)
-                {
-                    value = Constant.MarkableCanvas.MagnifyingGlassMinimumZoom;
-                }
-                this.magnifyingGlass.Zoom = value;
+            return this.magnifyingGlass.Zoom;
+        }
 
-                // update magnifier content if there is something to magnify
-                if (this.ImageToMagnify.Source != null && this.ImageToDisplay.ActualWidth > 0)
-                {
-                    this.RedrawMagnifyingGlassIfVisible();
-                }
+        /// <summary>
+        /// Gets or sets the amount we should zoom (scale) the image in the magnifying glass
+        /// </summary>
+        private void SetMagnifyingGlassZoom(double value)
+        {
+            // clamp the value
+            if (value < Constant.MarkableCanvas.MagnifyingGlassMaximumZoom)
+            {
+                value = Constant.MarkableCanvas.MagnifyingGlassMaximumZoom;
+            }
+            else if (value > Constant.MarkableCanvas.MagnifyingGlassMinimumZoom)
+            {
+                value = Constant.MarkableCanvas.MagnifyingGlassMinimumZoom;
+            }
+            this.magnifyingGlass.Zoom = value;
+
+            // update magnifier content if there is something to magnify
+            if (this.ImageToMagnify.Source != null && this.ImageToDisplay.ActualWidth > 0)
+            {
+                this.RedrawMagnifyingGlassIfVisible();
             }
         }
 
@@ -1120,7 +1121,7 @@ namespace Timelapse.Images
         /// </summary>
         public void MagnifierZoomIn()
         {
-            this.MagnifyingGlassZoom -= this.magnifyingGlassZoomStep;
+            this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() - this.magnifyingGlassZoomStep);
         }
 
         /// <summary>
@@ -1128,7 +1129,7 @@ namespace Timelapse.Images
         /// </summary>
         public void MagnifierZoomOut()
         {
-            this.MagnifyingGlassZoom += this.magnifyingGlassZoomStep;
+            this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() + this.magnifyingGlassZoomStep);
         }
 
         private void RedrawMagnifyingGlassIfVisible()

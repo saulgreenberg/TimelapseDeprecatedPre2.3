@@ -3,7 +3,7 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
-    public class SortTerms
+    public static class SortTerms
     {
         /// <summary>
         /// Create a CustomSort, where we build a list of potential sort terms based on the controls found in the sorted template table

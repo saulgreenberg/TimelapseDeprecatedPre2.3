@@ -33,10 +33,10 @@ namespace Timelapse
                     this.FilePlayerTimer_Tick(null, null);
                     break;
                 case FilePlayerSelectionEnum.PlayFast:
-                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerFastValue));
+                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.State.FilePlayerFastValue));
                     break;
                 case FilePlayerSelectionEnum.PlaySlow:
-                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.state.FilePlayerSlowValue));
+                    this.FilePlayer_Play(TimeSpan.FromSeconds(this.State.FilePlayerSlowValue));
                     break;
                 case FilePlayerSelectionEnum.Stop:
                 default:

@@ -13,14 +13,14 @@ namespace Timelapse
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
             this.timerFileNavigator.Start(); // The timer forces an image display update to the current slider position if the user pauses longer than the timer's interval. 
-            this.state.FileNavigatorSliderDragging = true;
+            this.State.FileNavigatorSliderDragging = true;
         }
 
         // Drag Completed callback
         private void FileNavigatorSlider_DragCompleted(object sender, DragCompletedEventArgs args)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
-            this.state.FileNavigatorSliderDragging = false;
+            this.State.FileNavigatorSliderDragging = false;
             this.FileShow(this.FileNavigatorSlider);
             this.timerFileNavigator.Stop();
         }
@@ -29,24 +29,24 @@ namespace Timelapse
         private void FileNavigatorSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> args)
         {
             // since the minimum value is 1 there's a value change event during InitializeComponent() to ignore
-            if (this.state == null)
+            if (this.State == null)
             {
                 return;
             }
 
             // Stop the timer, but restart it if we are dragging
             this.timerFileNavigator.Stop();
-            if (this.state.FileNavigatorSliderDragging == true)
+            if (this.State.FileNavigatorSliderDragging == true)
             {
-                this.timerFileNavigator.Interval = this.state.Throttles.DesiredIntervalBetweenRenders; // Throttle values may have changed, so we reset it just in case.
+                this.timerFileNavigator.Interval = this.State.Throttles.DesiredIntervalBetweenRenders; // Throttle values may have changed, so we reset it just in case.
                 this.timerFileNavigator.Start();
             }
 
             DateTime utcNow = DateTime.UtcNow;
-            if ((this.state.FileNavigatorSliderDragging == false) || (utcNow - this.state.MostRecentDragEvent > this.timerFileNavigator.Interval))
+            if ((this.State.FileNavigatorSliderDragging == false) || (utcNow - this.State.MostRecentDragEvent > this.timerFileNavigator.Interval))
             {
                 this.FileShow(this.FileNavigatorSlider);
-                this.state.MostRecentDragEvent = utcNow;
+                this.State.MostRecentDragEvent = utcNow;
                 this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.File;
             }
         }

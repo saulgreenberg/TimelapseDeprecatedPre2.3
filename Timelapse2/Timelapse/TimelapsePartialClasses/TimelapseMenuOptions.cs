@@ -19,8 +19,8 @@ namespace Timelapse
         private void MenuItemAudioFeedback_Click(object sender, RoutedEventArgs e)
         {
             // We don't have to do anything here...
-            this.state.AudioFeedback = !this.state.AudioFeedback;
-            this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
+            this.State.AudioFeedback = !this.State.AudioFeedback;
+            this.MenuItemAudioFeedback.IsChecked = this.State.AudioFeedback;
         }
 
         // Display Magnifier: toggle on / off
@@ -56,7 +56,7 @@ namespace Timelapse
         // Adjust FilePlayer playback speeds
         private void MenuItemFilePlayerOptions_Click(object sender, RoutedEventArgs e)
         {
-            FilePlayerOptions filePlayerOptions = new FilePlayerOptions(this.state, this);
+            FilePlayerOptions filePlayerOptions = new FilePlayerOptions(this.State, this);
             filePlayerOptions.ShowDialog();
         }
 
@@ -77,13 +77,13 @@ namespace Timelapse
 
         private void MenuItemEpisodeOptions_Click(object sender, RoutedEventArgs e)
         {
-            EpisodeOptions episodeOptions = new EpisodeOptions(this.state.EpisodeTimeThreshold, this);
+            EpisodeOptions episodeOptions = new EpisodeOptions(this.State.EpisodeTimeThreshold, this);
             bool? result = episodeOptions.ShowDialog();
             if (result == true)
             {
                 // the time threshold has changed, so save its new state
-                this.state.EpisodeTimeThreshold = episodeOptions.EpisodeTimeThreshold;
-                Episodes.TimeThreshold = this.state.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
+                this.State.EpisodeTimeThreshold = episodeOptions.EpisodeTimeThreshold;
+                Episodes.TimeThreshold = this.State.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
                 Episodes.Reset();
             }
 
@@ -100,7 +100,7 @@ namespace Timelapse
         // Hide or show various informational dialogs"
         private void MenuItemDialogsOnOrOff_Click(object sender, RoutedEventArgs e)
         {
-            DialogsHideOrShow dialog = new DialogsHideOrShow(this.state, this);
+            DialogsHideOrShow dialog = new DialogsHideOrShow(this.State, this);
             dialog.ShowDialog();
         }
 
@@ -118,7 +118,7 @@ namespace Timelapse
         /// <summary>Show advanced Timelapse options</summary>
         private void MenuItemAdvancedTimelapseOptions_Click(object sender, RoutedEventArgs e)
         {
-            AdvancedTimelapseOptions advancedTimelapseOptions = new AdvancedTimelapseOptions(this.state, this.MarkableCanvas, this);
+            AdvancedTimelapseOptions advancedTimelapseOptions = new AdvancedTimelapseOptions(this.State, this.MarkableCanvas, this);
             advancedTimelapseOptions.ShowDialog();
             // Reset how some controls appear depending upon the current options
             this.EnableOrDisableMenusAndControls();
@@ -126,7 +126,7 @@ namespace Timelapse
             if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
             {
                 // If we aren't using detections, then hide their existence even if detection data may be present
-                GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
             }
             else
             {

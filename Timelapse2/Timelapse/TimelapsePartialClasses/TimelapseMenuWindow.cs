@@ -11,9 +11,9 @@ namespace Timelapse
         // Window / Restore sub-menu opening
         private void MenuItemWindowLoadCustom_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            this.MenuItemWindowCustom1Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
-            this.MenuItemWindowCustom2Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
-            this.MenuItemWindowCustom3Load.IsEnabled = this.state.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
+            this.MenuItemWindowCustom1Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
+            this.MenuItemWindowCustom2Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
+            this.MenuItemWindowCustom3Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
         }
 
         // Restore a particular window layout as identified in the menu's tag

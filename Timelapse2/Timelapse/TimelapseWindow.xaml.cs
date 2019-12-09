@@ -36,7 +36,7 @@ namespace Timelapse
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
         // private string mostRecentFileAddFolderPath;
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
-        public TimelapseState state;                                    // Status information concerning the state of the UI
+
         private TemplateDatabase templateDatabase;                      // The database that holds the template
         private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
@@ -49,6 +49,8 @@ namespace Timelapse
         // Timer used to AutoPlay images via MediaControl buttons
         readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
         readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
+
+        public TimelapseState State { get; set; }                       // Status information concerning the state of the UI
 
         public string FolderPath
         {
@@ -95,18 +97,18 @@ namespace Timelapse
             this.speechSynthesizer = new SpeechSynthesizer();
 
             // Recall user's state from prior sessions
-            this.state = new TimelapseState();
-            this.state.ReadSettingsFromRegistry();
-            Episodes.TimeThreshold = this.state.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
-            this.MarkableCanvas.SetBookmark(this.state.BookmarkScale, this.state.BookmarkTranslation);
+            this.State = new TimelapseState();
+            this.State.ReadSettingsFromRegistry();
+            Episodes.TimeThreshold = this.State.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
+            this.MarkableCanvas.SetBookmark(this.State.BookmarkScale, this.State.BookmarkTranslation);
 
-            this.MenuItemAudioFeedback.IsChecked = this.state.AudioFeedback;
+            this.MenuItemAudioFeedback.IsChecked = this.State.AudioFeedback;
 
             // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
             // Yup, poor practice but...
             GlobalReferences.MainWindow = this; // So other classes can access methods here
             GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
-            GlobalReferences.TimelapseState = this.state;
+            GlobalReferences.TimelapseState = this.State;
 
             // Populate the most recent image set list
             this.RecentFileSets_Refresh();
@@ -114,7 +116,7 @@ namespace Timelapse
             // Timer to force the image to update to the current slider position when the user pauses while dragging the  slider 
             this.timerFileNavigator = new DispatcherTimer()
             {
-                Interval = this.state.Throttles.DesiredIntervalBetweenRenders
+                Interval = this.State.Throttles.DesiredIntervalBetweenRenders
             };
             this.timerFileNavigator.Tick += this.TimerFileNavigator_Tick;
 
@@ -131,10 +133,10 @@ namespace Timelapse
             // Get the window and its size from its previous location
             // SAULXX: Note that this is actually redundant, as if AvalonLayout_TryLoad succeeds it will do it again.
             // Maybe integrate this call with that?
-            this.Top = this.state.TimelapseWindowPosition.Y;
-            this.Left = this.state.TimelapseWindowPosition.X;
-            this.Height = this.state.TimelapseWindowPosition.Height;
-            this.Width = this.state.TimelapseWindowPosition.Width;
+            this.Top = this.State.TimelapseWindowPosition.Y;
+            this.Left = this.State.TimelapseWindowPosition.X;
+            this.Height = this.State.TimelapseWindowPosition.Height;
+            this.Width = this.State.TimelapseWindowPosition.Width;
 
             // Mute the harmless 'System.Windows.Data Error: 4 : Cannot find source for binding with reference' (I think its from Avalon dock)
             System.Diagnostics.PresentationTraceSources.DataBindingSource.Switch.Level = System.Diagnostics.SourceLevels.Critical;
@@ -153,19 +155,19 @@ namespace Timelapse
             }
 
             // Check for updates at least once a day
-            if (DateTime.Now.Year != this.state.MostRecentCheckForUpdates.Year ||
-                DateTime.Now.Month != this.state.MostRecentCheckForUpdates.Month ||
-                DateTime.Now.Day != this.state.MostRecentCheckForUpdates.Day)
+            if (DateTime.Now.Year != this.State.MostRecentCheckForUpdates.Year ||
+                DateTime.Now.Month != this.State.MostRecentCheckForUpdates.Month ||
+                DateTime.Now.Day != this.State.MostRecentCheckForUpdates.Day)
             {
                 VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
-                this.state.MostRecentCheckForUpdates = DateTime.UtcNow;
+                this.State.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
-            if (this.state.FirstTimeFileLoading)
+            if (this.State.FirstTimeFileLoading)
             {
                 // Load the previously saved layout. If there is none, TryLoad will default to a reasonable layout and window size/position.
                 this.AvalonLayout_TryLoad(Constant.AvalonLayoutTags.LastUsed);
-                this.state.FirstTimeFileLoading = false;
+                this.State.FirstTimeFileLoading = false;
             }
 
             if (!Util.Utilities.CheckAndGetLangaugeAndCulture(out _, out _, out string displayname))
@@ -220,13 +222,13 @@ namespace Timelapse
                 this.dataHandler.FileDatabase.SyncImageSetToDatabase();
 
                 // ensure custom filter operator is synchronized in state for writing to user's registry
-                this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
 
                 // Check if we should delete the DeletedFiles folder, and if so do it.
                 // Note that we can only do this if we know where the DeletedFolder is,
                 // i.e. because the datahandler and datahandler.FileDatabae is not null
                 // That is why its in this if statement.
-                if (this.state.DeleteFolderManagement != DeleteFolderManagementEnum.ManualDelete)
+                if (this.State.DeleteFolderManagement != DeleteFolderManagementEnum.ManualDelete)
                 {
                     this.DeleteTheDeletedFilesFolderIfNeeded();
                 }
@@ -236,9 +238,9 @@ namespace Timelapse
             // persist user specific state to the registry
             if (this.Top > -10 && this.Left > -10)
             {
-                this.state.TimelapseWindowPosition = new Rect(new Point(this.Left, this.Top), new Size(this.Width, this.Height));
+                this.State.TimelapseWindowPosition = new Rect(new Point(this.Left, this.Top), new Size(this.Width, this.Height));
             }
-            this.state.TimelapseWindowSize = new Size(this.Width, this.Height);
+            this.State.TimelapseWindowSize = new Size(this.Width, this.Height);
 
             // Save the layout only if we are really closing Timelapse and the DataEntryControlPanel is visible, as otherwise it would be hidden
             // the next time Timelapse is started
@@ -263,18 +265,18 @@ namespace Timelapse
 
             // persist user specific state to the registry
             // note that we have to set the bookmark scale and transform in the state, as it is not done elsewhere
-            this.state.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
-            this.state.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
+            this.State.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
+            this.State.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
 
             // Clear the QuickPasteEntries from the ImageSet table and save its state, including the QuickPaste window position
             this.quickPasteEntries = null;
             if (this.quickPasteWindow != null)
             {
-                this.state.QuickPasteWindowPosition = this.quickPasteWindow.Position;
+                this.State.QuickPasteWindowPosition = this.quickPasteWindow.Position;
             }
 
             // Save the state by writing it to the registry
-            this.state.WriteSettingsToRegistry();
+            this.State.WriteSettingsToRegistry();
         }
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
@@ -290,10 +292,10 @@ namespace Timelapse
 
             // We either have auto deletion, or ask the user. Check both cases.
             // If its auto deletion, then set the flag to delete
-            bool deleteTheDeletedFolder = (this.state.DeleteFolderManagement == DeleteFolderManagementEnum.AutoDeleteOnExit) ? true : false;
+            bool deleteTheDeletedFolder = (this.State.DeleteFolderManagement == DeleteFolderManagementEnum.AutoDeleteOnExit) ? true : false;
 
             // if its ask the user, then set the flag according to the response
-            if (this.state.DeleteFolderManagement == DeleteFolderManagementEnum.AskToDeleteOnExit)
+            if (this.State.DeleteFolderManagement == DeleteFolderManagementEnum.AskToDeleteOnExit)
             {
                 Dialog.DeleteDeleteFolder deleteDeletedFolders = new Dialog.DeleteDeleteFolder(howManyDeletedFiles)
                 {
@@ -481,7 +483,7 @@ namespace Timelapse
         private void CounterControl_MouseEnter(object sender, MouseEventArgs e)
         {
             Panel panel = (Panel)sender;
-            this.state.MouseOverCounter = ((DataEntryCounter)panel.Tag).DataLabel;
+            this.State.MouseOverCounter = ((DataEntryCounter)panel.Tag).DataLabel;
             this.MarkableCanvas_UpdateMarkers();
         }
 
@@ -489,7 +491,7 @@ namespace Timelapse
         private void CounterControl_MouseLeave(object sender, MouseEventArgs e)
         {
             // Recolor the marks
-            this.state.MouseOverCounter = null;
+            this.State.MouseOverCounter = null;
             this.MarkableCanvas_UpdateMarkers();
         }
 
@@ -526,7 +528,7 @@ namespace Timelapse
             // remove image sets which are no longer present from the most recently used list
             // probably overkill to perform this check on every refresh rather than once at application launch, but it's not particularly expensive
             List<string> invalidPaths = new List<string>();
-            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
+            foreach (string recentImageSetPath in this.State.MostRecentImageSets)
             {
                 if (File.Exists(recentImageSetPath) == false)
                 {
@@ -536,7 +538,7 @@ namespace Timelapse
 
             foreach (string path in invalidPaths)
             {
-                bool result = this.state.MostRecentImageSets.TryRemove(path);
+                bool result = this.State.MostRecentImageSets.TryRemove(path);
                 if (!result)
                 {
                     TraceDebug.PrintMessage(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
@@ -544,12 +546,12 @@ namespace Timelapse
             }
 
             // Enable the menu only when there are items in it and only if the load menu is also enabled (i.e., that we haven't loaded anything yet)
-            this.MenuItemRecentImageSets.IsEnabled = this.state.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
+            this.MenuItemRecentImageSets.IsEnabled = this.State.MostRecentImageSets.Count > 0 && this.MenuItemLoadFiles.IsEnabled;
             this.MenuItemRecentImageSets.Items.Clear();
 
             // add menu items most recently used image sets
             int index = 1;
-            foreach (string recentImageSetPath in this.state.MostRecentImageSets)
+            foreach (string recentImageSetPath in this.State.MostRecentImageSets)
             {
                 // Create a menu item for each path
                 MenuItem recentImageSetItem = new MenuItem();
@@ -833,7 +835,7 @@ namespace Timelapse
             {
                 if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath) == false)
                 {
-                    this.state.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
+                    this.State.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
                     this.RecentFileSets_Refresh();
                 }
                 dropEvent.Handled = true;
@@ -855,7 +857,7 @@ namespace Timelapse
 
         public void MaybeFileShowCountsDialog(bool onFileLoading, Window owner)
         {
-            if (onFileLoading && this.state.SuppressFileCountOnImportDialog)
+            if (onFileLoading && this.State.SuppressFileCountOnImportDialog)
             {
                 return;
             }
@@ -872,7 +874,7 @@ namespace Timelapse
             Nullable<bool> result = imageStats.ShowDialog();
             if (onFileLoading && result.HasValue && result.Value && imageStats.DontShowAgain.IsChecked.HasValue)
             {
-                this.state.SuppressFileCountOnImportDialog = imageStats.DontShowAgain.IsChecked.Value;
+                this.State.SuppressFileCountOnImportDialog = imageStats.DontShowAgain.IsChecked.Value;
             }
         }
 
@@ -895,7 +897,7 @@ namespace Timelapse
         // Say the given text
         public void Speak(string text)
         {
-            if (this.state.AudioFeedback)
+            if (this.State.AudioFeedback)
             {
                 this.speechSynthesizer.SpeakAsyncCancelAll();
                 this.speechSynthesizer.SpeakAsync(text);

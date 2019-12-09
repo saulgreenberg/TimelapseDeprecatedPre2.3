@@ -242,15 +242,15 @@ namespace Timelapse
         // Determine whether system-supplied fields should be skipped over or not.
         private bool IsControlIncludedInTabOrder(DataEntryControl control)
         {
-            if (control.DataLabel == Constant.DatabaseColumn.DateTime && this.state.TabOrderIncludeDateTime == false)
+            if (control.DataLabel == Constant.DatabaseColumn.DateTime && this.State.TabOrderIncludeDateTime == false)
             {
                 return false;
             }
-            else if (control.DataLabel == Constant.DatabaseColumn.DeleteFlag && this.state.TabOrderIncludeDeleteFlag == false)
+            else if (control.DataLabel == Constant.DatabaseColumn.DeleteFlag && this.State.TabOrderIncludeDeleteFlag == false)
             {
                 return false;
             }
-            else if (control.DataLabel == Constant.DatabaseColumn.ImageQuality && this.state.TabOrderIncludeImageQuality == false)
+            else if (control.DataLabel == Constant.DatabaseColumn.ImageQuality && this.State.TabOrderIncludeImageQuality == false)
             {
                 return false;
             }

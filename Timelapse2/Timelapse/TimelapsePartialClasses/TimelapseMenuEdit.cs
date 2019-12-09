@@ -100,11 +100,11 @@ namespace Timelapse
                 return;
             }
 
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedPopulateFieldFromMetadataPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
                                                                "'Populate a data field with image metadata...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
+                                                                   this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
                 PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
@@ -275,11 +275,11 @@ namespace Timelapse
         private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt file, tell the person. Selecting ok will shift the views..
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedRereadDatesFromFilesPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedRereadDatesFromFilesPrompt,
                                                                "'Reread dates from files...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
+                                                                   this.State.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
                                                                }))
             {
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
@@ -313,11 +313,11 @@ namespace Timelapse
                 return;
             }
 
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDaylightSavingsCorrectionPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
                                                                "'Correct for daylight savings time...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
+                                                                   this.State.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
                                                                }))
             {
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
@@ -329,11 +329,11 @@ namespace Timelapse
         private void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeFixedCorrectionPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
                                                                "'Add a fixed correction value to every date/time...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
+                                                                   this.State.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
                                                                }))
             {
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
@@ -346,11 +346,11 @@ namespace Timelapse
         private void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDateTimeLinearCorrectionPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
                                                                "'Correct for camera clock drift'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
+                                                                   this.State.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
                                                                }))
             {
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
@@ -362,11 +362,11 @@ namespace Timelapse
         private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
             // Warn user that they are in a selection view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedAmbiguousDatesPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedAmbiguousDatesPrompt,
                                                                "'Correct ambiguous dates...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedAmbiguousDatesPrompt = optOut;
+                                                                   this.State.SuppressSelectedAmbiguousDatesPrompt = optOut;
                                                                }))
             {
                 DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this.dataHandler.FileDatabase, this);
@@ -389,11 +389,11 @@ namespace Timelapse
         private void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
         {
             // Warn user that they are in a selecction view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedSetTimeZonePrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedSetTimeZonePrompt,
                                                                "'Set the time zone of every date/time...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedSetTimeZonePrompt = optOut;
+                                                                   this.State.SuppressSelectedSetTimeZonePrompt = optOut;
                                                                }))
             {
                 DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
@@ -404,14 +404,14 @@ namespace Timelapse
         // Identify or reclassify dark files.
         private void MenuItemEditClassifyDarkImages_Click(object sender, RoutedEventArgs e)
         {
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.state.SuppressSelectedDarkThresholdPrompt,
+            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDarkThresholdPrompt,
                                                                "'(Re-) classify dark files...'",
                                                                (bool optOut) =>
                                                                {
-                                                                   this.state.SuppressSelectedDarkThresholdPrompt = optOut; // SG TODO
+                                                                   this.State.SuppressSelectedDarkThresholdPrompt = optOut; // SG TODO
                                                                }))
             {
-                using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, this.state, this))
+                using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, this.State, this))
                 {
                     darkThreshold.Owner = this;
                     darkThreshold.ShowDialog();

@@ -48,7 +48,7 @@ namespace Timelapse
             Mouse.OverrideCursor = Cursors.Wait;
             if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath) == false)
             {
-                this.state.MostRecentImageSets.TryRemove(recentDatabasePath);
+                this.State.MostRecentImageSets.TryRemove(recentDatabasePath);
                 this.RecentFileSets_Refresh();
             }
             Mouse.OverrideCursor = null;
@@ -132,7 +132,7 @@ namespace Timelapse
             if (result)
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
-                GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
                 this.FilesSelectAndShow(true);
             }
         }
@@ -141,7 +141,7 @@ namespace Timelapse
         // Export data for this image set as a .csv file and preview in Excel 
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
         {
-            if (this.state.SuppressSelectedCsvExportPrompt == false &&
+            if (this.State.SuppressSelectedCsvExportPrompt == false &&
                 this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
             {
                 MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
@@ -166,7 +166,7 @@ namespace Timelapse
 
                 if (messageBox.DontShowAgain.IsChecked.HasValue)
                 {
-                    this.state.SuppressSelectedCsvExportPrompt = messageBox.DontShowAgain.IsChecked.Value;
+                    this.State.SuppressSelectedCsvExportPrompt = messageBox.DontShowAgain.IsChecked.Value;
                 }
             }
 
@@ -227,7 +227,7 @@ namespace Timelapse
                     return;
                 }
             }
-            else if (this.state.SuppressCsvExportDialog == false)
+            else if (this.State.SuppressCsvExportDialog == false)
             {
                 // since the exported file isn't shown give the user some feedback about the export operation
                 MessageBox csvExportInformation = new MessageBox("Data exported.", this);
@@ -242,7 +242,7 @@ namespace Timelapse
                 bool? result = csvExportInformation.ShowDialog();
                 if (result.HasValue && result.Value && csvExportInformation.DontShowAgain.IsChecked.HasValue)
                 {
-                    this.state.SuppressCsvExportDialog = csvExportInformation.DontShowAgain.IsChecked.Value;
+                    this.State.SuppressCsvExportDialog = csvExportInformation.DontShowAgain.IsChecked.Value;
                 }
             }
             this.StatusBar.SetMessage("Data exported to " + csvFileName);
@@ -251,7 +251,7 @@ namespace Timelapse
         // Import data from a .csv file
         private void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
         {
-            if (this.state.SuppressCsvImportPrompt == false)
+            if (this.State.SuppressCsvImportPrompt == false)
             {
                 MessageBox messageBox = new MessageBox("How importing .csv data works", this, MessageBoxButton.OKCancel);
                 messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below." + Environment.NewLine;
@@ -283,7 +283,7 @@ namespace Timelapse
 
                 if (messageBox.DontShowAgain.IsChecked.HasValue)
                 {
-                    this.state.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
+                    this.State.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
                 }
             }
 
@@ -434,7 +434,7 @@ namespace Timelapse
                     this.dataHandler.FileDatabase.SyncImageSetToDatabase();
 
                     // ensure custom filter operator is synchronized in state for writing to user's registry
-                    this.state.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                    this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
                 }
                 // discard the image set 
                 if (this.dataHandler.ImageCache != null)
@@ -457,7 +457,7 @@ namespace Timelapse
             this.DataGrid.ItemsSource = null;
 
             // Reset the UX 
-            this.state.Reset();
+            this.State.Reset();
             this.MarkableCanvas.ZoomOutAllTheWay();
             this.FileNavigatorSliderReset();
             this.EnableOrDisableMenusAndControls();

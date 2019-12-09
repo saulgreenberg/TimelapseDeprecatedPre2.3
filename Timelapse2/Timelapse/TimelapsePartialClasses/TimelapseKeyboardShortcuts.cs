@@ -48,7 +48,7 @@ namespace Timelapse
         private void Window_PreviewKeyUp(object sender, KeyEventArgs currentKey)
         {
             // Force the end of a key repeat cycle
-            this.state.ResetKeyRepeat();
+            this.State.ResetKeyRepeat();
         }
 
         public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
@@ -90,7 +90,7 @@ namespace Timelapse
 
             // Finally, test for other shortcut keys and take the appropriate action as needed
             DirectionEnum direction;
-            int keyRepeatCount = this.state.GetKeyRepeatCount(currentKey);
+            int keyRepeatCount = this.State.GetKeyRepeatCount(currentKey);
             switch (currentKey.Key)
             {
                 case Key.B:                 // Save a Bookmark of the current pan / zoom level of the image
@@ -120,7 +120,7 @@ namespace Timelapse
                 case Key.Left:              // previous image
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
                     direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
-                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                    if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.State.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
                         this.TryFileShowWithoutSliderCallback(direction);
                     }
@@ -181,7 +181,7 @@ namespace Timelapse
                     else
                     {
                         this.FilePlayer_Stop();      // In case the FilePlayer is going
-                        if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.state.Throttles.RepeatedKeyAcceptanceInterval == 0))
+                        if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.State.Throttles.RepeatedKeyAcceptanceInterval == 0))
                         {
                             this.TryFileShowWithoutSliderCallback(direction);
                         }

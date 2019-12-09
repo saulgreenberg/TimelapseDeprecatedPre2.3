@@ -133,7 +133,7 @@ namespace Timelapse.Util
             ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
 
             // Retrieve the layout configuration from the registry
-            string layoutAsString = timelapse.state.ReadFromRegistryString(registryKey);
+            string layoutAsString = timelapse.State.ReadFromRegistryString(registryKey);
             if (string.IsNullOrEmpty(layoutAsString))
             {
                 return false;
@@ -161,7 +161,7 @@ namespace Timelapse.Util
         private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             // Retrieve the window position and size
-            Rect windowRect = timelapse.state.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
+            Rect windowRect = timelapse.State.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
             // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
             windowRect.Height = Math.Abs(windowRect.Height);
             windowRect.Width = Math.Abs(windowRect.Width);
@@ -358,7 +358,7 @@ namespace Timelapse.Util
         // Retrieve the maximize state from the registry and set the timelapse window to that state
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
-            bool windowMaximizeState = timelapse.state.ReadTimelapseWindowMaximizeStateFromRegistryBool(registryKey);
+            bool windowMaximizeState = timelapse.State.ReadTimelapseWindowMaximizeStateFromRegistryBool(registryKey);
             timelapse.WindowState = windowMaximizeState ? WindowState.Maximized : WindowState.Normal;
         }
 
@@ -436,7 +436,7 @@ namespace Timelapse.Util
                 if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))
                 {
                     // Write the string to the registry under the given key name
-                    timelapse.state.WriteToRegistry(registryKey, xmlText.ToString());
+                    timelapse.State.WriteToRegistry(registryKey, xmlText.ToString());
                     AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
                     return true;
                 }
@@ -460,14 +460,14 @@ namespace Timelapse.Util
         private static void AvalonLayout_SaveWindowPositionAndSizeToRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             Rect windowPositionAndSize = new Rect(timelapse.Left, timelapse.Top, timelapse.Width, timelapse.Height);
-            timelapse.state.WriteToRegistry(registryKey, windowPositionAndSize);
+            timelapse.State.WriteToRegistry(registryKey, windowPositionAndSize);
         }
 
         // Save the current timelapse window maximize state to the registry 
         private static void AvalonLayout_SaveWindowMaximizeStateToRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             bool windowStateIsMaximized = timelapse.WindowState == WindowState.Maximized;
-            timelapse.state.WriteToRegistry(registryKey, windowStateIsMaximized);
+            timelapse.State.WriteToRegistry(registryKey, windowStateIsMaximized);
         }
         #endregion
     }

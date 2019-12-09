@@ -191,7 +191,7 @@ namespace Timelapse
 
                 // Update the emphasise for each tag to reflect how the user is interacting with tags
                 DataEntryCounter currentCounter = (DataEntryCounter)this.DataEntryControls.ControlsByDataLabel[markersForCounter.DataLabel];
-                bool emphasize = markersForCounter.DataLabel == this.state.MouseOverCounter;
+                bool emphasize = markersForCounter.DataLabel == this.State.MouseOverCounter;
                 foreach (Marker marker in markersForCounter.Markers)
                 {
                     // the first time through, show an annotation. Otherwise we clear the flags to hide the annotation.

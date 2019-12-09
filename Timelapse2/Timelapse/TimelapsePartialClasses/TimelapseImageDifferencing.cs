@@ -108,7 +108,7 @@ namespace Timelapse
             // Generate and cache difference image if needed
             if (this.dataHandler.ImageCache.GetCurrentImage() == null)
             {
-                ImageDifferenceResultEnum result = this.dataHandler.ImageCache.TryCalculateCombinedDifference(this.state.DifferenceThreshold);
+                ImageDifferenceResultEnum result = this.dataHandler.ImageCache.TryCalculateCombinedDifference(this.State.DifferenceThreshold);
                 switch (result)
                 {
                     case ImageDifferenceResultEnum.CurrentImageNotAvailable:

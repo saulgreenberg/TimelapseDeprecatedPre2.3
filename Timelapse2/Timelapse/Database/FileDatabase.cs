@@ -1886,6 +1886,14 @@ namespace Timelapse.Database
                 {
                     this.Markers.Dispose();
                 }
+                if (this.detectionDataTable != null)
+                {
+                    detectionDataTable.Dispose();
+                }
+                if (this.classificationsDataTable != null)
+                {
+                    classificationsDataTable.Dispose();
+                }
             }
 
             base.Dispose(disposing);
@@ -2311,5 +2319,6 @@ namespace Timelapse.Database
             return this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
         }
         #endregion
+
     }
 }

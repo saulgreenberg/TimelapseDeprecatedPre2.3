@@ -55,7 +55,7 @@ namespace Timelapse
             AboutTimelapse about = new AboutTimelapse(this);
             if ((about.ShowDialog() == true) && about.MostRecentCheckForUpdate.HasValue)
             {
-                this.state.MostRecentCheckForUpdates = about.MostRecentCheckForUpdate.Value;
+                this.State.MostRecentCheckForUpdates = about.MostRecentCheckForUpdate.Value;
             }
         }
     }

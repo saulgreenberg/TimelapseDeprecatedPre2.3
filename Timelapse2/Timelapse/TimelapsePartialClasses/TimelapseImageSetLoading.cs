@@ -26,7 +26,7 @@ namespace Timelapse
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
             // Default the template selection dialog to the most recently opened database
-            this.state.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
+            this.State.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
             if (Utilities.TryGetFileFromUser(
                 "Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
@@ -139,7 +139,7 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.state.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
             Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DBTables.FileData);
@@ -171,7 +171,7 @@ namespace Timelapse
             this.dataHandler.MarkableCanvas = this.MarkableCanvas;
 
             this.Title = Constant.Defaults.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
-            this.state.MostRecentImageSets.SetMostRecent(templateDatabasePath);
+            this.State.MostRecentImageSets.SetMostRecent(templateDatabasePath);
             this.RecentFileSets_Refresh();
 
             // Record the version number of the currently executing version of Timelapse only if its greater than the one already stored in the ImageSet Table.
@@ -339,7 +339,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.dataHandler, this.state);
+                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.dataHandler, this.State);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 
@@ -515,7 +515,7 @@ namespace Timelapse
             this.FilePlayer.Visibility = Visibility.Visible;
 
             // Set whether detections actually exist at this point.
-            GlobalReferences.DetectionsExists = this.state.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+            GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
 
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;

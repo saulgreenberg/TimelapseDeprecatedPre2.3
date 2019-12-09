@@ -17,7 +17,7 @@ namespace Timelapse.Dialog
     /// a list of metadata found in the current image. It asks the user to select one from each.
     /// The user can then populate the selected data field with the corresponding metadata value from that image for all images.
     /// </summary>
-    public partial class PopulateFieldWithMetadata : Window
+    public partial class PopulateFieldWithMetadata : Window, IDisposable
     {
         private bool clearIfNoMetadata;
         private readonly FileDatabase database;
@@ -350,7 +350,7 @@ namespace Timelapse.Dialog
                 if (this.exifTool != null)
                 {
                     this.exifTool.Stop();
-                    this.exifTool.Dispose();
+
                 }
             };
             this.BusyIndicator.IsBusy = true;
@@ -408,6 +408,23 @@ namespace Timelapse.Dialog
                 this.FileName = fileName;
                 this.Message = message;
             }
+        }
+
+        // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // dispose managed resources
+                this.exifTool.Dispose();
+            }
+            // free native resources
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
