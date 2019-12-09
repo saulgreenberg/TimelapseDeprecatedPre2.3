@@ -164,7 +164,10 @@ namespace Timelapse.Images
             // batch update both tables
             imageDatabase.UpdateFiles(imagesToUpdate);
             imageDatabase.UpdateMarkers(markersToUpdate);
-            reader.Dispose();
+            if (reader != null)
+            {
+                reader.Dispose();
+            }
         }
     }
 }

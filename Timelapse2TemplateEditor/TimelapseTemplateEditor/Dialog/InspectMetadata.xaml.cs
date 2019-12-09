@@ -13,7 +13,7 @@ namespace Timelapse.Editor.Dialog
     /// This dialog displays a list of metadata found in a selected file. 
     /// </summary>
     // Note: There are lots of commonalities between this dialog and DialogPopulate, but its not clear if it's worth the effort of factoring the two.
-    public partial class InspectMetadata : Window
+    public partial class InspectMetadata : Window, IDisposable
     {
         private Dictionary<string, ImageMetadata> metadataDictionary = new Dictionary<string, ImageMetadata>();
         private string metadataName = String.Empty;
@@ -196,6 +196,27 @@ namespace Timelapse.Editor.Dialog
         private void OkayButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+        }
+        #endregion
+
+        #region Disposing
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // dispose managed resources
+                if (this.exifTool != null)
+                {
+                    this.exifTool.Dispose();
+                }
+            }
+            // free native resources
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

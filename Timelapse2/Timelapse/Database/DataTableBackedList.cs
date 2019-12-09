@@ -114,7 +114,7 @@ namespace Timelapse.Database
                 return;
             }
 
-            if (disposing)
+            if (disposing && this.DataTable != null)
             {
                 this.DataTable.Dispose();
             }

@@ -70,7 +70,10 @@ namespace Timelapse.Editor.Util
                 ControlRow counter = templateDatabase.AddUserDefinedControl(Constant.Control.Counter);
                 CodeTemplateImporter.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Counter, counter, ref conversionErrors, ref dataLabels);
             }
-            reader.Dispose();
+            if (reader != null)
+            { 
+                reader.Dispose();
+            }
         }
 
         private static void UpdateControl(XmlNode selectedNode, TemplateDatabase templateDatabase, string typeWanted, ControlRow control, ref List<string> errorMessages, ref List<string> dataLabels)

@@ -59,10 +59,12 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             backgroundWorker.DoWork += (ow, ea) =>
             {

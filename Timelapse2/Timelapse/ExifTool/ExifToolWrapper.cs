@@ -619,9 +619,14 @@ namespace Timelapse.ExifTool
 
             if (this._proc != null && this.Status == ExeStatus.Ready)
                 this.Stop();
-
-            this._waitHandle.Dispose();
-            this._waitForErrorHandle.Dispose();
+            if (this._waitHandle != null)
+            { 
+                this._waitHandle.Dispose();
+            }
+            if (this._waitForErrorHandle != null)
+            { 
+                this._waitForErrorHandle.Dispose();
+            }
         }
 
         #endregion

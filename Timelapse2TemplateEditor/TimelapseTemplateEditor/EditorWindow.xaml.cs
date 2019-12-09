@@ -434,8 +434,10 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuItemInspectImageMetadata_Click(object sender, RoutedEventArgs e)
         {
-            InspectMetadata inspectMetadata = new InspectMetadata(this);
-            inspectMetadata.ShowDialog();
+            using (InspectMetadata inspectMetadata = new InspectMetadata(this))
+            { 
+                inspectMetadata.ShowDialog();
+            }
         }
         #endregion
 

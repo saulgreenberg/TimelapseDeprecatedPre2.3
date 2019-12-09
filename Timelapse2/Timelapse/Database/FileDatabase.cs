@@ -1733,7 +1733,10 @@ namespace Timelapse.Database
             string imageSetQuery = Sql.SelectStarFrom + Constant.DBTables.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
             DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
             this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
-            imageSetTable.Dispose();
+            if (imageSetTable != null)
+            {
+                imageSetTable.Dispose();
+            }
         }
 
         /// <summary>
@@ -2241,7 +2244,10 @@ namespace Timelapse.Database
                     DataRow row = dataTable.Rows[i];
                     this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
                 }
-                dataTable.Dispose();
+                if (dataTable != null)
+                {
+                    dataTable.Dispose();
+                }
             }
         }
 
@@ -2294,7 +2300,10 @@ namespace Timelapse.Database
                     DataRow row = dataTable.Rows[i];
                     this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
                 }
-                dataTable.Dispose();
+                if (dataTable != null)
+                { 
+                    dataTable.Dispose();
+                }
             }
         }
 

@@ -325,10 +325,12 @@ namespace Timelapse
             // Generally, Background worker examines each image, and extracts data from it which it stores in a data structure, which in turn is used to compose bulk database inserts. 
             // PERFORMANCE This is likely the place that the best performance increases can be gained by transforming its foreach loop into a Parallel.ForEach. 
             // Indeed, you will see commented out remnants of a Parallel.ForEach in the code where this was done, but using it introduced errors. 
+#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             // folderLoadProgress contains data to be used to provide feedback on the folder loading state
             FolderLoadProgress folderLoadProgress = new FolderLoadProgress(filesToAdd.Count)

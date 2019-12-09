@@ -362,7 +362,10 @@ namespace Timelapse.Database
             {
                 TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
             }
-            command.Dispose();
+            if (command != null)
+            {
+                command.Dispose();
+            }
         }
 
         // Trims all the white space from the data held in the list of column_names in table_name
@@ -1125,7 +1128,10 @@ namespace Timelapse.Database
             string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
             DataTable datatable = this.GetDataTableFromSelect(query);
             bool rowsExist = datatable.Rows.Count != 0;
-            datatable.Dispose();
+            if (datatable != null)
+            {
+                datatable.Dispose();
+            }
             return rowsExist;
         }
 
@@ -1133,15 +1139,15 @@ namespace Timelapse.Database
         {
             // DETECTIONS: Move statements into constants
             string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
-            DataTable datatable = this.GetDataTableFromSelect(query);
-            if (datatable.Rows.Count == 0)
+            using (DataTable datatable = this.GetDataTableFromSelect(query))
             {
-                datatable.Dispose();
-                return false;
+                if (datatable.Rows.Count == 0)
+                {
+                    return false;
+                }
+                query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
+                return this.GetCountFromSelect(query) != 0;
             }
-            datatable.Dispose();
-            query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
-            return this.GetCountFromSelect(query) != 0;
         }
         #endregion
 

@@ -311,7 +311,10 @@ namespace Timelapse.Detection
                 detectionDB.Insert(Constant.DBTables.Classifications, classificationInsertionStatements);
                 fileDatabase.IndexCreateForDetectionsAndClassifications();
                 // System.Diagnostics.Debug.Print("Files: " + fileCount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
-                dataTable.Dispose();
+                if (dataTable != null)
+                { 
+                    dataTable.Dispose();
+                }
             }
         }
     }

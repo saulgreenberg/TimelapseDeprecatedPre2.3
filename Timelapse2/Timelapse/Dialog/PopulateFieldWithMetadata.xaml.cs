@@ -233,7 +233,9 @@ namespace Timelapse.Dialog
             this.PanelHeader.Visibility = Visibility.Collapsed;
             this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker() { WorkerReportsProgress = true };
+#pragma warning restore CA2000 // Dispose objects before losing scope
             backgroundWorker.DoWork += (ow, ea) =>
             {
                 // this runs on the background thread; its written as an anonymous delegate
@@ -350,7 +352,6 @@ namespace Timelapse.Dialog
                 if (this.exifTool != null)
                 {
                     this.exifTool.Stop();
-
                 }
             };
             this.BusyIndicator.IsBusy = true;
@@ -416,7 +417,10 @@ namespace Timelapse.Dialog
             if (disposing)
             {
                 // dispose managed resources
-                this.exifTool.Dispose();
+                if (this.exifTool != null)
+                { 
+                    this.exifTool.Dispose();
+                }
             }
             // free native resources
         }

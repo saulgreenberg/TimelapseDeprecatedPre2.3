@@ -368,10 +368,12 @@ namespace Timelapse.Dialog
             this.ScrollImages.IsEnabled = false;
             this.ResetButton.IsEnabled = false;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
             };
+#pragma warning restore CA2000 // Dispose objects before losing scope
             backgroundWorker.DoWork += (ow, ea) =>
             {
                 TimeSpan desiredRenderInterval = TimeSpan.FromSeconds(1.0 / Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault);
