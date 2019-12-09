@@ -21,6 +21,7 @@ namespace Timelapse.Images
         public ImageCache(FileDatabase fileDatabase) :
             base(fileDatabase)
         {
+            this.TryMoveToFile(Constant.DatabaseValues.InvalidRow);
             this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
             this.differenceBitmapCache = new Dictionary<ImageDifferenceEnum, BitmapSource>();
             this.mostRecentlyUsedIDs = new MostRecentlyUsedCollection<long>(Constant.ImageValues.BitmapCacheSize);

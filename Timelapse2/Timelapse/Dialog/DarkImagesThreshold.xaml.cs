@@ -42,7 +42,8 @@ namespace Timelapse.Dialog
             this.Owner = owner;
 
             this.database = database;
-            this.imageEnumerator = new FileTableEnumerator(database, currentImageIndex);
+            this.imageEnumerator = new FileTableEnumerator(database);
+            this.imageEnumerator.TryMoveToFile(currentImageIndex);
             this.darkPixelThreshold = state.DarkPixelThreshold;
             this.darkPixelRatio = state.DarkPixelRatioThreshold;
             this.darkPixelRatioFound = 0;

@@ -12,18 +12,9 @@ namespace Timelapse.Database
         public ImageRow Current { get; private set; }
         public int CurrentRow { get; private set; }
 
-        public FileTableEnumerator(FileDatabase fileDatabase) :
-            this(fileDatabase, Constant.DatabaseValues.InvalidRow)
+        public FileTableEnumerator(FileDatabase fileDatabase) //, int startingPosition)
         {
-        }
-
-        public FileTableEnumerator(FileDatabase fileDatabase, int startingPosition)
-        {
-            this.CurrentRow = startingPosition;
             this.Database = fileDatabase;
-
-            // OK if this fails as FileTableEnumerator..ctor(FileDatabase) passes -1 to match default enumerator behaviour
-            this.TryMoveToFile(startingPosition);
         }
 
         public void Dispose()
