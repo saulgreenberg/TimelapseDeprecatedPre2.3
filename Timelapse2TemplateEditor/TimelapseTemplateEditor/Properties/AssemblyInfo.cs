@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Resources;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -33,3 +34,4 @@ using System.Windows;
 [assembly: AssemblyFileVersion("2.2.3.1")]
 
 [assembly: InternalsVisibleTo("Timelapse2.UnitTests")]
+[assembly: NeutralResourcesLanguage("en-US")]
