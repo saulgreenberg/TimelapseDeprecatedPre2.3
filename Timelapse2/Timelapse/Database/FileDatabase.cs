@@ -1999,9 +1999,9 @@ namespace Timelapse.Database
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                System.Diagnostics.Debug.Print("Could not populate detection data");
+                System.Diagnostics.Debug.Print(e.Message + "Could not populate detection data");
                 return false;
             }
         }
