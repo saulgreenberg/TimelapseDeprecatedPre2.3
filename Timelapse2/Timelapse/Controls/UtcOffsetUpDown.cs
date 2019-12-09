@@ -6,17 +6,9 @@ namespace Timelapse.Controls
 {
     public class UtcOffsetUpDown : TimeSpanUpDown
     {
-        private static readonly FieldInfo DateTimeInfoListInfo;
-        private static readonly PropertyInfo DateTimeInfoListCount;
-        private static readonly MethodInfo DateTimeInfoListRemoveRange;
-
-        static UtcOffsetUpDown()
-        {
-            UtcOffsetUpDown.DateTimeInfoListInfo = typeof(TimeSpanUpDown).GetField("_dateTimeInfoList", BindingFlags.Instance | BindingFlags.NonPublic);
-            Type typeofListDateTimeInfo = UtcOffsetUpDown.DateTimeInfoListInfo.FieldType;
-            UtcOffsetUpDown.DateTimeInfoListCount = typeofListDateTimeInfo.GetProperty("Count");
-            UtcOffsetUpDown.DateTimeInfoListRemoveRange = typeofListDateTimeInfo.GetMethod("RemoveRange");
-        }
+        private static readonly FieldInfo DateTimeInfoListInfo = typeof(TimeSpanUpDown).GetField("_dateTimeInfoList", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly PropertyInfo DateTimeInfoListCount = UtcOffsetUpDown.DateTimeInfoListInfo.FieldType.GetProperty("Count");
+        private static readonly MethodInfo DateTimeInfoListRemoveRange = UtcOffsetUpDown.DateTimeInfoListInfo.FieldType.GetMethod("RemoveRange");
 
         public UtcOffsetUpDown()
         {
