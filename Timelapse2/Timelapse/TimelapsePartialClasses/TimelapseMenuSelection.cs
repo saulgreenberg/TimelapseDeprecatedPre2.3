@@ -181,7 +181,7 @@ namespace Timelapse
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             if (this.dataHandler.ImageCache.Current == null)
             {
-                this.FilesSelectAndShow(selection, true);
+                this.FilesSelectAndShow(selection);
             }
             else
             {

@@ -12,38 +12,38 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // FilesSelectAndShow: various forms
-        private bool FilesSelectAndShow(bool forceUpdate)
+        private bool FilesSelectAndShow()
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
                 return false;
             }
-            return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection, forceUpdate);
+            return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection);
         }
 
-        private bool FilesSelectAndShow(FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(FileSelectionEnum selection)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            return this.FilesSelectAndShow(fileID, selection, forceUpdate);
+            return this.FilesSelectAndShow(fileID, selection);
         }
 
-        // FilesSelectAndShow: Basic form doesn't force an update
-        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
-        {
-            return this.FilesSelectAndShow(imageID, selection, false);
-        }
+        //// FilesSelectAndShow: Basic form doesn't force an update
+        //private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
+        //{
+        //    return this.FilesSelectAndShow(imageID, selection, false);
+        //}
 
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         // Note. forceUpdate isn't currently used. However,
         // I kept it in in case I want to use it in the future.
 #pragma warning disable IDE0060 // Remove unused parameter
-        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection, bool forceUpdate)
+        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
         #pragma warning restore IDE0060 // Remove unused parameter
         {
             // change selection

@@ -133,7 +133,7 @@ namespace Timelapse
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
                 GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
-                this.FilesSelectAndShow(true);
+                this.FilesSelectAndShow();
             }
         }
 
@@ -330,6 +330,13 @@ namespace Timelapse
                     }
                     messageBox.ShowDialog();
                 }
+                else
+                {
+                    // Importing done.
+                    // Reload the data
+                    this.FilesSelectAndShow();
+                    this.StatusBar.SetMessage(".csv file imported.");
+                }
             }
             catch (Exception exception)
             {
@@ -342,9 +349,6 @@ namespace Timelapse
                 messageBox.Message.Hint = "Is the file open in Excel?";
                 messageBox.ShowDialog();
             }
-            // Reload the data table
-            this.FilesSelectAndShow(false);
-            this.StatusBar.SetMessage(".csv file imported.");
         }
 
         // Export the current image or video _file

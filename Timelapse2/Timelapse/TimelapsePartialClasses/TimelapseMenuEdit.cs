@@ -108,7 +108,10 @@ namespace Timelapse
                                                                }))
             {
                 PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
-                this.ShowBulkImageEditDialog(populateField, false);
+                if (this.ShowBulkImageEditDialog(populateField))
+                {
+                    this.FilesSelectAndShow();
+                };
             }
         }
 
@@ -283,7 +286,10 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(rereadDates, true);
+                if (this.ShowBulkImageEditDialog(rereadDates))
+                {
+                    this.FilesSelectAndShow();
+                };
             }
         }
 
@@ -321,7 +327,10 @@ namespace Timelapse
                                                                }))
             {
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
-                this.ShowBulkImageEditDialog(dateTimeChange, true);
+                if (this.ShowBulkImageEditDialog(dateTimeChange))
+                {
+                    this.FilesSelectAndShow();
+                };
             }
         }
 
@@ -337,7 +346,11 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                this.ShowBulkImageEditDialog(fixedDateCorrection, true);
+                if (this.ShowBulkImageEditDialog(fixedDateCorrection))
+                {                
+                    this.FilesSelectAndShow();
+                }
+
             }
         }
 
@@ -354,7 +367,10 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
-                this.ShowBulkImageEditDialog(linearDateCorrection, true);
+                if (this.ShowBulkImageEditDialog(linearDateCorrection))
+                {
+                    this.FilesSelectAndShow();
+                }
             }
         }
 
@@ -381,7 +397,10 @@ namespace Timelapse
                     messageBox.Close();
                     return;
                 }
-                this.ShowBulkImageEditDialog(dateCorrection, true);
+                if (this.ShowBulkImageEditDialog(dateCorrection))
+                {
+                    this.FilesSelectAndShow();
+                }
             }
         }
 
@@ -397,7 +416,10 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                this.ShowBulkImageEditDialog(fixedDateCorrection, false);
+                if (this.ShowBulkImageEditDialog(fixedDateCorrection))
+                {
+                    this.FilesSelectAndShow();
+                }
             }
         }
 
@@ -439,14 +461,10 @@ namespace Timelapse
         // HELPER FUNCTION, only referenced by the above menu callbacks.
         // Various dialogs perform a bulk edit, after which various states have to be refreshed
         // This method shows the dialog and (if a bulk edit is done) refreshes those states.
-        private void ShowBulkImageEditDialog(Window dialog, bool forceUpdate)
+        private bool ShowBulkImageEditDialog(Window dialog)
         {
             dialog.Owner = this;
-            bool? result = dialog.ShowDialog();
-            if (result == true)
-            {
-                this.FilesSelectAndShow(forceUpdate);
-            }
+            return (dialog.ShowDialog() == true);
         }
     }
 }
