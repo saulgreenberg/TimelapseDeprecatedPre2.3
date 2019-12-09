@@ -15,7 +15,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     /// <summary>
     /// Encapsulates logic to load a set of images into the system.
     /// </summary>
-    public class ImageSetLoader
+    public class ImageSetLoader : IDisposable
     {
         private int imagesLoaded = 0;
         private int imagesToInsert = 0;
@@ -187,6 +187,27 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             t.Change(-1, -1);
             t.Dispose();
+        }
+
+        // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (pass1 != null)
+                {
+                    pass1.Dispose();
+                }
+                if (pass2 != null)
+                {
+                    pass2.Dispose();
+                }
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
