@@ -107,11 +107,13 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-                PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
-                if (this.ShowBulkImageEditDialog(populateField))
-                {
-                    this.FilesSelectAndShow();
-                };
+                using (PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
+                { 
+                    if (this.ShowBulkImageEditDialog(populateField))
+                    {
+                        this.FilesSelectAndShow();
+                    };
+                }
             }
         }
 
@@ -157,7 +159,11 @@ namespace Timelapse
                 deleteCurrentImageOnly = false;
                 deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name);
                 // get list of all images marked for deletion in the current seletion
-                imagesToDelete = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion().ToList();
+                using (FileTable filetable = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion())
+                {
+                    imagesToDelete = filetable.ToList();
+                }
+
                 for (int index = imagesToDelete.Count - 1; index >= 0; index--)
                 {
                     if (this.dataHandler.FileDatabase.FileTable.Find(imagesToDelete[index].ID) == null)
