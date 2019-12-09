@@ -4,21 +4,13 @@ using System.Runtime.Serialization;
 namespace Timelapse.ExifTool
 {
     [Serializable]
+#pragma warning disable CA2229 // Implement serialization constructors Reason: not sure what it does, and it generates other CAs.
+#pragma warning disable CA1032 //  Reason: not sure what it does, and it generates other CAs.
     public class ExifToolException : Exception
+#pragma warning restore CA1032 
+#pragma warning restore CA2229 
     {
-        // CA 1032 recommendation to add following constructor
-        public ExifToolException()
-        { }
-
-        // CA 1032 recommendation to add following constructor
-        public ExifToolException(string message, Exception innerExcepton)
-        { }
-
         public ExifToolException(string msg) : base(msg)
-        { }
-
-        // CA 2229 recommendation
-        protected ExifToolException(SerializationInfo info, StreamingContext context)
         { }
     }
 }

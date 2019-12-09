@@ -621,6 +621,7 @@ namespace Timelapse.ExifTool
                 this.Stop();
 
             this._waitHandle.Dispose();
+            this._waitForErrorHandle.Dispose();
         }
 
         #endregion
