@@ -168,7 +168,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 
-            await this.pass1;
+            await this.pass1.ConfigureAwait(false);
 
             t.Change(-1, -1);
             t.Dispose();
@@ -186,7 +186,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 reportProgress(percentProgress, folderLoadProgress);
             }, null, 0, progressIntervalMilliseconds);
 
-            await this.pass2;
+            await this.pass2.ConfigureAwait(false);
 
             t.Change(-1, -1);
             t.Dispose();
