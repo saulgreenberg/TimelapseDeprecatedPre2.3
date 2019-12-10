@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -260,9 +261,11 @@ namespace Timelapse
                 }
             }
 
+            Cursor cursor = Mouse.OverrideCursor;
             // If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
             if (missingRelativePaths?.Count > 1)
             {
+                Mouse.OverrideCursor = null;
                 MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", this, MessageBoxButton.OKCancel);
                 messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
                 foreach (string relativePath in missingRelativePaths)
@@ -274,13 +277,18 @@ namespace Timelapse
                 messageBox.Message.Icon = MessageBoxImage.Question;
                 if (messageBox.ShowDialog() == false)
                 {
+                    Mouse.OverrideCursor = cursor;
                     return;
                 }
+                Mouse.OverrideCursor = cursor;
             }
 
+            cursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = null;
             // Raise a dialog box for each image asking the user to locate the missing folder
             foreach (string relativePath in missingRelativePaths)
             {
+
                 Dialog.FindMissingImageFolder findMissingImageFolderDialog;
                 findMissingImageFolderDialog = new Dialog.FindMissingImageFolder(this, fileDatabase.FolderPath, relativePath);
                 bool? result = findMissingImageFolderDialog.ShowDialog();
@@ -293,9 +301,11 @@ namespace Timelapse
                 else if (findMissingImageFolderDialog.CancelAll)
                 {
                     // stop trying to locate missing folders
+                    Mouse.OverrideCursor = cursor;
                     break;
                 }
             }
+            Mouse.OverrideCursor = cursor;
         }
         // END
 
