@@ -36,9 +36,11 @@
                 <CheckBox Name="HideText" Content="_Hide explanation" Grid.Column="2" Visibility="Collapsed" Margin="10,10,5,0" VerticalAlignment="Center" Checked="HideTextButton_StateChange" Unchecked="HideTextButton_StateChange" IsThreeState="False" />
             </Grid>
 
-            <TextBlock Name="tbProblemLabel" Margin="10,8,10,0"  VerticalAlignment="Top" FontSize="14" FontWeight="Bold" Grid.Row="1" Grid.Column="0" Text="Problem:" />
-            <TextBlock Name="ProblemText" Margin="0,10,10,0"  VerticalAlignment="Top" FontSize="12" TextWrapping="Wrap"  Grid.Row="1" Grid.Column="1" Text=""/>
 
+            <TextBlock Name="tbProblemLabel" Margin="10,8,10,0"  VerticalAlignment="Top" FontSize="14" FontWeight="Bold" Grid.Row="1" Grid.Column="0" Text="Problem:" />
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"  Grid.Row="1" Grid.Column="1" MaxHeight="300">
+                <TextBlock Name="ProblemText" Margin="0,10,10,0"  VerticalAlignment="Top" FontSize="12" TextWrapping="Wrap"  Grid.Row="1" Grid.Column="1" Text=""/>
+            </ScrollViewer>
             <TextBlock Name="tbWhatLabel" Margin="10,8,10,0"  VerticalAlignment="Top" FontSize="14" FontWeight="Bold" Grid.Row="2" Grid.Column="0" Text="What:" />
             <TextBlock Name="WhatText" Margin="0,10,10,0"  VerticalAlignment="Top" FontSize="12" TextWrapping="Wrap"  Grid.Row="2" Grid.Column="1" Text=""/>
 
