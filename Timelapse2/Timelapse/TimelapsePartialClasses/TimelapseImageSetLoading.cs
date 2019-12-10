@@ -535,7 +535,10 @@ namespace Timelapse
             if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {
                 // if this is completion of an add to an existing image set stay on the image, ideally, shown before the import
-                mostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                if (this.dataHandler.ImageCache.Current != null)
+                {
+                    mostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                }
                 // This is heavier weight than desirable, but it's a one off.
                 this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
