@@ -13,6 +13,7 @@ namespace Timelapse.Dialog
         private readonly string missingFolderName;
 
         public string NewFolderName { get; set; }
+        public bool CancelAll { get; set; }
 
         public FindMissingImageFolder(Window owner, string folderPath, string missingFolderName)
         {
@@ -24,6 +25,7 @@ namespace Timelapse.Dialog
             this.Message.Problem = "Timelapse could not locate the image folder: " + this.missingFolderName + ".";
             this.NewFolderName = String.Empty;
             this.MissingFolderNameRun.Text = this.missingFolderName;
+            this.CancelAll = false;
         }
 
         // Adjust this dialog window position 
@@ -79,6 +81,12 @@ namespace Timelapse.Dialog
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
+        }
+
+        private void CancelAllButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.CancelAll = true;
+            this.DialogResult = false;
         }
     }
 }

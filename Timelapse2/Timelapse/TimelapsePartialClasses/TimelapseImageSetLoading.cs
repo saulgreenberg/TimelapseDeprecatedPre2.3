@@ -290,6 +290,11 @@ namespace Timelapse
                     ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
                     fileDatabase.UpdateFiles(columnToUpdateWithWhere);
                 }
+                else if (findMissingImageFolderDialog.CancelAll)
+                {
+                    // stop trying to locate missing folders
+                    break;
+                }
             }
         }
         // END

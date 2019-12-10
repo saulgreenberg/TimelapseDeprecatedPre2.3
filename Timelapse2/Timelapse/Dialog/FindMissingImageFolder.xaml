@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         mc:Ignorable="d"
-        Title="An image folder is missing"  Height="400" Width="650" MinHeight="375" MinWidth="400" Loaded="Window_Loaded">
+        Title="An image folder is missing"  Height="400" Width="650" MinHeight="425" MinWidth="400" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -26,7 +26,8 @@
                             Result="Timelapse will 
                                       &#10;&#x2022; try to find those images within the new folder location;
                                       &#10;&#x2022; update the 'Relative Path' field to that location." 
-                            Hint="Selecting Cancel will still show the image's data, but will display a 'missing' placeholder image." />
+                            Hint="&#x2022;'Skip Folder' will still show the image's data, but will display a 'missing' placeholder image.
+                                  &#10;&#x2022; 'Cancel All' will cancel all attempts to find any missing folder, including this one"  />
         <Rectangle Fill="#FF868686" Height="1" Grid.Row="1"></Rectangle>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="10,5,0,0">
             <TextBlock HorizontalAlignment="Left" Margin="0,5,10,0"  VerticalAlignment="Top" TextWrapping="Wrap" FontSize="12" >
@@ -47,7 +48,8 @@
         </StackPanel>
 
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="4">
-            <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+            <Button Name="CancelAllButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelAllButton_Click">_Cancel All</Button>
+            <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Skip Folder</Button>
             <Button Name="OkButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" IsEnabled="False" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click">_Okay</Button>
         </StackPanel>
     </Grid>
