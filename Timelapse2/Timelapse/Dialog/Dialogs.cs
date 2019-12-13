@@ -9,7 +9,16 @@ namespace Timelapse.Dialog
 {
     public static class Dialogs
     {
-        #region Dialog Box Positioning
+        #region Dialog Box Positioning and Fitting
+        // Most (but not all) invocations of SetDefaultDialogPosition and TryFitDialogWndowInWorkingArea 
+        // are done together, so collapse it into a single call
+        public static void TryPositionAndFitDialogIntoWindow(Window window)
+        {
+            Dialogs.SetDefaultDialogPosition(window);
+            Dialogs.TryFitDialogInWorkingArea(window);
+        }
+
+
         // Position the dialog box within its owner's window
         public static void SetDefaultDialogPosition(Window window)
         {
@@ -30,7 +39,7 @@ namespace Timelapse.Dialog
         // Note that all uses of this method is by dialog box windows (which should be initialy positioned relative to the main timelapse window) by a call to SetDefaultDialogPosition), 
         // rather than the main timelapse window (whose position, size and layout  is managed by the TimelapseAvalonExtension methods). 
         // We could likely collapse the two, but its not worth the bother. 
-        public static bool TryFitDialogWindowInWorkingArea(Window window)
+        public static bool TryFitDialogInWorkingArea(Window window)
         {
             if (window == null)
             {

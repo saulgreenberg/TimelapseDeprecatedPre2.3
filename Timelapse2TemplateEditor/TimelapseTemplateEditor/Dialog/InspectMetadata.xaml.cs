@@ -31,8 +31,7 @@ namespace Timelapse.Editor.Dialog
         // After the interface is loaded, try to adjust the position of the dialog box
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
             this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;

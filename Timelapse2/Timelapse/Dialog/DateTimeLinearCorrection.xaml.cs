@@ -74,8 +74,7 @@ namespace Timelapse
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
 
         private void PreviewDateTimeChanges()

@@ -31,8 +31,7 @@ namespace Timelapse.Dialog
         // Adjust this dialog window position 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
 
         // Folder dialog where the user can only select a sub-folder of the root folder path

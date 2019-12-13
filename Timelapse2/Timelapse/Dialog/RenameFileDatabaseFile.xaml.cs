@@ -20,8 +20,7 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             this.runOriginalFileName.Text = this.currentFileName;
             this.txtboxNewFileName.Text = this.NewFilename;

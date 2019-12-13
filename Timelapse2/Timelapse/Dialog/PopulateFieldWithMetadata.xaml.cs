@@ -51,8 +51,7 @@ namespace Timelapse.Dialog
         // - Load the names of the note controls into the listbox
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;

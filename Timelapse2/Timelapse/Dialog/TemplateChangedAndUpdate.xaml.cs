@@ -115,8 +115,7 @@ namespace Timelapse.Dialog
         // Position the window relative to its parent
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
 
         // Get a subset of the dictionary filtered by the type of control

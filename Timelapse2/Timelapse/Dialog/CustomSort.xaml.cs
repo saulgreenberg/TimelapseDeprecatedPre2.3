@@ -31,8 +31,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Adjust this dialog window position 
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             // Get the sort terms. 
             this.sortTermList = Database.SortTerms.GetSortTerms(this.database.CustomSelection.SearchTerms);

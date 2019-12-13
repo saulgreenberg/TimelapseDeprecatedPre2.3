@@ -49,8 +49,7 @@ namespace Timelapse.QuickPaste
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Adjust this dialog window position 
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             // Display the title of the QuickPasteEntry
             this.QuickPasteTitle.Text = this.QuickPasteEntry.Title;

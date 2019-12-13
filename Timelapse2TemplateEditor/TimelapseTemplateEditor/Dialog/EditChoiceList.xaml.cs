@@ -49,7 +49,7 @@ namespace Timelapse.Editor.Dialog
                     this.Left = mainWindowRightSide - this.ActualWidth - 100;
                 }
             }
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryFitDialogInWorkingArea(this);
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

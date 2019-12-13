@@ -55,8 +55,7 @@ namespace Timelapse.Dialog
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
         }

@@ -19,8 +19,7 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.SetDefaultDialogPosition(this);
-            Dialogs.TryFitDialogWindowInWorkingArea(this);
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
             this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum;
             this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum;
