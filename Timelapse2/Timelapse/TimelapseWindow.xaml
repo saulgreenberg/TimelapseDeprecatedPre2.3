@@ -159,7 +159,7 @@
                 </MenuItem>
 
                 <!-- Classify dark files...-->
-                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k files now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="Classify (or re-classify) which files are dark (usualy night-time shots)"  />
+                <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k images now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="Classify (or re-classify) files (excluding videos) that are dark (usualy night-time shots)"  />
 
                 <!-- Edit notes for this image set... -->
                 <MenuItem Name="MenuItemLog" Header="Edit _notes for this image set..." Click="MenuItemLog_Click"  ToolTip="View and edit any notes (e.g., a log of activites or to-do items) particular to this Image Set" IsEnabled="True" />

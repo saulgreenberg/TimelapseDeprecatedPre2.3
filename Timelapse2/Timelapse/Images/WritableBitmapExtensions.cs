@@ -161,7 +161,7 @@ namespace Timelapse.Images
                 {
                     return FileSelectionEnum.Dark;
                 }
-                return FileSelectionEnum.Dark;
+                return FileSelectionEnum.Ok;
             }
 #pragma warning disable CA2153 // Do Not Catch Corrupted State Exceptions
             catch

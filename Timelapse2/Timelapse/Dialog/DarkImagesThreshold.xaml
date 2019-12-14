@@ -6,7 +6,7 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         mc:Ignorable="d"
-        Title="Classify dark images and videos"
+        Title="Classify dark images"
         Loaded="Window_Loaded"
         MinHeight="700" MinWidth="768"
 		Height="768" Width="768"
@@ -16,11 +16,11 @@
     <DockPanel PreviewKeyDown="Window_PreviewKeyDown">
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Question"
-                            Title="Classify Dark Images and Videos"
+                            Title="Classify Dark Images"
                             What="If dark image classification was skipped when the image set was loaded, you can perform it now by clicking 'Apply...'.
-                                  &#10;Or, to adjust and how dark vs. light images are determined, set various thresholds with the controls below, then  'Apply'."
+                                  &#10;Or, to adjust and how dark vs. light images are determined, set various thresholds with the controls below, then  'Apply'.  &#10;Note that videos are always returned as 'Ok;"
                             Hint="It helps to understand how Timelapse determines darkness through the following steps.&#10;1. If it appears to be in color, then classify it as Ok (i.e., not dark).&#10;2. Otherwise, count the number of pixels darker than a 'grey color threshold'.&#10;3. If the percentage of dark pixels is greater than  the dark percentage threshold, then classify it as dark."
-                            Solution="If you want to tune how classification is done, go to an image or video that you think is a typical 'borderline' dark versus ok case. The horizontal bar's color reflects the current 'dark pixel threshold' (adjusted with the left slider), while the bar's length shows how many pixels in the current image are below that threshold. The red line shows the 'dark percentage threshold' needed. &#10;1. Drag the red line and the slider to adjust both thresholds, until satisfied with the classification.&#10;2. Check other borderline images or videos to see if it improves classification. If not, repeat the above steps.&#10;3. If it looks good, Apply those settings to all images and videos. Review and repeat if needed.&#10;4. At any time, you can reset thresholds to their initial values or to the Carnassial defaults, and Apply them."
+                            Solution="If you want to tune how classification is done, go to an image that you think is a typical 'borderline' dark versus ok case. The horizontal bar's color reflects the current 'dark pixel threshold' (adjusted with the left slider), while the bar's length shows how many pixels in the current image are below that threshold. The red line shows the 'dark percentage threshold' needed. &#10;1. Drag the red line and the slider to adjust both thresholds, until satisfied with the classification.&#10;2. Check other borderline images to see if it improves classification. If not, repeat the above steps.&#10;3. If it looks good, Apply those settings to all images and videos. Review and repeat if needed.&#10;4. At any time, you can reset thresholds to their initial values or to the Carnassial defaults, and Apply them."
                             ShowExplanationVisibility="True" />
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch" >
             <Rectangle Fill="#FF868686" Height="2"/>
