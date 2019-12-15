@@ -32,12 +32,6 @@ namespace Timelapse
             return this.FilesSelectAndShow(fileID, selection);
         }
 
-        //// FilesSelectAndShow: Basic form doesn't force an update
-        //private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
-        //{
-        //    return this.FilesSelectAndShow(imageID, selection, false);
-        //}
-
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         // Note. forceUpdate isn't currently used. However,

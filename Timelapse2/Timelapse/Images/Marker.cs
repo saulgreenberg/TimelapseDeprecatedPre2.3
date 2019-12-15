@@ -61,7 +61,10 @@ namespace Timelapse.Images
         // Calculate the point as a ratio of its position on the image, so we can locate it regardless of the actual image size
         public static Point ConvertPointToRatio(Point p, double width, double height)
         {
-            Point ratio = new Point(p.X / width, p.Y / height);
+            // Avoid possible divide by zero errors by setting the value to 0 if it occurs
+            double x = width != 0 ? p.X / width : 0;
+            double y = height != 0 ? p.Y / height : 0;
+            Point ratio = new Point(x, y);
             return ratio;
         }
 
