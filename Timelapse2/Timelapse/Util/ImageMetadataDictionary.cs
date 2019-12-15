@@ -13,9 +13,6 @@ namespace Timelapse.Util
         public static Dictionary<string, ImageMetadata> LoadMetadata(string filePath)
         {
             Dictionary<string, ImageMetadata> metadataDictionary = new Dictionary<string, ImageMetadata>();
-
-            var foo = ImageMetadataReader.ReadMetadata(filePath);
-
             try
             {
                 foreach (Directory metadataDirectory in ImageMetadataReader.ReadMetadata(filePath))

@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
+using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -126,7 +127,16 @@ namespace Timelapse
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
+                ImageRow imageRow = this.dataHandler.ImageCache.Current;
+                if (imageRow.IsVideo)
+                {
+                    string path = Path.Combine(this.FolderPath, imageRow.RelativePath, imageRow.File);
+                    this.MenuItemDeleteCurrentFile.IsEnabled =  BitmapUtilities.IsVideoFileDisplayable(path);
+                }
+                else
+                {
+                    this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
+                }
             }
             catch (Exception exception)
             {
@@ -186,8 +196,9 @@ namespace Timelapse
 
             // We have to change the way the current image is displayed, as otherwise it cannot be deleted as there is still a reference to the file.
             // NOTE THAT WE NEED TO DO THIS FOR VIDEOS AND FOR MULTIPLEIMAGEVIEW
-            // MAYBE CLEAR THE IMAGE CACHE TOO?
+            // MAYBE CLEAR THE IMAGE CACHE TOO? 
             this.dataHandler.ImageCache.Current.GetBitmapFromFile(this.FolderPath, 128, ImageDisplayIntentEnum.TransientNavigating, out _);
+
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...

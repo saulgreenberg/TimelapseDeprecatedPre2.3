@@ -89,7 +89,7 @@ namespace Timelapse
             {
                 string oldDT = image.Date + " " + image.Time;
                 string newDT = String.Empty;
-                string status = "Skipped: invalid date/time";
+                string status;
                 string difference = string.Empty;
                 double imagePositionInInterval;
 

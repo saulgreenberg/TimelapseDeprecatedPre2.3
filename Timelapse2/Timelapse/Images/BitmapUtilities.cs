@@ -52,6 +52,13 @@ namespace Timelapse.Images
             }
         }
 
+        // Return true only if the video file exists - we then assume its also displayable.
+        // Not the best, but ...
+        public static bool IsVideoFileDisplayable(string path)
+        {
+            return File.Exists(path);
+        }
+
         // TODO Check this, as we changed the bitmap cache options from OnDemand to OnLoad to ensure file deletions would work
         public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
