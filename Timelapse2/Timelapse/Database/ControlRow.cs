@@ -85,7 +85,7 @@ namespace Timelapse.Database
         // Overload: the caller is uninterested in knowing if there are any empty items in the list, and wants the empty item removed
         public List<string> GetChoices(bool removeEmptyChoiceItem)
         {
-            return this.GetChoices(out bool includesEmptyChoice, removeEmptyChoiceItem);
+            return this.GetChoices(out _, removeEmptyChoiceItem);
         }
         // Overload: the caller is interested in knowing if there are any empty items in the list, 
         // and wants the empty item removed (usually because they will add it themselves to a menu

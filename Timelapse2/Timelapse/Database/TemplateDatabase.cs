@@ -661,6 +661,17 @@ namespace Timelapse.Database
                 this.SetControlOrders(Constant.DatabaseColumn.UtcOffset, Constant.DatabaseValues.UtcOffsetPosition);
             }
 
+            // Bug fix: 
+            // Check to ensure that the image quality choice list in the templae match the expected default value,
+            // A previously introduced bug had added spaces before several items in the list. This fixes that.
+            // Note that this updates the template table in both the .tdb and .ddb file
+            ControlRow imageQualityControlRow = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);
+            if (imageQualityControlRow != null && imageQualityControlRow.List != Constant.ImageQuality.ListOfValues)
+            {
+                imageQualityControlRow.List = Constant.ImageQuality.ListOfValues;
+                this.SyncControlToDatabase(imageQualityControlRow);
+            }
+
             // Backwards compatability: ensure a DeleteFlag control exists, replacing the MarkForDeletion data label used in pre 2.1.0.4 templates if necessary
             ControlRow markForDeletion = this.GetControlFromTemplateTable(Constant.ControlsDeprecated.MarkForDeletion);
             if (markForDeletion != null)
