@@ -121,7 +121,7 @@ namespace Timelapse.Database
             return System.IO.File.Exists(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
         }
 
-        public bool IsDisplayable(string pathToRootFolder)
+        public virtual bool IsDisplayable(string pathToRootFolder)
         {
             return BitmapUtilities.IsBitmapFileDisplayable(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
         }
@@ -131,11 +131,6 @@ namespace Timelapse.Database
         public virtual bool IsVideo
         {
             get { return false; }
-        }
-
-        public virtual bool IsVideoAndExists(string rootFolder)
-        {
-            return this.IsVideo && this.FileExists(rootFolder); 
         }
         #endregion
 

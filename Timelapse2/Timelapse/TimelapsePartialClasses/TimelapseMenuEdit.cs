@@ -87,11 +87,9 @@ namespace Timelapse
         // Populate a data field from metadata (example metadata displayed from the currently selected image)
         private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
-            this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath);
             // If we are not in the selection All view, or if its a corrupt image or deleted image, or if its a video that no longer exists, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if ( (this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.Corrupt.Value || this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.FileNoLongerAvailable.Value) 
-                && this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath) == false)
+            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 // There are no displayable images, and thus no metadata to choose from, so abort
                 MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
@@ -130,14 +128,8 @@ namespace Timelapse
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
                 ImageRow imageRow = this.dataHandler.ImageCache.Current;
-                if (this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath))
-                {
-                    this.MenuItemDeleteCurrentFile.IsEnabled =  true;
-                }
-                else
-                {
-                    this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
-                }
+
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)
             {
@@ -323,20 +315,6 @@ namespace Timelapse
         // Correct for daylight savings time
         private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
-            // If we are not in the selection All view, or if its a corrupt image, tell the person. Selecting ok will shift the views..
-            if (this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
-            {
-                // Just a corrupted image
-                MessageBox messageBox = new MessageBox("Can't correct for daylight savings time.", this);
-                messageBox.Message.Problem = "This is a corrupted file.";
-                messageBox.Message.Solution = "To correct for daylight savings time, you need to:" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 be displaying a file with a valid date ";
-                messageBox.Message.Solution += "\u2022 where that file should be the one at the daylight savings time threshold.";
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.ShowDialog();
-                return;
-            }
-
             if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
                                                                "'Correct for daylight savings time...'",
                                                                (bool optOut) =>

@@ -19,6 +19,12 @@ namespace Timelapse.Database
         {
         }
 
+        // We can't easily tell if a video is displayable. Instead, just see if the file exists.
+        public override bool IsDisplayable(string pathToRootFolder)
+        {
+            return System.IO.File.Exists(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
+        }
+
         // This will be invoked only on a video file, so always returns true
         public override bool IsVideo
         {
