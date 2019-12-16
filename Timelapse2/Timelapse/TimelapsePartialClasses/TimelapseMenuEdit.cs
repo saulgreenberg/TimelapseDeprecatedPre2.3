@@ -87,9 +87,11 @@ namespace Timelapse
         // Populate a data field from metadata (example metadata displayed from the currently selected image)
         private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
-            // If we are not in the selection All view, or if its a corrupt image or deleted image, tell the person. Selecting ok will shift the selection.
+            this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath);
+            // If we are not in the selection All view, or if its a corrupt image or deleted image, or if its a video that no longer exists, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
-            if (this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.Corrupt.Value || this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.FileNoLongerAvailable.Value)
+            if ( (this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.Corrupt.Value || this.dataHandler.MarkableCanvas.ImageToDisplay.Source == Constant.ImageValues.FileNoLongerAvailable.Value) 
+                && this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath) == false)
             {
                 // There are no displayable images, and thus no metadata to choose from, so abort
                 MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
@@ -128,10 +130,9 @@ namespace Timelapse
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
                 ImageRow imageRow = this.dataHandler.ImageCache.Current;
-                if (imageRow.IsVideo)
+                if (this.dataHandler.ImageCache.Current.IsVideoAndExists(this.FolderPath))
                 {
-                    string path = Path.Combine(this.FolderPath, imageRow.RelativePath, imageRow.File);
-                    this.MenuItemDeleteCurrentFile.IsEnabled =  BitmapUtilities.IsVideoFileDisplayable(path);
+                    this.MenuItemDeleteCurrentFile.IsEnabled =  true;
                 }
                 else
                 {

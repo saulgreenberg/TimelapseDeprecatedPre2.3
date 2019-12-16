@@ -132,6 +132,11 @@ namespace Timelapse.Database
         {
             get { return false; }
         }
+
+        public virtual bool IsVideoAndExists(string rootFolder)
+        {
+            return this.IsVideo && this.FileExists(rootFolder); 
+        }
         #endregion
 
         // Check if a datalabel is present in the ImageRow
