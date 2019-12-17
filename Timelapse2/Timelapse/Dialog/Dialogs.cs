@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Forms;
+using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 using Clipboard = System.Windows.Clipboard;
 using Rectangle = System.Drawing.Rectangle;
@@ -107,6 +109,73 @@ namespace Timelapse.Dialog
             }
             return windowFitsInWorkingArea;
         }
+        #endregion
+
+        #region Dialog Messages: Prompt to apply operation if partial selection.
+
+        // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+        public static bool MaybePromptToApplyOperationOnSelection(Window window, FileDatabase fileDatabase, bool promptState, string operationDescription, Action<bool> persistOptOut)
+        {
+            if (Dialogs.CheckIfPromptNeeded(promptState, fileDatabase, out int filesTotalCount, out int filesSelectedCount) == false)
+            {
+                // if showing all images, or if users had elected not to be warned, then no need for showing the warning message
+                return true;
+            }
+
+            // Warn the user that the operation will only be applied to an image set.
+            string title = "Apply " + operationDescription + " to this selection?";
+            MessageBox messageBox = new MessageBox(title, window, MessageBoxButton.OKCancel);
+
+            messageBox.Message.What = operationDescription + " will be applied only to a subset of your images." + Environment.NewLine;
+            messageBox.Message.What += "Is this what you want?";
+
+            messageBox.Message.Reason = String.Format("A 'selection' is active, where you are currently viewing {0}/{1} total files.{2}", filesSelectedCount, filesTotalCount, Environment.NewLine);
+            messageBox.Message.Reason += "Only these selected images will be affected by this operation." + Environment.NewLine;
+            messageBox.Message.Reason += "Data for other unselected images will be unaffected.";
+
+            messageBox.Message.Solution = "Select " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Ok' for Timelapse to continue to " + operationDescription + " for these selected files" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Cancel' to abort";
+
+            messageBox.Message.Hint = "This is not an error." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 We are just reminding you that you ave an active selection that is displaying only a subset of your images." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 You can apply this operation to that subset ." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 However, if you did want to do this operaton for all images, choose the 'Select|All files' menu option.";
+
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool proceedWithOperation = (bool)messageBox.ShowDialog();
+            if (proceedWithOperation && messageBox.DontShowAgain.IsChecked.HasValue && persistOptOut != null)
+            {
+                persistOptOut(messageBox.DontShowAgain.IsChecked.Value);
+            }
+            return proceedWithOperation;
+        }
+
+        // Check if a prompt dialog is needed
+        private static bool CheckIfPromptNeeded(bool promptState, FileDatabase fileDatabase, out int filesTotalCount, out int filesSelectedCount)
+        {
+            filesTotalCount = 0;
+            filesSelectedCount = 0;
+            if (fileDatabase == null)
+            {
+                // This should not happen. Maybe raise an exception?
+                // In any case, don't show the prompt
+                return false;
+            }
+
+            if (promptState)
+            {
+                // We don't show the prompt as the user has turned it off.
+                return false;
+            }
+            // We want to show the prompt only if the promptState is true, and we are  viewing all images
+            filesTotalCount = fileDatabase.GetFileCount(FileSelectionEnum.All);
+            filesSelectedCount = fileDatabase.FileTable.RowCount;
+            return filesTotalCount != filesSelectedCount;
+        }
+
         #endregion
 
         #region Dialog Messages: Path too long warnings

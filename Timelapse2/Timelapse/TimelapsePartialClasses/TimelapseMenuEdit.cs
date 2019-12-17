@@ -101,8 +101,9 @@ namespace Timelapse
                 return;
             }
 
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
-                                                               "'Populate a data field with image metadata...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
+                                                                           "'Populate a data field with image metadata...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
@@ -287,9 +288,9 @@ namespace Timelapse
         // Re-read dates and times from files
         private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
         {
-            // If we are not in the selection All view, or if its a corrupt file, tell the person. Selecting ok will shift the views..
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedRereadDatesFromFilesPrompt,
-                                                               "'Reread dates from files...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedRereadDatesFromFilesPrompt,
+                                                               "'Reread dates and times from files...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
@@ -315,8 +316,9 @@ namespace Timelapse
         // Correct for daylight savings time
         private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
-                                                               "'Correct for daylight savings time...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
+                                                                           "'Correct for daylight savings time...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
@@ -333,9 +335,9 @@ namespace Timelapse
         // Correct for cameras not set to the right date and time by specifying an offset
         private void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
         {
-            // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
-                                                               "'Add a fixed correction value to every date/time...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
+                                                                           "'Add a fixed correction value to every date/time...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
@@ -354,9 +356,9 @@ namespace Timelapse
         // Note that the correction is applied only to images in the selected view.
         private void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
         {
-            // Warn user that they are in a selected view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
-                                                               "'Correct for camera clock drift'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
+                                                                           "'Correct for camera clock drift'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
@@ -373,9 +375,9 @@ namespace Timelapse
         // Correct ambiguous dates dialog i.e. dates that could be read as either month/day or day/month
         private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
-            // Warn user that they are in a selection view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedAmbiguousDatesPrompt,
-                                                               "'Correct ambiguous dates...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedAmbiguousDatesPrompt,
+                                                                           "'Correct ambiguous dates...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedAmbiguousDatesPrompt = optOut;
@@ -403,9 +405,9 @@ namespace Timelapse
         // Reassign a group of images to a particular time zone
         private void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
         {
-            // Warn user that they are in a selecction view, and verify that they want to continue
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedSetTimeZonePrompt,
-                                                               "'Set the time zone of every date/time...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedSetTimeZonePrompt,
+                                                                           "'Set the time zone of every date/time...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedSetTimeZonePrompt = optOut;
@@ -422,8 +424,9 @@ namespace Timelapse
         // Identify or reclassify dark files.
         private void MenuItemEditClassifyDarkImages_Click(object sender, RoutedEventArgs e)
         {
-            if (this.MaybePromptToApplyOperationIfPartialSelection(this.State.SuppressSelectedDarkThresholdPrompt,
-                                                               "'(Re-) classify dark files...'",
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDarkThresholdPrompt,
+                                                                           "'(Re-) classify dark files...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedDarkThresholdPrompt = optOut; // SG TODO

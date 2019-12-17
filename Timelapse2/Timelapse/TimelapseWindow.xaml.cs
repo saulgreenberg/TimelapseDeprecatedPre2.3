@@ -907,44 +907,6 @@ namespace Timelapse
             }
         }
 
-        // If we are not showing all images, then warn the user and make sure they want to continue.
-        private bool MaybePromptToApplyOperationIfPartialSelection(bool userOptedOutOfMessage, string operationDescription, Action<bool> persistOptOut)
-        {
-            // if showing all images then no need for showing the warning message
-            if (userOptedOutOfMessage || this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.All)
-            {
-                return true;
-            }
-
-            string title = "Apply " + operationDescription + " to this selection?";
-            MessageBox messageBox = new MessageBox(title, this, MessageBoxButton.OKCancel);
-
-            messageBox.Message.What = operationDescription + " will be applied only to the subset of images shown by the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection." + Environment.NewLine;
-            messageBox.Message.What += "Is this what you want?";
-
-            messageBox.Message.Reason = "You have the following selection on: " + this.dataHandler.FileDatabase.ImageSet.FileSelection + "." + Environment.NewLine;
-            messageBox.Message.Reason += "Only data for those images available in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be affected" + Environment.NewLine;
-            messageBox.Message.Reason += "Data for images not shown in this " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " selection will be unaffected." + Environment.NewLine;
-
-            messageBox.Message.Solution = "Select " + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 'Ok' for Timelapse to continue to " + operationDescription + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 'Cancel' to abort";
-
-            messageBox.Message.Hint = "This is not an error." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 We are asking just in case you forgot you had the " + this.dataHandler.FileDatabase.ImageSet.FileSelection + " on. " + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 You can use the 'Select' menu to change to other views." + Environment.NewLine;
-            messageBox.Message.Hint += "If you check don't show this message this dialog can be turned back on via the Options menu.";
-
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-            bool proceedWithOperation = (bool)messageBox.ShowDialog();
-            if (proceedWithOperation && messageBox.DontShowAgain.IsChecked.HasValue)
-            {
-                persistOptOut(messageBox.DontShowAgain.IsChecked.Value);
-            }
-            return proceedWithOperation;
-        }
 
         #endregion
     }
