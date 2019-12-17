@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -36,37 +38,33 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Columns[1].Width = new DataGridLength(2, DataGridLengthUnitType.Star);
 
         }
-
-        private void StartDoneButton_Click(object sender, RoutedEventArgs e)
+        private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeRereadFeedbackTuple>();
-            //this.FeedbackGrid.ItemsSource = feedbackRows;
             this.cancelButton.IsEnabled = false;
             this.StartDoneButton.Content = "_Done";
             this.StartDoneButton.Click -= this.StartDoneButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
-            BackgroundWorker backgroundWorker = new BackgroundWorker()
+            // Use this to update the progress bar
+            var progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                WorkerReportsProgress = true
-            };
-#pragma warning restore CA2000 // Dispose objects before losing scope
+                // Update the progress bar
+                this.UpdateProgress(value.PercentDone, value.Message);
+            });
+            var progress = progressHandler as IProgress<ProgressBarArguments>;
 
-            backgroundWorker.DoWork += (ow, ea) =>
+            // Show the busy indicator
+            this.BusyIndicator.IsBusy = true;
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+            await Task.Run( () =>
             {
-                // this runs on the background thread; its written as an anonymous delegate
-                // We need to invoke this to allow updates on the UI
-                this.Dispatcher.Invoke(new Action(() =>
-                {
-                    // First, provide initial feedback
-                    backgroundWorker.ReportProgress(0, "Pass 1: Examining image and video dates...");
-                }));
-
                 // Pass 1. Check to see what dates/times need updating.
+                progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates..."));
                 List<ImageRow> filesToAdjust = new List<ImageRow>();
                 int count = this.database.CurrentlySelectedFileCount;
                 TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
@@ -75,7 +73,7 @@ namespace Timelapse.Dialog
                     // We will store the various times here
                     ImageRow file = this.database.FileTable[fileIndex];
                     DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
-                    string feedbackMessage = String.Empty;
+                    string feedbackMessage = string.Empty;
                     try
                     {
                         // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
@@ -94,7 +92,7 @@ namespace Timelapse.Dialog
                             if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
                             {
                                 // We couldn't read the metadata, so get a candidate date/time from the file info instead
-                                file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);  
+                                file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);
                                 usingMetadataTimestamp = false;
                             }
                             DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
@@ -102,7 +100,7 @@ namespace Timelapse.Dialog
                             bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
                             bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
 
-                            if  (!(sameDate && sameTime && sameUTCOffset))
+                            if (!(sameDate && sameTime && sameUTCOffset))
                             {
                                 // Date has been updated - add it to the queue of files to be processed, and generate a feedback message.
                                 filesToAdjust.Add(file);
@@ -116,21 +114,21 @@ namespace Timelapse.Dialog
                     catch (Exception exception)
                     {
                         // This shouldn't happen, but just in case.
-                        TraceDebug.PrintMessage(String.Format("Unexpected exception processing '{0}' in DateTimeReread. {1}", file.File, exception.ToString()));
-                        feedbackMessage += String.Format("\x2716 skipping: {0}", exception.Message);
+                        TraceDebug.PrintMessage(string.Format("Unexpected exception processing '{0}' in DateTimeReread. {1}", file.File, exception.ToString()));
+                        feedbackMessage += string.Format("\x2716 skipping: {0}", exception.Message);
                         feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
                     }
-                    backgroundWorker.ReportProgress(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format ("Pass 1: Checking dates for {0} / {1} files", fileIndex, count));
+                    progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
 
                     if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
                     {
                         // Put in a delay every now and then, as otherwise the UI won't update.
-                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime); 
+                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
                     }
                 }
 
                 // Pass 2. Update each date as needed 
-                if (filesToAdjust.Count <= 0 )
+                if (filesToAdjust.Count <= 0)
                 {
                     // If none of the file dates need updating, just say so and bail out of here.
                     feedbackRows.Insert(0, new DateTimeRereadFeedbackTuple("---", "No files updated as their dates have not changed."));
@@ -139,9 +137,10 @@ namespace Timelapse.Dialog
 
                 // We have files whose dates have to be updated in the database 
                 // Provide feedback on the second pass
-                backgroundWorker.ReportProgress(0, String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count));
+                progress.Report(new ProgressBarArguments(0, String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count)));
+
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
-                
+
                 // Update the database
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
                 foreach (ImageRow image in filesToAdjust)
@@ -151,27 +150,16 @@ namespace Timelapse.Dialog
                 this.database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
 
                 // Provide summary feedback
-                feedbackRows.Insert(0, (new DateTimeRereadFeedbackTuple("---", String.Format("Updated {0}/{1} files whose dates have changed", filesToAdjust.Count, count))));
-            };
+                feedbackRows.Insert(0, (new DateTimeRereadFeedbackTuple("---", string.Format("Updated {0}/{1} files whose dates have changed", filesToAdjust.Count, count))));
+            });
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-            backgroundWorker.ProgressChanged += (o, ea) =>
-            {
-                // Update the progress bar
-                this.UpdateProgress(ea.ProgressPercentage, (string)ea.UserState);     
-            };
-
-            backgroundWorker.RunWorkerCompleted += (o, ea) =>
-            {
-                // Hide the busy indicator and display information about each changed file
-                this.BusyIndicator.IsBusy = false;
+            // Completed
+            // Hide the busy indicator and display information about each changed file
+            this.BusyIndicator.IsBusy = false;
                 this.FeedbackGrid.Visibility = Visibility.Visible;
                 this.FeedbackGrid.ItemsSource = feedbackRows;
                 this.StartDoneButton.IsEnabled = true;
-            };
-
-            // Show the busy indicator
-            this.BusyIndicator.IsBusy = true;
-            backgroundWorker.RunWorkerAsync();
         }
 
         // Convenience routing to show progress information in the progress bar
