@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
@@ -73,6 +75,12 @@ namespace Timelapse.Controls
             else
             {
                 this.ContentControl.Text = value;
+            }
+
+            // For date time controls, we also need to set the actual Value, as updating the text field by itself doesn't do that.
+            if (DateTimeHandler.TryParseDisplayDateTime(value, out DateTime dateTime))
+            {
+                this.ContentControl.Value = dateTime;
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for the selected image";
         }

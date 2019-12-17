@@ -40,126 +40,126 @@ namespace Timelapse.Dialog
         }
         private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                // Update the progress bar
+                this.UpdateProgress(value.PercentDone, value.Message);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeRereadFeedbackTuple>();
+
+            // Configure the UI's initial state
             this.cancelButton.IsEnabled = false;
             this.StartDoneButton.Content = "_Done";
             this.StartDoneButton.Click -= this.StartDoneButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-
-            // Use this to update the progress bar
-            var progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                this.UpdateProgress(value.PercentDone, value.Message);
-            });
-            var progress = progressHandler as IProgress<ProgressBarArguments>;
-
-            // Show the busy indicator
             this.BusyIndicator.IsBusy = true;
 
+
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-            await Task.Run( () =>
-            {
+            // Reread the Date/Times from each file
+            await Task.Run(() =>
+           {
                 // Pass 1. Check to see what dates/times need updating.
                 progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates..."));
-                List<ImageRow> filesToAdjust = new List<ImageRow>();
-                int count = this.database.CurrentlySelectedFileCount;
-                TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
-                for (int fileIndex = 0; fileIndex < count; ++fileIndex)
-                {
+               List<ImageRow> filesToAdjust = new List<ImageRow>();
+               int count = this.database.CurrentlySelectedFileCount;
+               TimeZoneInfo imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
+               for (int fileIndex = 0; fileIndex < count; ++fileIndex)
+               {
                     // We will store the various times here
                     ImageRow file = this.database.FileTable[fileIndex];
-                    DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
-                    string feedbackMessage = string.Empty;
-                    try
-                    {
+                   DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
+                   string feedbackMessage = string.Empty;
+                   try
+                   {
                         // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
                         // Note that if the image can't be created, we will just to the catch.
                         bool usingMetadataTimestamp = true;
-                        if (file.FileExists(this.database.FolderPath) == false)
-                        {
+                       if (file.FileExists(this.database.FolderPath) == false)
+                       {
                             // The file does not exist. Generate a feedback message
                             feedbackMessage = "\x2716 Missing file - date unchanged."; // X mark
                             feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
-                        }
-                        else
-                        {
+                       }
+                       else
+                       {
                             // Read the date from the file, and check to see if its different from the recorded date
                             DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.database.FolderPath, imageSetTimeZone);
-                            if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
-                            {
+                           if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
+                           {
                                 // We couldn't read the metadata, so get a candidate date/time from the file info instead
                                 file.SetDateTimeOffsetFromFileInfo(this.database.FolderPath);
-                                usingMetadataTimestamp = false;
-                            }
-                            DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
-                            bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
-                            bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
-                            bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
+                               usingMetadataTimestamp = false;
+                           }
+                           DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
+                           bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
+                           bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
+                           bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
 
-                            if (!(sameDate && sameTime && sameUTCOffset))
-                            {
+                           if (!(sameDate && sameTime && sameUTCOffset))
+                           {
                                 // Date has been updated - add it to the queue of files to be processed, and generate a feedback message.
                                 filesToAdjust.Add(file);
-                                feedbackMessage = "\x2713"; // Checkmark 
+                               feedbackMessage = "\x2713"; // Checkmark 
                                 feedbackMessage += DateTimeHandler.ToDisplayDateTimeString(originalDateTime) + " \x2192 " + DateTimeHandler.ToDisplayDateTimeString(rescannedDateTime);
-                                feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
-                                feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
-                            }
-                        }
-                    }
-                    catch (Exception exception)
-                    {
+                               feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
+                               feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
+                           }
+                       }
+                   }
+                   catch (Exception exception)
+                   {
                         // This shouldn't happen, but just in case.
                         TraceDebug.PrintMessage(string.Format("Unexpected exception processing '{0}' in DateTimeReread. {1}", file.File, exception.ToString()));
-                        feedbackMessage += string.Format("\x2716 skipping: {0}", exception.Message);
-                        feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
-                    }
-                    progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
+                       feedbackMessage += string.Format("\x2716 skipping: {0}", exception.Message);
+                       feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
+                   }
+                   progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
 
-                    if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
-                    {
+                   if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
+                   {
                         // Put in a delay every now and then, as otherwise the UI won't update.
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
-                    }
-                }
+                   }
+               }
 
-                // Pass 2. Update each date as needed 
+                // Pass 2. Update the files whose date has changed in the database
                 if (filesToAdjust.Count <= 0)
-                {
-                    // If none of the file dates need updating, just say so and bail out of here.
+               {
+                    // None of the file dates need updating, so no need to do anything more.
                     feedbackRows.Insert(0, new DateTimeRereadFeedbackTuple("---", "No files updated as their dates have not changed."));
-                    return;
-                }
+                   return;
+               }
 
-                // We have files whose dates have to be updated in the database 
-                // Provide feedback on the second pass
+                // Provide feedback that we are in the second pass
                 progress.Report(new ProgressBarArguments(0, String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count)));
-
-                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
+               Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
 
                 // Update the database
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                foreach (ImageRow image in filesToAdjust)
-                {
-                    imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                }
-                this.database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
+               foreach (ImageRow image in filesToAdjust)
+               {
+                   imagesToUpdate.Add(image.GetDateTimeColumnTuples());
+               }
+               this.database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
 
                 // Provide summary feedback
                 feedbackRows.Insert(0, (new DateTimeRereadFeedbackTuple("---", string.Format("Updated {0}/{1} files whose dates have changed", filesToAdjust.Count, count))));
-            });
+           });
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
 
-            // Completed
-            // Hide the busy indicator and display information about each changed file
+            // The await task has completed
+            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
             this.BusyIndicator.IsBusy = false;
-                this.FeedbackGrid.Visibility = Visibility.Visible;
-                this.FeedbackGrid.ItemsSource = feedbackRows;
-                this.StartDoneButton.IsEnabled = true;
+            this.FeedbackGrid.Visibility = Visibility.Visible;
+            this.FeedbackGrid.ItemsSource = feedbackRows;
+            this.StartDoneButton.IsEnabled = true;
         }
 
         // Convenience routing to show progress information in the progress bar
@@ -176,7 +176,7 @@ namespace Timelapse.Dialog
                 textmessage.Text = message;
             }
         }
-         
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
