@@ -20,6 +20,7 @@ namespace Timelapse.Dialog
         // Tokens to let us cancel the Reread Task
         private readonly CancellationTokenSource TokenSource;
         private CancellationToken Token;
+        private bool IsDatabaseAltered;
 
         public DateTimeRereadFromFiles(Window owner, FileDatabase database)
         {
@@ -30,6 +31,8 @@ namespace Timelapse.Dialog
             // Initialize the cancellation token
             this.TokenSource = new CancellationTokenSource();
             this.Token = this.TokenSource.Token;
+
+            this.IsDatabaseAltered = false;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -109,6 +112,7 @@ namespace Timelapse.Dialog
 
                 //// Update the database
                 this.DatabaseUpdateFileDates(filesToAdjust);
+                this.IsDatabaseAltered = true;
 
                 // Provide summary feedback 
                 message = string.Format("Updated {0}/{1} files whose dates have changed.", filesToAdjust.Count, count);
@@ -281,7 +285,8 @@ namespace Timelapse.Dialog
         private void DoneButton_Click(object sender, RoutedEventArgs e)
         {
             TokenSource.Dispose();
-            this.DialogResult = true;
+            // We return false if the database was not altered, i.e., if this was all a no-op
+            this.DialogResult = this.IsDatabaseAltered;
         }
 
         private void CancelButton_Click_1(object sender, RoutedEventArgs e)
