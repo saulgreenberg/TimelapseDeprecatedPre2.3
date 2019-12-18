@@ -49,19 +49,6 @@ namespace Timelapse.Dialog
         #region Reread task
         private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
-            
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-
-            // This list will hold key / value pairs that will be bound to the datagrid feedback, 
-            // which is the way to make those pairs appear in the data grid during background worker progress updates
-            ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeRereadFeedbackTuple>();
-
             // Configure the UI's initial state
             this.CancelButton.IsEnabled = false;
             this.StartDoneButton.Content = "_Done";
@@ -71,20 +58,46 @@ namespace Timelapse.Dialog
             this.BusyIndicator.IsBusy = true;
 
             // Reread the Date/Times from each file
-            await Task.Run(() =>
+            // feedbackRows will hold key / value pairs that will be bound to the datagrid feedback, 
+            // which is the way to make those pairs appear in the data grid during background worker progress updates
+            // The progress bar will be displayed during this process.
+            ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
+
+            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
+            this.BusyIndicator.IsBusy = false;
+            this.FeedbackGrid.Visibility = Visibility.Visible;
+            this.FeedbackGrid.ItemsSource = feedbackRows;
+            this.StartDoneButton.IsEnabled = true;
+        }
+        #endregion
+
+        private async Task<ObservableCollection<DateTimeRereadFeedbackTuple>> TaskRereadDatesAsync()
+        {
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
+                // Update the progress bar
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
+            // Reread the Date/Times from each file 
+            return await Task.Run(() =>
+            {
+                ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeRereadFeedbackTuple>();
+
                 // Pass 1. For each file, check to see what dates/times need updating.
                 progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates..."));
                 int count = this.Database.CurrentlySelectedFileCount;
                 TimeZoneInfo imageSetTimeZone = this.Database.ImageSet.GetSystemTimeZone();
-               
+
                 // Get the list of image rows (files) whose dates have changed
                 List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);
 
                 // We are done if the operation has been cancelled, or there are no files with changed dates.
                 if (CheckIfAllDone(filesToAdjust, feedbackRows, missingFiles))
                 {
-                    return;
+                    return feedbackRows;
                 }
 
                 // Pass 2. Update files in the database
@@ -106,24 +119,16 @@ namespace Timelapse.Dialog
                     : String.Format("{0} files are missing, and were not examined.", missingFiles);
                 }
                 feedbackRows.Insert(1, (new DateTimeRereadFeedbackTuple("---", message)));
-
-            }, Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
-
-            // The await task has completed
-            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
-            this.BusyIndicator.IsBusy = false;
-            this.FeedbackGrid.Visibility = Visibility.Visible;
-            this.FeedbackGrid.ItemsSource = feedbackRows;
-            this.StartDoneButton.IsEnabled = true;
+                return feedbackRows;
+            }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
         }
-        #endregion
 
         #region Reread task sub-methods
         // Returns:
         // - the list of files whose dates have changed
         // - a collection of feedback information for each file whose dates were changed, each row detailing the file name and how the dates were changed
         // - the number of missing Files, if any
-        private List<ImageRow> GetImageRowsWithChangedDates(IProgress<ProgressBarArguments> progress,int count, TimeZoneInfo imageSetTimeZone, ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows, out int missingFiles)
+        private List<ImageRow> GetImageRowsWithChangedDates(IProgress<ProgressBarArguments> progress, int count, TimeZoneInfo imageSetTimeZone, ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows, out int missingFiles)
         {
             List<ImageRow> filesToAdjust = new List<ImageRow>();
             missingFiles = 0;
@@ -261,6 +266,7 @@ namespace Timelapse.Dialog
             if (cancelButton != null)
             {
                 cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
             }
         }
         #endregion
