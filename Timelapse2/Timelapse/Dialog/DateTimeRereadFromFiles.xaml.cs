@@ -46,7 +46,7 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Columns[1].Width = new DataGridLength(2, DataGridLengthUnitType.Star);
         }
 
-        #region Reread task
+        #region Set up the Reread  
         private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
             // Configure the UI's initial state
@@ -71,6 +71,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Reread task Asynch
         private async Task<ObservableCollection<DateTimeRereadFeedbackTuple>> TaskRereadDatesAsync()
         {
             // Set up a progress handler that will update the progress bar
@@ -123,7 +124,7 @@ namespace Timelapse.Dialog
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
         }
 
-        #region Reread task sub-methods
+
         // Returns:
         // - the list of files whose dates have changed
         // - a collection of feedback information for each file whose dates were changed, each row detailing the file name and how the dates were changed
