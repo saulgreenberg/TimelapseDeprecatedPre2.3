@@ -17,11 +17,11 @@ namespace Timelapse.Dialog
     {
         private readonly FileDatabase Database;
 
-        // Tokens to let us cancel the Reread operaton
+        // Tokens to let us cancel the Reread Task
         private readonly CancellationTokenSource TokenSource;
         private CancellationToken Token;
 
-        public DateTimeRereadFromFiles(FileDatabase database, Window owner)
+        public DateTimeRereadFromFiles(Window owner, FileDatabase database)
         {
             this.InitializeComponent();
             this.Database = database;
@@ -45,11 +45,12 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Columns[1].Header = "Old date  \x2192  New Date if it differs";
             this.FeedbackGrid.Columns[1].Width = new DataGridLength(2, DataGridLengthUnitType.Star);
         }
-        
+
+        #region Reread task
         private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
             
-        // Set up a progress handler that will update the progress bar
+            // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
@@ -74,120 +75,26 @@ namespace Timelapse.Dialog
             {
                 // Pass 1. For each file, check to see what dates/times need updating.
                 progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates..."));
-                List<ImageRow> filesToAdjust = new List<ImageRow>();
                 int count = this.Database.CurrentlySelectedFileCount;
-                int missingFiles = 0;
                 TimeZoneInfo imageSetTimeZone = this.Database.ImageSet.GetSystemTimeZone();
+               
+                // Get the list of image rows (files) whose dates have changed
+                List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);
 
-                for (int fileIndex = 0; fileIndex < count; ++fileIndex)
+                // We are done if the operation has been cancelled, or there are no files with changed dates.
+                if (CheckIfAllDone(filesToAdjust, feedbackRows, missingFiles))
                 {
-                    // We will store the various times here
-                    ImageRow file = this.Database.FileTable[fileIndex];
-                    DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
-                    string feedbackMessage = string.Empty;
-
-                    if (Token.IsCancellationRequested)
-                    {
-                        // A cancel was requested. Clear all pending changes and abort
-                        feedbackRows.Clear();
-                        break;
-                    }
-
-                    try
-                    {
-                        // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
-                        // Note that if the image can't be created, we will just to the catch.
-                        bool usingMetadataTimestamp = true;
-                        if (file.FileExists(this.Database.FolderPath) == false)
-                        {
-                            // The file does not exist. Generate a feedback message
-                            missingFiles++;
-                        }
-                        else
-                        {
-                            // Read the date from the file, and check to see if its different from the recorded date
-                            DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.Database.FolderPath, imageSetTimeZone);
-                            if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
-                            {
-                                // We couldn't read the metadata, so get a candidate date/time from the file info instead
-                                file.SetDateTimeOffsetFromFileInfo(this.Database.FolderPath);
-                                usingMetadataTimestamp = false;
-                            }
-                            DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
-                            bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
-                            bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
-                            bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
-
-                            if (!(sameDate && sameTime && sameUTCOffset))
-                            {
-                                // Date has been updated - add it to the queue of files to be processed, and generate a feedback message.
-                                filesToAdjust.Add(file);
-                                feedbackMessage = "\x2713"; // Checkmark 
-                                feedbackMessage += DateTimeHandler.ToDisplayDateTimeString(originalDateTime) + " \x2192 " + DateTimeHandler.ToDisplayDateTimeString(rescannedDateTime);
-                                feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
-                                feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
-                            }
-                        }
-                    }
-                    catch (Exception exception)
-                    {
-                        // This shouldn't happen, but just in case. 
-                        TraceDebug.PrintMessage(string.Format("Unexpected exception processing '{0}' in DateTimeReread. {1}", file.File, exception.ToString()));
-                        feedbackMessage += string.Format("\x2716 skipping: {0}", exception.Message);
-                        feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
-                        break;
-                    }
-
-                    progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
-
-                    // Put in a delay every now and then, as otherwise the UI won't update.
-                    if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
-                    {
-                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
-                    }
-                }
-
-                string message;
-                // Abort (with feedback) if no dates needed changing and no cancellation request is pending
-                if (filesToAdjust.Count <= 0 && Token.IsCancellationRequested == false)
-                {
-                    // None of the file dates need updating, so no need to do anything more.
-                    message = "No files updated as their dates have not changed.";
-                    feedbackRows.Add(new DateTimeRereadFeedbackTuple("---", message));
-                    
-                    if (missingFiles > 0)
-                    {
-                        message = (missingFiles == 1) 
-                        ? String.Format("{0} file is missing, and was not examined.", missingFiles)
-                        : String.Format("{0} files are missing, and were not examined.", missingFiles);
-                    }
-                    feedbackRows.Add(new DateTimeRereadFeedbackTuple("---", message));
                     return;
                 }
 
-                // Abort (with feedback) the operation was cancelled
-                if (Token.IsCancellationRequested == true)
-                {
-                    feedbackRows.Clear();
-                    message = "No changes were made";
-                    feedbackRows.Add(new DateTimeRereadFeedbackTuple("Cancelled", message));
-                    return;
-                }
-
-                // Pass 2. If there, update the files whose date has changed in the database
-                // Provide feedback that we are in the second pass, and 
-                // disable the Cancel button in the progress bar as we shouldn't cancel half-way through a database update.
-                message = String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count);
+                // Pass 2. Update files in the database
+                // Provide feedback that we are in the second pass, disabling the Cancel button in the progress bar as we shouldn't cancel half-way through a database update.
+                string message = String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count);
                 progress.Report(new ProgressBarArguments(0, message, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
 
-                // Update the database
-                List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                foreach (ImageRow image in filesToAdjust)
-                {
-                    imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                }
-                this.Database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
+                //// Update the database
+                this.DatabaseUpdateFileDates(filesToAdjust);
 
                 // Provide summary feedback 
                 message = string.Format("Updated {0}/{1} files whose dates have changed.", filesToAdjust.Count, count);
@@ -209,7 +116,133 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.StartDoneButton.IsEnabled = true;
         }
+        #endregion
 
+        #region Reread task sub-methods
+        // Returns:
+        // - the list of files whose dates have changed
+        // - a collection of feedback information for each file whose dates were changed, each row detailing the file name and how the dates were changed
+        // - the number of missing Files, if any
+        private List<ImageRow> GetImageRowsWithChangedDates(IProgress<ProgressBarArguments> progress,int count, TimeZoneInfo imageSetTimeZone, ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows, out int missingFiles)
+        {
+            List<ImageRow> filesToAdjust = new List<ImageRow>();
+            missingFiles = 0;
+            for (int fileIndex = 0; fileIndex < count; ++fileIndex)
+            {
+                // We will store the various times here
+                ImageRow file = this.Database.FileTable[fileIndex];
+                DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
+                string feedbackMessage = string.Empty;
+
+                if (Token.IsCancellationRequested)
+                {
+                    // A cancel was requested. Clear all pending changes and abort
+                    feedbackRows.Clear();
+                    break;
+                }
+
+                try
+                {
+                    // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
+                    // Note that if the image can't be created, we will just to the catch.
+                    bool usingMetadataTimestamp = true;
+                    if (file.FileExists(this.Database.FolderPath) == false)
+                    {
+                        // The file does not exist. Generate a feedback message
+                        missingFiles++;
+                    }
+                    else
+                    {
+                        // Read the date from the file, and check to see if its different from the recorded date
+                        DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.Database.FolderPath, imageSetTimeZone);
+                        if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
+                        {
+                            // We couldn't read the metadata, so get a candidate date/time from the file info instead
+                            file.SetDateTimeOffsetFromFileInfo(this.Database.FolderPath);
+                            usingMetadataTimestamp = false;
+                        }
+                        DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
+                        bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
+                        bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
+                        bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
+
+                        if (!(sameDate && sameTime && sameUTCOffset))
+                        {
+                            // Date has been updated - add it to the queue of files to be processed, and generate a feedback message.
+                            filesToAdjust.Add(file);
+                            feedbackMessage = "\x2713"; // Checkmark 
+                            feedbackMessage += DateTimeHandler.ToDisplayDateTimeString(originalDateTime) + " \x2192 " + DateTimeHandler.ToDisplayDateTimeString(rescannedDateTime);
+                            feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
+                            feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    // This shouldn't happen, but just in case. 
+                    TraceDebug.PrintMessage(string.Format("Unexpected exception processing '{0}' in DateTimeReread. {1}", file.File, exception.ToString()));
+                    feedbackMessage += string.Format("\x2716 skipping: {0}", exception.Message);
+                    feedbackRows.Add(new DateTimeRereadFeedbackTuple(file.File, feedbackMessage));
+                    break;
+                }
+
+                progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
+
+                // Put in a delay every now and then, as otherwise the UI won't update.
+                if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
+                {
+                    Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
+                }
+            }
+            return filesToAdjust;
+        }
+
+        // We are done if the operation has been cancelled, or there are no files with changed dates.
+        private bool CheckIfAllDone(List<ImageRow> filesToAdjust, ObservableCollection<DateTimeRereadFeedbackTuple> feedbackRows, int missingFiles)
+        {
+            string message;
+            // Abort (with feedback) if no dates needed changing and no cancellation request is pending
+            if (filesToAdjust.Count <= 0 && Token.IsCancellationRequested == false)
+            {
+                // None of the file dates need updating, so no need to do anything more.
+                message = "No files updated as their dates have not changed.";
+                feedbackRows.Add(new DateTimeRereadFeedbackTuple("---", message));
+
+                if (missingFiles > 0)
+                {
+                    message = (missingFiles == 1)
+                    ? String.Format("{0} file is missing, and was not examined.", missingFiles)
+                    : String.Format("{0} files are missing, and were not examined.", missingFiles);
+                }
+                feedbackRows.Add(new DateTimeRereadFeedbackTuple("---", message));
+                return true;
+            }
+
+            // Abort (with feedback) the operation was cancelled
+            if (Token.IsCancellationRequested == true)
+            {
+                feedbackRows.Clear();
+                message = "No changes were made";
+                feedbackRows.Add(new DateTimeRereadFeedbackTuple("Cancelled", message));
+                return true;
+            }
+            return false;
+        }
+
+        // Update dates in the database for the given image rows 
+        private void DatabaseUpdateFileDates(List<ImageRow> filesToAdjust)
+        {
+            // Update the database
+            List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            foreach (ImageRow image in filesToAdjust)
+            {
+                imagesToUpdate.Add(image.GetDateTimeColumnTuples());
+            }
+            this.Database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
+        }
+        #endregion
+
+        #region ProgressBar helper
         // Convenience routing to show progress information in the progress bar
         // and to enable or disable its cancel button
         private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
@@ -230,7 +263,9 @@ namespace Timelapse.Dialog
                 cancelButton.IsEnabled = cancelEnabled;
             }
         }
+        #endregion
 
+        #region Other Button callbacks
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -247,5 +282,6 @@ namespace Timelapse.Dialog
             // Set this so that it will be caught in the above await task
             this.TokenSource.Cancel();
         }
+        #endregion
     }
 }

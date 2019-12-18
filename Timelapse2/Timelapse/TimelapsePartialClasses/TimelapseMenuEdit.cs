@@ -296,7 +296,7 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
                                                                }))
             {
-                DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this.dataHandler.FileDatabase, this);
+                DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this, this.dataHandler.FileDatabase);
                 if (this.ShowBulkImageEditDialog(rereadDates))
                 {
                     this.FilesSelectAndShow();
