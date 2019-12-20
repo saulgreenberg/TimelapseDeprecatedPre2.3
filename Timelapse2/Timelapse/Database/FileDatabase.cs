@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
@@ -1340,13 +1341,14 @@ namespace Timelapse.Database
             {
                 throw new ArgumentOutOfRangeException(nameof(adjustment), "The current format of the time column does not support milliseconds.");
             }
-            this.AdjustFileTimes((string fileName, int fileIndex, int count, DateTimeOffset imageTime) => { return imageTime + adjustment; }, startRow, endRow);
+            this.AdjustFileTimes((string fileName, int fileIndex, int count, DateTimeOffset imageTime) => { return imageTime + adjustment; }, startRow, endRow, CancellationToken.None);
         }
 
         // Given a time difference in ticks, update all the date/time field in the database
         // Note that it does NOT update the dataTable - this has to be done outside of this routine by regenerating the datatables with whatever selection is being used..
-        public void AdjustFileTimes(Func<string, int, int, DateTimeOffset, DateTimeOffset> adjustment, int startRow, int endRow)
+        public void AdjustFileTimes(Func<string, int, int, DateTimeOffset, DateTimeOffset> adjustment, int startRow, int endRow, CancellationToken token)
         {
+
             if (this.IsFileRowInRange(startRow) == false)
             {
                 throw new ArgumentOutOfRangeException(nameof(startRow));
@@ -1372,6 +1374,11 @@ namespace Timelapse.Database
             int fileIndex = 0;
             for (int row = startRow; row <= endRow; ++row)
             {
+                if (token.IsCancellationRequested)
+                {
+                    // A cancel was requested. Clear all pending changes and abort
+                    return;
+                }
                 ImageRow image = this.FileTable[row];
                 DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
@@ -105,7 +106,8 @@ namespace Timelapse.Dialog
                     return imageDateTime.SetOffset(utcOffset);
                 },
                 0,
-                this.fileDatabase.CurrentlySelectedFileCount - 1);
+                this.fileDatabase.CurrentlySelectedFileCount - 1,
+                CancellationToken.None);
             this.DialogResult = true;
         }
 

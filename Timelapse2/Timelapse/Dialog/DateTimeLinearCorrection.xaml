@@ -81,14 +81,14 @@
 
                 <!-- Busy Indicator-->
                 <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                    <xceed:BusyIndicator.BusyContentTemplate>
+                    <xceed:BusyIndicator.BusyContentTemplate >
                         <DataTemplate>
                             <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                                <StackPanel Margin="4,0,4,0">
+
                                     <Label Name="foo" Content="Please wait..." />
                                     <ProgressBar Name="bar" Value="0" Height="15" />
                                     <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
-                                </StackPanel>
+ 
                             </StackPanel>
                         </DataTemplate>
                     </xceed:BusyIndicator.BusyContentTemplate>

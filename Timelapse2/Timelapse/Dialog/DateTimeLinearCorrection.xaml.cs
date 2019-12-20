@@ -114,6 +114,7 @@ namespace Timelapse
             ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
             TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
             Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+            StackPanel sp = Utilities.GetVisualChild<StackPanel>(this.BusyIndicator);
             if (bar != null)
             {
                 bar.Value = percent;
@@ -158,11 +159,7 @@ namespace Timelapse
 
                 // this.GetFeedbackForFilesWithInterpolatedDates(progress, count, newestImageAdjustment, intervalFromOldestToNewestImage, feedbackRows);
 
-                // We are done if the operation has been cancelled
-                if (CheckIfAllDone(feedbackRows))
-                {
-                    return feedbackRows;
-                }
+
 
                 // Pass 2. Actually interpolate each date and update the database if the interpolation would lead to a change
                 string message = String.Format("Pass 2: Updating {0} files. Please wait...", count);
@@ -171,63 +168,20 @@ namespace Timelapse
 
                 this.DatabaseUpdateFileDates(progress, intervalFromOldestToNewestImage, newestImageAdjustment, feedbackRows);
 
+                // We are done if the operation has been cancelled
+                // Abort (with feedback) the operation was cancelled
+                if (Token.IsCancellationRequested == true)
+                {
+                    feedbackRows.Clear();
+                    message = "No changes were made";
+                    feedbackRows.Add(new DateTimeFeedbackTuple("Cancelled", "No changes were made"));
+                    this.IsDatabaseAltered = false;
+                    return feedbackRows;
+                }
                 this.IsDatabaseAltered = true;
                 return feedbackRows;
 
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
-        }
-
-        private void GetFeedbackForFilesWithInterpolatedDates(IProgress<ProgressBarArguments> progress, int count, TimeSpan newestImageAdjustment, TimeSpan intervalFromOldestToNewestImage, ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
-        {
-            int fileIndex = 1;
-            foreach (ImageRow image in this.fileDatabase.FileTable)
-            {
-                if (Token.IsCancellationRequested)
-                {
-                    // A cancel was requested. Clear all pending changes and abort
-                    feedbackRows.Clear();
-                    break;
-                }
-
-                string oldDT = image.Date + " " + image.Time;
-                string newDT = String.Empty;
-                string difference = string.Empty;
-                double imagePositionInInterval;
-
-                DateTimeOffset imageDateTime;
-                TimeSpan oneSecond = TimeSpan.FromSeconds(1);
-
-                imageDateTime = image.DateTimeIncorporatingOffset;
-                // adjust the date / time
-                if (intervalFromOldestToNewestImage == TimeSpan.Zero)
-                {
-                    imagePositionInInterval = 1;
-                }
-                else
-                {
-                    imagePositionInInterval = (imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
-                }
-                TimeSpan adjustment = TimeSpan.FromTicks((long)(imagePositionInInterval * newestImageAdjustment.Ticks));
-
-                // Pretty print the adjustment time
-                if (adjustment.Duration() >= oneSecond)
-                {
-                    difference = PrettyPrintTimeAdjustment(adjustment);
-
-                    // Get the new date/time
-                    newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
-
-                    progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count)));
-                    // Put in a delay every now and then, as otherwise the UI won't update.
-                    if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
-                    {
-                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
-                    }
-
-                    fileIndex++;
-                    feedbackRows.Add(new DateTimeFeedbackTuple(image.File, oldDT + " \x2192 " + newDT + " \x2192 " + difference));
-                }
-            }
         }
 
         private static string PrettyPrintTimeAdjustment(TimeSpan adjustment)
@@ -251,21 +205,6 @@ namespace Timelapse
             return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
         }
 
-        // We are done if the operation has been cancelled, or there are no files with changed dates.
-        private bool CheckIfAllDone(ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
-        {
-            string message;
-            // Abort (with feedback) the operation was cancelled
-            if (Token.IsCancellationRequested == true)
-            {
-                feedbackRows.Clear();
-                message = "No changes were made";
-                feedbackRows.Add(new DateTimeFeedbackTuple("Cancelled", message));
-                return true;
-            }
-            return false;
-        }
-
         // Update dates in the database for the given image rows 
         private static DateTime lastRefreshDateTime = DateTime.Now;
         private void DatabaseUpdateFileDates(IProgress<ProgressBarArguments> progress, TimeSpan intervalFromOldestToNewestImage, TimeSpan newestImageAdjustment, ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
@@ -276,6 +215,8 @@ namespace Timelapse
             }
             else
             {
+                // Note that this passes a function which is invoked by the fileDatabase method. 
+                // This not only calculates the new times, but updates the progress bar as the fileDatabase method iterates through the files.
                 this.fileDatabase.AdjustFileTimes(
                    (string fileName, int fileIndex, int count, DateTimeOffset imageDateTime) =>
                    {
@@ -311,7 +252,8 @@ namespace Timelapse
                        return imageDateTime + adjustment; // Returns the new time
                    },
                    0,
-                   this.fileDatabase.CurrentlySelectedFileCount - 1);
+                   this.fileDatabase.CurrentlySelectedFileCount - 1,
+                   this.Token);
             }
         }
 
