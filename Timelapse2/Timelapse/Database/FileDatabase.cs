@@ -1375,11 +1375,12 @@ namespace Timelapse.Database
 
                 // adjust the date/time
                 DateTimeOffset newImageDateTime = adjustment.Invoke(currentImageDateTime);
-                if (newImageDateTime == currentImageDateTime)
+                mostRecentAdjustment = newImageDateTime - currentImageDateTime;
+                if (mostRecentAdjustment.Duration() < TimeSpan.FromSeconds(1))
                 {
+                    // Ignore changes if it results in less than a 1 second change, 
                     continue;
                 }
-                mostRecentAdjustment = newImageDateTime - currentImageDateTime;
                 image.SetDateTimeOffset(newImageDateTime);
                 filesToAdjust.Add(image);
             }

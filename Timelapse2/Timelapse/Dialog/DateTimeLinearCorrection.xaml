@@ -3,7 +3,7 @@
         xmlns:local="clr-namespace:Timelapse"
         xmlns:controls="clr-namespace:Timelapse.Controls"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
 		Title="Correct for cameras whose clock runs fast or slow"
 		MinHeight="650" MinWidth="768"
 		Height="650" Width="768"
@@ -13,13 +13,15 @@
     <DockPanel >
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
                             Title="Correct for Cameras whose clock runs fast or slow"
-                            Problem="If a camera does not have an accurate clock, the time recorded on successive images ir videos will drift fast or slow, and become increasingly inaccurate."
+                            Problem="If a camera does not have an accurate clock, the time recorded on successive images or videos will drift fast or slow, and become increasingly inaccurate."
                             Solution="The file with the earliest and latest timestamps are shown below. We assume that the earliest file has the correct time, and that the latest shows the worst time drift.
-&#10;&#x2022; adjust the date/time for the latest file as needed
-&#10;&#x2022; click Start (which becomes active after you enter an adjusted date/time) to preview the changes that will be made
-&#10;&#x2022; click Apply Changes to apply those changes."
-                            Result="The date / time of each file in this filtered set will be examined. Using linear interpolation, each file date/ time is adjusted proportionaly to correct for clock drift."
-                            ShowExplanationVisibility="True"/>
+&#10;&#x2022; set the date/time for the latest file shown below to its correct date/time
+&#10;&#x2022; click Start (which becomes active after you enter an adjusted date/time) to correct the dates"
+                            Result="The date / time of each file will be adjusted proportionaly (using linear interpolation) to correct for clock drift."
+                            Hint="&#x2022; This operation will only work properly if the files are ordered by Date/Time. If you are unsure, select Sort|by DateTime&#8593;
+                                  &#x2022; If the earliest date is wrong, correct it first using: Edit|Date Correction|Correct for cameras not set to the right date and time
+                                  &#10;&#x2022; You can restore the original file dates by using:  Edit|Date Correction|Re-read dates and times from files"
+                            ShowExplanationVisibility="True" />
 
         <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
             <Rectangle Fill="#FF868686" Height="2"></Rectangle>
@@ -29,7 +31,7 @@
             <!-- Ok/Cancel buttons-->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">Cancel</Button>
-                <Button Name="OkButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click" IsEnabled="False">Start</Button>
+                <Button Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="Start_Click" IsEnabled="False">Start</Button>
             </StackPanel>
 
             <!-- Content area -->
@@ -71,19 +73,51 @@
                     </Grid.RowDefinitions>
                     <Label Content="Latest:"               HorizontalAlignment="Left"  HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
                     <Label Content="latest.jpg"            HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="latestImageName"/>
-                    <xctk:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0" CultureInfo="en-US" MouseLeave="DateTimePickerLatestDateTime_MouseLeave" ValueChanged="DateTimePicker_ValueChanged"  />
-
+                    <xceed:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0" CultureInfo="en-US" MouseLeave="DateTimePickerLatestDateTime_MouseLeave" ValueChanged="DateTimePicker_ValueChanged"  />
+  
                     <!-- <Label Content="dd-MMM-yyyy HH:mm:ss"       HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="1" Grid.Column="1" Margin="0,-8,0,0" Name="imageLatestDate"    />-->
                 </Grid>
                 <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
+
+                <!-- Busy Indicator-->
+                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                    <xceed:BusyIndicator.BusyContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
+                                <StackPanel Margin="4,0,4,0">
+                                    <Label Name="foo" Content="Please wait..." />
+                                    <ProgressBar Name="bar" Value="0" Height="15" />
+                                    <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </xceed:BusyIndicator.BusyContentTemplate>
+                    <xceed:BusyIndicator.ProgressBarStyle>
+                        <Style TargetType="ProgressBar">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </Style>
+                    </xceed:BusyIndicator.ProgressBarStyle>
+                </xceed:BusyIndicator>
+                
             </Grid>
-            <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Top" Margin="10,0,10,0">
-                <DockPanel>
-                    <Label FontSize="14" FontWeight="Bold" Content="The following changes to dates and times will occur if you select Apply Changes." DockPanel.Dock="Top"/>
-                    <controls:DateChangesFeedbackControl x:Name="DateUpdateFeedbackCtl"  DockPanel.Dock="Bottom">
-                    </controls:DateChangesFeedbackControl>
+            <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Bottom" Margin="10,0,10,0">
+                <DataGrid Name="FeedbackGrid" Margin="5,10,5,0" ColumnWidth="*" SelectionMode="Single" SelectionUnit="FullRow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    AutoGenerateColumns="True" 
+                    AutoGeneratedColumns="DatagridFeedback_AutoGeneratedColumns" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" 
+                    Visibility="Visible" Background="White"
+                    HeadersVisibility="Column"
+                   >
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style  TargetType="DataGridColumnHeader" >
+                                <Setter Property="Control.FontWeight" Value="Bold" />
+                                <Setter Property="Control.BorderThickness" Value="1" />
+                                <Setter Property="Control.Padding" Value="4" />
+                                <Setter Property="Control.Background" Value="Gainsboro" />
+                                <Setter Property="Control.BorderBrush" Value="Black" />
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                    </DataGrid>
                 </DockPanel>
-            </DockPanel>
         </DockPanel>
     </DockPanel>
 </Window>

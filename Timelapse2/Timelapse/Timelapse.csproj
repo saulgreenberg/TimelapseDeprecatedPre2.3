@@ -328,7 +328,7 @@
     <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
     <Compile Include="Database\FileTableEnumerator.cs" />
-    <Compile Include="Dialog\DateTimeRereadFeedbackTuple.cs" />
+    <Compile Include="Dialog\DateTimeFeedbackTuple.cs" />
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
     <Compile Include="Enums\ImageDisplayIntentEnum.cs" />

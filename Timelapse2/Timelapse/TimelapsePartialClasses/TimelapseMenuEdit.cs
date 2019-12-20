@@ -110,8 +110,8 @@ namespace Timelapse
                                                                }))
             {
                 using (PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
-                { 
-                    if (this.ShowBulkImageEditDialog(populateField))
+                {
+                    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                     {
                         this.FilesSelectAndShow();
                     };
@@ -285,25 +285,6 @@ namespace Timelapse
             }
         }
 
-        // Re-read dates and times from files
-        private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedRereadDatesFromFilesPrompt,
-                                                               "'Reread dates and times from files...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.State.SuppressSelectedRereadDatesFromFilesPrompt = optOut;
-                                                               }))
-            {
-                DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this, this.dataHandler.FileDatabase);
-                if (this.ShowBulkImageEditDialog(rereadDates))
-                {
-                    this.FilesSelectAndShow();
-                };
-            }
-        }
-
         // Date Correction sub-menu opening
         private void MenuItemDateCorrection_SubmenuOpened(object sender, RoutedEventArgs e)
         {
@@ -313,19 +294,40 @@ namespace Timelapse
             }
         }
 
+        // Re-read dates and times from files
+        private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
+        {
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+                this,
+                this.dataHandler.FileDatabase,
+                this.State.SuppressSelectedRereadDatesFromFilesPrompt,
+                "'Reread dates and times from files...'",
+                (bool optOut) => { this.State.SuppressSelectedRereadDatesFromFilesPrompt = optOut; }
+                ))
+            {
+                DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this, this.dataHandler.FileDatabase);
+                if (this.ShowDialogAndCheckIfChangesWereMade(rereadDates))
+                {
+                    this.FilesSelectAndShow();
+                };
+            }
+        }
+
         // Correct for daylight savings time
         private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
-                                                                           "'Correct for daylight savings time...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.State.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut;
-                                                               }))
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+                this,
+                this.dataHandler.FileDatabase,
+                this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
+                "'Correct for daylight savings time...'",
+                (bool optOut) => { this.State.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut; }
+                ))
             {
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
-                if (this.ShowBulkImageEditDialog(dateTimeChange))
+                if (this.ShowDialogAndCheckIfChangesWereMade(dateTimeChange))
                 {
                     this.FilesSelectAndShow();
                 };
@@ -344,8 +346,8 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                if (this.ShowBulkImageEditDialog(fixedDateCorrection))
-                {                
+                if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
+                {
                     this.FilesSelectAndShow();
                 }
 
@@ -357,15 +359,16 @@ namespace Timelapse
         private void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
-                                                                           "'Correct for camera clock drift'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.State.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut;
-                                                               }))
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+                this,
+                this.dataHandler.FileDatabase,
+                this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
+                "'Correct for camera clock drift'",
+                (bool optOut) => { this.State.SuppressSelectedDateTimeLinearCorrectionPrompt = optOut; }
+                ))
             {
-                DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this.dataHandler.FileDatabase, this);
-                if (this.ShowBulkImageEditDialog(linearDateCorrection))
+                DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this, this.dataHandler.FileDatabase);
+                if (this.ShowDialogAndCheckIfChangesWereMade(linearDateCorrection))
                 {
                     this.FilesSelectAndShow();
                 }
@@ -376,12 +379,13 @@ namespace Timelapse
         private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedAmbiguousDatesPrompt,
-                                                                           "'Correct ambiguous dates...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.State.SuppressSelectedAmbiguousDatesPrompt = optOut;
-                                                               }))
+            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+                this, this.dataHandler.FileDatabase, this.State.SuppressSelectedAmbiguousDatesPrompt,
+                "'Correct ambiguous dates...'",
+                (bool optOut) =>
+                 {
+                     this.State.SuppressSelectedAmbiguousDatesPrompt = optOut;
+                 }))
             {
                 DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this.dataHandler.FileDatabase, this);
                 if (dateCorrection.Abort)
@@ -395,7 +399,7 @@ namespace Timelapse
                     messageBox.Close();
                     return;
                 }
-                if (this.ShowBulkImageEditDialog(dateCorrection))
+                if (this.ShowDialogAndCheckIfChangesWereMade(dateCorrection))
                 {
                     this.FilesSelectAndShow();
                 }
@@ -414,7 +418,7 @@ namespace Timelapse
                                                                }))
             {
                 DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
-                if (this.ShowBulkImageEditDialog(fixedDateCorrection))
+                if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
                     this.FilesSelectAndShow();
                 }
@@ -460,7 +464,7 @@ namespace Timelapse
         // HELPER FUNCTION, only referenced by the above menu callbacks.
         // Various dialogs perform a bulk edit, after which various states have to be refreshed
         // This method shows the dialog and (if a bulk edit is done) refreshes those states.
-        private bool ShowBulkImageEditDialog(Window dialog)
+        private bool ShowDialogAndCheckIfChangesWereMade(Window dialog)
         {
             dialog.Owner = this;
             return (dialog.ShowDialog() == true);
