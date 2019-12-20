@@ -156,7 +156,7 @@ namespace Timelapse
 
                 int count = this.fileDatabase.FileTable.RowCount;
 
-                this.GetFeedbackForFilesWithInterpolatedDates(progress, count, newestImageAdjustment, intervalFromOldestToNewestImage, feedbackRows);
+                // this.GetFeedbackForFilesWithInterpolatedDates(progress, count, newestImageAdjustment, intervalFromOldestToNewestImage, feedbackRows);
 
                 // We are done if the operation has been cancelled
                 if (CheckIfAllDone(feedbackRows))
@@ -169,7 +169,7 @@ namespace Timelapse
                 progress.Report(new ProgressBarArguments(0, message, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
 
-                this.DatabaseUpdateFileDates(intervalFromOldestToNewestImage, newestImageAdjustment, feedbackRows);
+                this.DatabaseUpdateFileDates(progress, intervalFromOldestToNewestImage, newestImageAdjustment, feedbackRows);
 
                 this.IsDatabaseAltered = true;
                 return feedbackRows;
@@ -212,23 +212,7 @@ namespace Timelapse
                 // Pretty print the adjustment time
                 if (adjustment.Duration() >= oneSecond)
                 {
-                    string sign = (adjustment < TimeSpan.Zero) ? "-" : "+";
-
-                    // Pretty print the adjustment time, depending upon how many day(s) were included 
-                    string format;
-                    if (adjustment.Days == 0)
-                    {
-                        format = "{0:s}{1:D2}:{2:D2}:{3:D2}"; // Don't show the days field
-                    }
-                    else if (adjustment.Duration().Days == 1)
-                    {
-                        format = "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} day";
-                    }
-                    else
-                    {
-                        format = "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} days";
-                    }
-                    difference = string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
+                    difference = PrettyPrintTimeAdjustment(adjustment);
 
                     // Get the new date/time
                     newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
@@ -245,6 +229,28 @@ namespace Timelapse
                 }
             }
         }
+
+        private static string PrettyPrintTimeAdjustment(TimeSpan adjustment)
+        {
+            string sign = (adjustment < TimeSpan.Zero) ? "-" : "+";
+
+            // Pretty print the adjustment time, depending upon how many day(s) were included 
+            string format;
+            if (adjustment.Days == 0)
+            {
+                format = "{0:s}{1:D2}:{2:D2}:{3:D2}"; // Don't show the days field
+            }
+            else if (adjustment.Duration().Days == 1)
+            {
+                format = "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} day";
+            }
+            else
+            {
+                format = "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} days";
+            }
+            return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
+        }
+
         // We are done if the operation has been cancelled, or there are no files with changed dates.
         private bool CheckIfAllDone(ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
         {
@@ -261,7 +267,8 @@ namespace Timelapse
         }
 
         // Update dates in the database for the given image rows 
-        private void DatabaseUpdateFileDates(TimeSpan intervalFromOldestToNewestImage, TimeSpan newestImageAdjustment, ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
+        private static DateTime lastRefreshDateTime = DateTime.Now;
+        private void DatabaseUpdateFileDates(IProgress<ProgressBarArguments> progress, TimeSpan intervalFromOldestToNewestImage, TimeSpan newestImageAdjustment, ObservableCollection<DateTimeFeedbackTuple> feedbackRows)
         {
             if (intervalFromOldestToNewestImage == TimeSpan.Zero)
             {
@@ -270,21 +277,38 @@ namespace Timelapse
             else
             {
                 this.fileDatabase.AdjustFileTimes(
-                   (DateTimeOffset imageDateTime) =>
+                   (string fileName, int fileIndex, int count, DateTimeOffset imageDateTime) =>
                    {
                        double imagePositionInInterval = (imageDateTime - this.earliestImageDateTime).Ticks / (double)intervalFromOldestToNewestImage.Ticks;
                        Debug.Assert((-0.0000001 < imagePositionInInterval) && (imagePositionInInterval < 1.0000001), String.Format("Interval position {0} is not between 0.0 and 1.0.", imagePositionInInterval));
-                       TimeSpan adjustment = TimeSpan.FromTicks((long)(imagePositionInInterval * newestImageAdjustment.Ticks)); // Used to have a  .5 increment, I think to force rounding upwards
-                                                                                                                                // TimeSpan.Duration means we do these checks on the absolute value (positive) of the Timespan, as slow clocks will have negative adjustments.
+                       TimeSpan adjustment = TimeSpan.FromTicks((long)(imagePositionInInterval * newestImageAdjustment.Ticks)); // Used to have a  .5 increment, I think to force rounding upwards                                                                                                        // TimeSpan.Duration means we do these checks on the absolute value (positive) of the Timespan, as slow clocks will have negative adjustments.
                        Debug.Assert((TimeSpan.Zero <= adjustment.Duration()) && (adjustment.Duration() <= newestImageAdjustment.Duration()), String.Format("Expected adjustment {0} to be within [{1} {2}].", adjustment, TimeSpan.Zero, newestImageAdjustment));
-                       
-                       // SAULXXX CONTINUE FROM HERE, FIGURING OUT HOW TO GET THE FILE NAME AND TO DO PROGRESS AND CANCELLATON
+
                        if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
                        {
-
-                            feedbackRows.Add(new DateTimeFeedbackTuple("foo", adjustment.Duration().ToString()));
+                           // We only add to the feedback row if the change duration is > 1 second, as otherwise we don't change it.
+                           string oldDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime);
+                           string newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
+                           feedbackRows.Add(new DateTimeFeedbackTuple(fileName, oldDT + " \x2192 " + newDT + " \x2192 " + PrettyPrintTimeAdjustment(adjustment)));
                        }
-                       return imageDateTime + adjustment;
+
+                       // Update the progress bar every time interval to indicate what file we are working on
+                       TimeSpan intervalFromLastRefresh = DateTime.Now - lastRefreshDateTime;
+                       if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
+                       {
+                           int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
+                           progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count)));
+                           Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                           lastRefreshDateTime = DateTime.Now;
+                       }
+                       if (fileIndex >= count)
+                       {
+                           // After all files are processed, the next step would be updating the database.
+                           // This really should be somehow signalled from the invoking method (ideally ExecuteNonQueryWrappedInBeginEnd every update interval), but this is a reasonable workaround.
+                           progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", count)));
+                           Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                       }
+                       return imageDateTime + adjustment; // Returns the new time
                    },
                    0,
                    this.fileDatabase.CurrentlySelectedFileCount - 1);

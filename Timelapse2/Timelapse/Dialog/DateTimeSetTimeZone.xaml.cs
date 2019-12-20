@@ -99,7 +99,7 @@ namespace Timelapse.Dialog
             // Update the database
             TimeZoneInfo newTimeZone = this.TimeZones.TimeZonesByDisplayName[(string)this.TimeZones.SelectedItem];
             this.fileDatabase.AdjustFileTimes(
-                (DateTimeOffset imageDateTime) =>
+                (string fileName, int fileIndex, int count, DateTimeOffset imageDateTime) =>
                 {
                     TimeSpan utcOffset = newTimeZone.GetUtcOffset(imageDateTime);
                     return imageDateTime.SetOffset(utcOffset);

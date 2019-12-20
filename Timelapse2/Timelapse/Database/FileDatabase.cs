@@ -1340,12 +1340,12 @@ namespace Timelapse.Database
             {
                 throw new ArgumentOutOfRangeException(nameof(adjustment), "The current format of the time column does not support milliseconds.");
             }
-            this.AdjustFileTimes((DateTimeOffset imageTime) => { return imageTime + adjustment; }, startRow, endRow);
+            this.AdjustFileTimes((string fileName, int fileIndex, int count, DateTimeOffset imageTime) => { return imageTime + adjustment; }, startRow, endRow);
         }
 
         // Given a time difference in ticks, update all the date/time field in the database
         // Note that it does NOT update the dataTable - this has to be done outside of this routine by regenerating the datatables with whatever selection is being used..
-        public void AdjustFileTimes(Func<DateTimeOffset, DateTimeOffset> adjustment, int startRow, int endRow)
+        public void AdjustFileTimes(Func<string, int, int, DateTimeOffset, DateTimeOffset> adjustment, int startRow, int endRow)
         {
             if (this.IsFileRowInRange(startRow) == false)
             {
@@ -1368,13 +1368,16 @@ namespace Timelapse.Database
             // Get the original value of each, and update each date by the corrected amount if possible
             List<ImageRow> filesToAdjust = new List<ImageRow>();
             TimeSpan mostRecentAdjustment = TimeSpan.Zero;
+            int count = endRow - startRow;
+            int fileIndex = 0;
             for (int row = startRow; row <= endRow; ++row)
             {
                 ImageRow image = this.FileTable[row];
                 DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
 
                 // adjust the date/time
-                DateTimeOffset newImageDateTime = adjustment.Invoke(currentImageDateTime);
+                fileIndex++;
+                DateTimeOffset newImageDateTime = adjustment.Invoke(image.File, fileIndex, count, currentImageDateTime);
                 mostRecentAdjustment = newImageDateTime - currentImageDateTime;
                 if (mostRecentAdjustment.Duration() < TimeSpan.FromSeconds(1))
                 {

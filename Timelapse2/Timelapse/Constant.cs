@@ -559,6 +559,7 @@ namespace Timelapse.Constant
         public static readonly TimeSpan VideoRenderingBackoffTime = TimeSpan.FromMilliseconds(10.0);
         public static readonly TimeSpan DataGridTimerInterval = TimeSpan.FromMilliseconds(250);
         public static readonly TimeSpan LoadingImageDisplayInterval = TimeSpan.FromMilliseconds(500);
+        public static readonly TimeSpan ProgressBarRefreshInterval = TimeSpan.FromMilliseconds(100);
     }
 
     public static class Time
