@@ -351,7 +351,6 @@ namespace Timelapse
                     System.Diagnostics.Debug.Print("Files Select And Show");
                     this.FilesSelectAndShow();
                 }
-
             }
         }
 

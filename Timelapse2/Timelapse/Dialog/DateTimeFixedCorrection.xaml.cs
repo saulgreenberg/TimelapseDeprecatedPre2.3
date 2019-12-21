@@ -16,13 +16,10 @@ namespace Timelapse.Dialog
     /// This dialog lets the user specify a corrected date and time of an file. All other dates and times are then corrected by the same amount.
     /// This is useful if (say) the camera was not initialized to the correct date and time.
     /// </summary>
-    public partial class DateTimeFixedCorrection : Window
+    public partial class DateTimeFixedCorrection : DialogWindow
     {
+        // Remember passed in arguments
         private readonly FileDatabase fileDatabase;
-
-        // Token to let us cancel the task
-        private readonly CancellationTokenSource TokenSource;
-        private CancellationToken Token;
         private readonly ImageRow ImageToCorrect;
 
         // Tracks whether any changes to the database was made
@@ -32,16 +29,6 @@ namespace Timelapse.Dialog
 
         // To help determine periodic updates to the progress bar 
         private DateTime lastRefreshDateTime = DateTime.Now;
-
-        // Allows us to access the close button on the window
-        [DllImport("user32.dll")]
-        static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
-        [DllImport("user32.dll")]
-        static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
-        const uint MF_BYCOMMAND = 0x00000000;
-        const uint MF_GRAYED = 0x00000001;
-        const uint MF_ENABLED = 0x00000000;
-        const uint SC_CLOSE = 0xF060;
 
         #region Initialization
         public DateTimeFixedCorrection(Window owner, FileDatabase fileDatabase, ImageRow imageToCorrect)
@@ -54,10 +41,6 @@ namespace Timelapse.Dialog
             this.Owner = owner;
             this.fileDatabase = fileDatabase;
             this.ImageToCorrect = imageToCorrect;
-
-            // Initialize the cancellation token
-            this.TokenSource = new CancellationTokenSource();
-            this.Token = this.TokenSource.Token;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -224,7 +207,6 @@ namespace Timelapse.Dialog
             // SAULXXX REDO ALL THESE TESTS TO PUT IN FEEDBACK BEFORE WE DO THE ABOVE CHANGES?
             if (this.DateTimePicker.Value.HasValue == false)
             {
-                TokenSource.Dispose();
                 this.CancelButton_Click(null, null);
                 return;
             }
@@ -276,7 +258,6 @@ namespace Timelapse.Dialog
             // will likely have changed the FileTable (but not database) date entries. Returning true will reset them, as a FileSelectAndShow will be done.
             // Kinda hacky as it expects a certain behaviour of the caller, but it works.
             this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
-            TokenSource.Dispose();
         }
 
         // Cancel - do nothing
@@ -331,21 +312,6 @@ namespace Timelapse.Dialog
                 format = (adjustment.Duration().Days == 1) ? "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} day" : "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} days";
             }
             return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
-        }
-
-        // Set the Window's Close Button Enable state
-        private void CloseButtonIsEnabled(bool enable)
-        {
-            Window window = Window.GetWindow(this);
-            var wih = new WindowInteropHelper(window);
-            IntPtr hwnd = wih.Handle;
-
-            IntPtr hMenu = GetSystemMenu(hwnd, false);
-            uint enableAction = enable ? MF_ENABLED : MF_GRAYED;
-            if (hMenu != IntPtr.Zero)
-            {
-                EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | enableAction);
-            }
         }
         #endregion
 

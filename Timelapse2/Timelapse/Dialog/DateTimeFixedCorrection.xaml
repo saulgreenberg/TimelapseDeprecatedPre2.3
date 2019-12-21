@@ -1,4 +1,4 @@
-﻿<Window x:Class="Timelapse.Dialog.DateTimeFixedCorrection"
+﻿<controls:DialogWindow x:Class="Timelapse.Dialog.DateTimeFixedCorrection"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
@@ -100,4 +100,4 @@
             </xceed:BusyIndicator.ProgressBarStyle>
         </xceed:BusyIndicator >
     </Grid>
-</Window>
+</controls:DialogWindow>

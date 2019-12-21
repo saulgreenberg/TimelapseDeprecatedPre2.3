@@ -172,6 +172,7 @@
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\DialogWindow.cs" />
     <Compile Include="Controls\ProgressBarArguments.cs" />
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
