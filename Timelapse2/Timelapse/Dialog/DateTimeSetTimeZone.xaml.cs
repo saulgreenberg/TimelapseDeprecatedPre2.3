@@ -55,7 +55,7 @@ namespace Timelapse.Dialog
             foreach (ImageRow image in this.fileDatabase.FileTable)
             {
                 string newDateTime = String.Empty;
-                string status = "Skipped: invalid date/time";
+                string status;
                 DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
                 TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
                 DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);

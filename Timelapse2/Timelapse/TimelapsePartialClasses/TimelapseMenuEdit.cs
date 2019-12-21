@@ -348,6 +348,7 @@ namespace Timelapse
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
+                    System.Diagnostics.Debug.Print("Files Select And Show");
                     this.FilesSelectAndShow();
                 }
 
