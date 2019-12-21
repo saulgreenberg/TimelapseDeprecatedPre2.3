@@ -86,6 +86,7 @@ namespace Timelapse.Dialog
             // reload the FileTable with the updated data, or to reset the FileTable back to its original form
             // if the operation was cancelled.
             this.IsAnyDataUpdated = true;
+ 
             // Reread the Date/Times from each file 
             return await Task.Run(() =>
             {
@@ -100,7 +101,6 @@ namespace Timelapse.Dialog
                 {
                     feedbackRows.Clear();
                     feedbackRows.Add(new DateTimeFeedbackTuple("Cancelled", "No changes were made"));
-
                     return feedbackRows;
                 }
                 return feedbackRows;

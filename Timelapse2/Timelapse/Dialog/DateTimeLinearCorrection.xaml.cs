@@ -18,16 +18,12 @@ namespace Timelapse
     /// This dialog lets the user specify a corrected date and time of a file. All other dates and times are then corrected by the same amount.
     /// This is useful if (say) the camera was not initialized to the correct date and time.
     /// </summary>
-    public partial class DateTimeLinearCorrection : Window
+    public partial class DateTimeLinearCorrection : DialogWindow 
     {
         private readonly FileDatabase fileDatabase;
 
-        // Token to let us cancel the task
-        private readonly CancellationTokenSource TokenSource;
-        private CancellationToken Token;
-
-        // Tracks whether any changes to the database was made
-        private bool IsDatabaseAltered;
+        // Tracks whether any changes to the data or database are made
+        private bool IsAnyDataUpdated = false;
 
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
@@ -37,27 +33,17 @@ namespace Timelapse
 
         #region Initialization
         // Create the interface
-        public DateTimeLinearCorrection(Window owner, FileDatabase fileDatabase)
+        public DateTimeLinearCorrection(Window owner, FileDatabase fileDatabase) : base(owner)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
 
             this.InitializeComponent();
-            this.Owner = owner;
             this.fileDatabase = fileDatabase;
-
-            // Token to let us cancel the task
-            this.TokenSource = new CancellationTokenSource();
-            this.Token = this.TokenSource.Token;
-
-            // Tracks whether any changes to the database was made
-            this.IsDatabaseAltered = false;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
-
             // Set up the initial UI and values
             this.latestImageDateTime = DateTimeOffset.MinValue;
             this.earliestImageDateTime = DateTimeOffset.MaxValue;
@@ -120,6 +106,12 @@ namespace Timelapse
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
+            // A side effect of running this task is that the FileTable will be updated, which means that,
+            // at the very least, the calling function will need to run FilesSelectAndShow to either
+            // reload the FileTable with the updated data, or to reset the FileTable back to its original form
+            // if the operation was cancelled.
+            this.IsAnyDataUpdated = true;
+
             // Reread the Date/Times from each file 
             return await Task.Run(() =>
             {
@@ -134,10 +126,9 @@ namespace Timelapse
                 {
                     feedbackRows.Clear();
                     feedbackRows.Add(new DateTimeFeedbackTuple("Cancelled", "No changes were made"));
-                    this.IsDatabaseAltered = false;
+                    this.IsAnyDataUpdated = false;
                     return feedbackRows;
                 }
-                this.IsDatabaseAltered = true;
                 return feedbackRows;
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
         }
@@ -233,6 +224,15 @@ namespace Timelapse
         // Set up the UI and invoke the linear correction 
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            // A few checks just to make sure we actually have something to do...
+            if (this.dateTimePickerLatestDateTime.Value.HasValue == false)
+            {
+                // We don't have a valid date, so nothing really to do.
+                // This should not happen
+                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recognized by Timelapse." );
+                return;
+            }
+
             // Configure the UI's initial state
             this.CancelButton.IsEnabled = false;
             this.CancelButton.Visibility = Visibility.Hidden;
@@ -241,15 +241,6 @@ namespace Timelapse
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
-
-            // A few checks just to make sure we actually have something to do...
-            if (this.dateTimePickerLatestDateTime.Value.HasValue == false)
-            {
-                // We don't have a valid date, so nothing really to do.
-                TokenSource.Dispose();
-                this.DialogResult = false;
-                return;
-            }
 
             TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
             TimeSpan intervalFromOldestToNewestImage = this.latestImageDateTime - this.earliestImageDateTime;
@@ -265,7 +256,7 @@ namespace Timelapse
 
             // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
             // Provide summary feedback 
-            if (this.IsDatabaseAltered)
+            if (this.IsAnyDataUpdated)
             {
                 string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CurrentlySelectedFileCount);
                 feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));
@@ -280,15 +271,13 @@ namespace Timelapse
 
         private void DoneButton_Click(object sender, RoutedEventArgs e)
         {
-            TokenSource.Dispose();
             // We return false if the database was not altered, i.e., if this was all a no-op
-            this.DialogResult = this.IsDatabaseAltered;
+            this.DialogResult = this.IsAnyDataUpdated;
         }
 
         // Cancel - do nothing
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            TokenSource.Dispose();
             this.DialogResult = false;
         }
 
@@ -355,10 +344,5 @@ namespace Timelapse
             return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
         }
         #endregion
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-
-        }
     }
 }
