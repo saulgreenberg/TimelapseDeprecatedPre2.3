@@ -79,26 +79,28 @@
                 </Grid>
                 <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
 
-                <!-- Busy Indicator-->
-                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                    <xceed:BusyIndicator.BusyContentTemplate >
+                <!-- Busy Indicator showing a linear progress bar plus cancel button -->
+                <xceed:BusyIndicator Name="BusyIndicatorProgress" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                    <xceed:BusyIndicator.BusyContentTemplate>
                         <DataTemplate>
                             <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-
-                                    <Label Name="foo" Content="Please wait..." />
-                                    <ProgressBar Name="bar" Value="0" Height="15" />
-                                    <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
- 
-                            </StackPanel>
+                                <Label Name="foo" Content="Please wait..." />
+                                <ProgressBar Name="bar" Value="0" Height="15" />
+                                <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                             </StackPanel>
                         </DataTemplate>
                     </xceed:BusyIndicator.BusyContentTemplate>
+
+                    <!-- Busy Indicator showing a random progress bar  -->
                     <xceed:BusyIndicator.ProgressBarStyle>
                         <Style TargetType="ProgressBar">
                             <Setter Property="Visibility" Value="Collapsed"/>
                         </Style>
                     </xceed:BusyIndicator.ProgressBarStyle>
+                </xceed:BusyIndicator >
+                <xceed:BusyIndicator Name="BusyIndicatorRandom"  IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
                 </xceed:BusyIndicator>
-                
+
             </Grid>
             <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Bottom" Margin="10,0,10,0">
                 <DataGrid Name="FeedbackGrid" Margin="5,10,5,0" ColumnWidth="*" SelectionMode="Single" SelectionUnit="FullRow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
