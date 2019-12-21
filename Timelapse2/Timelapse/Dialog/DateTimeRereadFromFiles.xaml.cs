@@ -14,24 +14,37 @@ namespace Timelapse.Dialog
 {
     public partial class DateTimeRereadFromFiles : Window
     {
-        private readonly FileDatabase Database;
+        private readonly FileDatabase fileDatabase;
 
-        // Tokens to let us cancel the Reread Task
+        // Token to let us cancel the Reread Task
         private readonly CancellationTokenSource TokenSource;
         private CancellationToken Token;
+
+        // Tracks whether any changes to the database was made
         private bool IsDatabaseAltered;
 
-        public DateTimeRereadFromFiles(Window owner, FileDatabase database)
-        {
-            this.InitializeComponent();
-            this.Database = database;
-            this.Owner = owner;
+        // Update dates in the database for the given image rows 
+        private DateTime lastRefreshDateTime = DateTime.Now;
 
-            // Initialize the cancellation token
+        #region Initialization
+        public DateTimeRereadFromFiles(Window owner, FileDatabase fileDatabase)
+        {
+            // Check the arguments for null 
+            if (fileDatabase == null)
+            {
+                // this should not happen
+                TraceDebug.PrintStackTrace(1);
+                throw new ArgumentNullException(nameof(fileDatabase));
+            }
+
+            this.InitializeComponent();
+            this.Owner = owner;
+            this.fileDatabase = fileDatabase;
+
+            // Token to let us cancel the task
             this.TokenSource = new CancellationTokenSource();
             this.Token = this.TokenSource.Token;
 
-            // Tracks whether any changes to the database was made
             this.IsDatabaseAltered = false;
         }
 
@@ -48,34 +61,9 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Columns[1].Header = "Old date  \x2192  New Date if it differs";
             this.FeedbackGrid.Columns[1].Width = new DataGridLength(2, DataGridLengthUnitType.Star);
         }
-
-        #region Set up the Reread  
-        private async void StartButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Configure the UI's initial state
-            this.CancelButton.IsEnabled = false;
-            this.CancelButton.Visibility = Visibility.Hidden;
-            this.StartDoneButton.Content = "_Done";
-            this.StartDoneButton.Click -= this.StartButton_Click;
-            this.StartDoneButton.Click += this.DoneButton_Click;
-            this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
-
-            // Reread the Date/Times from each file
-            // feedbackRows will hold key / value pairs that will be bound to the datagrid feedback, 
-            // which is the way to make those pairs appear in the data grid during background worker progress updates
-            // The progress bar will be displayed during this process.
-            ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
-
-            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
-            this.BusyIndicator.IsBusy = false;
-            this.FeedbackGrid.Visibility = Visibility.Visible;
-            this.FeedbackGrid.ItemsSource = feedbackRows;
-            this.StartDoneButton.IsEnabled = true;
-        }
         #endregion
 
-        #region Reread task Asynch
+        #region Calculate times and Update files
         private async Task<ObservableCollection<DateTimeFeedbackTuple>> TaskRereadDatesAsync()
         {
             // Set up a progress handler that will update the progress bar
@@ -93,8 +81,8 @@ namespace Timelapse.Dialog
 
                 // Pass 1. For each file, check to see what dates/times need updating.
                 progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates..."));
-                int count = this.Database.CurrentlySelectedFileCount;
-                TimeZoneInfo imageSetTimeZone = this.Database.ImageSet.GetSystemTimeZone();
+                int count = this.fileDatabase.CurrentlySelectedFileCount;
+                TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
 
                 // Get the list of image rows (files) whose dates have changed
                 List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);
@@ -108,7 +96,7 @@ namespace Timelapse.Dialog
                 // Pass 2. Update files in the database
                 // Provide feedback that we are in the second pass, disabling the Cancel button in the progress bar as we shouldn't cancel half-way through a database update.
                 string message = String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count);
-                progress.Report(new ProgressBarArguments(0, message, false));
+                progress.Report(new ProgressBarArguments(100, message, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
 
                 //// Update the database
@@ -123,12 +111,11 @@ namespace Timelapse.Dialog
                     message = (missingFiles == 1)
                     ? String.Format("{0} file is missing, and was not examined.", missingFiles)
                     : String.Format("{0} files are missing, and were not examined.", missingFiles);
+                    feedbackRows.Insert(1, (new DateTimeFeedbackTuple("---", message)));
                 }
-                feedbackRows.Insert(1, (new DateTimeFeedbackTuple("---", message)));
                 return feedbackRows;
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
         }
-
 
         // Returns:
         // - the list of files whose dates have changed
@@ -148,7 +135,7 @@ namespace Timelapse.Dialog
                 }
 
                 // We will store the various times here
-                ImageRow file = this.Database.FileTable[fileIndex];
+                ImageRow file = this.fileDatabase.FileTable[fileIndex];
                 DateTimeOffset originalDateTime = file.DateTimeIncorporatingOffset;
                 string feedbackMessage = string.Empty;
 
@@ -157,7 +144,7 @@ namespace Timelapse.Dialog
                     // Get the image (if its there), get the new dates/times, and add it to the list of images to be updated 
                     // Note that if the image can't be created, we will just to the catch.
                     bool usingMetadataTimestamp = true;
-                    if (file.FileExists(this.Database.FolderPath) == false)
+                    if (file.FileExists(this.fileDatabase.FolderPath) == false)
                     {
                         // The file does not exist. Generate a feedback message
                         missingFiles++;
@@ -165,11 +152,11 @@ namespace Timelapse.Dialog
                     else
                     {
                         // Read the date from the file, and check to see if its different from the recorded date
-                        DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.Database.FolderPath, imageSetTimeZone);
+                        DateTimeAdjustmentEnum dateTimeAdjustment = file.TryReadDateTimeOriginalFromMetadata(this.fileDatabase.FolderPath, imageSetTimeZone);
                         if (dateTimeAdjustment == DateTimeAdjustmentEnum.MetadataNotUsed)
                         {
                             // We couldn't read the metadata, so get a candidate date/time from the file info instead
-                            file.SetDateTimeOffsetFromFileInfo(this.Database.FolderPath);
+                            file.SetDateTimeOffsetFromFileInfo(this.fileDatabase.FolderPath);
                             usingMetadataTimestamp = false;
                         }
                         DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
@@ -197,12 +184,14 @@ namespace Timelapse.Dialog
                     break;
                 }
 
-                progress.Report(new ProgressBarArguments(Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0), String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
-
-                // Put in a delay every now and then, as otherwise the UI won't update.
-                if (fileIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
+                // Update the progress bar every time interval to indicate what file we are working on
+                TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
+                if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
                 {
+                    int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
+                    progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Checking dates for {0} / {1} files", fileIndex, count)));
                     Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
+                    this.lastRefreshDateTime = DateTime.Now;
                 }
             }
             return filesToAdjust;
@@ -224,8 +213,8 @@ namespace Timelapse.Dialog
                     message = (missingFiles == 1)
                     ? String.Format("{0} file is missing, and was not examined.", missingFiles)
                     : String.Format("{0} files are missing, and were not examined.", missingFiles);
+                    feedbackRows.Add(new DateTimeFeedbackTuple("---", message));
                 }
-                feedbackRows.Add(new DateTimeFeedbackTuple("---", message));
                 return true;
             }
 
@@ -249,26 +238,37 @@ namespace Timelapse.Dialog
             {
                 imagesToUpdate.Add(image.GetDateTimeColumnTuples());
             }
-            this.Database.UpdateFiles(imagesToUpdate);  // Write the updates to the database
+            this.fileDatabase.UpdateFiles(imagesToUpdate);  // Write the updates to the database
         }
         #endregion
 
         #region ProgressBar helper
-        // Convenience routing to show progress information in the progress bar
-        // and to enable or disable its cancel button
+        // Show progress information in the progress bar, and to enable or disable its cancel button
         private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
         {
             ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
+            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
             Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
-            if (bar != null)
+
+            if (bar != null & percent < 100)
             {
+                // Treat it as a progressive progress bar
                 bar.Value = percent;
+                bar.IsIndeterminate = false;
             }
-            if (textmessage != null)
+            else
             {
-                textmessage.Text = message;
+                // If its at 100%, treat it as a random bar
+                bar.IsIndeterminate = true;
             }
+
+            // Update the text message
+            if (textMessage != null)
+            {
+                textMessage.Content = message;
+            }
+
+            // Update the cancel button to reflect the cancelEnabled argument
             if (cancelButton != null)
             {
                 cancelButton.IsEnabled = cancelEnabled;
@@ -277,9 +277,35 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Other Button callbacks
+        #region Button callbacks
+        // Set up the UI and invoke the Reread
+        private async void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Configure the UI's initial state
+            this.CancelButton.IsEnabled = false;
+            this.CancelButton.Visibility = Visibility.Hidden;
+            this.StartDoneButton.Content = "_Done";
+            this.StartDoneButton.Click -= this.StartButton_Click;
+            this.StartDoneButton.Click += this.DoneButton_Click;
+            this.StartDoneButton.IsEnabled = false;
+            this.BusyIndicator.IsBusy = true;
+
+            // Reread the Date/Times from each file
+            // feedbackRows will hold key / value pairs that will be bound to the datagrid feedback, 
+            // which is the way to make those pairs appear in the data grid during background worker progress updates
+            // The progress bar will be displayed during this process.
+            ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
+
+            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
+            this.BusyIndicator.IsBusy = false;
+            this.FeedbackGrid.Visibility = Visibility.Visible;
+            this.FeedbackGrid.ItemsSource = feedbackRows;
+            this.StartDoneButton.IsEnabled = true;
+        }
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
+            TokenSource.Dispose();
             this.DialogResult = false;
         }
 

@@ -35,7 +35,7 @@
                     <Button Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="Start_Click" IsEnabled="False">Start</Button>
                 </StackPanel>
 
-                <!-- Content area -->
+                <!-- Content area Either this or the Feedback area is visible-->
                 <Grid Name="PrimaryPanel" DockPanel.Dock="Top" Margin="10,0,10,0" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -83,6 +83,8 @@
 
 
                 </Grid>
+
+                <!-- Feedback area. Either this or the Content area is visible-->
                 <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Bottom" Margin="10,0,10,0">
                     <DataGrid Name="FeedbackGrid" Margin="5,10,5,0" ColumnWidth="*" SelectionMode="Single" SelectionUnit="FullRow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     AutoGenerateColumns="True" 
@@ -103,20 +105,22 @@
             </DockPanel>
         </DockPanel>
 
-        <!-- Busy Indicator showing a linear progress bar plus cancel button -->
-        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+        <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
+        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
+            
+            <!-- Construct the new content: A text message, a progress bar and a cancel button -->
             <xceed:BusyIndicator.BusyContentTemplate>
                 <DataTemplate>
                     <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                        <Label Name="foo" Content="Please wait..." />
-                        <ProgressBar Name="bar" Value="0" Height="15" />
-                        <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                        <Label Content="Please wait..." />
+                        <ProgressBar Value="0" Height="15" />
+                        <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
                     </StackPanel>
                 </DataTemplate>
             </xceed:BusyIndicator.BusyContentTemplate>
 
-            <!-- Busy Indicator showing a random progress bar. This will also overlay the entire window contents when IsBusy=treu  -->
-            <xceed:BusyIndicator.ProgressBarStyle Grid.Row="0" Grid.Column="0">
+            <!-- Collapse its default ProgressBar as we don't use it  -->
+            <xceed:BusyIndicator.ProgressBarStyle >
                 <Style TargetType="ProgressBar">
                     <Setter Property="Visibility" Value="Collapsed"/>
                 </Style>
