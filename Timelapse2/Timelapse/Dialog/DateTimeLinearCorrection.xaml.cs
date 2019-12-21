@@ -32,7 +32,7 @@ namespace Timelapse
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
 
-        // Update dates in the database for the given image rows 
+        // To help determine periodic updates to the progress bar 
         private DateTime lastRefreshDateTime = DateTime.Now;
 
         #region Initialization
@@ -40,18 +40,13 @@ namespace Timelapse
         public DateTimeLinearCorrection(Window owner, FileDatabase fileDatabase)
         {
             // Check the arguments for null 
-            if (fileDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileDatabase));
-            }
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
 
             this.InitializeComponent();
             this.Owner = owner;
             this.fileDatabase = fileDatabase;
 
-            // Initialize the cancellation token
+            // Token to let us cancel the task
             this.TokenSource = new CancellationTokenSource();
             this.Token = this.TokenSource.Token;
 
@@ -251,6 +246,7 @@ namespace Timelapse
             if (this.dateTimePickerLatestDateTime.Value.HasValue == false)
             {
                 // We don't have a valid date, so nothing really to do.
+                TokenSource.Dispose();
                 this.DialogResult = false;
                 return;
             }

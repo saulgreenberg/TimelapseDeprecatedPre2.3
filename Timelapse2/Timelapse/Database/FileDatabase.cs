@@ -1395,6 +1395,12 @@ namespace Timelapse.Database
                 filesToAdjust.Add(image);
             }
 
+            if (token.IsCancellationRequested)
+            {
+                // Don't update the database, as a cancellation was requested.
+                return;
+            }
+
             // update the database with the new date/time values
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             foreach (ImageRow image in filesToAdjust)

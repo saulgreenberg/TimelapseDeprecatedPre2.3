@@ -345,7 +345,7 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedDateTimeFixedCorrectionPrompt = optOut;
                                                                }))
             {
-                DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
+                DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
                     this.FilesSelectAndShow();

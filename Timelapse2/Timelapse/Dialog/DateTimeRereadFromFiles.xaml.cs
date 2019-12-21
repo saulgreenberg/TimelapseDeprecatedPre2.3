@@ -23,7 +23,7 @@ namespace Timelapse.Dialog
         // Tracks whether any changes to the database was made
         private bool IsDatabaseAltered;
 
-        // Update dates in the database for the given image rows 
+        // To help determine periodic updates to the progress bar 
         private DateTime lastRefreshDateTime = DateTime.Now;
 
         #region Initialization
