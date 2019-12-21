@@ -10,8 +10,9 @@
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
-    <DockPanel >
-        <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
+    <Grid>
+        <DockPanel Grid.Row="0" Grid.Column="0">
+            <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
                             Title="Correct for Cameras whose clock runs fast or slow"
                             Problem="If a camera does not have an accurate clock, the time recorded on successive images or videos will drift fast or slow, and become increasingly inaccurate."
                             Solution="The file with the earliest and latest timestamps are shown below. We assume that the earliest file has the correct time, and that the latest shows the worst time drift.
@@ -23,92 +24,71 @@
                                   &#10;&#x2022; You can restore the original file dates by using:  Edit|Date Correction|Re-read dates and times from files"
                             ShowExplanationVisibility="True" />
 
-        <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
-        </StackPanel>
-
-        <DockPanel >
-            <!-- Ok/Cancel buttons-->
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">Cancel</Button>
-                <Button Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="Start_Click" IsEnabled="False">Start</Button>
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
+                <Rectangle Fill="#FF868686" Height="2"></Rectangle>
             </StackPanel>
 
-            <!-- Content area -->
-            <Grid Name="PrimaryPanel" DockPanel.Dock="Top" Margin="10,0,10,0" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <DockPanel >
+                <!-- Ok/Cancel buttons-->
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">Cancel</Button>
+                    <Button Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="Start_Click" IsEnabled="False">Start</Button>
+                </StackPanel>
 
-                <!-- Content Left column-->
-                <Grid  Grid.Row="0" Grid.Column="0">
+                <!-- Content area -->
+                <Grid Name="PrimaryPanel" DockPanel.Dock="Top" Margin="10,0,10,0" >
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <Label Content="Earliest:"       HorizontalAlignment="Left" HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
-                    <Label Content="earliest.jpg"    HorizontalAlignment="Left" HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="earliestImageName"   />
-                    <Label Content="dd-MMM-yyyy HH:mm:ss"  HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="2" Name="earliestImageDate"/>
+
+                    <!-- Content Left column-->
+                    <Grid  Grid.Row="0" Grid.Column="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="Earliest:"       HorizontalAlignment="Left" HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
+                        <Label Content="earliest.jpg"    HorizontalAlignment="Left" HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="earliestImageName"   />
+                        <Label Content="dd-MMM-yyyy HH:mm:ss"  HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="2" Name="earliestImageDate"/>
+                    </Grid>
+                    <Image Name="imageEarliest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="0"/>
+
+                    <!-- Content Right column-->
+                    <Grid  Grid.Row="0" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Label Content="Latest:"               HorizontalAlignment="Left"  HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
+                        <Label Content="latest.jpg"            HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="latestImageName"/>
+                        <xceed:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0" CultureInfo="en-US" MouseLeave="DateTimePickerLatestDateTime_MouseLeave" ValueChanged="DateTimePicker_ValueChanged"  />
+
+                        <!-- <Label Content="dd-MMM-yyyy HH:mm:ss"       HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="1" Grid.Column="1" Margin="0,-8,0,0" Name="imageLatestDate"    />-->
+                    </Grid>
+                    <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
+
+
+
                 </Grid>
-                <Image Name="imageEarliest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="0"/>
-
-                <!-- Content Right column-->
-                <Grid  Grid.Row="0" Grid.Column="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Label Content="Latest:"               HorizontalAlignment="Left"  HorizontalContentAlignment="Right" FontWeight="Bold"   Grid.Row="0" Grid.Column="0"/>
-                    <Label Content="latest.jpg"            HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="0" Grid.Column="1" Name="latestImageName"/>
-                    <xceed:DateTimePicker HorizontalAlignment="Right"  HorizontalContentAlignment="Left"  Grid.Row="0" Grid.Column="2" x:Name="dateTimePickerLatestDateTime" Margin="10,0,0,0" CultureInfo="en-US" MouseLeave="DateTimePickerLatestDateTime_MouseLeave" ValueChanged="DateTimePicker_ValueChanged"  />
-  
-                    <!-- <Label Content="dd-MMM-yyyy HH:mm:ss"       HorizontalAlignment="Left"  HorizontalContentAlignment="Left"  FontWeight="Normal" Grid.Row="1" Grid.Column="1" Margin="0,-8,0,0" Name="imageLatestDate"    />-->
-                </Grid>
-                <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
-
-                <!-- Busy Indicator showing a linear progress bar plus cancel button -->
-                <xceed:BusyIndicator Name="BusyIndicatorProgress" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                    <xceed:BusyIndicator.BusyContentTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                                <Label Name="foo" Content="Please wait..." />
-                                <ProgressBar Name="bar" Value="0" Height="15" />
-                                <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
-                             </StackPanel>
-                        </DataTemplate>
-                    </xceed:BusyIndicator.BusyContentTemplate>
-
-                    <!-- Busy Indicator showing a random progress bar  -->
-                    <xceed:BusyIndicator.ProgressBarStyle>
-                        <Style TargetType="ProgressBar">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </Style>
-                    </xceed:BusyIndicator.ProgressBarStyle>
-                </xceed:BusyIndicator >
-                <xceed:BusyIndicator Name="BusyIndicatorRandom"  IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                </xceed:BusyIndicator>
-
-            </Grid>
-            <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Bottom" Margin="10,0,10,0">
-                <DataGrid Name="FeedbackGrid" Margin="5,10,5,0" ColumnWidth="*" SelectionMode="Single" SelectionUnit="FullRow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                <DockPanel Name="FeedbackPanel" Visibility="Collapsed" DockPanel.Dock="Bottom" Margin="10,0,10,0">
+                    <DataGrid Name="FeedbackGrid" Margin="5,10,5,0" ColumnWidth="*" SelectionMode="Single" SelectionUnit="FullRow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     AutoGenerateColumns="True" 
                     AutoGeneratedColumns="DatagridFeedback_AutoGeneratedColumns" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" 
                     Visibility="Visible" Background="White"
-                    HeadersVisibility="Column"
-                   >
+                    HeadersVisibility="Column">
                         <DataGrid.ColumnHeaderStyle>
                             <Style  TargetType="DataGridColumnHeader" >
                                 <Setter Property="Control.FontWeight" Value="Bold" />
@@ -120,7 +100,28 @@
                         </DataGrid.ColumnHeaderStyle>
                     </DataGrid>
                 </DockPanel>
+            </DockPanel>
         </DockPanel>
-    </DockPanel>
+
+        <!-- Busy Indicator showing a linear progress bar plus cancel button -->
+        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+            <xceed:BusyIndicator.BusyContentTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
+                        <Label Name="foo" Content="Please wait..." />
+                        <ProgressBar Name="bar" Value="0" Height="15" />
+                        <Button Name="CancelButton" Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                    </StackPanel>
+                </DataTemplate>
+            </xceed:BusyIndicator.BusyContentTemplate>
+
+            <!-- Busy Indicator showing a random progress bar. This will also overlay the entire window contents when IsBusy=treu  -->
+            <xceed:BusyIndicator.ProgressBarStyle Grid.Row="0" Grid.Column="0">
+                <Style TargetType="ProgressBar">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </xceed:BusyIndicator.ProgressBarStyle>
+        </xceed:BusyIndicator >
+    </Grid>
 </Window>
 

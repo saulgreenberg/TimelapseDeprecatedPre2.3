@@ -111,33 +111,33 @@ namespace Timelapse
         // and to enable or disable its cancel button
         private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
         {
-            if (percent < 100)
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
+            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+
+            if (bar != null & percent < 100)
             {
-                this.BusyIndicatorProgress.Visibility = Visibility.Visible;
-                this.BusyIndicatorRandom.Visibility = Visibility.Collapsed;
-                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicatorProgress);
-                Label textmessage = Utilities.GetVisualChild<Label>(this.BusyIndicatorProgress);
-                Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicatorProgress);
-                if (bar != null)
-                {
-                    bar.Value = percent;
-                }
-                if (textmessage != null)
-                {
-                    textmessage.Content = message;
-                }
-                if (cancelButton != null)
-                {
-                    cancelButton.IsEnabled = cancelEnabled;
-                    cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
-                }
+                // Treat it as a progressive progress bar
+                bar.Value = percent;
+                bar.IsIndeterminate = false;
             }
             else
             {
-                this.BusyIndicatorRandom.IsBusy = true;
-                this.BusyIndicatorRandom.BusyContent = message;
-                this.BusyIndicatorRandom.Visibility = Visibility.Visible;
-                this.BusyIndicatorProgress.Visibility = Visibility.Collapsed;
+                // If its at 100%, treat it as a random bar
+                bar.IsIndeterminate = true;
+            }
+
+            // Update the text message
+            if (textMessage != null)
+            {
+                textMessage.Content = message;
+            }
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            if (cancelButton != null)
+            {
+                cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
             }
         }
         #endregion
@@ -185,10 +185,10 @@ namespace Timelapse
             {
                 format = "{0:s}{1:D2}:{2:D2}:{3:D2}"; // Don't show the days field
             }
-            else 
+            else
             {
                 // includes singular or plural form of days
-                format = (adjustment.Duration().Days == 1) ? "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} day" :  "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} days"; 
+                format = (adjustment.Duration().Days == 1) ? "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} day" : "{0:s}{1:D2}:{2:D2}:{3:D2} {0:s} {4:D} days";
             }
             return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
         }
@@ -230,11 +230,12 @@ namespace Timelapse
                            Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                            lastRefreshDateTime = DateTime.Now;
                        }
+
                        if (fileIndex >= count)
                        {
-                           // After all files are processed, the next step would be updating the database.
+                           // After all files are processed, the next step would be updating the database. Disable the cancel button too.
                            // This really should be somehow signalled from the invoking method (ideally ExecuteNonQueryWrappedInBeginEnd every update interval), but this is a reasonable workaround.
-                           progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count)));
+                           progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count), false));
                            Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                        }
                        return imageDateTime + adjustment; // Returns the new time
@@ -256,7 +257,7 @@ namespace Timelapse
             this.StartDoneButton.Click -= this.Start_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicatorProgress.IsBusy = true;
+            this.BusyIndicator.IsBusy = true;
 
             // A few checks just to make sure we actually have something to do...
             if (this.dateTimePickerLatestDateTime.Value.HasValue == false)
@@ -280,10 +281,13 @@ namespace Timelapse
 
             // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
             // Provide summary feedback 
-            string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CurrentlySelectedFileCount);
-            feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));
+            if (this.IsDatabaseAltered)
+            {
+                string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CurrentlySelectedFileCount);
+                feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));
+            }
 
-            this.BusyIndicatorProgress.IsBusy = false;
+            this.BusyIndicator.IsBusy = false;
             this.PrimaryPanel.Visibility = Visibility.Collapsed;
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.FeedbackGrid.ItemsSource = feedbackRows;

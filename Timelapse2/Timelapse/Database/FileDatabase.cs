@@ -1370,7 +1370,7 @@ namespace Timelapse.Database
             // Get the original value of each, and update each date by the corrected amount if possible
             List<ImageRow> filesToAdjust = new List<ImageRow>();
             TimeSpan mostRecentAdjustment = TimeSpan.Zero;
-            int count = endRow - startRow;
+            int count = endRow - startRow + 1;
             int fileIndex = 0;
             for (int row = startRow; row <= endRow; ++row)
             {
