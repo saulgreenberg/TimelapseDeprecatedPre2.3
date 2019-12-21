@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -22,38 +20,31 @@ namespace Timelapse.Dialog
         private readonly FileDatabase fileDatabase;
         private readonly ImageRow ImageToCorrect;
 
-        // Tracks whether any changes to the database was made
-        private bool IsAnyDataUpdated = false;
-
+        // The initial unaltered date
         private DateTimeOffset initialDate;
 
-        // To help determine periodic updates to the progress bar 
-        private DateTime lastRefreshDateTime = DateTime.Now;
+        // Tracks whether any changes to the data or database are made
+        private bool IsAnyDataUpdated = false;
 
         #region Initialization
-        public DateTimeFixedCorrection(Window owner, FileDatabase fileDatabase, ImageRow imageToCorrect)
+        public DateTimeFixedCorrection(Window owner, FileDatabase fileDatabase, ImageRow imageToCorrect) : base (owner)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
             ThrowIf.IsNullArgument(imageToCorrect, nameof(imageToCorrect));
 
             this.InitializeComponent();
-            this.Owner = owner;
             this.fileDatabase = fileDatabase;
             this.ImageToCorrect = imageToCorrect;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
-
             // Set up the initial UI and values
 
-            // Get the image filename and display it
+            // Get the image filename and image and display them
             this.FileName.Content = this.ImageToCorrect.File;
             this.FileName.ToolTip = this.ImageToCorrect.File;
-
-            // Get the image and display it
             this.SampleImage.Source = this.ImageToCorrect.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // Configure datetime picker to the initial date on the images plus callbacks
@@ -132,13 +123,11 @@ namespace Timelapse.Dialog
                    }
 
                    // Update the progress bar every time interval to indicate what file we are working on
-                   TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
-                   if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
+                   if (this.ReadyToRefresh())
                    {
                        int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count)));
                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
-                       this.lastRefreshDateTime = DateTime.Now;
                    }
 
                    if (fileIndex >= count)
@@ -194,6 +183,23 @@ namespace Timelapse.Dialog
         #region Button callbacks
         private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            if (this.DateTimePicker.Value.HasValue == false || DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out DateTime originalDateTime) == false)
+            {
+                // This should not happen
+                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recognized by Timelapse: " + (string)this.OriginalDate.Content);
+                return;
+            }
+            TimeSpan adjustment = this.DateTimePicker.Value.Value - originalDateTime;
+
+            // Need at least a 1 second difference to do anything.
+            if (Math.Abs(adjustment.TotalSeconds) < 1)
+            {
+                // This should not happen
+                System.Windows.MessageBox.Show("At least a 1 second difference is required to do anything " + (string)this.OriginalDate.Content);
+                return;
+            }
+
+            // We have a valide new time that differs by at least one second.
             // Configure the UI's initial state
             this.CancelButton.IsEnabled = false;
             this.CancelButton.Visibility = Visibility.Hidden;
@@ -204,36 +210,8 @@ namespace Timelapse.Dialog
             this.BusyIndicator.IsBusy = true;
             this.CloseButtonIsEnabled(false);
 
-            // SAULXXX REDO ALL THESE TESTS TO PUT IN FEEDBACK BEFORE WE DO THE ABOVE CHANGES?
-            if (this.DateTimePicker.Value.HasValue == false)
-            {
-                this.CancelButton_Click(null, null);
-                return;
-            }
-
-            // Calculate and apply the date/time difference
-            // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
-            // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
-            if (DateTimeHandler.TryParseDisplayDateTimeString((string)this.OriginalDate.Content, out DateTime originalDateTime) == false)
-            {
-                // we couldn't parse it, thus we can't update anything.
-                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recongized by Timelapse: " + (string)this.OriginalDate.Content);
-                this.CancelButton_Click(null, null);
-                return;
-            }
-
-            TimeSpan adjustment = this.DateTimePicker.Value.Value - originalDateTime;
-
-            // Need at least a 1 second difference to do anything.
-            if (adjustment.TotalSeconds < 1)
-            {
-                // Put up a message here
-                this.CancelButton_Click(null, null); // No difference, so nothing to correct
-                return;
-            }
-
             // This call does all the actual updating...
-            ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await this.TaskFixedCorrectionAsync(adjustment);
+            ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await this.TaskFixedCorrectionAsync(adjustment).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
             // Provide summary feedback 
@@ -314,6 +292,5 @@ namespace Timelapse.Dialog
             return string.Format(format, sign, adjustment.Duration().Hours, adjustment.Duration().Minutes, adjustment.Duration().Seconds, adjustment.Duration().Days);
         }
         #endregion
-
     }
 }

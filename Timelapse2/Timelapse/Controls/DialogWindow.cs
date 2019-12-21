@@ -3,47 +3,61 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
+using Timelapse.Dialog;
 
 namespace Timelapse.Controls
 {
     // A specialized window to be used as a dialog, where:
-    // - it includes Cancellation tokens (and disposes of them afterwards)
+    // - it fits the window into the calling window
+    // - Cancellation tokens (and disposes of them afterwards) are include
     // - CloseButtonIsEnabled(bool enable): the window's close button can be enabled or disabled
-    #pragma warning disable CA1001 // Types that own disposable fields should be disposable. Reason: Handled in Closed event
+#pragma warning disable CA1001 // Types that own disposable fields should be disposable. Reason: Handled in Closed event
     public class DialogWindow : Window
-    #pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
+#pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
     {
         // Token to let us cancel the task
         private readonly CancellationTokenSource tokenSource;
         protected CancellationToken Token { get; set; }
-
         protected CancellationTokenSource TokenSource => this.tokenSource;
+
+        // To help determine periodic updates to the progress bar 
+        private DateTime lastRefreshDateTime = DateTime.Now;
 
         // Allows us to access the close button on the window
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
         [DllImport("user32.dll")]
         static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
-        const uint MF_BYCOMMAND = 0x00000000;
-        const uint MF_GRAYED = 0x00000001;
-        const uint MF_ENABLED = 0x00000000;
-        const uint SC_CLOSE = 0xF060;
+        private const uint MF_BYCOMMAND = 0x00000000;
+        private const uint MF_GRAYED = 0x00000001;
+        private const uint MF_ENABLED = 0x00000000;
+        private const uint SC_CLOSE = 0xF060;
 
-        public DialogWindow()
-        {   
+        public DialogWindow(Window owner)
+        {
+            this.Owner = owner;
             // Initialize the cancellation token
             this.tokenSource = new CancellationTokenSource();
             this.Token = this.tokenSource.Token;
+            this.Loaded += this.DialogWindow_Loaded;
             this.Closed += this.DialogWindow_Closed;
         }
 
-        private void DialogWindow_Closed(object sender, EventArgs e)
+        // Fit the dialog into the calling window
+        private void DialogWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // TokenSources need to be disposed, so here it is.
-            if (TokenSource != null)
+            Dialogs.TryPositionAndFitDialogIntoWindow(this);
+        }
+
+        protected bool ReadyToRefresh()
+        {
+            TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
+            if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
             {
-                TokenSource.Dispose();
+                this.lastRefreshDateTime = DateTime.Now;
+                return true;
             }
+            return false;
         }
 
         // Set the Window's Close Button Enable state
@@ -60,5 +74,16 @@ namespace Timelapse.Controls
                 EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | enableAction);
             }
         }
+
+        #region Internal methods
+        private void DialogWindow_Closed(object sender, EventArgs e)
+        {
+            // TokenSources need to be disposed, so here it is.
+            if (TokenSource != null)
+            {
+                TokenSource.Dispose();
+            }
+        }
+        #endregion
     }
 }
