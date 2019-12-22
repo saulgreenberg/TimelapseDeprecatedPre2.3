@@ -1,4 +1,4 @@
-﻿<Window x:Class="Timelapse.Dialog.DateTimeRereadFromFiles"
+﻿<controls:DialogWindow x:Class="Timelapse.Dialog.DateTimeRereadFromFiles"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Timelapse.Controls"
@@ -8,7 +8,7 @@
 		Height="500" Width="768"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
-		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
+		WindowStartupLocation="CenterOwner" BorderBrush="Black" Closing="Window_Closing">
     <Grid>
         <DockPanel Grid.Row="0" Grid.Column="0">
             <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
@@ -70,4 +70,4 @@
         </xceed:BusyIndicator >
 
     </Grid>
-</Window>
+</controls:DialogWindow>

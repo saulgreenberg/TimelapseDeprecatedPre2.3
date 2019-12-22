@@ -9,7 +9,7 @@
 		Height="650" Width="768"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
-		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
+		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid>
         <DockPanel Grid.Row="0" Grid.Column="0">
             <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"

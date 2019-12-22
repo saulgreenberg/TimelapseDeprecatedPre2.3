@@ -12,45 +12,33 @@ using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
-    public partial class DateTimeRereadFromFiles : Window
+    public partial class DateTimeRereadFromFiles : DialogWindow
     {
         private readonly FileDatabase fileDatabase;
 
-        // Token to let us cancel the Reread Task
-        private readonly CancellationTokenSource TokenSource;
-        private CancellationToken Token;
-
         // Tracks whether any changes to the database was made
-        private bool IsDatabaseAltered;
+        private bool IsAnyDataUpdated;
 
         // To help determine periodic updates to the progress bar 
         private DateTime lastRefreshDateTime = DateTime.Now;
 
         #region Initialization
-        public DateTimeRereadFromFiles(Window owner, FileDatabase fileDatabase)
+        public DateTimeRereadFromFiles(Window owner, FileDatabase fileDatabase): base(owner)
         {
             // Check the arguments for null 
-            if (fileDatabase == null)
-            {
-                // this should not happen
-                TraceDebug.PrintStackTrace(1);
-                throw new ArgumentNullException(nameof(fileDatabase));
-            }
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
 
             this.InitializeComponent();
             this.Owner = owner;
             this.fileDatabase = fileDatabase;
 
-            // Token to let us cancel the task
-            this.TokenSource = new CancellationTokenSource();
-            this.Token = this.TokenSource.Token;
-
-            this.IsDatabaseAltered = false;
+            // Tracks whether any changes to the data or database are made
+            this.IsAnyDataUpdated = false;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
         }
 
         // Label and size the datagrid column headers
@@ -74,6 +62,12 @@ namespace Timelapse.Dialog
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
+            // A side effect of running this task is that the FileTable will be updated, which means that,
+            // at the very least, the calling function will need to run FilesSelectAndShow to either
+            // reload the FileTable with the updated data, or to reset the FileTable back to its original form
+            // if the operation was cancelled.
+            this.IsAnyDataUpdated = true;
+            
             // Reread the Date/Times from each file 
             return await Task.Run(() =>
             {
@@ -101,7 +95,6 @@ namespace Timelapse.Dialog
 
                 //// Update the database
                 this.DatabaseUpdateFileDates(filesToAdjust);
-                this.IsDatabaseAltered = true;
 
                 // Provide summary feedback 
                 message = string.Format("Updated {0}/{1} files whose dates have changed.", filesToAdjust.Count, count);
@@ -289,6 +282,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
+            this.CloseButtonIsEnabled(false);
 
             // Reread the Date/Times from each file
             // feedbackRows will hold key / value pairs that will be bound to the datagrid feedback, 
@@ -301,19 +295,18 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Visibility = Visibility.Visible;
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.StartDoneButton.IsEnabled = true;
+            this.CloseButtonIsEnabled(true);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            TokenSource.Dispose();
             this.DialogResult = false;
         }
 
         private void DoneButton_Click(object sender, RoutedEventArgs e)
         {
-            TokenSource.Dispose();
             // We return false if the database was not altered, i.e., if this was all a no-op
-            this.DialogResult = this.IsDatabaseAltered;
+            this.DialogResult = this.IsAnyDataUpdated;
         }
 
         private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
