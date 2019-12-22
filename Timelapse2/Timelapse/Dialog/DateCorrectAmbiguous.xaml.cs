@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
 
@@ -12,30 +14,39 @@ namespace Timelapse.Dialog
     /// Contract: the abort state should be checked by the caller. If it is true, the
     /// .Show should not be invoked.
     /// </summary>
-    public partial class DateCorrectAmbiguous : Window
+    public partial class DateCorrectAmbiguous : DialogWindow
     {
+        // Remember passed in arguments
+        private readonly FileDatabase fileDatabase;
+
         private readonly List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
         private int ambiguousDatesListIndex;
-        private readonly FileDatabase database;
-        private bool displayingPreview;
 
-        // Whether the operation is aborted, ie., because there are no ambiguous dates
-        public bool Abort { get; set; }
+        private bool displayingPreview; // Whether we are displaying the preview Pane
+        public bool Abort { get; set; } // Whether the operation is aborted, ie., because there are no ambiguous dates
 
-        #region Constructor and Loading
-        public DateCorrectAmbiguous(FileDatabase database, Window owner)
+        #region Initialization
+        public DateCorrectAmbiguous(Window owner, FileDatabase fileDatabase) : base(owner)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
+
             this.InitializeComponent();
+            this.fileDatabase = fileDatabase;
             this.ambiguousDatesList = new List<AmbiguousDate>();
-            this.database = database;
             this.displayingPreview = false;
-            this.Owner = owner;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
             // We add this in code behind as we don't want to invoke the radiobutton callbacks when the interface is created.
             this.OriginalDate.Checked += this.DateBox_Checked;
             this.SwappedDate.Checked += this.DateBox_Checked;
 
             // Find the ambiguous dates in the current selected set
+            // This is a fast operation, so we don't bother to show a progress bar here
             if (this.FindAllAmbiguousDatesInSelectedImageSet() == true)
             {
                 this.Abort = false;
@@ -48,13 +59,11 @@ namespace Timelapse.Dialog
 
             // Start displaying from the first ambiguous date.
             this.ambiguousDatesListIndex = 0;
-        }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
             // If the caller invokes Show with Abort = true (i.e., count = 0), this will at least show an empty dialog.
             this.UpdateDisplay(this.ambiguousDatesList.Count > 0);
+
+            Mouse.OverrideCursor = null;
         }
         #endregion
 
@@ -63,6 +72,7 @@ namespace Timelapse.Dialog
         // This includes calculating the start and end rows of all images matching an ambiguous date
         private bool FindAllAmbiguousDatesInSelectedImageSet()
         {
+
             int start = this.SearchForNextAmbiguousDateInSelectedImageSet(0);
             while (start != -1)
             {
@@ -70,6 +80,7 @@ namespace Timelapse.Dialog
                 this.ambiguousDatesList.Add(new AmbiguousDate(start, end, count, false));
                 start = this.SearchForNextAmbiguousDateInSelectedImageSet(end + 1);
             }
+
             return (this.ambiguousDatesList.Count > 0) ? true : false;
         }
 
@@ -77,9 +88,9 @@ namespace Timelapse.Dialog
         // If it can't find an ambiguous date, it will return -1.
         private int SearchForNextAmbiguousDateInSelectedImageSet(int startIndex)
         {
-            for (int index = startIndex; index < this.database.CurrentlySelectedFileCount; index++)
+            for (int index = startIndex; index < this.fileDatabase.CurrentlySelectedFileCount; index++)
             {
-                ImageRow image = this.database.FileTable[index];
+                ImageRow image = this.fileDatabase.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
                 if (imageDateTime.Day <= Constant.Time.MonthsInYear)
                 {
@@ -96,23 +107,23 @@ namespace Timelapse.Dialog
         private int GetLastImageOnSameDay(int startIndex, out int count)
         {
             count = 1; // We start at 1 as we have at least one image (the starting image) with this date
-            int lastMatchingDate = -1;
+            int lastMatchingDate;
 
             // Check if index is in range
-            if (startIndex >= this.database.CurrentlySelectedFileCount || startIndex < 0)
+            if (startIndex >= this.fileDatabase.CurrentlySelectedFileCount || startIndex < 0)
             {
                 return -1;   // The index is out of range.
             }
 
             // Parse the provided starting date. Return -1 if it cannot.
-            ImageRow image = this.database.FileTable[startIndex];
+            ImageRow image = this.fileDatabase.FileTable[startIndex];
             DateTimeOffset desiredDateTime = image.DateTimeIncorporatingOffset;
 
             lastMatchingDate = startIndex;
-            for (int index = startIndex + 1; index < this.database.CurrentlySelectedFileCount; index++)
+            for (int index = startIndex + 1; index < this.fileDatabase.CurrentlySelectedFileCount; index++)
             {
                 // Parse the date for the given row.
-                image = this.database.FileTable[index];
+                image = this.fileDatabase.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
 
                 if (desiredDateTime.Date == imageDateTime.Date)
@@ -165,7 +176,7 @@ namespace Timelapse.Dialog
             this.ambiguousDatesListIndex = index;
 
             // We found an ambiguous date; provide appropriate feedback
-            image = this.database.FileTable[this.ambiguousDatesList[index].StartRange];
+            image = this.fileDatabase.FileTable[this.ambiguousDatesList[index].StartRange];
             this.OriginalDateLabel.Content = image.DateTimeIncorporatingOffset.Date;
 
             // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
@@ -174,7 +185,7 @@ namespace Timelapse.Dialog
             this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
             // Display the image. While we expect it to be on a valid image (our assumption), we can still show a missing or corrupted file if needed
-            this.Image.Source = image.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing);
+            this.Image.Source = image.LoadBitmap(this.fileDatabase.FolderPath, out _);
             this.FileName.Content = image.File;
             this.FileName.ToolTip = image.File;
 
@@ -193,7 +204,7 @@ namespace Timelapse.Dialog
             if (isAmbiguousDate)
             {
                 ImageRow image;
-                image = this.database.FileTable[this.ambiguousDatesList[this.ambiguousDatesListIndex].StartRange];
+                image = this.fileDatabase.FileTable[this.ambiguousDatesList[this.ambiguousDatesListIndex].StartRange];
                 this.OriginalDateLabel.Content = DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date);
 
                 // If we can't swap the date, we just return the original unaltered date. However, we expect that swapping would always work at this point.
@@ -202,7 +213,7 @@ namespace Timelapse.Dialog
                 this.NumberOfImagesWithSameDate.Content = this.ambiguousDatesList[this.ambiguousDatesListIndex].Count.ToString();
 
                 // Display the image. While we expect it to be on a valid image (our assumption), we can still show a missing or corrupted file if needed
-                this.Image.Source = image.LoadBitmap(this.database.FolderPath, out bool isCorruptOrMissing);
+                this.Image.Source = image.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
                 this.FileName.Content = image.File;
                 this.FileName.ToolTip = image.File;
 
@@ -228,7 +239,6 @@ namespace Timelapse.Dialog
                 this.Image.Source = null;
             }
         }
-        #endregion
 
         private void PreviewDateTimeChanges()
         {
@@ -239,8 +249,8 @@ namespace Timelapse.Dialog
             foreach (AmbiguousDate ambiguousDate in this.ambiguousDatesList)
             {
                 ImageRow image;
-                image = this.database.FileTable[ambiguousDate.StartRange];
-                string newDate = String.Empty;
+                image = this.fileDatabase.FileTable[ambiguousDate.StartRange];
+                string newDate;
                 if (ambiguousDate.Swapped)
                 {
                     DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate);
@@ -255,6 +265,7 @@ namespace Timelapse.Dialog
             this.DateChangeFeedback.Column2Name = "Current date";
             this.DateChangeFeedback.Column3Name = "New date";
         }
+        #endregion
 
         // Actually update the dates as needed
         private void ApplyDateTimeChanges()
@@ -263,10 +274,11 @@ namespace Timelapse.Dialog
             {
                 if (ambDate.Swapped)
                 {
-                    this.database.ExchangeDayAndMonthInFileDates(ambDate.StartRange, ambDate.EndRange);
+                    this.fileDatabase.ExchangeDayAndMonthInFileDates(ambDate.StartRange, ambDate.EndRange);
                 }
             }
         }
+
         #region UI Callbacks
         // This handler is triggered only when the radio button state is changed. This means
         // we should swap the dates regardless of which radio button was actually pressed.
@@ -323,6 +335,12 @@ namespace Timelapse.Dialog
                 ambDate.Swapped = true;
             }
             this.UpdateDisplay(true);
+        }
+
+        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Set this so that it will be caught in the above await task
+            this.TokenSource.Cancel();
         }
         #endregion
 

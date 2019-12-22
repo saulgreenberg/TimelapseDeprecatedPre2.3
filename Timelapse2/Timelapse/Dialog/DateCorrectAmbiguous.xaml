@@ -1,11 +1,12 @@
-﻿<Window x:Class="Timelapse.Dialog.DateCorrectAmbiguous"
+﻿<controls:DialogWindow x:Class="Timelapse.Dialog.DateCorrectAmbiguous"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
-        mc:Ignorable="d"
+                       xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
+                       mc:Ignorable="d"
         Title="Check and correct ambiguous dates" 
 		MinHeight="600" MinWidth="768"
 		Height="856" Width="768"
@@ -13,13 +14,14 @@
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-    <controls:StockMessageControl Grid.Row="0" x:Name="Message"
+        <Grid  Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <controls:StockMessageControl Grid.Row="0" x:Name="Message"
                             Title="Check and Correct Ambiguous Dates"
                             Icon="Question"
                             Problem="Timelapse may have interpretted the Day/Month as Month/Day for days of the month that are 12 or less."
@@ -35,53 +37,77 @@
 &#10;&#x2022; Reload your image set from scratch, or Select 'Edit/DateCorrection/Reread Dates from files...'. Check the result."
                             Result="Date corrections will be applied to all images and videos taken on those days."
                             ShowExplanationVisibility="True"/>
-        <Rectangle Grid.Row="1" Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
-        <DockPanel Name="PrimaryPanel" Grid.Row="2">
-            <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-                <Grid Name="gridImageArea">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+            <Rectangle Grid.Row="1" Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
+            <DockPanel Name="PrimaryPanel" Grid.Row="2">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
+                    <Grid Name="gridImageArea">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
 
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Width="200">
-                        <Label Content="Sample file:" Margin="10,0,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="12" FontWeight="Bold" />
-                        <Label Name="FileName" Content="[ --- file name --- ]" VerticalAlignment="Bottom" HorizontalContentAlignment="Left" HorizontalAlignment="Left"  FontSize="12" FontWeight="Normal" Grid.Row="0" Grid.Column="1"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
-                        <Label Content="# files with this date:" VerticalAlignment="Top" Margin="10,0,0,0" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"/>
-                        <Label Name="NumberOfImagesWithSameDate" VerticalAlignment="Top" Content="count" Margin="5,0,0,0" FontSize="12" HorizontalAlignment="Left" HorizontalContentAlignment="Left" Grid.Row="1" Grid.Column="1"/>
-                    </StackPanel>
-                    <RadioButton Name="OriginalDate" GroupName="DateOptions"  Content="Current date:" FontWeight="Bold" VerticalAlignment="Center" IsChecked="True" Grid.Row="0" Grid.Column="1"  Margin="30,2,0,0"/>
-                    <Label Name="OriginalDateLabel" MinWidth="88" Content="dd-mmm-yyyy"  VerticalAlignment="Bottom" FontWeight="Normal" FontSize="12" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="2" ToolTip="The original date recorded for all images taken this date" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Width="200">
+                            <Label Content="Sample file:" Margin="10,0,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="12" FontWeight="Bold" />
+                            <Label Name="FileName" Content="[ --- file name --- ]" VerticalAlignment="Bottom" HorizontalContentAlignment="Left" HorizontalAlignment="Left"  FontSize="12" FontWeight="Normal" Grid.Row="0" Grid.Column="1"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
+                            <Label Content="# files with this date:" VerticalAlignment="Top" Margin="10,0,0,0" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"/>
+                            <Label Name="NumberOfImagesWithSameDate" VerticalAlignment="Top" Content="count" Margin="5,0,0,0" FontSize="12" HorizontalAlignment="Left" HorizontalContentAlignment="Left" Grid.Row="1" Grid.Column="1"/>
+                        </StackPanel>
+                        <RadioButton Name="OriginalDate" GroupName="DateOptions"  Content="Current date:" FontWeight="Bold" VerticalAlignment="Center" IsChecked="True" Grid.Row="0" Grid.Column="1"  Margin="30,2,0,0"/>
+                        <Label Name="OriginalDateLabel" MinWidth="88" Content="dd-mmm-yyyy"  VerticalAlignment="Bottom" FontWeight="Normal" FontSize="12" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="2" ToolTip="The original date recorded for all images taken this date" />
 
-                    <RadioButton Name="SwappedDate"  GroupName="DateOptions" Content="New date:" FontWeight="Bold"  IsChecked="False"  Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Margin="30,6,0,0"/>
-                    <Label  Name="SwappedDateLabel" MinWidth="88" FontWeight="Normal" FontSize="12"  VerticalAlignment="Top" Content="dd-mmm-yyyy" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" ToolTip="The corrected (swapped) date for all images taken this date"/>
-                    <Button Name="PreviousDate" Content="_Previous" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Padding="5" Margin="5" IsEnabled="False" Click="NextPreviousButton_Click" />
-                    <Button Name="NextDate" Content="_Next" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="4" Grid.RowSpan="2" Padding="5" Margin="5" Click="NextPreviousButton_Click" />
-                    <Button Name="btnSwapAll" Content="_Swap all" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="5" Grid.RowSpan="2" Padding="5" Margin="20,5,5,5" Click="SwapAllButton_Click" />
-                </Grid>
-            </StackPanel>
-            <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
-            <DockPanel Name="DockPanelImage" DockPanel.Dock="Top">
-                <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        <RadioButton Name="SwappedDate"  GroupName="DateOptions" Content="New date:" FontWeight="Bold"  IsChecked="False"  Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Margin="30,6,0,0"/>
+                        <Label  Name="SwappedDateLabel" MinWidth="88" FontWeight="Normal" FontSize="12"  VerticalAlignment="Top" Content="dd-mmm-yyyy" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" ToolTip="The corrected (swapped) date for all images taken this date"/>
+                        <Button Name="PreviousDate" Content="_Previous" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Padding="5" Margin="5" IsEnabled="False" Click="NextPreviousButton_Click" />
+                        <Button Name="NextDate" Content="_Next" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="4" Grid.RowSpan="2" Padding="5" Margin="5" Click="NextPreviousButton_Click" />
+                        <Button Name="btnSwapAll" Content="_Swap all" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="5" Grid.RowSpan="2" Padding="5" Margin="20,5,5,5" Click="SwapAllButton_Click" />
+                    </Grid>
+                </StackPanel>
+                <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
+                <DockPanel Name="DockPanelImage" DockPanel.Dock="Top">
+                    <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </DockPanel>
             </DockPanel>
-        </DockPanel>
-        <DockPanel Name="FeedbackPanel" Visibility="Collapsed" Grid.Row="2" >
-            <Label FontSize="14" FontWeight="Bold" Content="The following changes to dates and times will occur if you select Apply Changes." DockPanel.Dock="Top"/>
-            <controls:DateChangesFeedbackControl x:Name="DateChangeFeedback"  DockPanel.Dock="Bottom" ShowDifferenceColumn="False" />
-        </DockPanel>
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Height="80">
-            <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click" IsEnabled="True">_Cancel</Button>
-            <Button Name="PreviewChangesButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" IsEnabled="False" Click="PreviewChangesButton_Click">Preview _Changes</Button>
-        </StackPanel>
+            <DockPanel Name="FeedbackPanel" Visibility="Collapsed" Grid.Row="2" >
+                <Label FontSize="14" FontWeight="Bold" Content="The following changes to dates and times will occur if you select Apply Changes." DockPanel.Dock="Top"/>
+                <controls:DateChangesFeedbackControl x:Name="DateChangeFeedback"  DockPanel.Dock="Bottom" ShowDifferenceColumn="False" />
+            </DockPanel>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Height="80">
+                <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click" IsEnabled="True">_Cancel</Button>
+                <Button Name="PreviewChangesButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" IsEnabled="False" Click="PreviewChangesButton_Click">Preview _Changes</Button>
+            </StackPanel>
+
+        </Grid>
+
+        <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
+        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
+
+            <!-- Construct the new content: A text message, a progress bar and a cancel button -->
+            <xceed:BusyIndicator.BusyContentTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
+                        <Label Content="Please wait..." />
+                        <ProgressBar Value="0" Height="15" />
+                        <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                    </StackPanel>
+                </DataTemplate>
+            </xceed:BusyIndicator.BusyContentTemplate>
+
+            <!-- Collapse its default ProgressBar as we don't use it  -->
+            <xceed:BusyIndicator.ProgressBarStyle >
+                <Style TargetType="ProgressBar">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </xceed:BusyIndicator.ProgressBarStyle>
+        </xceed:BusyIndicator >
     </Grid>
-</Window>
+</controls:DialogWindow>

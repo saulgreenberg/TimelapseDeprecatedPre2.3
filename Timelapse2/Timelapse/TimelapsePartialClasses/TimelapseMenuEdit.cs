@@ -386,7 +386,7 @@ namespace Timelapse
                      this.State.SuppressSelectedAmbiguousDatesPrompt = optOut;
                  }))
             {
-                DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this.dataHandler.FileDatabase, this);
+                DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this, this.dataHandler.FileDatabase);
                 if (dateCorrection.Abort)
                 {
                     MessageBox messageBox = new MessageBox("No ambiguous dates found", this);
