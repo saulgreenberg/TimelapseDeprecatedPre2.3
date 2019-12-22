@@ -215,7 +215,7 @@ namespace Timelapse.Dialog
 
             // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
             // Provide summary feedback 
-            if (this.IsAnyDataUpdated)
+            if (this.IsAnyDataUpdated && this.Token.IsCancellationRequested == false)
             {
                 string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CurrentlySelectedFileCount);
                 feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));

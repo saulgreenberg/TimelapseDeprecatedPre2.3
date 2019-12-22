@@ -326,7 +326,7 @@ namespace Timelapse
                 (bool optOut) => { this.State.SuppressSelectedDaylightSavingsCorrectionPrompt = optOut; }
                 ))
             {
-                DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this);
+                DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache);
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateTimeChange))
                 {
                     this.FilesSelectAndShow();
@@ -348,7 +348,6 @@ namespace Timelapse
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
-                    System.Diagnostics.Debug.Print("Files Select And Show");
                     this.FilesSelectAndShow();
                 }
             }

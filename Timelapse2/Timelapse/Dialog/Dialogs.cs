@@ -138,7 +138,7 @@ namespace Timelapse.Dialog
             messageBox.Message.Solution += "\u2022 'Cancel' to abort";
 
             messageBox.Message.Hint = "This is not an error." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 We are just reminding you that you ave an active selection that is displaying only a subset of your images." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 We are just reminding you that you have an active selection that is displaying only a subset of your images." + Environment.NewLine;
             messageBox.Message.Hint += "\u2022 You can apply this operation to that subset ." + Environment.NewLine;
             messageBox.Message.Hint += "\u2022 However, if you did want to do this operaton for all images, choose the 'Select|All files' menu option.";
 
