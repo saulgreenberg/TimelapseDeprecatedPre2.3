@@ -24,17 +24,18 @@
             <controls:StockMessageControl Grid.Row="0" x:Name="Message"
                             Title="Check and Correct Ambiguous Dates"
                             Icon="Question"
-                            Problem="Timelapse may have interpretted the Day/Month as Month/Day for days of the month that are 12 or less."
-                            Reason="Some  cameras record dates ambiguously, e.g. a date recorded as 01-02-2015 could be either 2-Jan-2015 or 01-Feb-2015.
-&#10;Timelapse relies on your computer's  Windows Control Panel date format to interpret these ambiguous dates. 
-&#10;If that differ from your camera's date format, the month could read as the day and vice-versa."           
-                            Solution="Check each ambiguous date below. You can swap them one by one, or swap them all.
+                            Problem="As date formats are sometimes ambiguous, Timelapse may interpret the date incorrectly."
+                            Reason="An ambiguous date is 01-03-2015, as that could be  interpreted as either 3-Jan-2015 or 01-Mar-2015.
+&#10;Timelapse tries varioous strategies to interpret the date correctly, with one method relying on your computer's  
+&#10;Windows Control Panel date format is set. Incorrect interpretations are possible, where the day/month are swapped."           
+Solution="The dialog below lists ambiguous dates. If the first one you see is correct, they are likely all correct. But... 
+&#10;&#x2022; Check each ambiguous date: Use Previous/Next to display - and correct if needed - each date.
+&#10;&#x2022; Swap all ambiguous dates: swaps the month/day for all ambiguous dates. You can still review them using previous/next.          
 &#10;&#x2022; Click 'Preview Changes' to see a summary of what dates will be changed. 
-&#10;&#x2022; Click 'Apply' to actually do the changes: all images/videos with those dates will be swapped.
-&#10;&#10;Alternately,
-&#10;&#x2022; Change the short date format in the Windows Control Panel to match the date format seen in your images 
+&#10;&#x2022; Click 'Apply' to actually do the changes: all files with those dates will be swapped.
+&#10;&#10;Alternately, change the short date format in the Windows Control Panel to match the date format seen in your images 
 &#10;   e.g., from dd/MM/yyyy to yyyy-MM-dd
-&#10;&#x2022; Reload your image set from scratch, or Select 'Edit/DateCorrection/Reread Dates from files...'. Check the result."
+&#10;&#x2022; Then select 'Edit/DateCorrection/Reread Dates from files...'. Check the result, as it may not work."
                             Result="Date corrections will be applied to all images and videos taken on those days."
                             ShowExplanationVisibility="True"/>
             <Rectangle Grid.Row="1" Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
@@ -74,7 +75,7 @@
                 </StackPanel>
                 <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
                 <DockPanel Name="DockPanelImage" DockPanel.Dock="Top">
-                    <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"/>
                 </DockPanel>
             </DockPanel>
             <DockPanel Name="FeedbackPanel" Visibility="Collapsed" Grid.Row="2" >

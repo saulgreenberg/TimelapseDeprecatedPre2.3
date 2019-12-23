@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -268,16 +270,80 @@ namespace Timelapse.Dialog
         #endregion
 
         // Actually update the dates as needed
-        private void ApplyDateTimeChanges()
+        private async Task ApplyDateTimeChangesAsync()
         {
-            foreach (AmbiguousDate ambDate in this.ambiguousDatesList)
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                if (ambDate.Swapped)
+                // Update the progress bar
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
+            await Task.Run(() =>
+            {
+                int count = this.ambiguousDatesList.Count;
+                int dateIndex = 0;
+                foreach (AmbiguousDate ambDate in this.ambiguousDatesList)
                 {
-                    this.fileDatabase.ExchangeDayAndMonthInFileDates(ambDate.StartRange, ambDate.EndRange);
+                    // Provide progress bar feedback
+                    if (ambDate.Swapped)
+                    {
+                        this.fileDatabase.ExchangeDayAndMonthInFileDates(ambDate.StartRange, ambDate.EndRange);
+                    }
+                    // Provide feedback if the operation was cancelled during the database update
+                    // Update the progress bar every time interval to indicate what file we are working on
+                    if (this.ReadyToRefresh())
+                    {
+                        dateIndex++;
+                        int percentDone = Convert.ToInt32(dateIndex / Convert.ToDouble(count) * 100.0);
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Swapping day with month for {0} / {1} ambiguous dates", dateIndex, count)));
+                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                    }
+                    // We don't do anything with the cancellation token, as we are actually updating the database at this point
+                    // and don't want a partially done update.
+                    //if (Token.IsCancellationRequested == true)
+                    //{
+                    //    return;
+                    //}
                 }
+            }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
+        }
+
+        #region ProgressBar helper
+        // Show progress information in the progress bar, and to enable or disable its cancel button
+        private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
+        {
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
+            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+
+            if (bar != null & percent < 100)
+            {
+                // Treat it as a progressive progress bar
+                bar.Value = percent;
+                bar.IsIndeterminate = false;
+            }
+            else
+            {
+                // If its at 100%, treat it as a random bar
+                bar.IsIndeterminate = true;
+            }
+
+            // Update the text message
+            if (textMessage != null)
+            {
+                textMessage.Content = message;
+            }
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            if (cancelButton != null)
+            {
+                cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
             }
         }
+        #endregion
 
         #region UI Callbacks
         // This handler is triggered only when the radio button state is changed. This means
@@ -300,8 +366,9 @@ namespace Timelapse.Dialog
             this.PreviewChangesButton.IsEnabled = swappedDatesAvailable != null;
         }
 
-        private void PreviewChangesButton_Click(object sender, RoutedEventArgs e)
+        private async void PreviewChangesButton_Click(object sender, RoutedEventArgs e)
         {
+           
             // 1st click: Show the preview before actually making any changes.
             if (this.displayingPreview == false)
             {
@@ -312,7 +379,11 @@ namespace Timelapse.Dialog
             }
 
             // 2nd click: Make the changes
-            this.ApplyDateTimeChanges();
+            this.CloseButtonIsEnabled(false);
+            this.BusyIndicator.IsBusy = true;
+            await this.ApplyDateTimeChangesAsync().ConfigureAwait(true);
+            this.BusyIndicator.IsBusy = false;
+            this.CloseButtonIsEnabled(true);
             this.DialogResult = true;
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
