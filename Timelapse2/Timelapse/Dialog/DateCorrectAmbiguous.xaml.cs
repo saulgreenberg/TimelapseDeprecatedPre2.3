@@ -24,6 +24,9 @@ namespace Timelapse.Dialog
         private readonly List<AmbiguousDate> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
         private int ambiguousDatesListIndex;
 
+        // Tracks whether any changes to the data or database are made
+        private bool IsAnyDataUpdated = false;
+
         private bool displayingPreview; // Whether we are displaying the preview Pane
         public bool Abort { get; set; } // Whether the operation is aborted, ie., because there are no ambiguous dates
 
@@ -56,7 +59,13 @@ namespace Timelapse.Dialog
             }
             else
             {
+                // Since there are no ambiguous dates, we are pretty well done!
+                this.PrimaryPanel.Visibility = Visibility.Collapsed;
+                this.NoAmbiguousDatesPanel.Visibility = Visibility.Visible;
                 this.Abort = true;
+                this.StartDoneButton.Visibility = Visibility.Collapsed;
+                this.CancelButton.Content = "Done";
+                this.Height = this.MinHeight;
             }
 
             // Start displaying from the first ambiguous date.
@@ -363,28 +372,31 @@ namespace Timelapse.Dialog
 
             // Enable previews only when there is something to see
             AmbiguousDate swappedDatesAvailable = this.ambiguousDatesList.FirstOrDefault(a => a.Swapped == true);
-            this.PreviewChangesButton.IsEnabled = swappedDatesAvailable != null;
+            this.StartDoneButton.IsEnabled = swappedDatesAvailable != null;
         }
 
-        private async void PreviewChangesButton_Click(object sender, RoutedEventArgs e)
+        private async void StartDoneButton_Click(object sender, RoutedEventArgs e)
         {
            
             // 1st click: Show the preview before actually making any changes.
-            if (this.displayingPreview == false)
-            {
-                this.displayingPreview = true;
-                this.PreviewDateTimeChanges();
-                this.PreviewChangesButton.Content = "_Apply Changes";
-                return;
-            }
+            //if (this.displayingPreview == false)
+            //{
+            //    this.displayingPreview = true;
+            //    this.PreviewDateTimeChanges();
+            //    this.StartDoneButton.Content = "_Apply Changes";
+            //    return;
+            //}
 
             // 2nd click: Make the changes
+            this.displayingPreview = true;
+            this.PreviewDateTimeChanges();
+            this.StartDoneButton.Content = "_Done";
+
             this.CloseButtonIsEnabled(false);
             this.BusyIndicator.IsBusy = true;
             await this.ApplyDateTimeChangesAsync().ConfigureAwait(true);
             this.BusyIndicator.IsBusy = false;
             this.CloseButtonIsEnabled(true);
-            this.DialogResult = true;
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {

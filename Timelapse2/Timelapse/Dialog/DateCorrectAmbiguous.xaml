@@ -30,9 +30,8 @@
 &#10;Windows Control Panel date format is set. Incorrect interpretations are possible, where the day/month are swapped."           
 Solution="The dialog below lists ambiguous dates. If the first one you see is correct, they are likely all correct. But... 
 &#10;&#x2022; Check each ambiguous date: Use Previous/Next to display - and correct if needed - each date.
-&#10;&#x2022; Swap all ambiguous dates: swaps the month/day for all ambiguous dates. You can still review them using previous/next.          
-&#10;&#x2022; Click 'Preview Changes' to see a summary of what dates will be changed. 
-&#10;&#x2022; Click 'Apply' to actually do the changes: all files with those dates will be swapped.
+&#10;&#x2022; Swap All: swaps the month/day for all ambiguous dates. You can still review them using previous/next.          
+&#10;&#x2022; Click 'Start' to update files with the new dates. 
 &#10;&#10;Alternately, change the short date format in the Windows Control Panel to match the date format seen in your images 
 &#10;   e.g., from dd/MM/yyyy to yyyy-MM-dd
 &#10;&#x2022; Then select 'Edit/DateCorrection/Reread Dates from files...'. Check the result, as it may not work."
@@ -79,14 +78,15 @@ Solution="The dialog below lists ambiguous dates. If the first one you see is co
                 </DockPanel>
             </DockPanel>
             <DockPanel Name="FeedbackPanel" Visibility="Collapsed" Grid.Row="2" >
-                <Label FontSize="14" FontWeight="Bold" Content="The following changes to dates and times will occur if you select Apply Changes." DockPanel.Dock="Top"/>
                 <controls:DateChangesFeedbackControl x:Name="DateChangeFeedback"  DockPanel.Dock="Bottom" ShowDifferenceColumn="False" />
             </DockPanel>
+            <Label Name="NoAmbiguousDatesPanel" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="24" FontWeight="Bold" Content="None of your files have ambiguous dates." DockPanel.Dock="Top"/>
+
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Height="80">
                 <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click" IsEnabled="True">_Cancel</Button>
-                <Button Name="PreviewChangesButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" IsEnabled="False" Click="PreviewChangesButton_Click">Preview _Changes</Button>
+                <Button Name="StartDoneButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" IsEnabled="False" Click="StartDoneButton_Click">Start</Button>
             </StackPanel>
-
+            
         </Grid>
 
         <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
