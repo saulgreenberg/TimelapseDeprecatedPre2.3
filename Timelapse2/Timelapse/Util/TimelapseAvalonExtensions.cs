@@ -365,6 +365,9 @@ namespace Timelapse.Util
         // Try to load a layout from the given resourceFilePath
         private static bool AvalonLayout_TryLoadFromResource(this TimelapseWindow timelapse, string resourceFilePath)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
             XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
             Uri uri = new Uri(resourceFilePath);
             try

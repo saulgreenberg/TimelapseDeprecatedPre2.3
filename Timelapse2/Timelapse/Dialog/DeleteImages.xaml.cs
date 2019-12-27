@@ -80,7 +80,7 @@ namespace Timelapse.Dialog
             this.Height = 600;
             this.MinHeight = 600;
             this.ImageViewer.Margin = new Thickness(20, 0, 0, 0);
-            this.ImageViewer.Source = imageRow.LoadBitmap(this.database.FolderPath, Constant.ImageValues.ThumnnailWidthWhenNavigating, out bool isCorruptOrMissing);
+            this.ImageViewer.Source = imageRow.LoadBitmap(this.database.FolderPath, Constant.ImageValues.ThumbnailWidthWhenNavigating, out bool isCorruptOrMissing);
 
             // Show  the deleted file name and image in the interface
             this.maxPathLength = 70;

@@ -205,7 +205,7 @@ namespace Timelapse.Dialog
             this.CancelButton.Visibility = Visibility.Hidden;
             this.StartDoneButton.Content = "_Done";
             this.StartDoneButton.Click -= this.Start_Click;
-            this.StartDoneButton.Click += this.DoneButton_Click;
+            this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
             this.CloseButtonIsEnabled(false);
@@ -229,7 +229,7 @@ namespace Timelapse.Dialog
             this.CloseButtonIsEnabled(true);
         }
 
-        private void DoneButton_Click(object sender, RoutedEventArgs e)
+        private void Done_Click(object sender, RoutedEventArgs e)
         {
 
             // We return true if the database was altered but also if there was a cancellation, as a cancelled operation

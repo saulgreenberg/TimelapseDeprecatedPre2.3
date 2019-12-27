@@ -70,7 +70,8 @@ namespace Timelapse.Dialog
                 {
                     status = "Unchanged";
                 }
-                this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
+                // SAULXXX MODIFIED THIS, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
+                // this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
             }
         }
 

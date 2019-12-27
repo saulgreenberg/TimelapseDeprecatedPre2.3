@@ -25,66 +25,31 @@
                             Title="Check and Correct Ambiguous Dates"
                             Icon="Question"
                             Problem="As date formats are sometimes ambiguous, Timelapse may interpret the date incorrectly."
-                            Reason="An ambiguous date is 01-03-2015, as that could be  interpreted as either 3-Jan-2015 or 01-Mar-2015.
-&#10;Timelapse tries varioous strategies to interpret the date correctly, with one method relying on your computer's  
+                            Reason="An ambiguous date example is 01-03-2015, as that could be  interpreted as either 3-Jan-2015 or 01-Mar-2015.
+&#10;Timelapse tries varioous strategies to interpret the date correctly, with one method relying on how your computer's  
 &#10;Windows Control Panel date format is set. Incorrect interpretations are possible, where the day/month are swapped."           
-Solution="The dialog below lists ambiguous dates. If the first one you see is correct, they are likely all correct. But... 
-&#10;&#x2022; Check each ambiguous date: Use Previous/Next to display - and correct if needed - each date.
-&#10;&#x2022; Swap All: swaps the month/day for all ambiguous dates. You can still review them using previous/next.          
-&#10;&#x2022; Click 'Start' to update files with the new dates. 
-&#10;&#10;Alternately, change the short date format in the Windows Control Panel to match the date format seen in your images 
-&#10;   e.g., from dd/MM/yyyy to yyyy-MM-dd
-&#10;&#x2022; Then select 'Edit/DateCorrection/Reread Dates from files...'. Check the result, as it may not work."
+Solution="Ambiguous dates and the # of files with that date are listed below. If they look ok, select Cancel. Otherwise, 
+&#10;&#x2022; Check the dates as listed below. Hover over each row to view a sample image with that date.
+&#10;&#x2022; Select the rows where the day/month should be swapped, or 'Select all' to select and swap all of them.          
+&#10;&#x2022; Click 'Start' to update the selected current dates with the new dates."
                             Result="Date corrections will be applied to all images and videos taken on those days."
+                            Hint="Check if the short date format in your Windows Control Panel is set to yyyy-MM-dd"
                             ShowExplanationVisibility="True"/>
             <Rectangle Grid.Row="1" Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
-            <DockPanel Name="PrimaryPanel" Grid.Row="2">
-                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-                    <Grid Name="gridImageArea">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
 
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0" Width="200">
-                            <Label Content="Sample file:" Margin="10,0,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="12" FontWeight="Bold" />
-                            <Label Name="FileName" Content="[ --- file name --- ]" VerticalAlignment="Bottom" HorizontalContentAlignment="Left" HorizontalAlignment="Left"  FontSize="12" FontWeight="Normal" Grid.Row="0" Grid.Column="1"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
-                            <Label Content="# files with this date:" VerticalAlignment="Top" Margin="10,0,0,0" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0"/>
-                            <Label Name="NumberOfImagesWithSameDate" VerticalAlignment="Top" Content="count" Margin="5,0,0,0" FontSize="12" HorizontalAlignment="Left" HorizontalContentAlignment="Left" Grid.Row="1" Grid.Column="1"/>
-                        </StackPanel>
-                        <RadioButton Name="OriginalDate" GroupName="DateOptions"  Content="Current date:" FontWeight="Bold" VerticalAlignment="Center" IsChecked="True" Grid.Row="0" Grid.Column="1"  Margin="30,2,0,0"/>
-                        <Label Name="OriginalDateLabel" MinWidth="88" Content="dd-mmm-yyyy"  VerticalAlignment="Bottom" FontWeight="Normal" FontSize="12" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="2" ToolTip="The original date recorded for all images taken this date" />
-
-                        <RadioButton Name="SwappedDate"  GroupName="DateOptions" Content="New date:" FontWeight="Bold"  IsChecked="False"  Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Margin="30,6,0,0"/>
-                        <Label  Name="SwappedDateLabel" MinWidth="88" FontWeight="Normal" FontSize="12"  VerticalAlignment="Top" Content="dd-mmm-yyyy" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" ToolTip="The corrected (swapped) date for all images taken this date"/>
-                        <Button Name="PreviousDate" Content="_Previous" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="3" Grid.RowSpan="2" Padding="5" Margin="5" IsEnabled="False" Click="NextPreviousButton_Click" />
-                        <Button Name="NextDate" Content="_Next" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="4" Grid.RowSpan="2" Padding="5" Margin="5" Click="NextPreviousButton_Click" />
-                        <Button Name="btnSwapAll" Content="_Swap all" Width="75" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="5" Grid.RowSpan="2" Padding="5" Margin="20,5,5,5" Click="SwapAllButton_Click" />
-                    </Grid>
+            <DockPanel Name="FeedbackPanel" Visibility="Visible" Grid.Row="2" >
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="Auto" HorizontalAlignment="Left">
+                    <CheckBox Name="ButtonSelectAll" Content="_Select all" HorizontalAlignment="Left" VerticalContentAlignment ="Center" Padding="5" Margin="20,5,5,5" Click="SelectAll_Click" />
                 </StackPanel>
-                <Rectangle Fill="#FF868686" Height="2" DockPanel.Dock="Top"/>
-                <DockPanel Name="DockPanelImage" DockPanel.Dock="Top">
-                    <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DockPanel.Dock="Top"/>
-                </DockPanel>
+                <controls:DateChangesFeedbackControl x:Name="DateChangeFeedback"  DockPanel.Dock="Bottom" ShowDifferenceColumn="False" MouseLeftButtonUp="DateChangeFeedback_MouseLeftButtonUp">
+                </controls:DateChangesFeedbackControl> 
             </DockPanel>
-            <DockPanel Name="FeedbackPanel" Visibility="Collapsed" Grid.Row="2" >
-                <controls:DateChangesFeedbackControl x:Name="DateChangeFeedback"  DockPanel.Dock="Bottom" ShowDifferenceColumn="False" />
-            </DockPanel>
+            
             <Label Name="NoAmbiguousDatesPanel" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="24" FontWeight="Bold" Content="None of your files have ambiguous dates." DockPanel.Dock="Top"/>
 
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Height="80">
-                <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click" IsEnabled="True">_Cancel</Button>
-                <Button Name="StartDoneButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" IsEnabled="False" Click="StartDoneButton_Click">Start</Button>
+                <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+                <Button Name="StartDoneButton" IsDefault="True" AutomationProperties.AutomationId="OkButton" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="Start_Click">Start</Button>
             </StackPanel>
             
         </Grid>

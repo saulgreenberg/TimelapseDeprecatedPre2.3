@@ -354,7 +354,8 @@ namespace Timelapse.Constant
         public const int LargeNumberOfDeletedImages = 30;
 
         // Image sizes
-        public const int ThumnnailWidthWhenNavigating = 300;
+        public const int TooltipWidth = 480;
+        public const int ThumbnailWidthWhenNavigating = 300;
         public const int ThumbnailWidth = 128;
 
         public static readonly Lazy<BitmapImage> Corrupt = ImageValues.Load("Corrupted.jpg");

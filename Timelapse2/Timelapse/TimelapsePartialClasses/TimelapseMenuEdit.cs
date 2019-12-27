@@ -387,17 +387,6 @@ namespace Timelapse
                  }))
             {
                 DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this, this.dataHandler.FileDatabase);
-                if (dateCorrection.Abort)
-                {
-                    MessageBox messageBox = new MessageBox("No ambiguous dates found", this);
-                    messageBox.Message.What = "No ambiguous dates found.";
-                    messageBox.Message.Reason = "All of the images in this selected view have unambguous date fields." + Environment.NewLine;
-                    messageBox.Message.Result = "No corrections needed, and no changes have been made." + Environment.NewLine;
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.ShowDialog();
-                    messageBox.Close();
-                    return;
-                }
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateCorrection))
                 {
                     this.FilesSelectAndShow();
