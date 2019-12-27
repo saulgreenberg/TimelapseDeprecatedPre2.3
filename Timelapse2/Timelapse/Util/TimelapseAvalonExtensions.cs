@@ -120,6 +120,8 @@ namespace Timelapse.Util
                         timelapse.DataEntryControlPanel.FloatingLeft = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
                     }
                     // This cause the above values to 'stick'
+                    // We have to dock it first, then float it as otherwise it can crash.
+                    timelapse.DataEntryControlPanel.Dock();
                     timelapse.DataEntryControlPanel.Float();
                 }
             }
