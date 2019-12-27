@@ -71,8 +71,7 @@ namespace Timelapse.Dialog
                 string newDate;
                 DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate);
                 newDate = DateTimeHandler.ToDisplayDateString(swappedDate.Date);
-                string numFilesWithThatDate = ambiguousDateRange.Count.ToString() + " file";
-                numFilesWithThatDate += (ambiguousDateRange.Count > 1) ? "s" : String.Empty;
+                string numFilesWithThatDate = ambiguousDateRange.Count.ToString();
                 this.DateChangeFeedback.AddFeedbackRow(image.File, DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date), newDate, numFilesWithThatDate, image, ambiguousDateRange);
             }
         }

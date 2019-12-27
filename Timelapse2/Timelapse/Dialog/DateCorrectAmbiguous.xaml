@@ -26,10 +26,11 @@
                             Icon="Question"
                             Problem="As date formats are sometimes ambiguous, Timelapse may interpret the date incorrectly."
                             Reason="An ambiguous date example is 01-03-2015, as that could be  interpreted as either 3-Jan-2015 or 01-Mar-2015.
-&#10;Timelapse tries varioous strategies to interpret the date correctly, with one method relying on how your computer's  
+&#10;Timelapse tries various strategies to interpret the date correctly, with one method relying on how your computer's  
 &#10;Windows Control Panel date format is set. Incorrect interpretations are possible, where the day/month are swapped."           
 Solution="Ambiguous dates and the # of files with that date are listed below. If they look ok, select Cancel. Otherwise, 
-&#10;&#x2022; Check the dates as listed below. Hover over each row to view a sample image with that date.
+&#10;&#x2022; Check the current vs. the new dates (where day/month is re-interpretted as month/day). 
+&#10;&#x2022; Hovering over a row displays a sample image with that date.
 &#10;&#x2022; Select the rows where the day/month should be swapped, or 'Select all' to select and swap all of them.          
 &#10;&#x2022; Click 'Start' to update the selected current dates with the new dates."
                             Result="Date corrections will be applied to all images and videos taken on those days."

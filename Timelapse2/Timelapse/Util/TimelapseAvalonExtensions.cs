@@ -103,7 +103,6 @@ namespace Timelapse.Util
 
             // Force an update to the DataEntryControlPanel if its visible, as the above doesn't trigger it
             timelapse.DataEntryControlPanel.IsVisible = true;
-            // timelapse.DataEntryControls.Visibility= Visibility.Visible;
 
             // Special case for DataEntryFloating:
             // Reposition the floating window in the middle of the main window, but just below the top
@@ -112,6 +111,9 @@ namespace Timelapse.Util
             {
                 if (timelapse.DockingManager.FloatingWindows.Any())
                 {
+                    // BUG. This doesn't work, although it used to in older versions of AvalonDock.
+                    // It seems we need to call Float() to get these positions to 'stick', as otherwise the positions are done
+                    // relative to the primary screen. But if we call Float, it crashes as PreviousParent is null (in Float) 
                     foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
                     {
                         // We set the DataEntry Control Panel top / left as it remembers the values (i.e. so the layout will be saved correctly later)
@@ -119,10 +121,8 @@ namespace Timelapse.Util
                         timelapse.DataEntryControlPanel.FloatingTop = timelapse.Top + 100;
                         timelapse.DataEntryControlPanel.FloatingLeft = timelapse.Left + ((timelapse.Width - floatingWindow.Width) / 2.0);
                     }
-                    // This cause the above values to 'stick'
-                    // We have to dock it first, then float it as otherwise it can crash.
-                    timelapse.DataEntryControlPanel.Dock();
-                    timelapse.DataEntryControlPanel.Float();
+                    // This used to cause the above values to 'stick', but it no longer works.
+                    //timelapse.DataEntryControlPanel.Float();
                 }
             }
             return true;
