@@ -8,7 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Controls;
+using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -19,9 +21,9 @@ namespace Timelapse.Database
     public class FileDatabase : TemplateDatabase
     {
         #region Private variables
-        private DataGrid boundGrid;
+        public DataGrid boundGrid;
         private bool disposed;
-        private DataRowChangeEventHandler onFileDataTableRowChanged;
+        public DataRowChangeEventHandler onFileDataTableRowChanged;
         // These two dictionaries mirror the contents of the detectionCategory and classificationCategory database table
         // for faster access
         private Dictionary<string, string> detectionCategoriesDictionary = null;
@@ -118,7 +120,7 @@ namespace Timelapse.Database
         /// Assumes that the database has already been opened and that the Template Table is loaded, where the DataLabel always has a valid value.
         /// Then create both the ImageSet table and the Markers table
         /// </summary>
-        protected override void OnDatabaseCreated(TemplateDatabase templateDatabase)
+        protected override async void OnDatabaseCreated(TemplateDatabase templateDatabase)
         {
             // copy the template's TemplateTable
             base.OnDatabaseCreated(templateDatabase);
@@ -178,7 +180,8 @@ namespace Timelapse.Database
             // create the Files table
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
-            this.SelectFiles(FileSelectionEnum.All);
+            await this.SelectFiles(FileSelectionEnum.All).ConfigureAwait(true) ;
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
 
             // Create the MarkersTable and initialize it from the template table
             columnDefinitions.Clear();
@@ -507,7 +510,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability()
+        private async void UpgradeDatabasesForBackwardsCompatability()
         {
             // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
             // Instead, we operate directly on the database. There is only one exception (updating DateTime),
@@ -670,7 +673,8 @@ namespace Timelapse.Database
                 // PERFORMANCE, BUT RARE: We invoke this to update various date/time values on all rows based on existing values. However, its rarely called
                 // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
                 // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
-                this.SelectFiles(FileSelectionEnum.All);
+                await this.SelectFiles(FileSelectionEnum.All).ConfigureAwait(true);
+                this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
                 foreach (ImageRow image in this.FileTable)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
@@ -842,133 +846,156 @@ namespace Timelapse.Database
         /// Rebuild the file table with all files in the database table which match the specified selection.
         /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.
         /// </summary>
-        public void SelectFiles(FileSelectionEnum selection)
+        public async Task SelectFiles(FileSelectionEnum selection)
         {
-            string query = String.Empty;
-            bool useStandardQuery = false;
-            if (this.CustomSelection == null)
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                useStandardQuery = true;
-            }
-            else
-            {
-                this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
-                if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(Util.GlobalReferences.BusyIndicator);
+                TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(Util.GlobalReferences.BusyIndicator);
+                if (bar != null)
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
-                    // Select covers queries including detections and mising detections
-                    // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
-                        Sql.From + Constant.DBTables.FileData +
-                        Sql.LeftJoin + Constant.DBTables.Detections +
-                        Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+                    bar.Value = 100;
                 }
-                else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (textmessage != null)
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
-                    // Select covers queries including detections 
-                    // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
-                         Sql.From + Constant.DBTables.Detections +
-                         Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
-                         Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
-                         Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
+                    textmessage.Text = "Selecting files using: " + Enum.GetName(typeof(FileSelectionEnum), selection) + ". Please wait...";
+                }
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
+            await Task.Run(() =>
+            {
+                progress.Report(new ProgressBarArguments(100, String.Empty, false, true));
+                Thread.Sleep(2000);
+                string query = String.Empty;
+                bool useStandardQuery = false;
+                if (this.CustomSelection == null)
+                {
+                    useStandardQuery = true;
                 }
                 else
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
-                    useStandardQuery = true;
-                }
-            }
-
-            if (useStandardQuery)
-            {
-                query = Sql.SelectStarFrom + Constant.DBTables.FileData;
-            }
-
-            if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
-            {
-                string conditionalExpression = this.GetFilesConditionalExpression(selection);
-                if (String.IsNullOrEmpty(conditionalExpression) == false)
-                {
-                    query += conditionalExpression;
-                }
-            }
-
-            // Sort by primary and secondary sort criteria if an image set is actually initialized (i.e., not null)
-            if (this.ImageSet != null)
-            {
-                SortTerm[] sortTerm = new SortTerm[2];
-                string[] term = new string[] { String.Empty, String.Empty };
-
-                // Special case for DateTime sorting.
-                // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
-                // this can result in odd DateTime sorts (assuming intermixed images with similar datetimes but with different UTCOffsets)
-                // where the user is expected sorting by local time. 
-                // To sort by true local time rather then UTC, we need to alter
-                // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
-                // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
-                // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
-                // Given the format of the corrected DateTime
-                for (int i = 0; i <= 1; i++)
-                {
-                    sortTerm[i] = this.ImageSet.GetSortTerm(i);
-
-                    // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
-                    if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
+                    this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
+                    if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                     {
-                        break;
+                        // PERFORMANCE Creates what seems to be a slow query on large databases
+                        // Select covers queries including detections and mising detections
+                        // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+                        query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
+                            Sql.From + Constant.DBTables.FileData +
+                            Sql.LeftJoin + Constant.DBTables.Detections +
+                            Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                            Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                            Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                     }
-                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
+                    else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
                     {
-                        // First Check for special cases, where we want to modify how sorting is done
-                        // DateTime:the modified query adds the UTC Offset to it
-                        term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
-                    }
-                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
-                    {
-                        // File: the modified term creates a file path by concatonating relative path and file
-                        term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
-                    }
-                    else if (sortTerm[i].ControlType == Constant.Control.Counter)
-                    {
-                        // Its a counter type: modify sorting of blanks by transforming it into a '-1' and then by casting it as an integer
-                        term[i] = String.Format("Cast(COALESCE(NULLIF({0}, ''), '-1') as Integer)", sortTerm[i].DataLabel);
+                        // PERFORMANCE Creates what seems to be a slow query on large databases
+                        // Select covers queries including detections 
+                        // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                        query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
+                             Sql.From + Constant.DBTables.Detections +
+                             Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
+                             Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
+                             Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
                     }
                     else
                     {
-                        // Default: just sort by the data label
-                        term[i] = sortTerm[i].DataLabel;
-                    }
-                    // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
-                    if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
-                    {
-                        term[i] += Sql.Descending;
+                        // PERFORMANCE Creates what seems to be a slow query on large databases
+                        useStandardQuery = true;
                     }
                 }
 
-                if (!String.IsNullOrEmpty(term[0]))
+                if (useStandardQuery)
                 {
-                    query += Sql.OrderBy + term[0];
-
-                    // If there is a second sort key, add it here
-                    if (!String.IsNullOrEmpty(term[1]))
-                    {
-                        query += Sql.Comma + term[1];
-                    }
-                    query += Sql.Semicolon;
+                    query = Sql.SelectStarFrom + Constant.DBTables.FileData;
                 }
-            }
 
-            // System.Diagnostics.Debug.Print("Doit: " + query);
-            // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
-            // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
-            // as I am not that savvy in database optimizations.
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            this.FileTable = new FileTable(images);
-            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+                if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
+                {
+                    string conditionalExpression = this.GetFilesConditionalExpression(selection);
+                    if (String.IsNullOrEmpty(conditionalExpression) == false)
+                    {
+                        query += conditionalExpression;
+                    }
+                }
+
+                // Sort by primary and secondary sort criteria if an image set is actually initialized (i.e., not null)
+                if (this.ImageSet != null)
+                {
+                    //progress.Report(new ProgressBarArguments(0, "Selecting Files. Please wait...", false, true));
+                    //Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                    SortTerm[] sortTerm = new SortTerm[2];
+                    string[] term = new string[] { String.Empty, String.Empty };
+
+                    // Special case for DateTime sorting.
+                    // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
+                    // this can result in odd DateTime sorts (assuming intermixed images with similar datetimes but with different UTCOffsets)
+                    // where the user is expected sorting by local time. 
+                    // To sort by true local time rather then UTC, we need to alter
+                    // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
+                    // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
+                    // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
+                    // Given the format of the corrected DateTime
+                    for (int i = 0; i <= 1; i++)
+                    {
+                        sortTerm[i] = this.ImageSet.GetSortTerm(i);
+
+                        // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
+                        if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
+                        {
+                            break;
+                        }
+                        else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
+                        {
+                            // First Check for special cases, where we want to modify how sorting is done
+                            // DateTime:the modified query adds the UTC Offset to it
+                            term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                        }
+                        else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
+                        {
+                            // File: the modified term creates a file path by concatonating relative path and file
+                            term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
+                        }
+                        else if (sortTerm[i].ControlType == Constant.Control.Counter)
+                        {
+                            // Its a counter type: modify sorting of blanks by transforming it into a '-1' and then by casting it as an integer
+                            term[i] = String.Format("Cast(COALESCE(NULLIF({0}, ''), '-1') as Integer)", sortTerm[i].DataLabel);
+                        }
+                        else
+                        {
+                            // Default: just sort by the data label
+                            term[i] = sortTerm[i].DataLabel;
+                        }
+                        // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
+                        if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
+                        {
+                            term[i] += Sql.Descending;
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(term[0]))
+                    {
+                        query += Sql.OrderBy + term[0];
+
+                        // If there is a second sort key, add it here
+                        if (!String.IsNullOrEmpty(term[1]))
+                        {
+                            query += Sql.Comma + term[1];
+                        }
+                        query += Sql.Semicolon;
+                    }
+                }
+
+                // System.Diagnostics.Debug.Print("Doit: " + query);
+                // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
+                // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
+                // as I am not that savvy in database optimizations.
+                DataTable images = this.Database.GetDataTableFromSelect(query);
+                this.FileTable = new FileTable(images);
+                //this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            }).ConfigureAwait(true);
         }
 
         public int CountMissingFilesFromCurrentlySelectedFiles()
