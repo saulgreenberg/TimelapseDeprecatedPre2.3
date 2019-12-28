@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -155,7 +158,7 @@ namespace Timelapse
 
             // This callback is invoked by DeleteImage (which deletes the current image) and DeleteImages (which deletes the images marked by the deletion flag)
             // Thus we need to use two different methods to construct a table containing all the images marked for deletion
-            List<ImageRow> imagesToDelete;
+            List<ImageRow> filesToDelete;
             bool deleteCurrentImageOnly;
             bool deleteFilesAndData;
             if (menuItem.Name.Equals(this.MenuItemDeleteFiles.Name) || menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name))
@@ -165,14 +168,14 @@ namespace Timelapse
                 // get list of all images marked for deletion in the current seletion
                 using (FileTable filetable = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion())
                 {
-                    imagesToDelete = filetable.ToList();
+                    filesToDelete = filetable.ToList();
                 }
 
-                for (int index = imagesToDelete.Count - 1; index >= 0; index--)
+                for (int index = filesToDelete.Count - 1; index >= 0; index--)
                 {
-                    if (this.dataHandler.FileDatabase.FileTable.Find(imagesToDelete[index].ID) == null)
+                    if (this.dataHandler.FileDatabase.FileTable.Find(filesToDelete[index].ID) == null)
                     {
-                        imagesToDelete.Remove(imagesToDelete[index]);
+                        filesToDelete.Remove(filesToDelete[index]);
                     }
                 }
             }
@@ -181,10 +184,10 @@ namespace Timelapse
                 // Delete current image case. Get the ID of the current image and construct a datatable that contains that image's datarow
                 deleteCurrentImageOnly = true;
                 deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteCurrentFileAndData.Name);
-                imagesToDelete = new List<ImageRow>();
+                filesToDelete = new List<ImageRow>();
                 if (this.dataHandler.ImageCache.Current != null)
                 {
-                    imagesToDelete.Add(this.dataHandler.ImageCache.Current);
+                    filesToDelete.Add(this.dataHandler.ImageCache.Current);
                 }
             }
 
@@ -196,7 +199,7 @@ namespace Timelapse
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...
-            if (imagesToDelete == null || imagesToDelete.Count < 1)
+            if (filesToDelete == null || filesToDelete.Count < 1)
             {
                 MessageBox messageBox = new MessageBox("No files are marked for deletion", this);
                 messageBox.Message.Problem = "You are trying to delete files marked for deletion, but no files have their 'Delete?' field checked.";
@@ -205,62 +208,19 @@ namespace Timelapse
                 messageBox.ShowDialog();
                 return;
             }
-
-            DeleteImages deleteImagesDialog = new DeleteImages(this.dataHandler.FileDatabase, imagesToDelete, deleteFilesAndData, deleteCurrentImageOnly, this);
+            long currentFileID = this.dataHandler.ImageCache.Current.ID;
+            DeleteImages deleteImagesDialog = new DeleteImages(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache, this.MarkableCanvas, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();
             if (result == true)
             {
-                // cache the current ID as the current image may be invalidated
-                long currentFileID = this.dataHandler.ImageCache.Current.ID;
-
+                // Delete the files
                 Mouse.OverrideCursor = Cursors.Wait;
-                List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                List<long> imageIDsToDropFromDatabase = new List<long>();
-                foreach (ImageRow image in imagesToDelete)
-                {
-                    // We need to release the file handle to various images as otherwise we won't be able to move them
-                    // First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
-                    if (currentFileID == image.ID)
-                    {
-                        ImageRow.ClearBitmap();
-                    }
-                    // Second, release the image cache   
-                    this.dataHandler.ImageCache.TryInvalidate(image.ID);
-                    // Third, clear images from the multiple image view so it can be moved
-                    this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
-
-                    // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
-                    // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlage and ImageQuality values. 
-                    // SAULXXX A good way is to put an 'image.ImageFileExists' field in, and then do various tests on that.
-                    image.TryMoveFileToDeletedFilesFolder(this.dataHandler.FileDatabase.FolderPath);
-
-                    if (deleteFilesAndData)
-                    {
-                        // mark the image row for dropping
-                        imageIDsToDropFromDatabase.Add(image.ID);
-                    }
-                    else
-                    {
-                        // as only the file was deleted, clear the delete flag
-                        image.DeleteFlag = false;
-                        List<ColumnTuple> columnTuples = new List<ColumnTuple>()
-                        {
-                            new ColumnTuple(Constant.DatabaseColumn.DeleteFlag, Constant.BooleanValue.False),
-                        };
-                        imagesToUpdate.Add(new ColumnTuplesWithWhere(columnTuples, image.ID));
-                    }
-                }
-
-                // Invalidate the overview cache as well, so Missing placeholder will be displayed.
-                this.MarkableCanvas.ClickableImagesGrid.InvalidateCache();
+                // Reload the file datatable. 
+                this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
                 if (deleteFilesAndData)
                 {
-                    // drop images
-                    this.dataHandler.FileDatabase.DeleteFilesAndMarkers(imageIDsToDropFromDatabase);
-
-                    // Reload the file datatable. Then find and show the image closest to the last one shown
-                    this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+                    // Find and show the image closest to the last one shown
                     if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
                     {
                         int nextImageRow = this.dataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID);
@@ -268,16 +228,13 @@ namespace Timelapse
                     }
                     else
                     {
+                        // No images left, so disable everything
                         this.EnableOrDisableMenusAndControls();
                     }
                 }
                 else
                 {
-                    // update image properties
-                    this.dataHandler.FileDatabase.UpdateFiles(imagesToUpdate);
-                    this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
-
-                    // display the updated properties on the current image
+                    // display the updated properties on the current image, or the closest one to it.
                     int nextImageRow = this.dataHandler.FileDatabase.FindClosestImageRow(currentFileID);
                     this.FileShow(nextImageRow);
                 }

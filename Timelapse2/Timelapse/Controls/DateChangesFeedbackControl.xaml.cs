@@ -142,7 +142,7 @@ namespace Timelapse.Controls
             // Load an image from thie image row (specified in the tuple.Tag)
             Image image = new Image()
             {
-                Source = ir.LoadBitmap(this.FolderPath, Constant.ImageValues.TooltipWidth, out bool _)
+                Source = ir.LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth480, out bool _)
             };
             row.ToolTip = image;
         }

@@ -46,7 +46,7 @@ Solution="Ambiguous dates and the # of files with that date are listed below. If
                 </controls:DateChangesFeedbackControl> 
             </DockPanel>
             
-            <Label Name="NoAmbiguousDatesPanel" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="24" FontWeight="Bold" Content="None of your files have ambiguous dates." DockPanel.Dock="Top"/>
+            <Label Name="DoneMessagePanel" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="24" FontWeight="Bold" Content="None of your files have ambiguous dates." DockPanel.Dock="Top"/>
 
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Height="80">
                 <Button Name="CancelButton" IsDefault="True" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>

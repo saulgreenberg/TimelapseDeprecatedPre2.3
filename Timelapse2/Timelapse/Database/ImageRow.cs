@@ -399,7 +399,7 @@ namespace Timelapse.Database
         {
             if (imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating)
             {
-                return this.GetBitmapFromFile(baseFolderPath, Constant.ImageValues.ThumbnailWidth, imageExpectedUsage, out isCorruptOrMissing);
+                return this.GetBitmapFromFile(baseFolderPath, Constant.ImageValues.PreviewWidth128, imageExpectedUsage, out isCorruptOrMissing);
             }
             else
             {
@@ -414,7 +414,7 @@ namespace Timelapse.Database
         public virtual Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage)
         {
             return this.GetBitmapFromFileAsync(baseFolderPath,
-                                               imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.ThumbnailWidth : null,
+                                               imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
                                                imageExpectedUsage);
         }
 

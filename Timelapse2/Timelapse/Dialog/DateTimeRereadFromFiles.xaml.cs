@@ -29,7 +29,7 @@ namespace Timelapse.Dialog
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
 
             this.InitializeComponent();
-            this.Owner = owner;
+
             this.fileDatabase = fileDatabase;
 
             // Tracks whether any changes to the data or database are made
@@ -290,12 +290,7 @@ namespace Timelapse.Dialog
             // The progress bar will be displayed during this process.
             ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
 
-            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
-            this.BusyIndicator.IsBusy = false;
-            this.FeedbackGrid.Visibility = Visibility.Visible;
-            this.FeedbackGrid.ItemsSource = feedbackRows;
-            this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

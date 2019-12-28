@@ -51,7 +51,7 @@ namespace Timelapse.Dialog
             else
             {
                 // Since there are no ambiguous dates, we are pretty well done!
-                this.NoAmbiguousDatesPanel.Visibility = Visibility.Visible;
+                this.DoneMessagePanel.Visibility = Visibility.Visible;
                 this.StartDoneButton.Visibility = Visibility.Collapsed;
                 this.CancelButton.Content = "Done";
                 this.Height = this.MinHeight;
@@ -264,13 +264,13 @@ namespace Timelapse.Dialog
             // Show the final message
             if (totalFileCount > 0)
             { 
-                this.NoAmbiguousDatesPanel.Content = "Dates for " + totalFileCount.ToString() + " files were swapped";
+                this.DoneMessagePanel.Content = "Dates for " + totalFileCount.ToString() + " files were swapped";
             }
             else
             {
-                this.NoAmbiguousDatesPanel.Content = "Nothing changed as no dates were selected.";
+                this.DoneMessagePanel.Content = "Nothing changed as no dates were selected.";
             }
-            this.NoAmbiguousDatesPanel.Visibility = Visibility.Visible;
+            this.DoneMessagePanel.Visibility = Visibility.Visible;
             this.FeedbackPanel.Visibility = Visibility.Collapsed;
             this.Height = this.MinHeight;
         }

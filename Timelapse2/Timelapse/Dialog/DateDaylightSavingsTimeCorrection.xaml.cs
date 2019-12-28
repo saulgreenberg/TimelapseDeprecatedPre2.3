@@ -34,7 +34,6 @@ namespace Timelapse.Dialog
             this.fileDatabase = database;
             this.fileEnumerator = fileEnumerator;
             this.currentImageRow = fileEnumerator.CurrentRow;
-
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -262,7 +261,6 @@ namespace Timelapse.Dialog
         #region Button callbacks
         private void DoneButton_Click(object sender, RoutedEventArgs e)
         {
-
             // We return true if the database was altered but also if there was a cancellation, as a cancelled operation
             // will likely have changed the FileTable (but not database) date entries. Returning true will reset them, as a FileSelectAndShow will be done.
             // Kinda hacky as it expects a certain behaviour of the caller, but it works.
