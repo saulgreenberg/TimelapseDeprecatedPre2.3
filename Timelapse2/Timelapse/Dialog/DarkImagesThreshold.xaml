@@ -108,13 +108,15 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Button Name="PreviousFile" Width="Auto" Grid.Column="0" VerticalAlignment="Center" Padding="4,0,4,0" Margin="10,10,0,10" HorizontalAlignment="Left" FontFamily="Marlett" FontSize="20" Click="PreviousButton_Click">3</Button>
+            <Button Name="PreviousFile" ToolTip="Previous file" Width="Auto" Grid.Column="0" VerticalAlignment="Center" Padding="4,0,4,0" Margin="10,10,0,10" HorizontalAlignment="Left" FontFamily="Marlett" FontSize="20" Click="PreviousButton_Click">3</Button>
             <Slider Name="ScrollImages" Grid.Column="1"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Padding="0" Margin="0,0,0,0" AutoToolTipPlacement="BottomRight"/>
-            <Button Name="NextFile" Width="Auto" Grid.Column="2" VerticalAlignment="Center"  Padding="4,0,4,0" Margin="0,10,40,10" HorizontalAlignment="Right" FontFamily="Marlett" FontSize="20" Click="NextButton_Click">4</Button>
-            <Button Name="CancelButton" Grid.Column="3" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-            <Button Name="ApplyButton" Grid.Column="4" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="ApplyButton_Click">_Apply to selected files</Button>
+            <Button Name="NextFile" ToolTip="Next file" Width="Auto" Grid.Column="2" VerticalAlignment="Center"  Padding="4,0,4,0" Margin="0,10,40,10" HorizontalAlignment="Right" FontFamily="Marlett" FontSize="20" Click="NextButton_Click">4</Button>
+            <Button Name="PlayFile" ToolTip="Play files automatically" Width="Auto" Grid.Column="3" VerticalAlignment="Center"  Padding="4,0,4,0" Margin="0,10,40,10" HorizontalAlignment="Right" FontFamily="Arial" FontSize="20" Click="PlayButton_Click" Content="&#9193;"/>
+            <Button Name="CancelButton" Grid.Column="4" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+            <Button Name="ApplyButton" Grid.Column="5" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="ApplyButton_Click">_Apply to selected files</Button>
         </Grid>
         <Image Name="Image" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both" DockPanel.Dock="Top" HorizontalAlignment="Stretch" />
     </DockPanel>

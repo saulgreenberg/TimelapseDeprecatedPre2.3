@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
@@ -35,6 +36,8 @@ namespace Timelapse.Dialog
         private bool isColor;
         private bool updateImageQualityForAllSelectedImagesStarted;
         private readonly bool stop;
+        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        private bool displatcherTimerIsPlaying = false;
 
         #region Initialization
         public DarkImagesThreshold(TimelapseWindow owner, FileDatabase fileDatabase, TimelapseUserRegistrySettings state, int currentImageIndex) : base(owner)
@@ -57,6 +60,10 @@ namespace Timelapse.Dialog
             this.updateImageQualityForAllSelectedImagesStarted = false;
             this.stop = false;
             this.state = state;
+
+            dispatcherTimer.Tick += this.DispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+
         }
 
         // Display the image and associated details in the UI
@@ -69,7 +76,7 @@ namespace Timelapse.Dialog
             this.ScrollImages.Maximum = this.fileDatabase.CurrentlySelectedFileCount - 1;
             this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
 
-            this.SetPreviousNextButtonStates();
+            this.SetPreviousNextPlayButtonStates();
             this.ScrollImages_ValueChanged(null, null);
             this.ScrollImages.ValueChanged += this.ScrollImages_ValueChanged;
             this.Focus();               // necessary for the left/right arrow keys to work.
@@ -188,8 +195,9 @@ namespace Timelapse.Dialog
             this.RecalculateImageQualityForCurrentImage();
             this.Repaint();
         }
-        #endregion 
+        #endregion
 
+        #region Do the actual updating of image quality
         /// <summary>
         /// Redo image quality calculations with current thresholds and return the ratio of pixels at least as dark as the threshold for the current image.
         /// Does not update the database.
@@ -207,24 +215,19 @@ namespace Timelapse.Dialog
         private async Task BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
             // Set up a progress handler that will update the progress bar
-            Progress<UpdateArguments> progressHandler = new Progress<UpdateArguments>(value =>
+            Progress<UpdateProgressArguments> progressHandler = new Progress<UpdateProgressArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
+                this.UpdateProgressDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
             });
-            IProgress<UpdateArguments> progress = progressHandler as IProgress<UpdateArguments>;
-            // Update the UI 
-            List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
+            IProgress<UpdateProgressArguments> progress = progressHandler as IProgress<UpdateProgressArguments>;
 
             await Task.Run(() =>
             {
-                //TimeSpan desiredRenderInterval = TimeSpan.FromSeconds(1.0 / Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault);
-                //DateTime previousImageRender = DateTime.UtcNow - desiredRenderInterval;
-                //object renderLock = new object();
-
-                int fileIndex = 0;
+                // The selected files to check
+                List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-
+                int fileIndex = 0;
                 foreach (ImageRow file in selectedFiles)
                 {
                     if (this.stop)
@@ -268,7 +271,7 @@ namespace Timelapse.Dialog
                     fileIndex++;
                     if (this.ReadyToRefresh())
                     {
-                        progress.Report(new UpdateArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
+                        progress.Report(new UpdateProgressArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }
@@ -283,8 +286,10 @@ namespace Timelapse.Dialog
             TimelapseWindow tw = (TimelapseWindow)this.Owner;
             tw.MaybeFileShowCountsDialog(false, this.Owner);
         }
+        #endregion
 
-        private void UpdateDisplay(int percentDone, int totalCount, ImageQuality imageQuality)
+        #region Progress Display
+        private void UpdateProgressDisplay(int percentDone, int totalCount, ImageQuality imageQuality)
         {
             // this gets called on the UI thread
             // ImageQuality imageQuality = (ImageQuality)ea.UserState;
@@ -319,6 +324,7 @@ namespace Timelapse.Dialog
             // update image scroll bar position
             this.ScrollImages.Value = Math.Min(percentDone / 100.0 * totalCount, totalCount - 1);
         }
+        #endregion
 
         #region UI Menu Callbacks for resetting thresholds
         // A drop-down menu providing the user with two ways to reset thresholds
@@ -417,12 +423,17 @@ namespace Timelapse.Dialog
 
             this.imageEnumerator.TryMoveToFile(Convert.ToInt32(this.ScrollImages.Value));
             this.DisplayImageAndDetails();
-            this.SetPreviousNextButtonStates();
+            this.SetPreviousNextPlayButtonStates();
         }
 
         // If its an arrow key navigate left/right image 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (!this.ReadyToRefresh())
+            {
+                // only update every now and then, as otherwise it stalls when the arrow key is held down
+                return;
+            }
             // Interpret key as a possible shortcut key. 
             // Depending on the key, take the appropriate action
             switch (e.Key)
@@ -454,10 +465,56 @@ namespace Timelapse.Dialog
         }
 
         // Helper for the above, where previous/next buttons are enabled/disabled as needed
-        private void SetPreviousNextButtonStates()
+        private void SetPreviousNextPlayButtonStates()
         {
             this.PreviousFile.IsEnabled = (this.imageEnumerator.CurrentRow == 0) ? false : true;
             this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CurrentlySelectedFileCount - 1) ? true : false;
+            if (NextFile.IsEnabled == false)
+            {
+                // We are at the end, so stop playback and disable the play button
+                this.PlayButtonSetState(false, false);
+            }
+            else if (this.displatcherTimerIsPlaying == false && NextFile.IsEnabled == true)
+            {
+                // We are at the end, so stop playback and disable the play button
+                this.PlayButtonSetState(false, true);
+            }
+        }
+
+        // Show the next file after every tick
+        private void DispatcherTimer_Tick(object sender, EventArgs e)
+        {
+            this.NextButton_Click(null, null);
+        }
+
+        // Play the images automatically
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.displatcherTimerIsPlaying = !this.displatcherTimerIsPlaying;
+            PlayButtonSetState(this.displatcherTimerIsPlaying, true);
+        }
+
+        // Set the play/pause/enable state of the play button
+        private void PlayButtonSetState(bool play, bool enabled)
+        {
+            if (play)
+            {
+                // Play
+                this.dispatcherTimer.Start();
+                this.displatcherTimerIsPlaying = true;
+                // Show Pause character
+                this.PlayFile.Content = "\u23F8";
+            }
+            else
+            {
+                // Pause
+                this.dispatcherTimer.Stop();
+                this.displatcherTimerIsPlaying = false;
+                // Start the playback
+                // Show Fast forward character
+                this.PlayFile.Content = "\u23E9";
+            }
+            this.PlayFile.IsEnabled = enabled;
         }
         #endregion
 
@@ -499,18 +556,23 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
-        private class UpdateArguments
+
+        #region Class UpdateProgressArguments
+        private class UpdateProgressArguments
         {
             public int PercentDone { get; set; }
             public int TotalCount { get; set; }
             public ImageQuality ImageQuality { get; set; }
 
-            public UpdateArguments(int percentDone, int totalCount, ImageQuality imageQuality)
+            public UpdateProgressArguments(int percentDone, int totalCount, ImageQuality imageQuality)
             {
                 this.PercentDone = percentDone;
                 this.TotalCount = totalCount;
                 this.ImageQuality = imageQuality;
             }
         }
+        #endregion
+
+
     }
 }
