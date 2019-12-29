@@ -13,8 +13,9 @@
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded" Closing="Window_Closing">
-    <DockPanel>
-        <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
+    <Grid>
+        <DockPanel Grid.Row="0">
+            <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Question"
                             Title="Populate a Data Field with Metadata of your Choosing"
                             What="Images often embed metadata, some of which may be useful to capture as data."
@@ -27,97 +28,98 @@
 &#10;6. Be patient: if you have a large number of files as it does take time to do this!"
                             Result="For each file, the chosen data field will be filled in with the chosen metadata from that image."
                             ShowExplanationVisibility="True" />
-        <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
-            <StackPanel Name="ToolSelectionPanel" Orientation="Horizontal">
-                <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
-                <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
-                <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
-            </StackPanel>
-            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
-            <Grid Name="PanelHeader">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition MinWidth="80" Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition MinWidth="80" Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Label Content="Example file:" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="0"/>
-                <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Name="lblImageName" Grid.Column="1"/>
-                <Label Content="Selected data field :" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="2"/>
-                <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Normal" Name="DataField" Grid.Column="3"/>
-                <Label Content="Selected metadata field :" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="4"/>
-                <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Name="MetadataDisplayText" Grid.Column="5"/>
-            </Grid>
-        </StackPanel>
-
-        <DockPanel LastChildFill="True" >
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-                <CheckBox x:Name="ClearIfNoMetadata"  VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,50,0" Margin="10,0,0,0" Checked="ClearIfNoMetadata_Checked">Clear the data field if the image file cannot be read or if it is missing that metadata field</CheckBox>
-                <Button x:Name="btnCancel" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-                <Button x:Name="PopulateButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="PopulateButton_Click">_Populate</Button>
+            <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
+                <Rectangle Fill="#FF868686" Height="2"></Rectangle>
+                <StackPanel Name="ToolSelectionPanel" Orientation="Horizontal">
+                    <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
+                    <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
+                    <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
+                </StackPanel>
+                <Rectangle Fill="#FF868686" Height="2"></Rectangle>
+                <Grid Name="PanelHeader">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition MinWidth="80" Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition MinWidth="80" Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Example file:" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="0"/>
+                    <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Name="lblImageName" Grid.Column="1"/>
+                    <Label Content="Selected data field :" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="2"/>
+                    <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Normal" Name="DataField" Grid.Column="3"/>
+                    <Label Content="Selected metadata field :" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="4"/>
+                    <Label Content="--" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Name="MetadataDisplayText" Grid.Column="5"/>
+                </Grid>
             </StackPanel>
 
-            <Grid Name="PrimaryPanel" Visibility="Visible">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="147*" />
-                    <ColumnDefinition Width="31*"/>
-                    <ColumnDefinition Width="116*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock FontWeight="Bold" Text="Data field" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10,10,40,0" />
-                <TextBlock FontWeight="Bold" Text="Metadata (including example values from the current file)" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" Margin="0.017,10,-0.122,0" Grid.ColumnSpan="3"/>
-                <DataGrid Name="AvailableMetadataDataGrid" Margin="0.017,0,9.878,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            <DockPanel LastChildFill="True" >
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <CheckBox x:Name="ClearIfNoMetadata"  VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,50,0" Margin="10,0,0,0" Checked="ClearIfNoMetadata_Checked">Clear the data field if the image file cannot be read or if it is missing that metadata field</CheckBox>
+                    <Button x:Name="btnCancel" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+                    <Button x:Name="PopulateButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="PopulateButton_Click">_Populate</Button>
+                </StackPanel>
+
+                <Grid Name="PrimaryPanel" Visibility="Visible">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="147*" />
+                        <ColumnDefinition Width="31*"/>
+                        <ColumnDefinition Width="116*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock FontWeight="Bold" Text="Data field" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10,10,40,0" />
+                    <TextBlock FontWeight="Bold" Text="Metadata (including example values from the current file)" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center" Margin="0.017,10,-0.122,0" Grid.ColumnSpan="3"/>
+                    <DataGrid Name="AvailableMetadataDataGrid" Margin="0.017,0,9.878,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     AutoGenerateColumns="True" SelectionUnit="FullRow" SelectionMode="Single" SelectedCellsChanged="Datagrid_SelectedCellsChanged" 
                     AutoGeneratedColumns="AvailableMetadataDatagrid_AutoGeneratedColumns" 
                     Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3">
-                </DataGrid>
-                <ListBox Name="DataFields" Margin="10,0,9.983,0" Grid.Column="0" Grid.Row="1" SelectionChanged="NoteFieldsListBox_SelectionChanged"/>
+                    </DataGrid>
+                    <ListBox Name="DataFields" Margin="10,0,9.983,0" Grid.Column="0" Grid.Row="1" SelectionChanged="NoteFieldsListBox_SelectionChanged"/>
 
-            </Grid>
-            <Grid Name="FeedbackPanel" Visibility="Collapsed">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Name="PopulatingMessage" FontWeight="Bold" Text="--" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" Margin="10,10,10,0" />
-                <DataGrid Name="FeedbackGrid" Margin="0,0,10,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                </Grid>
+                <Grid Name="FeedbackPanel" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Name="PopulatingMessage" FontWeight="Bold" Text="--" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Left" Margin="10,10,10,0" />
+                    <DataGrid Name="FeedbackGrid" Margin="0,0,10,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                     AutoGenerateColumns="True" SelectionUnit="FullRow" SelectionMode="Single" 
                     AutoGeneratedColumns="FeedbackDatagrid_AutoGeneratedColumns" 
                     Grid.Column="0" Grid.Row="1">
-                </DataGrid>
-
-                <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
-                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
-
-                    <!-- Construct the new content: A text message, a progress bar and a cancel button -->
-                    <xceed:BusyIndicator.BusyContentTemplate>
-                        <DataTemplate>
-                            <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                                <Label Content="Please wait..." />
-                                <ProgressBar Value="0" Height="15" />
-                                <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </xceed:BusyIndicator.BusyContentTemplate>
-
-                    <!-- Collapse its default ProgressBar as we don't use it  -->
-                    <xceed:BusyIndicator.ProgressBarStyle >
-                        <Style TargetType="ProgressBar">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </Style>
-                    </xceed:BusyIndicator.ProgressBarStyle>
-                </xceed:BusyIndicator >
-            </Grid>
+                    </DataGrid>
+ 
+                </Grid>
+            </DockPanel>
         </DockPanel>
-    </DockPanel>
+        <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
+        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
+
+            <!-- Construct the new content: A text message, a progress bar and a cancel button -->
+            <xceed:BusyIndicator.BusyContentTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
+                        <Label Content="Please wait..." />
+                        <ProgressBar Value="0" Height="15" />
+                        <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
+                    </StackPanel>
+                </DataTemplate>
+            </xceed:BusyIndicator.BusyContentTemplate>
+
+            <!-- Collapse its default ProgressBar as we don't use it  -->
+            <xceed:BusyIndicator.ProgressBarStyle >
+                <Style TargetType="ProgressBar">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </xceed:BusyIndicator.ProgressBarStyle>
+        </xceed:BusyIndicator >
+    </Grid>
 </controls:DialogWindow>

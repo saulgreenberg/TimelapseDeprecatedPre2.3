@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +25,12 @@ namespace Timelapse.Dialog
 
         private ExifToolWrapper exifTool;
 
-        private Dictionary<string, ImageMetadata> metadataDictionary;
         private readonly Dictionary<string, string> dataLabelByLabel;
-
         private bool clearIfNoMetadata;
         private string dataFieldLabel;
         private bool dataFieldSelected;
 
+        private Dictionary<string, ImageMetadata> metadataDictionary;
         private string metadataFieldName;
         private bool metadataFieldSelected;
         private bool noMetadataAvailable;
@@ -67,7 +65,6 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Set up the initial UI and values
-
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
 
@@ -107,7 +104,6 @@ namespace Timelapse.Dialog
             this.AvailableMetadataDataGrid.Columns[0].Visibility = Visibility.Collapsed;
             this.AvailableMetadataDataGrid.Columns[1].Visibility = Visibility.Collapsed;
         }
-
         #endregion
 
         #region Closing and Disposing
@@ -205,7 +201,6 @@ namespace Timelapse.Dialog
         // Populate the database with the metadata for the selected note field
         private async Task<ObservableCollection<KeyValuePair<string, string>>> Populate(bool? metadataExtractorRBIsChecked)
         {
-
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
@@ -316,7 +311,6 @@ namespace Timelapse.Dialog
                 }
 
                 progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
-                Thread.Sleep(2000);
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.fileDatabase.UpdateFiles(imagesToUpdate);
                 this.IsAnyDataUpdated = true;
@@ -359,8 +353,6 @@ namespace Timelapse.Dialog
             }
         }
         #endregion
-    
-
 
         #region Callbacks to select and assign metadata fields
         // Datagrid Callack where the user has selected a row. Get the metadata from that row, and make it the selected metadata.
@@ -372,7 +364,6 @@ namespace Timelapse.Dialog
             {
                 return;
             }
-
             IList<DataGridCellInfo> selectedcells = e.AddedCells;
 
             // Make sure there are actually some selected cells
@@ -463,7 +454,14 @@ namespace Timelapse.Dialog
             this.BusyIndicator.IsBusy = false;
             this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
             this.btnCancel.IsEnabled = true;
-            this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
+            if (this.Token.IsCancellationRequested)
+            {
+                this.PopulatingMessage.Text = "Cancelled: '" + this.DataField.Content + "' is unchanged.";
+            }
+            else
+            {
+                this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows.";
+            }
             if (this.exifTool != null)
             {
                 this.exifTool.Stop();
@@ -482,24 +480,5 @@ namespace Timelapse.Dialog
             this.TokenSource.Cancel();
         }
         #endregion
-
-
-        #region Class FeedbackMessage
-        // Class that tracks our progress as we load the images
-        // These are needed to make the background worker update correctly.
-        private class FeedbackMessage
-        {
-            public string FileName { get; set; }
-            public string Message { get; set; }
-
-            public FeedbackMessage(string message, string fileName)
-            {
-                this.FileName = fileName;
-                this.Message = message;
-            }
-        }
-        #endregion
-
-
     }
 }
