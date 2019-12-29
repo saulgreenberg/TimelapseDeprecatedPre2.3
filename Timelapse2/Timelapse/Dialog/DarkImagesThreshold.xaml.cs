@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -17,32 +18,36 @@ using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
-    public partial class DarkImagesThreshold : Window, IDisposable
+    public partial class DarkImagesThreshold : DialogWindow, IDisposable
     {
+        private readonly FileDatabase fileDatabase;
+        private readonly TimelapseUserRegistrySettings state;
+
         private const int MinimumRectangleWidth = 12;
 
         private WriteableBitmap bitmap;
         private int darkPixelThreshold;
         private double darkPixelRatio;
         private double darkPixelRatioFound;
-        private readonly FileDatabase database;
+
         private bool disposed;
         private readonly FileTableEnumerator imageEnumerator;
         private bool isColor;
         private bool updateImageQualityForAllSelectedImagesStarted;
         private readonly bool stop;
-        private readonly TimelapseUserRegistrySettings userSettings;
 
-        public DarkImagesThreshold(FileDatabase database, int currentImageIndex, TimelapseUserRegistrySettings state, TimelapseWindow owner)
+        #region Initialization
+        public DarkImagesThreshold(TimelapseWindow owner, FileDatabase fileDatabase, TimelapseUserRegistrySettings state, int currentImageIndex) : base(owner)
         {
             // Check the arguments for null 
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
             ThrowIf.IsNullArgument(state, nameof(state));
 
             this.InitializeComponent();
             this.Owner = owner;
 
-            this.database = database;
-            this.imageEnumerator = new FileTableEnumerator(database);
+            this.fileDatabase = fileDatabase;
+            this.imageEnumerator = new FileTableEnumerator(fileDatabase);
             this.imageEnumerator.TryMoveToFile(currentImageIndex);
             this.darkPixelThreshold = state.DarkPixelThreshold;
             this.darkPixelRatio = state.DarkPixelRatioThreshold;
@@ -51,20 +56,17 @@ namespace Timelapse.Dialog
             this.isColor = false;
             this.updateImageQualityForAllSelectedImagesStarted = false;
             this.stop = false;
-            this.userSettings = state;
+            this.state = state;
         }
 
         // Display the image and associated details in the UI
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Make sure the title bar of the dialog box is on the screen. For small screens it may default to being off the screen
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
-
-            this.DarkThreshold.Value = this.userSettings.DarkPixelThreshold;
+            this.DarkThreshold.Value = this.state.DarkPixelThreshold;
             this.DarkThreshold.ValueChanged += this.DarkThresholdSlider_ValueChanged;
 
             this.ScrollImages.Minimum = 0;
-            this.ScrollImages.Maximum = this.database.CurrentlySelectedFileCount - 1;
+            this.ScrollImages.Maximum = this.fileDatabase.CurrentlySelectedFileCount - 1;
             this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
 
             this.SetPreviousNextButtonStates();
@@ -72,27 +74,35 @@ namespace Timelapse.Dialog
             this.ScrollImages.ValueChanged += this.ScrollImages_ValueChanged;
             this.Focus();               // necessary for the left/right arrow keys to work.
         }
+        #endregion
 
-        // If its an arrow key and the textbox doesn't have the focus,
-        // navigate left/right image or up/down to look at differenced image
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        #region Closing and Disposing
+        public void Dispose()
         {
-            // Interpret key as a possible shortcut key. 
-            // Depending on the key, take the appropriate action
-            switch (e.Key)
-            {
-                case Key.Right:             // next file
-                    this.NextButton_Click(null, null);
-                    break;
-                case Key.Left:              // previous file
-                    this.PreviousButton_Click(null, null);
-                    break;
-                default:
-                    return;
-            }
-            e.Handled = true;
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                if (this.imageEnumerator != null)
+                {
+                    this.imageEnumerator.Dispose();
+                }
+            }
+
+            this.disposed = true;
+        }
+        #endregion
+
+        #region UI Updating
         public void Repaint()
         {
             // Color the bar to show the current color given the dark color threshold
@@ -169,7 +179,7 @@ namespace Timelapse.Dialog
         // Utility routine for calling a typical sequence of UI update actions
         private void DisplayImageAndDetails()
         {
-            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.database.FolderPath, out _).AsWriteable();
+            this.bitmap = this.imageEnumerator.Current.LoadBitmap(this.fileDatabase.FolderPath, out _).AsWriteable();
             this.Image.Source = this.bitmap;
             this.FileName.Content = this.imageEnumerator.Current.File;
             this.FileName.ToolTip = this.imageEnumerator.Current.File;
@@ -178,169 +188,8 @@ namespace Timelapse.Dialog
             this.RecalculateImageQualityForCurrentImage();
             this.Repaint();
         }
+        #endregion 
 
-        // Navigate to the previous image
-        private void PreviousButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.imageEnumerator.MovePrevious();
-            this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
-        }
-
-        // Navigate to the next image
-        private void NextButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.imageEnumerator.MoveNext();
-            this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
-        }
-
-        private void SetPreviousNextButtonStates()
-        {
-            this.PreviousFile.IsEnabled = (this.imageEnumerator.CurrentRow == 0) ? false : true;
-            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.database.CurrentlySelectedFileCount - 1) ? true : false;
-        }
-
-        // Update the database if the OK button is clicked
-        private void ApplyButton_Click(object sender, RoutedEventArgs e)
-        {
-            // second click - exit
-            if (this.updateImageQualityForAllSelectedImagesStarted)
-            {
-                this.DialogResult = true;
-                return;
-            }
-
-            // first click - do update
-            // Update the Carnassial variables to the current settings
-            this.userSettings.DarkPixelThreshold = this.darkPixelThreshold;
-            this.userSettings.DarkPixelRatioThreshold = this.darkPixelRatio;
-
-            this.CancelButton.Content = "_Stop";
-
-            this.updateImageQualityForAllSelectedImagesStarted = true;
-            this.BeginUpdateImageQualityForAllSelectedImagesAsync();
-            this.DisplayImageAndDetails(); // Goes back to the original image
-        }
-
-        // Cancel or Stop - exit the dialog
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = false;
-        }
-
-        // A drop-down menu providing the user with two ways to reset thresholds
-        private void ResetButton_Click(object sender, RoutedEventArgs e)
-        {
-            Button resetButton = (Button)sender;
-            resetButton.ContextMenu.IsEnabled = true;
-            resetButton.ContextMenu.PlacementTarget = sender as Button;
-            resetButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-            resetButton.ContextMenu.IsOpen = true;
-        }
-
-        // Reset the thresholds to their initial settings
-        private void MenuItemResetCurrent_Click(object sender, RoutedEventArgs e)
-        {
-            // Move the thumb to correspond to the original value
-            this.darkPixelRatio = this.userSettings.DarkPixelRatioThreshold;
-            Canvas.SetLeft(this.DarkPixelRatioThumb, this.darkPixelRatio * (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth));
-
-            // Move the slider to its original position
-            this.DarkThreshold.Value = this.userSettings.DarkPixelRatioThreshold;
-            this.RecalculateImageQualityForCurrentImage();
-            this.Repaint();
-        }
-
-        // Reset the thresholds to the Carnassial Default settings
-        private void MenuItemResetDefault_Click(object sender, RoutedEventArgs e)
-        {
-            // Move the thumb to correspond to the original value
-            this.darkPixelRatio = Constant.ImageValues.DarkPixelRatioThresholdDefault;
-            Canvas.SetLeft(this.DarkPixelRatioThumb, this.darkPixelRatio * (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth));
-
-            // Move the slider to its original position
-            this.DarkThreshold.Value = Constant.ImageValues.DarkPixelThresholdDefault;
-            this.RecalculateImageQualityForCurrentImage();
-            this.Repaint();
-        }
-
-        // Set a new value for the dark pixel threshold and update the UI
-        private void DarkThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (this.DarkPixelRatio == null)
-            {
-                return;
-            }
-            this.darkPixelThreshold = Convert.ToInt32(e.NewValue);
-
-            this.RecalculateImageQualityForCurrentImage();
-            this.Repaint();
-        }
-
-        // Set a new value for the Dark Pixel Ratio and update the UI
-        private void Thumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-        {
-            UIElement thumb = e.Source as UIElement;
-
-            if ((Canvas.GetLeft(thumb) + e.HorizontalChange) >= (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth))
-            {
-                Canvas.SetLeft(thumb, this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth);
-                this.darkPixelRatio = 1;
-            }
-            else if ((Canvas.GetLeft(thumb) + e.HorizontalChange) <= 0)
-            {
-                Canvas.SetLeft(thumb, 0);
-                this.darkPixelRatio = 0;
-            }
-            else
-            {
-                Canvas.SetLeft(thumb, Canvas.GetLeft(thumb) + e.HorizontalChange);
-                this.darkPixelRatio = (Canvas.GetLeft(thumb) + e.HorizontalChange) / this.FeedbackCanvas.ActualWidth;
-            }
-            if (this.DarkPixelRatio == null)
-            {
-                return;
-            }
-
-            this.RecalculateImageQualityForCurrentImage();
-            // We don't repaint, as this will screw up the thumb dragging. So just update the labels instead.
-            this.UpdateLabels();
-        }
-
-        private void ScrollImages_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (this.updateImageQualityForAllSelectedImagesStarted)
-            {
-                return;
-            }
-
-            this.imageEnumerator.TryMoveToFile(Convert.ToInt32(this.ScrollImages.Value));
-            this.DisplayImageAndDetails();
-            this.SetPreviousNextButtonStates();
-        }
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (this.disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                if (this.imageEnumerator != null)
-                {
-                    this.imageEnumerator.Dispose();
-                }
-            }
-
-            this.disposed = true;
-        }
 
         /// <summary>
         /// Redo image quality calculations with current thresholds and return the ratio of pixels at least as dark as the threshold for the current image.
@@ -358,7 +207,7 @@ namespace Timelapse.Dialog
 
         private void BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
-            List<ImageRow> selectedFiles = this.database.FileTable.ToList();
+            List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
             this.ApplyButton.Content = "_Done";
             this.ApplyButton.IsEnabled = false;
             this.DarkPixelRatioThumb.IsEnabled = false;
@@ -400,7 +249,7 @@ namespace Timelapse.Dialog
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on that
-                        imageQuality.Bitmap = file.LoadBitmap(this.database.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
+                        imageQuality.Bitmap = file.LoadBitmap(this.fileDatabase.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
                         if (isCorruptOrMissing)
                         {
                             // If we can't read the image, just set its quality to OK
@@ -443,7 +292,7 @@ namespace Timelapse.Dialog
                 }
 
                 // Update the database to reflect the changed values
-                this.database.UpdateFiles(filesToUpdate);
+                this.fileDatabase.UpdateFiles(filesToUpdate);
             };
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
@@ -490,5 +339,176 @@ namespace Timelapse.Dialog
             };
             backgroundWorker.RunWorkerAsync();
         }
+
+        #region UI Menu Callbacks for resetting thresholds
+        // A drop-down menu providing the user with two ways to reset thresholds
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button resetButton = (Button)sender;
+            resetButton.ContextMenu.IsEnabled = true;
+            resetButton.ContextMenu.PlacementTarget = sender as Button;
+            resetButton.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            resetButton.ContextMenu.IsOpen = true;
+        }
+
+        // Reset the thresholds to their initial settings
+        private void MenuItemResetCurrent_Click(object sender, RoutedEventArgs e)
+        {
+            // Move the thumb to correspond to the original value
+            this.darkPixelRatio = this.state.DarkPixelRatioThreshold;
+            Canvas.SetLeft(this.DarkPixelRatioThumb, this.darkPixelRatio * (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth));
+
+            // Move the slider to its original position
+            this.DarkThreshold.Value = this.state.DarkPixelRatioThreshold;
+            this.RecalculateImageQualityForCurrentImage();
+            this.Repaint();
+        }
+
+        // Reset the thresholds to the Default settings
+        private void MenuItemResetDefault_Click(object sender, RoutedEventArgs e)
+        {
+            // Move the thumb to correspond to the original value
+            this.darkPixelRatio = Constant.ImageValues.DarkPixelRatioThresholdDefault;
+            Canvas.SetLeft(this.DarkPixelRatioThumb, this.darkPixelRatio * (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth));
+
+            // Move the slider to its original position
+            this.DarkThreshold.Value = Constant.ImageValues.DarkPixelThresholdDefault;
+            this.RecalculateImageQualityForCurrentImage();
+            this.Repaint();
+        }
+
+
+        #endregion
+
+        #region UI Callbacks - setting thresholds for what is dark
+
+        // Set a new value for the dark pixel threshold and update the UI
+        private void DarkThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (this.DarkPixelRatio == null)
+            {
+                return;
+            }
+            this.darkPixelThreshold = Convert.ToInt32(e.NewValue);
+
+            this.RecalculateImageQualityForCurrentImage();
+            this.Repaint();
+        }
+
+        // Set a new value for the Dark Pixel Ratio and update the UI
+        private void Thumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+        {
+            UIElement thumb = e.Source as UIElement;
+
+            if ((Canvas.GetLeft(thumb) + e.HorizontalChange) >= (this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth))
+            {
+                Canvas.SetLeft(thumb, this.FeedbackCanvas.ActualWidth - this.DarkPixelRatioThumb.ActualWidth);
+                this.darkPixelRatio = 1;
+            }
+            else if ((Canvas.GetLeft(thumb) + e.HorizontalChange) <= 0)
+            {
+                Canvas.SetLeft(thumb, 0);
+                this.darkPixelRatio = 0;
+            }
+            else
+            {
+                Canvas.SetLeft(thumb, Canvas.GetLeft(thumb) + e.HorizontalChange);
+                this.darkPixelRatio = (Canvas.GetLeft(thumb) + e.HorizontalChange) / this.FeedbackCanvas.ActualWidth;
+            }
+            if (this.DarkPixelRatio == null)
+            {
+                return;
+            }
+
+            this.RecalculateImageQualityForCurrentImage();
+            // We don't repaint, as this will screw up the thumb dragging. So just update the labels instead.
+            this.UpdateLabels();
+        }
+        #endregion
+
+        #region UI callbacks - Navigating through images
+        // Scroll to another image
+        private void ScrollImages_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (this.updateImageQualityForAllSelectedImagesStarted)
+            {
+                return;
+            }
+
+            this.imageEnumerator.TryMoveToFile(Convert.ToInt32(this.ScrollImages.Value));
+            this.DisplayImageAndDetails();
+            this.SetPreviousNextButtonStates();
+        }
+
+        // If its an arrow key navigate left/right image 
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Interpret key as a possible shortcut key. 
+            // Depending on the key, take the appropriate action
+            switch (e.Key)
+            {
+                case Key.Right:             // next file
+                    this.NextButton_Click(null, null);
+                    break;
+                case Key.Left:              // previous file
+                    this.PreviousButton_Click(null, null);
+                    break;
+                default:
+                    return;
+            }
+            e.Handled = true;
+        }
+
+        // Navigate to the previous image
+        private void PreviousButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.imageEnumerator.MovePrevious();
+            this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
+        }
+
+        // Navigate to the next image
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.imageEnumerator.MoveNext();
+            this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
+        }
+
+        // Helper for the above, where previous/next buttons are enabled/disabled as needed
+        private void SetPreviousNextButtonStates()
+        {
+            this.PreviousFile.IsEnabled = (this.imageEnumerator.CurrentRow == 0) ? false : true;
+            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CurrentlySelectedFileCount - 1) ? true : false;
+        }
+        #endregion
+
+        #region Button callbacks
+        // Update the database if the OK button is clicked
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {
+            // second click - exit
+            if (this.updateImageQualityForAllSelectedImagesStarted)
+            {
+                this.DialogResult = true;
+                return;
+            }
+
+            // first click - do update
+            // Update the Carnassial variables to the current settings
+            this.state.DarkPixelThreshold = this.darkPixelThreshold;
+            this.state.DarkPixelRatioThreshold = this.darkPixelRatio;
+
+            this.CancelButton.Content = "_Stop";
+
+            this.updateImageQualityForAllSelectedImagesStarted = true;
+            this.BeginUpdateImageQualityForAllSelectedImagesAsync();
+            this.DisplayImageAndDetails(); // Goes back to the original image
+        }
+
+        // Cancel or Stop - exit the dialog
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+        }
+        #endregion
     }
 }

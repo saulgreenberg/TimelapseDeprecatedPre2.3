@@ -377,7 +377,7 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedDarkThresholdPrompt = optOut; // SG TODO
                                                                }))
             {
-                using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, this.State, this))
+                using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this, this.dataHandler.FileDatabase, this.State, this.dataHandler.ImageCache.CurrentRow))
                 {
                     darkThreshold.Owner = this;
                     darkThreshold.ShowDialog();
