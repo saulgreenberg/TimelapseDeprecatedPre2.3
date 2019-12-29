@@ -312,7 +312,7 @@ namespace Timelapse.Detection
                 fileDatabase.IndexCreateForDetectionsAndClassifications();
                 // System.Diagnostics.Debug.Print("Files: " + fileCount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
                 if (dataTable != null)
-                { 
+                {
                     dataTable.Dispose();
                 }
             }

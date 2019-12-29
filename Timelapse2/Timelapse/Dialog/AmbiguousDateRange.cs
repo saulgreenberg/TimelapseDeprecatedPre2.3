@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Timelapse.Dialog
+﻿namespace Timelapse.Dialog
 {
     // A class that stores various properties for each ambiguous date found
     // The start index in the file table
@@ -12,7 +6,7 @@ namespace Timelapse.Dialog
     public class AmbiguousDateRange
     {
         // The start and end indeces in the file table that define a range of ambiguous dates
-        public int StartIndex { get; set; } 
+        public int StartIndex { get; set; }
         public int EndIndex { get; set; }
 
         // How many images are affected

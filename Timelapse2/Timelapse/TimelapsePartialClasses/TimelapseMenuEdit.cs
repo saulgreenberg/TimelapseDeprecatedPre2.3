@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
-using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;

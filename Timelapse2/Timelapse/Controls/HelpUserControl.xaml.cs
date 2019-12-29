@@ -73,7 +73,7 @@ namespace Timelapse.Controls
                     reader.Dispose();
                 }
                 if (writer != null)
-                { 
+                {
                     writer.Dispose();
                 }
             }

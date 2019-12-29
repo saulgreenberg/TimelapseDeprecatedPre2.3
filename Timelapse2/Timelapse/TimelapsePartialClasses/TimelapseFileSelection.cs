@@ -38,7 +38,7 @@ namespace Timelapse
         // I kept it in in case I want to use it in the future.
 #pragma warning disable IDE0060 // Remove unused parameter
         private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
-        #pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()

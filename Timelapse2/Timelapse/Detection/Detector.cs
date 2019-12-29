@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 #pragma warning disable IDE1006 // Naming Style - we are using lower case names to match the json structure, we  mute the warning
 namespace Timelapse.Detection
 {
@@ -104,9 +103,9 @@ namespace Timelapse.Detection
         public string category { get; set; }
         public float conf { get; set; }
 
-        #pragma warning disable CA1819 // Properties should not return arrays. Reason: A Json serializer requires direct writing into an array property of this type.
+#pragma warning disable CA1819 // Properties should not return arrays. Reason: A Json serializer requires direct writing into an array property of this type.
         public double[] bbox { get; set; }
-        #pragma warning restore CA1819 // Properties should not return arrays
+#pragma warning restore CA1819 // Properties should not return arrays
 
         public List<Object[]> classifications { get; set; }
         public detection()

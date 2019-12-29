@@ -56,26 +56,26 @@ namespace Timelapse.Dialog
             //TimeZoneInfo newTimeZone = this.TimeZones.TimeZonesByDisplayName[(string)this.TimeZones.SelectedItem];
             //foreach (ImageRow image in this.fileDatabase.FileTable)
             //{
-                // SAULXXX MODIFIED this.TimeZoneUpdateFeedback.AddFeedbackRow, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
-                // CURRENTLY COMMENTED OUT JUST TO AVOID MESSAGE WARNINGS ABOUT UNUSED PARAMETERS
-                //string newDateTime = String.Empty;
-                //string status;
-                //DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
-                //TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
-                //DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);
+            // SAULXXX MODIFIED this.TimeZoneUpdateFeedback.AddFeedbackRow, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
+            // CURRENTLY COMMENTED OUT JUST TO AVOID MESSAGE WARNINGS ABOUT UNUSED PARAMETERS
+            //string newDateTime = String.Empty;
+            //string status;
+            //DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
+            //TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
+            //DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);
 
-                //// Pretty print the adjustment time
-                //if (currentImageDateTime != previewImageDateTime)
-                //{
-                //    status = "Changed";
-                //    newDateTime = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(previewImageDateTime);
-                //}
-                //else
-                //{
-                //    status = "Unchanged";
-                //}
+            //// Pretty print the adjustment time
+            //if (currentImageDateTime != previewImageDateTime)
+            //{
+            //    status = "Changed";
+            //    newDateTime = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(previewImageDateTime);
+            //}
+            //else
+            //{
+            //    status = "Unchanged";
+            //}
 
-                //this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
+            //this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
             //}
         }
 

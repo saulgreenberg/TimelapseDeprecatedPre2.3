@@ -20,7 +20,6 @@ using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse
 {

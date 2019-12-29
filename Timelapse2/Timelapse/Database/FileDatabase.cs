@@ -2318,7 +2318,7 @@ namespace Timelapse.Database
                     this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
                 }
                 if (dataTable != null)
-                { 
+                {
                     dataTable.Dispose();
                 }
             }

@@ -43,9 +43,9 @@ namespace Timelapse.ExifTool
         }
 
         //to use ExifToolResponse directly in if (discarding response)
-        #pragma warning disable CA2225 // Operator overloads have named alternates. Reason: don't think this is necessary
+#pragma warning disable CA2225 // Operator overloads have named alternates. Reason: don't think this is necessary
         public static implicit operator bool(ExifToolResponse r) => r.IsSuccess;
-        #pragma warning restore CA2225 // Operator overloads have named alternates
+#pragma warning restore CA2225 // Operator overloads have named alternates
     }
 
     public sealed class ExifToolWrapper : IDisposable
@@ -620,11 +620,11 @@ namespace Timelapse.ExifTool
             if (this._proc != null && this.Status == ExeStatus.Ready)
                 this.Stop();
             if (this._waitHandle != null)
-            { 
+            {
                 this._waitHandle.Dispose();
             }
             if (this._waitForErrorHandle != null)
-            { 
+            {
                 this._waitForErrorHandle.Dispose();
             }
         }

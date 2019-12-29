@@ -66,17 +66,17 @@ namespace Timelapse.ImageSetLoadingPipeline
             // - get all the current files in the database (as existing full paths) in a single database call,
             // - create a new file list (fileInfoArray) that only adds files (as fileInfos) that are NOT present in the database. 
             HashSet<string> existingPaths;
-            using(FileTable filetable = dataHandler.FileDatabase.GetAllFiles())
-            { 
+            using (FileTable filetable = dataHandler.FileDatabase.GetAllFiles())
+            {
                 existingPaths = new HashSet<string>(from file in filetable
                                                     select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
             }
             FileInfo[] filesToAddInfoArray = (from fileInfo in fileInfos
                                               where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
                                               select fileInfo).OrderBy(f => f.FullName).ToArray();
-           
+
             this.ImagesToLoad = filesToAddInfoArray.Length;
-            
+
             // The queue will take image rows ready for insertion to the second pass
             // The eventindicates explicitly when the first pass is done.
             ConcurrentQueue<ImageRow> databaseInsertionQueue = new ConcurrentQueue<ImageRow>();

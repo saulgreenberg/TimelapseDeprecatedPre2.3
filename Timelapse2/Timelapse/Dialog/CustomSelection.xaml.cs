@@ -587,7 +587,7 @@ namespace Timelapse.Dialog
                     // Display UTC time in Timelapse's standard DateTime display format
                     DateTime tmpDateTime = DateTime.Parse(searchTerm.DatabaseValue.Trim());
                     if (DateTimeHandler.TryParseDatabaseUtcOffsetString(utcOffset, out TimeSpan tmpTimeSpan))
-                    { 
+                    {
                         tmpDateTime.Add(tmpTimeSpan);
                         value = tmpDateTime.ToString(Constant.Time.DateTimeDisplayFormat);
                     }

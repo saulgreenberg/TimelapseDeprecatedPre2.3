@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Timelapse.Database;
@@ -81,8 +79,8 @@ namespace Timelapse.Controls
             foreach (FeedbackRowTuple tuple in this.feedbackRows)
             {
                 if (tuple.Select == true)
-                { 
-                    return true; 
+                {
+                    return true;
                 }
             }
             return false;

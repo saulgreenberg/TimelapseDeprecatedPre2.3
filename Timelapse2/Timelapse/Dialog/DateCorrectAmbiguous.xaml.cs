@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -190,7 +189,7 @@ namespace Timelapse.Dialog
                 }
                 return totalFileCount;
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
-           
+
         }
         #endregion 
 
@@ -224,7 +223,7 @@ namespace Timelapse.Dialog
             if (cancelButton != null)
             {
                 cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelEnabled ? "Cancel": "Writing data...";
+                cancelButton.Content = cancelEnabled ? "Cancel" : "Writing data...";
             }
         }
         #endregion
@@ -263,7 +262,7 @@ namespace Timelapse.Dialog
             this.CloseButtonIsEnabled(true);
             // Show the final message
             if (totalFileCount > 0)
-            { 
+            {
                 this.DoneMessagePanel.Content = "Dates for " + totalFileCount.ToString() + " files were swapped";
             }
             else

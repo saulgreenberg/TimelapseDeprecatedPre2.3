@@ -91,7 +91,7 @@ namespace Timelapse.Dialog
 
                 int count = this.fileDatabase.FileTable.RowCount;
                 this.DatabaseUpdateFileDates(progress, adjustment, startRow, endRow, feedbackRows);
-              
+
 
                 // Provide feedback if the operation was cancelled during the database update
                 if (Token.IsCancellationRequested == true)

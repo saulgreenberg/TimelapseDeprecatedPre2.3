@@ -18,7 +18,7 @@ namespace Timelapse
     /// This dialog lets the user specify a corrected date and time of a file. All other dates and times are then corrected by the same amount.
     /// This is useful if (say) the camera was not initialized to the correct date and time.
     /// </summary>
-    public partial class DateTimeLinearCorrection : DialogWindow 
+    public partial class DateTimeLinearCorrection : DialogWindow
     {
         private readonly FileDatabase fileDatabase;
 
@@ -234,7 +234,7 @@ namespace Timelapse
             {
                 // We don't have a valid date, so nothing really to do.
                 // This should not happen
-                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recognized by Timelapse." );
+                System.Windows.MessageBox.Show("Could not change the date/time, as it date is not in a format recognized by Timelapse.");
                 return;
             }
 

@@ -417,7 +417,7 @@ namespace Timelapse.Dialog
             {
                 // dispose managed resources
                 if (this.exifTool != null)
-                { 
+                {
                     this.exifTool.Dispose();
                 }
             }

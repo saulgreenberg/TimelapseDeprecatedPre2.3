@@ -306,7 +306,7 @@ namespace Timelapse.QuickPaste
                 {
                     cb.IsChecked = useState;
                 }
-            }       
+            }
         }
     }
 }

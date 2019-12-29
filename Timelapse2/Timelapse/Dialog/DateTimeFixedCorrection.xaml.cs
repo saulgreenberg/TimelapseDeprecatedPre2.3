@@ -27,7 +27,7 @@ namespace Timelapse.Dialog
         private bool IsAnyDataUpdated = false;
 
         #region Initialization
-        public DateTimeFixedCorrection(Window owner, FileDatabase fileDatabase, ImageRow imageToCorrect) : base (owner)
+        public DateTimeFixedCorrection(Window owner, FileDatabase fileDatabase, ImageRow imageToCorrect) : base(owner)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
@@ -86,7 +86,7 @@ namespace Timelapse.Dialog
             // reload the FileTable with the updated data, or to reset the FileTable back to its original form
             // if the operation was cancelled.
             this.IsAnyDataUpdated = true;
- 
+
             // Reread the Date/Times from each file 
             return await Task.Run(() =>
             {

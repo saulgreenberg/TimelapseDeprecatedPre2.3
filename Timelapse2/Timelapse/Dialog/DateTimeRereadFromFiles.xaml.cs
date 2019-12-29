@@ -23,7 +23,7 @@ namespace Timelapse.Dialog
         private DateTime lastRefreshDateTime = DateTime.Now;
 
         #region Initialization
-        public DateTimeRereadFromFiles(Window owner, FileDatabase fileDatabase): base(owner)
+        public DateTimeRereadFromFiles(Window owner, FileDatabase fileDatabase) : base(owner)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
@@ -67,7 +67,7 @@ namespace Timelapse.Dialog
             // reload the FileTable with the updated data, or to reset the FileTable back to its original form
             // if the operation was cancelled.
             this.IsAnyDataUpdated = true;
-            
+
             // Reread the Date/Times from each file 
             return await Task.Run(() =>
             {
@@ -290,7 +290,7 @@ namespace Timelapse.Dialog
             // The progress bar will be displayed during this process.
             ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
 
-;
+            ;
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
