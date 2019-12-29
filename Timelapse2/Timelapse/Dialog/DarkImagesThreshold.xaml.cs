@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -190,7 +190,6 @@ namespace Timelapse.Dialog
         }
         #endregion 
 
-
         /// <summary>
         /// Redo image quality calculations with current thresholds and return the ratio of pixels at least as dark as the threshold for the current image.
         /// Does not update the database.
@@ -205,38 +204,27 @@ namespace Timelapse.Dialog
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:ParametersMustBeOnSameLineOrSeparateLines", Justification = "Reviewed.")]
 
-        private void BeginUpdateImageQualityForAllSelectedImagesAsync()
+        private async Task BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
+            // Set up a progress handler that will update the progress bar
+            Progress<UpdateArguments> progressHandler = new Progress<UpdateArguments>(value =>
+            {
+                // Update the progress bar
+                this.UpdateDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
+            });
+            IProgress<UpdateArguments> progress = progressHandler as IProgress<UpdateArguments>;
+            // Update the UI 
             List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
-            this.ApplyButton.Content = "_Done";
-            this.ApplyButton.IsEnabled = false;
-            this.DarkPixelRatioThumb.IsEnabled = false;
-            this.DarkThreshold.IsEnabled = false;
-            this.PreviousFile.IsEnabled = false;
-            this.NextFile.IsEnabled = false;
-            this.ScrollImages.IsEnabled = false;
-            this.ResetButton.IsEnabled = false;
 
-#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
-            BackgroundWorker backgroundWorker = new BackgroundWorker()
+            await Task.Run(() =>
             {
-                WorkerReportsProgress = true
-            };
-#pragma warning restore CA2000 // Dispose objects before losing scope
-            backgroundWorker.DoWork += (ow, ea) =>
-            {
-                TimeSpan desiredRenderInterval = TimeSpan.FromSeconds(1.0 / Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault);
-                DateTime previousImageRender = DateTime.UtcNow - desiredRenderInterval;
-                object renderLock = new object();
+                //TimeSpan desiredRenderInterval = TimeSpan.FromSeconds(1.0 / Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault);
+                //DateTime previousImageRender = DateTime.UtcNow - desiredRenderInterval;
+                //object renderLock = new object();
 
                 int fileIndex = 0;
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
-                // SaulXXX There was an issue in the Parallel.ForEach that occurred when initially loading files as some files were duplicated or missing (see Issue 16 and 18) 
-                // Its not clear that we really need to display each image, but given that we are already opening it, it may not be a huge expense
-                // If we want to try the parallel again, here it is.
-                // Parallel.ForEach(new SequentialPartitioner<ImageRow>(selectedFiles), Utilities.GetParallelOptions(3), (ImageRow file, ParallelLoopState loopState) =>
-                // replace break (after this.stop) with loopState.Break
-                // -- add closing brace});
+
                 foreach (ImageRow file in selectedFiles)
                 {
                     if (this.stop)
@@ -277,67 +265,59 @@ namespace Timelapse.Dialog
                         Debug.Fail("Exception while assessing image quality.", exception.ToString());
                     }
 
-                    int currentFileIndex = Interlocked.Increment(ref fileIndex);
-                    DateTime utcNow = DateTime.UtcNow;
-                    if (utcNow - previousImageRender > desiredRenderInterval)
+                    fileIndex++;
+                    if (this.ReadyToRefresh())
                     {
-                        lock (renderLock)
-                        {
-                            if (utcNow - previousImageRender > desiredRenderInterval)
-                            {
-                                backgroundWorker.ReportProgress((int)(100.0 * currentFileIndex / selectedFiles.Count), imageQuality);
-                            }
-                        }
+                        progress.Report(new UpdateArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
+                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }
 
                 // Update the database to reflect the changed values
                 this.fileDatabase.UpdateFiles(filesToUpdate);
-            };
-            backgroundWorker.ProgressChanged += (o, ea) =>
+            }).ConfigureAwait(true);
+
+            this.DisplayImageAndDetails();
+            this.ApplyButton.IsEnabled = true;
+            this.CancelButton.IsEnabled = false;
+            TimelapseWindow tw = (TimelapseWindow)this.Owner;
+            tw.MaybeFileShowCountsDialog(false, this.Owner);
+        }
+
+        private void UpdateDisplay(int percentDone, int totalCount, ImageQuality imageQuality)
+        {
+            // this gets called on the UI thread
+            // ImageQuality imageQuality = (ImageQuality)ea.UserState;
+            this.Image.Source = imageQuality.Bitmap;
+
+            this.FileName.Content = imageQuality.FileName;
+            this.OriginalClassification.Content = imageQuality.OldImageQuality;
+            this.NewClassification.Content = imageQuality.NewImageQuality;
+            this.DarkPixelRatio.Content = String.Format("{0,3:##0}%", 100 * this.darkPixelRatio);
+            this.RatioFound.Content = String.Format("{0,3:##0}", 100 * imageQuality.DarkPixelRatioFound);
+
+            if (imageQuality.IsColor) // color image 
             {
-                // this gets called on the UI thread
-                ImageQuality imageQuality = (ImageQuality)ea.UserState;
-                this.Image.Source = imageQuality.Bitmap;
-
-                this.FileName.Content = imageQuality.FileName;
-                this.OriginalClassification.Content = imageQuality.OldImageQuality;
-                this.NewClassification.Content = imageQuality.NewImageQuality;
-                this.DarkPixelRatio.Content = String.Format("{0,3:##0}%", 100 * this.darkPixelRatio);
-                this.RatioFound.Content = String.Format("{0,3:##0}", 100 * imageQuality.DarkPixelRatioFound);
-
-                if (imageQuality.IsColor) // color image 
-                {
-                    this.ThresholdMessage.Text = "Color - therefore not dark";
-                    this.Percent.Visibility = Visibility.Hidden;
-                    this.RatioFound.Content = String.Empty;
-                }
-                else
-                {
-                    this.ThresholdMessage.Text = "of the pixels are darker than the threshold";
-                    this.Percent.Visibility = Visibility.Visible;
-                }
-
-                // Size the bar to show how many pixels in the current image are at least as dark as that color
-                this.RectDarkPixelRatioFound.Width = this.FeedbackCanvas.ActualWidth * imageQuality.DarkPixelRatioFound;
-                if (this.RectDarkPixelRatioFound.Width < 6)
-                {
-                    this.RectDarkPixelRatioFound.Width = 6; // Just so something is always visible
-                }
-                this.RectDarkPixelRatioFound.Height = this.FeedbackCanvas.ActualHeight;
-
-                // update image scroll bar position
-                this.ScrollImages.Value = Math.Min(ea.ProgressPercentage / 100.0 * selectedFiles.Count, selectedFiles.Count - 1);
-            };
-            backgroundWorker.RunWorkerCompleted += (o, ea) =>
+                this.ThresholdMessage.Text = "Color - therefore not dark";
+                this.Percent.Visibility = Visibility.Hidden;
+                this.RatioFound.Content = String.Empty;
+            }
+            else
             {
-                this.DisplayImageAndDetails();
-                this.ApplyButton.IsEnabled = true;
-                this.CancelButton.IsEnabled = false;
-                TimelapseWindow tw = (TimelapseWindow)this.Owner;
-                tw.MaybeFileShowCountsDialog(false, this.Owner);
-            };
-            backgroundWorker.RunWorkerAsync();
+                this.ThresholdMessage.Text = "of the pixels are darker than the threshold";
+                this.Percent.Visibility = Visibility.Visible;
+            }
+
+            // Size the bar to show how many pixels in the current image are at least as dark as that color
+            this.RectDarkPixelRatioFound.Width = this.FeedbackCanvas.ActualWidth * imageQuality.DarkPixelRatioFound;
+            if (this.RectDarkPixelRatioFound.Width < 6)
+            {
+                this.RectDarkPixelRatioFound.Width = 6; // Just so something is always visible
+            }
+            this.RectDarkPixelRatioFound.Height = this.FeedbackCanvas.ActualHeight;
+
+            // update image scroll bar position
+            this.ScrollImages.Value = Math.Min(percentDone / 100.0 * totalCount, totalCount - 1);
         }
 
         #region UI Menu Callbacks for resetting thresholds
@@ -483,7 +463,7 @@ namespace Timelapse.Dialog
 
         #region Button callbacks
         // Update the database if the OK button is clicked
-        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        private async void ApplyButton_Click(object sender, RoutedEventArgs e)
         {
             // second click - exit
             if (this.updateImageQualityForAllSelectedImagesStarted)
@@ -493,14 +473,23 @@ namespace Timelapse.Dialog
             }
 
             // first click - do update
-            // Update the Carnassial variables to the current settings
+            // Update the variables to the current settings
             this.state.DarkPixelThreshold = this.darkPixelThreshold;
             this.state.DarkPixelRatioThreshold = this.darkPixelRatio;
 
+            // update the UI
             this.CancelButton.Content = "_Stop";
-
             this.updateImageQualityForAllSelectedImagesStarted = true;
-            this.BeginUpdateImageQualityForAllSelectedImagesAsync();
+            this.ApplyButton.Content = "_Done";
+            this.ApplyButton.IsEnabled = false;
+            this.DarkPixelRatioThumb.IsEnabled = false;
+            this.DarkThreshold.IsEnabled = false;
+            this.PreviousFile.IsEnabled = false;
+            this.NextFile.IsEnabled = false;
+            this.ScrollImages.IsEnabled = false;
+            this.ResetButton.IsEnabled = false;
+
+            await this.BeginUpdateImageQualityForAllSelectedImagesAsync().ConfigureAwait(true);
             this.DisplayImageAndDetails(); // Goes back to the original image
         }
 
@@ -510,5 +499,18 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
+        private class UpdateArguments
+        {
+            public int PercentDone { get; set; }
+            public int TotalCount { get; set; }
+            public ImageQuality ImageQuality { get; set; }
+
+            public UpdateArguments(int percentDone, int totalCount, ImageQuality imageQuality)
+            {
+                this.PercentDone = percentDone;
+                this.TotalCount = totalCount;
+                this.ImageQuality = imageQuality;
+            }
+        }
     }
 }
