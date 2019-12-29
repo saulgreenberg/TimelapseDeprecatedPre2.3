@@ -141,7 +141,7 @@ namespace Timelapse
         }
 
         // Select callback: handles all standard menu selection items
-        private async void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
+        private void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)sender;
             FileSelectionEnum selection;
@@ -181,11 +181,11 @@ namespace Timelapse
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             if (this.dataHandler.ImageCache.Current == null)
             {
-                await this.FilesSelectAndShow(selection).ConfigureAwait(true);
+                this.FilesSelectAndShow(selection);
             }
             else
             {
-                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }
 

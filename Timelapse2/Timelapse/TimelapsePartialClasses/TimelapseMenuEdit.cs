@@ -88,7 +88,7 @@ namespace Timelapse
         }
 
         // Populate a data field from metadata (example metadata displayed from the currently selected image)
-        private async void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
+        private void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
             // If we are not in the selection All view, or if its a corrupt image or deleted image, or if its a video that no longer exists, tell the person. Selecting ok will shift the selection.
             // We want to be on a valid image as otherwise the metadata of interest won't appear
@@ -116,7 +116,7 @@ namespace Timelapse
                 {
                     if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                     {
-                        await this.FilesSelectAndShow().ConfigureAwait(true);
+                        this.FilesSelectAndShow();
                     };
                 }
             }
@@ -152,7 +152,7 @@ namespace Timelapse
         // - the current image or all images marked for deletion are deleted
         // - the data associated with those images may be delted.
         // - deleted images are moved to a backup folder.
-        private async void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
+        private void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;
 
@@ -216,7 +216,7 @@ namespace Timelapse
                 // Delete the files
                 Mouse.OverrideCursor = Cursors.Wait;
                 // Reload the file datatable. 
-                await this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+                this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
 
                 if (deleteFilesAndData)
                 {
@@ -252,7 +252,7 @@ namespace Timelapse
         }
 
         // Re-read dates and times from files
-        private async void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
+        private void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelection(
@@ -266,13 +266,13 @@ namespace Timelapse
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(rereadDates))
                 {
-                    await this.FilesSelectAndShow().ConfigureAwait(true);
+                    this.FilesSelectAndShow();
                 };
             }
         }
 
         // Correct for daylight savings time
-        private async void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
+        private void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelection(
@@ -286,13 +286,13 @@ namespace Timelapse
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache);
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateTimeChange))
                 {
-                    await this.FilesSelectAndShow().ConfigureAwait(true);
+                    this.FilesSelectAndShow();
                 };
             }
         }
 
         // Correct for cameras not set to the right date and time by specifying an offset
-        private async void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
+        private void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.dataHandler.FileDatabase, this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
@@ -305,14 +305,14 @@ namespace Timelapse
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
-                    await this.FilesSelectAndShow().ConfigureAwait(true);
+                    this.FilesSelectAndShow();
                 }
             }
         }
 
         // Correct for cameras whose clock runs fast or slow (clock drift). 
         // Note that the correction is applied only to images in the selected view.
-        private async void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
+        private void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelection(
@@ -326,13 +326,13 @@ namespace Timelapse
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(linearDateCorrection))
                 {
-                    await this.FilesSelectAndShow().ConfigureAwait(true);
+                    this.FilesSelectAndShow();
                 }
             }
         }
 
         // Correct ambiguous dates dialog i.e. dates that could be read as either month/day or day/month
-        private async void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
+        private void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelection(
@@ -346,7 +346,7 @@ namespace Timelapse
                 DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateCorrection))
                 {
-                    await this.FilesSelectAndShow().ConfigureAwait(true);
+                    this.FilesSelectAndShow();
                 }
             }
         }

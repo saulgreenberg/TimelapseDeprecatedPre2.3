@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
@@ -13,24 +12,24 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // FilesSelectAndShow: various forms
-        private async Task FilesSelectAndShow()
+        private bool FilesSelectAndShow()
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
-                return;
+                return false;
             }
-            await this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection);
         }
 
-        private async Task FilesSelectAndShow(FileSelectionEnum selection)
+        private bool FilesSelectAndShow(FileSelectionEnum selection)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            await this.FilesSelectAndShow(fileID, selection).ConfigureAwait(true);
+            return this.FilesSelectAndShow(fileID, selection);
         }
 
         // FilesSelectAndShow: Full version
@@ -38,7 +37,7 @@ namespace Timelapse
         // Note. forceUpdate isn't currently used. However,
         // I kept it in in case I want to use it in the future.
 #pragma warning disable IDE0060 // Remove unused parameter
-        private async Task FilesSelectAndShow(long imageID, FileSelectionEnum selection)
+        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
         #pragma warning restore IDE0060 // Remove unused parameter
         {
             // change selection
@@ -46,14 +45,14 @@ namespace Timelapse
             if (this.dataHandler == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
-                return ;
+                return false;
             }
             if (this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
-                return ;
+                return false;
             }
-            this.BusyIndicator.IsBusy = true; // Display the busy indicator
+
             // Select the files according to the given selection
             // Note that our check for missing actually checks to see if the file exists,
             // which is why its a different operation
@@ -72,8 +71,7 @@ namespace Timelapse
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
-                await this.dataHandler.FileDatabase.SelectFiles(selection).ConfigureAwait(true);
-                this.dataHandler.FileDatabase.FileTable.BindDataGrid(this.dataHandler.FileDatabase.boundGrid, this.dataHandler.FileDatabase.onFileDataTableRowChanged);
+                this.dataHandler.FileDatabase.SelectFiles(selection);
             }
             Mouse.OverrideCursor = null;
 
@@ -124,8 +122,7 @@ namespace Timelapse
 
                 selection = FileSelectionEnum.All;
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
-                await this.dataHandler.FileDatabase.SelectFiles(selection).ConfigureAwait(true);
-                this.dataHandler.FileDatabase.FileTable.BindDataGrid(this.dataHandler.FileDatabase.boundGrid, this.dataHandler.FileDatabase.onFileDataTableRowChanged);
+                this.dataHandler.FileDatabase.SelectFiles(selection);
             }
 
             // Change the selection to reflect what the user selected. Update the menu state accordingly
@@ -195,8 +192,7 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
-            this.BusyIndicator.IsBusy = false; // Display the busy indicator
-            return;
+            return true;
         }
     }
 }
