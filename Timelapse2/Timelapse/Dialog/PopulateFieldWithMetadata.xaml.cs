@@ -310,10 +310,10 @@ namespace Timelapse.Dialog
                     imagesToUpdate.Add(imageUpdate);
                 }
 
+                this.IsAnyDataUpdated = true;
                 progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.fileDatabase.UpdateFiles(imagesToUpdate);
-                this.IsAnyDataUpdated = true;
                 return keyValueList;
             }, this.Token).ConfigureAwait(true);
         }

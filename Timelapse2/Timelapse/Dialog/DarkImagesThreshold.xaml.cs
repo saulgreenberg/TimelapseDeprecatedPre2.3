@@ -35,9 +35,12 @@ namespace Timelapse.Dialog
         private readonly FileTableEnumerator imageEnumerator;
         private bool isColor;
         private bool updateImageQualityForAllSelectedImagesStarted;
-        private readonly bool stop;
+
         private DispatcherTimer dispatcherTimer = new DispatcherTimer();
         private bool displatcherTimerIsPlaying = false;
+
+        // Tracks whether any changes to the data or database are made
+        private bool IsAnyDataUpdated = false;
 
         #region Initialization
         public DarkImagesThreshold(TimelapseWindow owner, FileDatabase fileDatabase, TimelapseUserRegistrySettings state, int currentImageIndex) : base(owner)
@@ -58,7 +61,6 @@ namespace Timelapse.Dialog
             this.disposed = false;
             this.isColor = false;
             this.updateImageQualityForAllSelectedImagesStarted = false;
-            this.stop = false;
             this.state = state;
 
             dispatcherTimer.Tick += this.DispatcherTimer_Tick;
@@ -84,6 +86,11 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Closing and Disposing
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
+        }
+
         public void Dispose()
         {
             this.Dispose(true);
@@ -215,12 +222,19 @@ namespace Timelapse.Dialog
         private async Task BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
             // Set up a progress handler that will update the progress bar
-            Progress<UpdateProgressArguments> progressHandler = new Progress<UpdateProgressArguments>(value =>
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
             });
-            IProgress<UpdateProgressArguments> progress = progressHandler as IProgress<UpdateProgressArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            //// Set up a progress handler that will update the progress bar
+            //Progress<UpdateProgressArguments> progressHandler = new Progress<UpdateProgressArguments>(value =>
+            //{
+            //    // Update the progress bar
+            //    this.UpdateProgressDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
+            //});
+            //IProgress<UpdateProgressArguments> progress = progressHandler as IProgress<UpdateProgressArguments>;
 
             await Task.Run(() =>
             {
@@ -230,10 +244,13 @@ namespace Timelapse.Dialog
                 int fileIndex = 0;
                 foreach (ImageRow file in selectedFiles)
                 {
-                    if (this.stop)
+                    if (Token.IsCancellationRequested)
                     {
-                        break;
+                        // A cancel was requested. Clear all pending changes and abort
+                        filesToUpdate.Clear();
+                        return;
                     }
+
                     ImageQuality imageQuality = new ImageQuality(file);
                     try
                     {
@@ -271,20 +288,62 @@ namespace Timelapse.Dialog
                     fileIndex++;
                     if (this.ReadyToRefresh())
                     {
-                        progress.Report(new UpdateProgressArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
+                        int percentDone = (int)(100.0 * fileIndex / selectedFiles.Count);
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFiles.Count, file.File), true, false)) ;
+
+                        //progress.Report(new UpdateProgressArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }
 
                 // Update the database to reflect the changed values
+                // Tracks whether any changes to the data or database are made
+                progress.Report(new ProgressBarArguments(100, String.Format("Writing changes for {0} files. Please wait...", filesToUpdate.Count), false, true));
+                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                this.IsAnyDataUpdated = true;
                 this.fileDatabase.UpdateFiles(filesToUpdate);
-            }).ConfigureAwait(true);
+            }, this.Token).ConfigureAwait(true);
 
             this.DisplayImageAndDetails();
-            this.ApplyButton.IsEnabled = true;
+            this.StartDoneButton.IsEnabled = true;
             this.CancelButton.IsEnabled = false;
             TimelapseWindow tw = (TimelapseWindow)this.Owner;
             tw.MaybeFileShowCountsDialog(false, this.Owner);
+        }
+        #endregion
+
+        #region ProgressBar helper
+        // Show progress information in the progress bar, and to enable or disable its cancel button
+        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
+        {
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
+            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+
+            if (bar != null & !randomEnabled)
+            {
+                // Treat it as a progressive progress bar
+                bar.Value = percent;
+                bar.IsIndeterminate = false;
+            }
+            else if (randomEnabled)
+            {
+                // If its at 100%, treat it as a random bar
+                bar.IsIndeterminate = true;
+            }
+
+            // Update the text message
+            if (textMessage != null)
+            {
+                textMessage.Content = message;
+            }
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            if (cancelButton != null)
+            {
+                cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
+            }
         }
         #endregion
 
@@ -520,14 +579,14 @@ namespace Timelapse.Dialog
 
         #region Button callbacks
         // Update the database if the OK button is clicked
-        private async void ApplyButton_Click(object sender, RoutedEventArgs e)
+        private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            // second click - exit
-            if (this.updateImageQualityForAllSelectedImagesStarted)
-            {
-                this.DialogResult = true;
-                return;
-            }
+            //// second click - exit
+            //if (this.updateImageQualityForAllSelectedImagesStarted)
+            //{
+            //    this.DialogResult = true;
+            //    return;
+            //}
 
             // first click - do update
             // Update the variables to the current settings
@@ -535,44 +594,48 @@ namespace Timelapse.Dialog
             this.state.DarkPixelRatioThreshold = this.darkPixelRatio;
 
             // update the UI
-            this.CancelButton.Content = "_Stop";
-            this.updateImageQualityForAllSelectedImagesStarted = true;
-            this.ApplyButton.Content = "_Done";
-            this.ApplyButton.IsEnabled = false;
-            this.DarkPixelRatioThumb.IsEnabled = false;
-            this.DarkThreshold.IsEnabled = false;
-            this.PreviousFile.IsEnabled = false;
-            this.NextFile.IsEnabled = false;
-            this.ScrollImages.IsEnabled = false;
-            this.ResetButton.IsEnabled = false;
+            this.CancelButton.IsEnabled = false;
+            this.CancelButton.Visibility = Visibility.Hidden;
+            this.StartDoneButton.Content = "_Done";
+            this.StartDoneButton.Click -= this.StartButton_Click;
+            this.StartDoneButton.Click += this.DoneButton_Click;
+            this.StartDoneButton.IsEnabled = false;
+
+            //this.CancelButton.Content = "_Stop";
+            //this.updateImageQualityForAllSelectedImagesStarted = true;
+            //this.StartDoneButton.Content = "_Done";
+            //this.StartDoneButton.IsEnabled = false;
+            //this.DarkPixelRatioThumb.IsEnabled = false;
+            //this.DarkThreshold.IsEnabled = false;
+            //this.PreviousFile.IsEnabled = false;
+            //this.NextFile.IsEnabled = false;
+            //this.ScrollImages.IsEnabled = false;
+            //this.ResetButton.IsEnabled = false;
+            this.BusyIndicator.IsBusy = true;
 
             await this.BeginUpdateImageQualityForAllSelectedImagesAsync().ConfigureAwait(true);
+
+            this.BusyIndicator.IsBusy = false;
             this.DisplayImageAndDetails(); // Goes back to the original image
+        }
+
+        private void DoneButton_Click(object sender, RoutedEventArgs e)
+        {
+            // We return false if the database was not altered, i.e., if this was all a no-op
+            this.DialogResult = this.IsAnyDataUpdated;
         }
 
         // Cancel or Stop - exit the dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = false;
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; //((string)this.btnCancel.Content == "Cancel") ? false : true;
         }
         #endregion
 
-        #region Class UpdateProgressArguments
-        private class UpdateProgressArguments
+        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
         {
-            public int PercentDone { get; set; }
-            public int TotalCount { get; set; }
-            public ImageQuality ImageQuality { get; set; }
-
-            public UpdateProgressArguments(int percentDone, int totalCount, ImageQuality imageQuality)
-            {
-                this.PercentDone = percentDone;
-                this.TotalCount = totalCount;
-                this.ImageQuality = imageQuality;
-            }
+            // Set this so that it will be caught in the above await task
+            this.TokenSource.Cancel();
         }
-        #endregion
-
-
     }
 }
