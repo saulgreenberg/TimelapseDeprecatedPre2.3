@@ -98,10 +98,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // This completes processing, but it may be some time before the task is checked for completion.
                 // for purposes of reporting progress, call the completion delegate provided.
 
-                if (OnImageLoadComplete != null)
-                {
-                    OnImageLoadComplete();
-                }
+                OnImageLoadComplete?.Invoke();
             });
         }
     }

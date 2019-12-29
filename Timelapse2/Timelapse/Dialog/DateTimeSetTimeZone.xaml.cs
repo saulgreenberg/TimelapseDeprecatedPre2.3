@@ -47,32 +47,36 @@ namespace Timelapse.Dialog
 
         private void PreviewDateTimeChanges()
         {
-            this.PrimaryPanel.Visibility = Visibility.Collapsed;
-            this.FeedbackPanel.Visibility = Visibility.Visible;
+            // SAULXXX MODIFIED this.TimeZoneUpdateFeedback.AddFeedbackRow, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
+            // CURRENTLY COMMENTED OUT JUST TO AVOID MESSAGE WARNINGS ABOUT UNUSED PARAMETERS
+            //this.PrimaryPanel.Visibility = Visibility.Collapsed;
+            //this.FeedbackPanel.Visibility = Visibility.Visible;
 
-            // Preview the changes
-            TimeZoneInfo newTimeZone = this.TimeZones.TimeZonesByDisplayName[(string)this.TimeZones.SelectedItem];
-            foreach (ImageRow image in this.fileDatabase.FileTable)
-            {
-                string newDateTime = String.Empty;
-                string status;
-                DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
-                TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
-                DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);
+            //// Preview the changes
+            //TimeZoneInfo newTimeZone = this.TimeZones.TimeZonesByDisplayName[(string)this.TimeZones.SelectedItem];
+            //foreach (ImageRow image in this.fileDatabase.FileTable)
+            //{
+                // SAULXXX MODIFIED this.TimeZoneUpdateFeedback.AddFeedbackRow, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
+                // CURRENTLY COMMENTED OUT JUST TO AVOID MESSAGE WARNINGS ABOUT UNUSED PARAMETERS
+                //string newDateTime = String.Empty;
+                //string status;
+                //DateTimeOffset currentImageDateTime = image.DateTimeIncorporatingOffset;
+                //TimeSpan utcOffset = newTimeZone.GetUtcOffset(currentImageDateTime);
+                //DateTimeOffset previewImageDateTime = currentImageDateTime.SetOffset(utcOffset);
 
-                // Pretty print the adjustment time
-                if (currentImageDateTime != previewImageDateTime)
-                {
-                    status = "Changed";
-                    newDateTime = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(previewImageDateTime);
-                }
-                else
-                {
-                    status = "Unchanged";
-                }
-                // SAULXXX MODIFIED THIS, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
-                // this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
-            }
+                //// Pretty print the adjustment time
+                //if (currentImageDateTime != previewImageDateTime)
+                //{
+                //    status = "Changed";
+                //    newDateTime = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(previewImageDateTime);
+                //}
+                //else
+                //{
+                //    status = "Unchanged";
+                //}
+
+                //this.TimeZoneUpdateFeedback.AddFeedbackRow(image.File, status, DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentImageDateTime), newDateTime, String.Empty);
+            //}
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

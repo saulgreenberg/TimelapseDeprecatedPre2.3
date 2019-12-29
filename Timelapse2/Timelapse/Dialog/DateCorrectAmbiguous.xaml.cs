@@ -178,7 +178,7 @@ namespace Timelapse.Dialog
                     {
                         dateIndex++;
                         int percentDone = Convert.ToInt32(dateIndex / Convert.ToDouble(count) * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Swapping day with month for {0} / {1} ambiguous dates", dateIndex, count)));
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Swapping day with month for {0} / {1} ambiguous dates", dateIndex, count), false, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                     // The cancellation pattern is shown commented out. We don't do anything with the cancellation token, as we are actually updating the database at this point
@@ -202,13 +202,13 @@ namespace Timelapse.Dialog
             Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
             Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
 
-            if (bar != null & percent < 100)
+            if (bar != null && !cancelEnabled)
             {
                 // Treat it as a progressive progress bar
                 bar.Value = percent;
                 bar.IsIndeterminate = false;
             }
-            else
+            else if (cancelEnabled)
             {
                 // If its at 100%, treat it as a random bar
                 bar.IsIndeterminate = true;
@@ -223,8 +223,8 @@ namespace Timelapse.Dialog
             // We don't want the cancel button enabled
             if (cancelButton != null)
             {
-                cancelButton.IsEnabled = false;
-                cancelButton.Content = "Writing data...";
+                cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelEnabled ? "Cancel": "Writing data...";
             }
         }
         #endregion

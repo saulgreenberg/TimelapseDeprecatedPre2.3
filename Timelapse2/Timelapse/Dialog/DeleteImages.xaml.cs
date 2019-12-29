@@ -103,7 +103,8 @@ namespace Timelapse.Dialog
             {
                 filePath = filePath.Length <= this.maxPathLength ? filePath : "..." + filePath.Substring(filePath.Length - this.maxPathLength, this.maxPathLength);
             }
-            this.SingleImageViewer.Source = imageRow.LoadBitmap(this.fileDatabase.FolderPath, Constant.ImageValues.PreviewWidth480, out bool isCorruptOrMissing);
+
+            this.SingleImageViewer.Source = imageRow.LoadBitmap(this.fileDatabase.FolderPath, Constant.ImageValues.PreviewWidth480, out _);
             this.SingleFilePanel.ToolTip = Path.Combine(imageRow.RelativePath, imageRow.File);
             this.SingleImageViewer.ToolTip = Path.Combine(imageRow.RelativePath, imageRow.File);
             this.SingleFileNameRun.Text = filePath;
@@ -249,7 +250,7 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), false));
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), false, true));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
                     }
                 }
@@ -282,15 +283,14 @@ namespace Timelapse.Dialog
         // When the user enters a listbox item, show the image
         private void Lbi_MouseEnter(object sender, MouseEventArgs e)
         {
-            ListBoxItem lbi = sender as ListBoxItem;
-            if (lbi == null)
+            if (!(sender is ListBoxItem lbi))
             {
                 return;
             }
             ImageRow ir = (ImageRow)lbi.Tag;
             Image image = new Image()
             {
-                Source = ir.LoadBitmap(this.fileDatabase.FolderPath, Constant.ImageValues.PreviewWidth384, out bool isCorruptOrMissing),
+                Source = ir.LoadBitmap(this.fileDatabase.FolderPath, Constant.ImageValues.PreviewWidth384, out _),
                 Height = 300,
                 HorizontalAlignment = HorizontalAlignment.Left
             };
@@ -300,8 +300,7 @@ namespace Timelapse.Dialog
         // When the user leaves a listbox item, remove the image
         private void Lbi_MouseLeave(object sender, MouseEventArgs e)
         {
-            ListBoxItem lbi = sender as ListBoxItem;
-            if (lbi == null)
+            if (!(sender is ListBoxItem lbi))
             {
                 return;
             }
@@ -317,13 +316,13 @@ namespace Timelapse.Dialog
             Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
             Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
 
-            if (bar != null & percent < 100)
+            if (bar != null & !randomEnabled)
             {
                 // Treat it as a progressive progress bar
                 bar.Value = percent;
                 bar.IsIndeterminate = false;
             }
-            else
+            else if (randomEnabled)
             {
                 // If its at 100%, treat it as a random bar
                 bar.IsIndeterminate = true;
@@ -339,7 +338,7 @@ namespace Timelapse.Dialog
             if (cancelButton != null)
             {
                 cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
+                cancelButton.Content = cancelEnabled ? "Cancel" : "Writing data...";
             }
         }
         #endregion
