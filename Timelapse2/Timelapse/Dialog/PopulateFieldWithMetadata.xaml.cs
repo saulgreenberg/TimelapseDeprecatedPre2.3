@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.ExifTool;
 using Timelapse.Util;
@@ -17,7 +18,7 @@ namespace Timelapse.Dialog
     /// a list of metadata found in the current image. It asks the user to select one from each.
     /// The user can then populate the selected data field with the corresponding metadata value from that image for all images.
     /// </summary>
-    public partial class PopulateFieldWithMetadata : Window, IDisposable
+    public partial class PopulateFieldWithMetadata : DialogWindow, IDisposable 
     {
         private readonly FileDatabase fileDatabase;
         private readonly string filePath;
@@ -37,15 +38,21 @@ namespace Timelapse.Dialog
 
 
         #region Initialization
-        public PopulateFieldWithMetadata(FileDatabase fileDatabase, string filePath)
+        public PopulateFieldWithMetadata(Window owner, FileDatabase fileDatabase, string filePath) : base(owner)
         {
+            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
+
             this.InitializeComponent();
-            this.clearIfNoMetadata = false;
             this.fileDatabase = fileDatabase;
+            this.filePath = filePath;
+
+            // Store various states as set by the user
+            this.clearIfNoMetadata = false;
+
+            this.dataLabelByLabel = new Dictionary<string, string>();
             this.dataFieldLabel = String.Empty;
             this.dataFieldSelected = false;
-            this.dataLabelByLabel = new Dictionary<string, string>();
-            this.filePath = filePath;
+
             this.metadataFieldName = String.Empty;
             this.metadataFieldSelected = false;
             this.noMetadataAvailable = true;
@@ -56,7 +63,7 @@ namespace Timelapse.Dialog
         // - Load the names of the note controls into the listbox
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dialogs.TryPositionAndFitDialogIntoWindow(this);
+            // Set up the initial UI and values
 
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
@@ -70,10 +77,11 @@ namespace Timelapse.Dialog
                     this.DataFields.Items.Add(control.Label);
                 }
             }
+
             // Show the metadata of the current image, depending on the kind of tool selected
             this.MetadataToolType_Checked(null, null);
 
-            // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
+            // Add callbacks to the radio buttons. We do it here so they are not invoked when the window is loaded.
             this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;
             this.ExifToolRB.Checked += this.MetadataToolType_Checked;
         }
@@ -164,26 +172,15 @@ namespace Timelapse.Dialog
 
         #region Do the work: Populate the database 
         // Populate the database with the metadata for the selected note field
-        private void Populate()
+        private void Populate(bool? metadataExtractorRBIsChecked)
         {
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<KeyValuePair<string, string>> keyValueList = new ObservableCollection<KeyValuePair<string, string>>();
-            bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
 
-            // Update the UI to show the feedback datagrid, 
-            this.PopulatingMessage.Text = "Populating '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
-            this.PopulateButton.Visibility = Visibility.Collapsed; // Hide the populate button, as we are now in the act of populating things
-            this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
-            this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
-            this.DataFields.Visibility = Visibility.Collapsed;
-            this.FeedbackPanel.Visibility = Visibility.Visible;
-            this.PanelHeader.Visibility = Visibility.Collapsed;
-            this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
-
-#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
+            #pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker() { WorkerReportsProgress = true };
-#pragma warning restore CA2000 // Dispose objects before losing scope
+            #pragma warning restore CA2000 // Dispose objects before losing scope
             backgroundWorker.DoWork += (ow, ea) =>
             {
                 // this runs on the background thread; its written as an anonymous delegate
@@ -293,14 +290,9 @@ namespace Timelapse.Dialog
             {
                 // Show the results
                 this.FeedbackGrid.ItemsSource = keyValueList;
-                this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
-                this.btnCancel.IsEnabled = true;
                 this.BusyIndicator.IsBusy = false;
-                this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
-                if (this.exifTool != null)
-                {
-                    this.exifTool.Stop();
-                }
+
+
             };
             this.BusyIndicator.IsBusy = true;
 
@@ -402,7 +394,29 @@ namespace Timelapse.Dialog
         #region Button callbacks
         private void PopulateButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Populate();
+            // Update the UI to show the feedback datagrid, 
+            this.PopulatingMessage.Text = "Populating '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
+            this.PopulateButton.Visibility = Visibility.Collapsed; // Hide the populate button, as we are now in the act of populating things
+            this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
+            this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
+            this.DataFields.Visibility = Visibility.Collapsed;
+            this.FeedbackPanel.Visibility = Visibility.Visible;
+            this.PanelHeader.Visibility = Visibility.Collapsed;
+            this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
+
+            bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
+
+            // This call does all the actual populating...
+            this.Populate(metadataExtractorRBIsChecked);
+
+            // Update the UI to its final state
+            this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
+            this.btnCancel.IsEnabled = true;
+            this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
+            if (this.exifTool != null)
+            {
+                this.exifTool.Stop();
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

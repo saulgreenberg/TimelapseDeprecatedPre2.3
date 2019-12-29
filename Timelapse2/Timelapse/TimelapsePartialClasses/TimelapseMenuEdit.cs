@@ -108,7 +108,7 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-                using (PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
+                using (PopulateFieldWithMetadata populateField = new PopulateFieldWithMetadata(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
                 {
                     if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                     {
