@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Controls;
@@ -18,7 +19,7 @@ namespace Timelapse.Dialog
     /// a list of metadata found in the current image. It asks the user to select one from each.
     /// The user can then populate the selected data field with the corresponding metadata value from that image for all images.
     /// </summary>
-    public partial class PopulateFieldWithMetadata : DialogWindow, IDisposable 
+    public partial class PopulateFieldWithMetadata : DialogWindow, IDisposable
     {
         private readonly FileDatabase fileDatabase;
         private readonly string filePath;
@@ -36,6 +37,8 @@ namespace Timelapse.Dialog
         private bool metadataFieldSelected;
         private bool noMetadataAvailable;
 
+        // Tracks whether any changes to the data or database are made
+        private bool IsAnyDataUpdated = false;
 
         #region Initialization
         public PopulateFieldWithMetadata(Window owner, FileDatabase fileDatabase, string filePath) : base(owner)
@@ -103,6 +106,34 @@ namespace Timelapse.Dialog
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);
             this.AvailableMetadataDataGrid.Columns[0].Visibility = Visibility.Collapsed;
             this.AvailableMetadataDataGrid.Columns[1].Visibility = Visibility.Collapsed;
+        }
+
+        #endregion
+
+        #region Closing and Disposing
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
+        }
+
+        // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // dispose managed resources
+                if (this.exifTool != null)
+                {
+                    this.exifTool.Dispose();
+                }
+            }
+            // free native resources
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
         #endregion
 
@@ -172,23 +203,23 @@ namespace Timelapse.Dialog
 
         #region Do the work: Populate the database 
         // Populate the database with the metadata for the selected note field
-        private void Populate(bool? metadataExtractorRBIsChecked)
+        private async Task<ObservableCollection<KeyValuePair<string, string>>> Populate(bool? metadataExtractorRBIsChecked)
         {
+
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                // Update the progress bar
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<KeyValuePair<string, string>> keyValueList = new ObservableCollection<KeyValuePair<string, string>>();
 
-            #pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
-            BackgroundWorker backgroundWorker = new BackgroundWorker() { WorkerReportsProgress = true };
-            #pragma warning restore CA2000 // Dispose objects before losing scope
-            backgroundWorker.DoWork += (ow, ea) =>
+            return await Task.Run(() =>
             {
-                // this runs on the background thread; its written as an anonymous delegate
-                // We need to invoke this to allow updates on the UI
-                this.Dispatcher.Invoke(new Action(() =>
-                {
-                }));
-
                 // For each row in the database, get the image filename and try to extract the chosen metadata value.
                 // If we can't decide if we want to leave the data field alone or to clear it depending on the state of the isClearIfNoMetadata (set via the checkbox)
                 // Report progress as needed.
@@ -196,12 +227,19 @@ namespace Timelapse.Dialog
                 string dataLabelToUpdate = this.dataLabelByLabel[this.dataFieldLabel];
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
                 TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
-                int progress = 0;
+                int percentDone = 0;
 
                 double totalImages = this.fileDatabase.CurrentlySelectedFileCount;
                 Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
                 for (int imageIndex = 0; imageIndex < this.fileDatabase.CurrentlySelectedFileCount; ++imageIndex)
                 {
+                    // Provide feedback if the operation was cancelled during the database update
+                    if (Token.IsCancellationRequested == true)
+                    {
+                        keyValueList.Clear();
+                        keyValueList.Add(new KeyValuePair<string,string>("Cancelled", "No changes were made"));
+                        return keyValueList;
+                    }
 
                     ImageRow image = this.fileDatabase.FileTable[imageIndex];
                     if (metadataExtractorRBIsChecked == true)
@@ -219,8 +257,13 @@ namespace Timelapse.Dialog
                             metadata.Add(tags[0], new Timelapse.Util.ImageMetadata(String.Empty, tags[0], exifData[tags[0]]));
                         }
                     }
-                    progress = Convert.ToInt32(imageIndex / totalImages * 100.0);
-                    backgroundWorker.ReportProgress(progress, new FeedbackMessage(String.Format("{0}/{1} images. Processing ", imageIndex, totalImages), image.File));
+
+                    if (this.ReadyToRefresh())
+                    {
+                        percentDone = Convert.ToInt32(imageIndex / totalImages * 100.0);
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", imageIndex, totalImages, image.File), true, false));
+                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                    }
 
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
@@ -270,50 +313,54 @@ namespace Timelapse.Dialog
                         keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
                     }
                     imagesToUpdate.Add(imageUpdate);
-
-                    if (imageIndex % Constant.ThrottleValues.SleepForImageRenderInterval == 0)
-                    {
-                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime); // Put in a short delay every now and then, as otherwise the UI may not update.
-                    }
                 }
-                backgroundWorker.ReportProgress(progress, new FeedbackMessage("Writing the data...", "Please wait..."));
+
+                progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
+                Thread.Sleep(2000);
+                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.fileDatabase.UpdateFiles(imagesToUpdate);
-                backgroundWorker.ReportProgress(progress, new FeedbackMessage("Done", String.Empty));
-            };
-            backgroundWorker.ProgressChanged += (o, ea) =>
-            {
-                // Update the progress bar with a message
-                FeedbackMessage message = (FeedbackMessage)ea.UserState;
-                this.UpdateMetadataLoadProgress(ea.ProgressPercentage, message.Message + message.FileName);
-            };
-            backgroundWorker.RunWorkerCompleted += (o, ea) =>
-            {
-                // Show the results
-                this.FeedbackGrid.ItemsSource = keyValueList;
-                this.BusyIndicator.IsBusy = false;
-
-
-            };
-            this.BusyIndicator.IsBusy = true;
-
-            // Set up the user interface to show the progress bar
-            backgroundWorker.RunWorkerAsync();
+                this.IsAnyDataUpdated = true;
+                return keyValueList;
+            }, this.Token).ConfigureAwait(true);
         }
+        #endregion
 
-        private void UpdateMetadataLoadProgress(int percent, string message)
+        #region ProgressBar helper
+        // Show progress information in the progress bar, and to enable or disable its cancel button
+        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
         {
             ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
-            if (bar != null)
+            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
+            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+
+            if (bar != null & !randomEnabled)
             {
+                // Treat it as a progressive progress bar
                 bar.Value = percent;
+                bar.IsIndeterminate = false;
             }
-            if (textmessage != null)
+            else if (randomEnabled)
             {
-                textmessage.Text = message;
+                // If its at 100%, treat it as a random bar
+                bar.IsIndeterminate = true;
+            }
+
+            // Update the text message
+            if (textMessage != null)
+            {
+                textMessage.Content = message;
+            }
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            if (cancelButton != null)
+            {
+                cancelButton.IsEnabled = cancelEnabled;
+                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
             }
         }
         #endregion
+    
+
 
         #region Callbacks to select and assign metadata fields
         // Datagrid Callack where the user has selected a row. Get the metadata from that row, and make it the selected metadata.
@@ -392,7 +439,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Button callbacks
-        private void PopulateButton_Click(object sender, RoutedEventArgs e)
+        private async void PopulateButton_Click(object sender, RoutedEventArgs e)
         {
             // Update the UI to show the feedback datagrid, 
             this.PopulatingMessage.Text = "Populating '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
@@ -403,13 +450,17 @@ namespace Timelapse.Dialog
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.PanelHeader.Visibility = Visibility.Collapsed;
             this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
+            this.CloseButtonIsEnabled(false);
 
             bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
+            this.BusyIndicator.IsBusy = true;
 
             // This call does all the actual populating...
-            this.Populate(metadataExtractorRBIsChecked);
+            ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.Populate(metadataExtractorRBIsChecked).ConfigureAwait(true);
 
             // Update the UI to its final state
+            this.FeedbackGrid.ItemsSource = keyValueList;
+            this.BusyIndicator.IsBusy = false;
             this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
             this.btnCancel.IsEnabled = true;
             this.PopulatingMessage.Text = "Populated '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows."; //this.dataFieldLabel
@@ -417,36 +468,21 @@ namespace Timelapse.Dialog
             {
                 this.exifTool.Stop();
             }
+            this.CloseButtonIsEnabled(true);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = ((string)this.btnCancel.Content == "Cancel") ? false : true;
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; //((string)this.btnCancel.Content == "Cancel") ? false : true;
         }
 
+        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Set this so that it will be caught in the above await task
+            this.TokenSource.Cancel();
+        }
         #endregion
 
-        #region Disposing
-        // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // dispose managed resources
-                if (this.exifTool != null)
-                {
-                    this.exifTool.Dispose();
-                }
-            }
-            // free native resources
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
 
         #region Class FeedbackMessage
         // Class that tracks our progress as we load the images
@@ -463,5 +499,7 @@ namespace Timelapse.Dialog
             }
         }
         #endregion
+
+
     }
 }

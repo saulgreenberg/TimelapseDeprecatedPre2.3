@@ -12,7 +12,7 @@
 		Height="856" Width="840"
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
-		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
+		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded" Closing="Window_Closing">
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Question"
@@ -96,24 +96,27 @@
                     Grid.Column="0" Grid.Row="1">
                 </DataGrid>
 
-                <!-- Busy Indicator-->
-                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="1" >
+                <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
+                <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
+
+                    <!-- Construct the new content: A text message, a progress bar and a cancel button -->
                     <xceed:BusyIndicator.BusyContentTemplate>
                         <DataTemplate>
                             <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                                <StackPanel Margin="4,0,4,0">
-                                    <Label Name="foo" Content="Please wait..." />
-                                    <ProgressBar Name="bar" Value="0" Height="15" />
-                                </StackPanel>
+                                <Label Content="Please wait..." />
+                                <ProgressBar Value="0" Height="15" />
+                                <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
                             </StackPanel>
                         </DataTemplate>
                     </xceed:BusyIndicator.BusyContentTemplate>
-                    <xceed:BusyIndicator.ProgressBarStyle>
+
+                    <!-- Collapse its default ProgressBar as we don't use it  -->
+                    <xceed:BusyIndicator.ProgressBarStyle >
                         <Style TargetType="ProgressBar">
                             <Setter Property="Visibility" Value="Collapsed"/>
                         </Style>
                     </xceed:BusyIndicator.ProgressBarStyle>
-                </xceed:BusyIndicator>
+                </xceed:BusyIndicator >
             </Grid>
         </DockPanel>
     </DockPanel>
