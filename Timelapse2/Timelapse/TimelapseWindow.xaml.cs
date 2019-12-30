@@ -857,29 +857,6 @@ namespace Timelapse
             return true;
         }
 
-        public void MaybeFileShowCountsDialog(bool onFileLoading, Window owner)
-        {
-            if (onFileLoading && this.State.SuppressFileCountOnImportDialog)
-            {
-                return;
-            }
-
-            // Show the counts in the selected files only
-            // Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles(); // This would show counts over all files
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInCurrentSelection();
-            FileCountsByQuality imageStats = new FileCountsByQuality(counts, owner);
-            if (onFileLoading)
-            {
-                imageStats.Message.Hint = "\u2022 " + imageStats.Message.Hint + Environment.NewLine + "\u2022 If you check don't show this message again this dialog can be turned back on via the Options menu.";
-                imageStats.DontShowAgain.Visibility = Visibility.Visible;
-            }
-            Nullable<bool> result = imageStats.ShowDialog();
-            if (onFileLoading && result.HasValue && result.Value && imageStats.DontShowAgain.IsChecked.HasValue)
-            {
-                this.State.SuppressFileCountOnImportDialog = imageStats.DontShowAgain.IsChecked.Value;
-            }
-        }
-
         // Returns the currently active counter control, otherwise null
         private DataEntryCounter FindSelectedCounter()
         {

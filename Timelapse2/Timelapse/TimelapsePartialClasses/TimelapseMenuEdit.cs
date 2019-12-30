@@ -380,9 +380,12 @@ namespace Timelapse
                 using (DarkImagesThreshold darkThreshold = new DarkImagesThreshold(this, this.dataHandler.FileDatabase, this.State, this.dataHandler.ImageCache.CurrentRow))
                 {
                     darkThreshold.Owner = this;
-                    darkThreshold.ShowDialog();
-                    // Force an update of the current image in case the current values have changed
-                    this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
+                    if (darkThreshold.ShowDialog() == true)
+                    {
+                        // Force an update of the current image in case the current values have changed
+                        System.Diagnostics.Debug.Print("Updating Files with Dark");
+                        this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
+                    }
                 }
             }
         }

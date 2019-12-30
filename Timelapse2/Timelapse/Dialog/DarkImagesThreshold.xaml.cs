@@ -24,6 +24,10 @@ namespace Timelapse.Dialog
         private readonly FileDatabase fileDatabase;
         private readonly TimelapseUserRegistrySettings state;
 
+        private readonly bool updateImageQualityForAllSelectedImagesStarted;
+        private readonly DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        private readonly FileTableEnumerator imageEnumerator;
+
         private const int MinimumRectangleWidth = 12;
 
         private WriteableBitmap bitmap;
@@ -32,11 +36,9 @@ namespace Timelapse.Dialog
         private double darkPixelRatioFound;
 
         private bool disposed;
-        private readonly FileTableEnumerator imageEnumerator;
-        private bool isColor;
-        private bool updateImageQualityForAllSelectedImagesStarted;
 
-        private DispatcherTimer dispatcherTimer = new DispatcherTimer();
+        private bool isColor;
+
         private bool displatcherTimerIsPlaying = false;
 
         // Tracks whether any changes to the data or database are made
@@ -88,7 +90,7 @@ namespace Timelapse.Dialog
         #region Closing and Disposing
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
+            this.DialogResult = this.Token.IsCancellationRequested && this.IsAnyDataUpdated;
         }
 
         public void Dispose()
@@ -219,7 +221,7 @@ namespace Timelapse.Dialog
         /// </summary>
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:ParametersMustBeOnSameLineOrSeparateLines", Justification = "Reviewed.")]
 
-        private async Task BeginUpdateImageQualityForAllSelectedImagesAsync()
+        private async Task<string> BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
@@ -228,15 +230,8 @@ namespace Timelapse.Dialog
                 this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-            //// Set up a progress handler that will update the progress bar
-            //Progress<UpdateProgressArguments> progressHandler = new Progress<UpdateProgressArguments>(value =>
-            //{
-            //    // Update the progress bar
-            //    this.UpdateProgressDisplay(value.PercentDone, value.TotalCount, value.ImageQuality);
-            //});
-            //IProgress<UpdateProgressArguments> progress = progressHandler as IProgress<UpdateProgressArguments>;
 
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
                 // The selected files to check
                 List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
@@ -248,7 +243,7 @@ namespace Timelapse.Dialog
                     {
                         // A cancel was requested. Clear all pending changes and abort
                         filesToUpdate.Clear();
-                        return;
+                        return ("Cancelled - no changes made.");
                     }
 
                     ImageQuality imageQuality = new ImageQuality(file);
@@ -257,7 +252,7 @@ namespace Timelapse.Dialog
                         // Get the image, and add it to the list of images to be updated if the imageQuality has changed
                         // Note that if the image can't be created, we will just go to the catch.
                         // We also use a TransientLoading, as the estimate of darkness will work just fine on that
-                        imageQuality.Bitmap = file.LoadBitmap(this.fileDatabase.FolderPath, ImageDisplayIntentEnum.TransientLoading, out bool isCorruptOrMissing).AsWriteable();
+                        imageQuality.Bitmap = file.LoadBitmap(this.fileDatabase.FolderPath, ImageDisplayIntentEnum.TransientNavigating, out bool isCorruptOrMissing).AsWriteable();
                         if (isCorruptOrMissing)
                         {
                             // If we can't read the image, just set its quality to OK
@@ -289,7 +284,7 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = (int)(100.0 * fileIndex / selectedFiles.Count);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFiles.Count, file.File), true, false)) ;
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFiles.Count, file.File), true, false));
 
                         //progress.Report(new UpdateProgressArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
@@ -302,13 +297,10 @@ namespace Timelapse.Dialog
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.IsAnyDataUpdated = true;
                 this.fileDatabase.UpdateFiles(filesToUpdate);
+                return filesToUpdate.Count > 0
+                ? String.Format("{0} files examined, with {1} updated to reflect changes.", selectedFiles.Count, filesToUpdate.Count)
+                : String.Format("{0} files examined. None were updated as nothing has changed.", selectedFiles.Count);
             }, this.Token).ConfigureAwait(true);
-
-            this.DisplayImageAndDetails();
-            this.StartDoneButton.IsEnabled = true;
-            this.CancelButton.IsEnabled = false;
-            TimelapseWindow tw = (TimelapseWindow)this.Owner;
-            tw.MaybeFileShowCountsDialog(false, this.Owner);
         }
         #endregion
 
@@ -344,44 +336,6 @@ namespace Timelapse.Dialog
                 cancelButton.IsEnabled = cancelEnabled;
                 cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
             }
-        }
-        #endregion
-
-        #region Progress Display
-        private void UpdateProgressDisplay(int percentDone, int totalCount, ImageQuality imageQuality)
-        {
-            // this gets called on the UI thread
-            // ImageQuality imageQuality = (ImageQuality)ea.UserState;
-            this.Image.Source = imageQuality.Bitmap;
-
-            this.FileName.Content = imageQuality.FileName;
-            this.OriginalClassification.Content = imageQuality.OldImageQuality;
-            this.NewClassification.Content = imageQuality.NewImageQuality;
-            this.DarkPixelRatio.Content = String.Format("{0,3:##0}%", 100 * this.darkPixelRatio);
-            this.RatioFound.Content = String.Format("{0,3:##0}", 100 * imageQuality.DarkPixelRatioFound);
-
-            if (imageQuality.IsColor) // color image 
-            {
-                this.ThresholdMessage.Text = "Color - therefore not dark";
-                this.Percent.Visibility = Visibility.Hidden;
-                this.RatioFound.Content = String.Empty;
-            }
-            else
-            {
-                this.ThresholdMessage.Text = "of the pixels are darker than the threshold";
-                this.Percent.Visibility = Visibility.Visible;
-            }
-
-            // Size the bar to show how many pixels in the current image are at least as dark as that color
-            this.RectDarkPixelRatioFound.Width = this.FeedbackCanvas.ActualWidth * imageQuality.DarkPixelRatioFound;
-            if (this.RectDarkPixelRatioFound.Width < 6)
-            {
-                this.RectDarkPixelRatioFound.Width = 6; // Just so something is always visible
-            }
-            this.RectDarkPixelRatioFound.Height = this.FeedbackCanvas.ActualHeight;
-
-            // update image scroll bar position
-            this.ScrollImages.Value = Math.Min(percentDone / 100.0 * totalCount, totalCount - 1);
         }
         #endregion
 
@@ -581,15 +535,7 @@ namespace Timelapse.Dialog
         // Update the database if the OK button is clicked
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            //// second click - exit
-            //if (this.updateImageQualityForAllSelectedImagesStarted)
-            //{
-            //    this.DialogResult = true;
-            //    return;
-            //}
-
-            // first click - do update
-            // Update the variables to the current settings
+            // Update state variables to the current settings
             this.state.DarkPixelThreshold = this.darkPixelThreshold;
             this.state.DarkPixelRatioThreshold = this.darkPixelRatio;
 
@@ -600,23 +546,25 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.StartButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-
-            //this.CancelButton.Content = "_Stop";
-            //this.updateImageQualityForAllSelectedImagesStarted = true;
-            //this.StartDoneButton.Content = "_Done";
-            //this.StartDoneButton.IsEnabled = false;
-            //this.DarkPixelRatioThumb.IsEnabled = false;
-            //this.DarkThreshold.IsEnabled = false;
-            //this.PreviousFile.IsEnabled = false;
-            //this.NextFile.IsEnabled = false;
-            //this.ScrollImages.IsEnabled = false;
-            //this.ResetButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
 
-            await this.BeginUpdateImageQualityForAllSelectedImagesAsync().ConfigureAwait(true);
+            string finalMessage = await this.BeginUpdateImageQualityForAllSelectedImagesAsync().ConfigureAwait(true);
+
 
             this.BusyIndicator.IsBusy = false;
-            this.DisplayImageAndDetails(); // Goes back to the original image
+            // Hide various buttons, the primary panel, and the image
+            this.StartDoneButton.IsEnabled = true;
+            this.CancelButton.IsEnabled = false;
+
+            this.PreviousFile.Visibility = Visibility.Hidden;
+            this.NextFile.Visibility = Visibility.Hidden;
+            this.ScrollImages.Visibility = Visibility.Hidden;
+            this.PlayFile.Visibility = Visibility.Hidden;
+            this.PrimaryPanel.Visibility = Visibility.Collapsed;
+            this.Image.Visibility = Visibility.Collapsed;
+
+            this.FinalMessage.Visibility = Visibility.Visible;
+            this.FinalMessage.Text = finalMessage;
         }
 
         private void DoneButton_Click(object sender, RoutedEventArgs e)
@@ -630,12 +578,12 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; //((string)this.btnCancel.Content == "Cancel") ? false : true;
         }
-        #endregion
 
         private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
         {
             // Set this so that it will be caught in the above await task
             this.TokenSource.Cancel();
         }
+        #endregion
     }
 }
