@@ -147,10 +147,7 @@ namespace Timelapse.Controls
                     case Constant.Control.FixedChoice:
                         DataEntryChoice choice = (DataEntryChoice)pair.Value;
                         choice.ContentControl.SelectionChanged += this.ChoiceControl_SelectionChanged;
-                        if (controlType == Constant.Control.FixedChoice)
-                        {
-                            this.SetContextMenuCallbacks(choice);
-                        }
+                        this.SetContextMenuCallbacks(choice);
                         break;
                     case Constant.Control.Counter:
                         DataEntryCounter counter = (DataEntryCounter)pair.Value;
