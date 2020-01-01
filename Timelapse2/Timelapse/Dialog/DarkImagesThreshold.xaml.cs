@@ -285,8 +285,6 @@ namespace Timelapse.Dialog
                     {
                         int percentDone = (int)(100.0 * fileIndex / selectedFiles.Count);
                         progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFiles.Count, file.File), true, false));
-
-                        //progress.Report(new UpdateProgressArguments((int)(100.0 * fileIndex / selectedFiles.Count), selectedFiles.Count, imageQuality));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }

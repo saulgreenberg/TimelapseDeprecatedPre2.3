@@ -8,7 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -1967,8 +1970,76 @@ namespace Timelapse.Database
         }
 
         #region DETECTION INTEGRATION
-        public bool PopulateDetectionTables(string path, List<string> dbMissingFolders)
+        // To help determine periodic updates to the progress bar 
+        private DateTime lastRefreshDateTime = DateTime.Now;
+        protected bool ReadyToRefresh()
         {
+            TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
+            if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
+            {
+                this.lastRefreshDateTime = DateTime.Now;
+                return true;
+            }
+            return false;
+        }
+
+        private void PStream_BytesRead(object sender,
+                                      ProgressStreamReportEventArgs args)
+        {
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
+            long current = args.StreamPosition;
+            long total = args.StreamLength;
+            double p = ((double)current) / ((double)total);
+            if (this.ReadyToRefresh())
+            {
+                // Update the progress bar
+                progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", true, false));
+                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+            }
+        }
+        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Code to run on the GUI thread.
+                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(GlobalReferences.MainWindow.BusyIndicator);
+                TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(GlobalReferences.MainWindow.BusyIndicator);
+                if (bar != null)
+                {
+                    bar.Value = percent;
+                }
+                if (textmessage != null)
+                {
+                    textmessage.Text = message;
+                }
+            });
+        }
+
+        //public delegate void UpdateLoadDelegate(double p);
+
+        //public void UpdateDetectionLoadProgress(double p)
+        //{
+
+        //    //if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
+        //    //    _UpdateDetectionLoadProgress(p);
+        //    //else 
+        //        this.Dispatcher.BeginInvoke(new UpdateLoadDelegate(_UpdateDetectionLoadProgress), p);
+        //}
+        public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> dbMissingFolders)
+        {
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                // Update the progress bar
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
             // Check the arguments for null 
             ThrowIf.IsNullArgument(dbMissingFolders, nameof(dbMissingFolders));
 
@@ -1976,51 +2047,63 @@ namespace Timelapse.Database
             {
                 return false;
             }
-            try
-            {
-                // using (Detector detector = JsonConvert.DeserializeObject<Detector>(File.ReadAllText(path))) 
-                // That call loads the whole json file into a string, then deserializes it.  
-                // This doubles the RAM requirement.  The .json library can open a file stream instead, as shown below, and deserializes from that directly. 
-                // Thus you never have the whole string in memory:
-                // TODO: SEE DAN MORRIS BRANCH 28 Jul 2019, which shows how to signal progress when reading JSON
-                using (StreamReader sr = new StreamReader(path))
-                {
-                    using (JsonReader reader = new JsonTextReader(sr))
-                    {
-                        JsonSerializer serializer = new JsonSerializer();
-                        Detector detector = serializer.Deserialize<Detector>(reader);
 
-                        // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
-                        if (this.CompareDetectorAndDBFolders(detector, dbMissingFolders) == false)
+            using (ProgressStream ps = new ProgressStream(System.IO.File.OpenRead(path)))
+            {
+                ps.BytesRead += new ProgressStreamReportDelegate(PStream_BytesRead);
+
+                using (TextReader sr = new StreamReader(ps))
+                {
+                    bool result = await Task.Run(() =>
+                    {
+                        try
                         {
-                            // No folders in the detections match folders in the databases. Abort without doing anything.
+                            using (JsonReader reader = new JsonTextReader(sr))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                Detector detector = serializer.Deserialize<Detector>(reader);
+
+                                // If detection population was previously done in this session, resetting these tables to null 
+                                // will force reading the new values into them
+                                this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                                this.detectionCategoriesDictionary = null;
+                                this.classificationCategoriesDictionary = null;
+                                this.classificationsDataTable = null;
+
+                                // Prepare the detection tables. If they already exist, clear them
+                                DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+
+                                // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
+                                if (this.CompareDetectorAndDBFolders(detector, dbMissingFolders) == false)
+                                {
+                                    // No folders in the detections match folders in the databases. Abort without doing anything.
+                                    return false;
+                                }
+                                // PERFORMANCE This method does two things:
+                                // - it walks through the detector data structure to construct sql insertion statements
+                                // - it invokes the actual insertion in the database.
+                                // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                                // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+
+                                    // Update the progress bar
+                                    progress.Report(new ProgressBarArguments((int)(0), "Updating database with detections. Please wait", true, false));
+                                    Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+
+                                DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
+                            }
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            System.Diagnostics.Debug.Print(e.Message + "Could not populate detection data");
                             return false;
                         }
-
-                        // Forces repopulating the data structure if it already exists.
-                        this.detectionDataTable = null;
-                        this.detectionCategoriesDictionary = null;
-                        this.classificationCategoriesDictionary = null;
-                        this.classificationsDataTable = null;
-
-                        // Prepare the detection tables. If they already exist, clear them
-                        DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
-
-                        // PERFORMANCE This method does two things:
-                        // - it walks through the detector data structure to construct sql insertion statements
-                        // - it invokes the actual insertion in the database.
-                        // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                        // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-                        DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
-                        return true;
-                    }
+                    }).ConfigureAwait(true);
                 }
             }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.Print(e.Message + "Could not populate detection data");
-                return false;
-            }
+
+            TimelapseWindow w = System.Windows.Application.Current.MainWindow as TimelapseWindow;
+            return true;
         }
 
         // Return true if there is at least one match between a detector folder and a DB folder

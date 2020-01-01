@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,6 +67,49 @@ namespace Timelapse
         }
 
         // Import Detection data
+
+        private static void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
+        {
+            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(GlobalReferences.MainWindow.BusyIndicator);
+            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(GlobalReferences.MainWindow.BusyIndicator);
+            if (bar != null)
+            {
+                bar.Value = percent;
+            }
+            if (textmessage != null)
+            {
+                textmessage.Text = message;
+            }
+        }
+
+        //private void _UpdateDetectionLoadProgress(double p)
+        //{
+
+        //    Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+        //    {
+        //        // Update the progress bar
+        //        UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+        //    });
+        //    IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+        //    progress.Report(new ProgressBarArguments((int)(100 * p), "Detecting, please wait", true, false));
+        //    //This is now running on the GUI thread.
+        //    Console.WriteLine(string.Format("{0}% done", (int)(100.0 * p)));
+        //}
+
+        //public void FinalizeDetectionLoad()
+        //{
+        //    if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
+        //        _FinalizeDetectionLoad();
+        //    else this.Dispatcher.BeginInvoke(new Action(_FinalizeDetectionLoad));
+        //}
+
+        //private void _FinalizeDetectionLoad()
+        //{
+        //    // This is now running on the GUI thread.
+        //    GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+        //    this.FilesSelectAndShow();
+        //}
+
         private async void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
@@ -80,16 +124,15 @@ namespace Timelapse
             }
             List<string> dbMissingFolders = new List<string>();
 
-            // Show the random busy indicator
-            this.BusyIndicatorRandom.BusyContent = "Importing recogition data. Please be patient.";
-            this.BusyIndicatorRandom.IsBusy = true;
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task. Rejected, as it crashes the system.
-            bool result = await Task.Run(() =>
-            {
-                return this.dataHandler.FileDatabase.PopulateDetectionTables(jsonFilePath, dbMissingFolders);
-            });
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
-            this.BusyIndicatorRandom.IsBusy = false;
+            // Show the Busy indicator
+            this.BusyIndicator.IsBusy = true;
+
+            // Load the detections
+            bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, dbMissingFolders).ConfigureAwait(true);
+
+            // Hid the Busy indicator
+            this.BusyIndicator.IsBusy = false;
+
             if (result == false)
             {
                 // No matching folders in the DB and the detector
