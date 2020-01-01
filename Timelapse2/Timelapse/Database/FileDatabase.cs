@@ -2002,6 +2002,7 @@ namespace Timelapse.Database
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
             }
         }
+
         private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
         {
             Application.Current.Dispatcher.Invoke(() =>

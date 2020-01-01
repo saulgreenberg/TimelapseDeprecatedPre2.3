@@ -44,6 +44,51 @@ namespace Timelapse.Util
             return child;
         }
 
+        // Similar to the above, except it also considers the name of the child.
+        // Get the visual child of the specified type with the matching name
+        // Invoke by, e.g., TextBlock tb = Utilities.GetVisualChild<TextBlock>(somePartentUIElement, name);
+        public static T GetVisualChild<T>(DependencyObject parent, string childName)
+           where T : DependencyObject
+        {
+            // Confirm parent and childName are valid. 
+            if (parent == null) return null;
+
+            T foundChild = null;
+
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                // If the child is not of the request child type child
+                if (!(child is T))
+                {
+                    // recursively drill down the tree
+                    foundChild = GetVisualChild<T>(child, childName);
+
+                    // If the child is found, break so we do not overwrite the found child. 
+                    if (foundChild != null) break;
+                }
+                else if (!string.IsNullOrEmpty(childName))
+                {
+                    // If the child's name is set for search
+                    if (child is FrameworkElement frameworkElement && frameworkElement.Name == childName)
+                    {
+                        // if the child's name is of the request name
+                        foundChild = (T)child;
+                        break;
+                    }
+                }
+                else
+                {
+                    // child element found.
+                    foundChild = (T)child;
+                    break;
+                }
+            }
+            return foundChild;
+        }
+
+
         // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
         public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
         {
