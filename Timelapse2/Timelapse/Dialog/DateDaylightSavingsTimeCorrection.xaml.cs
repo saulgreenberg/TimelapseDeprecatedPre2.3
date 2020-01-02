@@ -73,7 +73,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -123,7 +123,7 @@ namespace Timelapse.Dialog
                    if (this.ReadyToRefresh())
                    {
                        int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
-                       progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count)));
+                       progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count), true, false));
                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                    }
 
@@ -131,7 +131,7 @@ namespace Timelapse.Dialog
                    {
                        // After all files are processed, the next step would be updating the database. Disable the cancel button too.
                        // This really should be somehow signalled from the invoking method (ideally ExecuteNonQueryWrappedInBeginEnd every update interval), but this is a reasonable workaround.
-                       progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count), false));
+                       progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count), false, true));
                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                    }
                    return imageDateTime + adjustment; // Returns the new time
@@ -154,7 +154,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.StartButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
             this.CloseButtonIsEnabled(false);
 
             // Calculate the required adjustment
@@ -187,7 +187,7 @@ namespace Timelapse.Dialog
                 feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));
             }
 
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
             this.PrimaryPanel.Visibility = Visibility.Collapsed;
             this.Image.Visibility = Visibility.Collapsed;
             this.FeedbackGrid.ItemsSource = feedbackRows;
@@ -224,36 +224,20 @@ namespace Timelapse.Dialog
 
         #region ProgressBar helper
         // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
+        private void UpdateProgressBar(int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+            // Set it as a progressive or indeterminate bar
+            this.BusyCancelIndicator.IsIndeterminate = isIndeterminate;
 
-            if (bar != null & percent < 100)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
+            // Set the progress bar position (only visible if determinate)
+            this.BusyCancelIndicator.Percent = percent;
 
             // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
+            this.BusyCancelIndicator.Message = message;
 
             // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
-            }
+            this.BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            this.BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
         #endregion
 

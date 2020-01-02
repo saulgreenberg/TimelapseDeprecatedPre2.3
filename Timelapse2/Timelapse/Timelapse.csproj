@@ -166,6 +166,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controls\AutocompleteTextBox.cs" />
+    <Compile Include="Controls\BusyCancelIndicator.xaml.cs">
+      <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ClickableImage.xaml.cs">
       <DependentUpon>ClickableImage.xaml</DependentUpon>
     </Compile>
@@ -368,6 +371,10 @@
     <Compile Include="Dialog\DeleteImages.xaml.cs">
       <DependentUpon>DeleteImages.xaml</DependentUpon>
     </Compile>
+    <Page Include="Controls\BusyCancelIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\ClickableImage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

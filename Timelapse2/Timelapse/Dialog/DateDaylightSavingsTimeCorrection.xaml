@@ -102,25 +102,6 @@
         </Grid>
 
         <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
-        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
-
-            <!-- Construct the new content: A text message, a progress bar and a cancel button -->
-            <xceed:BusyIndicator.BusyContentTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                        <Label Content="Please wait..." />
-                        <ProgressBar Value="0" Height="15" />
-                        <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
-                    </StackPanel>
-                </DataTemplate>
-            </xceed:BusyIndicator.BusyContentTemplate>
-
-            <!-- Collapse its default ProgressBar as we don't use it  -->
-            <xceed:BusyIndicator.ProgressBarStyle >
-                <Style TargetType="ProgressBar">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </Style>
-            </xceed:BusyIndicator.ProgressBarStyle>
-        </xceed:BusyIndicator >
+        <controls:BusyCancelIndicator x:Name="BusyCancelIndicator" IsBusy="False" CancelClick="CancelAsyncOperationButton_Click" Grid.Row="0"/>
     </Grid>
 </controls:DialogWindow>

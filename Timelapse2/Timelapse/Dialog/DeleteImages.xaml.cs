@@ -200,7 +200,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
             // cache the current ID as the current image may be invalidated

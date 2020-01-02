@@ -1988,7 +1988,7 @@ namespace Timelapse.Database
         {
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -2037,7 +2037,7 @@ namespace Timelapse.Database
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 

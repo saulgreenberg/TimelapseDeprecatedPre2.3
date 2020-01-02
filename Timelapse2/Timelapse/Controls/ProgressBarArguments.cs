@@ -9,33 +9,33 @@
         public string Message { get; set; }
 
         // Whether the Cancel button should be enabled or disabled
-        public bool CancelEnabled { get; set; }
+        public bool IsCancelEnabled { get; set; }
 
         // Whether the Random progress bar should be enabled or disabled
-        public bool RandomEnabled { get; set; }
+        public bool IsIndeterminate { get; set; }
 
         public ProgressBarArguments(int percentDone, string message)
         {
             this.PercentDone = percentDone;
             this.Message = message;
-            this.CancelEnabled = true;
-            this.RandomEnabled = false;
+            this.IsCancelEnabled = true;
+            this.IsIndeterminate = false;
         }
 
         public ProgressBarArguments(int percentDone, string message, bool cancelEnabled)
         {
             this.PercentDone = percentDone;
             this.Message = message;
-            this.CancelEnabled = cancelEnabled;
-            this.RandomEnabled = false;
+            this.IsCancelEnabled = cancelEnabled;
+            this.IsIndeterminate = false;
         }
 
-        public ProgressBarArguments(int percentDone, string message, bool cancelEnabled, bool randomEnabled)
+        public ProgressBarArguments(int percentDone, string message, bool cancelEnabled, bool IsIndeterminate)
         {
             this.PercentDone = percentDone;
             this.Message = message;
-            this.CancelEnabled = cancelEnabled;
-            this.RandomEnabled = randomEnabled;
+            this.IsCancelEnabled = cancelEnabled;
+            this.IsIndeterminate = IsIndeterminate;
         }
     }
 }

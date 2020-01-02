@@ -153,7 +153,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -191,40 +191,24 @@ namespace Timelapse.Dialog
             }, this.Token).ConfigureAwait(continueOnCapturedContext: true); // Set to true as we need to continue in the UI context
 
         }
-        #endregion 
+        #endregion
 
         #region ProgressBar helper
         // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
+        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool indeterminate)
         {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+            // Set it as a progressive or indeterminate bar
+            this.BusyCancelIndicator.IsIndeterminate = indeterminate;
 
-            if (bar != null && !cancelEnabled)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else if (cancelEnabled)
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
-
+            // Set the progress bar position (only visible if determinate)
+            this.BusyCancelIndicator.Percent = percent;
+            
             // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
+            this.BusyCancelIndicator.Message = message;
 
-            // We don't want the cancel button enabled
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelEnabled ? "Cancel" : "Writing data...";
-            }
+            // Update the cancel button to reflect the cancelEnabled argument
+            this.BusyCancelIndicator.CancelButtonIsEnabled = cancelEnabled;
+            this.BusyCancelIndicator.CancelButtonText = cancelEnabled ? "Cancel" : "Writing data...";
         }
         #endregion
 
@@ -232,7 +216,6 @@ namespace Timelapse.Dialog
         // Select all / none of the checkboxes in the datechangedfeedback panel.
         private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
-            this.ButtonSelectAll.Content = this.ButtonSelectAll.IsChecked == true ? "Select none" : "Select all";
             this.DateChangeFeedback.SelectAll(this.ButtonSelectAll.IsChecked == true);
             this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
         }
@@ -251,13 +234,13 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.Start_Click;
             this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
             this.CloseButtonIsEnabled(false);
 
             int totalFileCount = await this.ApplyDateTimeChangesAsync().ConfigureAwait(true);
 
             // Update the UI final state
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
             this.CloseButtonIsEnabled(true);
             // Show the final message
@@ -285,13 +268,6 @@ namespace Timelapse.Dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
-        }
-
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // A no-op. We don't make use of the cancellation token callback (see comment above)
-            // Set this so that it will be caught in the above await task
-            // this.TokenSource.Cancel();
         }
         #endregion
 

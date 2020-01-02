@@ -58,7 +58,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled);
+                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -237,36 +237,20 @@ namespace Timelapse.Dialog
 
         #region ProgressBar helper
         // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled)
+        private void UpdateProgressBar(int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+            // Set it as a progressive or indeterminate bar
+            this.BusyCancelIndicator.IsIndeterminate = isIndeterminate;
 
-            if (bar != null & percent < 100)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
+            // Set the progress bar position (only visible if determinate)
+            this.BusyCancelIndicator.Percent = percent;
 
             // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
+            this.BusyCancelIndicator.Message = message;
 
             // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
-            }
+            this.BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            this.BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
         #endregion
 
@@ -281,7 +265,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.StartButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
             this.CloseButtonIsEnabled(false);
 
             // Reread the Date/Times from each file
@@ -290,7 +274,12 @@ namespace Timelapse.Dialog
             // The progress bar will be displayed during this process.
             ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await TaskRereadDatesAsync().ConfigureAwait(true);
 
-            ;
+            // Hide the busy indicator and update the UI, e.g., to show which files have changed dates
+            this.BusyCancelIndicator.IsBusy = false;
+            this.FeedbackGrid.Visibility = Visibility.Visible;
+            this.FeedbackGrid.ItemsSource = feedbackRows;
+            this.StartDoneButton.IsEnabled = true;
+            this.CloseButtonIsEnabled(true);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
