@@ -14,22 +14,6 @@
         // Whether the Random progress bar should be enabled or disabled
         public bool IsIndeterminate { get; set; }
 
-        public ProgressBarArguments(int percentDone, string message)
-        {
-            this.PercentDone = percentDone;
-            this.Message = message;
-            this.IsCancelEnabled = true;
-            this.IsIndeterminate = false;
-        }
-
-        public ProgressBarArguments(int percentDone, string message, bool cancelEnabled)
-        {
-            this.PercentDone = percentDone;
-            this.Message = message;
-            this.IsCancelEnabled = cancelEnabled;
-            this.IsIndeterminate = false;
-        }
-
         public ProgressBarArguments(int percentDone, string message, bool cancelEnabled, bool IsIndeterminate)
         {
             this.PercentDone = percentDone;

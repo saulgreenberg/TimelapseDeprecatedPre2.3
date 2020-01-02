@@ -67,49 +67,6 @@ namespace Timelapse
         }
 
         // Import Detection data
-
-        private static void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
-        {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(GlobalReferences.MainWindow.BusyIndicator);
-            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(GlobalReferences.MainWindow.BusyIndicator);
-            if (bar != null)
-            {
-                bar.Value = percent;
-            }
-            if (textmessage != null)
-            {
-                textmessage.Text = message;
-            }
-        }
-
-        //private void _UpdateDetectionLoadProgress(double p)
-        //{
-
-        //    Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-        //    {
-        //        // Update the progress bar
-        //        UpdateProgressBar(value.PercentDone, value.Message, value.CancelEnabled, value.RandomEnabled);
-        //    });
-        //    IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-        //    progress.Report(new ProgressBarArguments((int)(100 * p), "Detecting, please wait", true, false));
-        //    //This is now running on the GUI thread.
-        //    Console.WriteLine(string.Format("{0}% done", (int)(100.0 * p)));
-        //}
-
-        //public void FinalizeDetectionLoad()
-        //{
-        //    if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
-        //        _FinalizeDetectionLoad();
-        //    else this.Dispatcher.BeginInvoke(new Action(_FinalizeDetectionLoad));
-        //}
-
-        //private void _FinalizeDetectionLoad()
-        //{
-        //    // This is now running on the GUI thread.
-        //    GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
-        //    this.FilesSelectAndShow();
-        //}
-
         private async void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;

@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -126,7 +126,7 @@ namespace Timelapse.Dialog
                    if (this.ReadyToRefresh())
                    {
                        int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
-                       progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count)));
+                       progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Calculating new date/times for {0} / {1} files", fileIndex, count), true, false));
                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                    }
 
@@ -134,7 +134,7 @@ namespace Timelapse.Dialog
                    {
                        // After all files are processed, the next step would be updating the database. Disable the cancel button too.
                        // This really should be somehow signalled from the invoking method (ideally ExecuteNonQueryWrappedInBeginEnd every update interval), but this is a reasonable workaround.
-                       progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count), false));
+                       progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", feedbackRows.Count), false, true));
                        Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                    }
                    return imageDateTime + adjustment; // Returns the new time
@@ -142,25 +142,6 @@ namespace Timelapse.Dialog
                0,
                this.fileDatabase.CurrentlySelectedFileCount - 1,
                this.Token);
-        }
-        #endregion
-
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool isIndeterminate)
-        {
-            // Set it as a progressive or indeterminate bar
-            this.BusyCancelIndicator.IsIndeterminate = isIndeterminate;
-
-            // Set the progress bar position (only visible if determinate)
-            this.BusyCancelIndicator.Percent = percent;
-
-            // Update the text message
-            this.BusyCancelIndicator.Message = message;
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            this.BusyCancelIndicator.CancelButtonIsEnabled = cancelEnabled;
-            this.BusyCancelIndicator.CancelButtonText = cancelEnabled ? "Cancel" : "Writing data...";
         }
         #endregion
 

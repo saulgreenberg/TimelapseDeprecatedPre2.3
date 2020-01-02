@@ -227,7 +227,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -299,41 +299,6 @@ namespace Timelapse.Dialog
                 ? String.Format("{0} files examined, with {1} updated to reflect changes.", selectedFiles.Count, filesToUpdate.Count)
                 : String.Format("{0} files examined. None were updated as nothing has changed.", selectedFiles.Count);
             }, this.Token).ConfigureAwait(true);
-        }
-        #endregion
-
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
-        {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
-
-            if (bar != null & !randomEnabled)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else if (randomEnabled)
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
-
-            // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
-            }
         }
         #endregion
 
@@ -544,12 +509,12 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.StartButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
 
             string finalMessage = await this.BeginUpdateImageQualityForAllSelectedImagesAsync().ConfigureAwait(true);
 
 
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
             // Hide various buttons, the primary panel, and the image
             this.StartDoneButton.IsEnabled = true;
             this.CancelButton.IsEnabled = false;

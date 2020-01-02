@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 using Timelapse.Dialog;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -33,6 +34,7 @@ namespace Timelapse.Controls
         private const uint MF_ENABLED = 0x00000000;
         private const uint SC_CLOSE = 0xF060;
 
+        #region Initialization 
         public DialogWindow(Window owner)
         {
             this.Owner = owner;
@@ -47,6 +49,28 @@ namespace Timelapse.Controls
         private void DialogWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
+        }
+        #endregion
+
+        #region Protected methods
+        // Show progress information in the passed in progress bar as indicated
+        protected static void UpdateProgressBar(BusyCancelIndicator BusyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(BusyCancelIndicator, nameof(BusyCancelIndicator));
+
+            // Set it as a progressive or indeterminate bar
+            BusyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+            // Set the progress bar position (only visible if determinate)
+            BusyCancelIndicator.Percent = percent;
+
+            // Update the text message
+            BusyCancelIndicator.Message = message;
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
 
         protected bool ReadyToRefresh()
@@ -74,6 +98,7 @@ namespace Timelapse.Controls
                 EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | enableAction);
             }
         }
+        #endregion
 
         #region Internal methods
         private void DialogWindow_Closed(object sender, EventArgs e)

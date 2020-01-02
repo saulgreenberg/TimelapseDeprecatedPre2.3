@@ -205,7 +205,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -319,41 +319,6 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
-        {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
-
-            if (bar != null & !randomEnabled)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else if (randomEnabled)
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
-
-            // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelButton.IsEnabled ? "Cancel" : "Writing data...";
-            }
-        }
-        #endregion
-
         #region Callbacks to select and assign metadata fields
         // Datagrid Callack where the user has selected a row. Get the metadata from that row, and make it the selected metadata.
         // Also enable/disable UI controls as needed
@@ -444,14 +409,14 @@ namespace Timelapse.Dialog
             this.CloseButtonIsEnabled(false);
 
             bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
 
             // This call does all the actual populating...
             ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.Populate(metadataExtractorRBIsChecked).ConfigureAwait(true);
 
             // Update the UI to its final state
             this.FeedbackGrid.ItemsSource = keyValueList;
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
             this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
             this.btnCancel.IsEnabled = true;
             if (this.Token.IsCancellationRequested)

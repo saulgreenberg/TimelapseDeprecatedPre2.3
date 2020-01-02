@@ -73,7 +73,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -221,25 +221,6 @@ namespace Timelapse.Dialog
                 this.StartDoneButton.IsEnabled = false;
             }
         }
-
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool isCancelEnabled, bool isIndeterminate)
-        {
-            // Set it as a progressive or indeterminate bar
-            this.BusyCancelIndicator.IsIndeterminate = isIndeterminate;
-
-            // Set the progress bar position (only visible if determinate)
-            this.BusyCancelIndicator.Percent = percent;
-
-            // Update the text message
-            this.BusyCancelIndicator.Message = message;
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            this.BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
-            this.BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
-        }
-        #endregion
 
         #region Button callbacks
         private void DoneButton_Click(object sender, RoutedEventArgs e)
