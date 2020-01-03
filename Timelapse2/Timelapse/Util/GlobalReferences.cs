@@ -1,4 +1,5 @@
-﻿using Xceed.Wpf.Toolkit;
+﻿
+using Timelapse.Controls;
 
 namespace Timelapse.Util
 {
@@ -8,7 +9,7 @@ namespace Timelapse.Util
         // Rather than contorting to try to pass it as a parameter, we just make it available here.
         public static TimelapseWindow MainWindow { get; set; }
 
-        public static BusyIndicator BusyIndicator { get; set; }
+        public static BusyCancelIndicator BusyCancelIndicator { get; set; }
 
         public static TimelapseState TimelapseState { get; set; }
 

@@ -388,7 +388,7 @@ namespace Timelapse
                         : String.Format("{0}{1} {2} of {3} ({4})", message, what, folderLoadProgress.CurrentFile, folderLoadProgress.TotalFiles, folderLoadProgress.CurrentFileName);
                 }
 
-                this.UpdateFolderLoadProgress(folderLoadProgress.BitmapSource, ea.ProgressPercentage, message);
+                this.UpdateFolderLoadProgress(this.BusyCancelIndicator, folderLoadProgress.BitmapSource, ea.ProgressPercentage, message, false, false);
                 this.StatusBar.SetCurrentFile(folderLoadProgress.CurrentFile);
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
             };
@@ -430,37 +430,42 @@ namespace Timelapse
                         this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection); // to regenerate the controls and markers for this image
                     }
                 }
-                this.BusyIndicator.IsBusy = false; // Hide the busy indicator
+                this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator
             };
 
             // Set up the user interface to show feedback
-            this.BusyIndicator.IsBusy = true; // Display the busy indicator
+            this.BusyCancelIndicator.IsBusy = true; // Display the busy indicator
 
             this.FileNavigatorSlider.Visibility = Visibility.Collapsed;
             // First feedback message
-            this.UpdateFolderLoadProgress(null, 0, String.Format("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count));
+            this.UpdateFolderLoadProgress(GlobalReferences.BusyCancelIndicator, null, 0, String.Format("Initializing...{0}Analyzing and loading {1} files ", Environment.NewLine, filesToAdd.Count), false, false);
             this.StatusBar.SetMessage("Loading folders...");
             backgroundWorker.RunWorkerAsync();
             return true;
         }
 
-        private void UpdateFolderLoadProgress(BitmapSource bitmap, int percent, string message)
+        private void UpdateFolderLoadProgress(BusyCancelIndicator BusyCancelIndicator, BitmapSource bitmap, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
             if (bitmap != null)
             {
                 this.MarkableCanvas.SetNewImage(bitmap, null);
             }
 
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(this.BusyIndicator);
-            if (bar != null)
-            {
-                bar.Value = percent;
-            }
-            if (textmessage != null)
-            {
-                textmessage.Text = message;
-            }
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(BusyCancelIndicator, nameof(BusyCancelIndicator));
+
+            // Set it as a progressive or indeterminate bar
+            BusyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+            // Set the progress bar position (only visible if determinate)
+            BusyCancelIndicator.Percent = percent;
+
+            // Update the text message
+            BusyCancelIndicator.Message = message;
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
 
         // Given the location path of the template,  return:

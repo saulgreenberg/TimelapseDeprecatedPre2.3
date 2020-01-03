@@ -106,7 +106,7 @@ namespace Timelapse
             // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
             // Yup, poor practice but...
             GlobalReferences.MainWindow = this; // So other classes can access methods here
-            GlobalReferences.BusyIndicator = this.BusyIndicator; // So other classes can access methods here
+            GlobalReferences.BusyCancelIndicator = this.BusyCancelIndicator; // So other classes can access methods here
             GlobalReferences.TimelapseState = this.State;
 
             // Populate the most recent image set list

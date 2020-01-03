@@ -35,7 +35,7 @@
                 </DataTemplate>
             </xceed:BusyIndicator.BusyContentTemplate>
 
-            <!-- Collapse its default ProgressBar as we don't use it  -->
+            <!-- Collapse the default ProgressBar as we don't use it  -->
             <xceed:BusyIndicator.ProgressBarStyle >
                 <Style TargetType="ProgressBar">
                     <Setter Property="Visibility" Value="Collapsed"/>

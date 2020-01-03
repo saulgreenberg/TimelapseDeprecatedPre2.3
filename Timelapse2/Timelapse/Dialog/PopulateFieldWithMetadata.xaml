@@ -57,8 +57,8 @@
             <DockPanel LastChildFill="True" >
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
                     <CheckBox x:Name="ClearIfNoMetadata"  VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0,50,0" Margin="10,0,0,0" Checked="ClearIfNoMetadata_Checked">Clear the data field if the image file cannot be read or if it is missing that metadata field</CheckBox>
-                    <Button x:Name="btnCancel" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-                    <Button x:Name="PopulateButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="PopulateButton_Click">_Populate</Button>
+                    <Button x:Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
+                    <Button x:Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="Start_Click">_Populate</Button>
                 </StackPanel>
 
                 <Grid Name="PrimaryPanel" Visibility="Visible">

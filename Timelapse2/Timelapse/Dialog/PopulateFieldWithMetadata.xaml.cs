@@ -309,7 +309,6 @@ namespace Timelapse.Dialog
                     }
                     imagesToUpdate.Add(imageUpdate);
                 }
-
                 this.IsAnyDataUpdated = true;
                 progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
@@ -349,14 +348,14 @@ namespace Timelapse.Dialog
                 this.MetadataDisplayText.Content = this.metadataDictionary[this.metadataFieldName].Name;
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = true;
-                this.PopulateButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
+                this.StartDoneButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
             }
             else
             {
                 this.MetadataDisplayText.Content = String.Empty;
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = false;
-                this.PopulateButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
+                this.StartDoneButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
             }
         }
 
@@ -369,7 +368,7 @@ namespace Timelapse.Dialog
                 this.dataFieldLabel = this.DataFields.SelectedItem as string;
                 this.dataFieldSelected = true;
             }
-            this.PopulateButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
+            this.StartDoneButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
         }
         #endregion
 
@@ -395,11 +394,21 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Button callbacks
-        private async void PopulateButton_Click(object sender, RoutedEventArgs e)
+        private async void Start_Click(object sender, RoutedEventArgs e)
         {
+            bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
+
             // Update the UI to show the feedback datagrid, 
             this.PopulatingMessage.Text = "Populating '" + this.DataField.Content + "' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
-            this.PopulateButton.Visibility = Visibility.Collapsed; // Hide the populate button, as we are now in the act of populating things
+            this.CancelButton.IsEnabled = false;
+            this.CancelButton.Visibility = Visibility.Hidden;
+            this.StartDoneButton.Content = "_Done";
+            this.StartDoneButton.Click -= this.Start_Click;
+            this.StartDoneButton.Click += this.Done_Click;
+            this.StartDoneButton.IsEnabled = false;
+            this.BusyCancelIndicator.IsBusy = true;
+            this.CloseButtonIsEnabled(false);
+
             this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
             this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
             this.DataFields.Visibility = Visibility.Collapsed;
@@ -408,17 +417,17 @@ namespace Timelapse.Dialog
             this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
             this.CloseButtonIsEnabled(false);
 
-            bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
-            this.BusyCancelIndicator.IsBusy = true;
-
             // This call does all the actual populating...
             ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.Populate(metadataExtractorRBIsChecked).ConfigureAwait(true);
 
             // Update the UI to its final state
             this.FeedbackGrid.ItemsSource = keyValueList;
+            this.StartDoneButton.IsEnabled = true;
             this.BusyCancelIndicator.IsBusy = false;
-            this.btnCancel.Content = "Done"; // Change the Cancel button to Done, but inactivate it as we don't want the operation to be cancellable (due to worries about database corruption)
-            this.btnCancel.IsEnabled = true;
+            this.CloseButtonIsEnabled(true);
+
+            this.FeedbackGrid.ItemsSource = keyValueList;
+
             if (this.Token.IsCancellationRequested)
             {
                 this.PopulatingMessage.Text = "Cancelled: '" + this.DataField.Content + "' is unchanged.";
@@ -431,12 +440,19 @@ namespace Timelapse.Dialog
             {
                 this.exifTool.Stop();
             }
-            this.CloseButtonIsEnabled(true);
-        }
 
+        }
+        private void Done_Click(object sender, RoutedEventArgs e)
+        {
+
+            // We return true if the database was altered but also if there was a cancellation, as a cancelled operation
+            // may have changed the FileTable (but not database) date entries. Returning true will reset them, as a FileSelectAndShow will be done.
+            // Kinda hacky as it expects a certain behaviour of the caller, but it works.
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
+        }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; //((string)this.btnCancel.Content == "Cancel") ? false : true;
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; 
         }
 
         private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)

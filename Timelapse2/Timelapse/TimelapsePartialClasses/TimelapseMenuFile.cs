@@ -82,13 +82,13 @@ namespace Timelapse
             List<string> dbMissingFolders = new List<string>();
 
             // Show the Busy indicator
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
 
             // Load the detections
             bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, dbMissingFolders).ConfigureAwait(true);
 
             // Hid the Busy indicator
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
 
             if (result == false)
             {

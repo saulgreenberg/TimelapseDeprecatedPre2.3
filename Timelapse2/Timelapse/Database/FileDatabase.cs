@@ -1982,13 +1982,11 @@ namespace Timelapse.Database
             }
             return false;
         }
-
-        private void PStream_BytesRead(object sender,
-                                      ProgressStreamReportEventArgs args)
+        private void PStream_BytesRead(object sender, ProgressStreamReportEventArgs args)
         {
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -1998,46 +1996,41 @@ namespace Timelapse.Database
             if (this.ReadyToRefresh())
             {
                 // Update the progress bar
-                progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", true, false));
+                progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", false, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
             }
         }
 
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
+        static void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
                 // Code to run on the GUI thread.
-                ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(GlobalReferences.MainWindow.BusyIndicator);
-                TextBlock textmessage = Utilities.GetVisualChild<TextBlock>(GlobalReferences.MainWindow.BusyIndicator);
-                if (bar != null)
-                {
-                    bar.Value = percent;
-                }
-                if (textmessage != null)
-                {
-                    textmessage.Text = message;
-                }
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+
+                // Set it as a progressive or indeterminate bar
+                busyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+                // Set the progress bar position (only visible if determinate)
+                busyCancelIndicator.Percent = percent;
+
+                // Update the text message
+                busyCancelIndicator.Message = message;
+
+                // Update the cancel button to reflect the cancelEnabled argument
+                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
             });
         }
 
-        //public delegate void UpdateLoadDelegate(double p);
-
-        //public void UpdateDetectionLoadProgress(double p)
-        //{
-
-        //    //if (Application.Current.MainWindow.Dispatcher.Thread == Thread.CurrentThread)
-        //    //    _UpdateDetectionLoadProgress(p);
-        //    //else 
-        //        this.Dispatcher.BeginInvoke(new UpdateLoadDelegate(_UpdateDetectionLoadProgress), p);
-        //}
         public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> dbMissingFolders)
         {
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -2086,10 +2079,9 @@ namespace Timelapse.Database
                                 // Both steps are very slow with a very large JSON of detections that matches folders of images.
                                 // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
 
-                                    // Update the progress bar
-                                    progress.Report(new ProgressBarArguments((int)(0), "Updating database with detections. Please wait", true, false));
-                                    Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
-
+                                // Update the progress bar
+                                progress.Report(new ProgressBarArguments((int)(0), "Updating database with detections. Please wait", false, true));
+                                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
                             }
                             return true;
