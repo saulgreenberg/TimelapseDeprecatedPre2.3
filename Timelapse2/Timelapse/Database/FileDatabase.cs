@@ -1992,7 +1992,7 @@ namespace Timelapse.Database
 
             long current = args.StreamPosition;
             long total = args.StreamLength;
-            double p = ((double)current) / ((double)total);
+            double p = current / ((double)total);
             if (this.ReadyToRefresh())
             {
                 // Update the progress bar
@@ -2080,7 +2080,7 @@ namespace Timelapse.Database
                                 // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
 
                                 // Update the progress bar
-                                progress.Report(new ProgressBarArguments((int)(0), "Updating database with detections. Please wait", false, true));
+                                progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
                                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
                             }

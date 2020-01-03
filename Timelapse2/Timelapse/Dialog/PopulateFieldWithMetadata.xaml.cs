@@ -232,7 +232,7 @@ namespace Timelapse.Dialog
                     if (Token.IsCancellationRequested == true)
                     {
                         keyValueList.Clear();
-                        keyValueList.Add(new KeyValuePair<string,string>("Cancelled", "No changes were made"));
+                        keyValueList.Add(new KeyValuePair<string, string>("Cancelled", "No changes were made"));
                         return keyValueList;
                     }
 
@@ -452,7 +452,7 @@ namespace Timelapse.Dialog
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; 
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
         }
 
         private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
