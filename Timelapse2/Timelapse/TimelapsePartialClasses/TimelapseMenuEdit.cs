@@ -148,7 +148,7 @@ namespace Timelapse
         // - the current image or all images marked for deletion are deleted
         // - the data associated with those images may be delted.
         // - deleted images are moved to a backup folder.
-        private void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;
 
@@ -212,7 +212,7 @@ namespace Timelapse
                 // Delete the files
                 Mouse.OverrideCursor = Cursors.Wait;
                 // Reload the file datatable. 
-                this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+                await this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
 
                 if (deleteFilesAndData)
                 {

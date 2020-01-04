@@ -100,7 +100,7 @@ namespace Timelapse
         }
 
         // A specific folder was selected.
-        private void MenuItemSelectFolder_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSelectFolder_Click(object sender, RoutedEventArgs e)
         {
             if (!(sender is MenuItem mi))
             {
@@ -110,7 +110,7 @@ namespace Timelapse
             // If its select all folders, then just set the selection to all
             if (mi == this.MenuItemSelectAllFolders)
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All);
+                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace Timelapse
             this.MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders);  // Go to the first result (i.e., index 0) in the given selection set
+            await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
         }
 
         private void MenuItemSelectByFolder_ClearAllCheckmarks()
@@ -141,7 +141,7 @@ namespace Timelapse
         }
 
         // Select callback: handles all standard menu selection items
-        private void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)sender;
             FileSelectionEnum selection;
@@ -181,16 +181,16 @@ namespace Timelapse
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             if (this.dataHandler.ImageCache.Current == null)
             {
-                this.FilesSelectAndShow(selection);
+                await this.FilesSelectAndShow(selection).ConfigureAwait(true);
             }
             else
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection);  // Go to the first result (i.e., index 0) in the given selection set
+                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }
 
         // Custom Selection: raises a dialog letting the user specify their selection criteria
-        private void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
         {
             // the first time the custom selection dialog is launched update the DateTime and UtcOffset search terms to the time of the current image
             SearchTerm firstDateTimeSearchTerm = this.dataHandler.FileDatabase.CustomSelection.SearchTerms.FirstOrDefault(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
@@ -209,7 +209,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom);
+                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom).ConfigureAwait(true);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
                     this.MenuItemSelectByFolder_ClearAllCheckmarks();
@@ -229,11 +229,12 @@ namespace Timelapse
 
         // Refresh the selection: based on the current select criteria. 
         // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
-        private void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
         {
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
+
 
         #region Depracated
         // There really is no reason to have a special menu item for this, as one can see the counts

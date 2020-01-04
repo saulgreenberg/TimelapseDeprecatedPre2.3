@@ -87,5 +87,14 @@ namespace Timelapse
             this.MenuItemBookmarkSetPanZoom.IsEnabled = enable;
             this.MenuItemBookmarkDefaultPanZoom.IsEnabled = enable;
         }
+
+        // Configure the BusyCancelIndicator to show appropriate feedback during a selection
+        private void EnableBusyCancelIndicatorForSelection(bool isBusy)
+        {
+            this.BusyCancelIndicator.IsBusy = isBusy;
+            this.BusyCancelIndicator.Message = isBusy ? "Selecting Files from the database. Please wait..." : "Please wait...";
+            this.BusyCancelIndicator.CancelButtonIsEnabled = false;
+            this.BusyCancelIndicator.CancelButtonText = isBusy ? "Querying the database" : "Cancel";
+        }
     }
 }

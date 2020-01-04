@@ -392,7 +392,7 @@ namespace Timelapse
                 this.StatusBar.SetCount(folderLoadProgress.TotalFiles);
             };
 
-            backgroundWorker.RunWorkerCompleted += (o, ea) =>
+            backgroundWorker.RunWorkerCompleted += async (o, ea) =>
             {
                 // BackgroundWorker aborts execution on an exception and transfers it to completion for handling
                 // If something went wrong rethrow the error so the user knows there's a problem.  Otherwise what would happen is either 
@@ -426,7 +426,7 @@ namespace Timelapse
                     if (dialogResult == true)
                     {
                         ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
-                        this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection); // to regenerate the controls and markers for this image
+                        await this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
                     }
                 }
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator
@@ -519,7 +519,7 @@ namespace Timelapse
         /// <summary>
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
-        private void OnFolderLoadingComplete(bool filesJustAdded)
+        private async void OnFolderLoadingComplete(bool filesJustAdded)
         {
             this.ShowSortFeedback(true);
 
@@ -564,7 +564,7 @@ namespace Timelapse
 
             // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 
             // PROGRESSBAR - Display a progress bar on this (and all other) calls to FilesSelectAndShow after a delay of (say) .5 seconds.
-            this.FilesSelectAndShow(mostRecentFileID, fileSelection);
+            await this.FilesSelectAndShow(mostRecentFileID, fileSelection).ConfigureAwait(true);
 
             // match UX availability to file availability
             this.EnableOrDisableMenusAndControls();

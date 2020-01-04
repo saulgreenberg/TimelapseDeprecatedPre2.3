@@ -92,14 +92,16 @@ namespace Timelapse
         #region Helper functions
         // Do the sort and show feedback to the user. 
         // Only invoked by the above menu functions 
-        private void DoSortAndShowSortFeedback(bool updateMenuChecks)
+        private async void DoSortAndShowSortFeedback(bool updateMenuChecks)
         {
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
             this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
 
+            this.BusyCancelIndicator.IsBusy = true;
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            this.BusyCancelIndicator.IsBusy = false;
 
             // sets up various status indicators in the UI
             this.ShowSortFeedback(updateMenuChecks);
@@ -113,7 +115,6 @@ namespace Timelapse
         {
             // Get the two sort terms
             SortTerm[] sortTerm = new SortTerm[2];
-            string[] statusbar_feedback = new string[] { String.Empty, String.Empty };
 
             for (int i = 0; i <= 1; i++)
             {
