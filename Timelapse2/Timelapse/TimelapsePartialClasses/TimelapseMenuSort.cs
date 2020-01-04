@@ -55,7 +55,7 @@ namespace Timelapse
             this.dataHandler.FileDatabase.ImageSet.SetSortTerm(sortTerm1, sortTerm2);
 
             // Do the sort, showing feedback in the status bar and by checking the appropriate menu item
-            this.DoSortAndShowSortFeedback(true);
+            this.DoSortAndShowSortFeedbackAsync(true);
         }
 
         // Custom Sort: raises a dialog letting the user specify their sort criteria
@@ -73,7 +73,7 @@ namespace Timelapse
                     // this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
                     this.dataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
                 }
-                this.DoSortAndShowSortFeedback(true);
+                this.DoSortAndShowSortFeedbackAsync(true);
             }
             else
             {
@@ -86,20 +86,22 @@ namespace Timelapse
         // Useful when, for example, the user has sorted a view, but then changed some data values where items are no longer sorted correctly.
         private void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
         {
-            this.DoSortAndShowSortFeedback(false);
+            this.DoSortAndShowSortFeedbackAsync(false);
         }
 
         #region Helper functions
         // Do the sort and show feedback to the user. 
         // Only invoked by the above menu functions 
-        private void DoSortAndShowSortFeedback(bool updateMenuChecks)
+        private async void DoSortAndShowSortFeedbackAsync(bool updateMenuChecks)
         {
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
             this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
 
+            this.BusyCancelIndicator.IsBusy = true;
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            this.BusyCancelIndicator.IsBusy = false;
 
             // sets up various status indicators in the UI
             this.ShowSortFeedback(updateMenuChecks);
@@ -113,7 +115,6 @@ namespace Timelapse
         {
             // Get the two sort terms
             SortTerm[] sortTerm = new SortTerm[2];
-            string[] statusbar_feedback = new string[] { String.Empty, String.Empty };
 
             for (int i = 0; i <= 1; i++)
             {

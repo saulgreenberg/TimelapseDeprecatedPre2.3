@@ -112,7 +112,7 @@ namespace Timelapse
                 {
                     if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                     {
-                        this.FilesSelectAndShow();
+                        this.FilesSelectAndShowAsync();
                     };
                 }
             }
@@ -148,7 +148,7 @@ namespace Timelapse
         // - the current image or all images marked for deletion are deleted
         // - the data associated with those images may be delted.
         // - deleted images are moved to a backup folder.
-        private void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemDeleteFiles_Click(object sender, RoutedEventArgs e)
         {
             MenuItem menuItem = sender as MenuItem;
 
@@ -212,7 +212,7 @@ namespace Timelapse
                 // Delete the files
                 Mouse.OverrideCursor = Cursors.Wait;
                 // Reload the file datatable. 
-                this.FilesSelectAndShow(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection);
+                await this.FilesSelectAndShowAsync(currentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
 
                 if (deleteFilesAndData)
                 {
@@ -262,7 +262,7 @@ namespace Timelapse
                 DateTimeRereadFromFiles rereadDates = new DateTimeRereadFromFiles(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(rereadDates))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 };
             }
         }
@@ -282,7 +282,7 @@ namespace Timelapse
                 DateDaylightSavingsTimeCorrection dateTimeChange = new DateDaylightSavingsTimeCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache);
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateTimeChange))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 };
             }
         }
@@ -301,7 +301,7 @@ namespace Timelapse
                 DateTimeFixedCorrection fixedDateCorrection = new DateTimeFixedCorrection(this, this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 }
             }
         }
@@ -322,7 +322,7 @@ namespace Timelapse
                 DateTimeLinearCorrection linearDateCorrection = new DateTimeLinearCorrection(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(linearDateCorrection))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 }
             }
         }
@@ -342,7 +342,7 @@ namespace Timelapse
                 DateCorrectAmbiguous dateCorrection = new DateCorrectAmbiguous(this, this.dataHandler.FileDatabase);
                 if (this.ShowDialogAndCheckIfChangesWereMade(dateCorrection))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 }
             }
         }
@@ -361,7 +361,7 @@ namespace Timelapse
                 DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.Current, this);
                 if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
                 {
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                 }
             }
         }

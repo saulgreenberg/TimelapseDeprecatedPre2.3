@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
@@ -12,45 +13,38 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // FilesSelectAndShow: various forms
-        private bool FilesSelectAndShow()
+        private async void FilesSelectAndShowAsync()
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
-                return false;
             }
-            return this.FilesSelectAndShow(this.dataHandler.FileDatabase.ImageSet.FileSelection);
+            await this.FilesSelectAndShowAsync(this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
 
-        private bool FilesSelectAndShow(FileSelectionEnum selection)
+        private async Task FilesSelectAndShowAsync(FileSelectionEnum selection)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
             if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
             {
                 fileID = this.dataHandler.ImageCache.Current.ID;
             }
-            return this.FilesSelectAndShow(fileID, selection);
+            await this.FilesSelectAndShowAsync(fileID, selection).ConfigureAwait(true);
         }
 
         // FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
-        // Note. forceUpdate isn't currently used. However,
-        // I kept it in in case I want to use it in the future.
-#pragma warning disable IDE0060 // Remove unused parameter
-        private bool FilesSelectAndShow(long imageID, FileSelectionEnum selection)
-#pragma warning restore IDE0060 // Remove unused parameter
+        private async Task FilesSelectAndShowAsync(long imageID, FileSelectionEnum selection)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
             {
-                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");
-                return false;
+                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");;
             }
             if (this.dataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
-                return false;
             }
 
             // Select the files according to the given selection
@@ -71,7 +65,9 @@ namespace Timelapse
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
-                this.dataHandler.FileDatabase.SelectFiles(selection);
+                this.EnableBusyCancelIndicatorForSelection(true); 
+                await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
+                this.EnableBusyCancelIndicatorForSelection(false);
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
             Mouse.OverrideCursor = null;
@@ -123,7 +119,7 @@ namespace Timelapse
 
                 selection = FileSelectionEnum.All;
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
-                this.dataHandler.FileDatabase.SelectFiles(selection);
+                await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
 
@@ -194,7 +190,6 @@ namespace Timelapse
             this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
-            return true;
         }
     }
 }

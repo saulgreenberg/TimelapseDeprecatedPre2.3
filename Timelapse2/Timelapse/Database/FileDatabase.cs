@@ -76,7 +76,7 @@ namespace Timelapse.Database
             if (populateDatabase)
             {
                 // initialize the database if it's newly created
-                fileDatabase.OnDatabaseCreated(templateDatabase);
+                fileDatabase.OnDatabaseCreatedAsync(templateDatabase);
             }
             else
             {
@@ -121,10 +121,10 @@ namespace Timelapse.Database
         /// Assumes that the database has already been opened and that the Template Table is loaded, where the DataLabel always has a valid value.
         /// Then create both the ImageSet table and the Markers table
         /// </summary>
-        protected override void OnDatabaseCreated(TemplateDatabase templateDatabase)
+        protected async override void OnDatabaseCreatedAsync(TemplateDatabase templateDatabase)
         {
             // copy the template's TemplateTable
-            base.OnDatabaseCreated(templateDatabase);
+            base.OnDatabaseCreatedAsync(templateDatabase);
 
             // Create the DataTable from the template
             // First, define the creation string based on the contents of the template. 
@@ -181,7 +181,7 @@ namespace Timelapse.Database
             // create the Files table
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
-            this.SelectFiles(FileSelectionEnum.All);
+            await this.SelectFilesAsync(FileSelectionEnum.All).ConfigureAwait(true);
             this.BindToDataGrid();
 
             // Create the MarkersTable and initialize it from the template table
@@ -421,7 +421,7 @@ namespace Timelapse.Database
             base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatability();
+            this.UpgradeDatabasesForBackwardsCompatabilityAsync();
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -523,7 +523,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private void UpgradeDatabasesForBackwardsCompatability()
+        private async void UpgradeDatabasesForBackwardsCompatabilityAsync()
         {
             // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
             // Instead, we operate directly on the database. There is only one exception (updating DateTime),
@@ -686,7 +686,7 @@ namespace Timelapse.Database
                 // PERFORMANCE, BUT RARE: We invoke this to update various date/time values on all rows based on existing values. However, its rarely called
                 // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
                 // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
-                this.SelectFiles(FileSelectionEnum.All);
+                await this.SelectFilesAsync(FileSelectionEnum.All).ConfigureAwait(true);
                 this.BindToDataGrid();
                 foreach (ImageRow image in this.FileTable)
                 {
@@ -726,7 +726,7 @@ namespace Timelapse.Database
                     // The TemplateTable in the .tdb and .ddb database differ. 
                     // Update the .ddb Template table by dropping the .ddb template table and replacing it with the .tdb table. 
                     base.Database.DropTable(Constant.DBTables.Controls);
-                    base.OnDatabaseCreated(templateDatabase);
+                    base.OnDatabaseCreatedAsync(templateDatabase);
                 }
 
                 // Condition 1: the tdb template table contains one or more datalabels not found in the ddb template table
@@ -859,7 +859,7 @@ namespace Timelapse.Database
         /// Rebuild the file table with all files in the database table which match the specified selection.
         /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.
         /// </summary>
-        public void SelectFiles(FileSelectionEnum selection)
+        public async Task SelectFilesAsync(FileSelectionEnum selection)
         {
             string query = String.Empty;
             bool useStandardQuery = false;
@@ -979,13 +979,18 @@ namespace Timelapse.Database
                 }
             }
 
-            // System.Diagnostics.Debug.Print("Doit: " + query);
-            // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
-            // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
-            // as I am not that savvy in database optimizations.
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            this.FileTable = new FileTable(images);
-            // this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            await Task.Run(() =>
+            {
+                // System.Diagnostics.Debug.Print("Doit: " + query);
+                // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
+                // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
+                // as I am not that savvy in database optimizations.
+                DataTable images = this.Database.GetDataTableFromSelect(query);
+
+                this.FileTable = new FileTable(images);
+                // this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            }).ConfigureAwait(true);
+
         }
 
         public int CountMissingFilesFromCurrentlySelectedFiles()

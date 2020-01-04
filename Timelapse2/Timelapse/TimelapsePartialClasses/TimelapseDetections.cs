@@ -14,8 +14,8 @@ namespace Timelapse
         public BoundingBoxes GetBoundingBoxesForCurrentFile(long fileID)
         {
             BoundingBoxes bboxes = new BoundingBoxes();
-            string detectionCategoryLabel = String.Empty;
-            string classificationCategoryLabel = String.Empty;
+            string detectionCategoryLabel;
+            string classificationCategoryLabel;
 
             if (this.dataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
             {

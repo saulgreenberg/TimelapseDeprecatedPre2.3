@@ -133,7 +133,7 @@ namespace Timelapse
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
                 GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
-                this.FilesSelectAndShow();
+                this.FilesSelectAndShowAsync();
             }
         }
 
@@ -334,7 +334,7 @@ namespace Timelapse
                 {
                     // Importing done.
                     // Reload the data
-                    this.FilesSelectAndShow();
+                    this.FilesSelectAndShowAsync();
                     this.StatusBar.SetMessage(".csv file imported.");
                 }
             }
