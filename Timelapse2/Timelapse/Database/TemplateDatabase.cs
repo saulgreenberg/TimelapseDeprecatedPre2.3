@@ -64,7 +64,7 @@ namespace Timelapse.Database
             if (populateDatabase)
             {
                 // initialize the database if it's newly created
-                templateDatabase.OnDatabaseCreated(null);
+                templateDatabase.OnDatabaseCreatedAsync(null);
             }
             else
             {
@@ -450,7 +450,7 @@ namespace Timelapse.Database
             return control.ID;
         }
 
-        protected virtual void OnDatabaseCreated(TemplateDatabase other)
+        protected virtual void OnDatabaseCreatedAsync(TemplateDatabase other)
         {
             // create the template table
             List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>

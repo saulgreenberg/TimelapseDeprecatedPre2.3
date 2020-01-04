@@ -110,7 +110,7 @@ namespace Timelapse
             // If its select all folders, then just set the selection to all
             if (mi == this.MenuItemSelectAllFolders)
             {
-                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
+                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
                 return;
             }
 
@@ -128,7 +128,7 @@ namespace Timelapse
             this.MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
-            await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+            await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
         }
 
         private void MenuItemSelectByFolder_ClearAllCheckmarks()
@@ -181,11 +181,11 @@ namespace Timelapse
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
             if (this.dataHandler.ImageCache.Current == null)
             {
-                await this.FilesSelectAndShow(selection).ConfigureAwait(true);
+                await this.FilesSelectAndShowAsync(selection).ConfigureAwait(true);
             }
             else
             {
-                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }
 
@@ -209,7 +209,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom).ConfigureAwait(true);
+                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom).ConfigureAwait(true);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
                     this.MenuItemSelectByFolder_ClearAllCheckmarks();
@@ -232,7 +232,7 @@ namespace Timelapse
         private async void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
         {
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            await this.FilesSelectAndShow(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
 
 

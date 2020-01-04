@@ -199,7 +199,7 @@ namespace Timelapse.Dialog
 
         #region Do the work: Populate the database 
         // Populate the database with the metadata for the selected note field
-        private async Task<ObservableCollection<KeyValuePair<string, string>>> Populate(bool? metadataExtractorRBIsChecked)
+        private async Task<ObservableCollection<KeyValuePair<string, string>>> PopulateAsync(bool? metadataExtractorRBIsChecked)
         {
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
@@ -418,7 +418,7 @@ namespace Timelapse.Dialog
             this.CloseButtonIsEnabled(false);
 
             // This call does all the actual populating...
-            ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.Populate(metadataExtractorRBIsChecked).ConfigureAwait(true);
+            ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.PopulateAsync(metadataExtractorRBIsChecked).ConfigureAwait(true);
 
             // Update the UI to its final state
             this.FeedbackGrid.ItemsSource = keyValueList;
