@@ -182,6 +182,7 @@ namespace Timelapse.Database
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
             this.SelectFiles(FileSelectionEnum.All);
+            this.BindToDataGrid();
 
             // Create the MarkersTable and initialize it from the template table
             columnDefinitions.Clear();
@@ -196,6 +197,7 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DBTables.Markers, columnDefinitions);
         }
         #endregion
+
 
         public List<object> GetDistinctValuesInColumn(string table, string columnName)
         {
@@ -367,6 +369,17 @@ namespace Timelapse.Database
             this.ImageSet.Log += logEntry;
             this.SyncImageSetToDatabase();
         }
+
+        // Bind the data grid to an event, using boundGrid and the onFileDataTableRowChanged event 
+        public void BindToDataGrid()
+        {
+            if (this.FileTable == null)
+            {
+                return;
+            }
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+        }
+
 
         public void BindToDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
         {
@@ -674,6 +687,7 @@ namespace Timelapse.Database
                 // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
                 // we  have to select all rows. However, this operation would only ever happen once, and only on legacy .ddb files
                 this.SelectFiles(FileSelectionEnum.All);
+                this.BindToDataGrid();
                 foreach (ImageRow image in this.FileTable)
                 {
                     // NEED TO GET Legacy DATE TIME  (i.e., FROM DATE AND TIME fields) as the new DateTime did not exist in this old database. 
@@ -971,7 +985,7 @@ namespace Timelapse.Database
             // as I am not that savvy in database optimizations.
             DataTable images = this.Database.GetDataTableFromSelect(query);
             this.FileTable = new FileTable(images);
-            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+            // this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
         }
 
         public int CountMissingFilesFromCurrentlySelectedFiles()

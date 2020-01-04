@@ -72,6 +72,7 @@ namespace Timelapse
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
                 this.dataHandler.FileDatabase.SelectFiles(selection);
+                this.dataHandler.FileDatabase.BindToDataGrid();
             }
             Mouse.OverrideCursor = null;
 
@@ -123,6 +124,7 @@ namespace Timelapse
                 selection = FileSelectionEnum.All;
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
                 this.dataHandler.FileDatabase.SelectFiles(selection);
+                this.dataHandler.FileDatabase.BindToDataGrid();
             }
 
             // Change the selection to reflect what the user selected. Update the menu state accordingly
