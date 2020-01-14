@@ -77,15 +77,25 @@ namespace Timelapse
             {
                 return;
             }
-            List<string> dbMissingFolders = new List<string>();
+            List<string> foldersInDBListButNotInJSon = new List<string>();
+            List<string> foldersInJsonButNotInDB = new List<string>();
+            List<string> foldersInBoth = new List<string>();
 
             // Show the Busy indicator
             this.BusyCancelIndicator.IsBusy = true;
-
+            
             // Load the detections
-            bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, dbMissingFolders).ConfigureAwait(true);
+            bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth).ConfigureAwait(true);
 
-            // Hid the Busy indicator
+            // Hide the Busy indicator
+            //this.BusyCancelIndicator.IsBusy = false;
+
+            if (result)
+            {
+                // Only reset these if we actually imported some detections, as otherwise nothing has changed.
+                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+            }
             this.BusyCancelIndicator.IsBusy = false;
 
             if (result == false)
@@ -101,21 +111,21 @@ namespace Timelapse
                 messageBox.Message.Solution += "that you can use to extract recognitions matching your sub-folder: " + Environment.NewLine;
                 messageBox.Message.Solution += "  http://aka.ms/cameratraps-detectormismatch";
                 messageBox.Message.Result = "Recognition information was not imported.";
+                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
                 messageBox.ShowDialog();
             }
-            else if (dbMissingFolders.Count > 0)
+            else if (foldersInDBListButNotInJSon.Count > 0)
             {
                 // Some folders missing - show which folder paths in the DB are not in the detector
-                string listAsLines = string.Join(", \u2022 ", dbMissingFolders.ToArray());
                 MessageBox messageBox = new MessageBox("Recognition data imported for only some of your folders.", this);
                 messageBox.Message.Icon = MessageBoxImage.Information;
                 messageBox.Message.Problem = "Some of the sub-folders in your image set's Database file have no corresponding entries in the Recognition file." + Environment.NewLine;
                 messageBox.Message.Problem += "While not an error, we just wanted to bring it to your attention.";
-                messageBox.Message.Reason = "In particular, you may have added, moved, or renamed the folders belows since supplying the originals to the recognizer:" + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 " + listAsLines;
+                messageBox.Message.Reason = "This could happen if you have added, moved, or renamed the folders since supplying the originals to the recognizer:" + Environment.NewLine;
                 messageBox.Message.Result = "Recognition data will still be imported for the other folders.";
                 messageBox.Message.Hint = "You can also view which images are missing recognition data by choosing" + Environment.NewLine;
                 messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
                 messageBox.ShowDialog();
             }
             else
@@ -126,15 +136,52 @@ namespace Timelapse
                 messageBox.Message.Result = "Recognition data imported. You can select images matching particular recognitions by choosing 'Select|Custom Selection...'";
                 messageBox.Message.Hint = "You can also view which images (if any) are missing recognition data by choosing" + Environment.NewLine;
                 messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
                 messageBox.ShowDialog();
             }
 
-            if (result)
+        }
+
+        private string ComposeFolderDetails(List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
+        {
+            string folderDetails = String.Empty;
+            if (foldersInDBListButNotInJSon.Count == 0 && foldersInJsonButNotInDB.Count == 0)
             {
-                // Only reset these if we actually imported some detections, as otherwise nothing has changed.
-                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
-                this.FilesSelectAndShowAsync();
+                // All folders match, so don't show any details.
+                return folderDetails;
             }
+
+            // At this point, there is a mismatch, so we should show something.
+            if (foldersInBoth.Count > 0 )
+            {
+                folderDetails += foldersInBoth.Count.ToString() + " of your folders had matching recognition data:" + Environment.NewLine;
+                foreach (string folder in foldersInBoth)
+                {
+                    folderDetails += "\u2022 " + folder + Environment.NewLine;
+                }
+                folderDetails += Environment.NewLine;
+            }
+
+            if (foldersInDBListButNotInJSon.Count > 0)
+            {
+                folderDetails += foldersInDBListButNotInJSon.Count.ToString() + " of your folders had no matching recognition data:" + Environment.NewLine;
+                foreach (string folder in foldersInDBListButNotInJSon)
+                {
+                    folderDetails += "\u2022 " + folder + Environment.NewLine;
+                }
+                folderDetails += Environment.NewLine;
+            }
+            if (foldersInJsonButNotInDB.Count > 0)
+            {
+                folderDetails += "The recognition file also included " + foldersInJsonButNotInDB.Count.ToString() + " other ";
+                folderDetails += (foldersInJsonButNotInDB.Count == 1) ? "folder" : "folders";
+                folderDetails += " not found in your folders:" + Environment.NewLine;
+                foreach (string folder in foldersInJsonButNotInDB)
+                {
+                    folderDetails += "\u2022 " + folder + Environment.NewLine;
+                }
+            }
+            return folderDetails;
         }
 
         // Export data for this image set as a .csv file
@@ -249,7 +296,7 @@ namespace Timelapse
         }
 
         // Import data from a .csv file
-        private void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressCsvImportPrompt == false)
             {
@@ -334,7 +381,7 @@ namespace Timelapse
                 {
                     // Importing done.
                     // Reload the data
-                    this.FilesSelectAndShowAsync();
+                    await this.FilesSelectAndShowAsync().ConfigureAwait(true);
                     this.StatusBar.SetMessage(".csv file imported.");
                 }
             }

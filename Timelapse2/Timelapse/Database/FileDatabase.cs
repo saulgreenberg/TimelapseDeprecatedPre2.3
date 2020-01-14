@@ -988,7 +988,6 @@ namespace Timelapse.Database
                 DataTable images = this.Database.GetDataTableFromSelect(query);
 
                 this.FileTable = new FileTable(images);
-                // this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
             }).ConfigureAwait(true);
 
         }
@@ -2043,7 +2042,7 @@ namespace Timelapse.Database
             });
         }
 
-        public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> dbMissingFolders)
+        public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
         {
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
@@ -2054,20 +2053,23 @@ namespace Timelapse.Database
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(dbMissingFolders, nameof(dbMissingFolders));
+            ThrowIf.IsNullArgument(foldersInDBListButNotInJSon, nameof(foldersInDBListButNotInJSon));
+            ThrowIf.IsNullArgument(foldersInJsonButNotInDB, nameof(foldersInJsonButNotInDB));
+            ThrowIf.IsNullArgument(foldersInBoth, nameof(foldersInBoth));
 
             if (File.Exists(path) == false)
             {
                 return false;
             }
 
+            bool result;
             using (ProgressStream ps = new ProgressStream(System.IO.File.OpenRead(path)))
             {
                 ps.BytesRead += new ProgressStreamReportDelegate(PStream_BytesRead);
 
                 using (TextReader sr = new StreamReader(ps))
                 {
-                    bool result = await Task.Run(() =>
+                    result = await Task.Run(() =>
                     {
                         try
                         {
@@ -2087,7 +2089,7 @@ namespace Timelapse.Database
                                 DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
 
                                 // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
-                                if (this.CompareDetectorAndDBFolders(detector, dbMissingFolders) == false)
+                                if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
                                 {
                                     // No folders in the detections match folders in the databases. Abort without doing anything.
                                     return false;
@@ -2113,18 +2115,13 @@ namespace Timelapse.Database
                     }).ConfigureAwait(true);
                 }
             }
-
-            TimelapseWindow w = System.Windows.Application.Current.MainWindow as TimelapseWindow;
-            return true;
+            return result;
         }
 
         // Return true if there is at least one match between a detector folder and a DB folder
-        // Return a list of folder paths missing in the DB but present in the detector
-        private bool CompareDetectorAndDBFolders(Detector detector, List<string> missingDBFoldersList)
+        // Return a list of folder paths missing in the DB but present in the detector file
+        private bool CompareDetectorAndDBFolders(Detector detector, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
         {
-            List<string> FoldersInDBListButNotInJSon = new List<string>();
-            List<string> FoldersInInJsonButNotInDB = new List<string>();
-
             string folderpath;
 
             if (detector.images.Count <= 0)
@@ -2160,32 +2157,40 @@ namespace Timelapse.Database
             }
 
             // Compare each folder in the DB against the folders in the detector );
-            bool atLeastOneMatch = false;
             foreach (string originalFolderDB in FoldersInDBList)
             {
                 // Add a closing slash to the folderDB for the same reasons described above
-                string modifedFolderDB = String.Empty;
+                string modifiedFolderDB = String.Empty;
                 if (!string.IsNullOrEmpty(originalFolderDB))
                 {
-                    modifedFolderDB = originalFolderDB + "\\";
+                    modifiedFolderDB = originalFolderDB + "\\";
                 }
-                if (foldersInDetectorList.Contains(modifedFolderDB))
+
+                if (foldersInDetectorList.Contains(modifiedFolderDB))
                 {
-                    atLeastOneMatch = true;
+                    // this folder path is in both the detector file and the image set
+                    foldersInBoth.Add(modifiedFolderDB);
                 }
                 else
                 {
                     if (string.IsNullOrEmpty(originalFolderDB))
                     {
-                        missingDBFoldersList.Add("<root folder>");
+                        // An empty strng is the root folder, so make sure we add it
+                        foldersInDBListButNotInJSon.Add("<root folder>");
                     }
                     else
                     {
-                        missingDBFoldersList.Add(originalFolderDB);
+                        // This folder is in the image set but NOT in the detector
+                        foldersInDBListButNotInJSon.Add(originalFolderDB);
                     }
                 }
             }
-            return atLeastOneMatch;
+            List<string> tempList = foldersInDetectorList.Except(foldersInBoth).ToList();
+            foreach (string s in tempList)
+            {
+                foldersInJsonButNotInDB.Add(s);
+            }
+            return foldersInDBListButNotInJSon.Count == 0;
         }
 
         // Its possible that the folder where the .tdb file is located is either:

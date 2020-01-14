@@ -46,6 +46,7 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
+
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

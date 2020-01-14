@@ -236,7 +236,6 @@
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />
     <Compile Include="Images\VideoThumbnailer.cs" />
-    <Compile Include="Microsoft\Windows\Controls.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>

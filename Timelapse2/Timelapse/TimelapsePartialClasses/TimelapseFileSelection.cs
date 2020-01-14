@@ -13,7 +13,7 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // FilesSelectAndShow: various forms
-        private async void FilesSelectAndShowAsync()
+        private async Task FilesSelectAndShowAsync()
         {
             if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
             {

@@ -39,9 +39,12 @@ namespace Timelapse.Controls
                         this.iconType = MessageBoxImage.Information;
                         break;
                     case MessageBoxImage.Error:
-                        Run run = new Run(); // Create a symbol of a stopped hand
-                        run.FontFamily = new FontFamily("Wingdings 2");
-                        run.Text = "\u004e";
+                        Run run = new Run
+                        {
+                            FontFamily = new FontFamily("Wingdings 2"),
+                            Text = "\u004e"
+                        }; 
+                        // Create a symbol of a stopped hand
                         this.lblIconType.Content = run;
                         this.iconType = MessageBoxImage.Error;
                         break;
@@ -146,6 +149,19 @@ namespace Timelapse.Controls
             }
         }
 
+        public string Details
+        {
+            get
+            {
+                return this.DetailsText.Text;
+            }
+            set
+            {
+                this.DetailsText.Text = value;
+                this.SetExplanationVisibility();
+            }
+        }
+
         public bool ShowExplanationVisibility
         {
             get
@@ -176,6 +192,7 @@ namespace Timelapse.Controls
                 this.MessageGrid.RowDefinitions[4].Height = zeroHeight;
                 this.MessageGrid.RowDefinitions[5].Height = zeroHeight;
                 this.MessageGrid.RowDefinitions[6].Height = zeroHeight;
+                this.MessageGrid.RowDefinitions[7].Height = zeroHeight;
                 return;
             }
 
@@ -186,6 +203,7 @@ namespace Timelapse.Controls
             this.MessageGrid.RowDefinitions[4].Height = String.IsNullOrEmpty(this.Solution) ? zeroHeight : autoHeight;
             this.MessageGrid.RowDefinitions[5].Height = String.IsNullOrEmpty(this.Result) ? zeroHeight : autoHeight;
             this.MessageGrid.RowDefinitions[6].Height = String.IsNullOrEmpty(this.Hint) ? zeroHeight : autoHeight;
+            this.MessageGrid.RowDefinitions[7].Height = String.IsNullOrEmpty(this.Details) ? zeroHeight : autoHeight;
         }
 
         // This will toggle the visibility of the explanation panel
