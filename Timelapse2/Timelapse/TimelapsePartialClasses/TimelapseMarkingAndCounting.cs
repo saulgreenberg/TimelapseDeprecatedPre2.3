@@ -82,7 +82,7 @@ namespace Timelapse
             {
                 markersForCounter.RemoveMarker(e.Marker);
                 this.Speak(counter.Content); // Speak the current count
-                this.dataHandler.FileDatabase.SetMarkerPositions(this.dataHandler.ImageCache.Current.ID, markersForCounter);
+                this.dataHandler.FileDatabase.MarkersUpdateMarkerRow(this.dataHandler.ImageCache.Current.ID, markersForCounter);
             }
             this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
         }
@@ -126,11 +126,11 @@ namespace Timelapse
             {
                 // Check - If there is no row in the marker table with that ID, an empty row (with null values) will be added to the database
                 // and the Markers list held by the database will be updated accordingly
-                if (this.dataHandler.FileDatabase.TryAddNewMarkerRow(this.dataHandler.ImageCache.Current.ID))
+                if (this.dataHandler.FileDatabase.MarkersTryInsertNewMarkerRow(this.dataHandler.ImageCache.Current.ID))
                 {
                     // We added a new marker row, so we need to update the various markers data structures to reflect the new marker
                     markersForCounter = new MarkersForCounter(counter.DataLabel);
-                    this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+                    this.markersOnCurrentFile = this.dataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
                 }
             }
 
@@ -153,7 +153,7 @@ namespace Timelapse
             markersForCounter.AddMarker(marker);
 
             // update this counter's list of points in the database
-            this.dataHandler.FileDatabase.SetMarkerPositions(this.dataHandler.ImageCache.Current.ID, markersForCounter);
+            this.dataHandler.FileDatabase.MarkersUpdateMarkerRow(this.dataHandler.ImageCache.Current.ID, markersForCounter);
             this.MarkableCanvas.Markers = this.GetDisplayMarkers();
             this.Speak(counter.Content + " " + counter.Label); // Speak the current count
         }

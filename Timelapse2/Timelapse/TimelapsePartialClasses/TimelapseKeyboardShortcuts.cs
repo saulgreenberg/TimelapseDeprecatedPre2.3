@@ -15,7 +15,7 @@ namespace Timelapse
         {
             if (this.dataHandler == null ||
                 this.dataHandler.FileDatabase == null ||
-                this.dataHandler.FileDatabase.CurrentlySelectedFileCount == 0)
+                this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
             {
                 // PERHAPS BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
                 // Maybe we need to change the enable state?

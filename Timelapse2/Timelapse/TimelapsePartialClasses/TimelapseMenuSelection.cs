@@ -123,7 +123,7 @@ namespace Timelapse
 
             // Set the search terms to the designated relative path
             this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
-            int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.Custom);
+            int count = this.dataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
             if (count <= 0)
             {
                 Timelapse.Dialog.MessageBox messageBox = new Timelapse.Dialog.MessageBox("No files in this folder", Application.Current.MainWindow);

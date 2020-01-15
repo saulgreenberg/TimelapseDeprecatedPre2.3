@@ -63,7 +63,7 @@ namespace Timelapse
         private void FindBoxSetVisibility(bool isVisible)
         {
             // Only make the find box visible if there are files to view
-            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
             {
                 this.FindBox.IsOpen = isVisible;
                 this.FindBoxTextBox.Focus();

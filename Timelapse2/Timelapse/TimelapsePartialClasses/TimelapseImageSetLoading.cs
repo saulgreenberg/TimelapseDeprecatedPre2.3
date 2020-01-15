@@ -142,7 +142,7 @@ namespace Timelapse
             FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
-            Dictionary<string, string> columndefaultdict = fileDatabase.GetColumnsAndDefaultValuesFromSchema(Constant.DBTables.FileData);
+            Dictionary<string, string> columndefaultdict = fileDatabase.SchemaGetColumnsAndDefaultValues(Constant.DBTables.FileData);
             char[] quote = { '\'' };
 
             foreach (KeyValuePair<string, string> pair in columndefaultdict)
@@ -180,7 +180,7 @@ namespace Timelapse
             if (VersionClient.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.dataHandler.FileDatabase.ImageSet.VersionCompatability))
             {
                 this.dataHandler.FileDatabase.ImageSet.VersionCompatability = currentVersionNumberAsString;
-                this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             }
 
             // If this is a new image database, try to load images (if any) from the folder...  

@@ -72,7 +72,7 @@ namespace Timelapse
             }
             Mouse.OverrideCursor = null;
 
-            if ((this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1) && (selection != FileSelectionEnum.All))
+            if ((this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1) && (selection != FileSelectionEnum.All))
             {
                 // These cases are reached when 
                 // 1) datetime modifications result in no files matching a custom selection
@@ -163,7 +163,7 @@ namespace Timelapse
             // FileShow() handles empty image sets, so those don't need to be checked for here.
             // After a selection changes, set the slider to represent the index and the count of the current selection
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-            this.FileNavigatorSlider.Maximum = this.dataHandler.FileDatabase.CurrentlySelectedFileCount;  // Reset the slider to the size of images in this set
+            this.FileNavigatorSlider.Maximum = this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles;  // Reset the slider to the size of images in this set
             if (this.FileNavigatorSlider.Maximum <= 50)
             {
                 this.FileNavigatorSlider.IsSnapToTickEnabled = true;
@@ -187,7 +187,7 @@ namespace Timelapse
 
             // Update the status bar accordingly
             this.StatusBar.SetCurrentFile(this.dataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list
-            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
+            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
         }

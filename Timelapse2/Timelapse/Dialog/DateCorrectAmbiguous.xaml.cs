@@ -94,7 +94,7 @@ namespace Timelapse.Dialog
         // If it can't find an ambiguous date, it will return -1.
         private int SearchForNextAmbiguousDateInSelectedImageSet(int startIndex)
         {
-            for (int index = startIndex; index < this.fileDatabase.CurrentlySelectedFileCount; index++)
+            for (int index = startIndex; index < this.fileDatabase.CountAllCurrentlySelectedFiles; index++)
             {
                 ImageRow image = this.fileDatabase.FileTable[index];
                 DateTimeOffset imageDateTime = image.DateTimeIncorporatingOffset;
@@ -116,7 +116,7 @@ namespace Timelapse.Dialog
             int lastMatchingDate;
 
             // Check if index is in range
-            if (startIndex >= this.fileDatabase.CurrentlySelectedFileCount || startIndex < 0)
+            if (startIndex >= this.fileDatabase.CountAllCurrentlySelectedFiles || startIndex < 0)
             {
                 return -1;   // The index is out of range.
             }
@@ -126,7 +126,7 @@ namespace Timelapse.Dialog
             DateTimeOffset desiredDateTime = image.DateTimeIncorporatingOffset;
 
             lastMatchingDate = startIndex;
-            for (int index = startIndex + 1; index < this.fileDatabase.CurrentlySelectedFileCount; index++)
+            for (int index = startIndex + 1; index < this.fileDatabase.CountAllCurrentlySelectedFiles; index++)
             {
                 // Parse the date for the given row.
                 image = this.fileDatabase.FileTable[index];
@@ -167,7 +167,7 @@ namespace Timelapse.Dialog
                     if (ambDate.SwapDates)
                     {
                         this.IsAnyDataUpdated = true;
-                        this.fileDatabase.ExchangeDayAndMonthInFileDates(ambDate.StartIndex, ambDate.EndIndex);
+                        this.fileDatabase.UpdateExchangeDayAndMonthInFileDates(ambDate.StartIndex, ambDate.EndIndex);
                         totalFileCount += ambDate.Count;
                     }
                     // Provide feedback if the operation was cancelled during the database update

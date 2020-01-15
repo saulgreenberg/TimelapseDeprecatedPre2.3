@@ -66,7 +66,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             // - get all the current files in the database (as existing full paths) in a single database call,
             // - create a new file list (fileInfoArray) that only adds files (as fileInfos) that are NOT present in the database. 
             HashSet<string> existingPaths;
-            using (FileTable filetable = dataHandler.FileDatabase.GetAllFiles())
+            using (FileTable filetable = dataHandler.FileDatabase.SelectAllFiles())
             {
                 existingPaths = new HashSet<string>(from file in filetable
                                                     select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());

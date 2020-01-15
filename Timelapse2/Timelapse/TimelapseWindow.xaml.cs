@@ -189,7 +189,7 @@ namespace Timelapse
 
             if ((this.dataHandler != null) &&
                 (this.dataHandler.FileDatabase != null) &&
-                (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0))
+                (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0))
             {
                 // save image set properties to the database
                 if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
@@ -218,7 +218,7 @@ namespace Timelapse
                     this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
                 }
 
-                this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
 
                 // ensure custom filter operator is synchronized in state for writing to user's registry
                 this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
@@ -689,7 +689,7 @@ namespace Timelapse
 
             // True only if we are displaying at least one file in an image set
             return this.IsFileDatabaseAvailable() &&
-                   this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0;
+                   this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0;
         }
 
         private bool IsDisplayingMultipleImagesInOverview()

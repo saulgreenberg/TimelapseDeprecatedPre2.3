@@ -25,7 +25,7 @@ namespace Timelapse.Images
             {
                 XmlNode logNode = logNodes[0];
                 imageDatabase.ImageSet.Log = logNode.InnerText;
-                imageDatabase.SyncImageSetToDatabase();
+                imageDatabase.UpdateSyncImageSetToDatabase();
             }
 
             // Create three lists, each one representing the datalabels (in order found in the template) of notes, counters and choices

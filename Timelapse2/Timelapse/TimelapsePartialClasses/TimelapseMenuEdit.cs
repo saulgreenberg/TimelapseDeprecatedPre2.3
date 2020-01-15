@@ -70,7 +70,7 @@ namespace Timelapse
                 else
                 {
                     this.quickPasteEntries = qpe;
-                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                    this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
                     this.QuickPasteRefreshWindowAndXML();
                     this.QuickPasteWindowShow();
                 }
@@ -162,7 +162,7 @@ namespace Timelapse
                 deleteCurrentImageOnly = false;
                 deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name);
                 // get list of all images marked for deletion in the current seletion
-                using (FileTable filetable = this.dataHandler.FileDatabase.GetFilesMarkedForDeletion())
+                using (FileTable filetable = this.dataHandler.FileDatabase.SelectFilesMarkedForDeletion())
                 {
                     filesToDelete = filetable.ToList();
                 }
@@ -217,7 +217,7 @@ namespace Timelapse
                 if (deleteFilesAndData)
                 {
                     // Find and show the image closest to the last one shown
-                    if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+                    if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
                     {
                         int nextImageRow = this.dataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID);
                         this.FileShow(nextImageRow);
@@ -401,7 +401,7 @@ namespace Timelapse
             if (result == true)
             {
                 this.dataHandler.FileDatabase.ImageSet.Log = editImageSetLog.Log.Text;
-                this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             }
         }
 

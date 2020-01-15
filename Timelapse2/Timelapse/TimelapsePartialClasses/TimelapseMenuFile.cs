@@ -468,7 +468,7 @@ namespace Timelapse
             if (this.IsFileDatabaseAvailable())
             {
                 // persist image set properties if an image set has been opened
-                if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+                if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
                 {
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
@@ -482,7 +482,7 @@ namespace Timelapse
                     }
 
                     // write image set properties to the database
-                    this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+                    this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
 
                     // ensure custom filter operator is synchronized in state for writing to user's registry
                     this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;

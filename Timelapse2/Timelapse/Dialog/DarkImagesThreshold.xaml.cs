@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
             this.DarkThreshold.ValueChanged += this.DarkThresholdSlider_ValueChanged;
 
             this.ScrollImages.Minimum = 0;
-            this.ScrollImages.Maximum = this.fileDatabase.CurrentlySelectedFileCount - 1;
+            this.ScrollImages.Maximum = this.fileDatabase.CountAllCurrentlySelectedFiles - 1;
             this.ScrollImages.Value = this.imageEnumerator.CurrentRow;
 
             this.SetPreviousNextPlayButtonStates();
@@ -444,7 +444,7 @@ namespace Timelapse.Dialog
         private void SetPreviousNextPlayButtonStates()
         {
             this.PreviousFile.IsEnabled = (this.imageEnumerator.CurrentRow == 0) ? false : true;
-            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CurrentlySelectedFileCount - 1) ? true : false;
+            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CountAllCurrentlySelectedFiles - 1) ? true : false;
             if (NextFile.IsEnabled == false)
             {
                 // We are at the end, so stop playback and disable the play button

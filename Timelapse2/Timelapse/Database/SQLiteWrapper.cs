@@ -82,7 +82,7 @@ namespace Timelapse.Database
         #endregion
 
         // Return a dictionary comprising each column in the schema and its default values (if any)
-        public Dictionary<string, string> GetColumnsAndDefaultValuesFromSchema(string tableName)
+        public Dictionary<string, string> SchemaGetColumnsAndDefaultValues(string tableName)
         {
             try
             {

@@ -96,7 +96,7 @@ namespace Timelapse
         {
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
-            this.dataHandler.FileDatabase.SyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
+            this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase(); // SAULXXX CHECK IF THIS IS NEEDED
 
             this.BusyCancelIndicator.IsBusy = true;
             // Reselect the images, which re-sorts them to the current sort criteria. 

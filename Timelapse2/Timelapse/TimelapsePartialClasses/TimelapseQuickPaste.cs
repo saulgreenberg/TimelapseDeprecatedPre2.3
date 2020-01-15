@@ -48,7 +48,7 @@ namespace Timelapse
             }
 
             // Finally, show the window if it makes sense to do so
-            if (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0)
+            if (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
             {
                 this.quickPasteWindow.Show();
             }
@@ -299,7 +299,7 @@ namespace Timelapse
         private void QuickPasteRefreshWindowAndXML()
         {
             this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
-            this.dataHandler.FileDatabase.SyncImageSetToDatabase();
+            this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             if (this.quickPasteWindow != null)
             {
                 this.quickPasteWindow.Refresh(this.quickPasteEntries);

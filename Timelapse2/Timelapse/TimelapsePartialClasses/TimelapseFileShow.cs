@@ -37,7 +37,7 @@ namespace Timelapse
         private void FileShow(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
-            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CurrentlySelectedFileCount < 1)
+            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1)
             {
                 this.MarkableCanvas.SetNewImage(Constant.ImageValues.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
@@ -109,14 +109,14 @@ namespace Timelapse
             // update the status bar to show which image we are on out of the total displayed under the current selection
             // the total is always refreshed as it's not known if FileShow() is being called due to a change in the selection
             this.StatusBar.SetCurrentFile(fileIndex + 1); // Add one because indexes are 0-based
-            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CurrentlySelectedFileCount);
+            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
             this.StatusBar.ClearMessage();
 
             this.FileNavigatorSlider.Value = fileIndex + 1;
 
             // Get the bounding boxes and markers (if any) for the current image;
             BoundingBoxes bboxes = this.GetBoundingBoxesForCurrentFile(this.dataHandler.ImageCache.Current.ID);
-            this.markersOnCurrentFile = this.dataHandler.FileDatabase.GetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+            this.markersOnCurrentFile = this.dataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers();
 
             // Display new file if the file changed
@@ -161,7 +161,7 @@ namespace Timelapse
                 this.FilePlayer.BackwardsControlsEnabled(true);
             }
 
-            if (this.dataHandler.ImageCache.CurrentRow == this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1)
+            if (this.dataHandler.ImageCache.CurrentRow == this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1)
             {
                 this.FilePlayer.ForwardsControlsEnabled(false);
             }
@@ -222,7 +222,7 @@ namespace Timelapse
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction)
         {
             // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
+            if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
             {
                 return false;
             }
@@ -235,7 +235,7 @@ namespace Timelapse
         {
             int desiredRow = 0;
             // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CurrentlySelectedFileCount <= 0)
+            if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
             {
                 return false;
             }
@@ -254,9 +254,9 @@ namespace Timelapse
             }
 
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
-            if (desiredRow >= this.dataHandler.FileDatabase.CurrentlySelectedFileCount)
+            if (desiredRow >= this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles)
             {
-                desiredRow = this.dataHandler.FileDatabase.CurrentlySelectedFileCount - 1;
+                desiredRow = this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1;
             }
             else if (desiredRow < 0)
             {

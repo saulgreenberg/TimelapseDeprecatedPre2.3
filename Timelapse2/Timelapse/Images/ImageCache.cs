@@ -85,7 +85,7 @@ namespace Timelapse.Images
                 // Already at the beginning
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
             }
-            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Next && this.CurrentRow == this.Database.CurrentlySelectedFileCount - 1)
+            else if (this.CurrentDifferenceState == ImageDifferenceEnum.Next && this.CurrentRow == this.Database.CountAllCurrentlySelectedFiles - 1)
             {
                 // Already at the end
                 this.MoveToNextStateInPreviousNextDifferenceCycle();

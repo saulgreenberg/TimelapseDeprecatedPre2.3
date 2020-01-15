@@ -171,7 +171,7 @@ namespace Timelapse.Dialog
                 return false;
             }
             // We want to show the prompt only if the promptState is true, and we are  viewing all images
-            filesTotalCount = fileDatabase.GetFileCount(FileSelectionEnum.All);
+            filesTotalCount = fileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.All);
             filesSelectedCount = fileDatabase.FileTable.RowCount;
             return filesTotalCount != filesSelectedCount;
         }

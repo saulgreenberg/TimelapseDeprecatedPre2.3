@@ -247,7 +247,7 @@ namespace Timelapse.Controls
         public void CopyForward(string dataLabel, bool checkForZero)
         {
             int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
-            int imagesAffected = this.FileDatabase.CurrentlySelectedFileCount - currentRowIndex - 1;
+            int imagesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRowIndex - 1;
             if (imagesAffected == 0)
             {
                 // Nothing to propagate. Note that we shouldn't really see this, as the menu shouldn't be highlit if we are on the last image
@@ -268,7 +268,7 @@ namespace Timelapse.Controls
             }
 
             // Update the files from the next row (as we are copying from the current row) to the end.
-            this.FileDatabase.UpdateFiles(imageRow, dataLabel, nextRowIndex, this.FileDatabase.CurrentlySelectedFileCount - 1);
+            this.FileDatabase.UpdateFiles(imageRow, dataLabel, nextRowIndex, this.FileDatabase.CountAllCurrentlySelectedFiles - 1);
         }
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace Timelapse.Controls
             ThrowIf.IsNullArgument(control, nameof(control));
 
             bool checkForZero = control is DataEntryCounter;
-            int filesAffected = this.FileDatabase.CurrentlySelectedFileCount;
+            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles;
 
             string displayValueToCopy = control.Content;
 
@@ -362,7 +362,7 @@ namespace Timelapse.Controls
                 return false;
             }
 
-            int filesAffected = this.FileDatabase.CurrentlySelectedFileCount - this.ImageCache.CurrentRow - 1;
+            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - this.ImageCache.CurrentRow - 1;
             return (filesAffected > 0) ? true : false;
         }
 

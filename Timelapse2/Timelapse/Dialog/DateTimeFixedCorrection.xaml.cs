@@ -111,7 +111,7 @@ namespace Timelapse.Dialog
         {
             // Note that this passes a function which is invoked by the fileDatabase method. 
             // This not only calculates the new times, but updates the progress bar as the fileDatabase method iterates through the files.
-            this.fileDatabase.AdjustFileTimes(
+            this.fileDatabase.UpdateAdjustedFileTimes(
                (string fileName, int fileIndex, int count, DateTimeOffset imageDateTime) =>
                {
                    if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
@@ -140,7 +140,7 @@ namespace Timelapse.Dialog
                    return imageDateTime + adjustment; // Returns the new time
                },
                0,
-               this.fileDatabase.CurrentlySelectedFileCount - 1,
+               this.fileDatabase.CountAllCurrentlySelectedFiles - 1,
                this.Token);
         }
         #endregion
@@ -182,7 +182,7 @@ namespace Timelapse.Dialog
             // Provide summary feedback 
             if (this.IsAnyDataUpdated && this.Token.IsCancellationRequested == false)
             {
-                string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CurrentlySelectedFileCount);
+                string message = string.Format("Updated {0}/{1} files whose dates have changed.", feedbackRows.Count, this.fileDatabase.CountAllCurrentlySelectedFiles);
                 feedbackRows.Insert(0, (new DateTimeFeedbackTuple("---", message)));
             }
 

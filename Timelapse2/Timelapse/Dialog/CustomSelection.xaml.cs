@@ -869,7 +869,7 @@ namespace Timelapse.Dialog
             {
                 return;
             }
-            int count = this.database.GetFileCount(FileSelectionEnum.Custom);
+            int count = this.database.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
             this.OkButton.IsEnabled = count > 0; // Dusable OK button if there are no matches
         }

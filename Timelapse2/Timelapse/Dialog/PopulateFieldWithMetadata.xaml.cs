@@ -224,9 +224,9 @@ namespace Timelapse.Dialog
                 TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
                 int percentDone = 0;
 
-                double totalImages = this.fileDatabase.CurrentlySelectedFileCount;
+                double totalImages = this.fileDatabase.CountAllCurrentlySelectedFiles;
                 Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
-                for (int imageIndex = 0; imageIndex < this.fileDatabase.CurrentlySelectedFileCount; ++imageIndex)
+                for (int imageIndex = 0; imageIndex < this.fileDatabase.CountAllCurrentlySelectedFiles; ++imageIndex)
                 {
                     // Provide feedback if the operation was cancelled during the database update
                     if (Token.IsCancellationRequested == true)

@@ -10,7 +10,7 @@ namespace Timelapse
         private void EnableOrDisableMenusAndControls()
         {
             bool imageSetAvailable = this.IsFileDatabaseAvailable();
-            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CurrentlySelectedFileCount > 0) ? true : false;
+            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
