@@ -56,7 +56,20 @@ namespace Timelapse
             {
                 // PERFORMANCE this can be slow if there are many files, as it checks every single file in the current database selection to see if it exists
                 // However, it is not a mainstream operation so can be considered a lower priority place for optimization
-                this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
+                bool anyFilesMissing = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
+                if (anyFilesMissing == false)
+                {
+                    // No files were missing. Inform the user, and don't change anything.
+                    MessageBox messageBox = new MessageBox("No Files are Missing.", this);
+                    messageBox.Message.Title = "No Files are Missing in the Current Selection.";
+                    messageBox.Message.Icon = MessageBoxImage.Information;
+                    messageBox.Message.What = "No files are missing in the current selection.";
+                    messageBox.Message.Reason = "All files in the current selection were checked, and all are present. None were missing.";
+                    messageBox.Message.Result = "No changes were made.";
+                    messageBox.ShowDialog();
+                    Mouse.OverrideCursor = null;
+                    return;
+                }
             }
             else
             {
@@ -99,6 +112,7 @@ namespace Timelapse
                         messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
                         break;
                     case FileSelectionEnum.Missing:
+                        // We should never invoke this, as its handled earlier.
                         messageBox.Message.Problem = "Missing files were previously selected. However, none of the files appear to be missing, so nothing can be shown.";
                         break;
                     case FileSelectionEnum.MarkedForDeletion:

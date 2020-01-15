@@ -964,6 +964,7 @@ namespace Timelapse.Database
             string filepath = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+           
             // Check if each file exists. Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
             foreach (ImageRow image in this.FileTable)
             {
@@ -974,9 +975,14 @@ namespace Timelapse.Database
             }
             // remove the trailing comma
             commaSeparatedListOfIDs = commaSeparatedListOfIDs.TrimEnd(',');
+            if (string.IsNullOrEmpty(commaSeparatedListOfIDs))
+            {
+                // No missing files
+                return false;
+            }
             this.FileTable = this.SelectFilesInDataTableById(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-            return (string.IsNullOrEmpty(commaSeparatedListOfIDs)) ? false : true;
+            return true;
         }
 
         // Select only those files that are marked for deletion i.e. DeleteFlag = true
