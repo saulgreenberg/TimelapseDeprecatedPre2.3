@@ -1179,6 +1179,22 @@ namespace Timelapse.Database
             // System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
             return this.Database.GetCountFromSelect(query);
         }
+
+        // Form examples
+        // - Select EXISTS  ( SELECT 1   FROM DataTable WHERE DeleteFlag='true')
+        public bool RowExistsWhere(FileSelectionEnum fileSelection)
+        {
+            string query = Sql.SelectExists + Sql.OpenParenthesis + Sql.SelectOne + Sql.From + Constant.DBTables.FileData;
+            string where = this.GetFilesConditionalExpression(fileSelection);
+            if (!String.IsNullOrEmpty(where))
+            {
+                query += where;
+            }
+            query += Sql.CloseParenthesis;
+            // Uncommment this to see the actual complete query
+            // System.Diagnostics.Debug.Print("Exists: " + query + Environment.NewLine);
+            return this.Database.GetExists(query);
+        }
         #endregion
 
         // Insert one or more rows into a table

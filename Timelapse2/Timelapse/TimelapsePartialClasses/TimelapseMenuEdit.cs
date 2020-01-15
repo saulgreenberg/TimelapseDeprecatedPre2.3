@@ -123,9 +123,9 @@ namespace Timelapse
         {
             try
             {
-                int deletedImages = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
-                this.MenuItemDeleteFiles.IsEnabled = deletedImages > 0;
-                this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages > 0;
+                bool deletedImages = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
+                this.MenuItemDeleteFiles.IsEnabled = deletedImages;
+                this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
                 ImageRow imageRow = this.dataHandler.ImageCache.Current;
 
@@ -144,7 +144,7 @@ namespace Timelapse
             }
         }
 
-        // Delete callback manages all deletion menu choices where: 
+         // Delete callback manages all deletion menu choices where: 
         // - the current image or all images marked for deletion are deleted
         // - the data associated with those images may be delted.
         // - deleted images are moved to a backup folder.

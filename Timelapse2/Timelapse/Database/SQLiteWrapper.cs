@@ -513,6 +513,18 @@ namespace Timelapse.Database
             return Convert.ToInt32(this.GetScalarFromSelect(query));
         }
 
+        // The EXISTS query should be in the form of 
+        // e.g., Select EXISTS  ( SELECT 1 FROM DataTable WHERE DeleteFlag='true')
+        // which returns a 1 (true) or a 0 (false) if any matching row exists.
+        // That result is transformed into a boolean true/false
+        // The performance of this query depends upon how many rows in the table has to be searched
+        // before the first exists appears. If there are no matching rows, the performance is more or
+        // less equivalent to COUNT as it has to go through every row. 
+        public bool GetExists(string query)
+        {
+            return (Convert.ToInt32(this.GetScalarFromSelect(query)) == 1);
+        }
+
         // This method will create a column in a table of type TEXT, where it is added to its end
         // It assumes that the value, if not empty, should be treated as the default value for that column
         public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)

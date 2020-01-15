@@ -19,9 +19,14 @@ namespace Timelapse
 
             this.MenuItemSelectMissingFiles.IsEnabled = true;
 
-            int count = this.dataHandler.FileDatabase.GetFileCount(FileSelectionEnum.MarkedForDeletion);
-            this.MenuItemSelectFilesMarkedForDeletion.Header = String.Format("Files marked for d_eletion [{0}]", count);
-            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = count > 0;
+            // Enable menu if there are any files marked for deletion
+            bool exists = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
+            this.MenuItemSelectFilesMarkedForDeletion.Header = "Files marked for d_eletion";
+            if (!exists)
+            {
+                this.MenuItemSelectFilesMarkedForDeletion.Header += " (0)";
+            }
+            this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = exists;
 
             // Put a checkmark next to the menu item that matches the stored selection criteria
             FileSelectionEnum selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
@@ -39,21 +44,23 @@ namespace Timelapse
 
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            Dictionary<FileSelectionEnum, int> counts = this.dataHandler.FileDatabase.GetFileCountsInAllFiles();
-            int count;
+            bool existsDark = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Dark);
+            bool existsOk = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Ok);
 
             // Enable only the menu items that can select at least one potential image 
-            count = counts[FileSelectionEnum.Ok];
-            this.MenuItemSelectOkFiles.IsEnabled = count > 0;
-            this.MenuItemSelectOkFiles.Header = String.Format("_Ok files [{0}]", count);
+            this.MenuItemSelectOkFiles.Header = "_Ok files";
+            if (!existsOk)
+            {
+                this.MenuItemSelectOkFiles.Header += " (0)";
+            }
+            this.MenuItemSelectOkFiles.IsEnabled = existsOk;
 
-            count = counts[FileSelectionEnum.Dark];
-            this.MenuItemSelectDarkFiles.Header = String.Format("_Dark files [{0}]", count);
-            this.MenuItemSelectDarkFiles.IsEnabled = count > 0;
-
-            count = this.dataHandler.FileDatabase.CountMissingFilesFromCurrentlySelectedFiles();
-            this.MenuItemSelectMissingFiles.Header = String.Format("Missing files [{0}]", count);
-            this.MenuItemSelectMissingFiles.IsEnabled = count > 0;
+            this.MenuItemSelectDarkFiles.Header = "_Dark files";
+            if (!existsDark)
+            {
+                this.MenuItemSelectDarkFiles.Header += " (0)";
+            }
+            this.MenuItemSelectDarkFiles.IsEnabled = existsDark;
         }
 
         private void MenuItemSelectByFolder_SubmenuOpening(object sender, RoutedEventArgs e)
