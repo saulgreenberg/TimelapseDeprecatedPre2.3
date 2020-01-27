@@ -332,16 +332,24 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        public async static Task<Tuple<bool,TemplateDatabase>>TryCreateOrOpenAsync(string filePath)
+        public async static Task<Tuple<bool, TemplateDatabase>> TryCreateOrOpenAsync(string filePath)
         {
+            // Follow the MSDN design pattern for returning an IDisposable: https://www.codeproject.com/Questions/385273/Returning-a-Disposable-Object-from-a-Method
+            TemplateDatabase disposableTemplateDB = null;
             try
-            {  
-                return new Tuple<bool,TemplateDatabase>(true, await TemplateDatabase.CreateOrOpenAsync(filePath).ConfigureAwait(true));
+            {
+                disposableTemplateDB = await CreateOrOpenAsync(filePath).ConfigureAwait(true);
+                TemplateDatabase returnableTemplateDB = disposableTemplateDB;
+                return new Tuple<bool, TemplateDatabase>(true, returnableTemplateDB);
             }
             catch (Exception exception)
             {
                 TraceDebug.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
                 return new Tuple<bool, TemplateDatabase>(false, null);
+            }
+            finally
+            {
+                disposableTemplateDB.Dispose();
             }
         }
 
@@ -452,7 +460,9 @@ namespace Timelapse.Database
         protected async virtual Task OnDatabaseCreatedAsync(TemplateDatabase other)
         {
             // create the template table
-            List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
+            await Task.Run(() =>
+            {
+                List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
             {
                 new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
                 new ColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
@@ -467,22 +477,22 @@ namespace Timelapse.Database
                 new ColumnDefinition(Constant.Control.Visible, Sql.Text),
                 new ColumnDefinition(Constant.Control.List, Sql.Text)
             };
-            this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
+                this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
 
-            // if an existing table was passed, clone its contents into this database
-            if (other != null)
-            {
-                this.SyncTemplateTableToDatabase(other.Controls);
-                return;
-            }
+                // if an existing table was passed, clone its contents into this database
+                if (other != null)
+                {
+                    this.SyncTemplateTableToDatabase(other.Controls);
+                    return;
+                }
 
-            // no existing table to clone, so add standard controls to template table
-            List<List<ColumnTuple>> standardControls = new List<List<ColumnTuple>>();
-            long controlOrder = 0; // The control order, a one based count incremented for every new entry
-            long spreadsheetOrder = 0; // The spreadsheet order, a one based count incremented for every new entry
+                // no existing table to clone, so add standard controls to template table
+                List<List<ColumnTuple>> standardControls = new List<List<ColumnTuple>>();
+                long controlOrder = 0; // The control order, a one based count incremented for every new entry
+                long spreadsheetOrder = 0; // The spreadsheet order, a one based count incremented for every new entry
 
-            // file
-            List<ColumnTuple> file = new List<ColumnTuple>
+                // file
+                List<ColumnTuple> file = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
@@ -496,13 +506,13 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.Visible, true),
                 new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
             };
-            standardControls.Add(file);
+                standardControls.Add(file);
 
-            // relative path
-            standardControls.Add(GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
+                // relative path
+                standardControls.Add(GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
 
-            // folder
-            List<ColumnTuple> folder = new List<ColumnTuple>
+                // folder
+                List<ColumnTuple> folder = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
@@ -516,16 +526,16 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.Visible, true),
                 new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
             };
-            standardControls.Add(folder);
+                standardControls.Add(folder);
 
-            // datetime
-            standardControls.Add(GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
+                // datetime
+                standardControls.Add(GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
 
-            // utcOffset
-            standardControls.Add(GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
+                // utcOffset
+                standardControls.Add(GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
 
-            // date
-            List<ColumnTuple> date = new List<ColumnTuple>
+                // date
+                List<ColumnTuple> date = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
@@ -539,10 +549,10 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.Visible, false),
                 new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
             };
-            standardControls.Add(date);
+                standardControls.Add(date);
 
-            // time
-            List<ColumnTuple> time = new List<ColumnTuple>
+                // time
+                List<ColumnTuple> time = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
@@ -556,10 +566,10 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.Visible, false),
                 new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
             };
-            standardControls.Add(time);
+                standardControls.Add(time);
 
-            // image quality
-            List<ColumnTuple> imageQuality = new List<ColumnTuple>
+                // image quality
+                List<ColumnTuple> imageQuality = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
                 new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
@@ -573,30 +583,37 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.Control.Visible, true),
                 new ColumnTuple(Constant.Control.List, Constant.ImageQuality.ListOfValues)
             };
-            standardControls.Add(imageQuality);
+                standardControls.Add(imageQuality);
 
-            // delete flag
-            standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
+                // delete flag
+                standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
 
-            // insert standard controls into the template table
-            this.Database.Insert(Constant.DBTables.Controls, standardControls);
+                // insert standard controls into the template table
+                this.Database.Insert(Constant.DBTables.Controls, standardControls);
 
-            // populate the in memory version of the template table
-            this.GetControlsSortedByControlOrder();
+                // populate the in memory version of the template table
+                this.GetControlsSortedByControlOrder();
+            }).ConfigureAwait(true);
         }
 
         protected async virtual Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
-            this.GetControlsSortedByControlOrder();
-            this.EnsureDataLabelsAndLabelsNotEmpty();
-            this.EnsureCurrentSchema();
+            await Task.Run(() =>
+            {
+                this.GetControlsSortedByControlOrder();
+                this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureCurrentSchema();
+            }).ConfigureAwait(true);
         }
 
         protected async virtual Task OnExistingDatabaseOpenedAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
-            this.GetControlsSortedByControlOrder();
-            this.EnsureDataLabelsAndLabelsNotEmpty();
-            this.EnsureCurrentSchema();
+            await Task.Run(() =>
+            {
+                this.GetControlsSortedByControlOrder();
+                this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureCurrentSchema();
+            }).ConfigureAwait(true);
         }
 
         // Do various checks and corrections to the Template DB to maintain backwards compatability. 

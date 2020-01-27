@@ -1856,6 +1856,7 @@ namespace Timelapse.Database
             double p = current / ((double)total);
             if (this.ReadyToRefresh())
             {
+                // SaulXXX This should really be cancellable, but not sure how to do it from here.
                 // Update the progress bar
                 progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", false, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
