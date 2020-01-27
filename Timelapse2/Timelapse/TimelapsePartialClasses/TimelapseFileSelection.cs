@@ -78,8 +78,10 @@ namespace Timelapse
                     ? this.dataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
-                this.EnableBusyCancelIndicatorForSelection(true); 
+                this.EnableBusyCancelIndicatorForSelection(true);
+
                 await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
+           
                 this.EnableBusyCancelIndicatorForSelection(false);
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
@@ -130,10 +132,14 @@ namespace Timelapse
                 }
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 messageBox.ShowDialog();
-
+                
                 selection = FileSelectionEnum.All;
+
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
+                this.EnableBusyCancelIndicatorForSelection(true);
                 await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
+                this.EnableBusyCancelIndicatorForSelection(false);
+
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
 
@@ -169,7 +175,7 @@ namespace Timelapse
             // Show feedback of the status description in both the status bar and the data entry control panel title
             this.StatusBar.SetView(status);
             this.DataEntryControlPanel.Title = "Data entry for " + status;
-
+            
             // Reset the Episodes, as it may change based on the current selection
             Episodes.Reset();
 

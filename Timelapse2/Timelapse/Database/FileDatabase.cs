@@ -67,7 +67,7 @@ namespace Timelapse.Database
             this.FileTableColumnsByDataLabel = new Dictionary<string, FileTableColumn>();
         }
 
-        public static FileDatabase CreateOrOpen(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static async Task<FileDatabase> CreateOrOpenAsync(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -77,12 +77,12 @@ namespace Timelapse.Database
             if (populateDatabase)
             {
                 // initialize the database if it's newly created
-                fileDatabase.OnDatabaseCreatedAsync(templateDatabase);
+                await fileDatabase.OnDatabaseCreatedAsync(templateDatabase).ConfigureAwait(true);
             }
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                fileDatabase.OnExistingDatabaseOpened(templateDatabase, templateSyncResults);
+                await fileDatabase.OnExistingDatabaseOpenedAsync(templateDatabase, templateSyncResults).ConfigureAwait(true);
             }
 
             // ensure all tables have been loaded from the database
@@ -104,10 +104,10 @@ namespace Timelapse.Database
         /// Assumes that the database has already been opened and that the Template Table is loaded, where the DataLabel always has a valid value.
         /// Then create both the ImageSet table and the Markers table
         /// </summary>
-        protected async override void OnDatabaseCreatedAsync(TemplateDatabase templateDatabase)
+        protected async override Task OnDatabaseCreatedAsync(TemplateDatabase templateDatabase)
         {
             // copy the template's TemplateTable
-            base.OnDatabaseCreatedAsync(templateDatabase);
+            await base.OnDatabaseCreatedAsync(templateDatabase).ConfigureAwait(true);
 
             // Create the DataTable from the template
             // First, define the creation string based on the contents of the template. 
@@ -165,6 +165,7 @@ namespace Timelapse.Database
             // This is necessary as files can't be added unless the Files Column is available.  Thus SelectFiles() has to be called after the ImageSetTable is created
             // so that the selection can be persisted.
             await this.SelectFilesAsync(FileSelectionEnum.All).ConfigureAwait(true);
+
             this.BindToDataGrid();
 
             // Create the MarkersTable and initialize it from the template table
@@ -181,14 +182,14 @@ namespace Timelapse.Database
         }
 
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
-        protected override void OnExistingDatabaseOpened(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
+        protected override async Task OnExistingDatabaseOpenedAsync(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
 
             // Perform TemplateTable initializations.
-            base.OnExistingDatabaseOpened(templateDatabase, null);
+            await base.OnExistingDatabaseOpenedAsync(templateDatabase, null).ConfigureAwait(true);
 
             // If directed to use the template found in the template database, 
             // check and repair differences between the .tdb and .ddb template tables due to  missing or added controls 
@@ -200,7 +201,7 @@ namespace Timelapse.Database
                     // The TemplateTable in the .tdb and .ddb database differ. 
                     // Update the .ddb Template table by dropping the .ddb template table and replacing it with the .tdb table. 
                     base.Database.DropTable(Constant.DBTables.Controls);
-                    base.OnDatabaseCreatedAsync(templateDatabase);
+                    await base.OnDatabaseCreatedAsync(templateDatabase).ConfigureAwait(true);
                 }
 
                 // Condition 1: the tdb template table contains one or more datalabels not found in the ddb template table
@@ -329,7 +330,7 @@ namespace Timelapse.Database
         #endregion
 
         #region Upgrade Databases and Templates
-        public static FileDatabase UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
+        public async static Task<FileDatabase> UpgradeDatabasesAndCompareTemplates(string filePath, TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // If the file doesn't exist, then no immediate action is needed
             if (!File.Exists(filePath))
@@ -337,21 +338,21 @@ namespace Timelapse.Database
                 return null;
             }
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            fileDatabase.UpgradeDatabasesAndCompareTemplates(templateDatabase, templateSyncResults);
+            await fileDatabase.UpgradeDatabasesAndCompareTemplatesAsync(templateDatabase, templateSyncResults).ConfigureAwait(true);
             return fileDatabase;
         }
 
-        protected override void UpgradeDatabasesAndCompareTemplates(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
+        protected async override Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
 
             // perform TemplateTable initializations and migrations, then check for synchronization issues
-            base.UpgradeDatabasesAndCompareTemplates(templateDatabase, null);
+            await base.UpgradeDatabasesAndCompareTemplatesAsync(templateDatabase, null).ConfigureAwait(true);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-            this.UpgradeDatabasesForBackwardsCompatabilityAsync();
+           await this.UpgradeDatabasesForBackwardsCompatabilityAsync().ConfigureAwait(true);
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -453,7 +454,7 @@ namespace Timelapse.Database
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
-        private async void UpgradeDatabasesForBackwardsCompatabilityAsync()
+        private async Task UpgradeDatabasesForBackwardsCompatabilityAsync()
         {
             // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
             // Instead, we operate directly on the database. There is only one exception (updating DateTime),
@@ -932,17 +933,15 @@ namespace Timelapse.Database
                 }
             }
 
-            await Task.Run(() =>
+            DataTable images = await Task.Run(() =>
             {
                 // System.Diagnostics.Debug.Print("Doit: " + query);
                 // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
                 // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
                 // as I am not that savvy in database optimizations.
-                DataTable images = this.Database.GetDataTableFromSelect(query);
-
-                this.FileTable = new FileTable(images);
+                return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
-
+            this.FileTable = new FileTable(images);
         }
 
         // Select all files in the file table

@@ -30,22 +30,23 @@ namespace Timelapse
         }
 
         // Load template, images, and video files...
-        private void MenuItemLoadImages_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemLoadImages_Click(object sender, RoutedEventArgs e)
         {
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath);
+                await this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath).ConfigureAwait(true);
                 Mouse.OverrideCursor = null;
             }
         }
 
         // Load a recently used image set
-        private void MenuItemRecentImageSet_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemRecentImageSet_Click(object sender, RoutedEventArgs e)
         {
             string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
             Mouse.OverrideCursor = Cursors.Wait;
-            if (this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath) == false)
+            bool result = await this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath).ConfigureAwait(true); 
+            if (result == false)
             {
                 this.State.MostRecentImageSets.TryRemove(recentDatabasePath);
                 this.RecentFileSets_Refresh();
@@ -59,7 +60,7 @@ namespace Timelapse
             if (this.ShowFolderSelectionDialog(this.FolderPath, out string folderPath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, folderPath);
+                this.TryBeginImageFolderLoad(this.FolderPath, folderPath);
                 Mouse.OverrideCursor = null;
             }
         }

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -48,7 +49,7 @@ namespace Timelapse
         // Load the specified database template and then the associated images. 
         // templateDatabasePath is the Fully qualified path to the template database file.
         // Returns true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise
-        private bool TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath)
+        private async Task<bool> TryOpenTemplateAndBeginLoadFoldersAsync(string templateDatabasePath)
         {
             // Try to create or open the template database
             // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
@@ -57,8 +58,12 @@ namespace Timelapse
                 Dialogs.TemplatePathTooLongDialog(templateDatabasePath, this);
                 return false;
             }
-            // Second, check to see if we can actually open it.
-            if (!TemplateDatabase.TryCreateOrOpen(templateDatabasePath, out this.templateDatabase))
+            // Second, check to see if we can actually open it. 
+            // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
+            // Original form: if (!(await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath, out this.templateDatabase).ConfigureAwait(true))
+            Tuple<bool,TemplateDatabase>  tupleResult = await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath).ConfigureAwait(true);
+            this.templateDatabase = tupleResult.Item2;
+            if (!tupleResult.Item1)
             {
                 // notify the user the template couldn't be loaded rather than silently doing nothing
                 Dialogs.TemplateCouldNotBeLoadedDialog(templateDatabasePath, this);
@@ -91,7 +96,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
-            using (FileDatabase fileDB = FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults))
+            using (FileDatabase fileDB = await FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults).ConfigureAwait(true))
             {
                 // A file database was available to open
                 if (fileDB != null)
@@ -139,7 +144,7 @@ namespace Timelapse
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = FileDatabase.CreateOrOpen(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults);
+            FileDatabase fileDatabase = await FileDatabase.CreateOrOpenAsync(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults).ConfigureAwait(true);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
             Dictionary<string, string> columndefaultdict = fileDatabase.SchemaGetColumnsAndDefaultValues(Constant.DBTables.FileData);
@@ -186,11 +191,11 @@ namespace Timelapse
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
-                this.TryBeginImageFolderLoadAsync(this.FolderPath, this.FolderPath);
+                this.TryBeginImageFolderLoad(this.FolderPath, this.FolderPath);
             }
             else
             {
-                this.OnFolderLoadingCompleteAsync(false);
+                await this.OnFolderLoadingCompleteAsync(false).ConfigureAwait(true);
             }
             return true;
         }
@@ -310,7 +315,7 @@ namespace Timelapse
 
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
-        private bool TryBeginImageFolderLoadAsync(string imageSetFolderPath, string selectedFolderPath)
+        private bool TryBeginImageFolderLoad(string imageSetFolderPath, string selectedFolderPath)
         {
             List<FileInfo> filesToAdd = new List<FileInfo>();
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
@@ -407,7 +412,7 @@ namespace Timelapse
                 // Show the file slider
                 this.FileNavigatorSlider.Visibility = Visibility.Visible;
 
-                this.OnFolderLoadingCompleteAsync(true);
+                await this.OnFolderLoadingCompleteAsync(true).ConfigureAwait(true);
 
                 // Do some final things
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
@@ -519,7 +524,7 @@ namespace Timelapse
         /// <summary>
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
-        private async void OnFolderLoadingCompleteAsync(bool filesJustAdded)
+        private async Task OnFolderLoadingCompleteAsync(bool filesJustAdded)
         {
             this.ShowSortFeedback(true);
 

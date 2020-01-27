@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using Timelapse.Util;
 
@@ -55,7 +56,7 @@ namespace Timelapse.Database
             this.mostRecentBackup = DateTime.UtcNow;
         }
 
-        public static TemplateDatabase CreateOrOpen(string filePath)
+        public async static Task<TemplateDatabase> CreateOrOpenAsync(string filePath)
         {
             // check for an existing database before instantiating the databse as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
@@ -64,12 +65,12 @@ namespace Timelapse.Database
             if (populateDatabase)
             {
                 // initialize the database if it's newly created
-                templateDatabase.OnDatabaseCreatedAsync(null);
+                await templateDatabase.OnDatabaseCreatedAsync(null).ConfigureAwait(true);
             }
             else
             {
                 // if it's an existing database check if it needs updating to current structure and load data tables
-                templateDatabase.OnExistingDatabaseOpened(null, null);
+                await templateDatabase.OnExistingDatabaseOpenedAsync(null, null).ConfigureAwait(true);
             }
             return templateDatabase;
         }
@@ -331,18 +332,16 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        public static bool TryCreateOrOpen(string filePath, out TemplateDatabase database)
+        public async static Task<Tuple<bool,TemplateDatabase>>TryCreateOrOpenAsync(string filePath)
         {
             try
-            {
-                database = TemplateDatabase.CreateOrOpen(filePath);
-                return true;
+            {  
+                return new Tuple<bool,TemplateDatabase>(true, await TemplateDatabase.CreateOrOpenAsync(filePath).ConfigureAwait(true));
             }
             catch (Exception exception)
             {
                 TraceDebug.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
-                database = null;
-                return false;
+                return new Tuple<bool, TemplateDatabase>(false, null);
             }
         }
 
@@ -450,7 +449,7 @@ namespace Timelapse.Database
             return control.ID;
         }
 
-        protected virtual void OnDatabaseCreatedAsync(TemplateDatabase other)
+        protected async virtual Task OnDatabaseCreatedAsync(TemplateDatabase other)
         {
             // create the template table
             List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
@@ -586,14 +585,14 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
-        protected virtual void UpgradeDatabasesAndCompareTemplates(TemplateDatabase other, TemplateSyncResults templateSyncResults)
+        protected async virtual Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();
             this.EnsureCurrentSchema();
         }
 
-        protected virtual void OnExistingDatabaseOpened(TemplateDatabase other, TemplateSyncResults templateSyncResults)
+        protected async virtual Task OnExistingDatabaseOpenedAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             this.GetControlsSortedByControlOrder();
             this.EnsureDataLabelsAndLabelsNotEmpty();

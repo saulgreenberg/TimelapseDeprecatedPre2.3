@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions; // For debugging
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -137,7 +138,7 @@ namespace Timelapse.Editor
         /// <summary>
         /// Creates a new database file of a user chosen name in a user chosen location.
         /// </summary>
-        private void MenuFileNewTemplate_Click(object sender, RoutedEventArgs e)
+        private async void MenuFileNewTemplate_Click(object sender, RoutedEventArgs e)
         {
             this.ApplyPendingEdits();
 
@@ -180,7 +181,7 @@ namespace Timelapse.Editor
                 }
 
                 // Open document 
-                this.InitializeDataGrid(templateFileName);
+                await this.InitializeDataGridAsync(templateFileName).ConfigureAwait(true);
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
                 this.MenuFileClose.IsEnabled = true;
             }
@@ -189,7 +190,7 @@ namespace Timelapse.Editor
         /// <summary>
         /// Opens an existing database file.
         /// </summary>
-        private void MenuFileOpenTemplate_Click(object sender, RoutedEventArgs e)
+        private async void MenuFileOpenTemplate_Click(object sender, RoutedEventArgs e)
         {
             this.ApplyPendingEdits();
 
@@ -216,14 +217,14 @@ namespace Timelapse.Editor
             if (result == true)
             {
                 // Open document 
-                this.InitializeDataGrid(openFileDialog.FileName);
+                await this.InitializeDataGridAsync(openFileDialog.FileName).ConfigureAwait(true);
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
                 this.MenuFileClose.IsEnabled = true;
             }
         }
 
         // Open a rencently used template
-        private void MenuItemRecentTemplate_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemRecentTemplate_Click(object sender, RoutedEventArgs e)
         {
             string recentTemplatePath = (string)((MenuItem)sender).ToolTip;
             if (File.Exists(recentTemplatePath) == false)
@@ -234,14 +235,14 @@ namespace Timelapse.Editor
                 messageBox.ShowDialog();
                 return;
             }
-            this.InitializeDataGrid(recentTemplatePath);
+            await this.InitializeDataGridAsync(recentTemplatePath).ConfigureAwait(true);
             this.HelpMessageInitial.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
         /// Convert an old style xml template to the new style template
         /// </summary>
-        private void MenuFileConvertTemplate_Click(object sender, RoutedEventArgs e)
+        private async void MenuFileConvertTemplate_Click(object sender, RoutedEventArgs e)
         {
             string codeTemplateFileName;  // The code template file name
 
@@ -292,7 +293,7 @@ namespace Timelapse.Editor
             }
 
             // Begin the conversion by creating a default data template
-            this.InitializeDataGrid(templateDatabaseFile.FileName);
+            await this.InitializeDataGridAsync(templateDatabaseFile.FileName).ConfigureAwait(true);
             this.HelpMessageInitial.Visibility = Visibility.Collapsed;
 
             // Now convert the code template file into a Data Template, overwriting values and adding rows as required
@@ -519,10 +520,10 @@ namespace Timelapse.Editor
         /// Some listeners are added to the DataTable, and the DataTable is bound. The add row buttons are enabled.
         /// </summary>
         /// <param name="templateDatabaseFilePath">The path of the DB file created or loaded</param>
-        private void InitializeDataGrid(string templateDatabaseFilePath)
+        private async Task InitializeDataGridAsync(string templateDatabaseFilePath)
         {
             // Create a new DB file if one does not exist, or load a DB file if there is one.
-            this.templateDatabase = TemplateDatabase.CreateOrOpen(templateDatabaseFilePath);
+            this.templateDatabase = await TemplateDatabase.CreateOrOpenAsync(templateDatabaseFilePath).ConfigureAwait(true);
 
             // Map the data table to the data grid, and create a callback executed whenever the datatable row changes
             this.templateDatabase.BindToEditorDataGrid(this.TemplateDataGrid, this.TemplateDataTable_RowChanged);
@@ -1461,11 +1462,11 @@ namespace Timelapse.Editor
         #region Template Drag and Drop
         // Dragging and dropping a .tdb file on the help window will open that file 
         // SAULXXX Seems esoteric - maybe delete this function. Likely not useful after Avalon dock added.
-        private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
+        private async void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
             if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
-                this.InitializeDataGrid(templateDatabaseFilePath);
+                await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true);
             }
         }
 

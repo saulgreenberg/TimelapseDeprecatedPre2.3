@@ -831,11 +831,11 @@ namespace Timelapse
             Utilities.OnHelpDocumentPreviewDrag(dragEvent);
         }
 
-        private void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
+        private async void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
             if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
             {
-                if (this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath) == false)
+                if (await this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath).ConfigureAwait(true) == false)
                 {
                     this.State.MostRecentImageSets.TryRemove(templateDatabaseFilePath);
                     this.RecentFileSets_Refresh();

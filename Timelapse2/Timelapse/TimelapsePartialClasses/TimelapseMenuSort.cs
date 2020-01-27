@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Controls;
@@ -16,7 +17,7 @@ namespace Timelapse
         }
 
         // Sort callback: handles all standard menu sorting items
-        private void MenuItemSort_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSort_Click(object sender, RoutedEventArgs e)
         {
 
             // While this should never happen, don't do anything if we don's have any data
@@ -55,11 +56,11 @@ namespace Timelapse
             this.dataHandler.FileDatabase.ImageSet.SetSortTerm(sortTerm1, sortTerm2);
 
             // Do the sort, showing feedback in the status bar and by checking the appropriate menu item
-            this.DoSortAndShowSortFeedbackAsync(true);
+            await this.DoSortAndShowSortFeedbackAsync(true).ConfigureAwait(true);
         }
 
         // Custom Sort: raises a dialog letting the user specify their sort criteria
-        private void MenuItemSortCustom_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSortCustom_Click(object sender, RoutedEventArgs e)
         {
             // Raise a dialog where user can specify the sorting criteria
             Dialog.CustomSort customSort = new Dialog.CustomSort(this.dataHandler.FileDatabase)
@@ -73,7 +74,7 @@ namespace Timelapse
                     // this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
                     this.dataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
                 }
-                this.DoSortAndShowSortFeedbackAsync(true);
+                await this.DoSortAndShowSortFeedbackAsync(true).ConfigureAwait(true);
             }
             else
             {
@@ -84,15 +85,15 @@ namespace Timelapse
 
         // Refresh the sort: based on the current sort criteria. 
         // Useful when, for example, the user has sorted a view, but then changed some data values where items are no longer sorted correctly.
-        private void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemSortResort_Click(object sender, RoutedEventArgs e)
         {
-            this.DoSortAndShowSortFeedbackAsync(false);
+            await this.DoSortAndShowSortFeedbackAsync(false).ConfigureAwait(true);
         }
 
         #region Helper functions
         // Do the sort and show feedback to the user. 
         // Only invoked by the above menu functions 
-        private async void DoSortAndShowSortFeedbackAsync(bool updateMenuChecks)
+        private async Task DoSortAndShowSortFeedbackAsync(bool updateMenuChecks)
         {
             // Sync the current sort settings into the actual database. While this is done
             // on closing Timelapse, this will save it on the odd chance that Timelapse crashes before it exits.
