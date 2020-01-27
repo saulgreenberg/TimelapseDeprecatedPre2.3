@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -208,7 +209,7 @@ namespace Timelapse.Controls
                 Header = "Copy to all",
                 Tag = control
             };
-            menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValue_Click;
+            menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValueToAll_Click;
 
             // DataEntrHandler.PropagateFromLastValueIndex and CopyForwardIndex must be kept in sync with the add order here
             ContextMenu menu = new ContextMenu();
@@ -242,60 +243,38 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        #region Copy Forward/Backwards etc.
-        /// <summary>Propagate the current value of the current control forward from this point across the current set of selected images.</summary>
-        public void CopyForward(string dataLabel, bool checkForZero)
-        {
-            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
-            int imagesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRowIndex - 1;
-            if (imagesAffected == 0)
-            {
-                // Nothing to propagate. Note that we shouldn't really see this, as the menu shouldn't be highlit if we are on the last image
-                // But just in case...
-                MessageBox messageBox = new MessageBox("Nothing to copy forward.", Application.Current.MainWindow);
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.Message.Reason = "As you are on the last file, there are no files after this.";
-                messageBox.ShowDialog();
-                return;
-            }
+        #region Context menu event handlers
+        // Menu selections for propagating or copying the current value of this control to all images
 
-            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
-            int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
-            string valueToCopy = imageRow.GetValueDisplayString(dataLabel);
-            if (ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
-            {
-                return;
-            }
-
-            // Update the files from the next row (as we are copying from the current row) to the end.
-            this.FileDatabase.UpdateFiles(imageRow, dataLabel, nextRowIndex, this.FileDatabase.CountAllCurrentlySelectedFiles - 1);
-        }
-
-        /// <summary>
-        /// Copy the last non-empty value in this control preceding this file up to the current image
-        /// </summary>
-        public string CopyFromLastNonEmptyValue(DataEntryControl control)
+        // Copy the last non-empty value in this control preceding this file up to the current image
+        protected virtual void MenuItemPropagateFromLastValue_Click(object sender, RoutedEventArgs e)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(control, nameof(control));
+            ThrowIf.IsNullArgument(sender, nameof(sender));
+
+            // Get the chosen data entry control
+            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
+            if (control == null)
+            {
+                return;
+            }
 
             bool checkForZero = control is DataEntryCounter;
             bool isFlag = control is DataEntryFlag;
-
             int indexToCopyFrom = -1;
             ImageRow valueSource = null;
             string valueToCopy = checkForZero ? "0" : String.Empty;
+
+            // Search for the row with some value in it, starting from the previous row
             int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
             for (int previousIndex = currentRowIndex - 1; previousIndex >= 0; previousIndex--)
             {
-                // Search for the row with some value in it, starting from the previous row
                 ImageRow file = this.FileDatabase.FileTable[previousIndex];
                 valueToCopy = file.GetValueDatabaseString(control.DataLabel);
                 if (valueToCopy == null)
                 {
                     continue;
                 }
-
                 valueToCopy = valueToCopy.Trim();
                 if (valueToCopy.Length > 0)
                 {
@@ -310,51 +289,126 @@ namespace Timelapse.Controls
                 }
             }
 
+            string newContent = valueToCopy;
             if (indexToCopyFrom < 0)
             {
-                // Nothing to propagate.  If the menu item is deactivated as expected, this should never be triggered.
+                // Display a dialog box saying there is nothing to propagate. Note that this should never be displayed, as the menu shouldn't be highlit if there is nothing to propagate
+                // But just in case...
                 MessageBox messageBox = new MessageBox("Nothing to Propagate to Here.", Application.Current.MainWindow);
                 messageBox.Message.Icon = MessageBoxImage.Exclamation;
                 messageBox.Message.Reason = "All the earlier files have nothing in this field, so there are no values to propagate.";
                 messageBox.ShowDialog();
-                return this.FileDatabase.FileTable[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                newContent = this.FileDatabase.FileTable[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
+            // Display the appropriate dialog box that explains what will happen. Arguments indicate what is to be propagated and how many files will be affected
             int filesAffected = currentRowIndex - indexToCopyFrom;
             if (ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
             {
-                return this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                newContent = this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
-            // Update. Note that we start on the next row, as we are copying from the current row.
+            // Update the affected files. Note that we start on the row after the one with a value in it to the current row.
+            Mouse.OverrideCursor = Cursors.Wait;
             this.FileDatabase.UpdateFiles(valueSource, control.DataLabel, indexToCopyFrom + 1, currentRowIndex);
-            return valueToCopy;
+            control.SetContentAndTooltip(newContent);
+            Mouse.OverrideCursor = null;
         }
 
-        /// <summary>Copy the current value of this control to all images</summary>
-        public void CopyToAll(DataEntryControl control)
+        // Copy the current value of this control to all images
+        protected virtual void MenuItemCopyCurrentValueToAll_Click(object sender, RoutedEventArgs e)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(control, nameof(control));
+            ThrowIf.IsNullArgument(sender, nameof(sender));
 
-            bool checkForZero = control is DataEntryCounter;
-            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles;
-
-            string displayValueToCopy = control.Content;
-
-            if (ConfirmCopyCurrentValueToAll(displayValueToCopy, filesAffected, checkForZero) != true)
+            // Get the chosen data entry control
+            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
+            if (control == null)
             {
                 return;
             }
 
-            // WE  SHOULD ALLOW THE COPY TO ALL IF ALL THE SELECTED VALUES ARE THE SAME - CHANGE RESTRICTIVE CODE TO TEST FOR THIS?
-            // BUT WE NEED TO DIFFERENTIATE BETWEEN BLANKS AND DISABLED.
+            // Display a dialog box that explains what will happen. Arguments indicate how many files will be affected, and is tuned to the type of control 
+            bool checkForZero = control is DataEntryCounter;
+            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles;
+            if (ConfirmCopyCurrentValueToAll(control.Content, filesAffected, checkForZero) != true)
+            {
+                return;
+            }
 
-            // Get the currently selected image row
+            // Update all files to match the value of the control (identified by the data label) in the currently selected image row.
+            Mouse.OverrideCursor = Cursors.Wait;
             ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
             this.FileDatabase.UpdateFiles(imageRow, control.DataLabel);
+            Mouse.OverrideCursor = null;
         }
 
+        // Propagate the current value of this control forward from this point across the current set of selected images
+        protected virtual void MenuItemPropagateForward_Click(object sender, RoutedEventArgs e)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(sender, nameof(sender));
+
+            // Get the chosen data entry control
+            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
+            if (control == null)
+            {
+                return;
+            }
+
+            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
+            int imagesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRowIndex - 1;
+            if (imagesAffected == 0)
+            {
+                // Display a dialog box saying there is nothing to propagate. Note that this should never be displayed, as the menu shouldn't be highlit if we are on the last image
+                // But just in case...
+                MessageBox messageBox = new MessageBox("Nothing to copy forward.", Application.Current.MainWindow);
+                messageBox.Message.Icon = MessageBoxImage.Exclamation;
+                messageBox.Message.Reason = "As you are on the last file, there are no files after this.";
+                messageBox.ShowDialog();
+                return;
+            }
+
+            // Display the appropriate dialog box that explains what will happen. Arguments indicate how many files will be affected, and is tuned to the type of control 
+            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
+            string valueToCopy = imageRow.GetValueDisplayString(control.DataLabel);
+            bool checkForZero = control is DataEntryCounter;
+            if (ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
+            {
+                return;
+            }
+
+            // Update the files from the next row (as we are copying from the current row) to the end.
+            Mouse.OverrideCursor = Cursors.Wait;
+            int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
+            this.FileDatabase.UpdateFiles(imageRow, control.DataLabel, nextRowIndex, this.FileDatabase.CountAllCurrentlySelectedFiles - 1);
+            Mouse.OverrideCursor = null;
+        }
+
+        // Enable or disable particular context menu items
+        protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(sender, nameof(sender));
+
+            StackPanel stackPanel = (StackPanel)sender;
+            DataEntryControl control = (DataEntryControl)stackPanel.Tag;
+
+            MenuItem menuItemCopyToAll = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyToAllIndex];
+            MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
+            MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
+
+            // Behaviour: 
+            // - if the clickable image is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
+            // - otherwise enable the menut item only if the resulting action is coherent
+            bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
+            menuItemCopyToAll.IsEnabled = enabledIsPossible;
+            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible() : false;
+            menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
+        }
+        #endregion
+
+        #region Helpers for Copy Forward/Backwards etc.
         public bool IsCopyForwardPossible()
         {
             if (this.ImageCache.Current == null)
@@ -650,6 +704,7 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        #region Update Rows
         // Update either the current row or the selected rows in the database, 
         // depending upon whether we are in the single image or  the ClickableImagesGrid view respectively.
         private void UpdateRowsDependingOnClickableImageGridState(string datalabel, string content)
@@ -664,59 +719,6 @@ namespace Timelapse.Controls
                 // Multiple images are displayed: update the database for all selected rows with the control's value
                 this.FileDatabase.UpdateFiles(this.ClickableImagesGrid.GetSelected(), datalabel, content.Trim());
             }
-        }
-
-        #region Menu event handlers
-        // Menu selections for propagating or copying the current value of this control to all images
-        protected virtual void MenuItemPropagateFromLastValue_Click(object sender, RoutedEventArgs e)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(sender, nameof(sender));
-
-            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
-            control.SetContentAndTooltip(this.CopyFromLastNonEmptyValue(control));
-        }
-
-        // Copy the current value of this control to all images
-        protected virtual void MenuItemCopyCurrentValue_Click(object sender, RoutedEventArgs e)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(sender, nameof(sender));
-
-            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
-            this.CopyToAll(control);
-        }
-
-        // Propagate the current value of this control forward from this point across the current set of selected images
-        protected virtual void MenuItemPropagateForward_Click(object sender, RoutedEventArgs e)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(sender, nameof(sender));
-
-            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
-            this.CopyForward(control.DataLabel, control is DataEntryCounter);
-        }
-
-        // Enable or disable particular context menu items
-        protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(sender, nameof(sender));
-
-            StackPanel stackPanel = (StackPanel)sender;
-            DataEntryControl control = (DataEntryControl)stackPanel.Tag;
-
-            MenuItem menuItemCopyToAll = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyToAllIndex];
-            MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
-            MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
-
-            // Behaviour: 
-            // - if the clickable image is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
-            // - otherwise enable the menut item only if the resulting action is coherent
-            bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
-            menuItemCopyToAll.IsEnabled = enabledIsPossible;
-            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible() : false;
-            menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
         }
         #endregion
 
