@@ -409,13 +409,13 @@ namespace Timelapse
                 messageBox.Message.Reason += "\u2022 The column Header 'File' must be included." + Environment.NewLine;
                 messageBox.Message.Reason += "\u2022 Subsequent rows defines the data for each File ." + Environment.NewLine;
                 messageBox.Message.Reason += "\u2022 Column data should match the Header type. In particular," + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 File data should define name of the file you want to update." + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 Counter data must be blank or a positive integer. " + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 Flag data must be 'true' or 'false'." + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 FixedChoice data should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
-                messageBox.Message.Result = "Only user-defined fields will be updated (Note, FixedChoice, Counter and Flags).";
-                messageBox.Message.Result += "The other standard Timelapse fields are ignored" + Environment.NewLine;
-                messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine; 
+                messageBox.Message.Reason += "  \u2022\u2022 File values should define name of the file you want to update." + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 Counter values must be blank or a positive integer. " + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 Flag and DeleteFlag values must be 'true' or 'false'." + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 FixedChoice values should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
+                messageBox.Message.Result = "Image values for identified files will be updated, except for values relating to a File's location or its dates / times.";
+                messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine;
+                messageBox.Message.Hint += "\u2022 Warning will be generated for non-matching CSV fields, which you can then fix." + Environment.NewLine;
                 messageBox.Message.Hint += "\u2022 If you check 'Don't show this message again' this dialog can be turned back on via the Options menu.";
                 messageBox.Message.Icon = MessageBoxImage.Warning;
                 messageBox.DontShowAgain.Visibility = Visibility.Visible;
@@ -455,7 +455,10 @@ namespace Timelapse
 
             try
             {
-                if (CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
+                Mouse.OverrideCursor = Cursors.Wait;
+                bool result = CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors);
+                Mouse.OverrideCursor = null;
+                if (result == false)
                 {
                     MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                     messageBox.Message.Icon = MessageBoxImage.Error;
@@ -464,9 +467,9 @@ namespace Timelapse
                     messageBox.Message.Solution = "Check that:" + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Choice values use the correct case." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Counter values are numbers." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Flag values are either 'true' or 'false'.";
+                    messageBox.Message.Solution += "\u2022 Choice and ImageQuality values are in that DataLabel's Choice list." + Environment.NewLine;
+                    messageBox.Message.Solution += "\u2022 Counter values are numbers or blanks." + Environment.NewLine;
+                    messageBox.Message.Solution += "\u2022 Flag and DeleteFlag values are either 'true' or 'false'.";
                     messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
                     messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
                     foreach (string importError in importErrors)
