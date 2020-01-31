@@ -45,7 +45,7 @@ namespace Timelapse
         {
             string recentDatabasePath = (string)((MenuItem)sender).ToolTip;
             Mouse.OverrideCursor = Cursors.Wait;
-            bool result = await this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath).ConfigureAwait(true); 
+            bool result = await this.TryOpenTemplateAndBeginLoadFoldersAsync(recentDatabasePath).ConfigureAwait(true);
             if (result == false)
             {
                 this.State.MostRecentImageSets.TryRemove(recentDatabasePath);
@@ -84,7 +84,7 @@ namespace Timelapse
 
             // Show the Busy indicator
             this.BusyCancelIndicator.IsBusy = true;
-            
+
             // Load the detections
             bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth).ConfigureAwait(true);
 
@@ -153,7 +153,7 @@ namespace Timelapse
             }
 
             // At this point, there is a mismatch, so we should show something.
-            if (foldersInBoth.Count > 0 )
+            if (foldersInBoth.Count > 0)
             {
                 folderDetails += foldersInBoth.Count.ToString() + " of your folders had matching recognition data:" + Environment.NewLine;
                 foreach (string folder in foldersInBoth)
@@ -297,29 +297,126 @@ namespace Timelapse
         }
 
         // Import data from a .csv file
+        //private async void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (this.State.SuppressCsvImportPrompt == false)
+        //    {
+        //        MessageBox messageBox = new MessageBox("How importing .csv data works", this, MessageBoxButton.OKCancel);
+        //        messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below." + Environment.NewLine;
+        //        messageBox.Message.What += "Otherwise your Timelapse data may become corrupted.";
+        //        messageBox.Message.Reason = "Timelapse requires the .csv file follow a specific format and processes  its data a specific way.";
+        //        messageBox.Message.Solution = "\u2022 Only modify and import a .csv file previously exported by Timelapse." + Environment.NewLine;
+        //        messageBox.Message.Solution += "\u2022 Do not change Folder, RelativePath, or File as those fields uniquely identify a file" + Environment.NewLine;
+        //        messageBox.Message.Solution += "\u2022 Do not change Date or Time as those columns are ignored (change DateTime instead, if it exists)" + Environment.NewLine;
+        //        messageBox.Message.Solution += "\u2022 Do not change column names" + Environment.NewLine;
+        //        messageBox.Message.Solution += "\u2022 Do not add or delete rows (those changes will be ignored)" + Environment.NewLine;
+        //        messageBox.Message.Solution += "\u2022 Restrict modifications as follows:" + Environment.NewLine;
+        //        messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, DateTime must be in '{0}' format{1}", Constant.Time.DateTimeDatabaseFormat, Environment.NewLine);
+        //        messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, UtcOffset must be a floating point number between {0} and {1}, inclusive{2}", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), Environment.NewLine);
+        //        messageBox.Message.Solution += "    \u2022 Counter data must be zero or a positive integer" + Environment.NewLine;
+        //        messageBox.Message.Solution += "    \u2022 Flag data must be 'true' or 'false'" + Environment.NewLine;
+        //        messageBox.Message.Solution += "    \u2022 FixedChoice data must be a string that exactly matches one of the FixedChoice menu options, or empty." + Environment.NewLine;
+        //        messageBox.Message.Solution += "    \u2022 Note data to any string, including empty.";
+        //        messageBox.Message.Result = "Timelapse will create a backup .ddb file in the Backups folder, and will then try its best.";
+        //        messageBox.Message.Hint = "\u2022 After you import, check your data. If it is not what you expect, restore your data by using that backup file." + Environment.NewLine;
+        //        messageBox.Message.Hint += "\u2022 If you check don't show this message this dialog can be turned back on via the Options menu.";
+        //        messageBox.Message.Icon = MessageBoxImage.Warning;
+        //        messageBox.DontShowAgain.Visibility = Visibility.Visible;
+
+        //        bool? proceeed = messageBox.ShowDialog();
+        //        if (proceeed != true)
+        //        {
+        //            return;
+        //        }
+
+        //        if (messageBox.DontShowAgain.IsChecked.HasValue)
+        //        {
+        //            this.State.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
+        //        }
+        //    }
+
+        //    string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
+        //    if (Utilities.TryGetFileFromUser(
+        //                         "Select a .csv file to merge into the current image set",
+        //                         Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
+        //                         String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
+        //                         Constant.File.CsvFileExtension,
+        //                         out string csvFilePath) == false)
+        //    {
+        //        return;
+        //    }
+
+        //    // Create a backup database file
+        //    if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))
+        //    {
+        //        this.StatusBar.SetMessage("Backup of data file made.");
+        //    }
+        //    else
+        //    {
+        //        this.StatusBar.SetMessage("No data file backup was made.");
+        //    }
+
+        //    try
+        //    {
+        //        if (CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors) == false)
+        //        {
+        //            MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
+        //            messageBox.Message.Icon = MessageBoxImage.Error;
+        //            messageBox.Message.Problem = String.Format("The file {0} could not be read.", csvFilePath);
+        //            messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
+        //            messageBox.Message.Solution = "Check that:" + Environment.NewLine;
+        //            messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
+        //            messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
+        //            messageBox.Message.Solution += "\u2022 Choice values use the correct case." + Environment.NewLine;
+        //            messageBox.Message.Solution += "\u2022 Counter values are blank or integer numbers." + Environment.NewLine;
+        //            messageBox.Message.Solution += "\u2022 Flag values are either 'true' or 'false'.";
+        //            messageBox.Message.Result = "Either no data was imported or invalid parts of the .csv were skipped.";
+        //            messageBox.Message.Hint = "The errors encountered were:" + Environment.NewLine;
+        //            foreach (string importError in importErrors)
+        //            {
+        //                messageBox.Message.Hint += "\u2022 " + importError;
+        //            }
+        //            messageBox.ShowDialog();
+        //        }
+        //        else
+        //        {
+        //            // Importing done.
+        //            // Reload the data
+        //            await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+        //            this.StatusBar.SetMessage(".csv file imported.");
+        //        }
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
+        //        messageBox.Message.Icon = MessageBoxImage.Error;
+        //        messageBox.Message.Problem = String.Format("The file {0} could not be opened.", csvFilePath);
+        //        messageBox.Message.Reason = "Most likely the file is open in another program.";
+        //        messageBox.Message.Solution = "If the file is open in another program, close it.";
+        //        messageBox.Message.Result = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
+        //        messageBox.Message.Hint = "Is the file open in Excel?";
+        //        messageBox.ShowDialog();
+        //    }
+        //}
+
         private async void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressCsvImportPrompt == false)
             {
                 MessageBox messageBox = new MessageBox("How importing .csv data works", this, MessageBoxButton.OKCancel);
-                messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below." + Environment.NewLine;
-                messageBox.Message.What += "Otherwise your Timelapse data may become corrupted.";
-                messageBox.Message.Reason = "Timelapse requires the .csv file follow a specific format and processes  its data a specific way.";
-                messageBox.Message.Solution = "\u2022 Only modify and import a .csv file previously exported by Timelapse." + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change Folder, RelativePath, or File as those fields uniquely identify a file" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change Date or Time as those columns are ignored (change DateTime instead, if it exists)" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not change column names" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Do not add or delete rows (those changes will be ignored)" + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 Restrict modifications as follows:" + Environment.NewLine;
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, DateTime must be in '{0}' format{1}", Constant.Time.DateTimeDatabaseFormat, Environment.NewLine);
-                messageBox.Message.Solution += String.Format("    \u2022 If it's in the csv file, UtcOffset must be a floating point number between {0} and {1}, inclusive{2}", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), DateTimeHandler.ToDatabaseUtcOffsetString(Constant.Time.MinimumUtcOffset), Environment.NewLine);
-                messageBox.Message.Solution += "    \u2022 Counter data must be zero or a positive integer" + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 Flag data must be 'true' or 'false'" + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 FixedChoice data must be a string that exactly matches one of the FixedChoice menu options, or empty." + Environment.NewLine;
-                messageBox.Message.Solution += "    \u2022 Note data to any string, including empty.";
-                messageBox.Message.Result = "Timelapse will create a backup .ddb file in the Backups folder, and will then try its best.";
-                messageBox.Message.Hint = "\u2022 After you import, check your data. If it is not what you expect, restore your data by using that backup file." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 If you check don't show this message this dialog can be turned back on via the Options menu.";
+                messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below.";
+                messageBox.Message.Reason = "\u2022 The first row in the CSV file must comprise column Headers that match the DataLabels in the .tdb template file." + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 The column Header 'File' must be included." + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 Subsequent rows defines the data for each File ." + Environment.NewLine;
+                messageBox.Message.Reason += "\u2022 Column data should match the Header type. In particular," + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 File data should define name of the file you want to update." + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 Counter data must be blank or a positive integer. " + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 Flag data must be 'true' or 'false'." + Environment.NewLine;
+                messageBox.Message.Reason += "  \u2022\u2022 FixedChoice data should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
+                messageBox.Message.Result = "Only user-defined fields will be updated (Note, FixedChoice, Counter and Flags).";
+                messageBox.Message.Result += "The other standard Timelapse fields are ignored" + Environment.NewLine;
+                messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine; 
+                messageBox.Message.Hint += "\u2022 If you check 'Don't show this message again' this dialog can be turned back on via the Options menu.";
                 messageBox.Message.Icon = MessageBoxImage.Warning;
                 messageBox.DontShowAgain.Visibility = Visibility.Visible;
 
@@ -362,7 +459,7 @@ namespace Timelapse
                 {
                     MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                     messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.Message.Problem = String.Format("The file {0} could not be read.", csvFilePath);
+                    messageBox.Message.Problem = String.Format("The file {0} could not be read.", Path.GetFileName(csvFilePath));
                     messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
                     messageBox.Message.Solution = "Check that:" + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
@@ -370,30 +467,38 @@ namespace Timelapse
                     messageBox.Message.Solution += "\u2022 Choice values use the correct case." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 Counter values are numbers." + Environment.NewLine;
                     messageBox.Message.Solution += "\u2022 Flag values are either 'true' or 'false'.";
-                    messageBox.Message.Result = "Either no data was imported or invalid parts of the .csv were skipped.";
-                    messageBox.Message.Hint = "The errors encountered were:";
+                    messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
+                    messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
                     foreach (string importError in importErrors)
                     {
-                        messageBox.Message.Hint += "\u2022 " + importError;
+                        messageBox.Message.Hint += Environment.NewLine + "\u2022 " + importError;
                     }
                     messageBox.ShowDialog();
                 }
                 else
                 {
                     // Importing done.
+                    MessageBox messageBox = new MessageBox("CSV file imported", this);
+                    messageBox.Message.Icon = MessageBoxImage.Information;
+                    messageBox.Message.What = String.Format("The file {0} was successfully imported.", Path.GetFileName(csvFilePath));
+                    messageBox.Message.Hint = "\u2022 Check your data. If it is not what you expect, restore your data by using latest backup file in " + Constant.File.BackupFolder + ".";
+                    messageBox.ShowDialog();
+
                     // Reload the data
                     await this.FilesSelectAndShowAsync().ConfigureAwait(true);
-                    this.StatusBar.SetMessage(".csv file imported.");
+                    this.StatusBar.SetMessage("CSV file imported.");
                 }
             }
             catch (Exception exception)
             {
                 MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = String.Format("The file {0} could not be opened.", csvFilePath);
-                messageBox.Message.Reason = "Most likely the file is open in another program.";
+                messageBox.Message.Problem = String.Format("The file {0} could not be opened.", Path.GetFileName(csvFilePath));
+                messageBox.Message.Reason = "Most likely the file is open in another program. The technical reason is:" + Environment.NewLine;
+                messageBox.Message.Reason += exception.Message;
                 messageBox.Message.Solution = "If the file is open in another program, close it.";
-                messageBox.Message.Result = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
+                //messageBox.Message.Result = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
+                messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
                 messageBox.Message.Hint = "Is the file open in Excel?";
                 messageBox.ShowDialog();
             }
