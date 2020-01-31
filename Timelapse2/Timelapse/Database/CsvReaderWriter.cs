@@ -211,7 +211,8 @@ namespace Timelapse.Database
                         abort = true;
                     }
 
-                    // Required the column headers must exist in the template as valid DataLabels
+                    // Required: the column headers must exist in the template as valid DataLabels
+                    // Note: could do this as a warning rather than as an abort, but...
                     foreach (string dataLabel in dataLabelsInHeaderButNotFileDatabase)
                     {
                         importErrors.Add(String.Format("The column heading '{0}' in the CSV file does not match any DataLabel in the template.", dataLabel));
@@ -223,7 +224,7 @@ namespace Timelapse.Database
                         // We failed. abort.
                         return false;
                     }
-                    // List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+
                     List<Dictionary<string, string>> rowDictionaryList = new List<Dictionary<string, string>>();
                     int rowNumber = 0;
                     for (List<string> row = ReadAndParseLine(csvReader); row != null; row = ReadAndParseLine(csvReader))
@@ -297,7 +298,14 @@ namespace Timelapse.Database
                                 imageToUpdate.Columns.Add(new ColumnTuple(key, rowDict[key]));
                             }
                         }
-                        imageToUpdate.SetWhere(String.Empty, rowDict[Constant.DatabaseColumn.File]);
+                        if (rowDict.ContainsKey(Constant.DatabaseColumn.RelativePath) && !String.IsNullOrWhiteSpace(rowDict[Constant.DatabaseColumn.RelativePath]))
+                        {
+                            imageToUpdate.SetWhere(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]);
+                        }
+                        else
+                        { 
+                            imageToUpdate.SetWhere(String.Empty, rowDict[Constant.DatabaseColumn.File]);
+                        }
                         imagesToUpdate.Add(imageToUpdate);
 
                         // write current batch of updates to database
@@ -347,6 +355,7 @@ namespace Timelapse.Database
                 char currentCharacter = unparsedLine[index];
                 if (inField == false)
                 {
+                    // We are at the beginning of a field
                     if (currentCharacter == '\"')
                     {
                         // start of escaped field
@@ -372,6 +381,7 @@ namespace Timelapse.Database
                 }
                 else
                 {
+                    // We are in the midst of processing a field
                     if (currentCharacter == ',' && isFieldEscaped == false)
                     {
                         // end of unescaped field
@@ -402,24 +412,33 @@ namespace Timelapse.Database
                             {
                                 // escaped double quotation mark
                                 // just move next to skip over the second quotation mark as replacement back to one quotation mark is done in field extraction
-                                ++index;
+                                ++index; 
                             }
+                        }
+                        else
+                        {
+                            // We are at the end, still escaped, with no comma delimiting the last field
+                            // We have to get rid of the last escaped quote
+                            string field = unparsedLine.Substring(fieldStart, unparsedLine.Length - fieldStart);
+                            field = field.TrimEnd(new Char[] { '"' }); ;
+                            parsedLine.Add(field);
+                            ++index;
                         }
                     }
                 }
             }
-
+            // This code had a bug, which I fixed above (where it says 'We are at the end". But just leave it here for now until I am sure.
             // if the last character is a non-comma add the final (non-empty) field
             // final empty fields are ambiguous at this level and therefore handled by the caller
-            if (inField)
-            {
-                string field = unparsedLine.Substring(fieldStart, unparsedLine.Length - fieldStart);
-                if (isFieldEscaped)
-                {
-                    field = field.Replace("\"\"", "\"");
-                }
-                parsedLine.Add(field);
-            }
+            // if (inField)
+            // {
+            //    string field = unparsedLine.Substring(fieldStart, unparsedLine.Length - fieldStart);
+            //    if (isFieldEscaped)
+            //    {
+            //        field = field.Replace("\"\"", "\"");
+            //    }
+            //    parsedLine.Add(field);
+            // }
 
             return parsedLine;
         }
