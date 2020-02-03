@@ -43,7 +43,7 @@ namespace Timelapse.Controls
                         {
                             FontFamily = new FontFamily("Wingdings 2"),
                             Text = "\u004e"
-                        }; 
+                        };
                         // Create a symbol of a stopped hand
                         this.lblIconType.Content = run;
                         this.iconType = MessageBoxImage.Error;

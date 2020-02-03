@@ -352,7 +352,7 @@ namespace Timelapse.Database
             await base.UpgradeDatabasesAndCompareTemplatesAsync(templateDatabase, null).ConfigureAwait(true);
 
             // Upgrade the database from older to newer formats to preserve backwards compatability
-           await this.UpgradeDatabasesForBackwardsCompatabilityAsync().ConfigureAwait(true);
+            await this.UpgradeDatabasesForBackwardsCompatabilityAsync().ConfigureAwait(true);
 
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
@@ -963,7 +963,7 @@ namespace Timelapse.Database
             string filepath = String.Empty;
             string commaSeparatedListOfIDs = String.Empty;
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-           
+
             // Check if each file exists. Get all missing files in the selection as a list of file ids, e.g., "1,2,8,10" 
             foreach (ImageRow image in this.FileTable)
             {
@@ -1368,7 +1368,7 @@ namespace Timelapse.Database
             return this.Database.SchemaGetColumnsAndDefaultValues(tableName);
         }
         #endregion
-        
+
         #region Counts of matching files
         // Return a total count of the currently selected files in the file table.
         public int CountAllCurrentlySelectedFiles
@@ -2037,7 +2037,7 @@ namespace Timelapse.Database
             return foldersInDBListButNotInJSon.Count == 0;
         }
 
- 
+
 
         // Get the detections associated with the current file, if any
         // As part of the, create a DetectionTable in memory that mirrors the database table

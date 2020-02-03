@@ -40,7 +40,7 @@ namespace Timelapse
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
             if (this.dataHandler == null)
             {
-                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?");;
+                TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?"); ;
             }
             if (this.dataHandler.FileDatabase == null)
             {
@@ -81,7 +81,7 @@ namespace Timelapse
                 this.EnableBusyCancelIndicatorForSelection(true);
 
                 await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
-           
+
                 this.EnableBusyCancelIndicatorForSelection(false);
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
@@ -132,7 +132,7 @@ namespace Timelapse
                 }
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 messageBox.ShowDialog();
-                
+
                 selection = FileSelectionEnum.All;
 
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
@@ -175,7 +175,7 @@ namespace Timelapse
             // Show feedback of the status description in both the status bar and the data entry control panel title
             this.StatusBar.SetView(status);
             this.DataEntryControlPanel.Title = "Data entry for " + status;
-            
+
             // Reset the Episodes, as it may change based on the current selection
             Episodes.Reset();
 

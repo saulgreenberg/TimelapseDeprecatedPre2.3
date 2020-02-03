@@ -71,7 +71,7 @@ namespace Timelapse.Editor.Util
                 CodeTemplateImporter.UpdateControl(selectedNodes[index], templateDatabase, Constant.Control.Counter, counter, ref conversionErrors, ref dataLabels);
             }
             if (reader != null)
-            { 
+            {
                 reader.Dispose();
             }
         }

@@ -297,7 +297,7 @@ namespace Timelapse
         }
 
         // Import data from a CSV file. Display instructions and error messages as needed.
-         private async void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemImportFromCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressCsvImportPrompt == false)
             {
@@ -356,7 +356,7 @@ namespace Timelapse
                 // Show the Busy indicator
                 this.BusyCancelIndicator.IsBusy = true;
 
-                Tuple<bool,List<string>> resultAndImportErrors;
+                Tuple<bool, List<string>> resultAndImportErrors;
                 resultAndImportErrors = await CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase).ConfigureAwait(true);
 
                 this.BusyCancelIndicator.IsBusy = false;

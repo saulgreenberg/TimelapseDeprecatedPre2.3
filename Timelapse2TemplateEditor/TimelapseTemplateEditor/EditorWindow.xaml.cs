@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,7 +15,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Win32;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Editor.Dialog;
@@ -436,7 +436,7 @@ namespace Timelapse.Editor
         private void MenuItemInspectImageMetadata_Click(object sender, RoutedEventArgs e)
         {
             using (InspectMetadata inspectMetadata = new InspectMetadata(this))
-            { 
+            {
                 inspectMetadata.ShowDialog();
             }
         }
