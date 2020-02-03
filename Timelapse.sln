@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.AvalonDock", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.Toolkit", "..\wpftoolkit-master3.7.0-Modified\wpftoolkit-master\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.Toolkit\Xceed.Wpf.Toolkit.csproj", "{72E591D6-8F83-4D8C-8F67-9C325E623234}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateCSVFile", "UtilityPrograms\UpdateCSVFile\UpdateCSVFile.csproj", "{75AD7494-E72F-4789-8D02-BC98DBD9862E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,14 @@ Global
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|Any CPU.Build.0 = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.ActiveCfg = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.Build.0 = Release|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Debug|x86.Build.0 = Debug|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Release|x86.ActiveCfg = Release|Any CPU
+		{75AD7494-E72F-4789-8D02-BC98DBD9862E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -101,7 +101,7 @@ namespace Timelapse.Editor.Util
 
                 // string dataLabel = Regex.Replace(controlType, @"\s+", String.Empty);    // remove any white space that may be there
                 string dataLabel = Regex.Replace(controlType, "[^a-zA-Z0-9_]", String.Empty);  // only allow alphanumeric and '_'. 
-                if (!dataLabel.Equals(controlType))
+                if (!dataLabel.Equals(controlType, StringComparison.InvariantCulture))
                 {
                     errorMessages.Add("illicit characters: '" + controlType + "' changed to '" + dataLabel + "'");
                     controlType = dataLabel;
@@ -128,7 +128,7 @@ namespace Timelapse.Editor.Util
             {
                 temp_datalabel = controlType + j.ToString();
             }
-            if (!controlType.Equals(temp_datalabel))
+            if (!controlType.Equals(temp_datalabel, StringComparison.InvariantCulture))
             {
                 errorMessages.Add("duplicate data label:" + Environment.NewLine + "   '" + controlType + "' changed to '" + temp_datalabel + "'");
                 controlType = temp_datalabel;
@@ -136,7 +136,7 @@ namespace Timelapse.Editor.Util
 
             if (!String.IsNullOrEmpty(controlType))
             {
-                if (controlType.Equals("Delete"))
+                if (controlType.Equals("Delete", StringComparison.InvariantCulture))
                 {
                     controlType = Constant.ControlDefault.DeleteFlagLabel; // Delete is a reserved word!
                 }

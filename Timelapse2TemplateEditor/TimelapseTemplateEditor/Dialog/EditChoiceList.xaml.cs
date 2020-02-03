@@ -59,7 +59,7 @@ namespace Timelapse.Editor.Dialog
             if (this.IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
             {
                 // Include the empty choice at the end if it doesn't already exist
-                if (this.ChoiceList.Text.EndsWith(Constant.ControlMiscellaneous.EmptyChoiceItem) == false)
+                if (this.ChoiceList.Text.EndsWith(Constant.ControlMiscellaneous.EmptyChoiceItem, StringComparison.InvariantCulture) == false)
                 {
                     this.ChoiceList.Text += Environment.NewLine + Constant.ControlMiscellaneous.EmptyChoiceItem;
                 }
