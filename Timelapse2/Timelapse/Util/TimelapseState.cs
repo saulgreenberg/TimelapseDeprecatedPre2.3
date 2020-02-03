@@ -17,11 +17,8 @@ namespace Timelapse.Util
         public byte DifferenceThreshold { get; set; } // The threshold used for calculating combined differences
         public bool FileNavigatorSliderDragging { get; set; }
         public string MouseOverCounter { get; set; }
-
         public DateTime MostRecentDragEvent { get; set; }
-
         public bool FirstTimeFileLoading { get; set; }
-
         public double BoundingBoxThresholdOveride { get; set; }
 
         public TimelapseState()

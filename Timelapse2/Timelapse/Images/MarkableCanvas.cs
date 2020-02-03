@@ -307,6 +307,7 @@ namespace Timelapse.Images
             this.MouseLeave += this.ImageOrCanvas_MouseLeave;
             this.MouseMove += this.MarkableCanvas_MouseMove;
             this.PreviewKeyDown += this.MarkableCanvas_PreviewKeyDown;
+            this.PreviewKeyUp += this.MarkableCanvas_PreviewKeyUp;
             this.Loaded += this.MarkableCanvas_Loaded;
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
@@ -553,6 +554,7 @@ namespace Timelapse.Images
 
         #region Key Event Handlers
         // if it's < or > key zoom out or in around the mouse point
+        // If its an H, RedrawBoundingBoxes will hide ow the detection boxes
         private void MarkableCanvas_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -575,10 +577,28 @@ namespace Timelapse.Images
                         return;
                     }
                     break;
+                case Key.H:
+                    // Will hide detection boxes, if any
+                    this.RedrawBoundingBoxes();
+                    break;
                 default:
                     return;
             }
+            e.Handled = true;
+        }
 
+        // If its an H, RedrawBoundingBoxes will show the detection boxes
+        private void MarkableCanvas_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.H:
+                    // Will show detection boxes, if any
+                    this.RedrawBoundingBoxes();
+                    break;
+                default:
+                    return;
+            }
             e.Handled = true;
         }
         #endregion
@@ -1026,7 +1046,7 @@ namespace Timelapse.Images
             this.bboxCanvas.Children.Clear();
             this.Children.Remove(this.bboxCanvas);
 
-            if (GlobalReferences.DetectionsExists == false)
+            if (GlobalReferences.DetectionsExists == false || Keyboard.IsKeyDown(Key.H))
             {
                 // As detection don't exist, there won't be any bounding boxes to draw.
                 return;
