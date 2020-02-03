@@ -353,10 +353,15 @@ namespace Timelapse
 
             try
             {
-                Mouse.OverrideCursor = Cursors.Wait;
-                bool result = CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase, out List<string> importErrors);
-                Mouse.OverrideCursor = null;
-                if (result == false)
+                // Show the Busy indicator
+                this.BusyCancelIndicator.IsBusy = true;
+
+                Tuple<bool,List<string>> resultAndImportErrors;
+                resultAndImportErrors = await CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase).ConfigureAwait(true);
+
+                this.BusyCancelIndicator.IsBusy = false;
+
+                if (resultAndImportErrors.Item1 == false)
                 {
                     MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
                     messageBox.Message.Icon = MessageBoxImage.Error;
@@ -370,7 +375,7 @@ namespace Timelapse
                     messageBox.Message.Solution += "\u2022 Flag and DeleteFlag values are either 'true' or 'false'.";
                     messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
                     messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
-                    foreach (string importError in importErrors)
+                    foreach (string importError in resultAndImportErrors.Item2)
                     {
                         messageBox.Message.Hint += Environment.NewLine + "\u2022 " + importError;
                     }
@@ -386,7 +391,9 @@ namespace Timelapse
                     messageBox.ShowDialog();
 
                     // Reload the data
+                    this.BusyCancelIndicator.IsBusy = true;
                     await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                    this.BusyCancelIndicator.IsBusy = false;
                     this.StatusBar.SetMessage("CSV file imported.");
                 }
             }
