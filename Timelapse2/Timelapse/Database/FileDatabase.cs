@@ -942,7 +942,7 @@ namespace Timelapse.Database
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
             this.FileTable = new FileTable(images);
-        }
+      }
 
         // Select all files in the file table
         public FileTable SelectAllFiles()

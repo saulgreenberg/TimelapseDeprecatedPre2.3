@@ -81,7 +81,6 @@ namespace Timelapse
                 this.EnableBusyCancelIndicatorForSelection(true);
 
                 await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
-
                 this.EnableBusyCancelIndicatorForSelection(false);
                 this.dataHandler.FileDatabase.BindToDataGrid();
             }
@@ -202,6 +201,7 @@ namespace Timelapse
             }
 
             this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.dataHandler.FileDatabase);
+
             // Always force an update after a selection
             this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 

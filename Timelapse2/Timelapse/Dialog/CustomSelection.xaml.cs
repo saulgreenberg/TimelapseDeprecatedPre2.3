@@ -323,10 +323,9 @@ namespace Timelapse.Dialog
                     Grid.SetColumn(textBoxValue, CustomSelection.ValueColumn);
                     this.SearchTerms.Children.Add(textBoxValue);
                 }
-                else if (controlType == Constant.Control.FixedChoice ||
-                         controlType == Constant.DatabaseColumn.ImageQuality)
+                else if (controlType == Constant.Control.FixedChoice)
                 {
-                    // FixedChoice and ImageQuality both present combo boxes, so they can be constructed the same way
+                    // FixedChoice presents combo boxes, so they can be constructed the same way
                     ComboBox comboBoxValue = new ComboBox()
                     {
                         FontWeight = FontWeights.Normal,
@@ -336,6 +335,26 @@ namespace Timelapse.Dialog
 
                         // Create the dropdown menu 
                         ItemsSource = searchTerm.List,
+                        SelectedItem = searchTerm.DatabaseValue
+                    };
+                    comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
+                    Grid.SetRow(comboBoxValue, gridRowIndex);
+                    Grid.SetColumn(comboBoxValue, CustomSelection.ValueColumn);
+                    this.SearchTerms.Children.Add(comboBoxValue);
+                }
+                else if (controlType == Constant.DatabaseColumn.ImageQuality)
+                {
+                    // ImageQuality presents combo boxes but onlly with Ok/Dark/empty.
+                    // SAULXXX THIS HAS TO FIXED ONCE WE CHANGE IMAGE QUALITY
+                    ComboBox comboBoxValue = new ComboBox()
+                    {
+                        FontWeight = FontWeights.Normal,
+                        IsEnabled = searchTerm.UseForSearching,
+                        Width = CustomSelection.DefaultControlWidth,
+                        Margin = thickness,
+
+                        // Create the dropdown menu 
+                        ItemsSource = new List<string>() { Constant.ImageQuality.Ok, Constant.ImageQuality.Dark, String.Empty },
                         SelectedItem = searchTerm.DatabaseValue
                     };
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
