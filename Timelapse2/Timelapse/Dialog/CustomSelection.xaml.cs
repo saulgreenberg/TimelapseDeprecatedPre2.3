@@ -325,7 +325,7 @@ namespace Timelapse.Dialog
                 }
                 else if (controlType == Constant.Control.FixedChoice)
                 {
-                    // FixedChoice presents combo boxes, so they can be constructed the same way
+                    // FixedChoice presents combo boxes, so they can be constructed tGetDataTabelhe same way
                     ComboBox comboBoxValue = new ComboBox()
                     {
                         FontWeight = FontWeights.Normal,
