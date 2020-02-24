@@ -39,10 +39,10 @@ namespace Timelapse
         private void FindBox_FindImage(bool isForward)
         {
             string searchTerm = this.FindBoxTextBox.Text;
-            ImageRow row = this.dataHandler.ImageCache.Current;
+            ImageRow row = this.DataHandler.ImageCache.Current;
 
-            int currentIndex = this.dataHandler.FileDatabase.FileTable.IndexOf(row);
-            int foundIndex = this.dataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
+            int currentIndex = this.DataHandler.FileDatabase.FileTable.IndexOf(row);
+            int foundIndex = this.DataHandler.FileDatabase.FindByFileName(currentIndex, isForward, searchTerm);
             if (foundIndex != -1)
             {
                 this.FileShow(foundIndex);
@@ -63,7 +63,7 @@ namespace Timelapse
         private void FindBoxSetVisibility(bool isVisible)
         {
             // Only make the find box visible if there are files to view
-            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
+            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
             {
                 this.FindBox.IsOpen = isVisible;
                 this.FindBoxTextBox.Focus();

@@ -71,7 +71,7 @@ namespace Timelapse
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
             if (Utilities.TryGetFileFromUser(
                       "Select a .json file that contains the recognition data. It will be merged into the current image set",
-                      Path.Combine(this.dataHandler.FileDatabase.FolderPath, jsonFileName),
+                      Path.Combine(this.DataHandler.FileDatabase.FolderPath, jsonFileName),
                       String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
                       Constant.File.JsonFileExtension,
                       out string jsonFilePath) == false)
@@ -86,7 +86,7 @@ namespace Timelapse
             this.BusyCancelIndicator.IsBusy = true;
 
             // Load the detections
-            bool result = await this.dataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth).ConfigureAwait(true);
+            bool result = await this.DataHandler.FileDatabase.PopulateDetectionTablesAsync(jsonFilePath, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth).ConfigureAwait(true);
 
             // Hide the Busy indicator
             //this.BusyCancelIndicator.IsBusy = false;
@@ -94,7 +94,7 @@ namespace Timelapse
             if (result)
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
-                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
                 await this.FilesSelectAndShowAsync().ConfigureAwait(true);
             }
             this.BusyCancelIndicator.IsBusy = false;
@@ -190,7 +190,7 @@ namespace Timelapse
         private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressSelectedCsvExportPrompt == false &&
-                this.dataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
+                this.DataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
             {
                 MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
                 messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
@@ -219,7 +219,7 @@ namespace Timelapse
             }
 
             // Generate the file names/path
-            string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + ".csv";
+            string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + ".csv";
             string csvFilePath = Path.Combine(this.FolderPath, csvFileName);
 
             // Backup the csv file if it exists, as the export will overwrite it. 
@@ -234,7 +234,7 @@ namespace Timelapse
 
             try
             {
-                CsvReaderWriter.ExportToCsv(this.dataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
+                CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
             }
             catch (IOException exception)
             {
@@ -330,10 +330,10 @@ namespace Timelapse
                 }
             }
 
-            string csvFileName = Path.GetFileNameWithoutExtension(this.dataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
+            string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
             if (Utilities.TryGetFileFromUser(
                                  "Select a .csv file to merge into the current image set",
-                                 Path.Combine(this.dataHandler.FileDatabase.FolderPath, csvFileName),
+                                 Path.Combine(this.DataHandler.FileDatabase.FolderPath, csvFileName),
                                  String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
                                  Constant.File.CsvFileExtension,
                                  out string csvFilePath) == false)
@@ -342,7 +342,7 @@ namespace Timelapse
             }
 
             // Create a backup database file
-            if (FileBackup.TryCreateBackup(this.FolderPath, this.dataHandler.FileDatabase.FileName))
+            if (FileBackup.TryCreateBackup(this.FolderPath, this.DataHandler.FileDatabase.FileName))
             {
                 this.StatusBar.SetMessage("Backup of data file made.");
             }
@@ -357,7 +357,7 @@ namespace Timelapse
                 this.BusyCancelIndicator.IsBusy = true;
 
                 Tuple<bool, List<string>> resultAndImportErrors;
-                resultAndImportErrors = await CsvReaderWriter.TryImportFromCsv(csvFilePath, this.dataHandler.FileDatabase).ConfigureAwait(true);
+                resultAndImportErrors = await CsvReaderWriter.TryImportFromCsv(csvFilePath, this.DataHandler.FileDatabase).ConfigureAwait(true);
 
                 this.BusyCancelIndicator.IsBusy = false;
 
@@ -415,7 +415,7 @@ namespace Timelapse
         // Export the current image or video _file
         private void MenuItemExportThisImage_Click(object sender, RoutedEventArgs e)
         {
-            if (!this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
+            if (!this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
             {
                 MessageBox messageBox = new MessageBox("Can't export this file!", this);
                 messageBox.Message.Icon = MessageBoxImage.Error;
@@ -426,13 +426,13 @@ namespace Timelapse
                 return;
             }
             // Get the file name of the current image 
-            string sourceFile = this.dataHandler.ImageCache.Current.File;
+            string sourceFile = this.DataHandler.ImageCache.Current.File;
 
             // Set up a Folder Browser with some instructions
             using (SaveFileDialog dialog = new SaveFileDialog()
             {
                 Title = "Export a copy of the currently displayed file",
-                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.dataHandler.ImageCache.Current.File)),
+                Filter = String.Format("*{0}|*{0}", Path.GetExtension(this.DataHandler.ImageCache.Current.File)),
                 FileName = sourceFile,
                 OverwritePrompt = true
             })
@@ -442,7 +442,7 @@ namespace Timelapse
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
                     // Set the source and destination file names, including the complete path
-                    string sourcePath = this.dataHandler.ImageCache.Current.GetFilePath(this.FolderPath);
+                    string sourcePath = this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath);
                     string destFileName = dialog.FileName;
 
                     // Try to copy the source file to the destination, overwriting the destination file if it already exists.
@@ -464,14 +464,14 @@ namespace Timelapse
         // Rename the data file
         private void MenuItemRenameFileDatabaseFile_Click(object sender, RoutedEventArgs e)
         {
-            RenameFileDatabaseFile renameFileDatabase = new RenameFileDatabaseFile(this.dataHandler.FileDatabase.FileName, this)
+            RenameFileDatabaseFile renameFileDatabase = new RenameFileDatabaseFile(this.DataHandler.FileDatabase.FileName, this)
             {
                 Owner = this
             };
             bool? result = renameFileDatabase.ShowDialog();
             if (result == true)
             {
-                this.dataHandler.FileDatabase.RenameFile(renameFileDatabase.NewFilename);
+                this.DataHandler.FileDatabase.RenameFile(renameFileDatabase.NewFilename);
             }
         }
 
@@ -482,35 +482,35 @@ namespace Timelapse
             if (this.IsFileDatabaseAvailable())
             {
                 // persist image set properties if an image set has been opened
-                if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
+                if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
                 {
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
-                    if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
+                    if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
                     {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                     }
-                    if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
+                    if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
                     {
-                        this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                        this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
                     }
 
                     // write image set properties to the database
-                    this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
+                    this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
 
                     // ensure custom filter operator is synchronized in state for writing to user's registry
-                    this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                    this.State.CustomSelectionTermCombiningOperator = this.DataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
                 }
                 // discard the image set 
-                if (this.dataHandler.ImageCache != null)
+                if (this.DataHandler.ImageCache != null)
                 {
-                    this.dataHandler.ImageCache.Dispose();
+                    this.DataHandler.ImageCache.Dispose();
                 }
-                if (this.dataHandler != null)
+                if (this.DataHandler != null)
                 {
-                    this.dataHandler.Dispose();
+                    this.DataHandler.Dispose();
                 }
-                this.dataHandler = null;
+                this.DataHandler = null;
                 this.templateDatabase = null;
                 this.DataEntryControlPanel.IsVisible = false;
             }

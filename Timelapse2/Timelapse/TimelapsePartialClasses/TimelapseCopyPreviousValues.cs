@@ -22,7 +22,7 @@ namespace Timelapse
 
         private void CopyPreviousValues_LostFocus(object sender, RoutedEventArgs e)
         {
-            int previousRow = (this.dataHandler == null || this.dataHandler.ImageCache == null) ? -1 : this.dataHandler.ImageCache.CurrentRow - 1;
+            int previousRow = (this.DataHandler == null || this.DataHandler.ImageCache == null) ? -1 : this.DataHandler.ImageCache.CurrentRow - 1;
             this.CopyPreviousValuesSetGlowAsNeeded(previousRow);
         }
 
@@ -69,7 +69,7 @@ namespace Timelapse
         // This should be the only method (aside from the above events) invoked from outside this file
         public void CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded()
         {
-            int previousRow = (this.dataHandler == null || this.dataHandler.ImageCache == null) ? -1 : this.dataHandler.ImageCache.CurrentRow - 1;
+            int previousRow = (this.DataHandler == null || this.DataHandler.ImageCache == null) ? -1 : this.DataHandler.ImageCache.CurrentRow - 1;
             // Simulate enabled / disabled by changing the foreground color. 
             // We do this instead of disabling, as we still want the CopyPreviousValuseButton to obtain the focus so it can respond to the arrow keys.
             this.CopyPreviousValuesButton.Foreground = previousRow >= 0 && this.IsDisplayingSingleImage() ? Brushes.Black : Brushes.Gray;
@@ -134,7 +134,7 @@ namespace Timelapse
                     DataEntryControl control = pair.Value;
                     if (control.Copyable)
                     {
-                        string previewValue = this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel);
+                        string previewValue = this.DataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel);
                         control.ShowPreviewControlValue(previewValue);
                     }
                 }
@@ -156,7 +156,7 @@ namespace Timelapse
         // Paste the data values from the previous copyable controls to the currently displayed controls
         private bool TryCopyPreviousValuesPasteValues()
         {
-            int previousRow = this.dataHandler.ImageCache.CurrentRow - 1;
+            int previousRow = this.DataHandler.ImageCache.CurrentRow - 1;
 
             // This is an unneeded test as the CopyPreviousButton should be disabled if these conditions are met
             if (this.IsDisplayingSingleImage() == false || previousRow < 0)
@@ -170,7 +170,7 @@ namespace Timelapse
                 DataEntryControl control = pair.Value;
                 if (control.Copyable)
                 {
-                    control.SetContentAndTooltip(this.dataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel));
+                    control.SetContentAndTooltip(this.DataHandler.FileDatabase.FileTable[previousRow].GetValueDisplayString(control.DataLabel));
                 }
             }
             return true;

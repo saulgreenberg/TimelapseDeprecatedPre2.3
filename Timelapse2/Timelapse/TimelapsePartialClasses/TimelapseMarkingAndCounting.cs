@@ -48,10 +48,10 @@ namespace Timelapse
                 {
                     // Don't bother updating if the value hasn't changed (i.e., already at a 0 count)
                     // Update the datatable and database with the new counter values
-                    this.dataHandler.IsProgrammaticControlUpdate = true;
+                    this.DataHandler.IsProgrammaticControlUpdate = true;
                     counter.SetContentAndTooltip(newCounterData);
-                    this.dataHandler.IsProgrammaticControlUpdate = false;
-                    this.dataHandler.FileDatabase.UpdateFile(this.dataHandler.ImageCache.Current.ID, counter.DataLabel, newCounterData);
+                    this.DataHandler.IsProgrammaticControlUpdate = false;
+                    this.DataHandler.FileDatabase.UpdateFile(this.DataHandler.ImageCache.Current.ID, counter.DataLabel, newCounterData);
                 }
             }
 
@@ -82,7 +82,7 @@ namespace Timelapse
             {
                 markersForCounter.RemoveMarker(e.Marker);
                 this.Speak(counter.Content); // Speak the current count
-                this.dataHandler.FileDatabase.MarkersUpdateMarkerRow(this.dataHandler.ImageCache.Current.ID, markersForCounter);
+                this.DataHandler.FileDatabase.MarkersUpdateMarkerRow(this.DataHandler.ImageCache.Current.ID, markersForCounter);
             }
             this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
         }
@@ -111,10 +111,10 @@ namespace Timelapse
             ++count;
 
             string counterContent = count.ToString();
-            this.dataHandler.IsProgrammaticControlUpdate = true;
-            this.dataHandler.FileDatabase.UpdateFile(this.dataHandler.ImageCache.Current.ID, counter.DataLabel, counterContent);
+            this.DataHandler.IsProgrammaticControlUpdate = true;
+            this.DataHandler.FileDatabase.UpdateFile(this.DataHandler.ImageCache.Current.ID, counter.DataLabel, counterContent);
             counter.SetContentAndTooltip(counterContent);
-            this.dataHandler.IsProgrammaticControlUpdate = false;
+            this.DataHandler.IsProgrammaticControlUpdate = false;
 
             // Find the MarkersForCounters associated with this particular control so we can add a marker to it
             MarkersForCounter markersForCounter = null;
@@ -126,11 +126,11 @@ namespace Timelapse
             {
                 // Check - If there is no row in the marker table with that ID, an empty row (with null values) will be added to the database
                 // and the Markers list held by the database will be updated accordingly
-                if (this.dataHandler.FileDatabase.MarkersTryInsertNewMarkerRow(this.dataHandler.ImageCache.Current.ID))
+                if (this.DataHandler.FileDatabase.MarkersTryInsertNewMarkerRow(this.DataHandler.ImageCache.Current.ID))
                 {
                     // We added a new marker row, so we need to update the various markers data structures to reflect the new marker
                     markersForCounter = new MarkersForCounter(counter.DataLabel);
-                    this.markersOnCurrentFile = this.dataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+                    this.markersOnCurrentFile = this.DataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.DataHandler.ImageCache.Current.ID);
                 }
             }
 
@@ -153,7 +153,7 @@ namespace Timelapse
             markersForCounter.AddMarker(marker);
 
             // update this counter's list of points in the database
-            this.dataHandler.FileDatabase.MarkersUpdateMarkerRow(this.dataHandler.ImageCache.Current.ID, markersForCounter);
+            this.DataHandler.FileDatabase.MarkersUpdateMarkerRow(this.DataHandler.ImageCache.Current.ID, markersForCounter);
             this.MarkableCanvas.Markers = this.GetDisplayMarkers();
             this.Speak(counter.Content + " " + counter.Label); // Speak the current count
         }

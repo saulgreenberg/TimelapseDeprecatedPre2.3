@@ -25,7 +25,7 @@ namespace Timelapse
                     break;
                 case FilePlayerSelectionEnum.Last:
                     this.FilePlayer_Stop();
-                    this.FileNavigatorSlider.Value = this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles;
+                    this.FileNavigatorSlider.Value = this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles;
                     break;
                 case FilePlayerSelectionEnum.Step:
                     this.FilePlayer_Stop();
@@ -77,7 +77,7 @@ namespace Timelapse
             this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction);
 
             // Stop the timer if the image reaches the beginning or end of the image set
-            if ((this.dataHandler.ImageCache.CurrentRow >= this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1) || (this.dataHandler.ImageCache.CurrentRow <= 0))
+            if ((this.DataHandler.ImageCache.CurrentRow >= this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1) || (this.DataHandler.ImageCache.CurrentRow <= 0))
             {
                 this.FilePlayer_Stop();
             }

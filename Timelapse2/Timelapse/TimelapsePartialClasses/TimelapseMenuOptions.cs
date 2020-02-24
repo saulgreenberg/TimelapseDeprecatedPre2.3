@@ -26,9 +26,9 @@ namespace Timelapse
         // Display Magnifier: toggle on / off
         private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)
         {
-            this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = !this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MarkableCanvas.MagnifyingGlassEnabled = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = !this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MarkableCanvas.MagnifyingGlassEnabled = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
         }
 
         // Increase magnification of the magnifying glass. 
@@ -71,7 +71,7 @@ namespace Timelapse
             }
             else
             {
-                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 
@@ -93,7 +93,7 @@ namespace Timelapse
             }
             else
             {
-                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 
@@ -123,10 +123,10 @@ namespace Timelapse
             // Reset how some controls appear depending upon the current options
             this.EnableOrDisableMenusAndControls();
 
-            if (this.dataHandler != null && this.dataHandler.FileDatabase != null)
+            if (this.DataHandler != null && this.DataHandler.FileDatabase != null)
             {
                 // If we aren't using detections, then hide their existence even if detection data may be present
-                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
             }
             else
             {
@@ -134,9 +134,9 @@ namespace Timelapse
             }
 
             // redisplay the file as the options may change how bounding boxes should be displayed
-            if (this.dataHandler != null)
+            if (this.DataHandler != null)
             {
-                this.FileShow(this.dataHandler.ImageCache.CurrentRow, true);
+                this.FileShow(this.DataHandler.ImageCache.CurrentRow, true);
             }
         }
 

@@ -37,7 +37,7 @@ namespace Timelapse
         private void FileShow(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
         {
             // If there is no image set open, or if there is no image to show, then show an image indicating the empty image set.
-            if (this.IsFileDatabaseAvailable() == false || this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1)
+            if (this.IsFileDatabaseAvailable() == false || this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1)
             {
                 this.MarkableCanvas.SetNewImage(Constant.ImageValues.NoFilesAvailable.Value, null);
                 this.markersOnCurrentFile = null;
@@ -45,9 +45,9 @@ namespace Timelapse
                 this.MarkableCanvas.SwitchToImageView();
 
                 // We could invalidate the cache here, but it will be reset anyways when images are loaded. 
-                if (this.dataHandler != null)
+                if (this.DataHandler != null)
                 {
-                    this.dataHandler.IsProgrammaticControlUpdate = false;
+                    this.DataHandler.IsProgrammaticControlUpdate = false;
                 }
 
                 // We also need to do a bit of cleanup of UI elements that make no sense when there are no images to show.
@@ -57,18 +57,18 @@ namespace Timelapse
 
             // If we are already showing the desired file, and if we are not forcing an update, 
             // then abort as there is no need to redisplay the image.
-            if (this.dataHandler.ImageCache.CurrentRow == fileIndex && forceUpdate == false)
+            if (this.DataHandler.ImageCache.CurrentRow == fileIndex && forceUpdate == false)
             {
                 return;
             }
 
             this.DataEntryControls.AutocompletionUpdateWithCurrentRowValues();
             // for the bitmap caching logic below to work this should be the only place where code in TimelapseWindow moves the image enumerator
-            if (this.dataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
+            if (this.DataHandler.ImageCache.TryMoveToFile(fileIndex, forceUpdate, out bool newFileToDisplay) == false)
             {
-                if (this.dataHandler != null)
+                if (this.DataHandler != null)
                 {
-                    this.dataHandler.IsProgrammaticControlUpdate = false;
+                    this.DataHandler.IsProgrammaticControlUpdate = false;
                 }
                 // We used to throw a new exception, but lets see what happens if we just return instead.
                 // i.e., lets just abort.
@@ -82,17 +82,17 @@ namespace Timelapse
             // SAULXX: Note that this used to be before the above if statement. Not sure if it would be a problem having it here (in case of failur)
             this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
             this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.dataHandler.FileDatabase.FileTable;
+            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.DataHandler.FileDatabase.FileTable;
 
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
             // the call to TryMoveToImage() above refreshes the data stored under this.dataHandler.ImageCache.Current.
-            this.dataHandler.IsProgrammaticControlUpdate = true;
+            this.DataHandler.IsProgrammaticControlUpdate = true;
             foreach (KeyValuePair<string, DataEntryControl> control in this.DataEntryControls.ControlsByDataLabel)
             {
                 // update value
-                string controlType = this.dataHandler.FileDatabase.FileTableColumnsByDataLabel[control.Key].ControlType;
-                control.Value.SetContentAndTooltip(this.dataHandler.ImageCache.Current.GetValueDisplayString(control.Value.DataLabel));
+                string controlType = this.DataHandler.FileDatabase.FileTableColumnsByDataLabel[control.Key].ControlType;
+                control.Value.SetContentAndTooltip(this.DataHandler.ImageCache.Current.GetValueDisplayString(control.Value.DataLabel));
 
                 // for note controls, update the autocomplete list if an edit occurred
                 if (controlType == Constant.Control.Note)
@@ -104,33 +104,33 @@ namespace Timelapse
                     }
                 }
             }
-            this.dataHandler.IsProgrammaticControlUpdate = false;
+            this.DataHandler.IsProgrammaticControlUpdate = false;
 
             // update the status bar to show which image we are on out of the total displayed under the current selection
             // the total is always refreshed as it's not known if FileShow() is being called due to a change in the selection
             this.StatusBar.SetCurrentFile(fileIndex + 1); // Add one because indexes are 0-based
-            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
+            this.StatusBar.SetCount(this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
             this.StatusBar.ClearMessage();
 
             this.FileNavigatorSlider.Value = fileIndex + 1;
 
             // Get the bounding boxes and markers (if any) for the current image;
-            BoundingBoxes bboxes = this.GetBoundingBoxesForCurrentFile(this.dataHandler.ImageCache.Current.ID);
-            this.markersOnCurrentFile = this.dataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.dataHandler.ImageCache.Current.ID);
+            BoundingBoxes bboxes = this.GetBoundingBoxesForCurrentFile(this.DataHandler.ImageCache.Current.ID);
+            this.markersOnCurrentFile = this.DataHandler.FileDatabase.MarkersGetMarkersForCurrentFile(this.DataHandler.ImageCache.Current.ID);
             List<Marker> displayMarkers = this.GetDisplayMarkers();
 
             // Display new file if the file changed
             // This avoids unnecessary image reloads and refreshes in cases where FileShow() is just being called to refresh controls
             if (newFileToDisplay)
             {
-                if (this.dataHandler.ImageCache.Current.IsVideo)
+                if (this.DataHandler.ImageCache.Current.IsVideo)
                 {
-                    this.MarkableCanvas.SetNewVideo(this.dataHandler.ImageCache.Current.GetFileInfo(this.dataHandler.FileDatabase.FolderPath), displayMarkers);
+                    this.MarkableCanvas.SetNewVideo(this.DataHandler.ImageCache.Current.GetFileInfo(this.DataHandler.FileDatabase.FolderPath), displayMarkers);
                     this.EnableImageManipulationMenus(false);
                 }
                 else
                 {
-                    this.MarkableCanvas.SetNewImage(this.dataHandler.ImageCache.GetCurrentImage(), displayMarkers);
+                    this.MarkableCanvas.SetNewImage(this.DataHandler.ImageCache.GetCurrentImage(), displayMarkers);
                     // Draw markers for this file
                     this.MarkableCanvas_UpdateMarkers();
                     this.MarkableCanvas.BoundingBoxes = bboxes;
@@ -139,7 +139,7 @@ namespace Timelapse
             }
             else if (this.IsDisplayingSingleImage())
             {
-                if (this.dataHandler.ImageCache.Current.IsVideo)
+                if (this.DataHandler.ImageCache.Current.IsVideo)
                 {
                     this.MarkableCanvas.SwitchToVideoView();
                 }
@@ -152,7 +152,7 @@ namespace Timelapse
             this.DataGridSelectionsTimer_Reset();
 
             // Set the file player status
-            if (this.dataHandler.ImageCache.CurrentRow == 0)
+            if (this.DataHandler.ImageCache.CurrentRow == 0)
             {
                 this.FilePlayer.BackwardsControlsEnabled(false);
             }
@@ -161,7 +161,7 @@ namespace Timelapse
                 this.FilePlayer.BackwardsControlsEnabled(true);
             }
 
-            if (this.dataHandler.ImageCache.CurrentRow == this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1)
+            if (this.DataHandler.ImageCache.CurrentRow == this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1)
             {
                 this.FilePlayer.ForwardsControlsEnabled(false);
             }
@@ -193,7 +193,7 @@ namespace Timelapse
             {
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
-                    Episodes.EpisodeGetEpisodesInRange(this.dataHandler.FileDatabase.FileTable, this.dataHandler.ImageCache.CurrentRow);
+                    Episodes.EpisodeGetEpisodesInRange(this.DataHandler.FileDatabase.FileTable, this.DataHandler.ImageCache.CurrentRow);
                 }
                 Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
                 if (episode.Item1 == int.MaxValue)
@@ -222,7 +222,7 @@ namespace Timelapse
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction)
         {
             // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
+            if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
             {
                 return false;
             }
@@ -235,7 +235,7 @@ namespace Timelapse
         {
             int desiredRow = 0;
             // Check to see if there are any images to show, 
-            if (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
+            if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles <= 0)
             {
                 return false;
             }
@@ -243,20 +243,20 @@ namespace Timelapse
             switch (direction)
             {
                 case DirectionEnum.Next:
-                    desiredRow = this.dataHandler.ImageCache.CurrentRow + increment;
+                    desiredRow = this.DataHandler.ImageCache.CurrentRow + increment;
                     break;
                 case DirectionEnum.Previous:
-                    desiredRow = this.dataHandler.ImageCache.CurrentRow - increment;
+                    desiredRow = this.DataHandler.ImageCache.CurrentRow - increment;
                     break;
                 case DirectionEnum.None:
-                    desiredRow = this.dataHandler.ImageCache.CurrentRow;
+                    desiredRow = this.DataHandler.ImageCache.CurrentRow;
                     break;
             }
 
             // Set the desiredRow to either the maximum or minimum row if it exceeds the bounds,
-            if (desiredRow >= this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles)
+            if (desiredRow >= this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles)
             {
-                desiredRow = this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1;
+                desiredRow = this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1;
             }
             else if (desiredRow < 0)
             {
@@ -264,7 +264,7 @@ namespace Timelapse
             }
 
             // If the desired row is the same as the current row, the image is already being displayed
-            if (desiredRow != this.dataHandler.ImageCache.CurrentRow || direction == DirectionEnum.None)
+            if (desiredRow != this.DataHandler.ImageCache.CurrentRow || direction == DirectionEnum.None)
             {
                 // Move to the desired row, forcing an update if there is no change in direction
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);

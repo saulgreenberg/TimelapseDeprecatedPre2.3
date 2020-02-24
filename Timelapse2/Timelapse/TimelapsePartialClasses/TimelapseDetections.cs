@@ -17,10 +17,10 @@ namespace Timelapse
             string detectionCategoryLabel;
             string classificationCategoryLabel;
 
-            if (this.dataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
+            if (this.DataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
             {
                 // DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
-                DataRow[] dataRows = this.dataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
+                DataRow[] dataRows = this.DataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
                 // foreach (DataRow detectionRow in dataTable.Rows)
                 foreach (DataRow detectionRow in dataRows)
                 {
@@ -37,9 +37,9 @@ namespace Timelapse
                     {
                         bboxes.MaxConfidence = confidence;
                     }
-                    detectionCategoryLabel = this.dataHandler.FileDatabase.GetDetectionLabelFromCategory((string)detectionRow[Constant.DetectionColumns.Category]);
+                    detectionCategoryLabel = this.DataHandler.FileDatabase.GetDetectionLabelFromCategory((string)detectionRow[Constant.DetectionColumns.Category]);
 
-                    DataRow[] classificationDataTableRows = this.dataHandler.FileDatabase.GetClassificationsFromDetectionID((long)detectionRow[Constant.DetectionColumns.DetectionID]);
+                    DataRow[] classificationDataTableRows = this.DataHandler.FileDatabase.GetClassificationsFromDetectionID((long)detectionRow[Constant.DetectionColumns.DetectionID]);
                     List<KeyValuePair<string, string>> classifications = new List<KeyValuePair<string, string>>();
 
                     double conf = 0;
@@ -49,7 +49,7 @@ namespace Timelapse
                         conf = (double)classificationRow[Constant.DetectionColumns.Conf];
                         if (conf > 0.1)
                         {
-                            classificationCategoryLabel = this.dataHandler.FileDatabase.GetClassificationLabelFromCategory((string)classificationRow[Constant.ClassificationColumns.Category]);
+                            classificationCategoryLabel = this.DataHandler.FileDatabase.GetClassificationLabelFromCategory((string)classificationRow[Constant.ClassificationColumns.Category]);
                             classifications.Add(new KeyValuePair<string, string>(classificationCategoryLabel, conf.ToString()));
                         }
                     }

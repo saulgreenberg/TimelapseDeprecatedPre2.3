@@ -10,7 +10,7 @@ namespace Timelapse
         private void EnableOrDisableMenusAndControls()
         {
             bool imageSetAvailable = this.IsFileDatabaseAvailable();
-            bool filesSelected = (imageSetAvailable && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
+            bool filesSelected = (imageSetAvailable && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
@@ -43,7 +43,7 @@ namespace Timelapse
             this.MenuItemEpisodeOptions.IsEnabled = filesSelected;
             this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemDialogsOnOrOff.IsEnabled = filesSelected;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = true;
 
@@ -62,7 +62,7 @@ namespace Timelapse
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.MarkableCanvas.IsEnabled = filesSelected;
-            this.MarkableCanvas.MagnifyingGlassEnabled = filesSelected && this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MarkableCanvas.MagnifyingGlassEnabled = filesSelected && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
 
             if (filesSelected == false)
             {

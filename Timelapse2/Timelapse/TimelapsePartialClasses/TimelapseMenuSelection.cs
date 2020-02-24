@@ -20,7 +20,7 @@ namespace Timelapse
             this.MenuItemSelectMissingFiles.IsEnabled = true;
 
             // Enable menu if there are any files marked for deletion
-            bool exists = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
+            bool exists = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
             this.MenuItemSelectFilesMarkedForDeletion.Header = "Files marked for d_eletion";
             if (!exists)
             {
@@ -29,7 +29,7 @@ namespace Timelapse
             this.MenuItemSelectFilesMarkedForDeletion.IsEnabled = exists;
 
             // Put a checkmark next to the menu item that matches the stored selection criteria
-            FileSelectionEnum selection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            FileSelectionEnum selection = this.DataHandler.FileDatabase.ImageSet.FileSelection;
 
             this.MenuItemSelectAllFiles.IsChecked = selection == FileSelectionEnum.All;
 
@@ -44,8 +44,8 @@ namespace Timelapse
 
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            bool existsDark = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Dark);
-            bool existsOk = this.dataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Ok);
+            bool existsDark = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Dark);
+            bool existsOk = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Ok);
 
             // Enable only the menu items that can select at least one potential image 
             this.MenuItemSelectOkFiles.Header = "_Ok files";
@@ -86,7 +86,7 @@ namespace Timelapse
             int i = 1;
             // PERFORMANCE. THIS introduces a delay when there are a large number of files. It is invoked when the user loads images for the first time. 
             // PROGRESSBAR - at the very least, show a progress bar if needed.
-            List<object> folderList = this.dataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            List<object> folderList = this.DataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
                 if (string.IsNullOrEmpty(header))
@@ -117,13 +117,13 @@ namespace Timelapse
             // If its select all folders, then just set the selection to all
             if (mi == this.MenuItemSelectAllFolders)
             {
-                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
                 return;
             }
 
             // Set the search terms to the designated relative path
-            this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
-            int count = this.dataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
+            this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
+            int count = this.DataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
             if (count <= 0)
             {
                 Timelapse.Dialog.MessageBox messageBox = new Timelapse.Dialog.MessageBox("No files in this folder", Application.Current.MainWindow);
@@ -135,7 +135,7 @@ namespace Timelapse
             this.MenuItemSelectByFolder_ClearAllCheckmarks();
             this.MenuItemSelectByFolder.IsChecked = true;
             mi.IsChecked = true;
-            await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+            await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
         }
 
         private void MenuItemSelectByFolder_ClearAllCheckmarks()
@@ -186,13 +186,13 @@ namespace Timelapse
             this.MenuItemSelectByFolder_ClearAllCheckmarks();
 
             // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            if (this.dataHandler.ImageCache.Current == null)
+            if (this.DataHandler.ImageCache.Current == null)
             {
                 await this.FilesSelectAndShowAsync(selection).ConfigureAwait(true);
             }
             else
             {
-                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
             }
         }
 
@@ -200,15 +200,15 @@ namespace Timelapse
         private async void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
         {
             // the first time the custom selection dialog is launched update the DateTime and UtcOffset search terms to the time of the current image
-            SearchTerm firstDateTimeSearchTerm = this.dataHandler.FileDatabase.CustomSelection.SearchTerms.FirstOrDefault(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
+            SearchTerm firstDateTimeSearchTerm = this.DataHandler.FileDatabase.CustomSelection.SearchTerms.FirstOrDefault(searchTerm => searchTerm.DataLabel == Constant.DatabaseColumn.DateTime);
             if (firstDateTimeSearchTerm.GetDateTime() == Constant.ControlDefault.DateTimeValue.DateTime)
             {
-                DateTimeOffset defaultDate = this.dataHandler.ImageCache.Current.DateTimeIncorporatingOffset;
-                this.dataHandler.FileDatabase.CustomSelection.SetDateTimesAndOffset(defaultDate);
+                DateTimeOffset defaultDate = this.DataHandler.ImageCache.Current.DateTimeIncorporatingOffset;
+                this.DataHandler.FileDatabase.CustomSelection.SetDateTimesAndOffset(defaultDate);
             }
 
             // show the dialog and process the resuls
-            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.dataHandler.FileDatabase, this.DataEntryControls, this, this.IsUTCOffsetControlHidden(), this.dataHandler.FileDatabase.CustomSelection.DetectionSelections)
+            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.DataHandler.FileDatabase, this.DataEntryControls, this, this.IsUTCOffsetControlHidden(), this.DataHandler.FileDatabase.CustomSelection.DetectionSelections)
             {
                 Owner = this
             };
@@ -216,7 +216,7 @@ namespace Timelapse
             // Set the selection to show all images and a valid image
             if (changeToCustomSelection == true)
             {
-                await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom).ConfigureAwait(true);
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Custom).ConfigureAwait(true);
                 if (this.MenuItemSelectCustomSelection.IsChecked || this.MenuItemSelectCustomSelection.IsChecked)
                 {
                     this.MenuItemSelectByFolder_ClearAllCheckmarks();
@@ -239,7 +239,7 @@ namespace Timelapse
         private async void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
         {
             // Reselect the images, which re-sorts them to the current sort criteria. 
-            await this.FilesSelectAndShowAsync(this.dataHandler.ImageCache.Current.ID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
 
 

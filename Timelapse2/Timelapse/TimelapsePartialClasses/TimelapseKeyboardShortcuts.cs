@@ -13,9 +13,9 @@ namespace Timelapse
         // navigate left/right image or up/down to look at differenced image
         private void Window_PreviewKeyDown(object sender, KeyEventArgs currentKey)
         {
-            if (this.dataHandler == null ||
-                this.dataHandler.FileDatabase == null ||
-                this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
+            if (this.DataHandler == null ||
+                this.DataHandler.FileDatabase == null ||
+                this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
             {
                 // PERHAPS BUG - this only works when the datagrid pane is in a tab, and when files are loaded.
                 // Maybe we need to change the enable state?

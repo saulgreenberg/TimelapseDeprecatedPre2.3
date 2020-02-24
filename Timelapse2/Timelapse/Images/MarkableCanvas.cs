@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Timelapse.Controls;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
 using Timelapse.Util;
@@ -33,6 +35,8 @@ namespace Timelapse.Images
 
         // the canvas to magnify contains both an image and markers so the magnifying glass view matches the display image
         private readonly Canvas canvasToMagnify;
+
+        private EpisodePopup episodePopup;
 
         // render transforms
         private readonly ScaleTransform imageToDisplayScale;
@@ -121,7 +125,7 @@ namespace Timelapse.Images
             }
         }
 
-        // BOunding boxes for detection. Whenever one is set, it is redrawn
+        // Bounding boxes for detection. Whenever one is set, it is redrawn
         public BoundingBoxes BoundingBoxes
         {
             get
@@ -579,7 +583,17 @@ namespace Timelapse.Images
                     break;
                 case Key.H:
                     // Will hide detection boxes, if any
-                    this.RedrawBoundingBoxes();
+                    if (!e.IsRepeat)
+                    {
+                        this.RedrawBoundingBoxes();
+                    }
+                    break;
+                case Key.P:
+                    // Show previous/next image in epesode in a popup, regardless of the current selection
+                    if (!this.IsClickableImagesGridVisible && !e.IsRepeat)
+                    {
+                        this.EpisodePopupIsVisible(true);
+                    }
                     break;
                 default:
                     return;
@@ -594,7 +608,17 @@ namespace Timelapse.Images
             {
                 case Key.H:
                     // Will show detection boxes, if any
-                    this.RedrawBoundingBoxes();
+                    if (!e.IsRepeat)
+                    {
+                        this.RedrawBoundingBoxes();
+                    }
+                    break;
+                case Key.P:
+                    // Show previous/next image regardless of selection
+                    if (!e.IsRepeat)
+                    {
+                        this.EpisodePopupIsVisible(false);
+                    }
                     break;
                 default:
                     return;
@@ -1300,8 +1324,16 @@ namespace Timelapse.Images
             this.timerSlider.Stop();
             this.RefreshClickableImagesGrid(this.ClickableImagesState);
         }
-
         #endregion
+
+        private void EpisodePopupIsVisible(bool isVisible)
+        {
+            if (this.episodePopup == null)
+            {
+                episodePopup = new EpisodePopup(this);
+            }
+            episodePopup.Show(isVisible, 4);
+        }
 
         #region Window shuffling
         public void SwitchToImageView()

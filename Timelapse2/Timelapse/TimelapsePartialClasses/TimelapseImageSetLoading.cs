@@ -168,12 +168,12 @@ namespace Timelapse
             this.CheckAndCorrectForMissingFolders(fileDatabase);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
-            this.dataHandler = new DataEntryHandler(fileDatabase);
-            this.DataEntryControls.CreateControls(fileDatabase, this.dataHandler);
+            this.DataHandler = new DataEntryHandler(fileDatabase);
+            this.DataEntryControls.CreateControls(fileDatabase, this.DataHandler);
             this.SetUserInterfaceCallbacks();
             this.MarkableCanvas.DataEntryControls = this.DataEntryControls; // so the markable canvas can access the controls
-            this.dataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
-            this.dataHandler.MarkableCanvas = this.MarkableCanvas;
+            this.DataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
+            this.DataHandler.MarkableCanvas = this.MarkableCanvas;
 
             this.Title = Constant.Defaults.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
             this.State.MostRecentImageSets.SetMostRecent(templateDatabasePath);
@@ -182,10 +182,10 @@ namespace Timelapse
             // Record the version number of the currently executing version of Timelapse only if its greater than the one already stored in the ImageSet Table.
             // This will indicate the latest timelapse version that is compatable with the database structure. 
             string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
-            if (VersionClient.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.dataHandler.FileDatabase.ImageSet.VersionCompatability))
+            if (VersionClient.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.DataHandler.FileDatabase.ImageSet.VersionCompatability))
             {
-                this.dataHandler.FileDatabase.ImageSet.VersionCompatability = currentVersionNumberAsString;
-                this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
+                this.DataHandler.FileDatabase.ImageSet.VersionCompatability = currentVersionNumberAsString;
+                this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             }
 
             // If this is a new image database, try to load images (if any) from the folder...  
@@ -360,7 +360,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.dataHandler, this.State);
+                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.DataHandler, this.State);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 
@@ -430,8 +430,8 @@ namespace Timelapse
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
-                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.dataHandler.FileDatabase);
-                        await this.FilesSelectAndShowAsync(this.dataHandler.FileDatabase.ImageSet.MostRecentFileID, this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
+                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
+                        await this.FilesSelectAndShowAsync(this.DataHandler.FileDatabase.ImageSet.MostRecentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
                     }
                 }
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator
@@ -541,30 +541,30 @@ namespace Timelapse
             this.FilePlayer.Visibility = Visibility.Visible;
 
             // Set whether detections actually exist at this point.
-            GlobalReferences.DetectionsExists = this.State.UseDetections ? this.dataHandler.FileDatabase.DetectionsExists() : false;
+            GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
 
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
-            string xml = this.dataHandler.FileDatabase.ImageSet.QuickPasteXML;
-            this.quickPasteEntries = QuickPasteOperations.QuickPasteEntriesFromXML(this.dataHandler.FileDatabase, xml);
+            string xml = this.DataHandler.FileDatabase.ImageSet.QuickPasteXML;
+            this.quickPasteEntries = QuickPasteOperations.QuickPasteEntriesFromXML(this.DataHandler.FileDatabase, xml);
 
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
-            long mostRecentFileID = this.dataHandler.FileDatabase.ImageSet.MostRecentFileID;
-            FileSelectionEnum fileSelection = this.dataHandler.FileDatabase.ImageSet.FileSelection;
+            long mostRecentFileID = this.DataHandler.FileDatabase.ImageSet.MostRecentFileID;
+            FileSelectionEnum fileSelection = this.DataHandler.FileDatabase.ImageSet.FileSelection;
             if (fileSelection == FileSelectionEnum.Folders)
             {
                 // Compose a custom search term for the relative path
-                this.dataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.dataHandler.FileDatabase.ImageSet.SelectedFolder);
+                this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.DataHandler.FileDatabase.ImageSet.SelectedFolder);
             }
-            if (filesJustAdded && (this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.dataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
+            if (filesJustAdded && (this.DataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.DataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {
                 // if this is completion of an add to an existing image set stay on the image, ideally, shown before the import
-                if (this.dataHandler.ImageCache.Current != null)
+                if (this.DataHandler.ImageCache.Current != null)
                 {
-                    mostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                    mostRecentFileID = this.DataHandler.ImageCache.Current.ID;
                 }
                 // This is heavier weight than desirable, but it's a one off.
-                this.dataHandler.ImageCache.TryInvalidate(mostRecentFileID);
+                this.DataHandler.ImageCache.TryInvalidate(mostRecentFileID);
             }
 
             // PERFORMANCE - Initial but necessary Selection done in OnFolderLoadingComplete invoking this.FilesSelectAndShow to display selected image set 

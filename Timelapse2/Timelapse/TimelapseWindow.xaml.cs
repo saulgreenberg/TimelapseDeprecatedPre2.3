@@ -29,7 +29,7 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         #region Variables and Properties
-        private DataEntryHandler dataHandler;
+        public DataEntryHandler DataHandler { get; set; }
         private bool disposed;
         private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
@@ -55,14 +55,14 @@ namespace Timelapse
         {
             get
             {
-                if (this.dataHandler == null)
+                if (this.DataHandler == null)
                 {
                     System.Diagnostics.Debug.Print("Weird error in FolderPath - datahandler is null");
                     return String.Empty;
                 }
                 else
                 {
-                    return this.dataHandler.FileDatabase.FolderPath;
+                    return this.DataHandler.FileDatabase.FolderPath;
                 }
             }
 
@@ -187,41 +187,41 @@ namespace Timelapse
         {
             this.FilePlayer_Stop();
 
-            if ((this.dataHandler != null) &&
-                (this.dataHandler.FileDatabase != null) &&
-                (this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0))
+            if ((this.DataHandler != null) &&
+                (this.DataHandler.FileDatabase != null) &&
+                (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0))
             {
                 // save image set properties to the database
-                if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
+                if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
                 {
                     // don't save custom selections, revert to All 
-                    this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                 }
-                else if (this.dataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
+                else if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
                 {
                     // If the last selection was a non-empty folder, save it as the folder selection
-                    if (String.IsNullOrEmpty(this.dataHandler.FileDatabase.ImageSet.SelectedFolder))
+                    if (String.IsNullOrEmpty(this.DataHandler.FileDatabase.ImageSet.SelectedFolder))
                     {
-                        this.dataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
                     }
                 }
 
                 // sync image set properties
                 if (this.MarkableCanvas != null)
                 {
-                    this.dataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = this.MarkableCanvas.MagnifyingGlassEnabled;
+                    this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = this.MarkableCanvas.MagnifyingGlassEnabled;
                 }
 
                 // Persist the current ID in the database image set, so we can go back to that image when restarting timelapse
-                if (this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
+                if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
                 {
-                    this.dataHandler.FileDatabase.ImageSet.MostRecentFileID = this.dataHandler.ImageCache.Current.ID;
+                    this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
                 }
 
-                this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
+                this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
 
                 // ensure custom filter operator is synchronized in state for writing to user's registry
-                this.State.CustomSelectionTermCombiningOperator = this.dataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
+                this.State.CustomSelectionTermCombiningOperator = this.DataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
 
                 // Check if we should delete the DeletedFiles folder, and if so do it.
                 // Note that we can only do this if we know where the DeletedFolder is,
@@ -280,7 +280,7 @@ namespace Timelapse
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
         {
-            string deletedFolderPath = Path.Combine(this.dataHandler.FileDatabase.FolderPath, Constant.File.DeletedFilesFolder);
+            string deletedFolderPath = Path.Combine(this.DataHandler.FileDatabase.FolderPath, Constant.File.DeletedFilesFolder);
             int howManyDeletedFiles = Directory.Exists(deletedFolderPath) ? Directory.GetFiles(deletedFolderPath).Length : 0;
 
             // If there are no files, there is nothing to delete
@@ -323,9 +323,9 @@ namespace Timelapse
 
             if (disposing)
             {
-                if (this.dataHandler != null)
+                if (this.DataHandler != null)
                 {
-                    this.dataHandler.Dispose();
+                    this.DataHandler.Dispose();
                 }
                 if (this.speechSynthesizer != null)
                 {
@@ -361,7 +361,7 @@ namespace Timelapse
             DataEntryNote time = null;
             foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
             {
-                string controlType = this.dataHandler.FileDatabase.FileTableColumnsByDataLabel[pair.Key].ControlType;
+                string controlType = this.DataHandler.FileDatabase.FileTableColumnsByDataLabel[pair.Key].ControlType;
                 switch (controlType)
                 {
                     case Constant.Control.Counter:
@@ -614,7 +614,7 @@ namespace Timelapse
         public void DataGridPane_IsActiveChanged(bool forceUpdate)
         {
             // Don't update anything if we don't have any files to display
-            if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
+            if (this.DataHandler == null || this.DataHandler.FileDatabase == null)
             {
                 this.DataGrid.ItemsSource = null;
                 return;
@@ -622,7 +622,7 @@ namespace Timelapse
 
             if (forceUpdate || this.DataGridPane.IsActive || this.DataGridPane.IsFloating || this.DataGridPane.IsVisible)
             {
-                this.dataHandler.FileDatabase.BindToDataGrid(this.DataGrid, null);
+                this.DataHandler.FileDatabase.BindToDataGrid(this.DataGrid, null);
             }
             this.DataGridSelectionsTimer_Reset();
         }
@@ -689,7 +689,7 @@ namespace Timelapse
 
             // True only if we are displaying at least one file in an image set
             return this.IsFileDatabaseAvailable() &&
-                   this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0;
+                   this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0;
         }
 
         private bool IsDisplayingMultipleImagesInOverview()
@@ -717,9 +717,9 @@ namespace Timelapse
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
 
-            if (this.dataHandler != null)
+            if (this.DataHandler != null)
             {
-                this.DisplayEpisodeTextIfWarranted(this.dataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 
@@ -729,7 +729,7 @@ namespace Timelapse
             if (e.ImageRow != null)
             {
                 // Switch to either the video or image view as needed
-                if (this.dataHandler.ImageCache.Current.IsVideo && this.dataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
+                if (this.DataHandler.ImageCache.Current.IsVideo && this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
                 {
                     this.MarkableCanvas.SwitchToVideoView();
                 }
@@ -738,7 +738,7 @@ namespace Timelapse
                     this.MarkableCanvas.SwitchToImageView();
                 }
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-                this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
+                this.FileShow(this.DataHandler.FileDatabase.GetFileOrNextFileIndex(e.ImageRow.ID));
                 this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             }
         }
@@ -756,7 +756,7 @@ namespace Timelapse
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
                     DataRowView rowView = row.Item as DataRowView;
                     long fileID = (long)rowView.Row.ItemArray[0];
-                    this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
+                    this.FileShow(this.DataHandler.FileDatabase.GetFileOrNextFileIndex(fileID));
                     this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
 
                     // The datagrid isn't floating: Switch from the dataGridPane view to the ImagesetPane view
@@ -784,15 +784,15 @@ namespace Timelapse
             if (this.IsDisplayingSingleImage())
             {
                 // Only the current row is  selected in the single images view, so just use that.
-                int currentRowIndex = this.dataHandler.ImageCache.CurrentRow;
-                IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
+                int currentRowIndex = this.DataHandler.ImageCache.CurrentRow;
+                IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
             }
             else
             {
                 // multiple selections are possible in the 
                 foreach (int rowIndex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
                 {
-                    IdRowIndex.Add(new Tuple<long, int>(this.dataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
+                    IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
                 }
             }
             if (this.DataGrid.Items.Count > 0)
@@ -849,8 +849,8 @@ namespace Timelapse
         // Returns whether there is an open file database
         private bool IsFileDatabaseAvailable()
         {
-            if (this.dataHandler == null ||
-                this.dataHandler.FileDatabase == null)
+            if (this.DataHandler == null ||
+                this.DataHandler.FileDatabase == null)
             {
                 return false;
             }

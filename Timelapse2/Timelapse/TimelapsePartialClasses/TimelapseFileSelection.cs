@@ -15,19 +15,19 @@ namespace Timelapse
         // FilesSelectAndShow: various forms
         private async Task FilesSelectAndShowAsync()
         {
-            if (this.dataHandler == null || this.dataHandler.FileDatabase == null)
+            if (this.DataHandler == null || this.DataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow: Expected a file database to be available.");
             }
-            await this.FilesSelectAndShowAsync(this.dataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+            await this.FilesSelectAndShowAsync(this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
 
         private async Task FilesSelectAndShowAsync(FileSelectionEnum selection)
         {
             long fileID = Constant.DatabaseValues.DefaultFileID;
-            if (this.dataHandler != null && this.dataHandler.ImageCache != null && this.dataHandler.ImageCache.Current != null)
+            if (this.DataHandler != null && this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
             {
-                fileID = this.dataHandler.ImageCache.Current.ID;
+                fileID = this.DataHandler.ImageCache.Current.ID;
             }
             await this.FilesSelectAndShowAsync(fileID, selection).ConfigureAwait(true);
         }
@@ -38,11 +38,11 @@ namespace Timelapse
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
-            if (this.dataHandler == null)
+            if (this.DataHandler == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?"); ;
             }
-            if (this.dataHandler.FileDatabase == null)
+            if (this.DataHandler.FileDatabase == null)
             {
                 TraceDebug.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
             }
@@ -56,7 +56,7 @@ namespace Timelapse
             {
                 // PERFORMANCE this can be slow if there are many files, as it checks every single file in the current database selection to see if it exists
                 // However, it is not a mainstream operation so can be considered a lower priority place for optimization
-                bool anyFilesMissing = this.dataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
+                bool anyFilesMissing = this.DataHandler.FileDatabase.SelectMissingFilesFromCurrentlySelectedFiles();
                 if (anyFilesMissing == false)
                 {
                     // No files were missing. Inform the user, and don't change anything.
@@ -74,19 +74,19 @@ namespace Timelapse
             else
             {
                 // If its a folder selection, record it so we can save it later in the image set table 
-                this.dataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
-                    ? this.dataHandler.FileDatabase.GetSelectedFolder()
+                this.DataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
+                    ? this.DataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
                 this.EnableBusyCancelIndicatorForSelection(true);
 
-                await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
+                await this.DataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
                 this.EnableBusyCancelIndicatorForSelection(false);
-                this.dataHandler.FileDatabase.BindToDataGrid();
+                this.DataHandler.FileDatabase.BindToDataGrid();
             }
             Mouse.OverrideCursor = null;
 
-            if ((this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1) && (selection != FileSelectionEnum.All))
+            if ((this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1) && (selection != FileSelectionEnum.All))
             {
                 // These cases are reached when 
                 // 1) datetime modifications result in no files matching a custom selection
@@ -136,10 +136,10 @@ namespace Timelapse
 
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
                 this.EnableBusyCancelIndicatorForSelection(true);
-                await this.dataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
+                await this.DataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
                 this.EnableBusyCancelIndicatorForSelection(false);
 
-                this.dataHandler.FileDatabase.BindToDataGrid();
+                this.DataHandler.FileDatabase.BindToDataGrid();
             }
 
             // Change the selection to reflect what the user selected. Update the menu state accordingly
@@ -182,7 +182,7 @@ namespace Timelapse
             // FileShow() handles empty image sets, so those don't need to be checked for here.
             // After a selection changes, set the slider to represent the index and the count of the current selection
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(false);
-            this.FileNavigatorSlider.Maximum = this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles;  // Reset the slider to the size of images in this set
+            this.FileNavigatorSlider.Maximum = this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles;  // Reset the slider to the size of images in this set
             if (this.FileNavigatorSlider.Maximum <= 50)
             {
                 this.FileNavigatorSlider.IsSnapToTickEnabled = true;
@@ -200,16 +200,16 @@ namespace Timelapse
                 this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
             }
 
-            this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.dataHandler.FileDatabase);
+            this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.DataHandler.FileDatabase);
 
             // Always force an update after a selection
-            this.FileShow(this.dataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
+            this.FileShow(this.DataHandler.FileDatabase.GetFileOrNextFileIndex(imageID), true);
 
             // Update the status bar accordingly
-            this.StatusBar.SetCurrentFile(this.dataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list
-            this.StatusBar.SetCount(this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
+            this.StatusBar.SetCurrentFile(this.DataHandler.ImageCache.CurrentRow + 1);  // We add 1 because its a 0-based list
+            this.StatusBar.SetCount(this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
-            this.dataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
+            this.DataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
         }
     }
 }

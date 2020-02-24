@@ -48,7 +48,7 @@ namespace Timelapse
             }
 
             // Finally, show the window if it makes sense to do so
-            if (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
+            if (this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
             {
                 this.quickPasteWindow.Show();
             }
@@ -115,7 +115,7 @@ namespace Timelapse
         private void QuickPasteEntryNew()
         {
             string title = "QuickPaste #" + (this.quickPasteEntries.Count + 1).ToString();
-            QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.dataHandler.FileDatabase, this.dataHandler.ImageCache.CurrentRow, title);
+            QuickPasteEntry quickPasteEntry = QuickPasteOperations.TryGetQuickPasteItemFromDataFields(this.DataHandler.FileDatabase, this.DataHandler.ImageCache.CurrentRow, title);
             if (quickPasteEntry == null)
             {
                 return;
@@ -126,7 +126,7 @@ namespace Timelapse
             {
                 this.quickPasteWindow.Topmost = false;
             }
-            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.dataHandler.FileDatabase, this.DataEntryControls)
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.DataHandler.FileDatabase, this.DataEntryControls)
             {
                 Owner = this
             };
@@ -170,7 +170,7 @@ namespace Timelapse
                 this.quickPasteWindow.Topmost = false;
             }
 
-            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.dataHandler.FileDatabase, this.DataEntryControls)
+            QuickPasteEditor quickPasteEditor = new QuickPasteEditor(quickPasteEntry, this.DataHandler.FileDatabase, this.DataEntryControls)
             {
                 Owner = this
             };
@@ -191,8 +191,8 @@ namespace Timelapse
         private void QuickPasteDataControlsHighlight(QuickPasteEntry quickPasteEntry)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
-            int row = this.dataHandler.ImageCache.CurrentRow;
-            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            int row = this.DataHandler.ImageCache.CurrentRow;
+            if (!this.DataHandler.FileDatabase.IsFileRowInRange(row))
             {
                 return; // This shouldn't happen, but just in case...
             }
@@ -220,8 +220,8 @@ namespace Timelapse
         private void QuickPasteDataControlsUnHighlight(QuickPasteEntry quickPasteEntry)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
-            int row = this.dataHandler.ImageCache.CurrentRow;
-            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            int row = this.DataHandler.ImageCache.CurrentRow;
+            if (!this.DataHandler.FileDatabase.IsFileRowInRange(row))
             {
                 return; // This shouldn't happen, but just in case...
             }
@@ -252,8 +252,8 @@ namespace Timelapse
         private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnum flash)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
-            int row = this.dataHandler.ImageCache.CurrentRow;
-            if (!this.dataHandler.FileDatabase.IsFileRowInRange(row))
+            int row = this.DataHandler.ImageCache.CurrentRow;
+            if (!this.DataHandler.FileDatabase.IsFileRowInRange(row))
             {
                 return; // This shouldn't happen, but just in case...
             }
@@ -298,8 +298,8 @@ namespace Timelapse
         // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
         private void QuickPasteRefreshWindowAndXML()
         {
-            this.dataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
-            this.dataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
+            this.DataHandler.FileDatabase.ImageSet.QuickPasteXML = QuickPasteOperations.QuickPasteEntriesToXML(this.quickPasteEntries);
+            this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             if (this.quickPasteWindow != null)
             {
                 this.quickPasteWindow.Refresh(this.quickPasteEntries);

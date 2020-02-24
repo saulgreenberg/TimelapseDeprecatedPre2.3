@@ -47,7 +47,7 @@ namespace Timelapse
             {
                 this.FileShow(this.FileNavigatorSlider);
                 this.State.MostRecentDragEvent = utcNow;
-                this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.File;
+                this.FileNavigatorSlider.AutoToolTipContent = this.DataHandler.ImageCache.Current.File;
             }
         }
 
@@ -70,7 +70,7 @@ namespace Timelapse
         {
             this.timerFileNavigator.Stop();
             this.FileShow(this.FileNavigatorSlider);
-            this.FileNavigatorSlider.AutoToolTipContent = this.dataHandler.ImageCache.Current.File;
+            this.FileNavigatorSlider.AutoToolTipContent = this.DataHandler.ImageCache.Current.File;
         }
 
         private void FileNavigatorSlider_EnableOrDisableValueChangedCallback(bool enableCallback)
@@ -88,12 +88,12 @@ namespace Timelapse
         // Reset the slider: usually done to disable the FileNavigator when there is no image set to display.
         private void FileNavigatorSliderReset()
         {
-            bool filesSelected = (this.IsFileDatabaseAvailable() && this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
+            bool filesSelected = (this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
 
             this.timerFileNavigator.Stop();
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(filesSelected);
             this.FileNavigatorSlider.IsEnabled = filesSelected;
-            this.FileNavigatorSlider.Maximum = filesSelected ? this.dataHandler.FileDatabase.CountAllCurrentlySelectedFiles : 0;
+            this.FileNavigatorSlider.Maximum = filesSelected ? this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles : 0;
         }
     }
 }
