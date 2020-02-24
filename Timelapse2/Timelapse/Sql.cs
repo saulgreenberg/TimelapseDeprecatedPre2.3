@@ -46,6 +46,8 @@
         public const string LeftJoin = " LEFT JOIN ";
         public const string LessThanEqual = " <= ";
         public const string LessThan = " < ";
+        public const string Limit = " LIMIT ";
+        public const string LimitOne = Limit + " 1 ";
         public const string Max = " MAX ";
         public const string Name = " NAME ";
         public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
@@ -85,6 +87,7 @@
         public const string Where = " WHERE ";
         public const string WhereIDIn = Where + "Id IN ";
         public const string WhereIDNotIn = Where + " Id NOT IN ";
+        public const string WhereIDEquals = Where + " Id " + Equal;
         public const string Then = " THEN ";
     }
 }

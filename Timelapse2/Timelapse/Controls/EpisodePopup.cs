@@ -14,11 +14,19 @@ using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
+    // Create a popup that displays images surrounding the current image as long as they belong in the current episode.
+    // It alternates between the left / right of the current image (shown as a '^' marker) but stops on the side where the
+    // episode limit is reached, then filling the other side. If there are no images in the episode, only the '^' marker will be displayed.
+    // Importantly, the images on either side are chosen from the order that images were loaded, thus ignoring select and sort criteria.
+    // It is sensitive to:
+    // - whether images were intially loaded in time-order - if not, then the left/right images may not be the ones in the episode
+    // - whether images to the left/right were deleted, as the subsequent images may have a time difference greater than the threshold.
     public class EpisodePopup : Popup
     {
         private readonly TimelapseWindow timelapseWindow = GlobalReferences.MainWindow;
         private readonly MarkableCanvas markableCanvas;
         private readonly FileDatabase fileDatabase;
+        private const double ObjectHeight = 256;
         public EpisodePopup(MarkableCanvas markableCanvas)
         {
             this.markableCanvas = markableCanvas;
@@ -54,7 +62,7 @@ namespace Timelapse.Controls
             double height = 0;
 
             // Add a visual marker to show the position of the label in the image list
-            Label label = EpisodePopup.CreateLabel("^");
+            Label label = EpisodePopup.CreateLabel("^", ObjectHeight);
             width += label.Width;
             height = Math.Max(height, label.Height);
             sp.Children.Add(label);
@@ -78,7 +86,7 @@ namespace Timelapse.Controls
 
                 if (goBackwards)
                 {
-                    fileTable = this.fileDatabase.SelectFilesInDataTableById(backwardsID.ToString());
+                    fileTable = this.fileDatabase.SelectFileInDataTableById(backwardsID.ToString());
                     if (fileTable.Any())
                     {
                         if ((lastBackwardsDateTime - fileTable[0].DateTime).Duration() < timeThreshold)
@@ -109,7 +117,7 @@ namespace Timelapse.Controls
 
                 if (goForwards)
                 {
-                    fileTable = this.fileDatabase.SelectFilesInDataTableById(forwardsID.ToString());
+                    fileTable = this.fileDatabase.SelectFileInDataTableById(forwardsID.ToString());
                     if (fileTable.Any())
                     {
                         if ((lastForwardsDateTime - fileTable[0].DateTime).Duration() < timeThreshold)
@@ -150,7 +158,7 @@ namespace Timelapse.Controls
         {
             Image image = new Image
             {
-                Source = imageRow.GetBitmapFromFile(GlobalReferences.MainWindow.FolderPath, 256, ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing)
+                Source = imageRow.GetBitmapFromFile(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(ObjectHeight), ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing)
             };
             if (isCorruptOrMissing)
             {
@@ -160,7 +168,7 @@ namespace Timelapse.Controls
             return image;
         }
 
-        private static Label CreateLabel(string content)
+        private static Label CreateLabel(string content, double height)
         {
             return new Label
             {
@@ -169,7 +177,7 @@ namespace Timelapse.Controls
                 FontWeight = FontWeights.Bold,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Bottom,
-                Height = 256,
+                Height = height,
                 Width = 40,
                 Foreground = Brushes.Black,
                 Background = Brushes.LightGray

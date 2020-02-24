@@ -979,7 +979,7 @@ namespace Timelapse.Database
                 // No missing files
                 return false;
             }
-            this.FileTable = this.SelectFilesInDataTableById(commaSeparatedListOfIDs);
+            this.FileTable = this.SelectFilesInDataTableByCommaSeparatedIds(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
             return true;
         }
@@ -995,12 +995,21 @@ namespace Timelapse.Database
 
         // Select files with matching IDs where IDs are a comma-separated string i.e.,
         // Select * From DataTable Where  Id IN(1,2,4 )
-        public FileTable SelectFilesInDataTableById(string listOfIds)
+        public FileTable SelectFilesInDataTableByCommaSeparatedIds(string listOfIds)
         {
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDIn + Sql.OpenParenthesis + listOfIds + Sql.CloseParenthesis;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
+
+        public FileTable SelectFileInDataTableById(string id)
+        {
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + id + Sql.LimitOne;
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(images);
+        }
+
+
         #endregion
 
         #region Get Distinct Values
