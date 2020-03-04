@@ -36,7 +36,11 @@ namespace Timelapse.Images
         // the canvas to magnify contains both an image and markers so the magnifying glass view matches the display image
         private readonly Canvas canvasToMagnify;
 
+        // a Popup to show episode information, regardless of the selection or sorting criteria
         private EpisodePopup episodePopup;
+
+        // A canvas used to display the bounding boxes
+        private readonly Canvas bboxCanvas = new Canvas();
 
         // render transforms
         private readonly ScaleTransform imageToDisplayScale;
@@ -1049,7 +1053,6 @@ namespace Timelapse.Images
         }
         #endregion
 
-        private readonly Canvas bboxCanvas = new Canvas();
         #region Draw Bounding Box
         /// <summary>
         /// Remove all and then draw all the markers
@@ -1062,6 +1065,7 @@ namespace Timelapse.Images
             }
         }
 
+        // Draw bounding boxes into a boundingbox canvas that overlays the MarkableCanvas 
         public void DrawBoundingBox(Size canvasRenderSize)
         {
             // Remove existing bounding boxes, if any.
