@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Forms;
 using Timelapse.Database;
@@ -194,6 +195,31 @@ namespace Timelapse.Dialog
             {
                 Clipboard.SetText(e.ExceptionObject.ToString());
             }
+            messageBox.ShowDialog();
+        }
+
+        public static void FilePathTooLongDialog(List<string> folders, Window owner)
+        {
+            ThrowIf.IsNullArgument(folders, nameof(folders)); 
+
+            string title = "Some of your Image File Path Names Were Too Long";
+            MessageBox messageBox = new MessageBox(title, owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Title = title;
+            messageBox.Message.Problem = "Timelapse skipped reading some of your images in the folders below, as their file paths were too long.";
+            if (folders.Count > 0)
+            {
+                messageBox.Message.Problem += "Those files are found in these folders:";
+                foreach (string folder in folders)
+                {
+                    messageBox.Message.Problem += Environment.NewLine + "\u2022 " + folder;
+                }
+            }
+            messageBox.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
+            messageBox.Message.Solution = "Try reloading this image set after shortening the file path:" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 Shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine + "\u2022 Use shorter folder or file names.";
+          
+            messageBox.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
             messageBox.ShowDialog();
         }
 

@@ -56,10 +56,13 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
+        public List<string> ImagesSkippedAsFilePathTooLong { get; set; }
         public ImageSetLoader(string imageSetFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(dataHandler, nameof(dataHandler));
+
+            ImagesSkippedAsFilePathTooLong = new List<string>();
 
             // Don't add a file if it already exists in the database.
             // Rather than check every file one by one to see if it exists in the database 
@@ -71,9 +74,10 @@ namespace Timelapse.ImageSetLoadingPipeline
                 existingPaths = new HashSet<string>(from file in filetable
                                                     select Path.Combine(imageSetFolderPath, Path.Combine(file.RelativePath, file.File)).ToLowerInvariant());
             }
-            FileInfo[] filesToAddInfoArray = (from fileInfo in fileInfos
-                                              where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
-                                              select fileInfo).OrderBy(f => f.FullName).ToArray();
+            FileInfo[] filesToAddInfoArray = null;
+            filesToAddInfoArray = (from fileInfo in fileInfos
+                                   where existingPaths.Contains(fileInfo.FullName.ToLowerInvariant()) == false
+                                   select fileInfo).OrderBy(f => f.FullName).ToArray();
 
             this.ImagesToLoad = filesToAddInfoArray.Length;
 
@@ -93,10 +97,28 @@ namespace Timelapse.ImageSetLoadingPipeline
                 {
                     // Parse the relative path from the full name. 
                     // As GetDirectoryName does not end with a \ on a file name, we add the' '\' as needed
-                    string directoryName = Path.GetDirectoryName(fileInfo.FullName);
-                    if (directoryName.EndsWith(@"\") == false)
+                    
+                    string directoryName = String.Empty;
+                    try
                     {
-                        directoryName += @"\";
+                        directoryName = Path.GetDirectoryName(fileInfo.FullName);
+                        if (directoryName.EndsWith(@"\") == false)
+                        {
+                            directoryName += @"\";
+                        }
+                    }
+                    catch (System.IO.PathTooLongException e)
+                    {
+                        // If the file path is too long, skip the file.
+                        // Also, add its folder name (if it isn't already there) to a list so we can
+                        // later show a meaningful error message to the user that these files were skipped.
+                        // We do the folder name as otherwise the number of images could be overwhelming.
+                        string path = fileInfo.FullName.Substring(0, fileInfo.FullName.LastIndexOf(("\\")));  
+                        if (ImagesSkippedAsFilePathTooLong.Contains (path) == false)
+                        { 
+                            ImagesSkippedAsFilePathTooLong.Add(path);
+                        }
+                        continue;
                     }
                     string relativePath = directoryName.Replace(absolutePathPart, string.Empty).TrimEnd(Path.DirectorySeparatorChar);
 

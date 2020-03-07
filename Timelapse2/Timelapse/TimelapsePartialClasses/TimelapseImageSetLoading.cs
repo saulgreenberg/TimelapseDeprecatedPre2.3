@@ -318,6 +318,7 @@ namespace Timelapse
         private bool TryBeginImageFolderLoad(string imageSetFolderPath, string selectedFolderPath)
         {
             List<FileInfo> filesToAdd = new List<FileInfo>();
+            List<string> filesSkipped = new List<string>();
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
             // PERFORMANCE - takes modest but noticable time to do if there are a huge number of files. 
             // TO DO: PUT THIS IN THE SHOW PROGRESS LOOP
@@ -367,12 +368,19 @@ namespace Timelapse
                 // If the DoWork delegate is async, this is considered finished before the actual image set is loaded.
                 // Instead of an async DoWork and an await here, wait for the loading to finish.
                 loader.LoadAsync(backgroundWorker.ReportProgress, folderLoadProgress, 500).Wait();
+                filesSkipped = loader.ImagesSkippedAsFilePathTooLong;
+                backgroundWorker.ReportProgress(0, folderLoadProgress);
             };
 
             backgroundWorker.ProgressChanged += (o, ea) =>
             {
                 // this gets called on the UI thread
                 this.ImageSetPane.IsActive = true;
+
+                if (filesSkipped.Count > 0)
+                {
+                    Dialogs.FilePathTooLongDialog(filesSkipped, this);
+                }
                 if (folderLoadProgress.CurrentPass == 1 && folderLoadProgress.CurrentFile == 0)
                 {
                     // skip the 0th file of the 1st pass, as there is not really much of interest to show
