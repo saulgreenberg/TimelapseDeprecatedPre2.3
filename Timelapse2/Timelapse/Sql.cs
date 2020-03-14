@@ -11,6 +11,8 @@
         public const string AsInteger = " AS INTEGER ";
         public const string AsReal = " AS REAL ";
         public const string Ascending = " ASC ";
+        public const string AttachDatabase = " ATTACH DATABASE ";
+        public const string Concatenate = " || ";
         public const string Descending = " DESC ";
         public const string Dot = ".";
         public const string DotStar = Sql.Dot + Sql.Star;
@@ -19,6 +21,7 @@
         public const string Cast = " CAST ";
         public const string CreateIndex = " CREATE INDEX ";
         public const string CreateTable = " CREATE TABLE ";
+        public const string CreateTemporaryTable = " CREATE TEMPORARY TABLE ";
         public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";
         public const string CloseParenthesis = " ) ";
         public const string CollateNocase = " COLLATE NOCASE ";
@@ -58,6 +61,7 @@
         public const string OpenParenthesis = " ( ";
         public const string Or = " OR ";
         public const string OrderBy = " ORDER BY ";
+        public const string Plus = " + ";
         public const string PragmaTableInfo = " PRAGMA TABLE_INFO ";
         public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1 ";
         public const string PragmaForeignKeysOff = " PRAGMA foreign_keys = OFF ";

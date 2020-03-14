@@ -1124,11 +1124,11 @@ namespace Timelapse.Images
                     case "2":
                         brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)); // Blue
                         break;
-                    case "4":
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255));
+                    case "3":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255)); // Peacock green/blue
                         break;
                     default:
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255));
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255)); // White
                         break;
                 }
                 rect.Stroke = brush;

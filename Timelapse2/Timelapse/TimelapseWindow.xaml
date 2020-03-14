@@ -58,6 +58,9 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
+                    <!-- Merge -->
+                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merge any databases into a single one"  Click="MenuItemMergeDatabases_Click" />
+   
                     <Separator />
 
                     <!-- Export data for this image set as a .csv file... -->

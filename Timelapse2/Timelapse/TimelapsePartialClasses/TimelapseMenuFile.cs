@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -535,11 +536,50 @@ namespace Timelapse
             this.QuickPasteWindowTerminate();
         }
 
+
         // Exit Timelapse
         private void MenuItemExit_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
             Application.Current.Shutdown();
+        }
+
+
+        private void MenuItemMergeDatabases_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.TryGetTemplatePath(out string templateDatabasePath))
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                string sDir = Path.GetDirectoryName(templateDatabasePath);
+                 
+               
+                List<string> ddbFiles = DirSearch(sDir, "*.ddb");
+                
+                SQLiteWrapper.TryMergeDatabases(templateDatabasePath, ddbFiles);
+                Mouse.OverrideCursor = null;
+            }
+        }
+        static List<string> DirSearch(string sDir, string pattern)
+        {
+            List<string> files = new List<string>();
+            try
+            {
+                foreach (string d in Directory.GetDirectories(sDir))
+                {
+                    string foldername = d.Split(Path.DirectorySeparatorChar).Last();
+                    if (foldername == Constant.File.BackupFolder)
+                    {
+                        continue;
+                    }
+                    files.AddRange(System.IO.Directory.GetFiles(d, "*.ddb", SearchOption.TopDirectoryOnly));
+                    DirSearch(d, pattern);
+                }
+            }
+            catch (System.Exception excpt)
+            {
+                return null;
+            }
+            return files;
         }
     }
 }
