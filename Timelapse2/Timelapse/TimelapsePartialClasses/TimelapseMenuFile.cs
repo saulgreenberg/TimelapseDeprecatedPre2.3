@@ -545,41 +545,67 @@ namespace Timelapse
         }
 
 
-        private void MenuItemMergeDatabases_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemMergeDatabases_Click(object sender, RoutedEventArgs e)
         {
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
                 string sDir = Path.GetDirectoryName(templateDatabasePath);
-                 
-               
-                List<string> ddbFiles = DirSearch(sDir, "*.ddb");
-                
-                SQLiteWrapper.TryMergeDatabases(templateDatabasePath, ddbFiles);
+
+
+                List<string> ddbFiles = new List<string>();
+                DirSearch(sDir, "*.ddb", ddbFiles);
+
+                this.EnableBusyCancelIndicatorForSelection(true);
+                await SQLiteWrapper.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles).ConfigureAwait(true);
+                this.EnableBusyCancelIndicatorForSelection(false);
                 Mouse.OverrideCursor = null;
             }
         }
-        static List<string> DirSearch(string sDir, string pattern)
+        static List<string> DirSearch(string sDir, string pattern, List<string> files)
         {
-            List<string> files = new List<string>();
             try
             {
-                foreach (string d in Directory.GetDirectories(sDir))
+                foreach (string directory in Directory.GetDirectories(sDir))
                 {
-                    string foldername = d.Split(Path.DirectorySeparatorChar).Last();
+                    System.Diagnostics.Debug.Print(directory);
+                    string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
                     if (foldername == Constant.File.BackupFolder)
                     {
                         continue;
                     }
-                    files.AddRange(System.IO.Directory.GetFiles(d, "*.ddb", SearchOption.TopDirectoryOnly));
-                    DirSearch(d, pattern);
+                    files.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
+                    DirSearch(directory, pattern, files);
                 }
             }
-            catch (System.Exception excpt)
+            catch (System.Exception)
             {
                 return null;
             }
             return files;
         }
+        //static List<string> DirSearch(string sDir, string pattern)
+        //{
+        //    List<string> files = new List<string>();
+        //    try
+        //    {
+        //        foreach (string directory in Directory.GetDirectories(sDir))
+        //        {
+        //            System.Diagnostics.Debug.Print(directory);
+        //            string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
+        //            if (foldername == Constant.File.BackupFolder)
+        //            {
+        //                continue;
+        //            }
+        //            files.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
+        //            DirSearch(directory, pattern);
+        //        }
+        //    }
+        //    catch (System.Exception)
+        //    {
+        //        return null;
+        //    }
+        //    return files;
+        //}
     }
 }

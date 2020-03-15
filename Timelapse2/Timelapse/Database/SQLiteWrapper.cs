@@ -6,7 +6,12 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using Timelapse.Controls;
 using Timelapse.Detection;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -862,7 +867,7 @@ namespace Timelapse.Database
             SQLiteWrapper.SetPragmaForeignKeys(connection, true);
         }
 
- 
+
 
         public void DropTable(string tableName)
         {
@@ -1191,23 +1196,40 @@ namespace Timelapse.Database
         #endregion
 
         #region Merge Databases
-        public static bool TryMergeDatabases(string tdbFile, List<string> ddbFiles)
+        public async static Task<bool> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFiles)
         {
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                // Update the progress bar
+                SQLiteWrapper.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+
             if (ddbFiles?.Count < 1)
             {
                 System.Diagnostics.Debug.Print("Two files minimum needed");
                 return false;
             }
+
             string rootFolderPath = Path.GetDirectoryName(tdbFile);
             string mergedDDBPath = Path.Combine(rootFolderPath, "project.ddb");
             string rootFolder = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-            // Create and open the main ddb file in the root folder as a copy of the first database we find. 
-            // We will then add to that file.
-            if (File.Exists(mergedDDBPath))
+            await Task.Run(() =>
             {
-                File.Delete(mergedDDBPath);
-            }
-            File.Copy(ddbFiles[0], mergedDDBPath);
+                // Update the progress bar
+                progress.Report(new ProgressBarArguments((int)(1 / (double)ddbFiles.Count * 100.0), String.Format("Merging 1/{0} databases. Please wait...", ddbFiles.Count), false, false));
+                Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
+
+                // Create and open the main ddb file in the root folder as a copy of the first database we find. 
+                // We will then add to that file.
+                if (File.Exists(mergedDDBPath))
+                {
+                    File.Delete(mergedDDBPath);
+                }
+                File.Copy(ddbFiles[0], mergedDDBPath);
+            }).ConfigureAwait(true);
+          
             SQLiteWrapper mergedDDB = new SQLiteWrapper(mergedDDBPath);
 
             // Get a sample relative path from the datatable, which we will use to figure out the prefix to add to the relative from the current root
@@ -1228,6 +1250,7 @@ namespace Timelapse.Database
                 // then append it onto the relative paths of the ddb file rows
                 // SQL Form: UPDATE DataTable SET RelativePath = ("pathPrefixToAdd\" || RelativePath)
                 pathPrefixToAdd = GetSubPathPrefix(ddbFiles[0], rootFolderPath);
+                pathPrefixToAdd = pathPrefixToAdd.TrimEnd(Path.DirectorySeparatorChar);
                 if (!String.IsNullOrEmpty(pathPrefixToAdd))
                 {
                     mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath);
@@ -1236,13 +1259,28 @@ namespace Timelapse.Database
 
             for (int i = 1; i < ddbFiles.Count; i++)
             {
-                pathPrefixToAdd = GetSubPathPrefix(ddbFiles[i], rootFolderPath);
-                SQLiteWrapper.MergeIntoDDB(mergedDDB, ddbFiles[i], pathPrefixToAdd);
+                await Task.Run(() =>
+                {
+                    string message = String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFiles.Count);
+                    progress.Report(new ProgressBarArguments((int) ((i + 1) / (double) ddbFiles.Count * 100.0), message, false, false));
+                    Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
+                    pathPrefixToAdd = GetSubPathPrefix(ddbFiles[i], rootFolderPath);
+                    pathPrefixToAdd = pathPrefixToAdd.TrimEnd(Path.DirectorySeparatorChar);
+                    SQLiteWrapper.MergeIntoDDB(mergedDDB, ddbFiles[i], pathPrefixToAdd);
+                }).ConfigureAwait(true);
             }
             // After the merged database is constructed, set the Folder column to the current root folder
             if (!String.IsNullOrEmpty(rootFolder))
             {
                 mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(rootFolder));
+            }
+
+            // After the merged database is constructed, reset fields in the ImageSetTable to the defaults i.e., first row, selection all, 
+            if (!String.IsNullOrEmpty(rootFolder))
+            {
+                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.MostRecentFileID + Sql.Equal + "1");
+                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int) FileSelectionEnum.All).ToString());
+                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
             }
             return true;
         }
@@ -1295,7 +1333,7 @@ namespace Timelapse.Database
                 // Calculate an offset (the max DetectionIDs), where we will be adding that to all detectionIds in the ddbFile to merge. 
                 // However, the offeset should be 0 if there are no detections in the main DB, 
                 // as we will be creating the detection table and then just adding to it.
-                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect("Select Max(detectionId) from Detections"): 0;
+                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect("Select Max(detectionId) from Detections") : 0;
                 query += Sql.CreateTemporaryTable + tempDetectionsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Detections + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DetectionColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
@@ -1334,6 +1372,29 @@ namespace Timelapse.Database
             }
             return subPathPrefix;
         }
+
+        static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Code to run on the GUI thread.
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+
+                // Set it as a progressive or indeterminate bar
+                busyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+                // Set the progress bar position (only visible if determinate)
+                busyCancelIndicator.Percent = percent;
+
+                // Update the text message
+                busyCancelIndicator.Message = message;
+
+                // Update the cancel button to reflect the cancelEnabled argument
+                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
+            });
+        }
         #endregion 
 
         private static bool CheckDBForDetectionsTable(string dbPath)
@@ -1341,7 +1402,7 @@ namespace Timelapse.Database
             SQLiteWrapper db = new SQLiteWrapper(dbPath);
             return db.TableExists("Detections");
         }
- 
+
         #region Pragmas
         // PRAGMA Turn foreign keys on or off. 
         // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
@@ -1359,7 +1420,7 @@ namespace Timelapse.Database
         }
 
         // PRAGMA Defer foreign keys. 
-        private static void SetPragmanDeferForeignKeys(SQLiteConnection connection, bool state)
+        private static void SetPragmaDeferForeignKeys(SQLiteConnection connection, bool state)
         {
             // Syntax is: defer_foreign_keys = 1; True
             // Syntax is: defer_foreign_keys = 0; False

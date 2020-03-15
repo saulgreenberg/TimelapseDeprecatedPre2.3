@@ -107,7 +107,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                             directoryName += @"\";
                         }
                     }
-                    catch (System.IO.PathTooLongException e)
+                    catch (System.IO.PathTooLongException)
                     {
                         // If the file path is too long, skip the file.
                         // Also, add its folder name (if it isn't already there) to a list so we can
