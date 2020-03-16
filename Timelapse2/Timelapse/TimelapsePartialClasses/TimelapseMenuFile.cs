@@ -544,9 +544,28 @@ namespace Timelapse
             Application.Current.Shutdown();
         }
 
-
         private async void MenuItemMergeDatabases_Click(object sender, RoutedEventArgs e)
         {
+            // Show a message that explains how merging databases works, and its constraints
+            MessageBox messageBox = new MessageBox("Merge Databases.", this, MessageBoxButton.OKCancel);
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.Message.Title = "Merge Databases Explained.";
+            messageBox.Message.What = "Merging databases works as follows. Timelapse will:" + Environment.NewLine;
+            messageBox.Message.What += "\u2022 ask you to locate a root folder containing a template(a.tdb file)," + Environment.NewLine;
+            messageBox.Message.What += "\u2022 create a new database (.ddb) file called 'mergedTimelapseData.ddb' in that folder," + Environment.NewLine;
+            messageBox.Message.What += "\u2022 search for other database (.ddb) files in that folder's sub-folders, " + Environment.NewLine;
+            messageBox.Message.What += "\u2022 try to merge all data found in those found databases into the new database.";
+            messageBox.Message.Details  = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 Databases found in the Backup folders are ignored." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 The merged database is independent of the found databases: updates will not propagate between them." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 The merged database is a normal Timelapse database, which you can open and use as expected." + Environment.NewLine;
+            messageBox.Message.Hint = "Press Ok to continue with the merge, otherwise Cancel.";
+            messageBox.ShowDialog();
+            if (messageBox.DialogResult == false)
+            {
+                return;
+            }
+
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
                 Mouse.OverrideCursor = Cursors.Wait;
