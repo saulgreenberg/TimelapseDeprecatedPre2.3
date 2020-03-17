@@ -141,7 +141,6 @@ namespace Timelapse
                 messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
                 messageBox.ShowDialog();
             }
-
         }
 
         private string ComposeFolderDetails(List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
@@ -574,9 +573,10 @@ namespace Timelapse
 
                 List<string> ddbFiles = new List<string>();
                 DirSearch(sDir, "*.ddb", ddbFiles);
+                IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
                 this.EnableBusyCancelIndicatorForSelection(true);
-                List<string> errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles).ConfigureAwait(true);
+                List<string> errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles, progress).ConfigureAwait(true);
                 this.EnableBusyCancelIndicatorForSelection(false);
 
                 Mouse.OverrideCursor = null;
@@ -616,28 +616,37 @@ namespace Timelapse
             }
             return files;
         }
-        //static List<string> DirSearch(string sDir, string pattern)
-        //{
-        //    List<string> files = new List<string>();
-        //    try
-        //    {
-        //        foreach (string directory in Directory.GetDirectories(sDir))
-        //        {
-        //            System.Diagnostics.Debug.Print(directory);
-        //            string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
-        //            if (foldername == Constant.File.BackupFolder)
-        //            {
-        //                continue;
-        //            }
-        //            files.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
-        //            DirSearch(directory, pattern);
-        //        }
-        //    }
-        //    catch (System.Exception)
-        //    {
-        //        return null;
-        //    }
-        //    return files;
-        //}
+
+        #region Progess handler / Progress bar updates 
+        // Set up a progress handler that will update the progress bar
+        Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+        {
+            // Update the progress bar
+            UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.CancelMessage, value.IsCancelEnabled, value.IsIndeterminate);
+        });
+
+        static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, string cancelMessage, bool isCancelEnabled, bool isIndeterminate)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Code to run on the GUI thread.
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+
+                // Set it as a progressive or indeterminate bar
+                busyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+                // Set the progress bar position (only visible if determinate)
+                busyCancelIndicator.Percent = percent;
+
+                // Update the text message
+                busyCancelIndicator.Message = message;
+
+                // Update the cancel button to reflect the cancelEnabled argument
+                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : cancelMessage;
+            });
+        }
+        #endregion
     }
 }

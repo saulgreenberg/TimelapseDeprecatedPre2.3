@@ -30,18 +30,9 @@ namespace Timelapse.Database
         // - MAYBE SEARCH FOR .ddb FILES HERE?
         // - CREATE A NEW DDB RATHER THAN COPYING ONE
         // - CHECK .DDBs ADHERE TO TEMPLATE SCHEMA
-        public async static Task<List<string>> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths)
+        public async static Task<List<string>> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths, IProgress<ProgressBarArguments> progress)
         {
             List<string> errorMessages = new List<string>();
-
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                MergeDatabases.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-
             if (ddbFilePaths?.Count == 0)
             {
                 errorMessages.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
@@ -54,7 +45,7 @@ namespace Timelapse.Database
             await Task.Run(() =>
             {
                 // Update the progress bar
-                progress.Report(new ProgressBarArguments((int)(1 / (double)ddbFilePaths.Count * 100.0), String.Format("Merging 1/{0} databases. Please wait...", ddbFilePaths.Count), false, false));
+                progress.Report(new ProgressBarArguments((int)(1 / (double)ddbFilePaths.Count * 100.0), String.Format("Merging 1/{0} databases. Please wait...", ddbFilePaths.Count), "Processing detections...", false, false));
                 Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable. While it does introduce a short delay, its negligable.
 
                 // Create and open the main ddb file in the root folder as a copy of the first database we find. 
@@ -99,7 +90,7 @@ namespace Timelapse.Database
                 await Task.Run(() =>
                 {
                     string message = String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count);
-                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0), message, false, false));
+                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0), message, "Processing detections...", false, false));
                     Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
                     pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(ddbFilePaths[i], rootFolderPath);
                     MergeDatabases.MergeIntoDDB(mergedDDB, ddbFilePaths[i], pathPrefixToAdd);
@@ -217,30 +208,6 @@ namespace Timelapse.Database
             // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
             SQLiteWrapper db = new SQLiteWrapper(dbPath);
             return db.TableExists("Detections");
-        }
-
-        // MOVE THIS TO THE CALLER MENUs
-        static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                // Code to run on the GUI thread.
-                // Check the arguments for null 
-                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
-
-                // Set it as a progressive or indeterminate bar
-                busyCancelIndicator.IsIndeterminate = isIndeterminate;
-
-                // Set the progress bar position (only visible if determinate)
-                busyCancelIndicator.Percent = percent;
-
-                // Update the text message
-                busyCancelIndicator.Message = message;
-
-                // Update the cancel button to reflect the cancelEnabled argument
-                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
-                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
-            });
         }
         #endregion
     }
