@@ -286,11 +286,13 @@ namespace Timelapse.Constant
 
         public const string CsvFileExtension = ".csv";
         public const string DeletedFilesFolder = "DeletedFiles"; // Sub-folder that will contain backups of deleted images 
-        public const string DefaultFileDatabaseFileName = "TimelapseData.ddb";
+        public const string DefaultFileDatabaseFileName = DefaultFileDatabaseFileNameRoot + FileDatabaseFileExtension;
+        public const string DefaultFileDatabaseFileNameRoot = "TimelapseData";
         public const string DefaultTemplateDatabaseFileName = "TimelapseTemplate.tdb";
         public const string FileDatabaseFileExtension = ".ddb";
         public const string JpgFileExtension = ".jpg";
         public const string JsonFileExtension = ".json";
+        public const string MergedFileName = DefaultFileDatabaseFileNameRoot + "_merged" + FileDatabaseFileExtension;
         public const string Mp4FileExtension = ".mp4";
         public const string MacOSXHiddenFilePrefix = "._";
         public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep

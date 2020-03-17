@@ -1093,7 +1093,7 @@ namespace Timelapse.Database
         // Note that the 2nd argument is ParseViaFramework. This is included to resolve an issue that occurs
         // when users try to open a network file on some VPNs, eg., Cisco VPN and perhaps other network file systems
         // Its an obscur bug and solution reported by others: sqlite doesn't really document that argument very well. But it seems to fix it.
-        private static SQLiteConnection GetNewSqliteConnection(string connectionString)
+        public static SQLiteConnection GetNewSqliteConnection(string connectionString)
         {
             return new SQLiteConnection(connectionString, true);
         }
@@ -1195,214 +1195,6 @@ namespace Timelapse.Database
 #pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
-        #region Merge Databases
-        public async static Task<bool> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFiles)
-        {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                SQLiteWrapper.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-
-            if (ddbFiles?.Count < 1)
-            {
-                System.Diagnostics.Debug.Print("Two files minimum needed");
-                return false;
-            }
-
-            string rootFolderPath = Path.GetDirectoryName(tdbFile);
-            string mergedDDBPath = Path.Combine(rootFolderPath, "project.ddb");
-            string rootFolder = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-            await Task.Run(() =>
-            {
-                // Update the progress bar
-                progress.Report(new ProgressBarArguments((int)(1 / (double)ddbFiles.Count * 100.0), String.Format("Merging 1/{0} databases. Please wait...", ddbFiles.Count), false, false));
-                Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
-
-                // Create and open the main ddb file in the root folder as a copy of the first database we find. 
-                // We will then add to that file.
-                if (File.Exists(mergedDDBPath))
-                {
-                    File.Delete(mergedDDBPath);
-                }
-                File.Copy(ddbFiles[0], mergedDDBPath);
-            }).ConfigureAwait(true);
-          
-            SQLiteWrapper mergedDDB = new SQLiteWrapper(mergedDDBPath);
-
-            // Get a sample relative path from the datatable, which we will use to figure out the prefix to add to the relative from the current root
-            // Form:  SELECT RelativePath FROM DataTable LIMIT 1"))
-            string pathPrefixToAdd;
-            string query = Sql.Select + Constant.DatabaseColumn.RelativePath + Sql.From + Constant.DBTables.FileData + Sql.LimitOne;
-            using (DataTable dt = mergedDDB.GetDataTableFromSelect(query))
-            {
-                if (dt.Rows.Count == 0)
-                {
-                    // No rows in the main database table. Abort
-                    // But note that this could be possible if the first db has nothing in it, where we really should continue... But later.
-                    System.Diagnostics.Debug.Print("No rows in table!");
-                    return false;
-                }
-
-                // Correct the relative path. Find the extra path to the ddb File path from the .tdb File path.
-                // then append it onto the relative paths of the ddb file rows
-                // SQL Form: UPDATE DataTable SET RelativePath = ("pathPrefixToAdd\" || RelativePath)
-                pathPrefixToAdd = GetSubPathPrefix(ddbFiles[0], rootFolderPath);
-                pathPrefixToAdd = pathPrefixToAdd.TrimEnd(Path.DirectorySeparatorChar);
-                if (!String.IsNullOrEmpty(pathPrefixToAdd))
-                {
-                    mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath);
-                }
-            }
-
-            for (int i = 1; i < ddbFiles.Count; i++)
-            {
-                await Task.Run(() =>
-                {
-                    string message = String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFiles.Count);
-                    progress.Report(new ProgressBarArguments((int) ((i + 1) / (double) ddbFiles.Count * 100.0), message, false, false));
-                    Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
-                    pathPrefixToAdd = GetSubPathPrefix(ddbFiles[i], rootFolderPath);
-                    pathPrefixToAdd = pathPrefixToAdd.TrimEnd(Path.DirectorySeparatorChar);
-                    SQLiteWrapper.MergeIntoDDB(mergedDDB, ddbFiles[i], pathPrefixToAdd);
-                }).ConfigureAwait(true);
-            }
-            // After the merged database is constructed, set the Folder column to the current root folder
-            if (!String.IsNullOrEmpty(rootFolder))
-            {
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(rootFolder));
-            }
-
-            // After the merged database is constructed, reset fields in the ImageSetTable to the defaults i.e., first row, selection all, 
-            if (!String.IsNullOrEmpty(rootFolder))
-            {
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.MostRecentFileID + Sql.Equal + "1");
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int) FileSelectionEnum.All).ToString());
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
-            }
-            return true;
-        }
-
-        private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDB, string pathPrefixToAdd)
-        {
-            string attachedDB = "attachedDB";
-            string tempDataTable = "tempDataTable";
-            string tempDetectionsTable = "tempDetectionsTable";
-
-            // Calculate an ID offset (the current max Id), where we will be adding that to all Ids in the ddbFile to merge. 
-            // This will guarantee that there are no duplicate primary keys 
-            int offsetId = mergedDDB.GetCountFromSelect("Select Max(Id) from DataTable");
-
-            // Create the first part of the query to:
-            // - Attach the ddbFile
-            // - Create a temporary DataTable mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
-            // - Update the DataTable with the modified Ids
-            // - Update the DataTable with the path prefix
-            // - Insert the DataTable  into the main db's DataTable
-            // Form: ATTACH DATABASE 'toMergeDDB' AS attachedDB; 
-            //       CREATE TEMPORARY TABLE tempDataTable AS SELECT * FROM attachedDB.DataTable;
-            //       UPDATE tempDataTable SET Id = (offsetID + tempDataTable.Id);
-            //       UPDATE TempDataTable SET RelativePath = ("PrefixPath\" || RelativePath)
-            //       INSERT INTO DataTable SELECT * FROM tempDataTable;
-            string query = Sql.BeginTransaction + Sql.Semicolon;
-            query += Sql.AttachDatabase + Utilities.QuoteForSql(toMergeDDB) + Sql.As + attachedDB + Sql.Semicolon;
-            query += Sql.CreateTemporaryTable + tempDataTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.FileData + Sql.Semicolon;
-            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDataTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + ";";
-            query += Sql.InsertInto + Constant.DBTables.FileData + Sql.SelectStarFrom + tempDataTable + Sql.Semicolon;
-
-            // Now we need to see if we have to handle detection table updates.
-            // Check to see if the main DB file and the toMerge DB file each have a Detections table.
-            bool dbToMergeDetectionsExists = CheckDBForDetectionsTable(toMergeDDB);
-            bool mergedDDBDetectionsExists = mergedDDB.TableExists(Constant.DBTables.Detections);
-
-            // Create the second part of the query only if the toMergeDDB contains a detections table
-            // (as otherwise we don't have to update the detection table in the main ddb.
-            // - Create a temporary Detections table mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
-            // - Update the Detections Table with both the modified Ids and detectionIDs
-            // - Insert the Detections Table into the main db's Detections Table
-            // Form: CREATE TEMPORARY TABLE tempDetectionsTable AS SELECT * FROM attachedDB.Detections;
-            //       UPDATE TempDetectionsTable SET Id = (offsetId + TempDetectionsTable.Id);
-            //       UPDATE TempDetectionsTable SET DetectionID = (offsetDetectionId + TempDetectionsTable.DetectionId);
-            //       INSERT INTO Detections SELECT * FROM TempDetectionsTable;"
-            if (dbToMergeDetectionsExists)
-            {
-                // The database to merge in has detections, so the SQL query also updates the Detections table.
-                // Calculate an offset (the max DetectionIDs), where we will be adding that to all detectionIds in the ddbFile to merge. 
-                // However, the offeset should be 0 if there are no detections in the main DB, 
-                // as we will be creating the detection table and then just adding to it.
-                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect("Select Max(detectionId) from Detections") : 0;
-                query += Sql.CreateTemporaryTable + tempDetectionsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Detections + Sql.Semicolon;
-                query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DetectionColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.InsertInto + Constant.DBTables.Detections + Sql.SelectStarFrom + tempDetectionsTable + Sql.Semicolon;
-            }
-            query += Sql.EndTransaction + Sql.Semicolon;
-
-            // Execute the query. 
-            using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(mergedDDB.connectionString))
-            {
-                connection.Open();
-
-                // If the main database doesn't have detections, but the database to merge into it does,
-                // then we have to create the detection tables to the main database.
-                SQLiteWrapper tempDDB = new SQLiteWrapper(toMergeDDB);
-                if (mergedDDBDetectionsExists == false && dbToMergeDetectionsExists)
-                {
-                    DetectionDatabases.CreateOrRecreateTablesAndColumns(mergedDDB);
-                }
-
-                // Merge the database into the main database 
-                // I had thought that we would have to defer foreign keys as otherwise it wont allow us to update the primary key ids,
-                // but this doesn't seem to be the case
-                //SQLiteWrapper.DeferForeignKeys(connection, true);
-                mergedDDB.ExecuteOneNonQueryCommand(query);
-            }
-            return true;
-        }
-
-        private static string GetSubPathPrefix(string fullPath, string fullPathPrefix)
-        {
-            string subPathPrefix = Path.GetDirectoryName(fullPath).Replace(fullPathPrefix + "\\", "");
-            if (!String.IsNullOrEmpty(subPathPrefix))
-            {
-                subPathPrefix += "\\";
-            }
-            return subPathPrefix;
-        }
-
-        static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                // Code to run on the GUI thread.
-                // Check the arguments for null 
-                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
-
-                // Set it as a progressive or indeterminate bar
-                busyCancelIndicator.IsIndeterminate = isIndeterminate;
-
-                // Set the progress bar position (only visible if determinate)
-                busyCancelIndicator.Percent = percent;
-
-                // Update the text message
-                busyCancelIndicator.Message = message;
-
-                // Update the cancel button to reflect the cancelEnabled argument
-                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
-                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
-            });
-        }
-        #endregion 
-
-        private static bool CheckDBForDetectionsTable(string dbPath)
-        {
-            SQLiteWrapper db = new SQLiteWrapper(dbPath);
-            return db.TableExists("Detections");
-        }
-
         #region Pragmas
         // PRAGMA Turn foreign keys on or off. 
         // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
@@ -1420,10 +1212,11 @@ namespace Timelapse.Database
         }
 
         // PRAGMA Defer foreign keys. 
+#pragma warning disable IDE0051 // Remove unused private members
         private static void SetPragmaDeferForeignKeys(SQLiteConnection connection, bool state)
         {
             // Syntax is: defer_foreign_keys = 1; True
-            // Syntax is: defer_foreign_keys = 0; False
+            //            defer_foreign_keys = 0; False
             string sql = "PRAGMA defer_foreign_keys = ";
             sql += state ? "1;" : "0;";
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
@@ -1431,6 +1224,7 @@ namespace Timelapse.Database
                 command.ExecuteNonQuery();
             }
         }
+#pragma warning restore IDE0051 // Remove unused private members
         #endregion
     }
 }

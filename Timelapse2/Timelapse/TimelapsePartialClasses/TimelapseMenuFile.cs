@@ -551,8 +551,8 @@ namespace Timelapse
             messageBox.Message.Icon = MessageBoxImage.Question;
             messageBox.Message.Title = "Merge Databases Explained.";
             messageBox.Message.What = "Merging databases works as follows. Timelapse will:" + Environment.NewLine;
-            messageBox.Message.What += "\u2022 ask you to locate a root folder containing a template(a.tdb file)," + Environment.NewLine;
-            messageBox.Message.What += "\u2022 create a new database (.ddb) file called 'mergedTimelapseData.ddb' in that folder," + Environment.NewLine;
+            messageBox.Message.What += "\u2022 ask you to locate a root folder containing a template (a.tdb file)," + Environment.NewLine;
+            messageBox.Message.What += String.Format("\u2022 create a new database (.ddb) file in that folder, called {0},{1}", Constant.File.MergedFileName, Environment.NewLine);
             messageBox.Message.What += "\u2022 search for other database (.ddb) files in that folder's sub-folders, " + Environment.NewLine;
             messageBox.Message.What += "\u2022 try to merge all data found in those found databases into the new database.";
             messageBox.Message.Details  = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
@@ -576,9 +576,22 @@ namespace Timelapse
                 DirSearch(sDir, "*.ddb", ddbFiles);
 
                 this.EnableBusyCancelIndicatorForSelection(true);
-                await SQLiteWrapper.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles).ConfigureAwait(true);
+                List<string> errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles).ConfigureAwait(true);
                 this.EnableBusyCancelIndicatorForSelection(false);
+
                 Mouse.OverrideCursor = null;
+                if (errorMessages.Count != 0)
+                {
+                    messageBox = new MessageBox("Merge Databases Failed.", this);
+                    messageBox.Message.Icon = MessageBoxImage.Error;
+                    messageBox.Message.Title = "Merge Databases Failed.";
+                    messageBox.Message.What = "The merged database could not be created for the following reasons:";
+                    foreach (string errorMessage in errorMessages)
+                    {
+                        messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, errorMessage);
+                    }
+                    messageBox.ShowDialog();
+                }
             }
         }
         static List<string> DirSearch(string sDir, string pattern, List<string> files)

@@ -19,6 +19,8 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
+    // FileDatabase manages the Timelapse data held in datatables and the .ddb files.
+    // It also acts as a go-between with the database, where it forms Timelapse-specific SQL requests to the SQL wrapper
     public class FileDatabase : TemplateDatabase
     {
         #region Private variables
