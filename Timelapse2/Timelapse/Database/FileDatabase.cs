@@ -69,6 +69,19 @@ namespace Timelapse.Database
             this.FileTableColumnsByDataLabel = new Dictionary<string, FileTableColumn>();
         }
 
+        public static async Task<FileDatabase> CreateEmptyDatabase(string filePath, TemplateDatabase templateDatabase)
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            // initialize the database if it's newly created
+            FileDatabase fileDatabase = new FileDatabase(filePath);
+            await fileDatabase.OnDatabaseCreatedAsync(templateDatabase).ConfigureAwait(true);
+            return fileDatabase;    
+        }
+
+
         public static async Task<FileDatabase> CreateOrOpenAsync(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
@@ -359,8 +372,8 @@ namespace Timelapse.Database
             // Get the datalabels in the various templates 
             Dictionary<string, string> templateDataLabels = templateDatabase.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
             Dictionary<string, string> imageDataLabels = this.GetTypedDataLabelsExceptIDInSpreadsheetOrder();
-            templateSyncResults.DataLabelsInTemplateButNotImageDatabase = Utilities.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
-            templateSyncResults.DataLabelsInImageButNotTemplateDatabase = Utilities.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
+            templateSyncResults.DataLabelsInTemplateButNotImageDatabase = Compare.Dictionary1ExceptDictionary2(templateDataLabels, imageDataLabels);
+            templateSyncResults.DataLabelsInImageButNotTemplateDatabase = Compare.Dictionary1ExceptDictionary2(imageDataLabels, templateDataLabels);
 
             // Check for differences between the TemplateTable in the .tdb and .ddb database.
             bool areNewColumnsInTemplate = templateSyncResults.DataLabelsInTemplateButNotImageDatabase.Count > 0;
@@ -1377,6 +1390,11 @@ namespace Timelapse.Database
         public Dictionary<string, string> SchemaGetColumnsAndDefaultValues(string tableName)
         {
             return this.Database.SchemaGetColumnsAndDefaultValues(tableName);
+        }
+
+        public List<string> SchemaGetColumns(string tableName)
+        {
+            return this.Database.SchemaGetColumns(tableName);
         }
         #endregion
 

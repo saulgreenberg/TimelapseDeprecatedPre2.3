@@ -296,6 +296,7 @@
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
+    <Compile Include="Util\Compare.cs" />
     <Compile Include="Util\Episodes.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileShow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseAvalonDock.cs" />
@@ -323,6 +324,7 @@
     <Compile Include="Util\DateTimeExtensions.cs" />
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
+    <Compile Include="Util\ErrorsAndWarnings.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\ThowIf.cs" />
     <Compile Include="Util\GlobalReferences.cs" />

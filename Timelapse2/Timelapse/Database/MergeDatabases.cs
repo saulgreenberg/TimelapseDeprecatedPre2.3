@@ -18,82 +18,67 @@ namespace Timelapse.Database
     {
         // Given 
         // - a path to a .tdb file  (specifying the root folder)
-        // - a list of ddbFiles (which must be located only in sub-folders relative to the root folder)
+        // - a list of ddbFiles (which must be located in sub-folders relative to the root folder)
         // create a .ddb File in the root folder that merges data found in the .ddbFiles into it, in particular, the tables: 
         // - DataTable
         // - Detections 
-        // If errors occur, abort and return the relevant error messages as a list of errorMessage strings.
+        // If fatal errors occur in the merge, abort 
+        // Return the relevant error messages in the ErrorsAndWarnings object.
         // Note: if a .ddb File already exists in that root folder, it will be over-written
         // TO DO: 
-        // - MAKE A NEW .DDB FILE AND RENAME IT WHEN DONE OR DELETE IT IF ERROR, MOVE OLD ONE INTO BACKUP
-        // - MOVE PROGRESS TO CALLING METHOD
-        // - MAYBE SEARCH FOR .ddb FILES HERE?
-        // - CREATE A NEW DDB RATHER THAN COPYING ONE
-        // - CHECK .DDBs ADHERE TO TEMPLATE SCHEMA
-        public async static Task<List<string>> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths, IProgress<ProgressBarArguments> progress)
+        // - MAKE A NEW .DDB FILE AND RENAME IT WHEN DONE, OR DELETE IT IF ERROR, MOVE OLD ONE INTO BACKUP
+        public async static Task<ErrorsAndWarnings> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths, IProgress<ProgressBarArguments> progress)
         {
-            List<string> errorMessages = new List<string>();
+
+            ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
             if (ddbFilePaths?.Count == 0)
             {
-                errorMessages.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
+                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
                 return errorMessages;
             }
 
             string rootFolderPath = Path.GetDirectoryName(tdbFile);
             string mergedDDBPath = Path.Combine(rootFolderPath, Constant.File.MergedFileName);
             string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-            await Task.Run(() =>
+
+            // Check to see if we can actually open the template. 
+            // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
+            // Original form: if (!(await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath, out this.templateDatabase).ConfigureAwait(true))
+            Tuple<bool, TemplateDatabase> tupleResult = await TemplateDatabase.TryCreateOrOpenAsync(tdbFile).ConfigureAwait(true);
+            TemplateDatabase templateDatabase = tupleResult.Item2;
+            if (!tupleResult.Item1)
             {
-                // Update the progress bar
-                progress.Report(new ProgressBarArguments((int)(1 / (double)ddbFilePaths.Count * 100.0), String.Format("Merging 1/{0} databases. Please wait...", ddbFilePaths.Count), "Processing detections...", false, false));
-                Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable. While it does introduce a short delay, its negligable.
+                // notify the user the template couldn't be loaded rather than silently doing nothing
+                errorMessages.Errors.Add("Could not open the template .tdb file: " + tdbFile);
+                return errorMessages;
+            }
+            FileDatabase fd = await FileDatabase.CreateEmptyDatabase(mergedDDBPath, templateDatabase).ConfigureAwait(true);
+            fd.Dispose();
+            fd = null;
 
-                // Create and open the main ddb file in the root folder as a copy of the first database we find. 
-                // If it exists, delete it 
-                // We will then merge the the ddb datatables to that file.
-                if (File.Exists(mergedDDBPath))
-                {
-                    File.Delete(mergedDDBPath);
-                }
-                File.Copy(ddbFilePaths[0], mergedDDBPath);
-            }).ConfigureAwait(true);
-
+            // Open the database
             SQLiteWrapper mergedDDB = new SQLiteWrapper(mergedDDBPath);
 
-            // Get a sample relative path from the datatable, which we will use to figure out the prefix to add to the relative from the current root
-            // Form:  SELECT RelativePath FROM DataTable LIMIT 1"))
-            string pathPrefixToAdd;
-            string query = Sql.Select + Constant.DatabaseColumn.RelativePath + Sql.From + Constant.DBTables.FileData + Sql.LimitOne;
-            using (DataTable dt = mergedDDB.GetDataTableFromSelect(query))
-            {
-                if (dt.Rows.Count == 0)
-                {
-                    // No rows in the main database table. Abort
-                    // But note that this could be possible if the first db has nothing in it, where we really should continue... But later.
-                    errorMessages.Add("No rows in table!");
-                    return errorMessages;
-                }
+            // Get the DataLabels from the DataTable in the main database.
+            // We will later check to see if they match their counterparts in each database to merge in
+            List<string> mergedDDBDataLabels = mergedDDB.SchemaGetColumns(Constant.DBTables.FileData);
 
-                // Correct the relative path. Find the extra path to the ddb File path from the .tdb File path.
-                // then append it onto the relative paths of the ddb file rows
-                // SQL Form: UPDATE DataTable SET RelativePath = ("pathPrefixToAdd\" || RelativePath)
-                pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(ddbFilePaths[0], rootFolderPath);
-                if (!String.IsNullOrEmpty(pathPrefixToAdd))
-                {
-                    // DONT FORGET TO DEAL WITH ERROR MESSAGES HERE
-                    mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath);
-                }
-            }
-
-            for (int i = 1; i < ddbFilePaths.Count; i++)
+            for (int i = 0; i < ddbFilePaths.Count; i++)
             {
+                // Try to merge each database into the merged database
                 await Task.Run(() =>
                 {
-                    string message = String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count);
-                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0), message, "Processing detections...", false, false));
-                    Thread.Sleep(250); // Allows the UI thread to update plus makes the progress bar readable
-                    pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(ddbFilePaths[i], rootFolderPath);
-                    MergeDatabases.MergeIntoDDB(mergedDDB, ddbFilePaths[i], pathPrefixToAdd);
+                    // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
+                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0),
+                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count), 
+                        "Processing detections...", 
+                        false, false));
+                    Thread.Sleep(250); 
+                    if (MergeDatabases.MergeIntoDDB(mergedDDB, ddbFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)
+                    {
+                        string trimmedPath = ddbFilePaths[i].Substring(rootFolderPath.Length + 1);
+                        errorMessages.Warnings.Add(String.Format("'{0}' was skipped. Its template uses different data labels", trimmedPath));
+                    }
                 }).ConfigureAwait(true);
             }
             // After the merged database is constructed, set the Folder column to the current root folder
@@ -114,8 +99,8 @@ namespace Timelapse.Database
 
         #region Private internal methods
         // Merge a .ddb file specified in the toMergeDDB path into the mergedDDB database.
-        // Also update the Relative path to reflect the location of the toMergeDDB by prefixing it with pathPrefixToAdd
-        private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDBPath, string pathPrefixToAdd)
+        // Also update the Relative path to reflect the new location of the toMergeDDB as defined in the rootFolderPath
+        private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDBPath, string rootFolderPath, List<string> mergedDDBDataLabels)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(mergedDDB, nameof(mergedDDB));
@@ -123,6 +108,18 @@ namespace Timelapse.Database
             string attachedDB = "attachedDB";
             string tempDataTable = "tempDataTable";
             string tempDetectionsTable = "tempDetectionsTable";
+
+            // Check to see if the datalabels in the toMergeDDB matches those in the mergedDBDataLabels.
+            // If not, generate n warning and abort the merge
+            SQLiteWrapper toMergeDDB = new SQLiteWrapper(toMergeDDBPath);
+            List<string> toMergeDBDDataLabels = toMergeDDB.SchemaGetColumns(Constant.DBTables.FileData);
+            if (Compare.CompareLists(mergedDDBDataLabels, toMergeDBDDataLabels) == false)
+            {
+                return false;
+            }
+
+            // Determine the path prefix to add to the Relative Path i.e., the difference between the .tdb root folder and the path to the ddb file
+            string pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(toMergeDDBPath, rootFolderPath);
 
             // Calculate an ID offset (the current max Id), where we will be adding that to all Ids in the ddbFile to merge. 
             // This will guarantee that there are no duplicate primary keys 

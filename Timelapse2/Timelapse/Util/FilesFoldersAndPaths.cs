@@ -149,6 +149,33 @@ namespace Timelapse.Util
             return false;
         }
 
+        public static List<string> RecursivelyFindFilesWithPattern(string startFolder, string pattern, bool ignoreBackupFolder, List<string> foundFiles)
+        {
+            if (foundFiles == null)
+            {
+                // This should not happen, as it should be initialized before this call
+                foundFiles = new List<string>();
+            }
+            try
+            {
+                foreach (string directory in Directory.GetDirectories(startFolder))
+                {
+                    string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
+                    if (ignoreBackupFolder && foldername == Constant.File.BackupFolder)
+                    {
+                        continue;
+                    }
+                    foundFiles.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
+                    RecursivelyFindFilesWithPattern(directory, pattern, true, foundFiles);
+                }
+            }
+            catch (System.Exception)
+            {
+                return null;
+            }
+            return foundFiles;
+        }
+
         #region Private methods
         // Remove, any files that 
         // - don't exactly match the desired image or video extension, 

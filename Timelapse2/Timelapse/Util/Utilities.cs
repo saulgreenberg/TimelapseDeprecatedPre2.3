@@ -89,21 +89,6 @@ namespace Timelapse.Util
         }
 
 
-        // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
-        public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(dictionary1, nameof(dictionary1));
-            ThrowIf.IsNullArgument(dictionary2, nameof(dictionary2));
-
-            Dictionary<string, string> dictionaryDifferences = new Dictionary<string, string>();
-            List<string> differencesByKeys = dictionary1.Keys.Except(dictionary2.Keys).ToList();
-            foreach (string key in differencesByKeys)
-            {
-                dictionaryDifferences.Add(key, dictionary1[key]);
-            }
-            return dictionaryDifferences;
-        }
 
         // Check to see if the language is english (en) and culture is en-US or en-CA. Return those values as well
         public static bool CheckAndGetLangaugeAndCulture(out string language, out string culturename, out string displayname)

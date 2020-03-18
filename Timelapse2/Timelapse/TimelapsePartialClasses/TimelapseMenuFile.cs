@@ -554,7 +554,7 @@ namespace Timelapse
             messageBox.Message.What += String.Format("\u2022 create a new database (.ddb) file in that folder, called {0},{1}", Constant.File.MergedFileName, Environment.NewLine);
             messageBox.Message.What += "\u2022 search for other database (.ddb) files in that folder's sub-folders, " + Environment.NewLine;
             messageBox.Message.What += "\u2022 try to merge all data found in those found databases into the new database.";
-            messageBox.Message.Details  = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
+            messageBox.Message.Details = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
             messageBox.Message.Details += "\u2022 Databases found in the Backup folders are ignored." + Environment.NewLine;
             messageBox.Message.Details += "\u2022 The merged database is independent of the found databases: updates will not propagate between them." + Environment.NewLine;
             messageBox.Message.Details += "\u2022 The merged database is a normal Timelapse database, which you can open and use as expected." + Environment.NewLine;
@@ -565,61 +565,69 @@ namespace Timelapse
                 return;
             }
 
-            if (this.TryGetTemplatePath(out string templateDatabasePath))
+            // Get the location of the template, which also determines the root folder
+            if (this.TryGetTemplatePath(out string templateDatabasePath) == false)
             {
-                Mouse.OverrideCursor = Cursors.Wait;
-                string sDir = Path.GetDirectoryName(templateDatabasePath);
+                return;
+            }
 
+            // Set up progress indicators
+            Mouse.OverrideCursor = Cursors.Wait;
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            this.EnableBusyCancelIndicatorForSelection(true);
 
-                List<string> ddbFiles = new List<string>();
-                DirSearch(sDir, "*.ddb", ddbFiles);
-                IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            // Find all the .DDB files located in subfolders under the root folder (excluding backup folders)
+            string startFolder = Path.GetDirectoryName(templateDatabasePath);
+            List<string> allDDBFiles = new List<string>();
+            FilesFoldersAndPaths.RecursivelyFindFilesWithPattern(startFolder, "*" + Constant.File.FileDatabaseFileExtension, true, allDDBFiles);
 
-                this.EnableBusyCancelIndicatorForSelection(true);
-                List<string> errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, ddbFiles, progress).ConfigureAwait(true);
-                this.EnableBusyCancelIndicatorForSelection(false);
+            // Merge the found databases into a new (or replaced) TimelapseData_merged.ddb file located in the same folder as the template.
+            // Note: .ddb files found in a Backup folder will be ignored
+            ErrorsAndWarnings errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, allDDBFiles, progress).ConfigureAwait(true);
 
-                Mouse.OverrideCursor = null;
-                if (errorMessages.Count != 0)
+            // Turn off progress indicators
+            this.EnableBusyCancelIndicatorForSelection(false);
+            Mouse.OverrideCursor = null;
+
+            // Show errors and/or warnings, if any.
+            if (errorMessages.Errors.Count != 0 || errorMessages.Warnings.Count != 0)
+            {
+                messageBox = new MessageBox("Merge Databases Results.", this);
+                messageBox.Message.Icon = MessageBoxImage.Error;
+                if (errorMessages.Errors.Count != 0)
                 {
-                    messageBox = new MessageBox("Merge Databases Failed.", this);
-                    messageBox.Message.Icon = MessageBoxImage.Error;
                     messageBox.Message.Title = "Merge Databases Failed.";
                     messageBox.Message.What = "The merged database could not be created for the following reasons:";
-                    foreach (string errorMessage in errorMessages)
-                    {
-                        messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, errorMessage);
-                    }
-                    messageBox.ShowDialog();
                 }
-            }
-        }
-        static List<string> DirSearch(string sDir, string pattern, List<string> files)
-        {
-            try
-            {
-                foreach (string directory in Directory.GetDirectories(sDir))
+                else if (errorMessages.Warnings.Count != 0)
                 {
-                    System.Diagnostics.Debug.Print(directory);
-                    string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
-                    if (foldername == Constant.File.BackupFolder)
-                    {
-                        continue;
-                    }
-                    files.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
-                    DirSearch(directory, pattern, files);
+                    messageBox.Message.Title = "Merge Databases Left Out Some Files.";
+                    messageBox.Message.What = "The merged database left out some files for the following reasons:";
                 }
+
+                if (errorMessages.Errors.Count != 0)
+                {
+                    messageBox.Message.What += String.Format("{0}{0}Errors:", Environment.NewLine);
+                    foreach (string error in errorMessages.Errors)
+                    {
+                        messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, error);
+                    }
+                }
+                if (errorMessages.Warnings.Count != 0)
+                {
+                    messageBox.Message.What += String.Format("{0}{0}Warnings:", Environment.NewLine);
+                }
+                foreach (string warning in errorMessages.Warnings)
+                {
+                    messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, warning);
+                }
+                messageBox.ShowDialog();
             }
-            catch (System.Exception)
-            {
-                return null;
-            }
-            return files;
         }
 
         #region Progess handler / Progress bar updates 
         // Set up a progress handler that will update the progress bar
-        Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+        readonly Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
         {
             // Update the progress bar
             UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.CancelMessage, value.IsCancelEnabled, value.IsIndeterminate);

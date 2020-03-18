@@ -108,7 +108,32 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing getschema in GetColumnAndDefaultValue. {0}", exception.ToString()));
+                TraceDebug.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumnsAndDefaultValues. {0}", exception.ToString()));
+                return null;
+            }
+        }
+
+        // Return a List of strings comprising each column in the schema
+        public List<string> SchemaGetColumns(string tableName)
+        {
+            try
+            {
+                // Open the connection
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    SQLiteDataReader reader = GetSchema(connection, tableName);
+                    List<string> columnsList = new List<string>();
+                    while (reader.Read())
+                    {
+                        columnsList.Add(reader[1].ToString());
+                    }
+                    return columnsList;
+                }
+            }
+            catch (Exception exception)
+            {
+                TraceDebug.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumns. {0}", exception.ToString()));
                 return null;
             }
         }
@@ -517,7 +542,8 @@ namespace Timelapse.Database
         /// <returns>The number of items selected.</returns>
         public int GetCountFromSelect(string query)
         {
-            return Convert.ToInt32(this.GetScalarFromSelect(query));
+            object obj = this.GetScalarFromSelect(query);
+            return (obj == DBNull.Value) ? 0 : Convert.ToInt32(obj);
         }
 
         // The EXISTS query should be in the form of 
