@@ -41,12 +41,46 @@ namespace Timelapse.Database
             return backupFolder;
         }
 
+        // Copy to backup version with with full path to source file
         public static bool TryCreateBackup(string sourceFilePath)
         {
-            return FileBackup.TryCreateBackup(Path.GetDirectoryName(sourceFilePath), Path.GetFileName(sourceFilePath));
+            return FileBackup.TryCreateBackup(Path.GetDirectoryName(sourceFilePath), Path.GetFileName(sourceFilePath), false);
         }
 
+        // Copy or move file to backup version with full path to source file
+        public static bool TryCreateBackup(string sourceFilePath, bool moveInsteadOfCopy)
+        {
+            return FileBackup.TryCreateBackup(Path.GetDirectoryName(sourceFilePath), Path.GetFileName(sourceFilePath), moveInsteadOfCopy);
+        }
+
+        // Copy or move file to backup version with separated path/source file name
         public static bool TryCreateBackup(string folderPath, string sourceFileName)
+        {
+            return FileBackup.TryCreateBackup(folderPath, sourceFileName, false);
+        }
+
+        public static string GetLastBackupFilePath(string sourceFilePath)
+        {
+            string sourceFolderPath = Path.GetDirectoryName(sourceFilePath);
+            DirectoryInfo backupFolder = new DirectoryInfo(Path.Combine(sourceFolderPath, Constant.File.BackupFolder));   // The Backup Folder 
+            if (backupFolder.Exists == false)
+            {
+                // If there is no backp folder, then there is no backup file
+                return String.Empty;
+            }
+            
+            // Get the backup files
+            IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
+            if (backupFiles.Any() == false)
+            {
+                // No backup files 
+                return String.Empty;
+            }
+            return backupFiles.Last().FullName;
+        }
+
+        // Full version: Copy or move file to backup version with separated path/source file name
+        public static bool TryCreateBackup(string folderPath, string sourceFileName, bool moveInsteadOfCopy)
         {
             string sourceFilePath = Path.Combine(folderPath, sourceFileName);
             if (File.Exists(sourceFilePath) == false)
@@ -67,7 +101,14 @@ namespace Timelapse.Database
 
             try
             {
-                File.Copy(sourceFilePath, destinationFilePath, true);
+                if (moveInsteadOfCopy)
+                {
+                    File.Move(sourceFilePath, destinationFilePath);
+                }
+                else
+                {
+                    File.Copy(sourceFilePath, destinationFilePath, true);
+                }
             }
             catch
             {
@@ -83,7 +124,6 @@ namespace Timelapse.Database
             {
                 File.Delete(file.FullName);
             }
-
             return true;
         }
     }

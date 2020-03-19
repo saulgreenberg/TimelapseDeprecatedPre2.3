@@ -585,6 +585,8 @@ namespace Timelapse
             // Note: .ddb files found in a Backup folder will be ignored
             ErrorsAndWarnings errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, allDDBFiles, progress).ConfigureAwait(true);
 
+
+
             // Turn off progress indicators
             this.EnableBusyCancelIndicatorForSelection(false);
             Mouse.OverrideCursor = null;

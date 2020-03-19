@@ -24,12 +24,10 @@ namespace Timelapse.Database
         // - Detections 
         // If fatal errors occur in the merge, abort 
         // Return the relevant error messages in the ErrorsAndWarnings object.
-        // Note: if a .ddb File already exists in that root folder, it will be over-written
-        // TO DO: 
-        // - MAKE A NEW .DDB FILE AND RENAME IT WHEN DONE, OR DELETE IT IF ERROR, MOVE OLD ONE INTO BACKUP
+        // Note: if a merged .ddb File already exists in that root folder, it will be backed up and then over-written
+
         public async static Task<ErrorsAndWarnings> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths, IProgress<ProgressBarArguments> progress)
         {
-
             ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
             if (ddbFilePaths?.Count == 0)
             {
@@ -38,9 +36,10 @@ namespace Timelapse.Database
             }
 
             string rootFolderPath = Path.GetDirectoryName(tdbFile);
-            string mergedDDBPath = Path.Combine(rootFolderPath, Constant.File.MergedFileName);
+            string mergeFileName = Constant.File.MergedFileName;
+            string mergedDDBPath = Path.Combine(rootFolderPath, mergeFileName);
             string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-
+            
             // Check to see if we can actually open the template. 
             // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
             // Original form: if (!(await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath, out this.templateDatabase).ConfigureAwait(true))
@@ -52,6 +51,16 @@ namespace Timelapse.Database
                 errorMessages.Errors.Add("Could not open the template .tdb file: " + tdbFile);
                 return errorMessages;
             }
+
+            // if the merge file exists, move it to the backup folder as we will be overwriting it.
+            bool backupMade = false;
+            if (File.Exists(mergedDDBPath))
+            {
+                // Backup the old merge file by moving it to the backup folder 
+                // Note that we do the move instead of copy as we will be overwriting the file anyways
+                backupMade = FileBackup.TryCreateBackup(mergedDDBPath, true);
+            }
+
             FileDatabase fd = await FileDatabase.CreateEmptyDatabase(mergedDDBPath, templateDatabase).ConfigureAwait(true);
             fd.Dispose();
             fd = null;
@@ -94,10 +103,14 @@ namespace Timelapse.Database
                 mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int)FileSelectionEnum.All).ToString());
                 mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
             }
+            if (backupMade && (errorMessages.Errors.Any() || errorMessages.Warnings.Any()))
+            {
+                errorMessages.Warnings.Add(String.Format("Note: A backup of your original {0} can be found in the {1} folder", mergeFileName, Constant.File.BackupFolder));
+            }
             return errorMessages;
         }
 
-        #region Private internal methods
+         #region Private internal methods
         // Merge a .ddb file specified in the toMergeDDB path into the mergedDDB database.
         // Also update the Relative path to reflect the new location of the toMergeDDB as defined in the rootFolderPath
         private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDBPath, string rootFolderPath, List<string> mergedDDBDataLabels)
