@@ -58,6 +58,8 @@ namespace Timelapse.Images
             TimeZoneInfo imageSetTimeZone = imageDatabase.ImageSet.GetSystemTimeZone();
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             List<ColumnTuplesWithWhere> markersToUpdate = new List<ColumnTuplesWithWhere>();
+            List<Tuple<string, List<ColumnTuple>>> fileNamesMarkersList = new List<Tuple<string, List<ColumnTuple>>>();
+            List<string> skippedFileNames = new List<string>();
             foreach (XmlNode node in nodeList)
             {
                 imageID++;
@@ -154,16 +156,37 @@ namespace Timelapse.Images
                 ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere(columnsToUpdate);
                 // Since Timelapse1 didn't have relative paths, we only need to set Where using the image filename 
                 // imageToUpdate.SetWhere(currentFolderName, null, imageFileName); //<- replaced by the simpler SetWhere form below
-                imageToUpdate.SetWhere(imageFileName);
-                imagesToUpdate.Add(imageToUpdate);
+                if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), imageFileName)))
+                { 
+                    imageToUpdate.SetWhere(imageFileName);
+                    imagesToUpdate.Add(imageToUpdate);
+                    ColumnTuple ColumnTupleFileName = new ColumnTuple(Constant.DatabaseColumn.File, imageFileName);
 
-                ColumnTuplesWithWhere markerToUpdate = new ColumnTuplesWithWhere(counterCoordinates, imageID);
-                markersToUpdate.Add(markerToUpdate);
+                    // We have to do the markers later, as we need to get the ID of the matching filename from the data table,
+                    // and use that to set the markers.
+                    Tuple<string, List<ColumnTuple>> filenameMarkerTuple = new Tuple<string, List<ColumnTuple>>(imageFileName, counterCoordinates);
+                    fileNamesMarkersList.Add(filenameMarkerTuple);
+                }
+                else
+                {
+                    skippedFileNames.Add(imageFileName);
+                }
             }
 
-            // batch update both tables
+            // batch update the data table
             imageDatabase.UpdateFiles(imagesToUpdate);
-            imageDatabase.UpdateMarkers(markersToUpdate);
+
+            // Now that we have updated the data table, we can update the markers.
+            // We retrieve the ID of the filename associated with the markers from the data table,
+            // and use that to set the correct row in the marker table.
+            foreach (Tuple<string, List<ColumnTuple>> tuple in fileNamesMarkersList)
+            {
+                long id = imageDatabase.GetIDFromDataTableByFileName(tuple.Item1);
+                ColumnTuplesWithWhere markerToUpdate = new ColumnTuplesWithWhere(tuple.Item2, id);
+                markersToUpdate.Add(markerToUpdate);
+                imageDatabase.UpdateMarkers(markersToUpdate);
+            }
+
             if (reader != null)
             {
                 reader.Dispose();

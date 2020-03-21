@@ -1019,12 +1019,23 @@ namespace Timelapse.Database
 
         public FileTable SelectFileInDataTableById(string id)
         {
-            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + id + Sql.LimitOne;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + Utilities.QuoteForSql(id) + Sql.LimitOne;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
 
-
+        // This is only used for converting old XML data files to the new ones
+        // Normally, we would need to use the relative path for this to work reliably,
+        // but the old XML files don't have a relative path.
+        public long GetIDFromDataTableByFileName(string fileName)
+        {
+            string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.From + Constant.DBTables.FileData;
+            query += Sql.Where + Constant.DatabaseColumn.File  + Sql.Equal + Utilities.QuoteForSql(fileName) + Sql.LimitOne;
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            long id = (images.Rows.Count == 1) ? (long) images.Rows[0][0] : -1;
+            images.Dispose();
+            return id;
+        }
         #endregion
 
         #region Get Distinct Values

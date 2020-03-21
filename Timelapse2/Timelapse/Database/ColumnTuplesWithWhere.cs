@@ -26,6 +26,12 @@ namespace Timelapse.Database
             this.SetWhere(id);
         }
 
+        public ColumnTuplesWithWhere(List<ColumnTuple> columns, ColumnTuple tuple)
+            : this(columns)
+        {
+            this.SetWhere(tuple);
+        }
+
         public ColumnTuplesWithWhere(ColumnTuple column, string field)
         {
             this.SetWhere(column, field);
@@ -54,6 +60,13 @@ namespace Timelapse.Database
         public void SetWhere(long id)
         {
             this.Where = Constant.DatabaseColumn.ID + " = " + id.ToString();
+        }
+
+        public void SetWhere(ColumnTuple columnTuple)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(columnTuple, nameof(columnTuple));
+            this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(columnTuple.Value));
         }
 
         public void SetWhere(ColumnTuple columnTuple, string field)
