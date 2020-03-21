@@ -438,8 +438,17 @@ namespace Timelapse
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
-                        ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
+                        Tuple<int,int> SuccessSkippedFileCounter = ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
                         await this.FilesSelectAndShowAsync(this.DataHandler.FileDatabase.ImageSet.MostRecentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
+                        MessageBox messageBox = new MessageBox("Data imported from old XML file", this);
+                        messageBox.Message.What = "Data imported " + SuccessSkippedFileCounter.Item1 + " existing images, each with an entry in your ImageData.xml file." + Environment.NewLine;
+                        if (SuccessSkippedFileCounter.Item2 != 0)
+                        {
+                            messageBox.Message.What += Environment.NewLine + "However, " + SuccessSkippedFileCounter.Item2.ToString() + " data entries in the ImageData.xml file were skipped, as they did not match any existing files.";
+                            messageBox.Message.What += Environment.NewLine + "This can occur if you moved, renamed, or deleted some of your original files.";
+                            messageBox.Message.What += Environment.NewLine + "This is not necessarily an error, but you should check to make sure you have what you need.";
+                        }
+                        messageBox.ShowDialog();
                     }
                 }
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator

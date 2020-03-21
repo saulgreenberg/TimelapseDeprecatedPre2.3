@@ -11,7 +11,7 @@ namespace Timelapse.Images
     {
         // Read all the data into the imageData structure from the XML file in the filepath.
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
-        public static void Read(string filePath, FileDatabase imageDatabase)
+        public static Tuple<int,int> Read(string filePath, FileDatabase imageDatabase)
         {
             // XML Preparation - follows CA3075  pattern for loading
             XmlDocument xmlDoc = new XmlDocument() { XmlResolver = null };
@@ -59,7 +59,11 @@ namespace Timelapse.Images
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             List<ColumnTuplesWithWhere> markersToUpdate = new List<ColumnTuplesWithWhere>();
             List<Tuple<string, List<ColumnTuple>>> fileNamesMarkersList = new List<Tuple<string, List<ColumnTuple>>>();
-            List<string> skippedFileNames = new List<string>();
+
+            int successCounter = 0;
+            int skippedCounter = 0;
+
+
             foreach (XmlNode node in nodeList)
             {
                 imageID++;
@@ -166,10 +170,11 @@ namespace Timelapse.Images
                     // and use that to set the markers.
                     Tuple<string, List<ColumnTuple>> filenameMarkerTuple = new Tuple<string, List<ColumnTuple>>(imageFileName, counterCoordinates);
                     fileNamesMarkersList.Add(filenameMarkerTuple);
+                    successCounter++;
                 }
                 else
                 {
-                    skippedFileNames.Add(imageFileName);
+                    skippedCounter++;
                 }
             }
 
@@ -191,6 +196,7 @@ namespace Timelapse.Images
             {
                 reader.Dispose();
             }
+            return new Tuple<int, int>(successCounter, skippedCounter);
         }
     }
 }

@@ -4,22 +4,25 @@
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
         Title="Import Data from ImageData.XML?" 
-        Height="430" Width="690"
+        Height="480" Width="690"
         ResizeMode="NoResize"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Question"
-                            Title="Do you want to import the data from ImageData.xml file?"
+                            Title="Import the data for matching files from your ImageData.xml file?"
                             Problem="An old-style ImageData.xml file, created with an earlier version of Timelapse, exists in this folder.&#10;It may have previously entered data about this image set that you may want to keep."
-                            Solution="1. Click 'Use Old Data' - this will import your data into a new-style .ddb data file. 
-                                   &#10;2. Click 'Ignore Old Data' - this will create an empty new-style .ddb data file."
+                            Solution="1. Click 'Use Old Data' - this will import each file's's data (if any) into the new-style .ddb data file. 
+                                   &#10;2. Click 'Ignore Old Data' - will ignore the ImageData.xml  data."
+                            Result="- For each file, Timelapse will update its data if there is a matching entry in the ImageData.xml file.
+                                   &#10;- If the ImageData.xml file has data for files that no longer exist, that data is ignored."
                             Hint="Correct importing will only work if:
                                    &#10;- you had converted your old template.xml file into the new .tdb template using the Template Editor 
                                    &#10;- that old template.xml file was used to create the old-style ImageData.xml file 
                                    &#10;- you did not add any new fields or delete any old ones from the template.
                                    &#10;- you did not reorder any of the fields.
+                                   &#10;- your file names match those in the ImageData.xml file (otherwise that data will be skipped).
                                    &#10;&#10;Check the results carefully."
                             />
         <DockPanel Name="DockPanelImage">

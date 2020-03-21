@@ -57,7 +57,9 @@
                             <Image Source="Icons/NewFile_40x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-
+                    
+                    <Separator />
+                    
                     <!-- Merge -->
                     <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merge any databases into a single one"  Click="MenuItemMergeDatabases_Click" />
    

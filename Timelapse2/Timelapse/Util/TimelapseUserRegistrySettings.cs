@@ -26,7 +26,7 @@ namespace Timelapse.Util
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }
         public bool SuppressCsvImportPrompt { get; set; }
-        public bool SuppressFileCountOnImportDialog { get; set; }
+        public bool SuppressMergeDatabasesPrompt { get; set; }
         public bool SuppressSelectedAmbiguousDatesPrompt { get; set; }
         public bool SuppressSelectedCsvExportPrompt { get; set; }
         public bool SuppressSelectedDarkThresholdPrompt { get; set; }
@@ -81,7 +81,7 @@ namespace Timelapse.Util
                 this.SuppressAmbiguousDatesDialog = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressCsvExportDialog, false);
                 this.SuppressCsvImportPrompt = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressCsvImportPrompt, false);
-                this.SuppressFileCountOnImportDialog = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressFileCountOnImportDialog, false);
+                this.SuppressMergeDatabasesPrompt = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressMergeDatabasesDialog, false);
                 this.SuppressSelectedAmbiguousDatesPrompt = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressSelectedAmbiguousDatesPrompt, false);
                 this.SuppressSelectedCsvExportPrompt = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressSelectedCsvExportPrompt, false);
                 this.SuppressSelectedDarkThresholdPrompt = registryKey.ReadBoolean(Constant.WindowRegistryKeys.SuppressSelectedDarkThresholdPrompt, false);
@@ -159,7 +159,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressAmbiguousDatesDialog, this.SuppressAmbiguousDatesDialog);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressCsvExportDialog, this.SuppressCsvExportDialog);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressCsvImportPrompt, this.SuppressCsvImportPrompt);
-                registryKey.Write(Constant.WindowRegistryKeys.SuppressFileCountOnImportDialog, this.SuppressFileCountOnImportDialog);
+                registryKey.Write(Constant.WindowRegistryKeys.SuppressMergeDatabasesDialog, this.SuppressMergeDatabasesPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedAmbiguousDatesPrompt, this.SuppressSelectedAmbiguousDatesPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedCsvExportPrompt, this.SuppressSelectedCsvExportPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedDarkThresholdPrompt, this.SuppressSelectedDarkThresholdPrompt);

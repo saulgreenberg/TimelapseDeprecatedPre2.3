@@ -26,8 +26,8 @@ namespace Timelapse.Dialog
             this.SuppressCsvExportDialog.IsChecked = this.state.SuppressCsvExportDialog;
             this.SuppressCsvExportDialog.IsChecked = this.state.SuppressCsvExportDialog;
             this.SuppressCsvImportPrompt.IsChecked = this.state.SuppressCsvImportPrompt;
-            this.SuppressFileCountOnImportDialog.IsChecked = this.state.SuppressFileCountOnImportDialog;
             this.SuppressSelectedAmbiguousDatesPrompt.IsChecked = this.state.SuppressSelectedAmbiguousDatesPrompt;
+            this.SuppressMergeDatabasesPrompt.IsChecked = this.state.SuppressMergeDatabasesPrompt;
             this.SuppressSelectedCsvExportPrompt.IsChecked = this.state.SuppressSelectedCsvExportPrompt;
             this.SuppressSelectedDarkThresholdPrompt.IsChecked = this.state.SuppressSelectedDarkThresholdPrompt;
             this.SuppressSelectedDateTimeFixedCorrectionPrompt.IsChecked = this.state.SuppressSelectedDateTimeFixedCorrectionPrompt;
@@ -56,18 +56,18 @@ namespace Timelapse.Dialog
             this.state.SuppressCsvImportPrompt = (cb.IsChecked == true) ? true : false;
         }
 
-        private void SuppressFileCountOnImportDialog_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBox cb = (CheckBox)sender;
-            this.state.SuppressFileCountOnImportDialog = (cb.IsChecked == true) ? true : false;
-        }
-
         private void SuppressSelectedAmbiguousDatesPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
             this.state.SuppressSelectedAmbiguousDatesPrompt = (cb.IsChecked == true) ? true : false;
         }
 
+        private void SuppressMergeDatabasesPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            this.state.SuppressMergeDatabasesPrompt = (cb.IsChecked == true) ? true : false;
+        }
+        
         private void SuppressSelectedCsvExportPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
