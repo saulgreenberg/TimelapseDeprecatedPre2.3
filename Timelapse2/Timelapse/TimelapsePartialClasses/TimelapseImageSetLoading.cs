@@ -438,7 +438,7 @@ namespace Timelapse
                     bool? dialogResult = importLegacyXmlDialog.ShowDialog();
                     if (dialogResult == true)
                     {
-                        Tuple<int,int> SuccessSkippedFileCounter = ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
+                        Tuple<int, int> SuccessSkippedFileCounter = ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
                         await this.FilesSelectAndShowAsync(this.DataHandler.FileDatabase.ImageSet.MostRecentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
                         MessageBox messageBox = new MessageBox("Data imported from old XML file", this);
                         messageBox.Message.What = "Data imported " + SuccessSkippedFileCounter.Item1 + " existing images, each with an entry in your ImageData.xml file." + Environment.NewLine;

@@ -5,13 +5,6 @@ using System.Data;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using Timelapse.Controls;
-using Timelapse.Detection;
-using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Database

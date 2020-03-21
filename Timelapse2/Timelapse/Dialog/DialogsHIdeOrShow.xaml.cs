@@ -67,7 +67,7 @@ namespace Timelapse.Dialog
             CheckBox cb = (CheckBox)sender;
             this.state.SuppressMergeDatabasesPrompt = (cb.IsChecked == true) ? true : false;
         }
-        
+
         private void SuppressSelectedCsvExportPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;

@@ -78,7 +78,7 @@ namespace Timelapse.Database
             // initialize the database if it's newly created
             FileDatabase fileDatabase = new FileDatabase(filePath);
             await fileDatabase.OnDatabaseCreatedAsync(templateDatabase).ConfigureAwait(true);
-            return fileDatabase;    
+            return fileDatabase;
         }
 
 
@@ -957,7 +957,7 @@ namespace Timelapse.Database
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
             this.FileTable = new FileTable(images);
-      }
+        }
 
         // Select all files in the file table
         public FileTable SelectAllFiles()
@@ -1030,9 +1030,9 @@ namespace Timelapse.Database
         public long GetIDFromDataTableByFileName(string fileName)
         {
             string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.From + Constant.DBTables.FileData;
-            query += Sql.Where + Constant.DatabaseColumn.File  + Sql.Equal + Utilities.QuoteForSql(fileName) + Sql.LimitOne;
+            query += Sql.Where + Constant.DatabaseColumn.File + Sql.Equal + Utilities.QuoteForSql(fileName) + Sql.LimitOne;
             DataTable images = this.Database.GetDataTableFromSelect(query);
-            long id = (images.Rows.Count == 1) ? (long) images.Rows[0][0] : -1;
+            long id = (images.Rows.Count == 1) ? (long)images.Rows[0][0] : -1;
             images.Dispose();
             return id;
         }

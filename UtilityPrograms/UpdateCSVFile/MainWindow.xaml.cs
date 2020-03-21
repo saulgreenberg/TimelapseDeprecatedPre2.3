@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -56,7 +55,7 @@ namespace UpdateCSVFile
                     ListUpdatedHeaders.Add(header);
                 }
             }
-            
+
             List<string> ListFinalHeaders = ListUpdatedHeaders.Select(item => (string)item.Clone()).ToList();
             if (this.CreateRelativePathCheckBox.IsChecked == true && ListUpdatedHeaders.Contains(Constant.DatabaseColumn.RelativePath) == false)
             {
@@ -103,7 +102,7 @@ namespace UpdateCSVFile
                         string newFileName = rowArray[j];
                         // Trim the file nameif needed
                         if (this.TrimFileCheckBox.IsChecked == true && trimAmount > 0)
-                        {  
+                        {
                             if (newFileName.Length >= trimAmount)
                             {
                                 newFileName = newFileName.Remove(0, trimAmount);
@@ -404,7 +403,7 @@ namespace UpdateCSVFile
                 instream.Close();
             }
             if (csvReader != null)
-            { 
+            {
                 csvReader.Close();
             }
         }

@@ -68,7 +68,7 @@ namespace Timelapse.Database
                 // If there is no backp folder, then there is no backup file
                 return String.Empty;
             }
-            
+
             // Get the backup files
             IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
             if (backupFiles.Any() == false)

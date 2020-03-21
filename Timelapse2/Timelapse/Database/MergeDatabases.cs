@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
@@ -39,7 +37,7 @@ namespace Timelapse.Database
             string mergeFileName = Constant.File.MergedFileName;
             string mergedDDBPath = Path.Combine(rootFolderPath, mergeFileName);
             string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-            
+
             // Check to see if we can actually open the template. 
             // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
             // Original form: if (!(await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath, out this.templateDatabase).ConfigureAwait(true))
@@ -79,10 +77,10 @@ namespace Timelapse.Database
                 {
                     // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
                     progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0),
-                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count), 
-                        "Processing detections...", 
+                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count),
+                        "Processing detections...",
                         false, false));
-                    Thread.Sleep(250); 
+                    Thread.Sleep(250);
                     if (MergeDatabases.MergeIntoDDB(mergedDDB, ddbFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)
                     {
                         string trimmedPath = ddbFilePaths[i].Substring(rootFolderPath.Length + 1);
@@ -110,7 +108,7 @@ namespace Timelapse.Database
             return errorMessages;
         }
 
-         #region Private internal methods
+        #region Private internal methods
         // Merge a .ddb file specified in the toMergeDDB path into the mergedDDB database.
         // Also update the Relative path to reflect the new location of the toMergeDDB as defined in the rootFolderPath
         private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDBPath, string rootFolderPath, List<string> mergedDDBDataLabels)
@@ -160,7 +158,7 @@ namespace Timelapse.Database
             query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(String.Empty);
             query += Sql.Then + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
             query += Sql.Else + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
-           
+
             query += Sql.InsertInto + Constant.DBTables.FileData + Sql.SelectStarFrom + tempDataTable + Sql.Semicolon;
 
             // Create the second part of the query to:
@@ -173,10 +171,10 @@ namespace Timelapse.Database
             query += Sql.CreateTemporaryTable + tempMarkersTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Markers + Sql.Semicolon;
             query += Sql.Update + tempMarkersTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempMarkersTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
             query += Sql.InsertInto + Constant.DBTables.Markers + Sql.SelectStarFrom + tempMarkersTable + Sql.Semicolon;
-         
+
             // Now we need to see if we have to handle detection table updates.
             // Check to see if the main DB file and the toMerge DB file each have a Detections table.
-            bool dbToMergeDetectionsExists = FileDatabase.TableExists(Constant.DBTables.Detections,  toMergeDDBPath);
+            bool dbToMergeDetectionsExists = FileDatabase.TableExists(Constant.DBTables.Detections, toMergeDDBPath);
             bool mergedDDBDetectionsExists = mergedDDB.TableExists(Constant.DBTables.Detections);
 
             // If the main database doesn't have detections, but the database to merge into it does,
@@ -211,7 +209,7 @@ namespace Timelapse.Database
                 // Calculate an offset (the max DetectionIDs), where we will be adding that to all detectionIds in the ddbFile to merge. 
                 // However, the offeset should be 0 if there are no detections in the main DB, so we can just reusue this as is.
                 // as we will be creating the detection table and then just adding to it.
-                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Detections)  : 0; // Form: "Select Max(detectionId) from Detections"
+                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Detections) : 0; // Form: "Select Max(detectionId) from Detections"
                 query += Sql.CreateTemporaryTable + tempDetectionsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Detections + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DetectionColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
@@ -243,7 +241,7 @@ namespace Timelapse.Database
                 return Path.GetDirectoryName(path1).Replace(path2 + "\\", "");
             }
             else
-            { 
+            {
                 return Path.GetDirectoryName(path2).Replace(path1 + "\\", "");
             }
         }

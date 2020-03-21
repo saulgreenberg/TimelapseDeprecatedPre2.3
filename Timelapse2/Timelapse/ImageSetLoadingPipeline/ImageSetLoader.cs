@@ -97,7 +97,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 {
                     // Parse the relative path from the full name. 
                     // As GetDirectoryName does not end with a \ on a file name, we add the' '\' as needed
-                    
+
                     string directoryName = String.Empty;
                     try
                     {
@@ -113,9 +113,9 @@ namespace Timelapse.ImageSetLoadingPipeline
                         // Also, add its folder name (if it isn't already there) to a list so we can
                         // later show a meaningful error message to the user that these files were skipped.
                         // We do the folder name as otherwise the number of images could be overwhelming.
-                        string path = fileInfo.FullName.Substring(0, fileInfo.FullName.LastIndexOf(("\\")));  
-                        if (ImagesSkippedAsFilePathTooLong.Contains (path) == false)
-                        { 
+                        string path = fileInfo.FullName.Substring(0, fileInfo.FullName.LastIndexOf(("\\")));
+                        if (ImagesSkippedAsFilePathTooLong.Contains(path) == false)
+                        {
                             ImagesSkippedAsFilePathTooLong.Add(path);
                         }
                         continue;

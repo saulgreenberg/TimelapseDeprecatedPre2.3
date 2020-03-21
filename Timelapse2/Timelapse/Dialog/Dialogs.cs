@@ -202,7 +202,7 @@ namespace Timelapse.Dialog
         // This version detects and displays warning messages.
         public static void FilePathTooLongDialog(List<string> folders, Window owner)
         {
-            ThrowIf.IsNullArgument(folders, nameof(folders)); 
+            ThrowIf.IsNullArgument(folders, nameof(folders));
 
             string title = "Some of your Image File Path Names Were Too Long";
             MessageBox messageBox = new MessageBox(title, owner);
@@ -220,7 +220,7 @@ namespace Timelapse.Dialog
             messageBox.Message.Reason = "Windows cannot perform file operations if the folder path combined with the file name is more than " + Constant.File.MaxPathLength.ToString() + " characters.";
             messageBox.Message.Solution = "Try reloading this image set after shortening the file path:" + Environment.NewLine;
             messageBox.Message.Solution += "\u2022 shorten the path name by moving your image folder higher up the folder hierarchy, or" + Environment.NewLine + "\u2022 use shorter folder or file names.";
-          
+
             messageBox.Message.Hint = "Files created in your " + Constant.File.BackupFolder + " folder must also be less than " + Constant.File.MaxPathLength.ToString() + " characters.";
             messageBox.ShowDialog();
         }

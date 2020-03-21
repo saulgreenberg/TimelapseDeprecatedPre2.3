@@ -11,7 +11,7 @@ namespace Timelapse.Images
     {
         // Read all the data into the imageData structure from the XML file in the filepath.
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
-        public static Tuple<int,int> Read(string filePath, FileDatabase imageDatabase)
+        public static Tuple<int, int> Read(string filePath, FileDatabase imageDatabase)
         {
             // XML Preparation - follows CA3075  pattern for loading
             XmlDocument xmlDoc = new XmlDocument() { XmlResolver = null };
@@ -161,7 +161,7 @@ namespace Timelapse.Images
                 // Since Timelapse1 didn't have relative paths, we only need to set Where using the image filename 
                 // imageToUpdate.SetWhere(currentFolderName, null, imageFileName); //<- replaced by the simpler SetWhere form below
                 if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), imageFileName)))
-                { 
+                {
                     imageToUpdate.SetWhere(imageFileName);
                     imagesToUpdate.Add(imageToUpdate);
                     ColumnTuple ColumnTupleFileName = new ColumnTuple(Constant.DatabaseColumn.File, imageFileName);
