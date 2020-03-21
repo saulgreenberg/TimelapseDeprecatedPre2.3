@@ -18,6 +18,7 @@
         public const string DotStar = Sql.Dot + Sql.Star;
         public const string BeginTransaction = " BEGIN TRANSACTION ";
         public const string Between = " BETWEEN ";
+        public const string CaseWhen = " CASE WHEN ";
         public const string Cast = " CAST ";
         public const string CreateIndex = " CREATE INDEX ";
         public const string CreateTable = " CREATE TABLE ";
@@ -31,6 +32,8 @@
         public const string DeleteFrom = "DELETE FROM ";
         public const string DropIndex = " DROP INDEX ";
         public const string DropTable = " DROP TABLE ";
+        public const string Else = " ELSE ";
+        public const string End = " END ";
         public const string EndTransaction = " END TRANSACTION ";
         public const string Equal = " = ";
         public const string EqualsCaseID = " = CASE Id";
@@ -82,6 +85,7 @@
         public const string MasterTableList = "sqlite_master";
         public const string Real = " REAL ";
         public const string Text = "TEXT";
+        public const string Then = " THEN ";
         public const string Trim = " TRIM ";
         public const string TypeEqualsTable = " TYPE='table' ";
         public const string UnionAll = " UNION ALL";
@@ -92,6 +96,5 @@
         public const string WhereIDIn = Where + "Id IN ";
         public const string WhereIDNotIn = Where + " Id NOT IN ";
         public const string WhereIDEquals = Where + " Id " + Equal;
-        public const string Then = " THEN ";
     }
 }

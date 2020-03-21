@@ -120,8 +120,9 @@ namespace Timelapse.Database
 
             string attachedDB = "attachedDB";
             string tempDataTable = "tempDataTable";
+            string tempMarkersTable = "tempMarkersTable";
             string tempDetectionsTable = "tempDetectionsTable";
-
+            string tempClassificationsTable = "tempClassificationsTable";
             // Check to see if the datalabels in the toMergeDDB matches those in the mergedDBDataLabels.
             // If not, generate n warning and abort the merge
             SQLiteWrapper toMergeDDB = new SQLiteWrapper(toMergeDDBPath);
@@ -147,21 +148,54 @@ namespace Timelapse.Database
             // Form: ATTACH DATABASE 'toMergeDDB' AS attachedDB; 
             //       CREATE TEMPORARY TABLE tempDataTable AS SELECT * FROM attachedDB.DataTable;
             //       UPDATE tempDataTable SET Id = (offsetID + tempDataTable.Id);
-            //       UPDATE TempDataTable SET RelativePath = ("PrefixPath\" || RelativePath)
+            //       UPDATE TempDataTable SET RelativePath =  CASE WHEN RelativePath = '' THEN     ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
             //       INSERT INTO DataTable SELECT * FROM tempDataTable;
             string query = Sql.BeginTransaction + Sql.Semicolon;
             query += Sql.AttachDatabase + Utilities.QuoteForSql(toMergeDDBPath) + Sql.As + attachedDB + Sql.Semicolon;
             query += Sql.CreateTemporaryTable + tempDataTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.FileData + Sql.Semicolon;
             query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDataTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + ";";
+
+            //query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + ";";
+            // A longer query, so split into three lines
+            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(String.Empty);
+            query += Sql.Then + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
+            query += Sql.Else + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
+           
             query += Sql.InsertInto + Constant.DBTables.FileData + Sql.SelectStarFrom + tempDataTable + Sql.Semicolon;
 
+            // Create the second part of the query to:
+            // - Create a temporary Markers Table mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
+            // - Update the Markers Table with the modified Ids
+            // - Insert the Markers Table  into the main db's Markers Table
+            // Form: CREATE TEMPORARY TABLE tempMarkers AS SELECT * FROM attachedDB.Markers;
+            //       UPDATE tempMarkers SET Id = (offsetID + tempMarkers.Id);
+            //       INSERT INTO Markers SELECT * FROM tempMarkers;
+            query += Sql.CreateTemporaryTable + tempMarkersTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Markers + Sql.Semicolon;
+            query += Sql.Update + tempMarkersTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempMarkersTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
+            query += Sql.InsertInto + Constant.DBTables.Markers + Sql.SelectStarFrom + tempMarkersTable + Sql.Semicolon;
+         
             // Now we need to see if we have to handle detection table updates.
             // Check to see if the main DB file and the toMerge DB file each have a Detections table.
-            bool dbToMergeDetectionsExists = MergeDatabases.ExistsDetectionsTableInDB(toMergeDDBPath);
+            bool dbToMergeDetectionsExists = FileDatabase.TableExists(Constant.DBTables.Detections,  toMergeDDBPath);
             bool mergedDDBDetectionsExists = mergedDDB.TableExists(Constant.DBTables.Detections);
 
-            // Create the second part of the query only if the toMergeDDB contains a detections table
+            // If the main database doesn't have detections, but the database to merge into it does,
+            // then we have to create the detection tables to the main database.
+            if (mergedDDBDetectionsExists == false && dbToMergeDetectionsExists)
+            {
+                DetectionDatabases.CreateOrRecreateTablesAndColumns(mergedDDB);
+
+                // As its the first time we see a database with detections, import the Detection Categories, Classification Categories and Info 
+                // This assumes (perhaps incorrectly) that all databases the merge in have the same detection/classification categories and info.
+                // FORM: INSERT INTO DetectionCategories SELECT * FROM attachedDB.DetectionCategories;
+                //              INSERT INTO ClassificationCategories SELECT * FROM attachedDB.ClassifciationCategories;
+                //              INSERT INTO Info SELECT * FROM attachedDB.Info;
+                query += Sql.InsertInto + Constant.DBTables.DetectionCategories + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.DetectionCategories + Sql.Semicolon;
+                query += Sql.InsertInto + Constant.DBTables.ClassificationCategories + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.ClassificationCategories + Sql.Semicolon;
+                query += Sql.InsertInto + Constant.DBTables.Info + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Info + Sql.Semicolon;
+            }
+
+            // Create the third part of the query only if the toMergeDDB contains a detections table
             // (as otherwise we don't have to update the detection table in the main ddb.
             // - Create a temporary Detections table mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
             // - Update the Detections Table with both the modified Ids and detectionIDs
@@ -170,30 +204,33 @@ namespace Timelapse.Database
             //       UPDATE TempDetectionsTable SET Id = (offsetId + TempDetectionsTable.Id);
             //       UPDATE TempDetectionsTable SET DetectionID = (offsetDetectionId + TempDetectionsTable.DetectionId);
             //       INSERT INTO Detections SELECT * FROM TempDetectionsTable;"
+            // The Classifications form is similar, except it used the classification-specific tables, ids, offsets, etc.
             if (dbToMergeDetectionsExists)
             {
                 // The database to merge in has detections, so the SQL query also updates the Detections table.
                 // Calculate an offset (the max DetectionIDs), where we will be adding that to all detectionIds in the ddbFile to merge. 
-                // However, the offeset should be 0 if there are no detections in the main DB, 
+                // However, the offeset should be 0 if there are no detections in the main DB, so we can just reusue this as is.
                 // as we will be creating the detection table and then just adding to it.
-                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect("Select Max(detectionId) from Detections") : 0;
+                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Detections)  : 0; // Form: "Select Max(detectionId) from Detections"
                 query += Sql.CreateTemporaryTable + tempDetectionsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Detections + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
                 query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DetectionColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
                 query += Sql.InsertInto + Constant.DBTables.Detections + Sql.SelectStarFrom + tempDetectionsTable + Sql.Semicolon;
+
+                // Similar to the above, we also update the classifications
+                int offsetClassificationId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.ClassificationColumns.ClassificationID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Classifications) : 0; // Form: "Select Max(classificationID) from Classifications"
+                query += Sql.CreateTemporaryTable + tempClassificationsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Classifications + Sql.Semicolon;
+                query += Sql.Update + tempClassificationsTable + Sql.Set + Constant.ClassificationColumns.ClassificationID + Sql.Equal + Sql.OpenParenthesis + offsetClassificationId + Sql.Plus + tempClassificationsTable + Sql.Dot + Constant.ClassificationColumns.ClassificationID + Sql.CloseParenthesis + Sql.Semicolon;
+                query += Sql.Update + tempClassificationsTable + Sql.Set + Constant.ClassificationColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempClassificationsTable + Sql.Dot + Constant.ClassificationColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
+                query += Sql.InsertInto + Constant.DBTables.Classifications + Sql.SelectStarFrom + tempClassificationsTable + Sql.Semicolon;
             }
             query += Sql.EndTransaction + Sql.Semicolon;
-
-            // If the main database doesn't have detections, but the database to merge into it does,
-            // then we have to create the detection tables to the main database.
-            if (mergedDDBDetectionsExists == false && dbToMergeDetectionsExists)
-            {
-                DetectionDatabases.CreateOrRecreateTablesAndColumns(mergedDDB);
-            }
             mergedDDB.ExecuteNonQuery(query);
             return true;
         }
+        #endregion
 
+        #region Private methods
         // Find the difference between two paths (ignoring the file name, if any) and return it
         // For example, given:
         // path1 =    "C:\\Users\\Owner\\Desktop\\Test sets\\MergeLarge\\1\\TimelapseData.ddb"
@@ -209,15 +246,6 @@ namespace Timelapse.Database
             { 
                 return Path.GetDirectoryName(path2).Replace(path1 + "\\", "");
             }
-        }
-
-        // Check if the database specified in the path has a detections table
-        private static bool ExistsDetectionsTableInDB(string dbPath)
-        {   
-            // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
-            // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
-            SQLiteWrapper db = new SQLiteWrapper(dbPath);
-            return db.TableExists("Detections");
         }
         #endregion
     }
