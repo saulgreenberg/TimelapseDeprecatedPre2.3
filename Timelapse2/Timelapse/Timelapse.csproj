@@ -672,12 +672,12 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <Resource Include="Resources\TimelapseHelp.rtf" />
     <None Include="StrongNameKeyFile.snk" />
     <None Include="Timelapse.ruleset" />
     <Resource Include="Resources\AvalonLayout_DataEntryFloating.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnSide.config" />
     <Resource Include="Resources\AvalonLayout_DataEntryOnTop.config" />
-    <Resource Include="Resources\TimelapseHelp.rtf" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
