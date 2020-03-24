@@ -115,8 +115,8 @@
     <AssemblyOriginatorKeyFile>StrongNameKeyFile.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MetadataExtractor, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MetadataExtractor.2.2.0\lib\net45\MetadataExtractor.dll</HintPath>
+    <Reference Include="MetadataExtractor, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MetadataExtractor.2.3.0\lib\net45\MetadataExtractor.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualBasic" />
