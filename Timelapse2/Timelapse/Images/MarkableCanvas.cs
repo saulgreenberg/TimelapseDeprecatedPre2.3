@@ -1332,7 +1332,7 @@ namespace Timelapse.Images
         // Display or hide the episode popup
         private void EpisodePopupIsVisible(bool isVisible)
         {
-            FileDatabase fileDatabase = Util.GlobalReferences.MainWindow?.DataHandler?.FileDatabase; 
+            FileDatabase fileDatabase = Util.GlobalReferences.MainWindow?.DataHandler?.FileDatabase;
             if (fileDatabase == null)
             {
                 return;

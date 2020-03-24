@@ -27,7 +27,7 @@ namespace Timelapse.Controls
 
         private readonly TimelapseWindow timelapseWindow = GlobalReferences.MainWindow;
         private readonly MarkableCanvas markableCanvas;
-        
+
         public EpisodePopup(MarkableCanvas markableCanvas, FileDatabase fileDatabase, double imageHeight)
         {
             this.markableCanvas = markableCanvas;
@@ -78,14 +78,14 @@ namespace Timelapse.Controls
             // Calculate the lower and upper extent of the range of dates we should examine
             // The maximum date range we need to consider would be the current date plus/minus the (time threshold * the number of images we could display),
             // While this could produce more hits than we need, it should give us a relatively short table of possible candidates
-            DateTime lowerDateTime = currentImageRow.DateTime - TimeSpan.FromTicks((long)(timeThreshold.Ticks * maxNumberImagesToDisplay));
-            DateTime upperDateTime = currentImageRow.DateTime + TimeSpan.FromTicks((long)(timeThreshold.Ticks * maxNumberImagesToDisplay));
+            DateTime lowerDateTime = currentImageRow.DateTime - TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
+            DateTime upperDateTime = currentImageRow.DateTime + TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
             string slowerDateTime = DateTimeHandler.ToDatabaseDateTimeString(lowerDateTime);
             string supperDateTime = DateTimeHandler.ToDatabaseDateTimeString(upperDateTime);
 
             // Get a table of files (sorted by datetime) with that relative path which falls between the lower and upper date range
             DataTable dt = this.FileDatabase.GetIDandDateWithRelativePathAndBetweenDates(relativePath, slowerDateTime, supperDateTime);
- 
+
             // Find the current image in that table by its ID
             int rowWithCurrentImageRowID = -1;
             int availableRows = dt.Rows.Count;
