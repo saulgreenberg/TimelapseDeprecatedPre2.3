@@ -49,8 +49,7 @@ namespace Timelapse
             {
                 // This checks to see if its the data entry window, which is the only layoutanchorable present.
                 // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
-                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
-                if (model == null)
+                if (!(floatingWindow.Model is LayoutAnchorableFloatingWindow))
                 {
                     // SAULXXX: Note that the Floating DocumentPane (i.e., the DataGrid) behaviour is not what we want
                     // That is, it always appears topmost. yet if we set it to null, then it disappears behind the main 
@@ -88,8 +87,7 @@ namespace Timelapse
             {
                 // This checks to see if its the data entry window, which is the only layoutanchorable present.
                 // If its not, then the value will be null (i.e., its the DataGrid layoutdocument)
-                LayoutAnchorableFloatingWindow model = floatingWindow.Model as LayoutAnchorableFloatingWindow;
-                if (model == null)
+                if (!(floatingWindow.Model is LayoutAnchorableFloatingWindow))
                 {
                     continue;
                 }

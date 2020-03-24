@@ -1036,6 +1036,19 @@ namespace Timelapse.Database
             images.Dispose();
             return id;
         }
+
+        // A specialized call: Given a relative path and two dates (in database DateTime format without the offset)
+        // return a table containing ID, DateTime that matches the relative path and is inbetween the two datetime intervals
+        public DataTable GetIDandDateWithRelativePathAndBetweenDates(string relativePath, string lowerDateTime, string uppderDateTime)
+        {
+            // datetimes are in database format e.g., 2017-06-14T18:36:52.000Z 
+            // Form: Select ID,DateTime from DataTable where RelativePath='relativePath' and DateTime BETWEEN 'lowerDateTime' AND 'uppderDateTime' ORDER BY DateTime ORDER BY DateTime  
+            string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.Comma + Constant.DatabaseColumn.DateTime + Sql.From + Constant.DBTables.FileData;
+            query += Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(relativePath);
+            query += Sql.And + Constant.DatabaseColumn.DateTime + Sql.Between + Utilities.QuoteForSql(lowerDateTime) + Sql.And + Utilities.QuoteForSql(uppderDateTime);
+            query += Sql.OrderBy + Constant.DatabaseColumn.DateTime;
+            return (this.Database.GetDataTableFromSelect(query));
+        }
         #endregion
 
         #region Get Distinct Values

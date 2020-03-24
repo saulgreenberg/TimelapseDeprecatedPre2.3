@@ -127,8 +127,7 @@ namespace Timelapse.Controls
                     continue;
                 }
                 // We are only autocompleting notes
-                DataEntryNote note = control as DataEntryNote;
-                if (note == null)
+                if (!(control is DataEntryNote note))
                 {
                     continue;
                 }
@@ -148,9 +147,8 @@ namespace Timelapse.Controls
                 }
                 // We are only autocompleting notes
                 // Get the value and add it to the autocompletion, but only if there are at least two characters in it.
-                DataEntryNote note = control as DataEntryNote;
 
-                if (note != null && note.ContentControl.Text.Length > 1)
+                if (control is DataEntryNote note && note.ContentControl.Text.Length > 1)
                 {
                     string value = note.ContentControl.Text;
                     if (note.ContentControl.Autocompletions.ContainsKey(value) == false)
@@ -168,8 +166,7 @@ namespace Timelapse.Controls
                 // no point in autocompleting if its read-only
                 if (control.DataLabel == datalabel)
                 {
-                    DataEntryNote note = control as DataEntryNote;
-                    if (note != null)
+                    if (control is DataEntryNote note)
                     {
                         return note.ContentControl.Autocompletions;
                     }

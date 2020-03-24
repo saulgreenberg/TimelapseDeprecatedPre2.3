@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Timelapse.Controls;
+using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
 using Timelapse.Util;
@@ -1328,13 +1329,25 @@ namespace Timelapse.Images
         }
         #endregion
 
+        // Display or hide the episode popup
         private void EpisodePopupIsVisible(bool isVisible)
         {
+            FileDatabase fileDatabase = Util.GlobalReferences.MainWindow?.DataHandler?.FileDatabase; 
+            if (fileDatabase == null)
+            {
+                return;
+            }
             if (this.episodePopup == null)
             {
-                episodePopup = new EpisodePopup(this);
+                episodePopup = new EpisodePopup(this, fileDatabase, 160);
             }
-            episodePopup.Show(isVisible, 4);
+            else
+            {
+                // reset the filedatabase just in case it has been reloaded
+                // to a new image set since the last time we used it
+                episodePopup.FileDatabase = fileDatabase;
+            }
+            episodePopup.Show(isVisible, 6);
         }
 
         #region Window shuffling
