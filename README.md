@@ -9,6 +9,8 @@ Timelapse is currently in use across the world by various biologists and resourc
 * they have their own needs and ways for performing analytics on that data.
 Timelapse 2 helps in the 2nd step, where users then export the data so that it can be analyzed in another package of their choosing (e.g., R, spreadsheets, etc.)
 
+We are now working with Microsoft's AI for Earth, where one of their team perform image recognition of wildlife images submitted to Timelapse imports a recognition file they produce, and displays detected items within bounding boxes. Queries can be run against recognized entities.
+
 ### Contributing
 
 Bug reports, feature requests, and feedback are most welcome. Let us know! We can't improve the system if we don't hear from you. If you wish to co-develop this project, see below. 
