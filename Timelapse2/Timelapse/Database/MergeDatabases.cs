@@ -14,6 +14,52 @@ namespace Timelapse.Database
     // This static class will try to merge various .ddb database files into a single database.
     public static class MergeDatabases
     {
+        
+        public async static Task<ErrorsAndWarnings> TryMergeSingleDatabaseAsync(FileDatabase fileData, string rootFolderPath, string toMergeDDBPath, IProgress<ProgressBarArguments> progress)
+        {
+            ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
+            if (File.Exists(toMergeDDBPath) == false)
+            {
+                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
+                return errorMessages;
+            }
+            string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
+            Tuple<bool, TemplateDatabase> tupleResult;
+
+            // Get the DataLabels from the DataTable in the main database.
+            // We will later check to see if they match their counterparts in each database to merge in
+            
+            List<string> mergedDDBDataLabels = fileData.GetDataLabelsExceptIDInSpreadsheetOrder().ToList() ;
+            mergedDDBDataLabels.Add(Constant.DatabaseColumn.ID);
+
+
+            // Try to merge each database into the merged database
+            await Task.Run(() =>
+            {
+                 // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
+                 progress.Report(new ProgressBarArguments(50,
+                     String.Format("Merging {0} into {1}. Please wait...", "foo", "bar"),
+                     "Merging database...",
+                     false, false));
+                Thread.Sleep(250);
+                if (MergeDatabases.MergeIntoDDB(fileData.Database, toMergeDDBPath, rootFolderPath, mergedDDBDataLabels) == false)
+                {
+                    string trimmedPath = toMergeDDBPath.Substring(rootFolderPath.Length + 1);
+                    errorMessages.Warnings.Add(String.Format("'{0}' was skipped. Its template uses different data labels", trimmedPath));
+                }
+            }).ConfigureAwait(true);
+
+            // Remember to refresh the selection, either here or in the calling menu 
+
+            //if (backupMade && (errorMessages.Errors.Any() || errorMessages.Warnings.Any()))
+            //{
+            //    errorMessages.Warnings.Add(String.Format("Note: A backup of your original {0} can be found in the {1} folder", mergeFileName, Constant.File.BackupFolder));
+            //}
+            return errorMessages;
+        }
+
+
+
         // Given 
         // - a path to a .tdb file  (specifying the root folder)
         // - a list of ddbFiles (which must be located in sub-folders relative to the root folder)

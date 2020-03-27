@@ -22,7 +22,7 @@ namespace Timelapse.Database
 
         public DataTableBackedList<ControlRow> Controls { get; private set; }
 
-        protected SQLiteWrapper Database { get; set; }
+        public SQLiteWrapper Database { get; set; }
 
         /// <summary>Gets the file name of the image database on disk.</summary>
         public string FilePath { get; private set; }

@@ -542,6 +542,52 @@ namespace Timelapse
             Application.Current.Shutdown();
         }
 
+        private async void MenuItemMergeSingleDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the location of the DDB to merge into
+            if (this.TryGetDatabasePath(out string databasePathToMerge) == false)
+            {
+                return;
+            }
+
+            // Set up progress indicators
+            Mouse.OverrideCursor = Cursors.Wait;
+            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            this.EnableBusyCancelIndicatorForSelection(true);
+            string rootFolderPath = this.DataHandler.FileDatabase.FolderPath;
+
+            // Merge the found databases into a new (or replaced) TimelapseData_merged.ddb file located in the same folder as the template.
+            // Note: .ddb files found in a Backup folder will be ignored
+            ErrorsAndWarnings errorMessages = await MergeDatabases.TryMergeSingleDatabaseAsync(this.DataHandler.FileDatabase, rootFolderPath, databasePathToMerge, progress).ConfigureAwait(true);
+
+            // Turn off progress indicators
+            this.EnableBusyCancelIndicatorForSelection(false);
+            Mouse.OverrideCursor = null;
+        }
+        // Prompt user to select a template.
+        private bool TryGetDatabasePath(out string databasePath)
+        {
+            // Default the template selection dialog to the most recently opened database
+            this.State.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
+            if (Utilities.TryGetFileFromUser(
+                "Select a TimelapseData.tdb file, which should be located in the root folder containing your images and videos",
+                                             defaultTemplateDatabasePath,
+                                             String.Format("Database files (*{0})|*{0}", Constant.File.FileDatabaseFileExtension),
+                                             Constant.File.FileDatabaseFileExtension,
+                                             out databasePath) == false)
+            {
+                return false;
+            }
+
+            string templateDatabaseDirectoryPath = Path.GetDirectoryName(databasePath);
+            if (String.IsNullOrEmpty(templateDatabaseDirectoryPath))
+            {
+                return false;
+            }
+            return true;
+        }
+
+
         private async void MenuItemMergeDatabases_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressMergeDatabasesPrompt == false)

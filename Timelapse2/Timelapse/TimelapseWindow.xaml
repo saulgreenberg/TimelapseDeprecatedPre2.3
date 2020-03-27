@@ -61,8 +61,9 @@
                     <Separator />
                     
                     <!-- Merge -->
-                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merge any databases into a single one"  Click="MenuItemMergeDatabases_Click" />
-   
+                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merges databases in sub-folders into a single new database"  Click="MenuItemMergeDatabases_Click" />
+                    <MenuItem Name="MenuItemMergeOneDatabase" Header="Merge a single database" IsEnabled="true" ToolTip="Merge one database into an existing database"  Click="MenuItemMergeSingleDatabase_Click" />
+
                     <Separator />
 
                     <!-- Export data for this image set as a .csv file... -->
