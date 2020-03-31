@@ -14,52 +14,6 @@ namespace Timelapse.Database
     // This static class will try to merge various .ddb database files into a single database.
     public static class MergeDatabases
     {
-        
-        public async static Task<ErrorsAndWarnings> TryMergeSingleDatabaseAsync(FileDatabase fileData, string rootFolderPath, string toMergeDDBPath, IProgress<ProgressBarArguments> progress)
-        {
-            ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
-            if (File.Exists(toMergeDDBPath) == false)
-            {
-                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
-                return errorMessages;
-            }
-            string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
-            Tuple<bool, TemplateDatabase> tupleResult;
-
-            // Get the DataLabels from the DataTable in the main database.
-            // We will later check to see if they match their counterparts in each database to merge in
-            
-            List<string> mergedDDBDataLabels = fileData.GetDataLabelsExceptIDInSpreadsheetOrder().ToList() ;
-            mergedDDBDataLabels.Add(Constant.DatabaseColumn.ID);
-
-
-            // Try to merge each database into the merged database
-            await Task.Run(() =>
-            {
-                 // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
-                 progress.Report(new ProgressBarArguments(50,
-                     String.Format("Merging {0} into {1}. Please wait...", "foo", "bar"),
-                     "Merging database...",
-                     false, false));
-                Thread.Sleep(250);
-                if (MergeDatabases.MergeIntoDDB(fileData.Database, toMergeDDBPath, rootFolderPath, mergedDDBDataLabels) == false)
-                {
-                    string trimmedPath = toMergeDDBPath.Substring(rootFolderPath.Length + 1);
-                    errorMessages.Warnings.Add(String.Format("'{0}' was skipped. Its template uses different data labels", trimmedPath));
-                }
-            }).ConfigureAwait(true);
-
-            // Remember to refresh the selection, either here or in the calling menu 
-
-            //if (backupMade && (errorMessages.Errors.Any() || errorMessages.Warnings.Any()))
-            //{
-            //    errorMessages.Warnings.Add(String.Format("Note: A backup of your original {0} can be found in the {1} folder", mergeFileName, Constant.File.BackupFolder));
-            //}
-            return errorMessages;
-        }
-
-
-
         // Given 
         // - a path to a .tdb file  (specifying the root folder)
         // - a list of ddbFiles (which must be located in sub-folders relative to the root folder)
@@ -70,18 +24,18 @@ namespace Timelapse.Database
         // Return the relevant error messages in the ErrorsAndWarnings object.
         // Note: if a merged .ddb File already exists in that root folder, it will be backed up and then over-written
 
-        public async static Task<ErrorsAndWarnings> TryMergeDatabasesAsync(string tdbFile, List<string> ddbFilePaths, IProgress<ProgressBarArguments> progress)
+        public async static Task<ErrorsAndWarnings> TryMergeDatabasesAsync(string tdbFile, List<string> sourceDDBFilePaths, IProgress<ProgressBarArguments> progress)
         {
             ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
-            if (ddbFilePaths?.Count == 0)
+            if (sourceDDBFilePaths?.Count == 0)
             {
                 errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
                 return errorMessages;
             }
 
             string rootFolderPath = Path.GetDirectoryName(tdbFile);
-            string mergeFileName = Constant.File.MergedFileName;
-            string mergedDDBPath = Path.Combine(rootFolderPath, mergeFileName);
+            string destinationDDBFileName = Constant.File.MergedFileName;
+            string destinationDDBFilePath = Path.Combine(rootFolderPath, destinationDDBFileName);
             string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
 
             // Check to see if we can actually open the template. 
@@ -98,38 +52,38 @@ namespace Timelapse.Database
 
             // if the merge file exists, move it to the backup folder as we will be overwriting it.
             bool backupMade = false;
-            if (File.Exists(mergedDDBPath))
+            if (File.Exists(destinationDDBFilePath))
             {
                 // Backup the old merge file by moving it to the backup folder 
                 // Note that we do the move instead of copy as we will be overwriting the file anyways
-                backupMade = FileBackup.TryCreateBackup(mergedDDBPath, true);
+                backupMade = FileBackup.TryCreateBackup(destinationDDBFilePath, true);
             }
 
-            FileDatabase fd = await FileDatabase.CreateEmptyDatabase(mergedDDBPath, templateDatabase).ConfigureAwait(true);
+            FileDatabase fd = await FileDatabase.CreateEmptyDatabase(destinationDDBFilePath, templateDatabase).ConfigureAwait(true);
             fd.Dispose();
             fd = null;
 
             // Open the database
-            SQLiteWrapper mergedDDB = new SQLiteWrapper(mergedDDBPath);
+            SQLiteWrapper destinationDDB = new SQLiteWrapper(destinationDDBFilePath);
 
             // Get the DataLabels from the DataTable in the main database.
             // We will later check to see if they match their counterparts in each database to merge in
-            List<string> mergedDDBDataLabels = mergedDDB.SchemaGetColumns(Constant.DBTables.FileData);
+            List<string> mergedDDBDataLabels = destinationDDB.SchemaGetColumns(Constant.DBTables.FileData);
 
-            for (int i = 0; i < ddbFilePaths.Count; i++)
+            for (int i = 0; i < sourceDDBFilePaths.Count; i++)
             {
                 // Try to merge each database into the merged database
                 await Task.Run(() =>
                 {
                     // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
-                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)ddbFilePaths.Count * 100.0),
-                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, ddbFilePaths.Count),
+                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)sourceDDBFilePaths.Count * 100.0),
+                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, sourceDDBFilePaths.Count),
                         "Processing detections...",
                         false, false));
                     Thread.Sleep(250);
-                    if (MergeDatabases.MergeIntoDDB(mergedDDB, ddbFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)
+                    if (MergeDatabases.InsertSourceDataBaseTablesintoDestinationDatabase(destinationDDB, sourceDDBFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)
                     {
-                        string trimmedPath = ddbFilePaths[i].Substring(rootFolderPath.Length + 1);
+                        string trimmedPath = sourceDDBFilePaths[i].Substring(rootFolderPath.Length + 1);
                         errorMessages.Warnings.Add(String.Format("'{0}' was skipped. Its template uses different data labels", trimmedPath));
                     }
                 }).ConfigureAwait(true);
@@ -137,106 +91,101 @@ namespace Timelapse.Database
             // After the merged database is constructed, set the Folder column to the current root folder
             if (!String.IsNullOrEmpty(rootFolderName))
             {
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(rootFolderName));
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(rootFolderName));
             }
 
             // After the merged database is constructed, reset fields in the ImageSetTable to the defaults i.e., first row, selection all, 
             if (!String.IsNullOrEmpty(rootFolderName))
             {
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.MostRecentFileID + Sql.Equal + "1");
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int)FileSelectionEnum.All).ToString());
-                mergedDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.MostRecentFileID + Sql.Equal + "1");
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int)FileSelectionEnum.All).ToString());
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
             }
             if (backupMade && (errorMessages.Errors.Any() || errorMessages.Warnings.Any()))
             {
-                errorMessages.Warnings.Add(String.Format("Note: A backup of your original {0} can be found in the {1} folder", mergeFileName, Constant.File.BackupFolder));
+                errorMessages.Warnings.Add(String.Format("Note: A backup of your original {0} can be found in the {1} folder", destinationDDBFileName, Constant.File.BackupFolder));
             }
             return errorMessages;
         }
 
         #region Private internal methods
-        // Merge a .ddb file specified in the toMergeDDB path into the mergedDDB database.
-        // Also update the Relative path to reflect the new location of the toMergeDDB as defined in the rootFolderPath
-        private static bool MergeIntoDDB(SQLiteWrapper mergedDDB, string toMergeDDBPath, string rootFolderPath, List<string> mergedDDBDataLabels)
+        // Merge a .ddb file specified in the sourceDDBPath path into the destinationDDB database.
+        // Also update the Relative path to reflect the new location of the sourceDDB paths as defined in the rootFolderPath
+        private static bool InsertSourceDataBaseTablesintoDestinationDatabase(SQLiteWrapper destinationDDB, string SourceDDBPath, string rootFolderPath, List<string> sourceDataLabels)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(mergedDDB, nameof(mergedDDB));
+            ThrowIf.IsNullArgument(destinationDDB, nameof(destinationDDB));
+
+            // Check to see if the datalabels in the sourceDDB matches those in the destinationDataLabels.
+            // If not, generate a warning and abort the merge
+            SQLiteWrapper sourceDDB = new SQLiteWrapper(SourceDDBPath);
+            List<string> destinationDataLabels = sourceDDB.SchemaGetColumns(Constant.DBTables.FileData);
+            if (Compare.CompareLists(sourceDataLabels, destinationDataLabels) == false)
+            {
+                return false;
+            }
 
             string attachedDB = "attachedDB";
             string tempDataTable = "tempDataTable";
             string tempMarkersTable = "tempMarkersTable";
             string tempDetectionsTable = "tempDetectionsTable";
             string tempClassificationsTable = "tempClassificationsTable";
-            // Check to see if the datalabels in the toMergeDDB matches those in the mergedDBDataLabels.
-            // If not, generate n warning and abort the merge
-            SQLiteWrapper toMergeDDB = new SQLiteWrapper(toMergeDDBPath);
-            List<string> toMergeDBDDataLabels = toMergeDDB.SchemaGetColumns(Constant.DBTables.FileData);
-            if (Compare.CompareLists(mergedDDBDataLabels, toMergeDBDDataLabels) == false)
-            {
-                return false;
-            }
 
             // Determine the path prefix to add to the Relative Path i.e., the difference between the .tdb root folder and the path to the ddb file
-            string pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(toMergeDDBPath, rootFolderPath);
+            string pathPrefixToAdd = GetDifferenceBetweenPathAndSubPath(SourceDDBPath, rootFolderPath);
 
             // Calculate an ID offset (the current max Id), where we will be adding that to all Ids in the ddbFile to merge. 
             // This will guarantee that there are no duplicate primary keys 
-            int offsetId = mergedDDB.GetCountFromSelect("Select Max(Id) from DataTable");
+            int offsetId = destinationDDB.GetCountFromSelect(QueryGetMax(Constant.DatabaseColumn.ID, Constant.DBTables.FileData));
 
             // Create the first part of the query to:
             // - Attach the ddbFile
-            // - Create a temporary DataTable mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
+            // - Create a temporary DataTable mirroring the one in the sourceDDB (so updates to that don't affect the original ddb)
             // - Update the DataTable with the modified Ids
             // - Update the DataTable with the path prefix
             // - Insert the DataTable  into the main db's DataTable
-            // Form: ATTACH DATABASE 'toMergeDDB' AS attachedDB; 
+            // Form: ATTACH DATABASE 'sourceDDB' AS attachedDB; 
             //       CREATE TEMPORARY TABLE tempDataTable AS SELECT * FROM attachedDB.DataTable;
             //       UPDATE tempDataTable SET Id = (offsetID + tempDataTable.Id);
-            //       UPDATE TempDataTable SET RelativePath =  CASE WHEN RelativePath = '' THEN     ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
+            //       UPDATE TempDataTable SET RelativePath =  CASE WHEN RelativePath = '' THEN ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
             //       INSERT INTO DataTable SELECT * FROM tempDataTable;
-            string query = Sql.BeginTransaction + Sql.Semicolon;
-            query += Sql.AttachDatabase + Utilities.QuoteForSql(toMergeDDBPath) + Sql.As + attachedDB + Sql.Semicolon;
-            query += Sql.CreateTemporaryTable + tempDataTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.FileData + Sql.Semicolon;
-            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDataTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-
-            //query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + ";";
-            // A longer query, so split into three lines
-            query += Sql.Update + tempDataTable + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(String.Empty);
-            query += Sql.Then + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
-            query += Sql.Else + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
-
-            query += Sql.InsertInto + Constant.DBTables.FileData + Sql.SelectStarFrom + tempDataTable + Sql.Semicolon;
+            string query = QueryBeginTransaction();
+            query += QueryAttachDatabaseAs(SourceDDBPath, attachedDB);
+            query += QueryCreateTemporaryTableFromExistingTable(tempDataTable, attachedDB, Constant.DBTables.FileData);
+            query += QueryAddOffsetToIDInTable(tempDataTable, Constant.DatabaseColumn.ID, offsetId);
+            query += QueryAddPrefixToRelativePathInTable(tempDataTable, pathPrefixToAdd);
+            query += QueryInsertTable2DataIntoTable1(Constant.DBTables.FileData, tempDataTable);
 
             // Create the second part of the query to:
-            // - Create a temporary Markers Table mirroring the one in the toMergeDDB (so updates to that don't affect the original ddb)
+            // - Create a temporary Markers Table mirroring the one in the sourceDDB (so updates to that don't affect the original ddb)
             // - Update the Markers Table with the modified Ids
             // - Insert the Markers Table  into the main db's Markers Table
             // Form: CREATE TEMPORARY TABLE tempMarkers AS SELECT * FROM attachedDB.Markers;
             //       UPDATE tempMarkers SET Id = (offsetID + tempMarkers.Id);
             //       INSERT INTO Markers SELECT * FROM tempMarkers;
-            query += Sql.CreateTemporaryTable + tempMarkersTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Markers + Sql.Semicolon;
-            query += Sql.Update + tempMarkersTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempMarkersTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-            query += Sql.InsertInto + Constant.DBTables.Markers + Sql.SelectStarFrom + tempMarkersTable + Sql.Semicolon;
+            query += QueryCreateTemporaryTableFromExistingTable(tempMarkersTable, attachedDB, Constant.DBTables.Markers);
+            query += QueryAddOffsetToIDInTable(tempMarkersTable, Constant.DatabaseColumn.ID, offsetId);
+            query += QueryInsertTable2DataIntoTable1(Constant.DBTables.Markers, tempMarkersTable);
 
             // Now we need to see if we have to handle detection table updates.
-            // Check to see if the main DB file and the toMerge DB file each have a Detections table.
-            bool dbToMergeDetectionsExists = FileDatabase.TableExists(Constant.DBTables.Detections, toMergeDDBPath);
-            bool mergedDDBDetectionsExists = mergedDDB.TableExists(Constant.DBTables.Detections);
+            // Check to see if the destinationDDB file and the sourceDDB file each have a Detections table.
+            bool sourceDetectionsExists = FileDatabase.TableExists(Constant.DBTables.Detections, SourceDDBPath);
+            bool destinationDetectionsExists = destinationDDB.TableExists(Constant.DBTables.Detections);
 
             // If the main database doesn't have detections, but the database to merge into it does,
             // then we have to create the detection tables to the main database.
-            if (mergedDDBDetectionsExists == false && dbToMergeDetectionsExists)
+            if (destinationDetectionsExists == false && sourceDetectionsExists)
             {
-                DetectionDatabases.CreateOrRecreateTablesAndColumns(mergedDDB);
+                DetectionDatabases.CreateOrRecreateTablesAndColumns(destinationDDB);
 
                 // As its the first time we see a database with detections, import the Detection Categories, Classification Categories and Info 
                 // This assumes (perhaps incorrectly) that all databases the merge in have the same detection/classification categories and info.
                 // FORM: INSERT INTO DetectionCategories SELECT * FROM attachedDB.DetectionCategories;
                 //              INSERT INTO ClassificationCategories SELECT * FROM attachedDB.ClassifciationCategories;
                 //              INSERT INTO Info SELECT * FROM attachedDB.Info;
-                query += Sql.InsertInto + Constant.DBTables.DetectionCategories + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.DetectionCategories + Sql.Semicolon;
-                query += Sql.InsertInto + Constant.DBTables.ClassificationCategories + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.ClassificationCategories + Sql.Semicolon;
-                query += Sql.InsertInto + Constant.DBTables.Info + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Info + Sql.Semicolon;
+                query += QueryInsertTableDataFromAnotherDatabase(Constant.DBTables.DetectionCategories, attachedDB);
+                query += QueryInsertTableDataFromAnotherDatabase(Constant.DBTables.ClassificationCategories, attachedDB);
+                query += QueryInsertTableDataFromAnotherDatabase(Constant.DBTables.Info, attachedDB);
             }
 
             // Create the third part of the query only if the toMergeDDB contains a detections table
@@ -249,28 +198,98 @@ namespace Timelapse.Database
             //       UPDATE TempDetectionsTable SET DetectionID = (offsetDetectionId + TempDetectionsTable.DetectionId);
             //       INSERT INTO Detections SELECT * FROM TempDetectionsTable;"
             // The Classifications form is similar, except it used the classification-specific tables, ids, offsets, etc.
-            if (dbToMergeDetectionsExists)
+            if (sourceDetectionsExists)
             {
                 // The database to merge in has detections, so the SQL query also updates the Detections table.
                 // Calculate an offset (the max DetectionIDs), where we will be adding that to all detectionIds in the ddbFile to merge. 
                 // However, the offeset should be 0 if there are no detections in the main DB, so we can just reusue this as is.
                 // as we will be creating the detection table and then just adding to it.
-                int offsetDetectionId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Detections) : 0; // Form: "Select Max(detectionId) from Detections"
-                query += Sql.CreateTemporaryTable + tempDetectionsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Detections + Sql.Semicolon;
-                query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DatabaseColumn.ID + Sql.Equal + Sql.OpenParenthesis + offsetId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.Update + tempDetectionsTable + Sql.Set + Constant.DetectionColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempDetectionsTable + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.InsertInto + Constant.DBTables.Detections + Sql.SelectStarFrom + tempDetectionsTable + Sql.Semicolon;
+                int offsetDetectionId = (destinationDetectionsExists)
+                    ? destinationDDB.GetCountFromSelect(QueryGetMax(Constant.DetectionColumns.DetectionID, Constant.DBTables.Detections))
+                    : 0;
+                query += QueryCreateTemporaryTableFromExistingTable(tempDetectionsTable, attachedDB, Constant.DBTables.Detections);
+                query += QueryAddOffsetToIDInTable(tempDetectionsTable, Constant.DatabaseColumn.ID, offsetId);
+                query += QueryAddOffsetToIDInTable(tempDetectionsTable, Constant.DetectionColumns.DetectionID, offsetDetectionId);
+                query += QueryInsertTable2DataIntoTable1(Constant.DBTables.Detections, tempDetectionsTable);
 
                 // Similar to the above, we also update the classifications
-                int offsetClassificationId = (mergedDDBDetectionsExists) ? mergedDDB.GetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + Constant.ClassificationColumns.ClassificationID + Sql.CloseParenthesis + Sql.From + Constant.DBTables.Classifications) : 0; // Form: "Select Max(classificationID) from Classifications"
-                query += Sql.CreateTemporaryTable + tempClassificationsTable + Sql.As + Sql.SelectStarFrom + attachedDB + Sql.Dot + Constant.DBTables.Classifications + Sql.Semicolon;
-                query += Sql.Update + tempClassificationsTable + Sql.Set + Constant.ClassificationColumns.ClassificationID + Sql.Equal + Sql.OpenParenthesis + offsetClassificationId + Sql.Plus + tempClassificationsTable + Sql.Dot + Constant.ClassificationColumns.ClassificationID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.Update + tempClassificationsTable + Sql.Set + Constant.ClassificationColumns.DetectionID + Sql.Equal + Sql.OpenParenthesis + offsetDetectionId + Sql.Plus + tempClassificationsTable + Sql.Dot + Constant.ClassificationColumns.DetectionID + Sql.CloseParenthesis + Sql.Semicolon;
-                query += Sql.InsertInto + Constant.DBTables.Classifications + Sql.SelectStarFrom + tempClassificationsTable + Sql.Semicolon;
+                int offsetClassificationId = (destinationDetectionsExists)
+                    ? destinationDDB.GetCountFromSelect(QueryGetMax(Constant.ClassificationColumns.ClassificationID, Constant.DBTables.Classifications))
+                    : 0;
+                query += QueryCreateTemporaryTableFromExistingTable(tempClassificationsTable, attachedDB, Constant.DBTables.Classifications);
+                query += QueryAddOffsetToIDInTable(tempClassificationsTable, Constant.ClassificationColumns.ClassificationID, offsetClassificationId);
+                query += QueryAddOffsetToIDInTable(tempClassificationsTable, Constant.ClassificationColumns.DetectionID, offsetDetectionId);
+                query += QueryInsertTable2DataIntoTable1(Constant.DBTables.Classifications, tempClassificationsTable);
             }
-            query += Sql.EndTransaction + Sql.Semicolon;
-            mergedDDB.ExecuteNonQuery(query);
+            query += QueryEndTransaction();
+            destinationDDB.ExecuteNonQuery(query);
             return true;
+        }
+        #endregion
+
+        #region Queries: return partial queries 
+        // Form: BEGIN TRANSACTION;
+        private static string QueryBeginTransaction()
+        {
+            return Sql.BeginTransaction + Sql.Semicolon;
+        }
+
+        // Form: END TRANSACTION;
+        private static string QueryEndTransaction()
+        {
+            return Sql.EndTransaction + Sql.Semicolon; ;
+        }
+
+        // Form: "Select Max(columnName) from tableName"
+        private static string QueryGetMax(string columnName, string tableName)
+        {
+            return Sql.Select + Sql.Max + Sql.OpenParenthesis + columnName + Sql.CloseParenthesis + Sql.From + tableName;
+        }
+        // Form: ATTACH DATABASE 'databasePath' AS alias;
+        private static string QueryAttachDatabaseAs(string databasePath, string alias)
+        {
+            return Sql.AttachDatabase + Utilities.QuoteForSql(databasePath) + Sql.As + alias + Sql.Semicolon;
+        }
+
+        // Form: CREATE TEMPORARY TABLE tempDataTable AS SELECT * FROM dataBaseName.tableName;
+        private static string QueryCreateTemporaryTableFromExistingTable(string tempDataTable, string dataBaseName, string tableName)
+        {
+            return Sql.CreateTemporaryTable + tempDataTable + Sql.As + Sql.SelectStarFrom + dataBaseName + Sql.Dot + tableName + Sql.Semicolon;
+        }
+
+        // Form: UPDATE dataTable SET IDColumn = (offset + dataTable.Id);
+        private static string QueryAddOffsetToIDInTable(string tableName, string IDColumn, int offset)
+        {
+            return Sql.Update + tableName + Sql.Set + IDColumn + Sql.Equal + Sql.OpenParenthesis + offset.ToString() + Sql.Plus + tableName + Sql.Dot + IDColumn + Sql.CloseParenthesis + Sql.Semicolon;
+        }
+
+        // Form: UPDATE dataTable SET IDColumn = (offset + dataTable.Id);
+        private static string QuerySetFolderInTable(string tableName, string folder)
+        {
+            return Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(folder) + Sql.Semicolon;
+        }
+
+        //Form:  UPDATE tableName SET RelativePath = CASE WHEN RelativePath = '' THEN ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
+        private static string QueryAddPrefixToRelativePathInTable(string tableName, string pathPrefixToAdd)
+        {
+            // A longer query, so split into three lines
+            // Note that tableName must be a DataTable for this to work
+            string query = Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(String.Empty);
+            query += Sql.Then + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
+            query += Sql.Else + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
+            return query;
+        }
+
+        //  Form: INSERT INTO tabl1 SELECT * FROM table2;
+        private static string QueryInsertTable2DataIntoTable1(string table1, string table2)
+        {
+            return Sql.InsertInto + table1 + Sql.SelectStarFrom + table2 + Sql.Semicolon;
+        }
+
+        //  Form: INSERT INTO table SELECT * FROM dataBase.table;
+        private static string QueryInsertTableDataFromAnotherDatabase(string table, string fromDatabase)
+        {
+            return Sql.InsertInto + table + Sql.SelectStarFrom + fromDatabase + Sql.Dot + table + Sql.Semicolon;
         }
         #endregion
 

@@ -23,6 +23,7 @@
         public const string CreateIndex = " CREATE INDEX ";
         public const string CreateTable = " CREATE TABLE ";
         public const string CreateTemporaryTable = " CREATE TEMPORARY TABLE ";
+        public const string CreateUniqueIndex = " CREATE UNIQUE INDEX ";
         public const string CreationStringPrimaryKey = "INTEGER PRIMARY KEY AUTOINCREMENT";
         public const string CloseParenthesis = " ) ";
         public const string CollateNocase = " COLLATE NOCASE ";
@@ -30,6 +31,8 @@
         public const string DataSource = "Data Source=";
         public const string Default = " DEFAULT ";
         public const string DeleteFrom = "DELETE FROM ";
+        public const string Do = " DO ";
+        public const string DoUpdate = " Do UPDATE ";
         public const string DropIndex = " DROP INDEX ";
         public const string DropTable = " DROP TABLE ";
         public const string Else = " ELSE ";
@@ -47,6 +50,7 @@
         public const string In = " In ";
         public const string InnerJoin = " INNER JOIN ";
         public const string InsertInto = " INSERT INTO ";
+        public const string InsertOrReplaceInto = " INSERT OR REPLACE INTO ";
         public const string IntegerType = " INTEGER ";
         public const string IsNull = " IS NULL ";
         public const string LeftJoin = " LEFT JOIN ";
@@ -61,6 +65,7 @@
         public const string Null = " NULL ";
         public const string NullAs = Null + " " + As;
         public const string On = " ON ";
+        public const string OnConflict = " ON CONFLICT ";
         public const string OpenParenthesis = " ( ";
         public const string Or = " OR ";
         public const string OrderBy = " ORDER BY ";
@@ -87,6 +92,7 @@
         public const string Text = "TEXT";
         public const string Then = " THEN ";
         public const string Trim = " TRIM ";
+        public const string True = " TRUE ";
         public const string TypeEqualsTable = " TYPE='table' ";
         public const string UnionAll = " UNION ALL";
         public const string Update = " UPDATE ";
