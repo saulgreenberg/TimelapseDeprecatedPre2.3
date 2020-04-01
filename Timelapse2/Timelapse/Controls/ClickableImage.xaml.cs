@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Images;
 using Timelapse.Util;
 
 namespace Timelapse.Controls
@@ -53,6 +57,27 @@ namespace Timelapse.Controls
 
         public ImageRow ImageRow { get; set; }
         // Whether the Checkbox is checked
+
+        // A canvas used to display the bounding boxes
+        private readonly Canvas bboxCanvas = new Canvas();
+
+        // bounding boxes for detection
+        private BoundingBoxes boundingBoxes;
+        // Bounding boxes for detection. Whenever one is set, it is redrawn
+        public BoundingBoxes BoundingBoxes
+        {
+            get
+            {
+                return this.boundingBoxes;
+            }
+            set
+            {
+                // update bounding boxes
+                this.boundingBoxes = value;
+                // render new bounding boxes and update display image
+                this.ShowOrHideBoundingBoxes(true);
+            }
+        }
 
         private bool isSelected = false;
         public bool IsSelected
@@ -134,6 +159,8 @@ namespace Timelapse.Controls
             {
                 this.Image.Height = bf.PixelHeight;
             }
+
+            this.ShowOrHideBoundingBoxes(true);
             return this.Image.Height;
         }
 
@@ -219,5 +246,122 @@ namespace Timelapse.Controls
                     return filename.Length <= 20 ? filename : ellipsis + filename.Remove(0, filename.Length - 20);
             }
         }
+
+        #region Draw Bounding Box
+        /// <summary>
+        /// Remove all and then draw all the bounding boxes
+        /// </summary>
+        /// 
+        public void ShowOrHideBoundingBoxes(bool visibility)
+        {
+            if (visibility && this.Image != null)
+            {
+                Size size = new Size(this.Image.Width, this.DesiredRenderSize.Y);
+                this.DrawBoundingBox(size);
+            }
+            else
+            {
+                this.bboxCanvas.Children.Clear();
+                this.Cell.Children.Remove(this.bboxCanvas);
+            }
+        }
+
+        // Draw bounding boxes into a boundingbox canvas that overlays the MarkableCanvas 
+        public void DrawBoundingBox(Size canvasRenderSize)
+        {
+            // Remove existing bounding boxes, if any.
+            // Note that we do this even if detections may not exist, as we need to clear things if the user had just toggled
+            // detections off
+            this.bboxCanvas.Children.Clear();
+            this.Cell.Children.Remove(this.bboxCanvas);
+
+            // if (GlobalReferences.DetectionsExists == false || Keyboard.IsKeyDown(Key.H)) 
+            if (GlobalReferences.DetectionsExists == false || Keyboard.IsKeyDown(Key.H))
+            {
+                // As detection don't exist, there won't be any bounding boxes to draw.
+                return;
+            }
+
+            int stroke_thickness = 2;
+            // Max Confidence is over all bounding boxes, regardless of the categories.
+            // So we just use it as a short cut, i.e., if none of the bounding boxes are above the threshold, we can abort.
+            // Also, we add a slight correction value to the MaxConfidence, so confidences near the threshold will still appear.
+            double correction = 0.005;
+            if (this.BoundingBoxes.MaxConfidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && this.BoundingBoxes.MaxConfidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
+            {
+                // Ignore any bounding box that is below the desired confidence threshold for displaying it.
+                // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+                // determined in the select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+                // show bounding boxes when the confidence is .4 or more.
+                return;
+            }
+
+            this.bboxCanvas.Width = canvasRenderSize.Width;
+            this.bboxCanvas.Height = canvasRenderSize.Height;
+            foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
+            {
+                if (bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
+                {
+                    // Ignore any bounding box that is below the desired confidence threshold for displaying it.
+                    // Note that the BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+                    // determined in the select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+                    // show bounding boxes when the confidence is .4 or more.
+                    continue;
+                }
+
+                // Create a bounding box 
+                Rectangle rect = new Rectangle();
+                byte transparency = (byte)Math.Round(255 * bbox.Confidence);
+
+                // The color of the bounding box depends upon its category
+                SolidColorBrush brush;
+                switch (bbox.DetectionCategory)
+                {
+                    case "0":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 0)); // Green
+                        break;
+                    case "1":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0)); // Red
+                        break;
+                    case "2":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)); // Blue
+                        break;
+                    case "3":
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255)); // Peacock green/blue
+                        break;
+                    default:
+                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255)); // White
+                        break;
+                }
+                rect.Stroke = brush;
+                rect.StrokeThickness = stroke_thickness;
+                rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
+                foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                {
+                    rect.ToolTip += Environment.NewLine + classification.Key + " " + classification.Value;
+                }
+
+                // Calculate the actual position of the bounding box from the ratios
+                Point screenPositionTopLeft = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, canvasRenderSize.Width, canvasRenderSize.Height);
+                Point screenPositionBottomRight = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, canvasRenderSize.Width, canvasRenderSize.Height);
+                Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
+
+                // We also adjust the rect width and height to take into account the stroke thickness, 
+                // as otherwise the border thickness would overlap with the entity in the bounding box)
+                rect.Width = screenPostionWidthHeight.X + (2 * stroke_thickness);
+                rect.Height = screenPostionWidthHeight.Y + (2 * stroke_thickness);
+
+                // Now add the rectangle to the canvas, also adjusting for the stroke thickness.
+                Canvas.SetLeft(rect, screenPositionTopLeft.X - stroke_thickness);
+                Canvas.SetTop(rect, screenPositionTopLeft.Y - stroke_thickness);
+                this.bboxCanvas.Children.Add(rect);
+                this.bboxCanvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
+            }
+            Canvas.SetLeft(this.bboxCanvas, 0);
+            Canvas.SetTop(this.bboxCanvas, 0);
+            Canvas.SetZIndex(this.bboxCanvas, 1);
+            this.Cell.Children.Add(this.bboxCanvas);
+        }
+        #endregion
     }
 }

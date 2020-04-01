@@ -89,6 +89,17 @@ namespace Timelapse.Controls
         }
         #endregion
 
+
+        // For each clickable image in the cache (i.e., those that are currently being displayed)
+        // show or hide the bounding boxes 
+        public void ShowOrHideBoundingBoxes(bool visibility)
+        { 
+            foreach (ClickableImage ci in this.cachedImageList)
+            {
+                ci.ShowOrHideBoundingBoxes(visibility);
+            }
+        }
+
         #region Public Refresh
         // Rebuild the grid, based on 
         // - fitting the image of a desired width into as many cells of the same size that can fit within the grid
@@ -175,8 +186,10 @@ namespace Timelapse.Controls
                                 // Reuse the cached image, as its at least of the same or greater resolution width. 
                                 ci.Image.Width = desiredWidth; // Adjust the image width to the new size
                                 imageHeight = ci.DesiredRenderSize.Y;
+
                                 // Rerender the episode text in case it has changed
                                 ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex, state);
+                                ci.ShowOrHideBoundingBoxes(true);
                             }
                             ci.FileTableIndex = fileTableIndex; // Update the filetableindex just in case
                             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
@@ -200,7 +213,8 @@ namespace Timelapse.Controls
                         {
                             RootFolder = this.FolderPath,
                             ImageRow = this.FileTable[fileTableIndex],
-                            DesiredRenderWidth = desiredWidth
+                            DesiredRenderWidth = desiredWidth,
+                            BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
                         };
                         imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, fileTableIndex);
                         ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later

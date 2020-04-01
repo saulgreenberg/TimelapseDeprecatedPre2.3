@@ -588,7 +588,14 @@ namespace Timelapse.Images
                     // Will hide detection boxes, if any
                     if (!e.IsRepeat)
                     {
-                        this.RedrawBoundingBoxes();
+                        if (IsClickableImagesGridVisible == false)
+                        {
+                            this.RedrawBoundingBoxes();
+                        }
+                        else
+                        {
+                            this.ClickableImagesGrid.ShowOrHideBoundingBoxes(false);
+                        }
                     }
                     break;
                 case Key.P:
@@ -613,7 +620,14 @@ namespace Timelapse.Images
                     // Will show detection boxes, if any
                     if (!e.IsRepeat)
                     {
-                        this.RedrawBoundingBoxes();
+                        if (IsClickableImagesGridVisible == false)
+                        {
+                            this.RedrawBoundingBoxes();
+                        }
+                        else
+                        {
+                            this.ClickableImagesGrid.ShowOrHideBoundingBoxes(true);
+                        }
                     }
                     break;
                 case Key.P:
@@ -1054,7 +1068,7 @@ namespace Timelapse.Images
 
         #region Draw Bounding Box
         /// <summary>
-        /// Remove all and then draw all the markers
+        /// Remove all and then draw all the bounding boxes
         /// </summary>
         private void RedrawBoundingBoxes()
         {
