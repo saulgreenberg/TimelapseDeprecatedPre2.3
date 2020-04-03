@@ -225,9 +225,8 @@ namespace Timelapse.Images
 
         #region Events
 
-        // Whenever an image is changed, raise an event (to be consumed by ImageAdjuster)
-        public event EventHandler<ImageChangedEventArgs> ImageChanged;
-
+        // Whenever an image state is changed, raise an event (to be consumed by ImageAdjuster)
+        public event EventHandler<ImageStateEventArgs> ImageStateChanged; // raise when an image state is changed (to be consumed by ImageAdjuster)
         public event EventHandler<MarkerEventArgs> MarkerEvent;
         public event Action SwitchedToClickableImagesGridEventAction;
         public event Action SwitchedToSingleImageViewEventAction;
@@ -662,19 +661,19 @@ namespace Timelapse.Images
         /// </summary>
         public void SetDisplayImage(BitmapSource bitmapSource)
         {
+            // If its a differenced image, generate an event saying so.
+            ImageCache imageCache = Util.GlobalReferences.MainWindow?.DataHandler?.ImageCache;
+            if (imageCache != null)
+            {
+                bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
+                this.OnImageStateChanged(new ImageStateEventArgs(true, isPrimaryImage)); //  Signal change in image state (consumed by ImageAdjuster)
+            }
             this.ImageToDisplay.Source = bitmapSource;
-            // Raise an event signalling that the image has changed (to be consumed by ImageAdjuster)
-            ImageChangedEventArgs eventArgs = new ImageChangedEventArgs("A Path", true);
-            this.OnImageChanged(eventArgs);
         }
 
-        protected virtual void OnImageChanged(ImageChangedEventArgs e)
+        protected virtual void OnImageStateChanged(ImageStateEventArgs e)
         {
-            EventHandler<ImageChangedEventArgs> ImageChangedEventHandler = ImageChanged;
-            if (ImageChangedEventHandler != null)
-            {
-                ImageChangedEventHandler(this, e);
-            }
+            ImageStateChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -701,6 +700,8 @@ namespace Timelapse.Images
             // this.markers rather than this.Markers.
             this.ImageToMagnify.Source = bitmapSource;
             this.displayingImage = true;
+
+            this.OnImageStateChanged(new ImageStateEventArgs(true, true)); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
             if (this.ClickableImagesState == 0)
@@ -1396,6 +1397,9 @@ namespace Timelapse.Images
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();
+
+            this.OnImageStateChanged(new ImageStateEventArgs(false, true)); //  Signal change in image state (consumed by ImageAdjuster)
+
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
@@ -1412,6 +1416,9 @@ namespace Timelapse.Images
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
             this.RedrawMarkers(); // Clears the markers as none should be associated with the video
+
+            this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
@@ -1430,6 +1437,8 @@ namespace Timelapse.Images
             {
                 return;
             }
+            this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.SwitchedToClickableImagesGridEventAction();
             // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
@@ -1442,28 +1451,31 @@ namespace Timelapse.Images
         #endregion
 
         #region ImageAdjuster stuff
-        // Holds the image as a reusable stream so we don't have to regenerate it every time
-        MemoryStream inImageStream;
 
         // State information
         private bool Processing = false;
-        private bool AbortUpdate = false;
-        private bool isDisposed;
+
+        // image processing parameters
         private int contrast;
         private int brightness;
         private bool detectEdges;
         private bool sharpen;
 
+        // We received an event containing new image processing parameters.
+        // Store them and then try to update the image
         public async void AdjustImage_EventHandler(object sender, ImageAdjusterEventArgs e)
         {
-            System.Diagnostics.Debug.Print("Image Adjuster event in MarkableCanvas");
+            if (e == null)
+            {
+                return;
+            }
             this.contrast = e.Contrast;
             this.brightness = e.Brightness;
             this.detectEdges = e.DetectEdges;
             this.sharpen = e.Sharpen;
-            await UpdateAndProcessImage();
+            this.timerImageProcessingUpdate.Start();
+            await UpdateAndProcessImage().ConfigureAwait(true);
         }
-
 
         private async void timerImageProcessingUpdate_Tick(object sender, EventArgs e)
         {
@@ -1471,42 +1483,58 @@ namespace Timelapse.Images
             {
                 return;
             }
-            System.Diagnostics.Debug.Print("Tick");
             await this.UpdateAndProcessImage().ConfigureAwait(true);
             this.timerImageProcessingUpdate.Stop();
         }
 
-        // Update the image processing parameters to those in the checkboxes and sliders
-        // Then update the image according to those parameters.
+        // Update the image according to the image processing parameters.
         private async Task UpdateAndProcessImage()
         {
-            // If its processing, we defer resetting anything as we may get an update later (e.g., via the timer)
-            if (this.AbortUpdate || this.Processing)
+            try
             {
-                // Don't do any updating.
-                return;
+                // If its processing, or if anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
+                DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
+                if (this.Processing || handler?.ImageCache?.CurrentDifferenceState == null || handler?.FileDatabase == null)
+                {
+                    return;
+                }
+
+                this.Processing = true;
+                string path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
+                if (File.Exists(path) == false)
+                {
+                    this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+                }
+                //using (MemoryStream imageStream = new MemoryStream(MarkableCanvas.ConvertBitmapSourceToByteArray(handler.ImageCache.GetCurrentImage()))) 
+                using (MemoryStream imageStream = new MemoryStream(File.ReadAllBytes(path)))
+                {
+                    this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges).ConfigureAwait(true);
+                }
+                this.Processing = false;
             }
-            await UpdateImage().ConfigureAwait(true);
+            catch
+            {
+                // We disable the ImageAdjuster for this image if there is a problem
+                this.Processing = false;
+                this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+            }
         }
 
-        // Process the current image (held in inImageStream) using the various image processing parameters
-        private async Task UpdateImage()
+        // Not used. See commented out statement in above method. 
+        // I  can get it from the image source, but it sometimes generates an invalid operation, 
+        // likely because I am trying to access it while the image is changing.
+        public static byte[] ConvertBitmapSourceToByteArray(ImageSource imageSource)
         {
-            DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
-            if (handler?.ImageCache?.Current == null || handler?.FileDatabase == null)
+            var image = imageSource as BitmapSource;
+            byte[] data;
+            BitmapEncoder encoder = new JpegBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            using (MemoryStream ms = new MemoryStream())
             {
-                return;
+                encoder.Save(ms);
+                data = ms.ToArray();
             }
-            string path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
-            this.inImageStream = new MemoryStream(File.ReadAllBytes(path));
-            // If we are already processing the image, abort.
-            if (this.Processing)
-            {
-                return;
-            }
-            this.Processing = true;
-            this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(this.inImageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges).ConfigureAwait(true);
-            this.Processing = false;
+            return data;
         }
         #endregion
     }

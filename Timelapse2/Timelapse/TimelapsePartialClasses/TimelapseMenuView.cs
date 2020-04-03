@@ -84,26 +84,18 @@ namespace Timelapse
             this.TryViewCombinedDifference();
         }
 
+        // Create or Show the Image Adjuster window
         private void MenuItemViewImageAdjuster_Click(object sender, RoutedEventArgs e)
         {
-            if (ImageAdjuster == null || ImageAdjuster.IsActive == false)
+            if (ImageAdjuster == null)
             {
                 ImageAdjuster = new ImageAdjuster(this);
                 this.ImageAdjuster.ImageProcessingParametersChanged += this.MarkableCanvas.AdjustImage_EventHandler;
             }
-            this.ShowControlsWindow();
-        }
-
-        private void ShowControlsWindow()
-        {
-            ImageAdjuster.ManipulatedImage = this.MarkableCanvas.ImageToDisplay;
-            // Get the path / name of the current image
-            if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
+            if (ImageAdjuster.IsVisible == false)
             {
-                System.Diagnostics.Debug.Print(this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath));
+                this.ImageAdjuster.Show(); 
             }
-            // ImageAdjuster.ManipulatedImagePath = this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath);
-            ImageAdjuster.Show();
         }
     }
 }
