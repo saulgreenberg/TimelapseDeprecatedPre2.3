@@ -237,6 +237,7 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EventArguments\ImageAdjusterEventArgs.cs" />
     <Compile Include="EventArguments\ImageChangedEventArgs.cs" />
     <Compile Include="ExifTool\ExifToolException.cs" />
     <Compile Include="ExifTool\ExifToolWrapper.cs" />

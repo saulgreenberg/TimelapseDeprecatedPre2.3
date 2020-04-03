@@ -20,7 +20,6 @@ namespace Timelapse.Dialog
     {
 
 
-
         // Holds the image as a reusable stream so we don't have to regenerate it every time
         MemoryStream inImageStream;
 
@@ -37,7 +36,6 @@ namespace Timelapse.Dialog
 
         DispatcherTimer SheduleImageProcessingUpdate = new DispatcherTimer();
         
-
 
         // A pointer to the image that should be displayed on the Markable Canvas
         // The image's source will be replaced after the manipulation
@@ -67,7 +65,7 @@ namespace Timelapse.Dialog
                     // TODO THIS SHOULD NOT BE HERE
                     // TODO THIS SHOULD NOT BE HERE
                     // TODO THIS SHOULD NOT BE HERE
-                    this.UpdateImage();
+                    // this.UpdateImage();
                 }
             }
         }
@@ -112,7 +110,7 @@ namespace Timelapse.Dialog
             // TO  DO: DO WE NEED THIS HERE
             // TO  DO: DO WE NEED THIS HERE
             // TO  DO: DO WE NEED THIS HERE
-            await UpdateImage().ConfigureAwait(true);
+            // await UpdateImage().ConfigureAwait(true);
         }
 
         private async void SheduleImageProcessingUpdate_Tick(object sender, EventArgs e)
@@ -137,12 +135,12 @@ namespace Timelapse.Dialog
         // Process the current image (held in inImageStream) using the various image processing parameters
         private async Task UpdateImage()
         {
+            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Contrast, this.Brightness, this.DetectEdges, this.Sharpen));
             // If we are already processing the image, abort.
             if (this.Processing)
             {
                 return;
             }
-            System.Diagnostics.Debug.Print(BrightnessSlider.Value.ToString());
             this.Processing = true;
             this.ManipulatedImage.Source = await ImageProcess.StreamToImageProcessedBitmap(this.inImageStream, this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges).ConfigureAwait(true);
             this.Processing = false;
@@ -166,7 +164,8 @@ namespace Timelapse.Dialog
                 this.Brightness = Convert.ToInt32(BrightnessSlider.Value);
                 this.DetectEdges = CBEdges.IsChecked == true;
                 this.Sharpen = CBSharpen.IsChecked == true;
-                await UpdateImage().ConfigureAwait(true);
+                this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Contrast, this.Brightness, this.DetectEdges, this.Sharpen));
+                //await UpdateImage().ConfigureAwait(true);
             }
         }
 
@@ -213,6 +212,16 @@ namespace Timelapse.Dialog
         {
             await ResetControls().ConfigureAwait(true);
             this.Dispose();
+        }
+        #endregion
+
+        #region Event Generation - Generate an event whenever the parameters change
+        // Whenever an image is changed, raise an event (to be consumed by MarkableCanvas)
+        public event EventHandler<ImageAdjusterEventArgs> ImageProcessingParametersChanged;
+
+        protected virtual void OnImageProcessingParametersChanged(ImageAdjusterEventArgs e)
+        {
+            ImageProcessingParametersChanged?.Invoke(this, e);
         }
         #endregion
 

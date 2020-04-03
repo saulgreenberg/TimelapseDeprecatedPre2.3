@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -52,6 +53,9 @@ namespace Timelapse.Images
 
         // Timer for resizing the clickable images grid only after resizing is (likely) completed
         private readonly DispatcherTimer timerResize = new DispatcherTimer();
+
+        // When started, tries to updates image processing to ensure that the last image processing values are applied
+        private readonly DispatcherTimer timerImageProcessingUpdate = new DispatcherTimer();
 
         // zoomed out state for ClickableImages. 
         // 0 - not zoomed out; 
@@ -228,7 +232,6 @@ namespace Timelapse.Images
         public event Action SwitchedToClickableImagesGridEventAction;
         public event Action SwitchedToSingleImageViewEventAction;
 
-
         private void SendMarkerEvent(MarkerEventArgs e)
         {
             this.MarkerEvent?.Invoke(this, e);
@@ -325,6 +328,10 @@ namespace Timelapse.Images
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
             this.timerResize.Tick += this.TimerResize_Tick;
+
+            // When started, ensures that the finall image processing parameters are applied to the image
+            this.timerImageProcessingUpdate.Interval = TimeSpan.FromSeconds(0.1);
+            this.timerImageProcessingUpdate.Tick += this.timerImageProcessingUpdate_Tick;
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
@@ -1431,6 +1438,75 @@ namespace Timelapse.Images
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
+        }
+        #endregion
+
+        #region ImageAdjuster stuff
+        // Holds the image as a reusable stream so we don't have to regenerate it every time
+        MemoryStream inImageStream;
+
+        // State information
+        private bool Processing = false;
+        private bool AbortUpdate = false;
+        private bool isDisposed;
+        private int contrast;
+        private int brightness;
+        private bool detectEdges;
+        private bool sharpen;
+
+        public async void AdjustImage_EventHandler(object sender, ImageAdjusterEventArgs e)
+        {
+            System.Diagnostics.Debug.Print("Image Adjuster event in MarkableCanvas");
+            this.contrast = e.Contrast;
+            this.brightness = e.Brightness;
+            this.detectEdges = e.DetectEdges;
+            this.sharpen = e.Sharpen;
+            await UpdateAndProcessImage();
+        }
+
+
+        private async void timerImageProcessingUpdate_Tick(object sender, EventArgs e)
+        {
+            if (this.Processing)
+            {
+                return;
+            }
+            System.Diagnostics.Debug.Print("Tick");
+            await this.UpdateAndProcessImage().ConfigureAwait(true);
+            this.timerImageProcessingUpdate.Stop();
+        }
+
+        // Update the image processing parameters to those in the checkboxes and sliders
+        // Then update the image according to those parameters.
+        private async Task UpdateAndProcessImage()
+        {
+            // If its processing, we defer resetting anything as we may get an update later (e.g., via the timer)
+            if (this.AbortUpdate || this.Processing)
+            {
+                // Don't do any updating.
+                return;
+            }
+            await UpdateImage().ConfigureAwait(true);
+        }
+
+        // Process the current image (held in inImageStream) using the various image processing parameters
+        private async Task UpdateImage()
+        {
+            DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
+            if (handler?.ImageCache?.Current == null || handler?.FileDatabase == null)
+            {
+                return;
+            }
+            string path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
+            this.inImageStream = new MemoryStream(File.ReadAllBytes(path));
+            // If we are already processing the image, abort.
+            if (this.Processing)
+            {
+                return;
+            }
+            this.Processing = true;
+            this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(this.inImageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges).ConfigureAwait(true);
+            this.Processing = false;
         }
         #endregion
     }

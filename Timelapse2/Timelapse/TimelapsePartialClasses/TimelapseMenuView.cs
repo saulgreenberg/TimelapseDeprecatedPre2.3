@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
+using Timelapse.EventArguments;
 
 namespace Timelapse
 {
@@ -88,6 +89,7 @@ namespace Timelapse
             if (ImageAdjuster == null || ImageAdjuster.IsActive == false)
             {
                 ImageAdjuster = new ImageAdjuster(this);
+                this.ImageAdjuster.ImageProcessingParametersChanged += this.MarkableCanvas.AdjustImage_EventHandler;
             }
             this.ShowControlsWindow();
         }
@@ -100,7 +102,7 @@ namespace Timelapse
             {
                 System.Diagnostics.Debug.Print(this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath));
             }
-            ImageAdjuster.ManipulatedImagePath = this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath);
+            // ImageAdjuster.ManipulatedImagePath = this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath);
             ImageAdjuster.Show();
         }
     }
