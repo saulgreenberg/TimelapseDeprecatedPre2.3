@@ -93,7 +93,7 @@ namespace Timelapse.Images
         public FilePlayer FilePlayer { get; set; }
 
         // Gets the image displayed across the MarkableCanvas for image files
-        public Image ImageToDisplay { get; private set; }
+        public Image ImageToDisplay { get; set; }
 
         /// <summary>
         /// Gets the image displayed in the magnifying glass

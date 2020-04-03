@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Database;
+using Timelapse.Dialog;
 using Timelapse.Enums;
 
 namespace Timelapse
@@ -8,6 +10,8 @@ namespace Timelapse
     // View Menu Callbacks
     public partial class TimelapseWindow : Window, IDisposable
     {
+        ImageAdjuster ImageAdjuster;
+
         // View sub-menu opening
         private void View_SubmenuOpening(object sender, RoutedEventArgs e)
         {
@@ -77,6 +81,27 @@ namespace Timelapse
         private void MenuItemViewDifferencesCombined_Click(object sender, RoutedEventArgs e)
         {
             this.TryViewCombinedDifference();
+        }
+
+        private void MenuItemViewImageAdjuster_Click(object sender, RoutedEventArgs e)
+        {
+            if (ImageAdjuster == null || ImageAdjuster.IsActive == false)
+            {
+                ImageAdjuster = new ImageAdjuster(this);
+            }
+            this.ShowControlsWindow();
+        }
+
+        private void ShowControlsWindow()
+        {
+            ImageAdjuster.ManipulatedImage = this.MarkableCanvas.ImageToDisplay;
+            // Get the path / name of the current image
+            if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
+            {
+                System.Diagnostics.Debug.Print(this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath));
+            }
+            ImageAdjuster.ManipulatedImagePath = this.DataHandler.ImageCache.Current.GetFilePath(this.DataHandler.FileDatabase.FolderPath);
+            ImageAdjuster.Show();
         }
     }
 }

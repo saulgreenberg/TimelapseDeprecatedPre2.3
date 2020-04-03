@@ -331,6 +331,10 @@ namespace Timelapse
                 {
                     this.speechSynthesizer.Dispose();
                 }
+                if (this.ImageAdjuster != null)
+                {
+                    ImageAdjuster.Dispose();
+                }
             }
             this.disposed = true;
         }
