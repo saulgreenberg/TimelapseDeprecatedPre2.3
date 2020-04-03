@@ -246,6 +246,7 @@
     <Compile Include="Images\BitmapUtilities.cs" />
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />
+    <Compile Include="Images\MarkableCanvasImageAdjustment.cs" />
     <Compile Include="Images\VideoThumbnailer.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">

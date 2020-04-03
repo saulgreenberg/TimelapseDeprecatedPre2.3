@@ -25,7 +25,7 @@ namespace Timelapse.Images
     /// - can save and restore a zoom+pan setting
     /// - can display a video 
     /// </summary>
-    public class MarkableCanvas : Canvas
+    public partial class MarkableCanvas : Canvas
     {
         #region Private variables
         private static readonly SolidColorBrush MarkerFillBrush = new SolidColorBrush(Color.FromArgb(2, 0, 0, 0));
@@ -53,9 +53,6 @@ namespace Timelapse.Images
 
         // Timer for resizing the clickable images grid only after resizing is (likely) completed
         private readonly DispatcherTimer timerResize = new DispatcherTimer();
-
-        // When started, tries to updates image processing to ensure that the last image processing values are applied
-        private readonly DispatcherTimer timerImageProcessingUpdate = new DispatcherTimer();
 
         // zoomed out state for ClickableImages. 
         // 0 - not zoomed out; 
@@ -328,9 +325,7 @@ namespace Timelapse.Images
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
             this.timerResize.Tick += this.TimerResize_Tick;
 
-            // When started, ensures that the finall image processing parameters are applied to the image
-            this.timerImageProcessingUpdate.Interval = TimeSpan.FromSeconds(0.1);
-            this.timerImageProcessingUpdate.Tick += this.timerImageProcessingUpdate_Tick;
+            
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
@@ -339,6 +334,9 @@ namespace Timelapse.Images
             // Default to the image view, as it will be all black
             this.ImageToDisplay.Visibility = Visibility.Visible;
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
+
+            // Continue with initializations required by the ImageAdjustment partial class
+            this.InitializeImageAdjustment();
         }
 
         // Hide the magnifying glass initially, as the mouse pointer may not be atop the canvas
@@ -1447,94 +1445,6 @@ namespace Timelapse.Images
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
-        }
-        #endregion
-
-        #region ImageAdjuster stuff
-
-        // State information
-        private bool Processing = false;
-
-        // image processing parameters
-        private int contrast;
-        private int brightness;
-        private bool detectEdges;
-        private bool sharpen;
-
-        // We received an event containing new image processing parameters.
-        // Store them and then try to update the image
-        public async void AdjustImage_EventHandler(object sender, ImageAdjusterEventArgs e)
-        {
-            if (e == null)
-            {
-                return;
-            }
-            this.contrast = e.Contrast;
-            this.brightness = e.Brightness;
-            this.detectEdges = e.DetectEdges;
-            this.sharpen = e.Sharpen;
-            this.timerImageProcessingUpdate.Start();
-            await UpdateAndProcessImage().ConfigureAwait(true);
-        }
-
-        private async void timerImageProcessingUpdate_Tick(object sender, EventArgs e)
-        {
-            if (this.Processing)
-            {
-                return;
-            }
-            await this.UpdateAndProcessImage().ConfigureAwait(true);
-            this.timerImageProcessingUpdate.Stop();
-        }
-
-        // Update the image according to the image processing parameters.
-        private async Task UpdateAndProcessImage()
-        {
-            try
-            {
-                // If its processing, or if anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
-                DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
-                if (this.Processing || handler?.ImageCache?.CurrentDifferenceState == null || handler?.FileDatabase == null)
-                {
-                    return;
-                }
-
-                this.Processing = true;
-                string path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
-                if (File.Exists(path) == false)
-                {
-                    this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
-                }
-                //using (MemoryStream imageStream = new MemoryStream(MarkableCanvas.ConvertBitmapSourceToByteArray(handler.ImageCache.GetCurrentImage()))) 
-                using (MemoryStream imageStream = new MemoryStream(File.ReadAllBytes(path)))
-                {
-                    this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges).ConfigureAwait(true);
-                }
-                this.Processing = false;
-            }
-            catch
-            {
-                // We disable the ImageAdjuster for this image if there is a problem
-                this.Processing = false;
-                this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
-            }
-        }
-
-        // Not used. See commented out statement in above method. 
-        // I  can get it from the image source, but it sometimes generates an invalid operation, 
-        // likely because I am trying to access it while the image is changing.
-        public static byte[] ConvertBitmapSourceToByteArray(ImageSource imageSource)
-        {
-            var image = imageSource as BitmapSource;
-            byte[] data;
-            BitmapEncoder encoder = new JpegBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(image));
-            using (MemoryStream ms = new MemoryStream())
-            {
-                encoder.Save(ms);
-                data = ms.ToArray();
-            }
-            return data;
         }
         #endregion
     }
