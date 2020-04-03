@@ -237,6 +237,7 @@
     <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
       <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EventArguments\ImageChangedEventArgs.cs" />
     <Compile Include="ExifTool\ExifToolException.cs" />
     <Compile Include="ExifTool\ExifToolWrapper.cs" />
     <Compile Include="ImageSetLoadingPipeline\ImageLoader.cs" />
@@ -580,7 +581,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Images\Marker.cs" />
-    <Compile Include="Images\WritableBitmapExtensions.cs" />
+    <Compile Include="Images\ImageProcess.cs" />
     <Compile Include="Dialog\ImportImageSetXmlFile.xaml.cs">
       <DependentUpon>ImportImageSetXmlFile.xaml</DependentUpon>
     </Compile>

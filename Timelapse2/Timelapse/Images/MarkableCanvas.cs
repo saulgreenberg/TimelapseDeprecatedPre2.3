@@ -220,9 +220,14 @@ namespace Timelapse.Images
         #endregion
 
         #region Events
+
+        // Whenever an image is changed, raise an event (to be consumed by ImageAdjuster)
+        public event EventHandler<ImageChangedEventArgs> ImageChanged;
+
         public event EventHandler<MarkerEventArgs> MarkerEvent;
         public event Action SwitchedToClickableImagesGridEventAction;
         public event Action SwitchedToSingleImageViewEventAction;
+
 
         private void SendMarkerEvent(MarkerEventArgs e)
         {
@@ -651,6 +656,18 @@ namespace Timelapse.Images
         public void SetDisplayImage(BitmapSource bitmapSource)
         {
             this.ImageToDisplay.Source = bitmapSource;
+            // Raise an event signalling that the image has changed (to be consumed by ImageAdjuster)
+            ImageChangedEventArgs eventArgs = new ImageChangedEventArgs("A Path", true);
+            this.OnImageChanged(eventArgs);
+        }
+
+        protected virtual void OnImageChanged(ImageChangedEventArgs e)
+        {
+            EventHandler<ImageChangedEventArgs> ImageChangedEventHandler = ImageChanged;
+            if (ImageChangedEventHandler != null)
+            {
+                ImageChangedEventHandler(this, e);
+            }
         }
 
         /// <summary>
