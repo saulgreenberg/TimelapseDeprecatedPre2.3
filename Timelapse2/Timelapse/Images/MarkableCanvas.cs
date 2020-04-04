@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -221,9 +220,6 @@ namespace Timelapse.Images
         #endregion
 
         #region Events
-
-        // Whenever an image state is changed, raise an event (to be consumed by ImageAdjuster)
-        public event EventHandler<ImageStateEventArgs> ImageStateChanged; // raise when an image state is changed (to be consumed by ImageAdjuster)
         public event EventHandler<MarkerEventArgs> MarkerEvent;
         public event Action SwitchedToClickableImagesGridEventAction;
         public event Action SwitchedToSingleImageViewEventAction;
@@ -325,7 +321,7 @@ namespace Timelapse.Images
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
             this.timerResize.Tick += this.TimerResize_Tick;
 
-            
+
 
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
@@ -664,15 +660,12 @@ namespace Timelapse.Images
             if (imageCache != null)
             {
                 bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
-                this.OnImageStateChanged(new ImageStateEventArgs(true, isPrimaryImage)); //  Signal change in image state (consumed by ImageAdjuster)
+                this.GenerateImageStateChangeEvent(true, isPrimaryImage); //  Signal change in image state (consumed by ImageAdjuster)
             }
             this.ImageToDisplay.Source = bitmapSource;
         }
 
-        protected virtual void OnImageStateChanged(ImageStateEventArgs e)
-        {
-            ImageStateChanged?.Invoke(this, e);
-        }
+
 
         /// <summary>
         /// Set a wholly new image.  Clears existing markers and syncs the magnifier image to the display image.
@@ -699,7 +692,7 @@ namespace Timelapse.Images
             this.ImageToMagnify.Source = bitmapSource;
             this.displayingImage = true;
 
-            this.OnImageStateChanged(new ImageStateEventArgs(true, true)); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(true, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
             if (this.ClickableImagesState == 0)
@@ -1396,7 +1389,7 @@ namespace Timelapse.Images
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();
 
-            this.OnImageStateChanged(new ImageStateEventArgs(false, true)); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(false, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             if (this.IsClickableImagesGridVisible == false)
             {
@@ -1415,7 +1408,7 @@ namespace Timelapse.Images
             this.VideoToDisplay.Visibility = Visibility.Visible;
             this.RedrawMarkers(); // Clears the markers as none should be associated with the video
 
-            this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
 
             if (this.IsClickableImagesGridVisible == false)
             {
@@ -1435,7 +1428,7 @@ namespace Timelapse.Images
             {
                 return;
             }
-            this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
 
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.SwitchedToClickableImagesGridEventAction();

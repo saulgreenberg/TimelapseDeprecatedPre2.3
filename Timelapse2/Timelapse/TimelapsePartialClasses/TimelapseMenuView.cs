@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
-using Timelapse.EventArguments;
 
 namespace Timelapse
 {
@@ -82,20 +80,6 @@ namespace Timelapse
         private void MenuItemViewDifferencesCombined_Click(object sender, RoutedEventArgs e)
         {
             this.TryViewCombinedDifference();
-        }
-
-        // Create or Show the Image Adjuster window
-        private void MenuItemViewImageAdjuster_Click(object sender, RoutedEventArgs e)
-        {
-            if (ImageAdjuster == null)
-            {
-                ImageAdjuster = new ImageAdjuster(this);
-                this.ImageAdjuster.ImageProcessingParametersChanged += this.MarkableCanvas.AdjustImage_EventHandler;
-            }
-            if (ImageAdjuster.IsVisible == false)
-            {
-                this.ImageAdjuster.Show(); 
-            }
         }
     }
 }

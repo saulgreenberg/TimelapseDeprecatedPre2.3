@@ -8,10 +8,17 @@ using Timelapse.EventArguments;
 
 namespace Timelapse.Images
 {
-    // This portion of the Markable Canvase handles image adjustments made via image processing.
-    // These are all triggered via an event received from the Image Adjuster.
-    public partial class MarkableCanvas : Canvas 
+    // This portion of the Markable Canvas 
+    // - handles image procesing adjustments as requested by events sent via the ImageAdjuster.
+    // - generates events indicating image state to be consumed by the Image Adjuster to adjust its own state (e.g., disabled, reset, etc).
+    public partial class MarkableCanvas : Canvas
     {
+        #region EventHandler definitions
+        // Whenever an image state is changed, raise an event (to be consumed by ImageAdjuster)
+        public event EventHandler<ImageStateEventArgs> ImageStateChanged; // raise when an image state is changed (to be consumed by ImageAdjuster)
+        #endregion
+
+        #region Private variables
         // State information - whether the current image is being processed
         private bool Processing = false;
 
@@ -29,13 +36,15 @@ namespace Timelapse.Images
         private int lastBrightness = 0;
         private bool lastDetectEdges = false;
         private bool lastSharpen = false;
+        #endregion
 
+        #region Consume and handle image processing events
         // This should be invoked by the Constructor to initialize aspects of this partial class
         private void InitializeImageAdjustment()
         {
             // When started, ensures that the final image processing parameters are applied to the image
             this.timerImageProcessingUpdate.Interval = TimeSpan.FromSeconds(0.1);
-            this.timerImageProcessingUpdate.Tick += this.timerImageProcessingUpdate_Tick;
+            this.timerImageProcessingUpdate.Tick += this.TimerImageProcessingUpdate_Tick;
         }
 
         // Receive an event containing new image processing parameters.
@@ -61,14 +70,14 @@ namespace Timelapse.Images
 
         // Because an event may come in while an image is being processed, the timer
         // will try to continue the processing the image with the latest image processing parameters (if any) 
-        private async void timerImageProcessingUpdate_Tick(object sender, EventArgs e)
+        private async void TimerImageProcessingUpdate_Tick(object sender, EventArgs e)
         {
             if (this.Processing)
             {
                 return;
             }
-            if (this.contrast != this.lastContrast || this.brightness!= this.lastBrightness || this.detectEdges != this.lastDetectEdges || this.sharpen != this.lastSharpen)
-            { 
+            if (this.contrast != this.lastContrast || this.brightness != this.lastBrightness || this.detectEdges != this.lastDetectEdges || this.sharpen != this.lastSharpen)
+            {
                 await this.UpdateAndProcessImage().ConfigureAwait(true);
             }
             this.timerImageProcessingUpdate.Stop();
@@ -110,5 +119,18 @@ namespace Timelapse.Images
             }
             this.Processing = false;
         }
+        #endregion 
+
+        #region Generate ImageStateChange event
+        // Generate an event indicating the image state. To be consumed by the Image Adjuster to adjust its own state (e.g., disabled, reset, etc).
+        private void GenerateImageStateChangeEvent(bool isNewImage, bool isPrimaryImage)
+        {
+            this.OnImageStateChanged(new ImageStateEventArgs(isNewImage, isPrimaryImage)); //  Signal change in image state (consumed by ImageAdjuster)
+        }
+        protected virtual void OnImageStateChanged(ImageStateEventArgs e)
+        {
+            ImageStateChanged?.Invoke(this, e);
+        }
+        #endregion
     }
 }
