@@ -1,5 +1,8 @@
-﻿using System;
+﻿using ImageProcessor;
+using System;
+using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
@@ -13,7 +16,7 @@ namespace Timelapse.Images
     /// <remarks>This class consumes WriteableBitmap.BackBuffer in unsafe operations for speed.  Other Windows Presentation Foundation bitmap classes do not
     /// expose in memory content of bitmaps, requiring somewhat expensive double buffering for image calculations, and using Marshal to obtain pixels from
     /// the backing buffer is substantially slower than direct access.</remarks>
-    public static class WritableBitmapExtensions
+    public static class ImageProcess
     {
         // Given three images, return an image that highlights the differences in common betwen the main image and the first image
         // and the main image and a second image.
@@ -24,13 +27,13 @@ namespace Timelapse.Images
             ThrowIf.IsNullArgument(previous, nameof(previous));
             ThrowIf.IsNullArgument(next, nameof(next));
 
-            if (WritableBitmapExtensions.BitmapsMismatched(unaltered, previous) ||
-                WritableBitmapExtensions.BitmapsMismatched(unaltered, next))
+            if (ImageProcess.BitmapsMismatched(unaltered, previous) ||
+                ImageProcess.BitmapsMismatched(unaltered, next))
             {
                 return null;
             }
 
-            WritableBitmapExtensions.GetColorOffsets(unaltered, out int blueOffset, out int greenOffset, out int redOffset);
+            ImageProcess.GetColorOffsets(unaltered, out int blueOffset, out int greenOffset, out int redOffset);
 
             int totalPixels = unaltered.PixelWidth * unaltered.PixelHeight;
             int pixelSizeInBytes = unaltered.Format.BitsPerPixel / 8;
@@ -49,9 +52,9 @@ namespace Timelapse.Images
                 byte g2 = (byte)Math.Abs(*(unalteredIndex + greenOffset) - *(nextIndex + greenOffset));
                 byte r2 = (byte)Math.Abs(*(unalteredIndex + redOffset) - *(nextIndex + redOffset));
 
-                byte b = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, b1, b2);
-                byte g = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, g1, g2);
-                byte r = WritableBitmapExtensions.DifferenceIfAboveThreshold(threshold, r1, r2);
+                byte b = ImageProcess.DifferenceIfAboveThreshold(threshold, b1, b2);
+                byte g = ImageProcess.DifferenceIfAboveThreshold(threshold, g1, g2);
+                byte r = ImageProcess.DifferenceIfAboveThreshold(threshold, r1, r2);
 
                 byte averageDifference = (byte)((b + g + r) / 3);
                 differencePixels[differenceIndex + blueOffset] = averageDifference;
@@ -92,7 +95,7 @@ namespace Timelapse.Images
             ThrowIf.IsNullArgument(image, nameof(image));
 
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
-            WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
+            ImageProcess.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
             // various counters that we will use in calculation of image darkness
             int darkPixels = 0;
@@ -177,14 +180,14 @@ namespace Timelapse.Images
             }
         }
 
-        // checks whether the image is completely black
+        // Checks whether the image is completely black
         public static unsafe bool IsBlack(this WriteableBitmap image)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(image, nameof(image));
 
             // The RGB offsets from the beginning of the pixel (i.e., 0, 1 or 2)
-            WritableBitmapExtensions.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
+            ImageProcess.GetColorOffsets(image, out int blueOffset, out int greenOffset, out int redOffset);
 
             // examine only a subset of pixels as otherwise this is an expensive operation
             // check pixels from last to first as most cameras put a non-black status bar or at least non-black text at the bottom of the frame,
@@ -215,11 +218,11 @@ namespace Timelapse.Images
             ThrowIf.IsNullArgument(image1, nameof(image1));
             ThrowIf.IsNullArgument(image2, nameof(image2));
 
-            if (WritableBitmapExtensions.BitmapsMismatched(image1, image2))
+            if (ImageProcess.BitmapsMismatched(image1, image2))
             {
                 return null;
             }
-            WritableBitmapExtensions.GetColorOffsets(image1, out int blueOffset, out int greenOffset, out int redOffset);
+            ImageProcess.GetColorOffsets(image1, out int blueOffset, out int greenOffset, out int redOffset);
 
             int totalPixels = image1.PixelWidth * image1.PixelHeight;
             int pixelSizeInBytes = image1.Format.BitsPerPixel / 8;
@@ -247,7 +250,60 @@ namespace Timelapse.Images
             return difference;
         }
 
-        internal static bool BitmapsMismatched(WriteableBitmap image1, WriteableBitmap image2)
+        // Given an instream image as a Memory Stream and various image manipulation parameters, return an image-processed BitmapFrame 
+        // - Contrast and brightness should be an integer between -100 to 100 (with 0 being no effect)
+        // - sharpen and detectEdges are boleans that indicate whether those effects should be added in.
+        // Note that sharpen and detectEdges are mutually exclusive, with detectEdges taking precedence if both are true.
+        // This method uses the ImageProcessing library
+        public static async Task<BitmapFrame> StreamToImageProcessedBitmap(MemoryStream inImageStream, int brightness, int contrast, bool sharpen, bool detectEdges)
+        {
+            if (inImageStream == null || inImageStream.CanRead == false)
+            {
+                return null;
+            }
+            return await Task.Run(() =>
+            {
+                using (MemoryStream outImageStream = new MemoryStream())
+                {
+                    // Initialize the ImageFactory using the overload to preserve EXIF metadata.
+                    using (ImageFactory imageFactory = new ImageFactory(preserveExifData: false))
+                    {
+                        if (detectEdges)
+                        {
+                            // Load, resize, set the format and quality and save an image.
+                            ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter edger = new ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter();
+                            imageFactory.Load(inImageStream)
+                                        .DetectEdges(edger)
+                                        .Contrast(contrast)
+                                        .Brightness(brightness)
+                                        .Save(outImageStream);
+                        }
+                        else if (sharpen)
+                        {
+                            ImageProcessor.Imaging.GaussianLayer gaussian = new ImageProcessor.Imaging.GaussianLayer(5, 3, 0);
+                            // Load, resize, set the format and quality and save an image.
+                            imageFactory.Load(inImageStream)
+                                        .GaussianSharpen(gaussian)
+                                        .Contrast(contrast)
+                                        .Brightness(brightness)
+                                        .Save(outImageStream);
+                        }
+                        else
+                        {
+                            // Load, resize, set the format and quality and save an image.
+                            imageFactory.Load(inImageStream)
+                                        .Contrast(contrast)
+                                        .Brightness(brightness)
+                                        .Save(outImageStream);
+                        }
+                    }
+                    // Return the stream as a bitmap that can be used in Image.Source
+                    return BitmapFrame.Create(outImageStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                }
+            }).ConfigureAwait(true);
+        }
+        #region Private methods
+        private static bool BitmapsMismatched(WriteableBitmap image1, WriteableBitmap image2)
         {
             return (image1.PixelWidth != image2.PixelWidth) ||
                    (image1.PixelHeight != image2.PixelHeight) ||
@@ -281,5 +337,6 @@ namespace Timelapse.Images
                 throw new NotSupportedException(String.Format("Unhandled image format {0}.", image.Format));
             }
         }
+        #endregion
     }
 }

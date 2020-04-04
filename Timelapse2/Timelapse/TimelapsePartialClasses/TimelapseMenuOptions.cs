@@ -97,6 +97,20 @@ namespace Timelapse
             }
         }
 
+        // Create or Show the Image Adjuster window
+        private void MenuItemImageAdjuster_Click(object sender, RoutedEventArgs e)
+        {
+            if (ImageAdjuster == null)
+            {
+                ImageAdjuster = new ImageAdjuster(this);
+                this.ImageAdjuster.ImageProcessingParametersChanged += this.MarkableCanvas.AdjustImage_EventHandler;
+            }
+            if (ImageAdjuster.IsVisible == false)
+            {
+                this.ImageAdjuster.Show();
+            }
+        }
+
         // Hide or show various informational dialogs"
         private void MenuItemDialogsOnOrOff_Click(object sender, RoutedEventArgs e)
         {

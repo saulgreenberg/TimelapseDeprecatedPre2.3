@@ -93,7 +93,7 @@ namespace Timelapse.Controls
         // For each clickable image in the cache (i.e., those that are currently being displayed)
         // show or hide the bounding boxes 
         public void ShowOrHideBoundingBoxes(bool visibility)
-        { 
+        {
             foreach (ClickableImage ci in this.cachedImageList)
             {
                 ci.ShowOrHideBoundingBoxes(visibility);

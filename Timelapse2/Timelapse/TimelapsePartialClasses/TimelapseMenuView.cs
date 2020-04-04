@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using Timelapse.Dialog;
 using Timelapse.Enums;
 
 namespace Timelapse
@@ -8,6 +9,8 @@ namespace Timelapse
     // View Menu Callbacks
     public partial class TimelapseWindow : Window, IDisposable
     {
+        ImageAdjuster ImageAdjuster;
+
         // View sub-menu opening
         private void View_SubmenuOpening(object sender, RoutedEventArgs e)
         {

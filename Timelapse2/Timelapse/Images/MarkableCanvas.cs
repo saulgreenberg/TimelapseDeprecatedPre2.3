@@ -24,7 +24,7 @@ namespace Timelapse.Images
     /// - can save and restore a zoom+pan setting
     /// - can display a video 
     /// </summary>
-    public class MarkableCanvas : Canvas
+    public partial class MarkableCanvas : Canvas
     {
         #region Private variables
         private static readonly SolidColorBrush MarkerFillBrush = new SolidColorBrush(Color.FromArgb(2, 0, 0, 0));
@@ -93,7 +93,7 @@ namespace Timelapse.Images
         public FilePlayer FilePlayer { get; set; }
 
         // Gets the image displayed across the MarkableCanvas for image files
-        public Image ImageToDisplay { get; private set; }
+        public Image ImageToDisplay { get; set; }
 
         /// <summary>
         /// Gets the image displayed in the magnifying glass
@@ -321,6 +321,8 @@ namespace Timelapse.Images
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
             this.timerResize.Tick += this.TimerResize_Tick;
 
+
+
             // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
             this.timerSlider.Tick += this.TimerSlider_Tick;
@@ -328,6 +330,9 @@ namespace Timelapse.Images
             // Default to the image view, as it will be all black
             this.ImageToDisplay.Visibility = Visibility.Visible;
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
+
+            // Continue with initializations required by the ImageAdjustment partial class
+            this.InitializeImageAdjustment();
         }
 
         // Hide the magnifying glass initially, as the mouse pointer may not be atop the canvas
@@ -650,8 +655,17 @@ namespace Timelapse.Images
         /// </summary>
         public void SetDisplayImage(BitmapSource bitmapSource)
         {
+            // If its a differenced image, generate an event saying so.
+            ImageCache imageCache = Util.GlobalReferences.MainWindow?.DataHandler?.ImageCache;
+            if (imageCache != null)
+            {
+                bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
+                this.GenerateImageStateChangeEvent(true, isPrimaryImage); //  Signal change in image state (consumed by ImageAdjuster)
+            }
             this.ImageToDisplay.Source = bitmapSource;
         }
+
+
 
         /// <summary>
         /// Set a wholly new image.  Clears existing markers and syncs the magnifier image to the display image.
@@ -677,6 +691,8 @@ namespace Timelapse.Images
             // this.markers rather than this.Markers.
             this.ImageToMagnify.Source = bitmapSource;
             this.displayingImage = true;
+
+            this.GenerateImageStateChangeEvent(true, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
             if (this.ClickableImagesState == 0)
@@ -1372,6 +1388,9 @@ namespace Timelapse.Images
             this.VideoToDisplay.Visibility = Visibility.Collapsed;
             this.VideoToDisplay.Pause();
             this.ShowMagnifierIfEnabledOtherwiseHide();
+
+            this.GenerateImageStateChangeEvent(false, true); //  Signal change in image state (consumed by ImageAdjuster)
+
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
@@ -1388,6 +1407,9 @@ namespace Timelapse.Images
             this.magnifyingGlass.Hide();
             this.VideoToDisplay.Visibility = Visibility.Visible;
             this.RedrawMarkers(); // Clears the markers as none should be associated with the video
+
+            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
+
             if (this.IsClickableImagesGridVisible == false)
             {
                 return;
@@ -1406,6 +1428,8 @@ namespace Timelapse.Images
             {
                 return;
             }
+            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
+
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.SwitchedToClickableImagesGridEventAction();
             // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
