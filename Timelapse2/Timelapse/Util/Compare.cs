@@ -3,11 +3,18 @@ using System.Linq;
 
 namespace Timelapse.Util
 {
-    // This class compares various objects for differences
+    /// <summary>
+    /// Compare various objects for differences
+    /// </summary>
+
     public static class Compare
     {
-
-        // Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2 
+        /// <summary>
+        /// Given two dictionaries, return a dictionary that contains only those key / value pairs in dictionary1 that are not in dictionary2  
+        /// </summary>
+        /// <param name="dictionary1"></param>
+        /// <param name="dictionary2"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> Dictionary1ExceptDictionary2(Dictionary<string, string> dictionary1, Dictionary<string, string> dictionary2)
         {
             // Check the arguments for null 
@@ -23,7 +30,12 @@ namespace Timelapse.Util
             return dictionaryDifferences;
         }
 
-        // Given two Lists of strings, return whether they both contain the same values 
+        /// <summary>
+        /// Given two Lists of strings, return whether they both contain the same values 
+        /// </summary>
+        /// <param name="list1"></param>
+        /// <param name="list2"></param>
+        /// <returns></returns>
         public static bool CompareLists(List<string> list1, List<string> list2)
         {
             if (list1 == null && list2 == null)
@@ -36,7 +48,6 @@ namespace Timelapse.Util
                 // false as one is null and the other isn't
                 return false;
             }
-
             List<string> firstNotSecond = list1.Except(list2).ToList();
             List<string> secondNotFirst = list2.Except(list1).ToList();
             return !firstNotSecond.Any() && !secondNotFirst.Any();

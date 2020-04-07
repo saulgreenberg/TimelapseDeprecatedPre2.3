@@ -149,7 +149,7 @@ namespace Timelapse
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.VersionUpdates.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
-                Dependencies.ShowMissingBinariesDialog(Constant.VersionUpdates.ApplicationName);
+                Dialogs.DependencyFilesMissingDialog(Constant.VersionUpdates.ApplicationName);
                 Application.Current.Shutdown();
             }
 
@@ -467,7 +467,7 @@ namespace Timelapse
         /// <param name="e">event information</param>
         private void CounterCtl_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = (Utilities.IsDigits(e.Text) || String.IsNullOrWhiteSpace(e.Text)) ? false : true;
+            e.Handled = (IsCondition.IsDigits(e.Text) || String.IsNullOrWhiteSpace(e.Text)) ? false : true;
             this.OnPreviewTextInput(e);
             this.FilePlayer_Stop(); // In case the FilePlayer is going
         }

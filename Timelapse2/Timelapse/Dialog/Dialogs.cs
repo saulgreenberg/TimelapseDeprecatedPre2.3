@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using Timelapse.Database;
@@ -175,6 +176,27 @@ namespace Timelapse.Dialog
             filesTotalCount = fileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.All);
             filesSelectedCount = fileDatabase.FileTable.RowCount;
             return filesTotalCount != filesSelectedCount;
+        }
+
+        #endregion
+
+        #region Dialog Messages: Missing dependencies
+        public static void DependencyFilesMissingDialog(string applicationName)
+        {
+            // can't use DialogMessageBox to show this message as that class requires the Timelapse window to be displayed.
+            string messageTitle = String.Format("{0} needs to be in its original downloaded folder.", applicationName);
+            StringBuilder message = new StringBuilder("Problem:" + Environment.NewLine);
+            message.AppendFormat("{0} won't run properly as it was not correctly installed.{1}{1}", applicationName, Environment.NewLine);
+            message.AppendLine("Reason:");
+            message.AppendFormat("When you downloaded {0}, it was in a folder with several other files and folders it needs. You probably dragged {0} out of that folder.{1}{1}", applicationName, Environment.NewLine);
+            message.AppendLine("Solution:");
+            message.AppendFormat("Move the {0} program back to its original folder, or download it again.{1}{1}", applicationName, Environment.NewLine);
+            message.AppendLine("Hint:");
+            message.AppendFormat("Create a shortcut if you want to access {0} outside its folder:{1}", applicationName, Environment.NewLine);
+            message.AppendLine("1. From its original folder, right-click the Timelapse program icon.");
+            message.AppendLine("2. Select 'Create Shortcut' from the menu.");
+            message.Append("3. Drag the shortcut icon to the location of your choice.");
+            System.Windows.MessageBox.Show(message.ToString(), messageTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         #endregion

@@ -329,12 +329,13 @@
     <Compile Include="TimelapsePartialClasses\TimelapseMenuView.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMenuWindow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
-    <Compile Include="Util\DataGridExtensions.cs" />
-    <Compile Include="Util\DateTimeExtensions.cs" />
-    <Compile Include="Util\DateTimeOffsetExtensions.cs" />
+    <Compile Include="Extensions\DataGridExtensions.cs" />
+    <Compile Include="Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Extensions\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="Util\ErrorsAndWarnings.cs" />
     <Compile Include="Util\ExternalProcesses.cs" />
+    <Compile Include="Util\IsCondition.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\ThowIf.cs" />
     <Compile Include="Util\GlobalReferences.cs" />

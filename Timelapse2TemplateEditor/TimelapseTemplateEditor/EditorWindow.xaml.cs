@@ -56,7 +56,7 @@ namespace Timelapse.Editor
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(EditorConstant.ApplicationName, Assembly.GetExecutingAssembly()) == false)
             {
-                Dependencies.ShowMissingBinariesDialog(EditorConstant.ApplicationName);
+                Dialogs.DependencyFilesMissingDialog(EditorConstant.ApplicationName);
                 Application.Current.Shutdown();
             }
 
@@ -167,7 +167,7 @@ namespace Timelapse.Editor
                 // First, check the file path length and notify the user the template couldn't be loaded because its path is too long 
                 // Note: The SaveFileDialog doesn't do the right thing when the user specifies a really long file name / path (it just returns the DefaultTemplateDatabaseFileName without a path), 
                 // so we test for that too as it also indicates a too longpath name
-                if (Utilities.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName)))
+                if (IsCondition.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName)))
                 {
                     Dialogs.TemplatePathTooLongDialog(templateFileName, this);
                     return;
@@ -207,7 +207,7 @@ namespace Timelapse.Editor
             Nullable<bool> result = openFileDialog.ShowDialog();
 
             // This likely isn't needed as the OpenFileDialog won't let us do that anyways. But just in case...
-            if (Utilities.IsPathLengthTooLong(openFileDialog.FileName))
+            if (IsCondition.IsPathLengthTooLong(openFileDialog.FileName))
             {
                 Dialogs.TemplatePathTooLongDialog(openFileDialog.FileName, this);
                 return;
@@ -735,7 +735,7 @@ namespace Timelapse.Editor
                 // EditorConstant.Control.ControlOrder is not editable
                 case EditorConstant.ColumnHeader.DataLabel:
                     // Only allow alphanumeric and '_' in data labels
-                    if ((!Utilities.IsLetterOrDigit(e.Text)) && !e.Text.Equals("_"))
+                    if ((!IsCondition.IsLetterOrDigit(e.Text)) && !e.Text.Equals("_"))
                     {
                         this.ShowMessageBox_DataLabelRequirements();
                         e.Handled = true;
@@ -748,7 +748,7 @@ namespace Timelapse.Editor
                     {
                         case Constant.Control.Counter:
                             // Only allow numbers in counters 
-                            e.Handled = !Utilities.IsDigits(e.Text);
+                            e.Handled = !IsCondition.IsDigits(e.Text);
                             break;
                         case Constant.Control.Flag:
                             // Only allow t/f and translate to true/false
@@ -776,7 +776,7 @@ namespace Timelapse.Editor
                     break;
                 case EditorConstant.ColumnHeader.Width:
                     // Only allow digits in widths as they must be parseable as integers
-                    e.Handled = !Utilities.IsDigits(e.Text);
+                    e.Handled = !IsCondition.IsDigits(e.Text);
                     break;
                 default:
                     // no restrictions on any of the other editable coumns

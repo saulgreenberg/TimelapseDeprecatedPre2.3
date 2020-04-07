@@ -54,7 +54,7 @@ namespace Timelapse.Dialog
             ContrastSlider.ValueChanged += ImageSliders_ValueChanged;
             BrightnessSlider.ValueChanged += ImageSliders_ValueChanged;
             GammaSlider.ValueChanged += ImageSliders_ValueChanged;
-            
+
             // This event signal provides information used to decide how this control should appear e.g., reset, activated, etc.
             Util.GlobalReferences.MainWindow.MarkableCanvas.ImageStateChanged += this.ConfigureWindowState;
         }
@@ -95,14 +95,14 @@ namespace Timelapse.Dialog
 
             // We only update everything and send the event if the final values differ from the current values
             if (this.Contrast != Convert.ToInt32(ContrastSlider.Value) || this.Brightness != Convert.ToInt32(BrightnessSlider.Value) || this.GammaValue != this.GammaSlider.Value
-                || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked || this.UseGamma != this.CBGamma.IsChecked )
+                || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked || this.UseGamma != this.CBGamma.IsChecked)
             {
                 this.Contrast = Convert.ToInt32(ContrastSlider.Value);
                 this.Brightness = Convert.ToInt32(BrightnessSlider.Value);
                 this.DetectEdges = CBEdges.IsChecked == true;
                 this.Sharpen = CBSharpen.IsChecked == true;
                 this.UseGamma = CBGamma.IsChecked == true;
-                this.GammaValue = (float) (this.GammaSlider.Maximum - this.GammaSlider.Value);
+                this.GammaValue = (float)(this.GammaSlider.Maximum - this.GammaSlider.Value);
 
                 // Generate an event to inform the Markable Canvase to update the image. 
                 // Note that the last argument (to invoke an external image viewer) is always false, as that is handeld separately
@@ -121,7 +121,7 @@ namespace Timelapse.Dialog
             this.CBGamma.IsChecked = false;
             this.GammaSlider.Value = 1;
             this.AbortUpdate = false;
-            
+
         }
         #endregion
 
@@ -148,11 +148,6 @@ namespace Timelapse.Dialog
             this.CBSharpen.IsEnabled = isNotGamma;
             this.UpdateImageParametersAndGenerateEvent();
         }
-
-        //private void GammaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        //{
-        //    this.UpdateImageParametersAndGenerateEvent();
-        //}
 
         private void ImageSliders_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {

@@ -53,7 +53,7 @@ namespace Timelapse
         {
             // Try to create or open the template database
             // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
-            if (Utilities.IsPathLengthTooLong(templateDatabasePath))
+            if (IsCondition.IsPathLengthTooLong(templateDatabasePath))
             {
                 Dialogs.TemplatePathTooLongDialog(templateDatabasePath, this);
                 return false;
@@ -80,14 +80,14 @@ namespace Timelapse
             }
 
             // Check the file path length of the .ddb file and notify the user the ddb couldn't be loaded because its path is too long
-            if (Utilities.IsPathLengthTooLong(fileDatabaseFilePath))
+            if (IsCondition.IsPathLengthTooLong(fileDatabaseFilePath))
             {
                 Dialogs.DatabasePathTooLongDialog(fileDatabaseFilePath, this);
                 return false;
             }
 
             // Check the expected file path length of the backup files, and warn the user if backups may not be made because thier path is too long
-            if (Utilities.IsBackupPathLengthTooLong(templateDatabasePath) || Utilities.IsBackupPathLengthTooLong(fileDatabaseFilePath))
+            if (IsCondition.IsBackupPathLengthTooLong(templateDatabasePath) || IsCondition.IsBackupPathLengthTooLong(fileDatabaseFilePath))
             {
                 Dialogs.BackupPathTooLongDialog(this);
             }

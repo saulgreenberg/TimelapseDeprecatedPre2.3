@@ -5,7 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Timelapse.Util
 {
-    // Various forms for printing out trace infromation containing a message and a stack trace of the method names 
+    // Used in debugging.
+    // Various forms of printing out trace infromation containing a message and a stack trace of the method names 
     public static class TraceDebug
     {
         // Print a message and stack trace to a file
@@ -38,12 +39,12 @@ namespace Timelapse.Util
             Debug.Print(GetMethodNameStack(message, 1));
         }
 
-        // Option to print various failure messagesfor debugging
         public static void PrintStackTrace(string message, int level)
         {
             Debug.Print(GetMethodNameStack(message, level));
         }
 
+        #region Internal methods
         [MethodImpl(MethodImplOptions.NoInlining)]
         // Return the order and number of calls on a method, i.e., to illustrate the method calling stack.
         // The optional message string can be anything you want included in the output.
@@ -67,5 +68,6 @@ namespace Timelapse.Util
             methodStack += ": " + message;
             return methodStack;
         }
+        #endregion
     }
 }

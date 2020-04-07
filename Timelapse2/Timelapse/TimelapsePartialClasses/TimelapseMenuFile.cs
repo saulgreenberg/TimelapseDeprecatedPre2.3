@@ -543,7 +543,7 @@ namespace Timelapse
             this.lastControlWithFocus = null;
             this.QuickPasteWindowTerminate();
             if (this.ImageAdjuster != null)
-            { 
+            {
                 this.ImageAdjuster.Hide();
             }
         }

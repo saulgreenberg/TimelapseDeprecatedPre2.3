@@ -11,7 +11,14 @@ namespace Timelapse.Util
     // Methods to manipulate a datagrid. 
     public static class DataGridExtensions
     {
+        #region Public methods
         // Sort the given data grid by the given column number in ascending order
+        // </summary>
+        /// <summary>
+        /// Sort the given data grid by the given column number in ascending order
+        /// </summary>
+        /// <param name="dataGrid"></param>
+        /// <param name="columnNumber"></param>
         public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
         {
             // Check the arguments for null 
@@ -36,18 +43,22 @@ namespace Timelapse.Util
             dataGrid.Items.Refresh();
         }
 
-        #region Code to enable multiple selections. 
-        // Select the rows with the given IDs, discover its rowIndexes, and then scroll the topmost row into view
-        // This method is provided with a list of tuples, each containing
-        // - a File ID, 
-        // - a possible row index into the data table containing that File ID
-        // We want to select (highlight) each row in the data table matching those IDs. 
-        // Typically, the file record identified by the ID will be found in the datagrid row specified by RowIndex,
-        // which will occur *unless* the the user has resorted the datagrid by clicking a column header 
-        // For efficiency, we check each tuple to see if the ID provided matches the ID in the row specified by rowIndex. If so, 
-        // we can quickly highlight those rows.  Otherwise we need to search the datagrid for each ID
+        /// <summary>
+        ///  Select the rows with the given IDs, discover its rowIndexes, and then scroll the topmost row into view 
+        ///  This method is provided with a list of tuples, each containing
+        /// - a File ID, 
+        /// - a possible row index into the data table containing that File ID
+        /// </summary>
+        /// <param name="dataGrid"></param>
+        /// <param name="idRowIndexes"></param>
         public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes)
         {
+            // We want to select (highlight) each row in the data table matching those IDs. 
+            // Typically, the file record identified by the ID will be found in the datagrid row specified by RowIndex,
+            // which will occur *unless* the the user has resorted the datagrid by clicking a column header 
+            // For efficiency, we check each tuple to see if the ID provided matches the ID in the row specified by rowIndex. If so, 
+            // we can quickly highlight those rows.  Otherwise we need to search the datagrid for each ID
+
             // Check the arguments for null 
             if (dataGrid == null || idRowIndexes == null)
             {
@@ -118,13 +129,6 @@ namespace Timelapse.Util
                     }
                 }
             }
-#if DeBUG
-            // We don't expect these to fail, but just in case
-            if (rowIndexesToSelect.Count != IdRowIndexes.Count || topmostRowIndex == int.MaxValue)
-            {
-                System.Diagnostics.Debug.Print("RowIndexes and ID counts don't match: " + rowIndexesToSelect.Count + ", " + IdRowIndexes.Count);
-            }
-#endif
 
             // Select the items (which highlights those rows)
             bool indexIncreasing = topmostRowIndex > dataGrid.SelectedIndex;
@@ -134,7 +138,9 @@ namespace Timelapse.Util
             int scrollIndex = indexIncreasing ? Math.Min(topmostRowIndex + 3, dataGrid.Items.Count - 1) : Math.Max(topmostRowIndex - 3, 0);
             dataGrid.ScrollIntoView(dataGrid.Items[scrollIndex]);
         }
+        #endregion
 
+        #region Private (internal) methods used by the above
         // Select the rows indicated by the (perhaps multple) row indexes
         // Modified from https://blog.magnusmontin.net/2013/11/08/how-to-programmatically-select-and-focus-a-row-or-cell-in-a-datagrid-in-wpf/
         private static void SelectRowByIndexes(DataGrid dataGrid, List<int> rowIndexes)
@@ -175,30 +181,11 @@ namespace Timelapse.Util
                     throw new ArgumentException(string.Format("{0} is an invalid row index.", rowIndex));
                 }
                 dataGrid.SelectedItems.Add(dataGrid.Items[rowIndex]);
-
-                // SAULXXX DELETE THIS CODE?
-                // I can't recall why I had this code in here, as I can't see why I need to focus on a particular cell.
-                // The bad side effect of it is that, if the datagrid is visible (e.g., as a separate pane), it grabs the focus
-                // away from other windows.
-                // //object item = dataGrid.Items[rowIndex];
-                // DataGridRow row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                // if (row == null)
-                // {
-                //    // dataGrid.ScrollIntoView(item);  CHANGE ABOVE TO SCROLL THE FIRST ITEM
-                //    row = dataGrid.ItemContainerGenerator.ContainerFromIndex(rowIndex) as DataGridRow;
-                // }
-                // if (row != null)
-                // {
-                //    DataGridCell cell = GetCell(dataGrid, row, 0);
-                //    if (cell != null)
-                //    { 
-                //       cell.Focus();
-                //    }
-                // }
             }
         }
+        #endregion
 
-        // UNUSED 
+        #region Unused methods
         // Get a cell from the DataGrid
         // private static DataGridCell GetCell(DataGrid dataGrid, DataGridRow rowContainer, int column)
         // {
@@ -228,28 +215,29 @@ namespace Timelapse.Util
         //    }
         //    return null;
         // }
-
+        // 
+        // Hsed by above. See replacements in Utiliites
         // Enumerate the members of a visual tree, in order to programmatic access objects in the visual tree.
-        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is T)
-                {
-                    return (T)child;
-                }
-                else
-                {
-                    T childOfChild = FindVisualChild<T>(child);
-                    if (childOfChild != null)
-                    {
-                        return childOfChild;
-                    }
-                }
-            }
-            return null;
-        }
+        //private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        //{
+        //    for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+        //    {
+        //        DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+        //        if (child != null && child is T)
+        //        {
+        //            return (T)child;
+        //        }
+        //        else
+        //        {
+        //            T childOfChild = FindVisualChild<T>(child);
+        //            if (childOfChild != null)
+        //            {
+        //                return childOfChild;
+        //            }
+        //        }
+        //    }
+        //    return null;
+        //}
         #endregion
     }
 }
