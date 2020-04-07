@@ -44,7 +44,7 @@ namespace Timelapse
             this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MenuItemImageAdjuster.IsEnabled = imageSetAvailable;
+            this.MenuItemImageAdjuster.IsEnabled = filesSelected;
             this.MenuItemDialogsOnOrOff.IsEnabled = imageSetAvailable;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = true;
 

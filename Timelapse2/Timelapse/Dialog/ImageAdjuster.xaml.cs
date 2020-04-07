@@ -43,8 +43,8 @@ namespace Timelapse.Dialog
             ContrastSlider.Minimum = -sliderMinMax;
             BrightnessSlider.Maximum = sliderMinMax;
             BrightnessSlider.Minimum = -sliderMinMax;
-            GammaSlider.Minimum = .1;
-            GammaSlider.Maximum = 1.9;
+            GammaSlider.Minimum = .0001;
+            GammaSlider.Maximum = 1.9999;
             GammaSlider.Value = GammaValue;
 
             // Register the various control callbacks. 
