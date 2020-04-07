@@ -334,6 +334,7 @@
     <Compile Include="Util\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="Util\ErrorsAndWarnings.cs" />
+    <Compile Include="Util\ExternalProcesses.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\ThowIf.cs" />
     <Compile Include="Util\GlobalReferences.cs" />

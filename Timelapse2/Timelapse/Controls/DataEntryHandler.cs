@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -798,6 +799,24 @@ namespace Timelapse.Controls
                 System.Diagnostics.Debug.Write("Catch in GetValueDisplayStringCommonToFileIds: " + dataLabel);
                 return null;
             }
+        }
+        #endregion
+
+        #region Static public methods
+        // Get a file path from the global datahandler. 
+        // If we can't, or if it does not exist, return String.Empty
+        public static string TryGetFilePathFromGlobalDataHandler()
+        {
+            string path;
+            // If anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
+            DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
+            if (handler?.ImageCache?.CurrentDifferenceState != null && handler?.FileDatabase != null)
+            {
+                // Get the path
+                path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
+                return File.Exists(path) ? path : null;
+            }
+            return null;
         }
         #endregion
     }

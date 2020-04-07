@@ -45,7 +45,7 @@ namespace Timelapse.Images
         #endregion
 
         #region Consume and handle image processing events
-        // This should be invoked by the Constructor to initialize aspects of this partial class
+        // This should be invoked by the MarkableCanvas Constructor to initialize aspects of this partial class
         private void InitializeImageAdjustment()
         {
             // When started, ensures that the final image processing parameters are applied to the image
@@ -63,7 +63,7 @@ namespace Timelapse.Images
                 return;
             }
 
-            string path = MarkableCanvas.GetFileFromDataHandlerIfExists();
+            string path = DataEntryHandler.TryGetFilePathFromGlobalDataHandler();
             if (String.IsNullOrEmpty(path))
             {
                 // The file cannot be opened or is not displayable. 
@@ -74,15 +74,27 @@ namespace Timelapse.Images
 
             if (e.OpenExternalViewer)
             {
-                // If its a command to open the external viewer, we do it regardless of the processing state.
-                this.OpenExternalViewer(path);
+                // The event says to open an external photo viewer. Try to do so.
+                // Note that we don't do any image processing on this event if if this is the case.
+                if (Util.ExternalProcesses.TryStartProcess(path) == false)
+                {
+                    string extension = Path.GetExtension(path);
+                    // Can't open the image file. Note that file must exist at this pint as we checked for that above.
+                    MessageBox messageBox = new MessageBox("Can't open a photo viewer.", Util.GlobalReferences.MainWindow);
+                    messageBox.Message.Icon = System.Windows.MessageBoxImage.Error;
+                    messageBox.Message.Reason = "You probably don't have a default program set up to display a photo viewer for " + extension + " files";
+                    messageBox.Message.Solution = "Set up a photo viewer in your Windows Settings." + Environment.NewLine;
+                    messageBox.Message.Solution += "\u2022 go to 'Default apps', select 'Photo Viewer' and choose a desired photo viewer." + Environment.NewLine;
+                    messageBox.Message.Solution += "\u2022 or right click on an " + extension + " file and set the default viewer that way";
+                    messageBox.ShowDialog();
+                }
                 return;
             }
 
+            // Process the image based on the current image processing arguments. 
             if (e.Contrast == this.lastContrast && e.Brightness == this.lastBrightness && e.DetectEdges == this.lastDetectEdges && e.Sharpen == this.lastSharpen && e.UseGamma == this.lastUseGamma && e.GammaValue == this.lastGammaValue)
             {
-                // No change from the last time we processed an image, so don't bother doing anything
-                System.Diagnostics.Debug.Print("No change in image");
+                // If there is no change from the last time we processed an image, abort as it would not make any difference to what the user sees
                 return;
             }
             this.contrast = e.Contrast;
@@ -105,6 +117,7 @@ namespace Timelapse.Images
             }
             if (this.contrast != this.lastContrast || this.brightness != this.lastBrightness || this.detectEdges != this.lastDetectEdges || this.sharpen != this.lastSharpen || this.lastUseGamma != this.useGamma || this.lastGammaValue != this.gammaValue)
             {
+                // Update the image as at least one parameter has changed (which will affect the image's appearance)
                 await this.UpdateAndProcessImage().ConfigureAwait(true);
             }
             this.timerImageProcessingUpdate.Stop();
@@ -120,7 +133,7 @@ namespace Timelapse.Images
             }
             try
             {
-                string path = MarkableCanvas.GetFileFromDataHandlerIfExists();
+                string path = DataEntryHandler.TryGetFilePathFromGlobalDataHandler(); ;
                 if (String.IsNullOrEmpty(path))
                 {
                     // If we cannot get a valid file, there is no image to manipulate. 
@@ -128,6 +141,7 @@ namespace Timelapse.Images
                     this.OnImageStateChanged(new ImageStateEventArgs(false, false));
                 }
 
+                // Set the state to Processing is used to indicate that other attempts to process the image should be aborted util this is done.
                 this.Processing = true;
                 using (MemoryStream imageStream = new MemoryStream(File.ReadAllBytes(path)))
                 {
@@ -149,49 +163,6 @@ namespace Timelapse.Images
             }
             this.Processing = false;
         }
-
-        private void OpenExternalViewer(string path)
-        {
-            // Open the file in a file viewer
-            try
-            {
-                // Show the file in a picture viewer
-                // Create a process that will try to show the file
-                using (Process process = new Process())
-                {
-                    process.StartInfo.UseShellExecute = true;
-                    process.StartInfo.RedirectStandardOutput = false;
-                    process.StartInfo.FileName = path;
-                    process.Start();
-                }
-            }
-            catch
-            {
-                // Can't open the image file
-                MessageBox messageBox = new MessageBox("Can't open a photo viewer.", Util.GlobalReferences.MainWindow);
-                messageBox.Message.Icon = System.Windows.MessageBoxImage.Error;
-                messageBox.Message.Problem = "You don't have a default program set up to display a photo viewer  " + path;
-                messageBox.Message.Solution = "Set up a photo viewer in your Windows Settings." + Environment.NewLine;
-                messageBox.Message.Solution += "Go to 'Default apps', select 'Photo Viewer' and choose a desired photo viewer.";
-                messageBox.ShowDialog();
-            }
-            return;
-        }
-
-        // Get a file path from the datahandler. 
-        // If we can't, or if it does not exist, return String.Empty
-        private static string GetFileFromDataHandlerIfExists()
-        {
-            string path = String.Empty;
-            // If anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
-            DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
-            if (handler?.ImageCache?.CurrentDifferenceState != null && handler?.FileDatabase != null)
-            {
-                // Get the path
-                path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
-            }
-            return File.Exists(path) ? path : String.Empty;
-        }
         #endregion
 
         #region Generate ImageStateChange event
@@ -200,12 +171,11 @@ namespace Timelapse.Images
         {
             this.OnImageStateChanged(new ImageStateEventArgs(isNewImage, isPrimaryImage)); //  Signal change in image state (consumed by ImageAdjuster)
         }
+
         protected virtual void OnImageStateChanged(ImageStateEventArgs e)
         {
             ImageStateChanged?.Invoke(this, e);
         }
-
-
         #endregion
     }
 }

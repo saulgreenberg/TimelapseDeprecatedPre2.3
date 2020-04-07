@@ -251,6 +251,16 @@ namespace Timelapse
             MenuItem mi = (MenuItem)sender;
             if (mi == this.MenuItemExportAsCsvAndPreview)
             {
+                if (Util.ExternalProcesses.TryStartProcess(csvFilePath) == false)
+                {
+                    // Can't open excel
+                    MessageBox messageBox = new MessageBox("Can't open Excel.", this);
+                    messageBox.Message.Icon = MessageBoxImage.Error;
+                    messageBox.Message.Problem = "Excel could not be opened to display " + csvFilePath;
+                    messageBox.Message.Solution = "Try again, or just manually start Excel and open the .csv file ";
+                    messageBox.ShowDialog();
+                    return;
+                }
                 try
                 {
                     // Show the file in excel
