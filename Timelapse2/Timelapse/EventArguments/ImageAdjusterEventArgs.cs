@@ -10,12 +10,21 @@ namespace Timelapse.EventArguments
         public bool DetectEdges { get; set; }
         public bool Sharpen { get; set; }
 
-        public ImageAdjusterEventArgs(int brightness, int contrast, bool sharpen, bool detectEdges)
+        public bool UseGamma { get; set; }
+
+        public float GammaValue { get; set; }
+
+        public bool OpenExternalViewer { get; set; }
+
+        public ImageAdjusterEventArgs(int brightness, int contrast, bool sharpen, bool detectEdges, bool useGamma, float gammaValue, bool openExternalViewer)
         {
             this.Brightness = brightness;
             this.Contrast = contrast;
             this.Sharpen = sharpen;
             this.DetectEdges = detectEdges;
+            this.UseGamma = useGamma;
+            this.GammaValue = gammaValue;
+            this.OpenExternalViewer = openExternalViewer;
         }
     }
 }

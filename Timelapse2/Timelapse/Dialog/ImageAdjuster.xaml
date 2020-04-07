@@ -5,10 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Timelapse.Dialog"
         mc:Ignorable="d"
-        Title="Image adjustment" Height="120" Width="300" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Image adjustment" Height="140" Width="340" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -18,10 +19,13 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <RadioButton Name="CBNone" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="0" Content="None" Margin="5,5,0,5" IsChecked="True"/>
-        <RadioButton Name="CBEdges" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="1" Content="Edges" Margin="0,5,0,5" />
-        <RadioButton Name="CBSharpen" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="2" Content="Sharpen" Margin="5,5,0,5" />
-        <Button Name="ButtonReset" Grid.Row="0" Grid.Column="3"  Content="Reset" Margin="5" Width="60" HorizontalAlignment="Right" Click="ButtonReset_Click"/>
+        <RadioButton Name="CBNone" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="0" Content="None" Margin="5" IsChecked="True"/>
+        <RadioButton Name="CBEdges" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="1" Content="Edges" Margin="0,5,5,5" />
+        <RadioButton Name="CBSharpen" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="2" Content="Sharpen" Margin="5,5,5,5" />
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="3" >
+            <Button Name="ButtonReset" Content="Reset" Margin="5" Width="60" HorizontalAlignment="Right" Click="ButtonReset_Click"/>
+            <Button Name="ButtonImageViewer"  Content="Open" Margin="5" Width="60" HorizontalAlignment="Right" Click="ButtonImageViewer_Click"/>
+        </StackPanel>
 
         <Label Grid.Row="1" Grid.Column="0"  Content="Contrast" HorizontalAlignment="Right"/>
         <Slider Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Name="ContrastSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" 
@@ -30,5 +34,10 @@
         <Label Grid.Row="2" Grid.Column="0" Content="Brightness" HorizontalAlignment="Right"/>
         <Slider Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Name="BrightnessSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" 
                 Thumb.DragCompleted="ImageSliders_DragCompleted" TickFrequency="25" TickPlacement="BottomRight"/>
+
+        <CheckBox  Name="CBGamma" Grid.Row="3" Grid.Column="0" Content="Gamma" HorizontalAlignment="Right" Margin="5,5,5,5" IsChecked="False" Checked="CBGamma_CheckedChanged" Unchecked="CBGamma_CheckedChanged"/>
+        <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Name="GammaSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" 
+                Thumb.DragCompleted="ImageSliders_DragCompleted" TickFrequency="25" TickPlacement="BottomRight" IsEnabled="false"/>
+
     </Grid>
 </Window>

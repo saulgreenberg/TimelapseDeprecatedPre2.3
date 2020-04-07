@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Timelapse.Controls;
+using Timelapse.Dialog;
 using Timelapse.EventArguments;
 
 namespace Timelapse.Images
@@ -30,12 +32,16 @@ namespace Timelapse.Images
         private int brightness;
         private bool detectEdges;
         private bool sharpen;
+        private bool useGamma;
+        private float gammaValue;
 
         // We track the last parameters used, as if they haven't changed we won't update the image
         private int lastContrast = 0;
         private int lastBrightness = 0;
         private bool lastDetectEdges = false;
         private bool lastSharpen = false;
+        private bool lastUseGamma = false;
+        private float lastGammaValue = 1;
         #endregion
 
         #region Consume and handle image processing events
@@ -53,17 +59,38 @@ namespace Timelapse.Images
         {
             if (e == null)
             {
+                // Shouldn't happen, but...
                 return;
             }
-            if (e.Contrast == this.lastContrast && e.Brightness == this.lastBrightness && e.DetectEdges == this.lastDetectEdges && e.Sharpen == this.lastSharpen)
+
+            string path = MarkableCanvas.GetFileFromDataHandlerIfExists();
+            if (String.IsNullOrEmpty(path))
+            {
+                // The file cannot be opened or is not displayable. 
+                // Signal change in image state, which essentially says there is no displayable image to adjust (consumed by ImageAdjuster)
+                this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+                return;
+            }
+
+            if (e.OpenExternalViewer)
+            {
+                // If its a command to open the external viewer, we do it regardless of the processing state.
+                this.OpenExternalViewer(path);
+                return;
+            }
+
+            if (e.Contrast == this.lastContrast && e.Brightness == this.lastBrightness && e.DetectEdges == this.lastDetectEdges && e.Sharpen == this.lastSharpen && e.UseGamma == this.lastUseGamma && e.GammaValue == this.lastGammaValue)
             {
                 // No change from the last time we processed an image, so don't bother doing anything
+                System.Diagnostics.Debug.Print("No change in image");
                 return;
             }
             this.contrast = e.Contrast;
             this.brightness = e.Brightness;
             this.detectEdges = e.DetectEdges;
             this.sharpen = e.Sharpen;
+            this.useGamma = e.UseGamma;
+            this.gammaValue = e.GammaValue;
             this.timerImageProcessingUpdate.Start();
             await UpdateAndProcessImage().ConfigureAwait(true);
         }
@@ -76,7 +103,7 @@ namespace Timelapse.Images
             {
                 return;
             }
-            if (this.contrast != this.lastContrast || this.brightness != this.lastBrightness || this.detectEdges != this.lastDetectEdges || this.sharpen != this.lastSharpen)
+            if (this.contrast != this.lastContrast || this.brightness != this.lastBrightness || this.detectEdges != this.lastDetectEdges || this.sharpen != this.lastSharpen || this.lastUseGamma != this.useGamma || this.lastGammaValue != this.gammaValue)
             {
                 await this.UpdateAndProcessImage().ConfigureAwait(true);
             }
@@ -86,40 +113,86 @@ namespace Timelapse.Images
         // Update the image according to the image processing parameters.
         private async Task UpdateAndProcessImage()
         {
+            // If its processing the image, try again later (via the time),
+            if (this.Processing)
+            {
+                return;
+            }
             try
             {
-                // If its processing, or if anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
-                DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
-                if (this.Processing || handler?.ImageCache?.CurrentDifferenceState == null || handler?.FileDatabase == null)
+                string path = MarkableCanvas.GetFileFromDataHandlerIfExists();
+                if (String.IsNullOrEmpty(path))
                 {
-                    return;
-                }
-
-                string path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
-                if (File.Exists(path) == false)
-                {
-                    this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
-                    return;
+                    // If we cannot get a valid file, there is no image to manipulate. 
+                    // So abort and signal a change in image state that says there is no displayable image to adjust (consumed by ImageAdjuster)
+                    this.OnImageStateChanged(new ImageStateEventArgs(false, false));
                 }
 
                 this.Processing = true;
                 using (MemoryStream imageStream = new MemoryStream(File.ReadAllBytes(path)))
                 {
+                    // Remember the currently selected image processing states, so we can compare them later for changes
                     this.lastBrightness = this.brightness;
                     this.lastContrast = this.contrast;
                     this.lastSharpen = this.sharpen;
                     this.lastDetectEdges = this.detectEdges;
-                    this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges).ConfigureAwait(true);
+                    this.lastUseGamma = this.useGamma;
+                    this.lastGammaValue = this.gammaValue;
+                    this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
                 }
             }
             catch
             {
-                // Disable the ImageAdjuster for this image if there is a problem
-                this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+                // We failed on this image. To avoid this happening again,
+                // Signal change in image state, which essentially says there is no adjustable image (consumed by ImageAdjuster)
+                this.OnImageStateChanged(new ImageStateEventArgs(false, false));
             }
             this.Processing = false;
         }
-        #endregion 
+
+        private void OpenExternalViewer(string path)
+        {
+            // Open the file in a file viewer
+            try
+            {
+                // Show the file in a picture viewer
+                // Create a process that will try to show the file
+                using (Process process = new Process())
+                {
+                    process.StartInfo.UseShellExecute = true;
+                    process.StartInfo.RedirectStandardOutput = false;
+                    process.StartInfo.FileName = path;
+                    process.Start();
+                }
+            }
+            catch
+            {
+                // Can't open the image file
+                MessageBox messageBox = new MessageBox("Can't open a photo viewer.", Util.GlobalReferences.MainWindow);
+                messageBox.Message.Icon = System.Windows.MessageBoxImage.Error;
+                messageBox.Message.Problem = "You don't have a default program set up to display a photo viewer  " + path;
+                messageBox.Message.Solution = "Set up a photo viewer in your Windows Settings." + Environment.NewLine;
+                messageBox.Message.Solution += "Go to 'Default apps', select 'Photo Viewer' and choose a desired photo viewer.";
+                messageBox.ShowDialog();
+            }
+            return;
+        }
+
+        // Get a file path from the datahandler. 
+        // If we can't, or if it does not exist, return String.Empty
+        private static string GetFileFromDataHandlerIfExists()
+        {
+            string path = String.Empty;
+            // If anything is null, we defer resetting anything. Note that we may get an update later (e.g., via the timer)
+            DataEntryHandler handler = Util.GlobalReferences.MainWindow?.DataHandler;
+            if (handler?.ImageCache?.CurrentDifferenceState != null && handler?.FileDatabase != null)
+            {
+                // Get the path
+                path = handler.ImageCache.Current.GetFilePath(handler.FileDatabase.FolderPath);
+            }
+            return File.Exists(path) ? path : String.Empty;
+        }
+        #endregion
 
         #region Generate ImageStateChange event
         // Generate an event indicating the image state. To be consumed by the Image Adjuster to adjust its own state (e.g., disabled, reset, etc).
@@ -131,6 +204,8 @@ namespace Timelapse.Images
         {
             ImageStateChanged?.Invoke(this, e);
         }
+
+
         #endregion
     }
 }

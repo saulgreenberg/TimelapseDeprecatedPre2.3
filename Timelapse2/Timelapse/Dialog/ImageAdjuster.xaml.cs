@@ -15,6 +15,8 @@ namespace Timelapse.Dialog
         private int Brightness = 0;
         private bool DetectEdges = false;
         private bool Sharpen = false;
+        private bool UseGamma = false;
+        private float GammaValue = 1;
 
         // State information
         private bool AbortUpdate = false;
@@ -41,6 +43,9 @@ namespace Timelapse.Dialog
             ContrastSlider.Minimum = -sliderMinMax;
             BrightnessSlider.Maximum = sliderMinMax;
             BrightnessSlider.Minimum = -sliderMinMax;
+            GammaSlider.Minimum = .1;
+            GammaSlider.Maximum = 1.9;
+            GammaSlider.Value = GammaValue;
 
             // Register the various control callbacks. 
             CBEdges.Checked += RadioButtons_CheckChanged;
@@ -48,10 +53,12 @@ namespace Timelapse.Dialog
             CBNone.Checked += RadioButtons_CheckChanged;
             ContrastSlider.ValueChanged += ImageSliders_ValueChanged;
             BrightnessSlider.ValueChanged += ImageSliders_ValueChanged;
-
+            GammaSlider.ValueChanged += ImageSliders_ValueChanged;
+            
             // This event signal provides information used to decide how this control should appear e.g., reset, activated, etc.
             Util.GlobalReferences.MainWindow.MarkableCanvas.ImageStateChanged += this.ConfigureWindowState;
         }
+
 
         // Reuse the window by changing closing to hiding
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -87,15 +94,19 @@ namespace Timelapse.Dialog
             }
 
             // We only update everything and send the event if the final values differ from the current values
-            if (this.Contrast != Convert.ToInt32(ContrastSlider.Value) || this.Brightness != Convert.ToInt32(BrightnessSlider.Value) || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked)
+            if (this.Contrast != Convert.ToInt32(ContrastSlider.Value) || this.Brightness != Convert.ToInt32(BrightnessSlider.Value) || this.GammaValue != this.GammaSlider.Value
+                || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked || this.UseGamma != this.CBGamma.IsChecked )
             {
                 this.Contrast = Convert.ToInt32(ContrastSlider.Value);
                 this.Brightness = Convert.ToInt32(BrightnessSlider.Value);
                 this.DetectEdges = CBEdges.IsChecked == true;
                 this.Sharpen = CBSharpen.IsChecked == true;
+                this.UseGamma = CBGamma.IsChecked == true;
+                this.GammaValue = (float) (this.GammaSlider.Maximum - this.GammaSlider.Value);
 
-                // Generate an event to inform the Markable Canvase to update the image
-                this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges));
+                // Generate an event to inform the Markable Canvase to update the image. 
+                // Note that the last argument (to invoke an external image viewer) is always false, as that is handeld separately
+                this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, false));
             }
         }
 
@@ -104,10 +115,13 @@ namespace Timelapse.Dialog
         {
             // We don't update anything until after we reset the sliders and checkbox, as otherwise it would generate an event for each change
             this.AbortUpdate = true;
-            BrightnessSlider.Value = 0;
-            ContrastSlider.Value = 0;
-            CBNone.IsChecked = true;
+            this.BrightnessSlider.Value = 0;
+            this.ContrastSlider.Value = 0;
+            this.CBNone.IsChecked = true;
+            this.CBGamma.IsChecked = false;
+            this.GammaSlider.Value = 1;
             this.AbortUpdate = false;
+            
         }
         #endregion
 
@@ -123,6 +137,22 @@ namespace Timelapse.Dialog
         {
             this.UpdateImageParametersAndGenerateEvent();
         }
+        private void CBGamma_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            bool isNotGamma = CBGamma.IsChecked == false;
+            this.GammaSlider.IsEnabled = !isNotGamma;
+            this.BrightnessSlider.IsEnabled = isNotGamma;
+            this.ContrastSlider.IsEnabled = isNotGamma;
+            this.CBNone.IsEnabled = isNotGamma;
+            this.CBEdges.IsEnabled = isNotGamma;
+            this.CBSharpen.IsEnabled = isNotGamma;
+            this.UpdateImageParametersAndGenerateEvent();
+        }
+
+        //private void GammaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //{
+        //    this.UpdateImageParametersAndGenerateEvent();
+        //}
 
         private void ImageSliders_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
@@ -134,8 +164,6 @@ namespace Timelapse.Dialog
             this.ResetControlsToNeutralValues();
             this.UpdateImageParametersAndGenerateEvent();
         }
-
-
         #endregion
 
         #region Event Generation - Generate an event whenever the parameters change
@@ -147,9 +175,13 @@ namespace Timelapse.Dialog
             ImageProcessingParametersChanged?.Invoke(this, e);
         }
 
-
         #endregion
 
-
+        private void ButtonImageViewer_Click(object sender, RoutedEventArgs e)
+        {
+            // Generate an event to inform the Markable Canvas, in this case to invoke the file viewer 
+            // The only thing of importance in this call is that the final argument (openExternalViewer) is true. The other values will be ignored. 
+            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, true));
+        }
     }
 }
