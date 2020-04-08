@@ -159,7 +159,7 @@ namespace Timelapse
                 DateTime.Now.Day != this.State.MostRecentCheckForUpdates.Day)
             {
                 VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
-                updater.TryGetAndParseVersion(false);
+                updater.TryCheckForNewVersionAndDisplayResultsAsNeeded(false);
                 this.State.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
             if (this.State.FirstTimeFileLoading)

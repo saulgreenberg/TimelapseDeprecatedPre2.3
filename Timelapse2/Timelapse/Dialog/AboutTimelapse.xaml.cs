@@ -38,7 +38,7 @@ namespace Timelapse.Dialog
         private void CheckForUpdateButton_Click(object sender, RoutedEventArgs e)
         {
             VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
-            if (updater.TryGetAndParseVersion(true))
+            if (updater.TryCheckForNewVersionAndDisplayResultsAsNeeded(true))
             {
                 // PERHAPS. This isn't quite right, as the most recent check for update data is (I think) set only if there is a new release
                 // (as true is only returned by TryGetAndParseVersion when that happens, I think).

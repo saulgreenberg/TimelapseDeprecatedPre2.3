@@ -35,11 +35,12 @@ namespace Timelapse.Util
         /// <summary>
         /// Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
         /// timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
-        /// Displays a message to the user (if showNoUpdatesMessage is false) indicating the status
+        /// Displays a notification with recent update information
+        /// Optionally displays a message to the user (if showNoUpdatesMessage is false) indicating the status
         /// </summary>
         /// <param name="showNoUpdatesMessage"></param>
         /// <returns>True if an update is available, else false</returns>
-        public bool TryGetAndParseVersion(bool showNoUpdatesMessage)
+        public bool TryCheckForNewVersionAndDisplayResultsAsNeeded(bool showNoUpdatesMessage)
         {
             string url = String.Empty; // THE URL where the new version is located
             Version latestVersionNumber = null;  // if a new version is available, store the new version number here  
