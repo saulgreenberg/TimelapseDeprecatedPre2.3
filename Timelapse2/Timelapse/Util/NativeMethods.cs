@@ -9,8 +9,11 @@ namespace Timelapse.Util
 {
     internal class NativeMethods
     {
-        // Get the cursor position
-        // This purportedly corrects a WPF problem... not sure if its really needed.
+        /// <summary>
+        /// Get the cursor position. This purportedly corrects a WPF problem... not sure if its really needed.
+        /// </summary>
+        /// <param name="relativeTo"></param>
+        /// <returns>Point</returns>
         public static Point GetCursorPos(Visual relativeTo)
         {
             Win32Point w32Mouse = new Win32Point();
@@ -25,48 +28,57 @@ namespace Timelapse.Util
             return relativeTo.PointFromScreen(new Point(w32Mouse.X, w32Mouse.Y));
         }
 
-        public static string GetRelativePath(string fromPath, string toPath)
-        {
-            int fromAttr = NativeMethods.GetPathAttribute(fromPath);
-            int toAttr = NativeMethods.GetPathAttribute(toPath);
-            StringBuilder relativePathBuilder = new StringBuilder(260); // MAX_PATH
-            if (NativeMethods.PathRelativePathTo(relativePathBuilder,
-                                                 fromPath,
-                                                 fromAttr,
-                                                 toPath,
-                                                 toAttr) == 0)
-            {
-                throw new ArgumentException("Paths must have a common prefix");
-            }
+        #region Private aspects
+        // Conversions between Pixels and device-independent pixels
+        // Note that this depends on the DPI settings of the display. 
+        // Typical dpi settings are 96dpi (which means the two are equivalent), but this is not always the case.
+        [DllImport("gdi32.dll")]
+        private static extern int GetDeviceCaps(IntPtr hDc, int nIndex);
 
-            string relativePath = relativePathBuilder.ToString();
-            if (relativePath.StartsWith(".\\"))
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDc);
+        private const int LOGPIXELSX = 88;
+        private const int LOGPIXELSY = 90;
+        #endregion
+
+        /// <summary>
+        /// Given size units in normal pixels, translate them into device independent pixels (the out parameters)
+        /// </summary>
+        /// <param name="widthInPixels"></param>
+        /// <param name="heightInPixels"></param>
+        /// <param name="widthInDeviceIndependentPixels"></param>
+        /// <param name="heightInDeviceIndependentPixels"></param>
+        public static void TransformPixelsToDeviceIndependentPixels(int widthInPixels,
+                                      int heightInPixels,
+                                      out double widthInDeviceIndependentPixels,
+                                      out double heightInDeviceIndependentPixels)
+        {
+            IntPtr hDc = GetDC(IntPtr.Zero);
+            if (hDc != IntPtr.Zero)
             {
-                relativePath = relativePath.Substring(2);
+                int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
+                int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
+
+                _ = ReleaseDC(IntPtr.Zero, hDc);
+
+                widthInDeviceIndependentPixels = 96 * widthInPixels / (double)dpiX;
+                heightInDeviceIndependentPixels = 96 * heightInPixels / (double)dpiY;
             }
-            return relativePath;
+            else
+            {
+                // This is very unlikely. 
+                // As a workaround, we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
+                // it will not crash the program and at least maintains the correct aspect ration
+                widthInDeviceIndependentPixels = widthInPixels;
+                heightInDeviceIndependentPixels = heightInPixels;
+                TraceDebug.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
+            }
         }
 
-        private static int GetPathAttribute(string path)
-        {
-            DirectoryInfo di = new DirectoryInfo(path);
-            if (di.Exists)
-            {
-                return NativeMethods.FILE_ATTRIBUTE_DIRECTORY;
-            }
-
-            FileInfo fi = new FileInfo(path);
-            if (fi.Exists)
-            {
-                return NativeMethods.FILE_ATTRIBUTE_NORMAL;
-            }
-
-            throw new FileNotFoundException(path);
-        }
-
-        private const int FILE_ATTRIBUTE_DIRECTORY = 0x10;
-        private const int FILE_ATTRIBUTE_NORMAL = 0x80;
-
+        #region Private aspects
         [StructLayout(LayoutKind.Sequential)]
         internal struct Win32Point
         {
@@ -77,25 +89,55 @@ namespace Timelapse.Util
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetCursorPos(ref Win32Point pt);
+        #endregion
 
-        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern int PathRelativePathTo(StringBuilder pszPath, string pszFrom, int dwAttrFrom, string pszTo, int dwAttrTo);
+        #region Unused: GetRelativePath
+        //[DllImport("shlwapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        //private static extern int PathRelativePathTo(StringBuilder pszPath, string pszFrom, int dwAttrFrom, string pszTo, int dwAttrTo);
 
-        // Conversions between Pixels and device-independent pixels
-        // Note that this depends on the DPI settings of the display. 
-        // Typical dpi settings are 96dpi (which means the two are equivalent), but this is not always the case.
-        [DllImport("gdi32.dll")]
-        public static extern int GetDeviceCaps(IntPtr hDc, int nIndex);
+        //public static string GetRelativePath(string fromPath, string toPath)
+        //{
+        //    int fromAttr = NativeMethods.GetPathAttribute(fromPath);
+        //    int toAttr = NativeMethods.GetPathAttribute(toPath);
+        //    StringBuilder relativePathBuilder = new StringBuilder(260); // MAX_PATH
+        //    if (NativeMethods.PathRelativePathTo(relativePathBuilder,
+        //                                         fromPath,
+        //                                         fromAttr,
+        //                                         toPath,
+        //                                         toAttr) == 0)
+        //    {
+        //        throw new ArgumentException("Paths must have a common prefix");
+        //    }
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr GetDC(IntPtr hWnd);
+        //    string relativePath = relativePathBuilder.ToString();
+        //    if (relativePath.StartsWith(".\\"))
+        //    {
+        //        relativePath = relativePath.Substring(2);
+        //    }
+        //    return relativePath;
+        //}
 
-        [DllImport("user32.dll")]
-        public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDc);
+        //private const int FILE_ATTRIBUTE_DIRECTORY = 0x10;
+        //private const int FILE_ATTRIBUTE_NORMAL = 0x80;
+        //private static int GetPathAttribute(string path)
+        //{
+        //    DirectoryInfo di = new DirectoryInfo(path);
+        //    if (di.Exists)
+        //    {
+        //        return NativeMethods.FILE_ATTRIBUTE_DIRECTORY;
+        //    }
 
-        public const int LOGPIXELSX = 88;
-        public const int LOGPIXELSY = 90;
+        //    FileInfo fi = new FileInfo(path);
+        //    if (fi.Exists)
+        //    {
+        //        return NativeMethods.FILE_ATTRIBUTE_NORMAL;
+        //    }
 
+        //    throw new FileNotFoundException(path);
+        //}
+        #endregion
+
+        #region Unused: TransformDeviceIndependentPixelsToPixels
         // UNUSED - BUT LETS KEEP IT FOR NOW.
         // Transforms device independent units(1/96 of an inch) to pixels
         // <param name = "widthInDeviceIndependentPixels" > a device independent unit value X</param>
@@ -126,33 +168,6 @@ namespace Timelapse.Util
         //        TraceDebug.PrintFailure("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
         //    }
         // }
-
-        // Given size units in normal pixels, translate them into device independent pixels
-        public static void TransformPixelsToDeviceIndependentPixels(int widthInPixels,
-                                      int heightInPixels,
-                                      out double widthInDeviceIndependentPixels,
-                                      out double heightInDeviceIndependentPixels)
-        {
-            IntPtr hDc = GetDC(IntPtr.Zero);
-            if (hDc != IntPtr.Zero)
-            {
-                int dpiX = GetDeviceCaps(hDc, LOGPIXELSX);
-                int dpiY = GetDeviceCaps(hDc, LOGPIXELSY);
-
-                _ = ReleaseDC(IntPtr.Zero, hDc);
-
-                widthInDeviceIndependentPixels = 96 * widthInPixels / (double)dpiX;
-                heightInDeviceIndependentPixels = 96 * heightInPixels / (double)dpiY;
-            }
-            else
-            {
-                // This is very unlikely. 
-                // As a workaround, we just return the original pixel size. While this may not be the correct size (depending on the actual dpi), 
-                // it will not crash the program and at least maintains the correct aspect ration
-                widthInDeviceIndependentPixels = widthInPixels;
-                heightInDeviceIndependentPixels = heightInPixels;
-                TraceDebug.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
-            }
-        }
+        #endregion
     }
 }

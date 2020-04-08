@@ -322,7 +322,7 @@ namespace Timelapse
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
             // PERFORMANCE - takes modest but noticable time to do if there are a huge number of files. 
             // TO DO: PUT THIS IN THE SHOW PROGRESS LOOP
-            Util.FilesFoldersAndPaths.GetAllImageAndVideoFilesInFolderAndSubfolders(selectedFolderPath, filesToAdd);
+            Util.FilesFolders.GetAllImageAndVideoFilesInFolderAndSubfolders(selectedFolderPath, filesToAdd);
 
             if (filesToAdd.Count == 0)
             {

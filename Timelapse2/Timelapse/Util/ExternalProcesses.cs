@@ -8,6 +8,11 @@ namespace Timelapse.Util
     {
         // Start a default external process on the given file.
         // If for some reason we can't e.g., if the file does not exist or there is no default app, return false
+        /// <summary>
+        /// Start a default external process on the given file.
+        /// </summary>
+        /// <param name="path">The complete file path to the file to open</param>
+        /// <returns>true if successful, false if the file does not exist or if there is no default application for the file's extension</returns>
         static public bool TryStartProcess(string path)
         {
             if (File.Exists(path) == false)

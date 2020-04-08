@@ -333,17 +333,17 @@
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
-    <Compile Include="Util\ErrorsAndWarnings.cs" />
+    <Compile Include="DataStructures\ErrorsAndWarnings.cs" />
     <Compile Include="Util\ExternalProcesses.cs" />
     <Compile Include="Util\IsCondition.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\ThowIf.cs" />
-    <Compile Include="Util\GlobalReferences.cs" />
-    <Compile Include="Util\ImageMetadata.cs" />
+    <Compile Include="DataStructures\GlobalReferences.cs" />
+    <Compile Include="DataStructures\ImageMetadata.cs" />
     <Compile Include="Util\ImageMetadataDictionary.cs" />
-    <Compile Include="Util\FilesFoldersAndPaths.cs" />
-    <Compile Include="Util\RegistryKeyExtensions.cs" />
-    <Compile Include="Util\SequentialPartitioner.cs" />
+    <Compile Include="Util\FilesFolders.cs" />
+    <Compile Include="Extensions\RegistryKeyExtensions.cs" />
+    <Compile Include="UnusedClasses\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Images\BitmapSourceExtensions.cs" />
@@ -362,7 +362,7 @@
     </Compile>
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
-    <Compile Include="Util\TimelapseAvalonExtensions.cs" />
+    <Compile Include="Extensions\TimelapseAvalonExtensions.cs" />
     <Compile Include="Util\TraceDebug.cs" />
     <Compile Include="Util\VersionClient.cs" />
     <Compile Include="Constant.cs" />
@@ -611,7 +611,7 @@
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Enums\ControlLabelStyleEnum.cs" />
     <Compile Include="Enums\ControlContentStyleEnum.cs" />
-    <Compile Include="Util\MostRecentlyUsedCollection.cs" />
+    <Compile Include="DataStructures\RecencyOrderedList.cs" />
     <Compile Include="Controls\DataEntryControl.cs" />
     <Compile Include="Controls\DataEntryCounter.cs" />
     <Compile Include="Controls\DataEntryChoice.cs" />
@@ -636,7 +636,7 @@
     </Compile>
     <Compile Include="Images\MarkableCanvas.cs" />
     <Compile Include="Util\DateTimeHandler.cs" />
-    <Compile Include="Util\UserRegistrySettings.cs" />
+    <Compile Include="DataStructures\UserRegistrySettings.cs" />
     <Compile Include="Controls\DataEntryControls.xaml.cs">
       <DependentUpon>DataEntryControls.xaml</DependentUpon>
     </Compile>

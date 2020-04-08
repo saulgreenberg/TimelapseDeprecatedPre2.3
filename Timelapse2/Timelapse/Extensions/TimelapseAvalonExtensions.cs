@@ -11,14 +11,22 @@ using Xceed.Wpf.AvalonDock.Layout.Serialization;
 
 namespace Timelapse.Util
 {
-    // These extensions save and restore the Avalon layouts (including main window and floating windows positions and sizes).
-    // Default layouts are stored as resources so they are always accessible, while user-created layouts (including the last saved layout) is stored in 
-    // the user's computer registry. If there is no last-saved layout found in the registry, a standard data entry on top default layout is used. 
+    /// <summary>
+    /// These extensions save and restore the Avalon layouts (including main window and floating windows positions and sizes).
+    /// Default layouts are stored as resources so they are always accessible, while user-created layouts (including the last saved layout) is stored in 
+    /// the user's computer registry. If there is no last-saved layout found in the registry, a standard data entry on top default layout is used. 
+    /// </summary>
     public static class TimelapseAvalonExtensions
     {
         #region Loading layouts
-        // Try to load the layout identified by the layoutKey, which, depending on the key, is stored in the resource file or the registry
-        // This includes various adjustments, as detailed in the comments below.
+
+        /// <summary>
+        /// Try to load the layout identified by the layoutKey, which, depending on the key, is stored in the resource file or the registry
+        /// This includes various adjustments, as detailed in the comments below.
+        /// </summary>
+        /// <param name="timelapse"></param>
+        /// <param name="layoutKey"></param>
+        /// <returns></returns>
         public static bool AvalonLayout_TryLoad(this TimelapseWindow timelapse, string layoutKey)
         {
             // Check the arguments for null 
@@ -128,64 +136,12 @@ namespace Timelapse.Util
             return true;
         }
 
-        // Try to load a layout from the registry given the registry key
-        public static bool AvalonLayout_TryLoadFromRegistry(this TimelapseWindow timelapse, string registryKey)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
-
-            // Retrieve the layout configuration from the registry
-            string layoutAsString = timelapse.State.ReadFromRegistryString(registryKey);
-            if (string.IsNullOrEmpty(layoutAsString))
-            {
-                return false;
-            }
-
-            // Convert the string to a stream 
-            MemoryStream layoutAsStream = new MemoryStream();
-            using (StreamWriter writer = new StreamWriter(layoutAsStream))
-            {
-                writer.Write(layoutAsString);
-                writer.Flush();
-                layoutAsStream.Position = 0;
-
-                // Deserializa and load the layout
-                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
-                using (StreamReader streamReader = new StreamReader(layoutAsStream))
-                {
-                    serializer.Deserialize(streamReader);
-                }
-                return true;
-            }
-        }
-
-        // Load the window position and size from the registry
-        private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
-        {
-            // Retrieve the window position and size
-            Rect windowRect = timelapse.State.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
-            // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
-            windowRect.Height = Math.Abs(windowRect.Height);
-            windowRect.Width = Math.Abs(windowRect.Width);
-
-            // Adjust the window position and size, if needed, to fit into the current screen dimensions
-            windowRect = timelapse.FitIntoASingleScreen(windowRect);
-            timelapse.Left = windowRect.Left;
-            timelapse.Top = windowRect.Top;
-            timelapse.Width = windowRect.Width;
-            timelapse.Height = windowRect.Height;
-
-            foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
-            {
-                windowRect = new Rect(floatingWindow.Left, floatingWindow.Top, floatingWindow.Width, floatingWindow.Height);
-                windowRect = timelapse.FitIntoASingleScreen(windowRect);
-                floatingWindow.Left = windowRect.Left;
-                floatingWindow.Top = windowRect.Top;
-                floatingWindow.Width = windowRect.Width;
-                floatingWindow.Height = windowRect.Height;
-            }
-        }
-
+        /// <summary>
+        /// Fit the window so that its entirety is within a single screen
+        /// </summary>
+        /// <param name="timelapse"></param>
+        /// <param name="windowRect"></param>
+        /// <returns>A rectangle containing the modified window coordinates as wleft, wtop, wwidth, wheight </returns>
         public static Rect FitIntoASingleScreen(this TimelapseWindow timelapse, Rect windowRect)
         {
             try
@@ -356,7 +312,120 @@ namespace Timelapse.Util
                 return new Rect(5, 5, 740, 740);
             }
         }
+        #endregion
 
+        #region Saving layouts
+        /// <summary>
+        /// Save the current Avalon layout to the registry under the given registry key
+        /// and the current timelapse window position and size under the given registry key with the added suffix
+        /// </summary>
+        /// <param name="timelapse"></param>
+        /// <param name="registryKey"></param>
+        /// <returns>false if there are any issues</returns>
+        public static bool AvalonLayout_TrySave(this TimelapseWindow timelapse, string registryKey)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
+            // Serialization normally creates a stream, so we have to do a few contortions to transform that stream into a string  
+            StringBuilder xmlText = new StringBuilder();
+            using (XmlWriter xmlWriter = XmlWriter.Create(xmlText))
+            {
+
+                // Serialize the layout into a string
+                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
+                using (StringWriter stream = new StringWriter())
+                {
+                    serializer.Serialize(xmlWriter);
+                }
+                if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))
+                {
+                    // Write the string to the registry under the given key name
+                    timelapse.State.WriteToRegistry(registryKey, xmlText.ToString());
+                    AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save the various window positions, size and mazimize state to the registry
+        /// </summary>
+        /// <param name="timelapse"></param>
+        /// <param name="registryKey"></param>
+        public static void AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(this TimelapseWindow timelapse, string registryKey)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
+            timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDockValues.WindowRegistryKeySuffix);
+            timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDockValues.WindowMaximizeStateRegistryKeySuffix);
+        }
+        #endregion
+
+        #region Private (internal) methods
+        // Try to load a layout from the registry given the registry key
+        private static bool AvalonLayout_TryLoadFromRegistry(this TimelapseWindow timelapse, string registryKey)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
+
+            // Retrieve the layout configuration from the registry
+            string layoutAsString = timelapse.State.ReadFromRegistryString(registryKey);
+            if (string.IsNullOrEmpty(layoutAsString))
+            {
+                return false;
+            }
+
+            // Convert the string to a stream 
+            MemoryStream layoutAsStream = new MemoryStream();
+            using (StreamWriter writer = new StreamWriter(layoutAsStream))
+            {
+                writer.Write(layoutAsString);
+                writer.Flush();
+                layoutAsStream.Position = 0;
+
+                // Deserializa and load the layout
+                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
+                using (StreamReader streamReader = new StreamReader(layoutAsStream))
+                {
+                    serializer.Deserialize(streamReader);
+                }
+                return true;
+            }
+        }
+        
+        // Load the window position and size from the registry
+        private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
+        {
+            // Retrieve the window position and size
+            Rect windowRect = timelapse.State.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
+            // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
+            windowRect.Height = Math.Abs(windowRect.Height);
+            windowRect.Width = Math.Abs(windowRect.Width);
+
+            // Adjust the window position and size, if needed, to fit into the current screen dimensions
+            windowRect = timelapse.FitIntoASingleScreen(windowRect);
+            timelapse.Left = windowRect.Left;
+            timelapse.Top = windowRect.Top;
+            timelapse.Width = windowRect.Width;
+            timelapse.Height = windowRect.Height;
+
+            foreach (var floatingWindow in timelapse.DockingManager.FloatingWindows)
+            {
+                windowRect = new Rect(floatingWindow.Left, floatingWindow.Top, floatingWindow.Width, floatingWindow.Height);
+                windowRect = timelapse.FitIntoASingleScreen(windowRect);
+                floatingWindow.Left = windowRect.Left;
+                floatingWindow.Top = windowRect.Top;
+                floatingWindow.Width = windowRect.Width;
+                floatingWindow.Height = windowRect.Height;
+            }
+        }
+        
         // Retrieve the maximize state from the registry and set the timelapse window to that state
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
@@ -416,49 +485,6 @@ namespace Timelapse.Util
                     timelapse.DataGridPane = layoutDocument;
                 }
             }
-        }
-        #endregion
-
-        #region Saving layouts
-        // Save the current Avalon layout to the registry under the given registry key
-        // and the current timelapse window position and size under the given registry key with the added suffix
-        public static bool AvalonLayout_TrySave(this TimelapseWindow timelapse, string registryKey)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
-
-            // Serialization normally creates a stream, so we have to do a few contortions to transform that stream into a string  
-            StringBuilder xmlText = new StringBuilder();
-            using (XmlWriter xmlWriter = XmlWriter.Create(xmlText))
-            {
-
-                // Serialize the layout into a string
-                XmlLayoutSerializer serializer = new XmlLayoutSerializer(timelapse.DockingManager);
-                using (StringWriter stream = new StringWriter())
-                {
-                    serializer.Serialize(xmlWriter);
-                }
-                if (!String.IsNullOrEmpty(xmlText.ToString().Trim()))
-                {
-                    // Write the string to the registry under the given key name
-                    timelapse.State.WriteToRegistry(registryKey, xmlText.ToString());
-                    AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(timelapse, registryKey);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-
-        public static void AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(this TimelapseWindow timelapse, string registryKey)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
-
-            timelapse.AvalonLayout_SaveWindowPositionAndSizeToRegistry(registryKey + Constant.AvalonDockValues.WindowRegistryKeySuffix);
-            timelapse.AvalonLayout_SaveWindowMaximizeStateToRegistry(registryKey + Constant.AvalonDockValues.WindowMaximizeStateRegistryKeySuffix);
         }
 
         // Save the current timelapse window position and size to the registry

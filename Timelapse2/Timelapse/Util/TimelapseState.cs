@@ -3,30 +3,48 @@ using System.Windows.Input;
 
 namespace Timelapse.Util
 {
-    // A class that tracks various states and flags.
+    /// <summary>
+    /// A class that tracks various states and flags. 
+    /// While it inherits from TimelapseUserRegistrySettings (so that all variables can be accessed collectively), 
+    /// these particular variables/methods are logically separate as they are only for run-time use and not stored in the registry
+    /// </summary>
     public class TimelapseState : TimelapseUserRegistrySettings
     {
+
+        // The threshold used for calculating combined differences between images
+        public byte DifferenceThreshold { get; set; } // The threshold used for calculating combined differences
+
+        // Whether the FileNavigator slider is being dragged
+        public bool FileNavigatorSliderDragging { get; set; }
+
+        // Whether the mouse is over a counter control
+        public string MouseOverCounter { get; set; }
+
+        public DateTime MostRecentDragEvent { get; set; }
+
+        public bool FirstTimeFileLoading { get; set; }
+
+        public double BoundingBoxThresholdOveride { get; set; }
+
+        #region Private (internal) variables 
         // These three variables are used for keeping track of repeated keys.
-        // First, there is a bug in Key.IsRepeat in KeyEventArgs events, where AvalonDock always sets it as true
+        // There is a bug in Key.IsRepeat in KeyEventArgs events, where AvalonDock always sets it as true
         // in a floating window. As a workaround, TimelapseWindow will set IsKeyRepeat to false whenever it detects a key up event.
-        // Second, keyRepeatCount and mostRecentKey are used for throttling, where keyRepeatCount is incremented everytime repeat is true and the same key is seen 
+        // keyRepeatCount and mostRecentKey are used for throttling, where keyRepeatCount is incremented everytime repeat is true and the same key is seen 
         private int keyRepeatCount;
         private KeyEventArgs mostRecentKey;
         private bool IsKeyRepeat { get; set; }
-
-        public byte DifferenceThreshold { get; set; } // The threshold used for calculating combined differences
-        public bool FileNavigatorSliderDragging { get; set; }
-        public string MouseOverCounter { get; set; }
-        public DateTime MostRecentDragEvent { get; set; }
-        public bool FirstTimeFileLoading { get; set; }
-        public double BoundingBoxThresholdOveride { get; set; }
-
+        #endregion
+        
         public TimelapseState()
         {
             this.FirstTimeFileLoading = true;
             this.Reset();
         }
 
+        /// <summary>
+        /// Reset various state variables
+        /// </summary>
         public void Reset()
         {
             this.DifferenceThreshold = Constant.ImageValues.DifferenceThresholdDefault;
@@ -37,6 +55,10 @@ namespace Timelapse.Util
             this.ResetKeyRepeat();
         }
 
+        #region Key Repeat methods
+        /// <summary>
+        /// Key Repeat: Reset 
+        /// </summary>
         public void ResetKeyRepeat()
         {
             this.keyRepeatCount = 0;
@@ -44,6 +66,11 @@ namespace Timelapse.Util
             this.mostRecentKey = null;
         }
 
+        /// <summary>
+        /// KeyRepeat: Count of the numer of repeats for a key. Used in threshold determination
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public int GetKeyRepeatCount(KeyEventArgs key)
         {
             // check mostRecentKey for null as key delivery is not entirely deterministic
@@ -61,5 +88,6 @@ namespace Timelapse.Util
             this.mostRecentKey = key;
             return this.keyRepeatCount;
         }
+        #endregion
     }
 }

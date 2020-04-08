@@ -3,13 +3,21 @@ using System.Collections.Generic;
 
 namespace Timelapse.Util
 {
-    // Maintain a list of the most recently opened/used files
-    public class MostRecentlyUsedCollection<TElement> : IEnumerable<TElement>
+    /// <summary>
+    /// Maintain a recency-ordered collection of items
+    /// </summary>
+    /// <typeparam name="TElement"></typeparam>
+    public class RecencyOrderedList<TElement> : IEnumerable<TElement>
     {
         private readonly LinkedList<TElement> list;
         private readonly int maximumItems;
 
-        public MostRecentlyUsedCollection(int maximumItems)
+        /// <summary>
+        /// Initalize a recency order collection that holds maximumItems
+        /// When the collection is full, adding an item drops off the oldest item 
+        /// </summary>
+        /// <param name="maximumItems"></param>
+        public RecencyOrderedList(int maximumItems)
         {
             this.list = new LinkedList<TElement>();
 
@@ -17,6 +25,9 @@ namespace Timelapse.Util
             this.maximumItems = maximumItems;
         }
 
+        /// <summary>
+        /// Number of items in the collection
+        /// </summary>
         public int Count
         {
             get { return this.list.Count; }
@@ -32,11 +43,20 @@ namespace Timelapse.Util
             return this.list.GetEnumerator();
         }
 
+        /// <summary>
+        /// Whether or not the collection is full i.e, it has the maximum number of items
+        /// </summary>
+        /// <returns></returns>
         public bool IsFull()
         {
             return this.list.Count == this.maximumItems;
         }
 
+        /// <summary>
+        /// Add or move an item to the most recent position.
+        /// If the list is full, drop the oldest item
+        /// </summary>
+        /// <param name="mostRecent"></param>
         public void SetMostRecent(TElement mostRecent)
         {
             if (this.list.Remove(mostRecent) == false)
@@ -48,11 +68,15 @@ namespace Timelapse.Util
                     this.list.RemoveLast();
                 }
             }
-
             // make the item the most current in the list
             this.list.AddFirst(mostRecent);
         }
 
+        /// <summary>
+        /// Get the most recent item and put it in mostRecent
+        /// </summary>
+        /// <param name="mostRecent"></param>
+        /// <returns>false if the list is empty</returns>
         public bool TryGetMostRecent(out TElement mostRecent)
         {
             if (this.list.Count > 0)
@@ -60,11 +84,15 @@ namespace Timelapse.Util
                 mostRecent = this.list.First.Value;
                 return true;
             }
-
-            mostRecent = default(TElement);
+            mostRecent = default;
             return false;
         }
 
+        /// <summary>
+        /// Get the oldest item and put it in mostRecent
+        /// </summary>
+        /// <param name="mostRecent"></param>
+        /// <returns>false if the list is empty</returns>
         public bool TryGetLeastRecent(out TElement leastRecent)
         {
             if (this.list.Count > 0)
@@ -72,11 +100,15 @@ namespace Timelapse.Util
                 leastRecent = this.list.Last.Value;
                 return true;
             }
-
             leastRecent = default(TElement);
             return false;
         }
 
+        /// <summary>
+        /// Remove the itme indicated by value
+        /// </summary>
+        /// <param name="mostRecent"></param>
+        /// <returns>false if the collecton does not contain that item </returns>
         public bool TryRemove(TElement value)
         {
             return this.list.Remove(value);

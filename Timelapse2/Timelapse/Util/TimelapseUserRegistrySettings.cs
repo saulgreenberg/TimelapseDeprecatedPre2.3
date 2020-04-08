@@ -21,7 +21,7 @@ namespace Timelapse.Util
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
-        public MostRecentlyUsedCollection<string> MostRecentImageSets { get; private set; }
+        public RecencyOrderedList<string> MostRecentImageSets { get; private set; }
         public Rect QuickPasteWindowPosition { get; set; }
         public bool SuppressAmbiguousDatesDialog { get; set; }
         public bool SuppressCsvExportDialog { get; set; }

@@ -601,7 +601,7 @@ namespace Timelapse
             // Find all the .DDB files located in subfolders under the root folder (excluding backup folders)
             string startFolder = Path.GetDirectoryName(templateDatabasePath);
             List<string> allDDBFiles = new List<string>();
-            FilesFoldersAndPaths.RecursivelyFindFilesWithPattern(startFolder, "*" + Constant.File.FileDatabaseFileExtension, true, allDDBFiles);
+            FilesFolders.GetAllFilesInFoldersAndSubfoldersMatchingPattern(startFolder, "*" + Constant.File.FileDatabaseFileExtension, true, allDDBFiles);
 
             // Merge the found databases into a new (or replaced) TimelapseData_merged.ddb file located in the same folder as the template.
             // Note: .ddb files found in a Backup folder will be ignored

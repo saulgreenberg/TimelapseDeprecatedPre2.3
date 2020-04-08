@@ -5,9 +5,12 @@ using System.Windows;
 
 namespace Timelapse.Util
 {
-    // Read and Write particular data types into the registry. 
+    /// <summary>
+    /// Read and Write particular data types into the registry
+    /// </summary>
     public static class RegistryKeyExtensions
     {
+
         public static bool ReadBoolean(this RegistryKey registryKey, string subKeyPath, bool defaultValue)
         {
             string valueAsString = registryKey.ReadString(subKeyPath);
@@ -151,13 +154,13 @@ namespace Timelapse.Util
         }
 
         // read a series of REG_SZ keys' values from the registry
-        public static MostRecentlyUsedCollection<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
+        public static RecencyOrderedList<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
 
             RegistryKey subKey = registryKey.OpenSubKey(subKeyPath);
-            MostRecentlyUsedCollection<string> values = new MostRecentlyUsedCollection<string>(Constant.Defaults.NumberOfMostRecentDatabasesToTrack);
+            RecencyOrderedList<string> values = new RecencyOrderedList<string>(Constant.Defaults.NumberOfMostRecentDatabasesToTrack);
 
             if (subKey != null)
             {
@@ -189,7 +192,7 @@ namespace Timelapse.Util
             registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        public static void Write(this RegistryKey registryKey, string subKeyPath, MostRecentlyUsedCollection<string> values)
+        public static void Write(this RegistryKey registryKey, string subKeyPath, RecencyOrderedList<string> values)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));

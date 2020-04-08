@@ -7,6 +7,12 @@ namespace Timelapse.Util
     /// </summary>
     public static class ThrowIf
     {
+        /// <summary>
+        /// Throw an exception if the argument is null
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="name"></param>
         public static void IsNullArgument<T>(T value, string name) where T : class
         {
             if (value == null)

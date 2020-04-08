@@ -2,12 +2,13 @@
 
 namespace Timelapse.Util
 {
-    // Captures a single metadata record entry as extracted by MetaDataExtractor. 
+    /// <summary>
+    /// Captures a single metadata record entry as extracted by MetaDataExtractor. 
+    /// </summary>
     public class ImageMetadata
     {
         public string Directory { get; set; }
-        public string Name { get; set; }
-        public string Value { get; set; }
+
         public string Key
         {
             get
@@ -16,6 +17,13 @@ namespace Timelapse.Util
             }
         }
 
+        public string Name { get; set; }
+
+        public string Value { get; set; }
+
+        /// <summary>
+        /// ImageMetadata: A data structure holding a single metadata record entry as extracted by MetaDataExtractor. 
+        /// </summary>
         public ImageMetadata()
         {
             this.Initialize(String.Empty, String.Empty, String.Empty);

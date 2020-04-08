@@ -12,7 +12,7 @@ namespace Timelapse.Images
     public class ImageCache : FileTableEnumerator
     {
         private readonly Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
-        private readonly MostRecentlyUsedCollection<long> mostRecentlyUsedIDs;
+        private readonly RecencyOrderedList<long> mostRecentlyUsedIDs;
         private readonly ConcurrentDictionary<long, Task> prefetechesByID;
         private readonly ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
 
@@ -24,7 +24,7 @@ namespace Timelapse.Images
             this.TryMoveToFile(Constant.DatabaseValues.InvalidRow);
             this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
             this.differenceBitmapCache = new Dictionary<ImageDifferenceEnum, BitmapSource>();
-            this.mostRecentlyUsedIDs = new MostRecentlyUsedCollection<long>(Constant.ImageValues.BitmapCacheSize);
+            this.mostRecentlyUsedIDs = new RecencyOrderedList<long>(Constant.ImageValues.BitmapCacheSize);
             this.prefetechesByID = new ConcurrentDictionary<long, Task>();
             this.unalteredBitmapsByID = new ConcurrentDictionary<long, BitmapSource>();
         }

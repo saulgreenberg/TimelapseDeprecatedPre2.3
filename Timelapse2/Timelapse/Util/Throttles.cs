@@ -3,7 +3,9 @@ using System.Windows;
 
 namespace Timelapse.Util
 {
-    // Throttles are used to slow down image rendering, as we may hit limits on some computers that causes image display to freeze or stutter.
+    /// <summary>
+    /// Throttles are used to slow down image rendering, as we may hit limits on some computers that causes image display to freeze or stutter.
+    /// </summary>
     public class Throttles
     {
         // The current setting for images rendered per second. Default is set to the maximum.
@@ -16,11 +18,19 @@ namespace Timelapse.Util
             this.ResetToDefaults();
         }
 
+        /// <summary>
+        /// Reset the image renedered values to their hard-coded defaults
+        /// </summary>
         public void ResetToDefaults()
         {
             this.DesiredImageRendersPerSecond = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault;
         }
 
+        /// <summary>
+        /// Set desired image rendered values based upon the rendersPerSecond
+        /// Also guarantees that the renders per second are kept within a hard-coded range
+        /// </summary>
+        /// <param name="rendersPerSecond"></param>
         public void SetDesiredImageRendersPerSecond(double rendersPerSecond)
         {
             // Ensure that the renders per second is within range. 

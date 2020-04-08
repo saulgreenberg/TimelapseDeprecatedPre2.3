@@ -9,7 +9,7 @@ namespace Timelapse.Editor.Util
         // same key as Timelapse uses; intentional as both Timelapse and template editor are released together
         public DateTime MostRecentCheckForUpdates { get; set; }
 
-        public MostRecentlyUsedCollection<string> MostRecentTemplates { get; private set; }
+        public RecencyOrderedList<string> MostRecentTemplates { get; private set; }
 
         public bool ShowUtcOffset { get; set; }
 
