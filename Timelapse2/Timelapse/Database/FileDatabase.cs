@@ -155,7 +155,7 @@ namespace Timelapse.Database
 
             // Populate the data for the image set with defaults
             // VersionCompatabily
-            Version timelapseCurrentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
+            Version timelapseCurrentVersionNumber = VersionChecks.GetTimelapseCurrentVersionNumber();
             List<ColumnTuple> columnsToUpdate = new List<ColumnTuple>
             {
                 new ColumnTuple(Constant.DatabaseColumn.Log, Constant.DatabaseValues.ImageSetDefaultLog),
@@ -485,7 +485,7 @@ namespace Timelapse.Database
             bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
             string imageSetVersionNumber = versionCompatabilityColumnExists ? this.ImageSet.VersionCompatability
                 : lowestVersionNumber;
-            string timelapseVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
+            string timelapseVersionNumberAsString = VersionChecks.GetTimelapseCurrentVersionNumber().ToString();
 
             // Step 1. Check the FileTable for missing columns
             // RelativePath column (if missing) needs to be added 
@@ -565,7 +565,7 @@ namespace Timelapse.Database
             // Repair by turning all nulls in FileTable, if any, into empty strings
             // SAULXX Note that we could likely remove the WhiteSpaceTrimmed column and use the version number instead but we need to check if that is backwards compatable before doing so.
             string firstVersionWithNullCheck = "2.2.2.4";
-            if (VersionClient.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, imageSetVersionNumber))
+            if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithNullCheck, imageSetVersionNumber))
             {
                 this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
@@ -593,7 +593,7 @@ namespace Timelapse.Database
             // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
             // If not, add it and set it to the default
             string firstVersionWithSelectedFilesColumns = "2.2.2.6";
-            if (VersionClient.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
+            if (VersionChecks.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
             {
                 // Because we may be running this several times on the same version, we should still check to see if the column exists before adding it
                 bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SelectedFolder);
@@ -714,42 +714,42 @@ namespace Timelapse.Database
                         switch (controlType)
                         {
                             case Constant.DatabaseColumn.File:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.File)}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.File)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.RelativePath:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.RelativePath)}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.RelativePath)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Folder:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Folder)}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.Folder)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Date:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Date)}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.Date)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{Utilities.QuoteForSql(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Time:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.Time)}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.Time)}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.ImageQuality:
-                                queryValues.Append($"{Utilities.QuoteForSql(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(imageProperties.ImageQuality.ToString())}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.DeleteFlag:
                                 string dataLabel = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag];
 
                                 // Default as specified in the template file, which should be "false"
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[dataLabel])}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(defaultValueLookup[dataLabel])}{Sql.Comma}");
                                 break;
 
                             // Find and then add the customizable types, populating it with their default values.
@@ -757,16 +757,16 @@ namespace Timelapse.Database
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
                                 // Now initialize notes, flags, and fixed choices to the defaults
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
 
                             case Constant.Control.Counter:
-                                queryValues.Append($"{Utilities.QuoteForSql(defaultValueLookup[columnName])}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
                                 break;
 
                             default:
-                                TraceDebug.PrintMessage(String.Format("Unhandled control type '{0}' in AddImages.", controlType));
+                                TracePrint.PrintMessage(String.Format("Unhandled control type '{0}' in AddImages.", controlType));
                                 break;
                         }
                     }
@@ -1002,7 +1002,7 @@ namespace Timelapse.Database
         // Select only those files that are marked for deletion i.e. DeleteFlag = true
         public FileTable SelectFilesMarkedForDeletion()
         {
-            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True); // = value
+            string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True); // = value
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
@@ -1019,7 +1019,7 @@ namespace Timelapse.Database
 
         public FileTable SelectFileInDataTableById(string id)
         {
-            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + Utilities.QuoteForSql(id) + Sql.LimitOne;
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + Sql.Quote(id) + Sql.LimitOne;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             return new FileTable(images);
         }
@@ -1030,7 +1030,7 @@ namespace Timelapse.Database
         public long GetIDFromDataTableByFileName(string fileName)
         {
             string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.From + Constant.DBTables.FileData;
-            query += Sql.Where + Constant.DatabaseColumn.File + Sql.Equal + Utilities.QuoteForSql(fileName) + Sql.LimitOne;
+            query += Sql.Where + Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(fileName) + Sql.LimitOne;
             DataTable images = this.Database.GetDataTableFromSelect(query);
             long id = (images.Rows.Count == 1) ? (long)images.Rows[0][0] : -1;
             images.Dispose();
@@ -1044,8 +1044,8 @@ namespace Timelapse.Database
             // datetimes are in database format e.g., 2017-06-14T18:36:52.000Z 
             // Form: Select ID,DateTime from DataTable where RelativePath='relativePath' and DateTime BETWEEN 'lowerDateTime' AND 'uppderDateTime' ORDER BY DateTime ORDER BY DateTime  
             string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.Comma + Constant.DatabaseColumn.DateTime + Sql.From + Constant.DBTables.FileData;
-            query += Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(relativePath);
-            query += Sql.And + Constant.DatabaseColumn.DateTime + Sql.Between + Utilities.QuoteForSql(lowerDateTime) + Sql.And + Utilities.QuoteForSql(uppderDateTime);
+            query += Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(relativePath);
+            query += Sql.And + Constant.DatabaseColumn.DateTime + Sql.Between + Sql.Quote(lowerDateTime) + Sql.And + Sql.Quote(uppderDateTime);
             query += Sql.OrderBy + Constant.DatabaseColumn.DateTime;
             return (this.Database.GetDataTableFromSelect(query));
         }
@@ -1769,9 +1769,9 @@ namespace Timelapse.Database
                     return String.Empty;
                 case FileSelectionEnum.Dark:
                 case FileSelectionEnum.Ok:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Utilities.QuoteForSql(selection.ToString());
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Sql.Quote(selection.ToString());
                 case FileSelectionEnum.MarkedForDeletion:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Utilities.QuoteForSql(Constant.BooleanValue.True);
+                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                 case FileSelectionEnum.Folders:
                     return this.CustomSelection.GetFilesWhere();
@@ -1810,7 +1810,7 @@ namespace Timelapse.Database
                 }
                 catch (Exception exception)
                 {
-                    TraceDebug.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
+                    TracePrint.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
                     pointList = String.Empty;
                 }
                 markersForCounter.Parse(pointList);
@@ -1860,7 +1860,7 @@ namespace Timelapse.Database
             MarkerRow marker = this.Markers.Find(imageID);
             if (marker == null)
             {
-                TraceDebug.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
+                TracePrint.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
                 return;
             }
 
@@ -2573,47 +2573,47 @@ namespace Timelapse.Database
         //                }
 
         //                // Fill up each column in order
-        //                queryValues.Append($"{Utilities.QuoteForSql(fileProperties[columnName])}{Sql.Comma}");
+        //                queryValues.Append($"{Sql.Quote(fileProperties[columnName])}{Sql.Comma}");
 
         //                string controlType = this.FileTableColumnsByDataLabel[columnName].ControlType;
 
         //                switch (controlType)
         //                {
         //                    //case Constant.DatabaseColumn.File:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.File])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.File])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.RelativePath:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.RelativePath])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.RelativePath])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.Folder:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.Folder])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.Folder])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.Date:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.Date])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.Date])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.DateTime:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.DateTime])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.DateTime])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.UtcOffset:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.UtcOffset])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.UtcOffset])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.Time:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.Time])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.Time])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.ImageQuality:
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.ImageQuality])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.ImageQuality])}{Sql.Comma}");
         //                    //    break;
 
         //                    //case Constant.DatabaseColumn.DeleteFlag:
         //                    //    // Default as specified in the template file, which should be "false"
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[Constant.DatabaseColumn.DeleteFlag])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[Constant.DatabaseColumn.DeleteFlag])}{Sql.Comma}");
         //                    //    break;
 
         //                    //// Find and then add the customizable types, populating it with their default values.
@@ -2621,11 +2621,11 @@ namespace Timelapse.Database
         //                    //case Constant.Control.FixedChoice:
         //                    //case Constant.Control.Flag:
         //                    //    // Now initialize notes, flags, and fixed choices to the defaults
-        //                    //    queryValues.Append($"{Utilities.QuoteForSql(fileProperties[columnName])}{Sql.Comma}");
+        //                    //    queryValues.Append($"{Sql.Quote(fileProperties[columnName])}{Sql.Comma}");
         //                    //    break;
 
         //                    case Constant.Control.Counter:
-        //                        // queryValues.Append($"{Utilities.QuoteForSql(fileProperties[columnName])}{Sql.Comma}");
+        //                        // queryValues.Append($"{Sql.Quote(fileProperties[columnName])}{Sql.Comma}");
         //                        markerRow.Add(new ColumnTuple(columnName, String.Empty));
         //                        break;
 

@@ -28,7 +28,7 @@ namespace Timelapse
         {
             // Default the template selection dialog to the most recently opened database
             this.State.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
-            if (Utilities.TryGetFileFromUser(
+            if (FilesFolders.TryGetFileFromUser(
                 "Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
                                              String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension),
@@ -181,8 +181,8 @@ namespace Timelapse
 
             // Record the version number of the currently executing version of Timelapse only if its greater than the one already stored in the ImageSet Table.
             // This will indicate the latest timelapse version that is compatable with the database structure. 
-            string currentVersionNumberAsString = VersionClient.GetTimelapseCurrentVersionNumber().ToString();
-            if (VersionClient.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.DataHandler.FileDatabase.ImageSet.VersionCompatability))
+            string currentVersionNumberAsString = VersionChecks.GetTimelapseCurrentVersionNumber().ToString();
+            if (VersionChecks.IsVersion1GreaterThanVersion2(currentVersionNumberAsString, this.DataHandler.FileDatabase.ImageSet.VersionCompatability))
             {
                 this.DataHandler.FileDatabase.ImageSet.VersionCompatability = currentVersionNumberAsString;
                 this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
@@ -209,7 +209,7 @@ namespace Timelapse
             {
                 // this should not happen
                 // System.Diagnostics.Debug.Print("The fielDatabase was null and it shouldn't be");
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // No-op
                 return;
             }

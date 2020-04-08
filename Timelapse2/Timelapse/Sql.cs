@@ -102,5 +102,17 @@
         public const string WhereIDIn = Where + "Id IN ";
         public const string WhereIDNotIn = Where + " Id NOT IN ";
         public const string WhereIDEquals = Where + " Id " + Equal;
+
+        /// <summary>
+        /// Format the passed value for use as string value in a SQL statement or query.
+        /// Nulls are quoted as empty strings
+        /// </summary>
+        public static string Quote(string value)
+        {
+            // promote null values to empty strings
+            return (value == null)
+                ? "''"
+                : "'" + value.Replace("'", "''") + "'";
+        }
     }
 }

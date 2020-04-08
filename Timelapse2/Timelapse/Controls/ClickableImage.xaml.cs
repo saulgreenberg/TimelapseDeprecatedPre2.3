@@ -231,7 +231,7 @@ namespace Timelapse.Controls
             if (filename == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 return "Unknown file name";
             }
 

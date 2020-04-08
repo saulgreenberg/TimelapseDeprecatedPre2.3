@@ -375,7 +375,7 @@ namespace Timelapse.Util
             ThrowIf.IsNullArgument(timelapse, nameof(timelapse));
 
             // Retrieve the layout configuration from the registry
-            string layoutAsString = timelapse.State.ReadFromRegistryString(registryKey);
+            string layoutAsString = timelapse.State.GetFromRegistry(registryKey);
             if (string.IsNullOrEmpty(layoutAsString))
             {
                 return false;
@@ -403,7 +403,7 @@ namespace Timelapse.Util
         private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
             // Retrieve the window position and size
-            Rect windowRect = timelapse.State.ReadTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
+            Rect windowRect = timelapse.State.GetTimelapseWindowPositionAndSizeFromRegistryRect(registryKey);
             // Height and Width should not be negative. There was an instance where it was, so this tries to catch it just in case
             windowRect.Height = Math.Abs(windowRect.Height);
             windowRect.Width = Math.Abs(windowRect.Width);
@@ -429,7 +429,7 @@ namespace Timelapse.Util
         // Retrieve the maximize state from the registry and set the timelapse window to that state
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
-            bool windowMaximizeState = timelapse.State.ReadTimelapseWindowMaximizeStateFromRegistryBool(registryKey);
+            bool windowMaximizeState = timelapse.State.GetTimelapseWindowMaximizeStateFromRegistryBool(registryKey);
             timelapse.WindowState = windowMaximizeState ? WindowState.Maximized : WindowState.Normal;
         }
 

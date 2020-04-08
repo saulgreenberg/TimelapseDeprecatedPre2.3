@@ -24,7 +24,7 @@ namespace Timelapse.ExifTool
             if (response == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(response));
                 // Treat it as a failure case?
                 this.IsSuccess = false;
@@ -329,7 +329,7 @@ namespace Timelapse.ExifTool
             if (data == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(data));
                 // try this to indicate the failure case
                 return new ExifToolResponse(false, "data dictionary is null");

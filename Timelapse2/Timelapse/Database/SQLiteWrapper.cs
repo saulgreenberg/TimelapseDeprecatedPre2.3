@@ -101,7 +101,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumnsAndDefaultValues. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumnsAndDefaultValues. {0}", exception.ToString()));
                 return null;
             }
         }
@@ -126,7 +126,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumns. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumns. {0}", exception.ToString()));
                 return null;
             }
         }
@@ -163,7 +163,7 @@ namespace Timelapse.Database
                 foreach (ColumnTuple column in columnsToUpdate)
                 {
                     columns += String.Format(" {0}" + Sql.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
-                    values += String.Format(" {0}" + Sql.Comma, Utilities.QuoteForSql(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
+                    values += String.Format(" {0}" + Sql.Comma, Sql.Quote(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
                 }
                 if (columns.Length > 0)
                 {
@@ -212,7 +212,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing query '{0}' in GetDataTableFromSelect. {1}", query, exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure executing query '{0}' in GetDataTableFromSelect. {1}", query, exception.ToString()));
                 return dataTable;
             }
         }
@@ -261,7 +261,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing query '{0}' in GetObjectFromSelect: {1}", query, exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure executing query '{0}' in GetObjectFromSelect: {1}", query, exception.ToString()));
                 return null;
             }
         }
@@ -286,7 +286,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", statement, exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", statement, exception.ToString()));
             }
         }
 
@@ -353,7 +353,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
             }
         }
 
@@ -385,7 +385,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
             }
             if (command != null)
             {
@@ -412,7 +412,7 @@ namespace Timelapse.Database
         // Set all rows in a given column to a single value
         public void SetColumnToACommonValue(string tableName, string columnName, string value)
         {
-            string query = Sql.Update + tableName + Sql.Set + columnName + Sql.Equal + Utilities.QuoteForSql(value);
+            string query = Sql.Update + tableName + Sql.Set + columnName + Sql.Equal + Sql.Quote(value);
             this.ExecuteNonQuery(query);
         }
 
@@ -480,7 +480,7 @@ namespace Timelapse.Database
             ThrowIf.IsNullArgument(columnToUpdate, nameof(columnToUpdate));
 
             string query = Sql.Update + tableName + Sql.Set;
-            query += String.Format(" {0} = {1}", columnToUpdate.Name, Utilities.QuoteForSql(columnToUpdate.Value));
+            query += String.Format(" {0} = {1}", columnToUpdate.Name, Sql.Quote(columnToUpdate.Value));
             this.ExecuteNonQuery(query);
         }
 
@@ -514,7 +514,7 @@ namespace Timelapse.Database
                 }
                 else
                 {
-                    query += String.Format(" {0} = {1}{2}", column.Name, Utilities.QuoteForSql(column.Value), Sql.Comma);
+                    query += String.Format(" {0} = {1}{2}", column.Name, Sql.Quote(column.Value), Sql.Comma);
                 }
             }
             query = query.Substring(0, query.Length - Sql.Comma.Length); // Remove the last comma
@@ -631,7 +631,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -649,7 +649,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
                 return false;
             }
         }
@@ -713,7 +713,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in AddColumn. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in AddColumn. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -764,7 +764,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -818,7 +818,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
                 throw;
             }
         }
@@ -1074,7 +1074,7 @@ namespace Timelapse.Database
                         case 4:  // dflt_value (Column has a default value)
                             if (String.IsNullOrEmpty(reader[field].ToString()))
                             {
-                                existingColumnDefinition += Sql.Default + Utilities.QuoteForSql(reader[field].ToString()) + " ";
+                                existingColumnDefinition += Sql.Default + Sql.Quote(reader[field].ToString()) + " ";
                             }
                             break;
                         case 5:  // pk (Column is part of the primary key)

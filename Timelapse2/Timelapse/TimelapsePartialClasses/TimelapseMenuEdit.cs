@@ -48,7 +48,7 @@ namespace Timelapse
         // Import QuickPaste Items from .ddb file
         private void MenuItemQuickPasteImportFromDB_Click(object sender, RoutedEventArgs e)
         {
-            if (Utilities.TryGetFileFromUser("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
+            if (FilesFolders.TryGetFileFromUser("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
                                              Path.Combine(this.DataHandler.FileDatabase.FolderPath, Constant.File.DefaultFileDatabaseFileName),
                                              String.Format("Database files (*{0})|*{0}", Constant.File.FileDatabaseFileExtension),
                                              Constant.File.FileDatabaseFileExtension,
@@ -133,7 +133,7 @@ namespace Timelapse
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Delete submenu failed to open in Delete_SubmenuOpening. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Delete submenu failed to open in Delete_SubmenuOpening. {0}", exception.ToString()));
 
                 // This function was blowing up on one user's machine, but not others.
                 // I couldn't figure out why, so I just put this fallback in here to catch that unusual case.

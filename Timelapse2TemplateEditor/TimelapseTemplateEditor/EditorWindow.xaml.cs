@@ -82,7 +82,7 @@ namespace Timelapse.Editor
                 DateTime.Now.Month != this.userSettings.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.userSettings.MostRecentCheckForUpdates.Day)
             {
-                VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
+                VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.userSettings.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
@@ -100,7 +100,7 @@ namespace Timelapse.Editor
         // If we get an exception that wasn't handled, show a dialog asking the user to send the bug report to us.
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Utilities.ShowExceptionReportingDialog("Timelapse Editor", e, this);
+            Dialogs.ShowExceptionReportingDialog("Timelapse Editor", e, this);
         }
         #endregion
 
@@ -657,7 +657,7 @@ namespace Timelapse.Editor
             ControlRow choiceControl = this.templateDatabase.Controls.FirstOrDefault(control => control.ControlOrder.ToString().Equals(button.Tag.ToString()));
             if (choiceControl == null)
             {
-                TraceDebug.PrintMessage(String.Format("Control named {0} not found.", button.Tag));
+                TracePrint.PrintMessage(String.Format("Control named {0} not found.", button.Tag));
                 return;
             }
 
@@ -890,7 +890,7 @@ namespace Timelapse.Editor
 
                 // grid cells are editable by default
                 // disable cells which should not be editable
-                DataGridCellsPresenter presenter = Utilities.GetVisualChild<DataGridCellsPresenter>(row);
+                DataGridCellsPresenter presenter = VisualChildren.GetVisualChild<DataGridCellsPresenter>(row);
                 for (int column = 0; column < this.TemplateDataGrid.Columns.Count; column++)
                 {
                     DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(column);
@@ -1029,7 +1029,7 @@ namespace Timelapse.Editor
             }
 
             currentRow = (DataGridRow)this.TemplateDataGrid.ItemContainerGenerator.ContainerFromIndex(this.TemplateDataGrid.SelectedIndex);
-            DataGridCellsPresenter presenter = Utilities.GetVisualChild<DataGridCellsPresenter>(currentRow);
+            DataGridCellsPresenter presenter = VisualChildren.GetVisualChild<DataGridCellsPresenter>(currentRow);
             currentCell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(this.TemplateDataGrid.CurrentColumn.DisplayIndex);
             return currentCell != null;
         }
@@ -1297,7 +1297,7 @@ namespace Timelapse.Editor
                 string dataLabel = control.DataLabel;
                 if (String.IsNullOrEmpty(dataLabel))
                 {
-                    TraceDebug.PrintMessage("GenerateSpreadsheet: Database constructors should guarantee data labels are not null.");
+                    TracePrint.PrintMessage("GenerateSpreadsheet: Database constructors should guarantee data labels are not null.");
                 }
                 else
                 {
@@ -1464,7 +1464,7 @@ namespace Timelapse.Editor
         // SAULXXX Seems esoteric - maybe delete this function. Likely not useful after Avalon dock added.
         private async void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
-            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
+            if (DragDropFile.IsTemplateFileDragging(dropEvent, out string templateDatabaseFilePath))
             {
                 await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true);
             }
@@ -1472,7 +1472,7 @@ namespace Timelapse.Editor
 
         private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
         {
-            Utilities.OnHelpDocumentPreviewDrag(dragEvent);
+            DragDropFile.OnTemplateFilePreviewDrag(dragEvent);
         }
         #endregion
     }

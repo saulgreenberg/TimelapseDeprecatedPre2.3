@@ -306,6 +306,7 @@
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
     <Compile Include="Util\Compare.cs" />
+    <Compile Include="Util\DragDropFile.cs" />
     <Compile Include="Util\Episodes.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileShow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseAvalonDock.cs" />
@@ -337,6 +338,7 @@
     <Compile Include="Util\ExternalProcesses.cs" />
     <Compile Include="Util\IsCondition.cs" />
     <Compile Include="Util\ProgressStream.cs" />
+    <Compile Include="Util\SystemStatus.cs" />
     <Compile Include="Util\ThowIf.cs" />
     <Compile Include="DataStructures\GlobalReferences.cs" />
     <Compile Include="DataStructures\ImageMetadata.cs" />
@@ -363,8 +365,8 @@
     <Compile Include="Database\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
     <Compile Include="Extensions\TimelapseAvalonExtensions.cs" />
-    <Compile Include="Util\TraceDebug.cs" />
-    <Compile Include="Util\VersionClient.cs" />
+    <Compile Include="DebuggingSupport\TracePrint.cs" />
+    <Compile Include="Util\VersionChecks.cs" />
     <Compile Include="Constant.cs" />
     <Compile Include="Database\CustomSelection.cs" />
     <Compile Include="Database\ColumnTuple.cs" />
@@ -386,6 +388,7 @@
     <Compile Include="Dialog\DeleteImages.xaml.cs">
       <DependentUpon>DeleteImages.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\VisualChildren.cs" />
     <Page Include="Controls\BusyCancelIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -636,21 +639,21 @@
     </Compile>
     <Compile Include="Images\MarkableCanvas.cs" />
     <Compile Include="Util\DateTimeHandler.cs" />
-    <Compile Include="DataStructures\UserRegistrySettings.cs" />
+    <Compile Include="State\UserRegistrySettings.cs" />
     <Compile Include="Controls\DataEntryControls.xaml.cs">
       <DependentUpon>DataEntryControls.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\AdvancedTimelapseOptions.xaml.cs">
       <DependentUpon>AdvancedTimelapseOptions.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\TimelapseUserRegistrySettings.cs" />
+    <Compile Include="State\TimelapseUserRegistrySettings.cs" />
     <Compile Include="Controls\DataEntryHandler.cs">
       <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="Database\SQLiteWrapper.cs" />
     <Compile Include="Controls\StatusBarExtensions.cs" />
     <Compile Include="Database\TemplateDatabase.cs" />
-    <Compile Include="Util\TimelapseState.cs" />
+    <Compile Include="State\TimelapseState.cs" />
     <Compile Include="Util\Utilities.cs" />
     <Compile Include="TimelapseWindow.xaml.cs">
       <DependentUpon>TimelapseWindow.xaml</DependentUpon>
@@ -833,6 +836,7 @@
       <Name>Xceed.Wpf.Toolkit</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

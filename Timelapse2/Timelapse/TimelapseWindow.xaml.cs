@@ -158,7 +158,7 @@ namespace Timelapse
                 DateTime.Now.Month != this.State.MostRecentCheckForUpdates.Month ||
                 DateTime.Now.Day != this.State.MostRecentCheckForUpdates.Day)
             {
-                VersionClient updater = new VersionClient(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
+                VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryGetAndParseVersion(false);
                 this.State.MostRecentCheckForUpdates = DateTime.UtcNow;
             }
@@ -169,7 +169,7 @@ namespace Timelapse
                 this.State.FirstTimeFileLoading = false;
             }
 
-            if (!Util.Utilities.CheckAndGetLangaugeAndCulture(out _, out _, out string displayname))
+            if (!SystemStatus.CheckAndGetLangaugeAndCulture(out _, out _, out string displayname))
             {
                 this.HelpDocument.WarningRegionLanguage = displayname;
             }
@@ -343,7 +343,7 @@ namespace Timelapse
             }
             else
             {
-                Utilities.ShowExceptionReportingDialog("Timelapse", e, this);
+                Dialogs.ShowExceptionReportingDialog("Timelapse", e, this);
             }
         }
         #endregion
@@ -413,7 +413,7 @@ namespace Timelapse
                         utcOffset.ContentControl.PreviewKeyDown += this.ContentCtl_PreviewKeyDown;
                         break;
                     default:
-                        TraceDebug.PrintMessage(String.Format("Unhandled control type '{0}' in SetUserInterfaceCallbacks.", controlType));
+                        TracePrint.PrintMessage(String.Format("Unhandled control type '{0}' in SetUserInterfaceCallbacks.", controlType));
                         break;
                 }
             }
@@ -543,7 +543,7 @@ namespace Timelapse
                 bool result = this.State.MostRecentImageSets.TryRemove(path);
                 if (!result)
                 {
-                    TraceDebug.PrintMessage(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
+                    TracePrint.PrintMessage(String.Format("Removal of image set '{0}' no longer present on disk unexpectedly failed.", path));
                 }
             }
 
@@ -828,12 +828,12 @@ namespace Timelapse
         #region Help Document - Drag Drop
         private void HelpDocument_PreviewDrag(object sender, DragEventArgs dragEvent)
         {
-            Utilities.OnHelpDocumentPreviewDrag(dragEvent);
+            DragDropFile.OnTemplateFilePreviewDrag(dragEvent);
         }
 
         private async void HelpDocument_Drop(object sender, DragEventArgs dropEvent)
         {
-            if (Utilities.IsSingleTemplateFileDrag(dropEvent, out string templateDatabaseFilePath))
+            if (DragDropFile.IsTemplateFileDragging(dropEvent, out string templateDatabaseFilePath))
             {
                 if (await this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabaseFilePath).ConfigureAwait(true) == false)
                 {

@@ -5,10 +5,12 @@ using Timelapse.Enums;
 
 namespace Timelapse.Util
 {
-    // Save the state of various things in the Registry.
+    /// 
+    /// Save the state of various things in the Registry.
+    /// 
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
-        #region Settings
+        #region Settings that will be saved into the registry
         public bool AudioFeedback { get; set; }
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
@@ -40,14 +42,13 @@ namespace Timelapse.Util
         public bool TabOrderIncludeDateTime { get; set; }
         public bool TabOrderIncludeDeleteFlag { get; set; }
         public bool TabOrderIncludeImageQuality { get; set; }
-
         public Size TimelapseWindowSize { get; set; }
         public Rect TimelapseWindowPosition { get; set; }
         public bool UseDetections { get; set; }
         #endregion
 
-        public TimelapseUserRegistrySettings() :
-            this(Constant.WindowRegistryKeys.RootKey)
+        #region Constructors
+        public TimelapseUserRegistrySettings() : this(Constant.WindowRegistryKeys.RootKey)
         {
         }
 
@@ -57,9 +58,11 @@ namespace Timelapse.Util
             this.Throttles = new Throttles();
             this.ReadSettingsFromRegistry();
         }
-
+        #endregion
         #region Read from registry
-        // Read standard settings from registry
+        /// <summary>
+        /// Read all standard settings from registry
+        /// </summary>
         public void ReadSettingsFromRegistry()
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
@@ -100,6 +103,11 @@ namespace Timelapse.Util
             }
         }
 
+        /// <summary>
+        /// Check if a particular registry key exists
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool IsRegistryKeyExists(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
@@ -107,8 +115,11 @@ namespace Timelapse.Util
                 return String.IsNullOrEmpty(registryKey.ReadString(key, String.Empty)) ? false : true;
             }
         }
-        // Read a single registry entry
-        public string ReadFromRegistryString(string key)
+
+        /// <summary>
+        /// Get a single registry entry
+        /// </summary>
+        public string GetFromRegistry(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
@@ -116,7 +127,12 @@ namespace Timelapse.Util
             }
         }
 
-        public Rect ReadTimelapseWindowPositionAndSizeFromRegistryRect(string key)
+        /// <summary>
+        /// Get the Timelapse window position and size from the registry 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>Rect</returns>
+        public Rect GetTimelapseWindowPositionAndSizeFromRegistryRect(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
@@ -124,7 +140,12 @@ namespace Timelapse.Util
             }
         }
 
-        public bool ReadTimelapseWindowMaximizeStateFromRegistryBool(string key)
+        /// <summary>
+        /// Get the Timelapse maximize state from the registry 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>True if maximized, else false</returns>
+        public bool GetTimelapseWindowMaximizeStateFromRegistryBool(string key)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
@@ -134,7 +155,9 @@ namespace Timelapse.Util
         #endregion
 
         #region Write to registry
-        // Write standard settings to registry
+        /// <summary>
+        /// Write all Timelapse settings to registry
+        /// </summary>
         public void WriteSettingsToRegistry()
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
@@ -177,7 +200,11 @@ namespace Timelapse.Util
             }
         }
 
-        // Write a single registry entry 
+        /// <summary>
+        /// Write a single registry entry, which will eventually convert its type to a string as needed
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
         public void WriteToRegistry(string key, string value)
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())

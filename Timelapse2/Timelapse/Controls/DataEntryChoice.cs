@@ -63,7 +63,7 @@ namespace Timelapse.Controls
             if (control == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 choiceList = new List<string>();
                 includesEmptyChoice = true;
             }
@@ -210,7 +210,7 @@ namespace Timelapse.Controls
             Border contentHost = (Border)this.ContentControl.Template.FindName("PART_Border", this.ContentControl);
             if (contentHost != null)
             {
-                TextBlock tb = Utilities.GetVisualChild<TextBlock>(contentHost);
+                TextBlock tb = VisualChildren.GetVisualChild<TextBlock>(contentHost);
                 if (tb != null)
                 {
                     tb.Background = new SolidColorBrush(Colors.White);

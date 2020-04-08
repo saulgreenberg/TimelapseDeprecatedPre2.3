@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace Timelapse.Util
 {
@@ -10,6 +11,46 @@ namespace Timelapse.Util
     /// </summary>
     public static class FilesFolders
     {
+        /// <summary>
+        /// Get a location for the template database from the user and put it in selectedFilePath
+        /// </summary>
+        /// <returns>True if the user indicated one, else false</returns>
+        public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
+        {
+            // Get the template file, which should be located where the images reside
+            using (OpenFileDialog openFileDialog = new OpenFileDialog()
+            {
+                Title = title,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = false,
+                AutoUpgradeEnabled = true,
+
+                // Set filter for file extension and default file extension 
+                DefaultExt = defaultExtension,
+                Filter = filter
+            })
+            {
+                if (String.IsNullOrWhiteSpace(defaultFilePath))
+                {
+                    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
+                else
+                {
+                    openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
+                    openFileDialog.FileName = Path.GetFileName(defaultFilePath);
+                }
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    selectedFilePath = openFileDialog.FileName;
+                    return true;
+                }
+                selectedFilePath = null;
+                return false;
+            }
+        }
+
         /// <summary>
         /// Populate fileInfoList  with the .jpg, .avi, and .mp4 files found in the rootFolderPath and its sub-folders
         /// </summary>
@@ -67,7 +108,7 @@ namespace Timelapse.Util
             if (folderPaths == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(folderPaths));
                 // Not sure what happens if we have a null folderPaths, but we may as well try it.
                 return;
@@ -117,7 +158,7 @@ namespace Timelapse.Util
             if (fileInfoList == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // Not show what happens if we return with a null fileInfoList, but its worth a shot
                 // throw new ArgumentNullException(nameof(control));
                 return;

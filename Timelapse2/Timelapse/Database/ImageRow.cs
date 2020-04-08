@@ -84,7 +84,7 @@ namespace Timelapse.Database
                         this.Row.SetField<FileSelectionEnum>(Constant.DatabaseColumn.ImageQuality, value);
                         break;
                     default:
-                        TraceDebug.PrintMessage(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
+                        TracePrint.PrintMessage(String.Format("Value: {0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
                         throw new ArgumentOutOfRangeException(ParamName, String.Format("{0} is not an ImageQuality.  ImageQuality must be one of CorruptFile, Dark, FileNoLongerAvailable, or Ok.", value));
                 }
             }
@@ -362,7 +362,7 @@ namespace Timelapse.Database
                 }
                 catch (UnauthorizedAccessException exception)
                 {
-                    TraceDebug.PrintMessage("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
+                    TracePrint.PrintMessage("Could not delete " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                     return false;
                 }
             }
@@ -375,7 +375,7 @@ namespace Timelapse.Database
             {
                 // This may occur if for some reason we could not move the file, for example, if we have loaded the image in a way that it locks the file.
                 // I've changed image loading to avoid this, but its something to watch out for.
-                TraceDebug.PrintMessage("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
+                TracePrint.PrintMessage("Could not move " + sourceFilePath + Environment.NewLine + exception.Message + ": " + exception.ToString());
                 return false;
             }
         }
@@ -486,7 +486,7 @@ namespace Timelapse.Database
                 // Optional messages for eventual debugging of catch errors, 
                 if (exception is InsufficientMemoryException)
                 {
-                    TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.File, exception.Message, exception.StackTrace));
+                    TracePrint.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.File, exception.Message, exception.StackTrace));
                 }
                 else
                 {

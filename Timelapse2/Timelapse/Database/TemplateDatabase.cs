@@ -344,7 +344,7 @@ namespace Timelapse.Database
             }
             catch (Exception exception)
             {
-                TraceDebug.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
+                TracePrint.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
                 return new Tuple<bool, TemplateDatabase>(false, null);
             }
             finally

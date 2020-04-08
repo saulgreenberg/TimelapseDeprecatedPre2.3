@@ -63,7 +63,7 @@ namespace Timelapse.Util
             if (dataGrid == null || idRowIndexes == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(idRowIndexes) + " or " nameof(dataGrid));
                 // Not sure what the consequences of this empty return is, but ...
                 return;

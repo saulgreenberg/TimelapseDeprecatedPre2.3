@@ -5,11 +5,16 @@ using System.Runtime.CompilerServices;
 
 namespace Timelapse.Util
 {
-    // Used in debugging.
-    // Various forms of printing out trace infromation containing a message and a stack trace of the method names 
-    public static class TraceDebug
+    /// <summary>
+    /// Debugging: Various forms of printing out trace infromation containing a message and a stack trace of the method names 
+    /// Only active when the TRACE flag is set in the Project properties
+    /// </summary>
+    public static class TracePrint
     {
-        // Print a message and stack trace to a file
+        /// <summary>
+        /// Print a message and stack trace to a file
+        /// </summary>
+        /// <param name="message"></param>
         public static void PrintStackTraceToFile(string message)
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(Path.Combine(Util.GlobalReferences.MainWindow.FolderPath, Constant.File.TraceFile), true))
@@ -19,7 +24,10 @@ namespace Timelapse.Util
             }
         }
 
-        // Insert these call into the beginning of a method name with the TRACE flag set in properties
+        /// <summary>
+        /// Debug print a message
+        /// </summary>
+        /// <param name="message"></param>
         [Conditional("TRACE")]
         // Option to print various failure messagesfor debugging
         public static void PrintMessage(string message)
@@ -27,24 +35,33 @@ namespace Timelapse.Util
             Debug.Print("PrintFailure: " + message);
         }
 
+        /// <summary>
+        /// Debug print the method name followed by its stack level 
+        /// </summary>
         [Conditional("TRACE")]
         public static void PrintStackTrace(int level)
         {
             Debug.Print(GetMethodNameStack(String.Empty, level));
         }
 
+        /// <summary>
+        /// Debug print the method name followed a message
+        /// </summary>
         [Conditional("TRACE")]
         public static void PrintStackTrace(string message)
         {
             Debug.Print(GetMethodNameStack(message, 1));
         }
 
+        /// <summary>
+        /// Debug print the method name followed a message and stack level
+        /// </summary>
         public static void PrintStackTrace(string message, int level)
         {
             Debug.Print(GetMethodNameStack(message, level));
         }
 
-        #region Internal methods
+        #region Private (Internal) methods
         [MethodImpl(MethodImplOptions.NoInlining)]
         // Return the order and number of calls on a method, i.e., to illustrate the method calling stack.
         // The optional message string can be anything you want included in the output.

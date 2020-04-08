@@ -51,7 +51,7 @@ namespace Timelapse.Controls
                     default:
                         this.lblIconType.Content = "?";
                         this.Icon = MessageBoxImage.Question; // Show a reasonable default in the unlikely case this happens
-                        TraceDebug.PrintMessage(String.Format("Unhandled icon type {0}.", this.Icon));
+                        TracePrint.PrintMessage(String.Format("Unhandled icon type {0}.", this.Icon));
                         break;
                 }
                 this.iconType = value;

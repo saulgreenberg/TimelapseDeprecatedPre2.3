@@ -66,7 +66,7 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnTuple, nameof(columnTuple));
-            this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(columnTuple.Value));
+            this.Where = String.Format("{0} = {1}", columnTuple.Name, Sql.Quote(columnTuple.Value));
         }
 
         public void SetWhere(ColumnTuple columnTuple, string field)
@@ -74,7 +74,7 @@ namespace Timelapse.Database
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnTuple, nameof(columnTuple));
 
-            this.Where = String.Format("{0} = {1}", columnTuple.Name, Utilities.QuoteForSql(field));
+            this.Where = String.Format("{0} = {1}", columnTuple.Name, Sql.Quote(field));
         }
 
         public void SetWhereNotEquals(ColumnTuple columnTuple, string field)
@@ -82,24 +82,24 @@ namespace Timelapse.Database
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnTuple, nameof(columnTuple));
 
-            this.Where = String.Format("{0} <> {1}", columnTuple.Name, Utilities.QuoteForSql(field));
+            this.Where = String.Format("{0} <> {1}", columnTuple.Name, Sql.Quote(field));
         }
 
         public void SetWhere(string folder, string relativePath, string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Utilities.QuoteForSql(relativePath));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.Folder, Utilities.QuoteForSql(folder));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Sql.Quote(file));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Sql.Quote(relativePath));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.Folder, Sql.Quote(folder));
         }
 
         public void SetWhere(string relativePath, string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
-            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Utilities.QuoteForSql(relativePath));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Sql.Quote(file));
+            this.Where += String.Format(" AND {0} = {1}", Constant.DatabaseColumn.RelativePath, Sql.Quote(relativePath));
         }
         public void SetWhere(string file)
         {
-            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Utilities.QuoteForSql(file));
+            this.Where = String.Format("{0} = {1}", Constant.DatabaseColumn.File, Sql.Quote(file));
         }
     }
 }

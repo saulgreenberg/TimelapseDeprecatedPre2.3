@@ -40,7 +40,7 @@ namespace Timelapse.Database
             string columnDefinition = String.Format("{0} {1}", this.Name, this.Type);
             if (this.DefaultValue != null)
             {
-                columnDefinition += " DEFAULT " + Utilities.QuoteForSql(this.DefaultValue);
+                columnDefinition += " DEFAULT " + Sql.Quote(this.DefaultValue);
             }
             return columnDefinition;
         }

@@ -91,7 +91,7 @@ namespace Timelapse.Database
             // After the merged database is constructed, set the Folder column to the current root folder
             if (!String.IsNullOrEmpty(rootFolderName))
             {
-                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(rootFolderName));
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Sql.Quote(rootFolderName));
             }
 
             // After the merged database is constructed, reset fields in the ImageSetTable to the defaults i.e., first row, selection all, 
@@ -99,7 +99,7 @@ namespace Timelapse.Database
             {
                 destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.MostRecentFileID + Sql.Equal + "1");
                 destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.Selection + Sql.Equal + ((int)FileSelectionEnum.All).ToString());
-                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Utilities.QuoteForSql(Constant.DatabaseValues.DefaultSortTerms));
+                destinationDDB.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.SortTerms + Sql.Equal + Sql.Quote(Constant.DatabaseValues.DefaultSortTerms));
             }
             if (backupMade && (errorMessages.Errors.Any() || errorMessages.Warnings.Any()))
             {
@@ -248,7 +248,7 @@ namespace Timelapse.Database
         // Form: ATTACH DATABASE 'databasePath' AS alias;
         private static string QueryAttachDatabaseAs(string databasePath, string alias)
         {
-            return Sql.AttachDatabase + Utilities.QuoteForSql(databasePath) + Sql.As + alias + Sql.Semicolon;
+            return Sql.AttachDatabase + Sql.Quote(databasePath) + Sql.As + alias + Sql.Semicolon;
         }
 
         // Form: CREATE TEMPORARY TABLE tempDataTable AS SELECT * FROM dataBaseName.tableName;
@@ -266,7 +266,7 @@ namespace Timelapse.Database
         // Form: UPDATE dataTable SET IDColumn = (offset + dataTable.Id);
         private static string QuerySetFolderInTable(string tableName, string folder)
         {
-            return Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Utilities.QuoteForSql(folder) + Sql.Semicolon;
+            return Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Sql.Quote(folder) + Sql.Semicolon;
         }
 
         //Form:  UPDATE tableName SET RelativePath = CASE WHEN RelativePath = '' THEN ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
@@ -274,9 +274,9 @@ namespace Timelapse.Database
         {
             // A longer query, so split into three lines
             // Note that tableName must be a DataTable for this to work
-            string query = Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Utilities.QuoteForSql(String.Empty);
-            query += Sql.Then + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
-            query += Sql.Else + Sql.OpenParenthesis + Utilities.QuoteForSql(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
+            string query = Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.CaseWhen + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(String.Empty);
+            query += Sql.Then + Sql.OpenParenthesis + Sql.Quote(pathPrefixToAdd) + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis;
+            query += Sql.Else + Sql.OpenParenthesis + Sql.Quote(pathPrefixToAdd + "\\") + Sql.Concatenate + Constant.DatabaseColumn.RelativePath + Sql.CloseParenthesis + " END " + Sql.Semicolon;
             return query;
         }
 

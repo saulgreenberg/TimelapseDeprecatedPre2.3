@@ -69,7 +69,7 @@ namespace Timelapse
         private async void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
-            if (Utilities.TryGetFileFromUser(
+            if (FilesFolders.TryGetFileFromUser(
                       "Select a .json file that contains the recognition data. It will be merged into the current image set",
                       Path.Combine(this.DataHandler.FileDatabase.FolderPath, jsonFileName),
                       String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
@@ -340,7 +340,7 @@ namespace Timelapse
             }
 
             string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
-            if (Utilities.TryGetFileFromUser(
+            if (FilesFolders.TryGetFileFromUser(
                                  "Select a .csv file to merge into the current image set",
                                  Path.Combine(this.DataHandler.FileDatabase.FolderPath, csvFileName),
                                  String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),
@@ -463,7 +463,7 @@ namespace Timelapse
                     }
                     catch (Exception exception)
                     {
-                        TraceDebug.PrintMessage(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
+                        TracePrint.PrintMessage(String.Format("Copy of '{0}' to '{1}' failed. {2}", sourceFile, destFileName, exception.ToString()));
                         this.StatusBar.SetMessage(String.Format("Copy failed with {0} in MenuItemExportThisImage_Click.", exception.GetType().Name));
                     }
                 }

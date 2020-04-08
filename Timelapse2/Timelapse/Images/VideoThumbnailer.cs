@@ -19,7 +19,7 @@ namespace Timelapse.Images
             if (videoSuffixes == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(videoSuffixes));
                 // Make it a no-op
                 return;

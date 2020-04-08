@@ -8,22 +8,37 @@ using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Util
 {
-    // Check if the version currently being run is the latest version
-    public class VersionClient
+    /// <summary>
+    /// Check if the version currently being run is the latest version
+    /// </summary>
+    public class VersionChecks
     {
+        #region Private variables
         private readonly Uri latestVersionAddress; // The url of the timelapse_template_version timelapse_version xml file containing the versioo information
         private readonly string applicationName;  // Either Timelapse or TimelapseEditor
         private readonly Window window;
+        #endregion
 
-        public VersionClient(Window window, string applicationName, Uri latestVersionAddress)
+        /// <summary>
+        /// Constructor. For convenience in later calls, it stores various parameters for reuse in its methods
+        /// </summary>
+        /// <param name="window"></param>
+        /// <param name="applicationName"></param>
+        /// <param name="latestVersionAddress"></param>
+        public VersionChecks(Window window, string applicationName, Uri latestVersionAddress)
         {
             this.applicationName = applicationName;
             this.latestVersionAddress = latestVersionAddress;
             this.window = window;
         }
 
-        // Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
-        // timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
+        /// <summary>
+        /// Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
+        /// timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
+        /// Displays a message to the user (if showNoUpdatesMessage is false) indicating the status
+        /// </summary>
+        /// <param name="showNoUpdatesMessage"></param>
+        /// <returns>True if an update is available, else false</returns>
         public bool TryGetAndParseVersion(bool showNoUpdatesMessage)
         {
             string url = String.Empty; // THE URL where the new version is located
@@ -86,7 +101,7 @@ namespace Timelapse.Util
             }
 
             // get the running version  
-            Version currentVersionNumber = VersionClient.GetTimelapseCurrentVersionNumber();
+            Version currentVersionNumber = VersionChecks.GetTimelapseCurrentVersionNumber();
 
             // compare the versions  
             if (currentVersionNumber < latestVersionNumber)
@@ -114,13 +129,21 @@ namespace Timelapse.Util
             return true;
         }
 
-        // Return the current timelapse version number
+        /// <summary>
+        /// Return the current timelapse version number
+        /// </summary>
+        /// <returns>Version instance detailing the version number </returns>
         public static Version GetTimelapseCurrentVersionNumber()
         {
             return Assembly.GetExecutingAssembly().GetName().Version;
         }
 
-        // returns true if version1 is greater than version2
+        /// <summary>
+        /// Compare version numbers 
+        /// </summary>
+        /// <param name="versionNumber1"></param>
+        /// <param name="versionNumber2"></param>
+        /// <returns>True if versionNumber1 is greater than versionNumber2</returns>
         public static bool IsVersion1GreaterThanVersion2(string versionNumber1, string versionNumber2)
         {
             Version version1 = new Version(versionNumber1);
@@ -128,6 +151,12 @@ namespace Timelapse.Util
             return version1 > version2;
         }
 
+        /// <summary>
+        /// Compare version numbers 
+        /// </summary>
+        /// <param name="versionNumber1"></param>
+        /// <param name="versionNumber2"></param>
+        /// <returns>True if versionNumber1 is greater than or equal to versionNumber2</returns>
         public static bool IsVersion1GreaterOrEqualToVersion2(string versionNumber1, string versionNumber2)
         {
             Version version1 = new Version(versionNumber1);

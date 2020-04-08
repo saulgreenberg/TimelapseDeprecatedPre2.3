@@ -312,9 +312,9 @@ namespace Timelapse.Dialog
         // Show progress information in the progress bar, and to enable or disable its cancel button
         private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
         {
-            ProgressBar bar = Utilities.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = Utilities.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = Utilities.GetVisualChild<Button>(this.BusyIndicator);
+            ProgressBar bar = VisualChildren.GetVisualChild<ProgressBar>(this.BusyIndicator);
+            Label textMessage = VisualChildren.GetVisualChild<Label>(this.BusyIndicator);
+            Button cancelButton = VisualChildren.GetVisualChild<Button>(this.BusyIndicator);
 
             if (bar != null & !randomEnabled)
             {

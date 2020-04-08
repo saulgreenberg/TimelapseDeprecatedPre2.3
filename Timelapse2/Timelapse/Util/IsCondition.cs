@@ -23,7 +23,7 @@ namespace Timelapse.Util
             if (value == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(value));
                 return false;
             }
@@ -47,7 +47,7 @@ namespace Timelapse.Util
             if (str == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 return false;
             }
 
@@ -72,7 +72,7 @@ namespace Timelapse.Util
             if (str == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 return false;
             }
 
@@ -86,7 +86,7 @@ namespace Timelapse.Util
             if (str == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 return false;
             }
             return str.Length + Constant.File.MaxAdditionalLengthOfBackupFiles > Constant.File.MaxPathLength;

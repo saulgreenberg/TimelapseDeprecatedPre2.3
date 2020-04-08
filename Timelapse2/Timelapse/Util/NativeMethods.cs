@@ -74,7 +74,7 @@ namespace Timelapse.Util
                 // it will not crash the program and at least maintains the correct aspect ration
                 widthInDeviceIndependentPixels = widthInPixels;
                 heightInDeviceIndependentPixels = heightInPixels;
-                TraceDebug.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
+                TracePrint.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
             }
         }
 

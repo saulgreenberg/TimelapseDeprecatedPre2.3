@@ -78,7 +78,7 @@ namespace Timelapse.Util
             if (registryKey == null)
             {
                 // this should not happen
-                TraceDebug.PrintStackTrace(1);
+                TracePrint.PrintStackTrace(1);
                 // throw new ArgumentNullException(nameof(registryKey));
                 return defaultValue;
             }
