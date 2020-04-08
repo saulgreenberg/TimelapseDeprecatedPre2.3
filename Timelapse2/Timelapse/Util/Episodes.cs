@@ -5,10 +5,12 @@ using Timelapse.Database;
 
 namespace Timelapse
 {
-    // Episodes
-    // This is a static class that calculates and saves state information in various static data structures. Notabley, 
+    /// <summary>
+    /// Episodes is a static class that calculates and saves state information in various static data structures. Notabley, 
     // - ShowEpisodes is a boolean that detemines whether Episode information should be displayed
     // - EpisodeDictionary caches episode information by FileTable index, where that information is created on demand 
+    /// </summary>
+
     public static class Episodes
     {
         // A dictionary defining episodes across files in the file table.
@@ -148,7 +150,7 @@ namespace Timelapse
             return !(minSearch == 0 || maxSearch == 0);
         }
 
-        #region Depracated - these functions returned all episodes across all files vs. the current version which is on demand
+        #region UNUSED - Depracated functions used to return all episodes across all files vs. the current version which is on demand. Could delete 
         //// Set the EpisodesDictionary defining all episodes across all files in the file table. Note that it assumes :
         //// - files are sorted to give meaningful results, e.g., by date or by RelativePath/date
         //// - if the file table is the result of a selection (i.e. as subset of all files), the episode definition is still meaningful

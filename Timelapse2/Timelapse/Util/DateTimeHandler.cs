@@ -5,7 +5,9 @@ namespace Timelapse.Util
 {
     public static class DateTimeHandler
     {
-        // Get a date/time offset given a dateTime and a timezone
+        /// <summary>
+        /// Create a DateTimeOffset given a dateTime and timezoneinfo
+        /// </summary>
         public static DateTimeOffset CreateDateTimeOffset(DateTime dateTime, TimeZoneInfo imageSetTimeZone)
         {
             if (imageSetTimeZone != null && dateTime.Kind == DateTimeKind.Unspecified)
@@ -16,6 +18,9 @@ namespace Timelapse.Util
             return new DateTimeOffset(dateTime);
         }
 
+        /// <summary>
+        /// Return a DateTimePffset from its database string representation
+        /// </summary>
         public static DateTimeOffset FromDatabaseDateTimeIncorporatingOffset(DateTime dateTime, TimeSpan utcOffset)
         {
             return new DateTimeOffset((dateTime + utcOffset).AsUnspecifed(), utcOffset);
@@ -30,7 +35,7 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Return a TimeSpan from its utcOfset string representation (hours) e.g., "-12.0"
+        /// Return a TimeSpan from its utcOfset string representation (hours) e.g., "-7.0"
         /// </summary>
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
@@ -47,7 +52,9 @@ namespace Timelapse.Util
             return utcOffset;
         }
 
-        // SAULXXX There may be an issue with and attempt to read dates.
+        /// <summary>
+        /// Parse a DateTime from its display format string representation "dd-MMM-yyyy HH:mm:ss". Return false on failure
+        /// </summary>
         public static bool TryParseDisplayDateTimeString(string dateTimeAsString, out DateTime dateTime)
         {
             if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == true)
@@ -63,7 +70,7 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Convert a DateTimeOffset to its database string representation i.e.  "yyyy-MM-ddTHH:mm:ss.fffZ"
+        /// Return "yyyy-MM-ddTHH:mm:ss.fffZ" database string format of DateTimeOffset
         /// </summary>
         public static string ToDatabaseDateTimeString(DateTimeOffset dateTime)
         {
@@ -71,7 +78,7 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Convert a Timespan to its string representation as hours i.e.  "0.00"
+        /// Return "0.00" hours format of a timeSpan e.g. "11:30"
         /// </summary>
         public static string ToDatabaseUtcOffsetString(TimeSpan timeSpan)
         {
@@ -79,23 +86,32 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Given a date as a DateTimeOffset, return it as a displayable string in dd-MMM-yyyy format, e.g., 05-Apr-2016, with the offset.
+        /// Return "dd-MMM-yyyy" format of a DateTimeOffset, e.g., 05-Apr-2016 
         /// </summary>
         public static string ToDisplayDateString(DateTimeOffset date)
         {
             return date.DateTime.ToString(Constant.Time.DateFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
+        /// <summary>
+        /// Return "dd-MMM-yyyy HH:mm:ss" format of a DateTimeOffset  e.g. 05-Apr-2016 12:05:01
+        /// </summary>
         public static string ToDisplayDateTimeString(DateTimeOffset dateTime)
         {
             return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
+        /// <summary>
+        /// Return "dd-MMM-yyyy HH:mm:ss+hh:mm" format of a DateTimeOffset  e.g. 05-Apr-2016 12:05:01+5:00
+        /// </summary>
         public static string ToDisplayDateTimeUtcOffsetString(DateTimeOffset dateTime)
         {
             return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US")) + " " + DateTimeHandler.ToDisplayUtcOffsetString(dateTime.Offset);
         }
 
+        /// <summary>
+        /// Return display format of a TimeSpan
+        /// </summary>
         public static string ToDisplayTimeSpanString(TimeSpan timeSpan)
         {
             // Pretty print the adjustment time, depending upon how many day(s) were included 
@@ -116,13 +132,16 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Given a time as a DateTimeOffset return it as a string in 24 hour forma with the offset.
+        /// Return "HH:mm:ss" in 24 hour format given a DateTimeOffset
         /// </summary>
         public static string ToDisplayTimeString(DateTimeOffset time)
         {
             return time.DateTime.ToString(Constant.Time.TimeFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
+        /// <summary>
+        /// Return "+hh\:mm" given a TimeSpan
+        /// </summary>
         public static string ToDisplayUtcOffsetString(TimeSpan utcOffset)
         {
             string displayString = utcOffset.ToString(Constant.Time.UtcOffsetDisplayFormat);
@@ -133,6 +152,9 @@ namespace Timelapse.Util
             return displayString;
         }
 
+        /// <summary>
+        /// Parse a DateTime from its database format string representation "yyyy-MM-ddTHH:mm:ss.fffZ". Return false on failure
+        /// </summary>
         public static bool TryParseDatabaseDateTime(string dateTimeAsString, out DateTime dateTime)
         {
             return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out dateTime);
@@ -149,6 +171,9 @@ namespace Timelapse.Util
             return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime);
         }
 
+        /// <summary>
+        /// Parse a utcOffsetAsString from its double representation. Return false on failure or on reasonableness checks
+        /// </summary>
         public static bool TryParseDatabaseUtcOffsetString(string utcOffsetAsString, out TimeSpan utcOffset)
         {
             if (double.TryParse(utcOffsetAsString, out double utcOffsetAsDouble))
@@ -163,12 +188,17 @@ namespace Timelapse.Util
             return false;
         }
 
+        /// <summary>
+        /// Parse a legacy date and time string into a DateTimeOffset. Return false on failure
+        /// </summary>
         public static bool TryParseLegacyDateTime(string date, string time, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
             return DateTimeHandler.TryParseDateTaken(date + " " + time, imageSetTimeZone, out dateTimeOffset);
         }
 
-
+        /// <summary>
+        /// Parse a metadata-formatted date/time string into a DateTimeOffset. Return false on failure
+        /// </summary>
         public static bool TryParseMetadataDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
             if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime) == false)
@@ -181,9 +211,9 @@ namespace Timelapse.Util
             return true;
         }
 
-        // Swap the day and month, if possible.
-        // However, if the date isn't valid return the date provided
-        // If the date is valid, 
+        /// <summary>
+        /// Swap the day and month of a DateTimeOffset if possible. Otherwise use the same DateTimeOffset. Return false if we cannot do the swap.
+        /// </summary>
         public static bool TrySwapDayMonth(DateTimeOffset imageDate, out DateTimeOffset swappedDate)
         {
             swappedDate = DateTimeOffset.MinValue;
