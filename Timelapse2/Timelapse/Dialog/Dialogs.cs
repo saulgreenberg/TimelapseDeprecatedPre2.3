@@ -354,5 +354,15 @@ namespace Timelapse.Dialog
             exitNotification.ShowDialog();
         }
         #endregion
+
+        #region Dialog Message: No Updates Available
+        public static void NoUpdatesAvailableDialog(Window owner, string applicationName, Version currentVersionNumber)
+        {
+            MessageBox messageBox = new MessageBox(String.Format("No updates to {0} are available.", applicationName), owner);
+            messageBox.Message.Reason = String.Format("You a running the latest version of {0}, version: {1}", applicationName, currentVersionNumber);
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
+        #endregion
     }
 }

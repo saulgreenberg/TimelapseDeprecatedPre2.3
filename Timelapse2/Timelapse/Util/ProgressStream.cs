@@ -5,6 +5,7 @@ namespace Timelapse.Util
 {
     /// <summary>
     /// Wraps another stream and provides reporting for when bytes are read or written to the stream.
+    /// Used to intermittently report progress in the UI when reading a very large stream
     /// </summary>
     public class ProgressStream : Stream
     {

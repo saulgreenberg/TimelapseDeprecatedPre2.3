@@ -10,10 +10,13 @@ namespace Timelapse.Util
     /// </summary>
     public static class RegistryKeyExtensions
     {
-
-        public static bool ReadBoolean(this RegistryKey registryKey, string subKeyPath, bool defaultValue)
+        #region Get (Read) values from the registry, returned as a particular type
+        /// <summary>
+        /// Get a boolean value from the registry
+        /// </summary>
+        public static bool GetBoolean(this RegistryKey registryKey, string subKeyPath, bool defaultValue)
         {
-            string valueAsString = registryKey.ReadString(subKeyPath);
+            string valueAsString = registryKey.GetString(subKeyPath);
             if (valueAsString != null)
             {
                 if (Boolean.TryParse(valueAsString, out bool value))
@@ -25,9 +28,12 @@ namespace Timelapse.Util
             return defaultValue;
         }
 
-        public static DateTime ReadDateTime(this RegistryKey registryKey, string subKeyPath, DateTime defaultValue)
+        /// <summary>
+        /// Get a DateTime value from the registry
+        /// </summary>
+        public static DateTime GetDateTime(this RegistryKey registryKey, string subKeyPath, DateTime defaultValue)
         {
-            string value = registryKey.ReadString(subKeyPath);
+            string value = registryKey.GetString(subKeyPath);
             if (value == null)
             {
                 return defaultValue;
@@ -36,10 +42,12 @@ namespace Timelapse.Util
             return DateTime.ParseExact(value, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         }
 
-        // Read TimeSpan as seconds
-        public static TimeSpan ReadTimeSpan(this RegistryKey registryKey, string subKeyPath, TimeSpan defaultValue)
+        /// <summary>
+        /// Get a TimeSpan value as Seconds from the registry
+        /// </summary>
+        public static TimeSpan GetTimeSpanAsSeconds(this RegistryKey registryKey, string subKeyPath, TimeSpan defaultValue)
         {
-            string value = registryKey.ReadString(subKeyPath);
+            string value = registryKey.GetString(subKeyPath);
             if (value == null)
             {
                 return defaultValue;
@@ -47,9 +55,12 @@ namespace Timelapse.Util
             return int.TryParse(value, out int seconds) ? TimeSpan.FromSeconds(seconds) : defaultValue;
         }
 
-        public static double ReadDouble(this RegistryKey registryKey, string subKeyPath, double defaultValue)
+        /// <summary>
+        /// Get a Double  from the registry
+        /// </summary>
+        public static double GetDouble(this RegistryKey registryKey, string subKeyPath, double defaultValue)
         {
-            string valueAsString = registryKey.ReadString(subKeyPath);
+            string valueAsString = registryKey.GetString(subKeyPath);
             if (valueAsString != null)
             {
                 if (Double.TryParse(valueAsString, out double value))
@@ -61,9 +72,12 @@ namespace Timelapse.Util
             return defaultValue;
         }
 
-        public static TEnum ReadEnum<TEnum>(this RegistryKey registryKey, string subKeyPath, TEnum defaultValue) where TEnum : struct, IComparable, IConvertible, IFormattable
+        /// <summary>
+        /// Get an enum from the registry
+        /// </summary>
+        public static TEnum GetEnum<TEnum>(this RegistryKey registryKey, string subKeyPath, TEnum defaultValue) where TEnum : struct, IComparable, IConvertible, IFormattable
         {
-            string valueAsString = registryKey.ReadString(subKeyPath);
+            string valueAsString = registryKey.GetString(subKeyPath);
             if (valueAsString != null)
             {
                 return (TEnum)Enum.Parse(typeof(TEnum), valueAsString);
@@ -72,7 +86,10 @@ namespace Timelapse.Util
             return defaultValue;
         }
 
-        public static int ReadInteger(this RegistryKey registryKey, string subKeyPath, int defaultValue)
+        /// <summary>
+        /// Get an Int from the registry
+        /// </summary>
+        public static int GetInteger(this RegistryKey registryKey, string subKeyPath, int defaultValue)
         {
             // Check the arguments for null 
             if (registryKey == null)
@@ -102,10 +119,12 @@ namespace Timelapse.Util
             throw new NotSupportedException(String.Format("Registry key {0}\\{1} has unhandled type {2}.", registryKey.Name, subKeyPath, value.GetType().FullName));
         }
 
-        // Read a rect frin the registry. If there are issues, just return the default value.
-        public static Rect ReadRect(this RegistryKey registryKey, string subKeyPath, Rect defaultValue)
+        /// <summary>
+        /// Get a rect from the registry. If there are issues, just return the default value.
+        /// </summary>
+        public static Rect GetRect(this RegistryKey registryKey, string subKeyPath, Rect defaultValue)
         {
-            string rectAsString = registryKey.ReadString(subKeyPath);
+            string rectAsString = registryKey.GetString(subKeyPath);
 
             if (rectAsString == null)
             {
@@ -124,9 +143,12 @@ namespace Timelapse.Util
             return Rect.Parse(rectAsString);
         }
 
-        public static Size ReadSize(this RegistryKey registryKey, string subKeyPath, Size defaultValue)
+        /// <summary>
+        /// Get a size from the registry
+        /// </summary>
+        public static Size GetSize(this RegistryKey registryKey, string subKeyPath, Size defaultValue)
         {
-            string sizeAsString = registryKey.ReadString(subKeyPath);
+            string sizeAsString = registryKey.GetString(subKeyPath);
             if (sizeAsString == null)
             {
                 return defaultValue;
@@ -134,9 +156,12 @@ namespace Timelapse.Util
             return Size.Parse(sizeAsString);
         }
 
-        public static string ReadString(this RegistryKey registryKey, string subKeyPath, string defaultValue)
+        /// <summary>
+        /// Get a string from the registry
+        /// </summary>
+        public static string GetString(this RegistryKey registryKey, string subKeyPath, string defaultValue)
         {
-            string valueAsString = registryKey.ReadString(subKeyPath);
+            string valueAsString = registryKey.GetString(subKeyPath);
             if (valueAsString == null)
             {
                 return defaultValue;
@@ -144,8 +169,10 @@ namespace Timelapse.Util
             return valueAsString;
         }
 
-        // read a REG_SZ key's value from the registry
-        public static string ReadString(this RegistryKey registryKey, string subKeyPath)
+        /// <summary>
+        /// Get a REG_SZ key's value from the registry
+        /// </summary>
+        public static string GetString(this RegistryKey registryKey, string subKeyPath)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
@@ -153,8 +180,10 @@ namespace Timelapse.Util
             return (string)registryKey.GetValue(subKeyPath);
         }
 
-        // read a series of REG_SZ keys' values from the registry
-        public static RecencyOrderedList<string> ReadMostRecentlyUsedList(this RegistryKey registryKey, string subKeyPath)
+        /// <summary>
+        /// Get a RecencyOrderedList from the registry
+        /// </summary>
+        public static RecencyOrderedList<string> GetRecencyOrderedList(this RegistryKey registryKey, string subKeyPath)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
@@ -173,25 +202,39 @@ namespace Timelapse.Util
                     }
                 }
             }
-
             return values;
         }
+        #endregion
 
+        #region Write a particular type of value to the registry, depending on its type
+
+        /// <summary>
+        /// Write a boolean value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, bool value)
         {
             registryKey.Write(subKeyPath, value.ToString().ToLowerInvariant());
         }
 
+        /// <summary>
+        /// Write a DateTime value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, DateTime value)
         {
             registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseFormat));
         }
 
+        /// <summary>
+        /// Write a Double value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, double value)
         {
             registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Write a RecencyOrderedList value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, RecencyOrderedList<string> values)
         {
             // Check the arguments for null 
@@ -223,6 +266,9 @@ namespace Timelapse.Util
             }
         }
 
+        /// <summary>
+        /// Write an int value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, int value)
         {
             // Check the arguments for null 
@@ -231,31 +277,41 @@ namespace Timelapse.Util
             registryKey.SetValue(subKeyPath, value, RegistryValueKind.DWord);
         }
 
+        /// <summary>
+        /// Write a Rect value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, Rect value)
         {
             registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Write a Size value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, Size value)
         {
             registryKey.Write(subKeyPath, value.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
+        /// <summary>
+        /// Write a string value to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, string value)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
-
             registryKey.SetValue(subKeyPath, value, RegistryValueKind.String);
         }
 
-        // Save Timespan as seconds
+        /// <summary>
+        /// Write a TimeSpan value as Seconds to registry
+        /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, TimeSpan value)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
-
             registryKey.SetValue(subKeyPath, value.TotalSeconds.ToString(), RegistryValueKind.String);
         }
+        #endregion
     }
 }

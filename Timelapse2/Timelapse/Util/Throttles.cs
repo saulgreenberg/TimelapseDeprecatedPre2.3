@@ -47,7 +47,7 @@ namespace Timelapse.Util
 
             this.DesiredImageRendersPerSecond = rendersPerSecond;
             this.DesiredIntervalBetweenRenders = TimeSpan.FromSeconds(1.0 / rendersPerSecond);
-            this.RepeatedKeyAcceptanceInterval = (int)((SystemStatus.KeyboardSpeed + 0.5 * rendersPerSecond) / rendersPerSecond);
+            this.RepeatedKeyAcceptanceInterval = (int)((SystemParameters.KeyboardSpeed + 0.5 * rendersPerSecond) / rendersPerSecond);
         }
     }
 }

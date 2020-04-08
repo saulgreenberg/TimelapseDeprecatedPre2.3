@@ -117,14 +117,7 @@ namespace Timelapse.Util
             }
             else if (showNoUpdatesMessage)
             {
-                MessageBox messageBox = new MessageBox(String.Format("No updates to {0} are available.", this.applicationName), Application.Current.MainWindow);
-                messageBox.Message.Reason = String.Format("You a running the latest version of {0}, version: {1}", this.applicationName, currentVersionNumber);
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                if (this.window != null)
-                {
-                    messageBox.Owner = this.window;
-                }
-                messageBox.ShowDialog();
+                Dialogs.NoUpdatesAvailableDialog(Application.Current.MainWindow, this.applicationName, currentVersionNumber);
             }
             return true;
         }

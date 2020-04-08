@@ -5,6 +5,7 @@ namespace Timelapse.Util
 {
     public static class DateTimeHandler
     {
+        // Get a date/time offset given a dateTime and a timezone
         public static DateTimeOffset CreateDateTimeOffset(DateTime dateTime, TimeZoneInfo imageSetTimeZone)
         {
             if (imageSetTimeZone != null && dateTime.Kind == DateTimeKind.Unspecified)
@@ -20,11 +21,17 @@ namespace Timelapse.Util
             return new DateTimeOffset((dateTime + utcOffset).AsUnspecifed(), utcOffset);
         }
 
+        /// <summary>
+        /// Return a DateTime from its DataTime database string representation in the form of "yyyy-MM-ddTHH:mm:ss.fffZ"
+        /// </summary>
         public static DateTime ParseDatabaseDateTimeString(string dateTimeAsString)
         {
             return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         }
 
+        /// <summary>
+        /// Return a TimeSpan from its utcOfset string representation (hours) e.g., "-12.0"
+        /// </summary>
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
             TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString));
@@ -55,18 +62,24 @@ namespace Timelapse.Util
             // return DateTime.ParseExact(dateTimeAsString, Constant.Time.DateTimeDisplayFormat, CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Convert a DateTimeOffset to its database string representation i.e.  "yyyy-MM-ddTHH:mm:ss.fffZ"
+        /// </summary>
         public static string ToDatabaseDateTimeString(DateTimeOffset dateTime)
         {
             return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeDatabaseFormat, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
+        /// <summary>
+        /// Convert a Timespan to its string representation as hours i.e.  "0.00"
+        /// </summary>
         public static string ToDatabaseUtcOffsetString(TimeSpan timeSpan)
         {
             return timeSpan.TotalHours.ToString(Constant.Time.UtcOffsetDatabaseFormat);
         }
 
         /// <summary>
-        /// Given a date as a DateTimeOffset, return it as a string in dd-MMM-yyyy format, e.g., 05-Apr-2016, with the offset.
+        /// Given a date as a DateTimeOffset, return it as a displayable string in dd-MMM-yyyy format, e.g., 05-Apr-2016, with the offset.
         /// </summary>
         public static string ToDisplayDateString(DateTimeOffset date)
         {
@@ -155,18 +168,6 @@ namespace Timelapse.Util
             return DateTimeHandler.TryParseDateTaken(date + " " + time, imageSetTimeZone, out dateTimeOffset);
         }
 
-        private static bool TryParseDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
-        {
-            // use current culture as BitmapMetadata.DateTaken is not invariant
-            if (DateTime.TryParse(dateTimeAsString, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dateTime) == false)
-            {
-                dateTimeOffset = DateTimeOffset.MinValue;
-                return false;
-            }
-
-            dateTimeOffset = DateTimeHandler.CreateDateTimeOffset(dateTime, imageSetTimeZone);
-            return true;
-        }
 
         public static bool TryParseMetadataDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
@@ -193,5 +194,20 @@ namespace Timelapse.Util
             swappedDate = new DateTimeOffset(imageDate.Year, imageDate.Day, imageDate.Month, imageDate.Hour, imageDate.Minute, imageDate.Second, imageDate.Millisecond, imageDate.Offset);
             return true;
         }
+
+        #region Private (internal) methods
+        private static bool TryParseDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
+        {
+            // use current culture as BitmapMetadata.DateTaken is not invariant
+            if (DateTime.TryParse(dateTimeAsString, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime dateTime) == false)
+            {
+                dateTimeOffset = DateTimeOffset.MinValue;
+                return false;
+            }
+
+            dateTimeOffset = DateTimeHandler.CreateDateTimeOffset(dateTime, imageSetTimeZone);
+            return true;
+        }
+        #endregion
     }
 }

@@ -28,9 +28,9 @@ namespace Timelapse.Editor.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                this.MostRecentCheckForUpdates = registryKey.ReadDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
-                this.MostRecentTemplates = registryKey.ReadMostRecentlyUsedList(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates);
-                this.ShowUtcOffset = registryKey.ReadBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);
+                this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
+                this.MostRecentTemplates = registryKey.GetRecencyOrderedList(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates);
+                this.ShowUtcOffset = registryKey.GetBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);
             }
         }
 

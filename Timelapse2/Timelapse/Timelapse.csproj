@@ -654,7 +654,6 @@
     <Compile Include="Controls\StatusBarExtensions.cs" />
     <Compile Include="Database\TemplateDatabase.cs" />
     <Compile Include="State\TimelapseState.cs" />
-    <Compile Include="Util\Utilities.cs" />
     <Compile Include="TimelapseWindow.xaml.cs">
       <DependentUpon>TimelapseWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
