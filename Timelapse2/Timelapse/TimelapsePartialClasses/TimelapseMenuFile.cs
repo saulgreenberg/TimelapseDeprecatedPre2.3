@@ -251,7 +251,8 @@ namespace Timelapse
             MenuItem mi = (MenuItem)sender;
             if (mi == this.MenuItemExportAsCsvAndPreview)
             {
-                if (Util.ExternalProcesses.TryStartProcess(csvFilePath) == false)
+                //if (Util.ExternalProcesses.TryStartProcess(csvFilePath) == false)
+                if (ProcessExecution.TryProcessStart(csvFilePath) == false)
                 {
                     // Can't open excel
                     MessageBox messageBox = new MessageBox("Can't open Excel.", this);
@@ -261,19 +262,16 @@ namespace Timelapse
                     messageBox.ShowDialog();
                     return;
                 }
-                try
+
+                // Show the file in excel
+                // Create a process that will try to show the file
+                ProcessStartInfo processStartInfo = new ProcessStartInfo
                 {
-                    // Show the file in excel
-                    // Create a process that will try to show the file
-                    using (Process process = new Process())
-                    {
-                        process.StartInfo.UseShellExecute = true;
-                        process.StartInfo.RedirectStandardOutput = false;
-                        process.StartInfo.FileName = csvFilePath;
-                        process.Start();
-                    }
-                }
-                catch
+                    UseShellExecute = true,
+                    RedirectStandardOutput = false,
+                    FileName = csvFilePath
+                };
+                if (ProcessExecution.TryProcessStart(processStartInfo) == false)
                 {
                     // Can't open excel
                     MessageBox messageBox = new MessageBox("Can't open Excel.", this);

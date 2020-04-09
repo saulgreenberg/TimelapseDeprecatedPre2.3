@@ -7,6 +7,7 @@ using System.Net;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -126,7 +127,7 @@ namespace Timelapse.Dialog
 
         private void Link_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(e.Uri);
             e.Handled = true;
         }
         #endregion Activate Hyperlinks in the Rich Text box

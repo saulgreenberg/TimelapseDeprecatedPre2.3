@@ -276,7 +276,7 @@ namespace Timelapse.Constant
         public static readonly Uri TimlapseVersionChangesLink = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.TimelapseVersions");
         public static readonly Uri UserManualLink = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
         public static readonly Uri CreativeCommonsLicenseLink = new Uri("https://creativecommons.org/licenses/by-nc-sa/4.0/");
-        public static readonly Uri AdditionalLicenseDetailsLink = new Uri("https://github.com/saulgreenberg/TimelapseImageAnalyzer/blob/master/LICENSE.md");
+        public static readonly Uri AdditionalLicenseDetailsLink = new Uri("https://github.com/saulgreenberg/Timelapse/blob/master/LICENSE.md");
     }
 
     public static class File

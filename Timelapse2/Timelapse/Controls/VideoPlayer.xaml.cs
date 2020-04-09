@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Media;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -205,6 +208,17 @@ namespace Timelapse.Controls
             {
                 this.Video.SpeedRatio = Convert.ToDouble(rb.Tag);
                 this.Play();
+            }
+        }
+
+        // Open the currently displayed video in an external player
+        private void OpenExternalPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the currently displayed video in an external player
+            if (File.Exists(Uri.UnescapeDataString(this.Video.Source.AbsolutePath)))
+            {
+                Uri uri = new Uri(Uri.UnescapeDataString(this.Video.Source.AbsolutePath));
+                ProcessExecution.TryProcessStart(uri);             
             }
         }
     }

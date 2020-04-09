@@ -100,7 +100,11 @@ namespace Timelapse.Editor
         // If we get an exception that wasn't handled, show a dialog asking the user to send the bug report to us.
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Dialogs.ShowExceptionReportingDialog("Timelapse Editor", e, this);
+            ExceptionShutdownDialog dialog = new ExceptionShutdownDialog(this, "Timelapse Editor", e);
+            dialog.ShowDialog();
+            // force a shutdown. While some bugs could be recoverable, its dangerous to keep things running. 
+            this.Close();
+            Application.Current.Shutdown(); 
         }
         #endregion
 
@@ -446,36 +450,31 @@ namespace Timelapse.Editor
         /// <summary>Display the Timelapse home page </summary> 
         private void MenuHelpTimelapseWebPage_Click(object sender, RoutedEventArgs e)
         {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse")); 
         }
 
         /// <summary>Display the manual in a web browser </summary> 
         private void MenuHelpTutorialManual_Click(object sender, RoutedEventArgs e)
         {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf"));
         }
 
         /// <summary>Display the page in the web browser that lets you join the Timelapse mailing list</summary>
         private void MenuHelpJoinTimelapseMailingList_Click(object sender, RoutedEventArgs e)
         {
-            Uri uri = new Uri("http://mailman.ucalgary.ca/mailman/listinfo/timelapse-l");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(new Uri("http://mailman.ucalgary.ca/mailman/listinfo/timelapse-l"));
         }
 
         /// <summary>Download the sample images from a web browser</summary>
         private void MenuHelpDownloadSampleImages_Click(object sender, RoutedEventArgs e)
         {
-            Uri uri = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Main/TutorialImageSet.zip");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.UserGuide"));
         }
 
         /// <summary>Send mail to the timelapse mailing list</summary> 
         private void MenuHelpMailToTimelapseMailingList_Click(object sender, RoutedEventArgs e)
         {
-            Uri uri = new Uri("mailto:timelapse-l@mailman.ucalgary.ca");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(new Uri("mailto:timelapse-l@mailman.ucalgary.ca"));
         }
 
         private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)

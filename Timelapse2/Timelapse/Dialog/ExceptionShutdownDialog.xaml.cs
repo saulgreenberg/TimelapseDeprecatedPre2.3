@@ -66,27 +66,10 @@ namespace Timelapse.Dialog
         private void MailButton_Click(object sender, RoutedEventArgs e)
         {
             Uri uri = new Uri(String.Format("mailto:{0}?subject={1}&body={2}", to, subject, Uri.EscapeUriString(body)));
-            using (Process process = new Process())
+            if (ProcessExecution.TryProcessStart(uri) == false)
             {
-                process.StartInfo = new ProcessStartInfo(uri.AbsoluteUri);
-                try
-                {
-                    if (process.Start())
-                    {
-                        // success
-                        this.DialogResult = true;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    if (exception != null)
-                    {
-                        // Error. A noop so we catch it cleanly but still leave the dialog running
-                        SystemSounds.Beep.Play();
-                        this.MailButton.Content = "Mailing failed - See 'alternate' instructions above, or press Cancel.";
-                        this.MailButton.IsEnabled = false;
-                    }
-                }
+                this.MailButton.Content = "Mailing failed - See 'alternate' instructions above, or press Cancel.";
+                this.MailButton.IsEnabled = false;
             }
         }
 

@@ -125,23 +125,18 @@ namespace Timelapse.Images
                     // If the thumbnail file doesn't exist, use FFMpeg to create one 
                     if (!File.Exists(thumbnailFilePath))
                     {
-                        using (Process process = new Process
+                        ProcessStartInfo processStartInfo = new ProcessStartInfo
                         {
-                            StartInfo = new ProcessStartInfo
-                            {
-                                WindowStyle = ProcessWindowStyle.Hidden,
-                                FileName = "cmd.exe",
-                                Arguments = "/C " + ffmpegCommand
-                            }
-                        })
-                        {
-                            process.Start();
-                            // We don't really have to wait for exit, but 
-                            // I am not sure if there are limits to how many process we can
-                            // create and run concurrently. This gives them time to finish
-                            // TODO Video thumbnail generation should be an async process run at low priority
-                            // process.WaitForExit(500);
-                        }
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            FileName = "cmd.exe",
+                            Arguments = "/C " + ffmpegCommand
+                        };
+                        ProcessExecution.TryProcessStart(processStartInfo);
+                        // We don't really have to wait for exit, but 
+                        // I am not sure if there are limits to how many process we can
+                        // create and run concurrently. This gives them time to finish
+                        // TODO Video thumbnail generation should be an async process run at low priority
+                        // process.WaitForExit(500);
                     }
                 }
                 return;

@@ -339,8 +339,8 @@
     <Compile Include="Extensions\DateTimeOffsetExtensions.cs" />
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="DataStructures\ErrorsAndWarnings.cs" />
-    <Compile Include="Util\ExternalProcesses.cs" />
     <Compile Include="Util\IsCondition.cs" />
+    <Compile Include="Util\ProcessExecution.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\SystemStatus.cs" />
     <Compile Include="Util\ThowIf.cs" />
@@ -825,6 +825,7 @@
     <Content Include="exiftool%28-k%29.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\ExternalVideoPlayer.png" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.8\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />

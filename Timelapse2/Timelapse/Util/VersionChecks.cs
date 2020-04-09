@@ -112,7 +112,7 @@ namespace Timelapse.Util
                 if (result == true)
                 {
                     // navigate the default web browser to our app homepage (the url comes from the xml content)  
-                    Process.Start(url);
+                    ProcessExecution.TryProcessStart(new Uri(url));
                 }
             }
             else if (showNoUpdatesMessage)

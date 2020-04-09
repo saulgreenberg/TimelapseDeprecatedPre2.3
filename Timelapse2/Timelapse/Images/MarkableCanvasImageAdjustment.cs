@@ -8,6 +8,7 @@ using Timelapse.Controls;
 using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
+using Timelapse.Util;
 
 namespace Timelapse.Images
 {
@@ -77,7 +78,8 @@ namespace Timelapse.Images
             {
                 // The event says to open an external photo viewer. Try to do so.
                 // Note that we don't do any image processing on this event if if this is the case.
-                if (Util.ExternalProcesses.TryStartProcess(path) == false)
+                //if (Util.ExternalProcesses.TryStartProcess(path) == false)
+                if (ProcessExecution.TryProcessStart(path) == false)
                 {
                     string extension = Path.GetExtension(path);
                     // Can't open the image file. Note that file must exist at this pint as we checked for that above.
