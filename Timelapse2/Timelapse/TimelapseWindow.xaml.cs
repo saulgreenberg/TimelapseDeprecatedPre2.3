@@ -343,7 +343,12 @@ namespace Timelapse
             }
             else
             {
-                Dialogs.ShowExceptionReportingDialog("Timelapse", e, this);
+                ExceptionShutdownDialog dialog = new ExceptionShutdownDialog(this, "Timelapse", e);
+                dialog.ShowDialog();
+                this.Close();
+                Application.Current.Shutdown();
+                // DEPREACATED: 
+                // Dialogs.ShowExceptionReportingDialog("Timelapse", e, this);
             }
         }
         #endregion
