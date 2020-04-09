@@ -172,7 +172,7 @@ namespace Timelapse.Util
             }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(rootFolderPath);
-            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension})
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
             {
                 // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
                 // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX

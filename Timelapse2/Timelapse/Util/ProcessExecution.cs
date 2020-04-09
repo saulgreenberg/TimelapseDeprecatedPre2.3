@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Timelapse.Util
 {
@@ -13,7 +9,7 @@ namespace Timelapse.Util
     /// Each call type returns true / false if the Process successfully started
     /// </summary>
     public static class ProcessExecution
-    {    
+    {
         /// <param name="processStartInfo">should contain the necessary information to configure the process</param>
         /// <returns>true/false if the process started or not</returns>
         public static bool TryProcessStart(ProcessStartInfo processStartInfo)
@@ -68,7 +64,7 @@ namespace Timelapse.Util
             }
             ProcessStartInfo processStartInfo = new ProcessStartInfo
             {
-                FileName=filePath
+                FileName = filePath
             };
             return ProcessExecution.TryProcessStart(processStartInfo);
         }

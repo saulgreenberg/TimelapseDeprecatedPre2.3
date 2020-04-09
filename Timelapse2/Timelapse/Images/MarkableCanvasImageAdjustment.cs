@@ -78,7 +78,6 @@ namespace Timelapse.Images
             {
                 // The event says to open an external photo viewer. Try to do so.
                 // Note that we don't do any image processing on this event if if this is the case.
-                //if (Util.ExternalProcesses.TryStartProcess(path) == false)
                 if (ProcessExecution.TryProcessStart(path) == false)
                 {
                     string extension = Path.GetExtension(path);
@@ -157,7 +156,7 @@ namespace Timelapse.Images
                     this.lastGammaValue = this.gammaValue;
                     BitmapFrame bf = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
                     if (bf != null)
-                    { 
+                    {
                         this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
                     }
                 }
@@ -173,12 +172,12 @@ namespace Timelapse.Images
         #endregion
 
         #region Generate ImageStateChange event
-        
+
         // An explicit check the current status of the image state and generate an event to reflect that.
         // Typically used when the image adjustment window is opened for the first time, as the markable canvas needs to signal its state to it.
         public void GenerateImageStateChangeEventToReflectCurrentStatus()
         {
-            if (this.ClickableImagesState != 0 )
+            if (this.ClickableImagesState != 0)
             {
                 // In the overview
                 this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuser)

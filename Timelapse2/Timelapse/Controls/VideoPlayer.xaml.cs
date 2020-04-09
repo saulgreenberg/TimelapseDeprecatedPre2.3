@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Media;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -218,7 +216,7 @@ namespace Timelapse.Controls
             if (File.Exists(Uri.UnescapeDataString(this.Video.Source.AbsolutePath)))
             {
                 Uri uri = new Uri(Uri.UnescapeDataString(this.Video.Source.AbsolutePath));
-                ProcessExecution.TryProcessStart(uri);             
+                ProcessExecution.TryProcessStart(uri);
             }
         }
     }

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -104,7 +103,7 @@ namespace Timelapse.Editor
             dialog.ShowDialog();
             // force a shutdown. While some bugs could be recoverable, its dangerous to keep things running. 
             this.Close();
-            Application.Current.Shutdown(); 
+            Application.Current.Shutdown();
         }
         #endregion
 
@@ -450,7 +449,7 @@ namespace Timelapse.Editor
         /// <summary>Display the Timelapse home page </summary> 
         private void MenuHelpTimelapseWebPage_Click(object sender, RoutedEventArgs e)
         {
-            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse")); 
+            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse"));
         }
 
         /// <summary>Display the manual in a web browser </summary> 

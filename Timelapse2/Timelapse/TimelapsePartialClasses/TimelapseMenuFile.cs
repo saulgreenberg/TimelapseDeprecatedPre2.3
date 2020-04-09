@@ -251,7 +251,6 @@ namespace Timelapse
             MenuItem mi = (MenuItem)sender;
             if (mi == this.MenuItemExportAsCsvAndPreview)
             {
-                //if (Util.ExternalProcesses.TryStartProcess(csvFilePath) == false)
                 if (ProcessExecution.TryProcessStart(csvFilePath) == false)
                 {
                     // Can't open excel

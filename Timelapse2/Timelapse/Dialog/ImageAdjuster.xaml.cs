@@ -88,8 +88,8 @@ namespace Timelapse.Dialog
             this.IsEnabled = enabledState;
             // Provide a more disabled appearance to radio buttons and checkboxes 
             Brush isEnabledAndNotGamma = enabledState && (CBGamma.IsChecked == false) ? Brushes.Black : Brushes.Gray;
-            Brush isEnabled = enabledState  ? Brushes.Black : Brushes.Gray;
-  
+            Brush isEnabled = enabledState ? Brushes.Black : Brushes.Gray;
+
             // Provide a more disabled appearance to radio buttons, checkboxes and slider labels 
             this.CBNone.Foreground = isEnabledAndNotGamma;
             this.CBEdges.Foreground = isEnabledAndNotGamma;
