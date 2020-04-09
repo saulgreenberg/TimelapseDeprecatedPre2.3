@@ -196,5 +196,16 @@ namespace Timelapse.Controls
             PlayOrPause.IsChecked = !PlayOrPause.IsChecked;
             PlayOrPause_Click(null, null);
         }
+
+        // Set the speed, which also causes the video to play (if currently paused)
+        private void SetSpeed_Checked(object sender, RoutedEventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb?.Tag != null)
+            {
+                this.Video.SpeedRatio = Convert.ToDouble(rb.Tag);
+                this.Play();
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Timelapse.Controls"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300" d:DesignWidth="800"
              MouseLeftButtonUp="PlayPause_MouseLeftButtonUp"
              >
     <UserControl.Resources>
@@ -50,9 +50,14 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <Image Name="ThumbnailImage" VerticalAlignment="Top"/>
         <!--<Image Source="pack://application:,,/Resources/BlankVideoWithoutLargePlayButton.jpg"/>-->
-        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <!--<xctk:MagnifierManager.Magnifier>
                 <xctk:Magnifier x:Name="_magnifier"
                                Background="White"
@@ -68,13 +73,14 @@
                                Visibility="Collapsed"/>
             </xctk:MagnifierManager.Magnifier>-->
         </MediaElement>
-        <StackPanel Grid.Row="1">
+        <StackPanel Grid.Row="1" Grid.Column="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-                <Slider Name="VideoPosition"  ValueChanged="VideoPosition_ValueChanged" PreviewMouseDown="VideoPosition_PreviewMouseDown" AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="3" IsMoveToPointEnabled="True" MinWidth="400" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" TickPlacement="BottomRight" />
+                <Slider Name="VideoPosition"  ValueChanged="VideoPosition_ValueChanged" PreviewMouseDown="VideoPosition_PreviewMouseDown" AutoToolTipPlacement="BottomRight" AutoToolTipPrecision="3" IsMoveToPointEnabled="True" MinWidth="300" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" TickPlacement="BottomRight" />
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -83,8 +89,20 @@
                     <TextBox Name="TimeFromStart" Grid.Column="0" Grid.Row="0" Style="{StaticResource TimeTextBoxStyle}">00:00</TextBox>
                     <ToggleButton Name="PlayOrPause" Click="PlayOrPause_Click" Style="{StaticResource PlayPauseButtonStyle}" Background="Transparent" BorderThickness="0" Width="35" Height="35"  Grid.Column="1" Grid.Row="0" />
                     <TextBox Name="TimeDuration" Grid.Column="2" Grid.Row="0" Style="{StaticResource TimeTextBoxStyle}">00:00</TextBox>
+                    
                 </Grid>
+               
             </StackPanel>
         </StackPanel>
+        <GroupBox Grid.Row="2" Grid.Column="3" Margin="5,0,0,0" Width ="140" Height="40" Foreground="LightGray" BorderThickness=".4" VerticalAlignment="Top" HorizontalAlignment="Left">
+            <GroupBox.Header>
+                Speed
+            </GroupBox.Header>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+            <RadioButton Name="RBSlow" Content=".5x" Foreground="White" GroupName="Speed"  Margin="5,0,10,0" Checked="SetSpeed_Checked" Tag="0.5"/>
+            <RadioButton Name="RBNormal" Content="1x" Foreground="White"  GroupName="Speed"  Margin="0,0,10,0" Checked="SetSpeed_Checked" IsChecked="True" Tag="1"/>
+            <RadioButton Name="RBFast" Content="2x" Foreground="White" GroupName="Speed" Margin="0,0,5,0" Checked="SetSpeed_Checked" Tag="2"/>
+        </StackPanel>
+        </GroupBox>
     </Grid>
 </UserControl>
