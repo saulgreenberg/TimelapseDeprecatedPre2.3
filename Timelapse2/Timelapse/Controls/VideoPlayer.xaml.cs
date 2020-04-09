@@ -189,5 +189,12 @@ namespace Timelapse.Controls
             this.ShowPosition();
             this.Pause(); // If a user scrubs, force the video to pause if its playing
         }
+
+        private void PlayPause_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Simulate clicking of the play/pause button
+            PlayOrPause.IsChecked = !PlayOrPause.IsChecked;
+            PlayOrPause_Click(null, null);
+        }
     }
 }

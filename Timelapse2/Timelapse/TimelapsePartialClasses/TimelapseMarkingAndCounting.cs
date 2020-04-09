@@ -37,7 +37,7 @@ namespace Timelapse
 
             // Part 1. Decrement the counter only if there is a number in it
             string oldCounterData = counter.Content;
-            string newCounterData = String.Empty;
+            string newCounterData;
             if (!String.IsNullOrEmpty(oldCounterData))
             {
                 int count = Convert.ToInt32(oldCounterData);
@@ -180,7 +180,7 @@ namespace Timelapse
             for (int counter = 0; counter < this.markersOnCurrentFile.Count; counter++)
             {
                 MarkersForCounter markersForCounter = this.markersOnCurrentFile[counter];
-                if (this.DataEntryControls.ControlsByDataLabel.TryGetValue(markersForCounter.DataLabel, out DataEntryControl control) == false)
+                if (this.DataEntryControls.ControlsByDataLabel.TryGetValue(markersForCounter.DataLabel, out _) == false)
                 {
                     // If we can't find the counter, its likely because the control was made invisible in the template,
                     // which means that there is no control associated with the marker. So just don't create the 

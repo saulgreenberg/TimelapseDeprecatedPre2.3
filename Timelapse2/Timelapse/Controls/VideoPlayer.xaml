@@ -6,7 +6,9 @@
              xmlns:local="clr-namespace:Timelapse.Controls"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300"
+             MouseLeftButtonUp="PlayPause_MouseLeftButtonUp"
+             >
     <UserControl.Resources>
         <Style x:Key="PlayPauseButtonStyle" TargetType="ToggleButton">
             <Setter Property="Margin" Value="0,5,0,0" />
@@ -51,7 +53,7 @@
         <Image Name="ThumbnailImage" VerticalAlignment="Top"/>
         <!--<Image Source="pack://application:,,/Resources/BlankVideoWithoutLargePlayButton.jpg"/>-->
         <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-            <xctk:MagnifierManager.Magnifier>
+            <!--<xctk:MagnifierManager.Magnifier>
                 <xctk:Magnifier x:Name="_magnifier"
                                Background="White"
                                Radius="120"
@@ -64,7 +66,7 @@
                                IsUsingZoomOnMouseWheel="True"
                                ZoomFactorOnMouseWheel="0.1"
                                Visibility="Collapsed"/>
-            </xctk:MagnifierManager.Magnifier>
+            </xctk:MagnifierManager.Magnifier>-->
         </MediaElement>
         <StackPanel Grid.Row="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
