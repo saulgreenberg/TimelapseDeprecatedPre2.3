@@ -1,5 +1,4 @@
 ﻿using System;
-using Timelapse.Util;
 
 namespace Timelapse.Database
 {

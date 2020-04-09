@@ -138,7 +138,7 @@ namespace Timelapse.Util
                 GetAllFoldersContainingAnImageOrVideo(subDir.FullName, folderPaths);
             }
         }
-        
+
         // Remove, any files that 
         // - don't exactly match the desired image or video extension, 
         // - have a MacOSX hidden file prefix

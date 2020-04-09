@@ -35,7 +35,7 @@ namespace Timelapse.Util
         private KeyEventArgs mostRecentKey;
         private bool IsKeyRepeat { get; set; }
         #endregion
-        
+
         public TimelapseState()
         {
             this.FirstTimeFileLoading = true;

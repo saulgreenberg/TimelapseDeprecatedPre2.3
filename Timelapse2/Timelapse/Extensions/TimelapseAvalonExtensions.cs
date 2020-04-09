@@ -398,7 +398,7 @@ namespace Timelapse.Util
                 return true;
             }
         }
-        
+
         // Load the window position and size from the registry
         private static void AvalonLayout_LoadWindowPositionAndSizeFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {
@@ -425,7 +425,7 @@ namespace Timelapse.Util
                 floatingWindow.Height = windowRect.Height;
             }
         }
-        
+
         // Retrieve the maximize state from the registry and set the timelapse window to that state
         private static void AvalonLayout_LoadWindowMaximizeStateFromRegistry(this TimelapseWindow timelapse, string registryKey)
         {

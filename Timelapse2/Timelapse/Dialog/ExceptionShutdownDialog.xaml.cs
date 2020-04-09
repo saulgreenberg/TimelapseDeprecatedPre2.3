@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
                         this.DialogResult = true;
                     }
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     if (exception != null)
                     {

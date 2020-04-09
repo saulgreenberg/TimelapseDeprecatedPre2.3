@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Windows;
 using System.Xml;
 using Timelapse.Dialog;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Util
 {
