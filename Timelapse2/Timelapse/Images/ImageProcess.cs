@@ -268,42 +268,49 @@ namespace Timelapse.Images
                     // Initialize the ImageFactory using the overload to preserve EXIF metadata.
                     using (ImageFactory imageFactory = new ImageFactory(preserveExifData: false))
                     {
-                        if (useGamma)
+                        try
                         {
-                            System.Drawing.Image drawingImage = System.Drawing.Image.FromStream(inImageStream);
-                            System.Drawing.Bitmap bitmap = AdjustGamma(drawingImage, gammaValue);
-                            bitmap.Save(outImageStream, System.Drawing.Imaging.ImageFormat.Bmp);
-                        }
-                        else
-                        {
-                            if (detectEdges)
+                            if (useGamma)
                             {
-                                // Load, resize, set the format and quality and save an image.
-                                ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter edger = new ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter();
-                                imageFactory.Load(inImageStream)
-                                            .DetectEdges(edger)
-                                            .Contrast(contrast)
-                                            .Brightness(brightness)
-                                            .Save(outImageStream);
-                            }
-                            else if (sharpen)
-                            {
-                                ImageProcessor.Imaging.GaussianLayer gaussian = new ImageProcessor.Imaging.GaussianLayer(5, 3, 0);
-                                // Load, resize, set the format and quality and save an image.
-                                imageFactory.Load(inImageStream)
-                                            .GaussianSharpen(gaussian)
-                                            .Contrast(contrast)
-                                            .Brightness(brightness)
-                                            .Save(outImageStream);
+                                System.Drawing.Image drawingImage = System.Drawing.Image.FromStream(inImageStream);
+                                System.Drawing.Bitmap bitmap = AdjustGamma(drawingImage, gammaValue);
+                                bitmap.Save(outImageStream, System.Drawing.Imaging.ImageFormat.Bmp);
                             }
                             else
                             {
-                                // Load, resize, set the format and quality and save an image.
-                                imageFactory.Load(inImageStream)
-                                            .Contrast(contrast)
-                                            .Brightness(brightness)
-                                            .Save(outImageStream);
+                                if (detectEdges)
+                                {
+                                    // Load, resize, set the format and quality and save an image.
+                                    ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter edger = new ImageProcessor.Imaging.Filters.EdgeDetection.ScharrEdgeFilter();
+                                    imageFactory.Load(inImageStream)
+                                                .DetectEdges(edger)
+                                                .Contrast(contrast)
+                                                .Brightness(brightness)
+                                                .Save(outImageStream);
+                                }
+                                else if (sharpen)
+                                {
+                                    ImageProcessor.Imaging.GaussianLayer gaussian = new ImageProcessor.Imaging.GaussianLayer(5, 3, 0);
+                                    // Load, resize, set the format and quality and save an image.
+                                    imageFactory.Load(inImageStream)
+                                                .GaussianSharpen(gaussian)
+                                                .Contrast(contrast)
+                                                .Brightness(brightness)
+                                                .Save(outImageStream);
+                                }
+                                else
+                                {
+                                    // Load, resize, set the format and quality and save an image.
+                                    imageFactory.Load(inImageStream)
+                                                .Contrast(contrast)
+                                                .Brightness(brightness)
+                                                .Save(outImageStream);
+                                }
                             }
+                        }
+                        catch
+                        {
+                            return null;
                         }
                     }
                     // Return the stream as a bitmap that can be used in Image.Source

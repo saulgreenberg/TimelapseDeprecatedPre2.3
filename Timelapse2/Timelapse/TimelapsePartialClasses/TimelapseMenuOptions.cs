@@ -108,6 +108,7 @@ namespace Timelapse
             if (ImageAdjuster.IsVisible == false)
             {
                 this.ImageAdjuster.Show();
+                this.MarkableCanvas.GenerateImageStateChangeEventToReflectCurrentStatus();
             }
         }
 

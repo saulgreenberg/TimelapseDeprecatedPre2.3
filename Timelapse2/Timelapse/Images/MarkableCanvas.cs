@@ -665,8 +665,6 @@ namespace Timelapse.Images
             this.ImageToDisplay.Source = bitmapSource;
         }
 
-
-
         /// <summary>
         /// Set a wholly new image.  Clears existing markers and syncs the magnifier image to the display image.
         /// </summary>

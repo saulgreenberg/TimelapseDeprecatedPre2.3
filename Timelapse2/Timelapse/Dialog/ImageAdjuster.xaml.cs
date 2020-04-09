@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media;
 using Timelapse.EventArguments;
 
 namespace Timelapse.Dialog
@@ -79,7 +80,26 @@ namespace Timelapse.Dialog
                 this.ResetControlsToNeutralValues();
             }
             // Enable the controls only if a primary (non-differenced) single image is being displayed
-            this.IsEnabled = e.IsPrimaryImage;
+            this.EnableControls(e.IsPrimaryImage);
+        }
+
+        private void EnableControls(bool enabledState)
+        {
+            this.IsEnabled = enabledState;
+            // Provide a more disabled appearance to radio buttons and checkboxes 
+            Brush isEnabledAndNotGamma = enabledState && (CBGamma.IsChecked == false) ? Brushes.Black : Brushes.Gray;
+            Brush isEnabled = enabledState  ? Brushes.Black : Brushes.Gray;
+  
+            // Provide a more disabled appearance to radio buttons, checkboxes and slider labels 
+            this.CBNone.Foreground = isEnabledAndNotGamma;
+            this.CBEdges.Foreground = isEnabledAndNotGamma;
+            this.CBSharpen.Foreground = isEnabledAndNotGamma;
+            this.BrightnessLabel.Foreground = isEnabledAndNotGamma;
+            this.ContrastLabel.Foreground = isEnabledAndNotGamma;
+
+            this.CBGamma.Foreground = isEnabled; // Gamma always reflects enabled state
+
+
         }
         #endregion
 
@@ -146,6 +166,15 @@ namespace Timelapse.Dialog
             this.CBNone.IsEnabled = isNotGamma;
             this.CBEdges.IsEnabled = isNotGamma;
             this.CBSharpen.IsEnabled = isNotGamma;
+
+            // Provide a more disabled appearance to radio buttons, checkboxes  and slider labels
+            Brush brush = isNotGamma ? Brushes.Black : Brushes.Gray;
+            this.CBNone.Foreground = brush;
+            this.CBEdges.Foreground = brush;
+            this.CBSharpen.Foreground = brush;
+            this.BrightnessLabel.Foreground = brush;
+            this.ContrastLabel.Foreground = brush;
+
             this.UpdateImageParametersAndGenerateEvent();
         }
 
