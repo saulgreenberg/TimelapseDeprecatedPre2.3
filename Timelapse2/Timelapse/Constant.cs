@@ -294,6 +294,7 @@ namespace Timelapse.Constant
         public const string JsonFileExtension = ".json";
         public const string MergedFileName = DefaultFileDatabaseFileNameRoot + "_merged" + FileDatabaseFileExtension;
         public const string Mp4FileExtension = ".mp4";
+        public const string ASFFileExtension = ".asf";
         public const string MacOSXHiddenFilePrefix = "._";
         public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep
         public const string RecognitionDataFileName = "recognitionData.csv";

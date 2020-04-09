@@ -120,7 +120,7 @@ namespace Timelapse
 
         private void MenuItemGenerateVideoThumbnails_Click(object sender, RoutedEventArgs e)
         {
-            string[] videoFileExtensions = { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension };
+            string[] videoFileExtensions = { Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension, };
             VideoThumbnailer.GenerateVideoThumbnailsInAllFolders(this.FolderPath, Constant.File.VideoThumbnailFolderName, videoFileExtensions);
         }
 

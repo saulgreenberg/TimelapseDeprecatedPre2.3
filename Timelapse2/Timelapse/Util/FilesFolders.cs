@@ -148,7 +148,8 @@ namespace Timelapse.Util
         {
             fileInfoList.RemoveAll(x => !(x.Name.EndsWith(Constant.File.JpgFileExtension, StringComparison.InvariantCultureIgnoreCase) == true
                                    || x.Name.EndsWith(Constant.File.AviFileExtension, StringComparison.InvariantCultureIgnoreCase) == true
-                                   || x.Name.EndsWith(Constant.File.Mp4FileExtension, StringComparison.InvariantCultureIgnoreCase) == true)
+                                   || x.Name.EndsWith(Constant.File.Mp4FileExtension, StringComparison.InvariantCultureIgnoreCase) == true
+                                   || x.Name.EndsWith(Constant.File.ASFFileExtension, StringComparison.InvariantCultureIgnoreCase) == true)
                                    || x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
         }
 
@@ -171,7 +172,7 @@ namespace Timelapse.Util
             }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(rootFolderPath);
-            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension})
             {
                 // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
                 // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX
@@ -208,7 +209,7 @@ namespace Timelapse.Util
         private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
-            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
             {
                 List<FileInfo> fileInfoList = new List<FileInfo>();
                 fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
