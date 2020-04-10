@@ -19,43 +19,33 @@ namespace Timelapse
         // - 1,(2,2) (1st file, 2 out of 2 images in the episode) 
         // - 2,(1,1) (2nd file, 1 out of 1 images in the episode) etc
         public static Dictionary<int, Tuple<int, int>> EpisodesDictionary { get; set; }
+       
+        /// <summary>
+        /// Whether or not Episodes should be displayed
+        /// </summary>
+        public static bool ShowEpisodes { get; set; } = false;
 
-        // Sets the state of whether we should show episodes or not
-        private static bool showEpisodes = false;
-        public static bool ShowEpisodes
-        {
-            get
-            {
-                return showEpisodes;
-            }
-            set
-            {
-                showEpisodes = value;
-            }
-        }
+        /// <summary>
+        /// The Time threshold between successive images that determine whether they belong together in an episode
+        /// </summary>
+        public static TimeSpan TimeThreshold { get; set; } = TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault);
 
-        private static TimeSpan timeDifferenceThreshold = TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault);
-        public static TimeSpan TimeThreshold
-        {
-            get
-            {
-                return timeDifferenceThreshold;
-            }
-            set
-            {
-                timeDifferenceThreshold = value;
-            }
-        }
-
-        // Set the EpisodesDictionary defining all episodes across all files in the file table. Note that it assumes :
-        // - files are sorted to give meaningful results, e.g., by date or by RelativePath/date
-        // - if the file table is the result of a selection (i.e. as subset of all files), the episode definition is still meaningful
+        /// <summary>
+        /// Reset the EpisodesDictionary defining all episodes across all files in the file table. Note that it assumes :
+        /// - files are sorted to give meaningful results, e.g., by date or by RelativePath/date if images are in different folders
+        /// - if the file table is the result of a selection (i.e. as subset of all files), the episode definition is still meaningful
+        /// </summary>
         public static void Reset()
         {
             Episodes.EpisodesDictionary = new Dictionary<int, Tuple<int, int>>();
             return;
         }
 
+        /// <summary>
+        /// Return the episodes for a given range within the file table
+        /// </summary>
+        /// <param name="fileTable"></param>
+        /// <param name="fileTableIndex"></param>
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex)
         {
             if (Episodes.EpisodesDictionary == null)
@@ -84,7 +74,9 @@ namespace Timelapse
             }
         }
 
-        // Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
+        /// <summary>
+        /// Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
+        /// </summary>
         private static bool EpisodeGetAroundIndex(FileTable files, int index, out int first, out int last, out int count)
         {
             DateTime date1;
