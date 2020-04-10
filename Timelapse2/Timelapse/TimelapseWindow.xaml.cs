@@ -345,6 +345,7 @@ namespace Timelapse
             {
                 ExceptionShutdownDialog dialog = new ExceptionShutdownDialog(this, "Timelapse", e);
                 dialog.ShowDialog();
+                // force a shutdown. WHile some bugs could be recoverable, its dangerous to keep things running. 
                 this.Close();
                 Application.Current.Shutdown();
                 // DEPREACATED: 

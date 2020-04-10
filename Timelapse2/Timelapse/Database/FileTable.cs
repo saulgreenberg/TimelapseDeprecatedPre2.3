@@ -20,7 +20,8 @@ namespace Timelapse.Database
             // Return a video row if its a video file (as identified by its suffix)
             string fileExtension = Path.GetExtension(fileName);
             if (String.Equals(fileExtension, Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
-                String.Equals(fileExtension, Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase))
+                String.Equals(fileExtension, Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(fileExtension, Constant.File.ASFFileExtension, StringComparison.OrdinalIgnoreCase))
             {
                 return new VideoRow(row);
             }

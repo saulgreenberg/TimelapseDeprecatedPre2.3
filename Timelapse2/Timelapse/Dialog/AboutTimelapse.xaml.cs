@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
 using Timelapse.Util;
@@ -49,7 +48,7 @@ namespace Timelapse.Dialog
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(e.Uri);
             e.Handled = true;
         }
     }

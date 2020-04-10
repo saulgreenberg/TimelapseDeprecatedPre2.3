@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -188,6 +189,35 @@ namespace Timelapse.Controls
             this.Video.Position = videoPosition;
             this.ShowPosition();
             this.Pause(); // If a user scrubs, force the video to pause if its playing
+        }
+
+        private void PlayPause_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Simulate clicking of the play/pause button
+            PlayOrPause.IsChecked = !PlayOrPause.IsChecked;
+            PlayOrPause_Click(null, null);
+        }
+
+        // Set the speed, which also causes the video to play (if currently paused)
+        private void SetSpeed_Checked(object sender, RoutedEventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb?.Tag != null)
+            {
+                this.Video.SpeedRatio = Convert.ToDouble(rb.Tag);
+                this.Play();
+            }
+        }
+
+        // Open the currently displayed video in an external player
+        private void OpenExternalPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            // Open the currently displayed video in an external player
+            if (File.Exists(Uri.UnescapeDataString(this.Video.Source.AbsolutePath)))
+            {
+                Uri uri = new Uri(Uri.UnescapeDataString(this.Video.Source.AbsolutePath));
+                ProcessExecution.TryProcessStart(uri);
+            }
         }
     }
 }

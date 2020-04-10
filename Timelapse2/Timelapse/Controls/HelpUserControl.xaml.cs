@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -8,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Resources;
+using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
@@ -182,7 +182,7 @@ namespace Timelapse.Controls
         // Load the Uri provided in a web browser  
         private void Link_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
         {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            ProcessExecution.TryProcessStart(e.Uri);
             e.Handled = true;
         }
         #endregion

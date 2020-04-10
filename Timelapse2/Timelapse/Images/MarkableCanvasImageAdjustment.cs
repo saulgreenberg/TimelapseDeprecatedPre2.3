@@ -2,10 +2,13 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Dialog;
+using Timelapse.Enums;
 using Timelapse.EventArguments;
+using Timelapse.Util;
 
 namespace Timelapse.Images
 {
@@ -75,7 +78,7 @@ namespace Timelapse.Images
             {
                 // The event says to open an external photo viewer. Try to do so.
                 // Note that we don't do any image processing on this event if if this is the case.
-                if (Util.ExternalProcesses.TryStartProcess(path) == false)
+                if (ProcessExecution.TryProcessStart(path) == false)
                 {
                     string extension = Path.GetExtension(path);
                     // Can't open the image file. Note that file must exist at this pint as we checked for that above.
@@ -151,7 +154,11 @@ namespace Timelapse.Images
                     this.lastDetectEdges = this.detectEdges;
                     this.lastUseGamma = this.useGamma;
                     this.lastGammaValue = this.gammaValue;
-                    this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
+                    BitmapFrame bf = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
+                    if (bf != null)
+                    {
+                        this.ImageToDisplay.Source = await ImageProcess.StreamToImageProcessedBitmap(imageStream, this.brightness, this.contrast, this.sharpen, this.detectEdges, this.useGamma, this.gammaValue).ConfigureAwait(true);
+                    }
                 }
             }
             catch
@@ -165,6 +172,32 @@ namespace Timelapse.Images
         #endregion
 
         #region Generate ImageStateChange event
+
+        // An explicit check the current status of the image state and generate an event to reflect that.
+        // Typically used when the image adjustment window is opened for the first time, as the markable canvas needs to signal its state to it.
+        public void GenerateImageStateChangeEventToReflectCurrentStatus()
+        {
+            if (this.ClickableImagesState != 0)
+            {
+                // In the overview
+                this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuser)
+                return;
+            }
+            ImageCache imageCache = Util.GlobalReferences.MainWindow?.DataHandler?.ImageCache;
+            if (imageCache != null)
+            {
+                if (imageCache.Current?.IsVideo == true)
+                {
+                    // Its a video
+                    this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuser)
+                    return;
+                }
+                // Its a primary image, but also check the differencing state
+                bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
+                this.GenerateImageStateChangeEvent(true, isPrimaryImage); //  Signal change in image state (consumed by ImageAdjuser)
+            }
+        }
+
         // Generate an event indicating the image state. To be consumed by the Image Adjuster to adjust its own state (e.g., disabled, reset, etc).
         private void GenerateImageStateChangeEvent(bool isNewImage, bool isPrimaryImage)
         {

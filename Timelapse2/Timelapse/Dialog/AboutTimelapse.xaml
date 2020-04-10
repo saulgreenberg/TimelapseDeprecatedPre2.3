@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
-        Title="About Timelapse" Height="520" Width="750"
+        Title="About Timelapse" Height="590" Width="750"
 		ResizeMode="NoResize"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
@@ -67,10 +67,21 @@
                 <LineBreak/>
                 <LineBreak/>
                 <Run Text="Donations are appreciated but not necessary."/>
+            </TextBlock>
 
+            <TextBlock HorizontalAlignment="Left" Margin="10,10,10,0"   VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap" FontSize="14" >
+                <Run FontWeight="Bold" Text="Software dependencies" FontSize="14"/>
+               
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Left" Margin="70,0,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap"  FontSize="14" >        
+                <Run FontStyle="Italic" Text="Timelapse incorporates 3rd party software under their license terms. We thank their developers."/>
+                <LineBreak/>
+                <Run Text="Extended WPF Toolkit (xceed.org)  &#x2022;  ExifTool (Phil Harvey)  &#x2022;  ImageProcessor (James South)"/>
+                 <LineBreak/>
+                <Run Text="MetadataExtractor+XMPCore (Drew Noakes)  &#x2022;  Newtonsoft (Json.net)  &#x2022;  System.Data.Sqlite (system.data.sqlite.org)"/>
             </TextBlock>
         </StackPanel>
-
+        
         <DockPanel Name="DockPanelImage">
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Name="OkButton" IsCancel="True" IsDefault="True" AutomationProperties.AutomationId="OkButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click" IsEnabled="True">_Okay</Button>

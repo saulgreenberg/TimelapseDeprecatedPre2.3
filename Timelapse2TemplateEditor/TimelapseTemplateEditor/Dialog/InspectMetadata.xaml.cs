@@ -149,7 +149,7 @@ namespace Timelapse.Editor.Dialog
         // When the user opens the file, get its metadata and display it in the datagrid
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
-            string filter = String.Format("Images and videos (*{0};*{1};*{2})|*{0};*{1};*{2}", Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension);
+            string filter = String.Format("Images and videos (*{0};*{1};*{2};*{3})|*{0};*{1};*{2};*{3}", Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension);
             if (FilesFolders.TryGetFileFromUser("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.imageFilePath) == true)
             {
                 this.ImageName.Content = Path.GetFileName(this.imageFilePath);
