@@ -14,6 +14,10 @@ namespace Timelapse.Util
         /// <returns>true/false if the process started or not</returns>
         public static bool TryProcessStart(ProcessStartInfo processStartInfo)
         {
+            if (processStartInfo == null)
+            {
+                return false;
+            }
             using (Process process = new Process())
             {
                 process.StartInfo = processStartInfo;
@@ -49,6 +53,10 @@ namespace Timelapse.Util
         /// <returns>true/false if the process started or not</returns>
         public static bool TryProcessStart(Uri uri)
         {
+            if (uri == null)
+            {
+                return false;
+            }
             ProcessStartInfo processStartInfo = new ProcessStartInfo(uri.AbsoluteUri);
             return ProcessExecution.TryProcessStart(processStartInfo);
         }
