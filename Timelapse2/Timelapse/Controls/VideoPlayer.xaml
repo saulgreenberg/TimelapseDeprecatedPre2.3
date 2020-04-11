@@ -57,9 +57,9 @@
         </Grid.ColumnDefinitions>
         <Image Name="ThumbnailImage" VerticalAlignment="Top"/>
         <!--<Image Source="pack://application:,,/Resources/BlankVideoWithoutLargePlayButton.jpg"/>-->
-        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-            <!--<xctk:MagnifierManager.Magnifier>
-                <xctk:Magnifier x:Name="_magnifier"
+        <!--<MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <xctk:MagnifierManager.Magnifier>
+                <local:OffsetLens x:Name="_magnifier"
                                Background="White"
                                Radius="120"
                                ZoomFactor="0.4"
@@ -72,6 +72,11 @@
                                ZoomFactorOnMouseWheel="0.1"
                                Visibility="Collapsed"/>
             </xctk:MagnifierManager.Magnifier>-->
+        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <xctk:MagnifierManager.Magnifier>
+                <local:OffsetLens x:Name="_magnifier"
+                               Visibility="Collapsed"/>
+            </xctk:MagnifierManager.Magnifier>
         </MediaElement>
         <StackPanel Grid.Row="1" Grid.Column="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">

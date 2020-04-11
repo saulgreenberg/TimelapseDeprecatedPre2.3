@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Util;
 
@@ -33,10 +34,11 @@ namespace Timelapse.Controls
 
             // TODO Add magnifier to videos. But to do this, we should change all magnifiers to the xceed one.
             // The commented out code below will use the Xceed magnifier.
-            // TranslateTransform tt = new TranslateTransform(100, -100);
-            // this._magnifier.RenderTransform = tt;
-            // this._magnifier.IsEnabled = true;
-            // this._magnifier.Visibility = Visibility.Visible;
+            //TranslateTransform tt = new TranslateTransform(100, -100);
+            //this._magnifier.RenderTransform = tt;
+            //this._magnifier.IsEnabled = true;
+            this._magnifier.Visibility = Visibility.Visible;
+
 
             this.IsEnabled = false;
         }
