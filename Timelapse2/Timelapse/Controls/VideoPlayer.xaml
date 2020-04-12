@@ -7,7 +7,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             MouseLeftButtonUp="PlayPause_MouseLeftButtonUp"
+             MouseLeftButtonUp="PlayPause_MouseLeftButtonUp" Loaded="VideoPlayer_Loaded"
              >
     <UserControl.Resources>
         <Style x:Key="PlayPauseButtonStyle" TargetType="ToggleButton">
@@ -101,8 +101,8 @@
                 <!--</GroupBox>-->
                 <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
                     <!--<Label Content="Play" Foreground="LightGray" Margin="10,0,0,0"/>-->
-                    <CheckBox Name="CBAutoPlay" Content="AutoPlay" VerticalAlignment="Center"  Margin="5,0,0,0" Foreground="White" Click="CBAutoPlay_Click"/>
-                    <CheckBox Name="CBRepeat" Content="Repeat" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="White" Click="CBRepeat_Click"/>
+                    <CheckBox Name="CBAutoPlay" Content="AutoPlay" VerticalAlignment="Center"  Margin="5,0,0,0" Foreground="White"/>
+                    <CheckBox Name="CBRepeat" Content="Repeat" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="White"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

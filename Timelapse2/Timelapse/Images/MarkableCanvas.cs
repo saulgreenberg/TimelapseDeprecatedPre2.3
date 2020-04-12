@@ -483,10 +483,28 @@ namespace Timelapse.Images
                 return this.ClickableImagesGrid.Visibility == Visibility.Visible;
             }
         }
+
+        private DateTime lastMouseWheelDateTime = DateTime.Now;
         private void ImageOrCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            Point mousePosition = e.GetPosition(this.ImageToDisplay);
             bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
+
+            // Eliminate overly exuberant mouse wheel events
+            // Check the time interval between mouse wheel events. If below a threshold, ignore the event.
+            // 1. This manages rapid turns of the wheel that would otherwise cause over-shooting of desired zoom.
+            // 2. It introduces a longer time threshold to switch from the image to the clickable grid, in order to give a natural 'break point' between the two.
+            // 3. A windows 10 bug (so it seems) generates 2 mouse wheel events for every mouse wheel click
+            //    This tries to catch that and eliminate the second click. 
+            TimeSpan timeDifference = DateTime.Now - lastMouseWheelDateTime;
+            if ( (timeDifference < TimeSpan.FromMilliseconds(50))
+                || (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum && this.ClickableImagesState == 0 && timeDifference < TimeSpan.FromMilliseconds(400) ))
+            {
+                lastMouseWheelDateTime = DateTime.Now; 
+                return;
+            }
+            lastMouseWheelDateTime = DateTime.Now;
+
+            Point mousePosition = e.GetPosition(this.ImageToDisplay);    
             this.TryZoomInOrOut(zoomIn, mousePosition);
         }
 
@@ -1282,16 +1300,31 @@ namespace Timelapse.Images
         {
             lock (this)
             {
-                if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                // Manage videos first
+                if (this.IsClickableImagesGridVisible == false && this.ImageToDisplay.IsVisible == false)
                 {
-                    if (this.ClickableImagesState >= 3)
+                    // Must be displaying the video
+                    if (zoomIn ||  (zoomIn == false && this.VideoToDisplay.IsUnScaled == false))
                     {
-                        // State: zoomed out maximum allowable steps on clickable grid
-                        // Don't zoom out any more
+                        // NEED TO SAVE THE STATE AND RESTORE IT LATER
+                        this.OffsetLens.Visibility = Visibility.Collapsed; 
+                        this.VideoToDisplay.ScaleVideo(mousePosition, zoomIn);
                         return;
                     }
-                    // State: zoomed out on clickable grid, but not at the maximum step
-                    // Zoom out another step
+                }
+
+                // Zoom out requested, and the image is unscaled. This means that we may be
+                // on the unscaled image or on the clickableImage
+                if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                {
+
+                    // State: already zoomed out the maximum allowable steps on clickable grid, so abort
+                    if (this.ClickableImagesState >= 3)
+                    {
+                        return;
+                    }
+
+                    // State: zoomed out on clickable grid, but not at the maximum step. Zoom out another step
                     bool isInitialSwitchToClickableImagesGrid = (this.ClickableImagesState == 0) ? true : false;
                     this.ClickableImagesState++;
 
@@ -1351,6 +1384,7 @@ namespace Timelapse.Images
                             mousePosition.Y = this.ImageToDisplay.ActualHeight;
                         }
                         this.ScaleImage(mousePosition, zoomIn);
+                        
                         this.ClickableImagesState = 0;
                     }
                 }
