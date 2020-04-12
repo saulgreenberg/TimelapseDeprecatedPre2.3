@@ -13,6 +13,7 @@ using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
 using Timelapse.Util;
+using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Images
 {
@@ -84,6 +85,8 @@ namespace Timelapse.Images
         private bool isDoubleClick = false;
         private bool isPanning = false;
         private bool displayingImage = false;
+
+        private readonly OffsetLens OffsetLens = new OffsetLens();
         #endregion
 
         #region Properties
@@ -200,6 +203,7 @@ namespace Timelapse.Images
                 {
                     this.magnifyingGlass.Hide();
                 }
+                this.OffsetLens.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -338,6 +342,7 @@ namespace Timelapse.Images
         // Hide the magnifying glass initially, as the mouse pointer may not be atop the canvas
         private void MarkableCanvas_Loaded(object sender, RoutedEventArgs e)
         {
+            MagnifierManager.SetMagnifier(VideoToDisplay.Video, OffsetLens);
             this.magnifyingGlass.Hide();
         }
 
@@ -610,6 +615,25 @@ namespace Timelapse.Images
                         this.EpisodePopupIsVisible(true);
                     }
                     break;
+                //case Key.X:
+                //  Used for testing changes of the OffsetLens direction
+                //    if (this.OffsetLens.Direction == OffsetLensDirection.NorthEast)
+                //    {
+                //        this.OffsetLens.SetDirection(OffsetLensDirection.NorthWest);
+                //    }
+                //    else if (this.OffsetLens.Direction == OffsetLensDirection.NorthWest)
+                //    {
+                //        this.OffsetLens.SetDirection(OffsetLensDirection.SouthWest);
+                //    }
+                //    else if (this.OffsetLens.Direction == OffsetLensDirection.SouthWest)
+                //    {
+                //        this.OffsetLens.SetDirection(OffsetLensDirection.SouthEast);
+                //    }
+                //    else if (this.OffsetLens.Direction == OffsetLensDirection.SouthEast)
+                //    {
+                //        this.OffsetLens.SetDirection(OffsetLensDirection.NorthEast);
+                //    }
+                //    break;
                 default:
                     return;
             }
@@ -1196,7 +1220,19 @@ namespace Timelapse.Images
         /// </summary>
         public void MagnifierZoomIn()
         {
-            this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() - this.magnifyingGlassZoomStep);
+            // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
+            if (this.IsClickableImagesGridVisible)
+            {
+                return;
+            }
+            if (this.magnifyingGlass.IsVisible)
+            {
+                this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() - this.magnifyingGlassZoomStep);
+            }
+            else if (this.OffsetLens.IsVisible)
+            {
+                this.OffsetLens.ZoomFactor = (this.OffsetLens.ZoomFactor - 0.05 <= 0.1) ? 0.1 : this.OffsetLens.ZoomFactor - 0.05;
+            }
         }
 
         /// <summary>
@@ -1204,7 +1240,19 @@ namespace Timelapse.Images
         /// </summary>
         public void MagnifierZoomOut()
         {
-            this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() + this.magnifyingGlassZoomStep);
+            // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
+            if (this.IsClickableImagesGridVisible)
+            {
+                return;
+            }
+            if (this.magnifyingGlass.IsVisible)
+            {
+                this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() + this.magnifyingGlassZoomStep);
+            }
+            else if (this.OffsetLens.IsVisible)
+            { 
+                this.OffsetLens.ZoomFactor = (this.OffsetLens.ZoomFactor + 0.05 >= .9) ? .9 : this.OffsetLens.ZoomFactor + 0.05;
+            }
         }
 
         private void RedrawMagnifyingGlassIfVisible()
@@ -1397,7 +1445,7 @@ namespace Timelapse.Images
             this.ClickableImagesState = 0;
             this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
-            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
+            this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1); 
         }
         public void SwitchToVideoView()
         {

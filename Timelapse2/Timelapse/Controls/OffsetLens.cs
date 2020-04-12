@@ -1,15 +1,36 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using Timelapse.Enums;
 using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
+    /// <summary>
+    /// An implementation of the Offset lens, based on the XCEED toolkit Magnifier Adorner
+    /// Some things to work on here
+    /// - Direction can be explicitly set to four angles. However, I only use the NorthEast angle for now
+    /// - To implementation Direction rotation, I modified the XCEED manifier to:
+    ///   - intercept RenderTransform, where it rotates the magnifier part differently from the entire object to keep it upright
+    ///      as otherwise the magnified region would be rotated as well)
+    ///   -implement a private RotateFactor, which when set will automatically rotate the magnifier part above
+    ///    All modified code is in a well defined region
+    /// - Having said that, I don't use it as this current implementation just uses the NorthEast angle, so its for future work    
+    ///     The problem is that animation doesn't seem to work on it, as part of the Magnifier uses Freeze - I have to look into that.
+    ///     I also have to detect the edges of objects to decide when to do a rotation.
+    /// - Using this offset lens also works on other objects. However, if those objects are scaled, the magnifier is as well, as it is an adorner.
+    ///     Its possible that https://stackoverflow.com/questions/9672207/how-to-create-adorners-that-dont-scale-with-adornedelement has a solution.
+    ///  - Various sizes are hard-wired. These should be dyanmic and placed in Constants.
+    /// </summary>
     public class OffsetLens : Magnifier
     {
         private Point Offset = new Point(125, -125);
         private MagHandleAdorner magHandleAdorner;
         private AdornerLayer myAdornerLayer;
+
+        public OffsetLensDirection Direction { get; set; }
         public OffsetLens()
         {
             // Lens appearance
@@ -22,32 +43,36 @@ namespace Timelapse.Controls
 
             // Makes mouse wheel operations (usually used to change the magnification level) into a no-op
             this.ZoomFactorOnMouseWheel = 0;
-            this.IsUsingZoomOnMouseWheel = false;   
+            this.IsUsingZoomOnMouseWheel = false;
         }
 
         private void OffsetLens_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             this.magHandleAdorner.Visibility = ((bool)e.NewValue) ? Visibility.Visible : Visibility.Collapsed;
+            if (this.Visibility == Visibility.Visible)
+            {
+                this.SetDirection(Direction);
+            }
         }
 
         private void OffsetLens_Loaded(object sender, RoutedEventArgs e)
         {
             this.IsEnabled = true;
-            // Lens transformation
-            TranslateTransform tt = new TranslateTransform(this.Offset.X, this.Offset.Y);
-            this.RenderTransform = tt;
             this.ZoomFactor = 0.4;
 
-            // Handle adorner
+            // Handle adorner, including calculating its original offset
             myAdornerLayer = AdornerLayer.GetAdornerLayer(this);
-            //myAdornerLayer.IsHitTestVisible = false;
-            magHandleAdorner = new MagHandleAdorner(this, this.Offset);
-            magHandleAdorner.IsHitTestVisible = false;
+            magHandleAdorner = new MagHandleAdorner(this)
+            {
+                IsHitTestVisible = false
+            };
+            TranslateTransform tt = new TranslateTransform(this.Offset.X, this.Offset.Y);
             magHandleAdorner.RenderTransform = tt;
             myAdornerLayer.Add(magHandleAdorner);
             this.IsVisibleChanged += this.OffsetLens_IsVisibleChanged;
-        }
 
+            this.SetDirection(OffsetLensDirection.TopRight);
+        }
 
         private LinearGradientBrush MakeOutlineBrush()
         {
@@ -61,16 +86,67 @@ namespace Timelapse.Controls
             outlineBrush.GradientStops.Add(new GradientStop((Color)cc.ConvertFrom("#111"), 1));
             return outlineBrush;
         }
+        public void SetDirection(OffsetLensDirection direction)
+        {
+            double x;
+            double y;
+            double angle;
+
+            if (this == null)
+            {
+                return;
+            }
+
+            // Set lens transformation
+            switch (direction)
+            {
+                case OffsetLensDirection.TopLeft: // Up and Left
+                    x = -this.Offset.X;
+                    y = this.Offset.Y;
+                    angle = -90;
+                    break;
+                case OffsetLensDirection.TopRight: // Up and Right
+                default:
+                    x = this.Offset.X;
+                    y = this.Offset.Y;
+                    angle = 0;
+                    break;
+                case OffsetLensDirection.BottomLeft: // Lower Right
+                    x = -this.Offset.X;
+                    y = 3*this.Offset.Y;
+                    angle = -180;
+                    break;
+                case OffsetLensDirection.BottomRight: // Lower Left
+                    x = this.Offset.X;
+                    y = 3 * this.Offset.Y;
+                    angle = -270;
+                    break;
+            }
+            // Now rotate and position the entire magnifying glass
+            this.RenderTransform = CreateTransformGroup(x, y, angle); 
+            this.Direction = direction;
+        }
+
+        #region Helpers
+        private static TransformGroup CreateTransformGroup(double x, double y, double angle)
+        {
+            TransformGroup transformGroup = new TransformGroup();
+            TranslateTransform tt = new TranslateTransform(x, y);
+            RotateTransform rt = new RotateTransform(angle);
+            transformGroup.Children.Add(tt);
+            transformGroup.Children.Add(rt);
+            return transformGroup;
+        }
+        #endregion
     }
 
-    public class MagHandleAdorner : Adorner
+    #region Magnifier Handle and Crosshairs Adorner
+    // Create an adorner for the magnifier that attahces a handle to it and draws crosshairs at its center
+    internal class MagHandleAdorner : Adorner
     {
-        private Point Offset;
-
-        public MagHandleAdorner(UIElement adornedElement, Point offset)
+        public MagHandleAdorner(UIElement adornedElement)
          : base(adornedElement)
         {
-            this.Offset = offset;
         }
         // A common way to implement an adorner's rendering behavior is to override the OnRender
         // method, which is called by the layout system as part of a rendering pass.
@@ -95,7 +171,7 @@ namespace Timelapse.Controls
 
             // Draw the handle
             Pen handlePen = new Pen(new SolidColorBrush(Colors.Green), 4);
-            drawingContext.DrawLine(handlePen, handleStart, handleEnd) ;
+            drawingContext.DrawLine(handlePen, handleStart, handleEnd);
             drawingContext.DrawLine(handlePen, handleStart, handleEnd);
 
             // Draw the crosshairs
@@ -109,4 +185,5 @@ namespace Timelapse.Controls
             return new Point(p1.X - p2.X, p1.Y - p2.Y);
         }
     }
+    #endregion
 }
