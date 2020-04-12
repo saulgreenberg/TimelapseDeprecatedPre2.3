@@ -14,7 +14,6 @@ namespace Timelapse.Controls
         private bool isProgrammaticUpdate;
         private readonly DispatcherTimer positionUpdateTimer;
         private readonly DispatcherTimer autoPlayDelayTimer;
-
         public VideoPlayer()
         {
             this.InitializeComponent();
@@ -34,6 +33,8 @@ namespace Timelapse.Controls
             this.IsEnabled = false;
         }
 
+        // Set the video to automatically start playing after a brief delay 
+        // This helps when one is navigating across videos, as there is a brief moment before the play starts.
         private void AutoPlayDelayTimer_Tick(object sender, EventArgs e)
         {
             this.Play();
@@ -149,13 +150,19 @@ namespace Timelapse.Controls
         {
             this.Pause();
             this.VideoPosition.Value = this.VideoPosition.Minimum; // Go back to the beginning
+            if (this.CBRepeat.IsChecked == true)
+            {
+                this.Play();
+            }
         }
 
         private void Video_MediaOpened(object sender, RoutedEventArgs e)
         {
             this.ShowPosition();
-            // SAULXXX Uncomment this line if you want the video to automatically start playing as soon as it is opened
-            // this.autoPlayDelayTimer.Start();
+            if (this.CBAutoPlay.IsChecked == true)
+            { 
+                this.autoPlayDelayTimer.Start();
+            }
         }
 
         private void Video_Unloaded(object sender, RoutedEventArgs e)
@@ -211,6 +218,16 @@ namespace Timelapse.Controls
                 Uri uri = new Uri(Uri.UnescapeDataString(this.Video.Source.AbsolutePath));
                 ProcessExecution.TryProcessStart(uri);
             }
+        }
+
+        private void CBAutoPlay_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CBRepeat_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
