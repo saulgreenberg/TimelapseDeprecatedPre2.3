@@ -8,19 +8,54 @@ using Timelapse.Util;
 
 namespace Timelapse.Images
 {
+    /// <summary>
+    /// A home-grown magnifying lens
+    /// Note that we don't use the xceed one (or this one in place of the xceed one as:
+    /// - this one can display the original unaltered images (for image differencing) while the xceed one cannot
+    /// - this one cannot display the video while the xceed one can
+    /// </summary>
     internal class MagnifyingGlass : Canvas
     {
-        // current angle of the lens only
-        private double lensAngle;
-        private readonly Canvas lensCanvas;
-
-        private readonly Ellipse magnifierLens;
-        // current angle of the entire magnifying glass
-        private double magnifyingGlassAngle;
-
-        public new MarkableCanvas Parent { get; set; }
+        #region Public properties
+        /// <summary>
+        /// Set / Get the Zoom value on the magnifying glass
+        /// </summary>
         public double Zoom { get; set; }
 
+        /// <summary>
+        /// Set/Get whether the magnifying lens is showing (visible)
+        /// </summary>
+        public bool Show
+        {
+            get
+            {
+                return this.IsVisible;
+            }
+            set
+            {
+                this.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+        #endregion
+
+        #region private properties and variables
+        // This hides the actual parent, which is why we set it as a property
+        private new MarkableCanvas Parent { get; set; }
+
+        // The lens is constructed within a canvas
+        private readonly Canvas lensCanvas;
+        
+        // current angle of the lens
+        private double lensAngle;
+
+        // The lens part of the magnifying glass, which contains the magnified image
+        private readonly Ellipse magnifierLens;
+        
+        // current angle of the entire magnifying glass
+        private double magnifyingGlassAngle;
+        #endregion
+
+        #region Constructor
         public MagnifyingGlass(MarkableCanvas markableCanvas)
         {
             this.IsEnabled = false;
@@ -129,31 +164,9 @@ namespace Timelapse.Images
             };
             this.lensCanvas.Children.Add(horizontalCrosshair);
         }
+        #endregion
 
-        // return the current angle if it matches one of the desired angle, or the the desired angle that is closest to the angle in degrees
-        private static double AdjustAngle(double currentAngle, double angle1, double angle2)
-        {
-            if (currentAngle == angle2)
-            {
-                return angle2;
-            }
-            else if (Math.Abs(currentAngle - angle1) > 180)
-            {
-                return angle2;
-            }
-            return angle1;
-        }
-
-        public void Hide()
-        {
-            this.Visibility = Visibility.Collapsed;
-        }
-
-        public void Show()
-        {
-            this.Visibility = Visibility.Visible;
-        }
-
+        #region Public methods
         public void RedrawIfVisible(Point mouseLocation, Canvas canvasToMagnify)
         {
             // nothing to draw
@@ -285,5 +298,22 @@ namespace Timelapse.Images
             Canvas.SetLeft(this, mouseLocation.X - lensDiameter);
             Canvas.SetTop(this, mouseLocation.Y - lensDiameter);
         }
+        #endregion
+
+        #region Private (internal) methods
+        // return the current angle if it matches one of the desired angle, or the the desired angle that is closest to the angle in degrees
+        private static double AdjustAngle(double currentAngle, double angle1, double angle2)
+        {
+            if (currentAngle == angle2)
+            {
+                return angle2;
+            }
+            else if (Math.Abs(currentAngle - angle1) > 180)
+            {
+                return angle2;
+            }
+            return angle1;
+        }
+        #endregion
     }
 }

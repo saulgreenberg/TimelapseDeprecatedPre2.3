@@ -41,15 +41,17 @@ namespace Timelapse
         // Zoom in
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.TryZoomInOrOut(true, mousePosition);
+            Point imageMousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
+            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoToDisplay.Video);
+            this.MarkableCanvas.TryZoomInOrOut(true, imageMousePosition, videoMousePosition);
         }
 
         // Zoom out
         private void MenuItemZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            Point mousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            this.MarkableCanvas.TryZoomInOrOut(false, mousePosition);
+            Point imageMousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
+            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoToDisplay.Video);
+            this.MarkableCanvas.TryZoomInOrOut(false, imageMousePosition, videoMousePosition);
         }
 
         // Save a Bookmark of the current pan / zoom region 

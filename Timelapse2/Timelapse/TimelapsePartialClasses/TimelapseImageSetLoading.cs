@@ -424,10 +424,10 @@ namespace Timelapse
 
                 // Do some final things
                 // Note that if the magnifier is enabled, we temporarily hide so it doesn't appear in the background 
-                bool saveMagnifierState = this.MarkableCanvas.MagnifyingGlassEnabled;
-                this.MarkableCanvas.MagnifyingGlassEnabled = false;
+                bool saveMagnifierState = this.MarkableCanvas.MagnifiersEnabled;
+                this.MarkableCanvas.MagnifiersEnabled = false;
                 this.StatusBar.SetMessage(folderLoadProgress.TotalFiles + " files are now loaded");
-                this.MarkableCanvas.MagnifyingGlassEnabled = saveMagnifierState;
+                this.MarkableCanvas.MagnifiersEnabled = saveMagnifierState;
 
                 // If we want to import old data from the ImageData.xml file, we can do it here...
                 // Check to see if there is an ImageData.xml file in here. If there is, ask the user

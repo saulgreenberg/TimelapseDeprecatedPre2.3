@@ -7,7 +7,7 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="800"
-             MouseLeftButtonUp="PlayPause_MouseLeftButtonUp" Loaded="VideoPlayer_Loaded"
+             Loaded="VideoPlayer_Loaded"
              >
     <UserControl.Resources>
         <Style x:Key="PlayPauseButtonStyle" TargetType="ToggleButton">
@@ -45,10 +45,11 @@
             <Setter Property="IsReadOnly" Value="True" />
         </Style>
     </UserControl.Resources>
-    <Grid Margin="10">
+    
+    <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -57,8 +58,10 @@
         </Grid.ColumnDefinitions>
         <Image Name="ThumbnailImage" VerticalAlignment="Top"/>
 
-        <MediaElement Name="Video" LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Top">
-        </MediaElement>
+        <Canvas Name="VideoCanvas" ClipToBounds="True" Focusable="True" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+            <MediaElement Name="Video" Focusable="True"  LoadedBehavior="Manual" ScrubbingEnabled="True" MediaEnded="Video_MediaEnded" MediaOpened="Video_MediaOpened" Unloaded="Video_Unloaded" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,0,0,1">
+            </MediaElement>
+        </Canvas>
 
         <StackPanel Grid.Row="1" Grid.Column="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
@@ -101,8 +104,8 @@
                 <!--</GroupBox>-->
                 <StackPanel Orientation="Horizontal" Margin="5,0,0,0">
                     <!--<Label Content="Play" Foreground="LightGray" Margin="10,0,0,0"/>-->
-                    <CheckBox Name="CBAutoPlay" Content="AutoPlay" VerticalAlignment="Center"  Margin="5,0,0,0" Foreground="White"/>
-                    <CheckBox Name="CBRepeat" Content="Repeat" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="White"/>
+                    <CheckBox Name="CBAutoPlay" Content="AutoPlay" Focusable="False" VerticalAlignment="Center"  Margin="5,0,0,0" Foreground="White" Checked="CBAutoPlay_CheckChanged" Unchecked="CBAutoPlay_CheckChanged"/>
+                    <CheckBox Name="CBRepeat" Content="Repeat" Focusable="False" VerticalAlignment="Center" Margin="5,0,0,0" Foreground="White"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

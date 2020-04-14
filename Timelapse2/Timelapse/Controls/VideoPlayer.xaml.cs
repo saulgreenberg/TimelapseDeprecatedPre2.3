@@ -12,14 +12,25 @@ namespace Timelapse.Controls
 {
     public partial class VideoPlayer : UserControl
     {
+        /// <summary>
+        /// True if the video is unscaled, false if it is zoomed in
+        /// </summary>        
+        public bool IsUnScaled
+        {
+            get
+            {
+                return this.videoScale.ScaleX == 1;
+            }
+        }
+
         private bool isProgrammaticUpdate;
         private readonly DispatcherTimer positionUpdateTimer;
         private readonly DispatcherTimer autoPlayDelayTimer;
 
         // render transforms
-        private ScaleTransform videoScale;
+        private readonly ScaleTransform videoScale;
+        private readonly TranslateTransform videoTranslation;
         private TransformGroup transformGroup;
-        private TranslateTransform videoTranslation;
 
         #region Constructor, Loading, Unloading, SetSource
         public VideoPlayer()
@@ -55,6 +66,26 @@ namespace Timelapse.Controls
             this.transformGroup.Children.Add(this.videoScale);
             this.transformGroup.Children.Add(this.videoTranslation);
             this.Video.RenderTransform = this.transformGroup;
+            this.SizeChanged += this.VideoPlayer_SizeChanged;
+            this.IsVisibleChanged += this.VideoPlayer_IsVisibleChanged;
+
+        }
+        // If the Video Player becomes visible, we need to start it playing if autoplay is true
+        private void VideoPlayer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (this.CBAutoPlay.IsChecked == true)
+            {
+                this.autoPlayDelayTimer.Start();
+            }
+        }
+
+        private void VideoPlayer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Fit the video into the canvas
+            this.Video.Width = this.VideoCanvas.ActualWidth;
+            this.Video.Height = this.VideoCanvas.ActualHeight;
+            this.videoScale.CenterX = 0.5 * this.ActualWidth;
+            this.videoScale.CenterY = 0.5 * this.ActualHeight;
         }
 
         private void Video_Unloaded(object sender, RoutedEventArgs e)
@@ -94,24 +125,13 @@ namespace Timelapse.Controls
         #endregion
 
         #region Pan and Zoom
-
-        /// <summary>
-        /// True if the video is unscaled, false if it is zoomed in
-        /// </summary>        
-        public bool IsUnScaled
-        {
-            get
-            {
-                return this.videoScale.ScaleX == 1;
-            }
-        }
-
         // Scale the video by one increment around the screen location
         public void ScaleVideo(Point location, bool zoomIn)
         {
-            double VideoZoomMaximum = 2.0;
-            double VideoZoomMinimum = 0;
-            double VideoZoomStep = 1.2;// Constant.MarkableCanvas.ImageZoomStep
+            //Debug.Print(String.Format("Vlocation: {0:0.0} , {1:0.0}", location.X, location.Y));
+            double VideoZoomMaximum = 4.0;
+            double VideoZoomMinimum = 1; // Unscaled
+            double VideoZoomStep = 1.1;  // Constant.MarkableCanvas.ImageZoomStep
 
             // Abort if we are already at our maximum or minimum scaling values 
             if ((zoomIn && this.videoScale.ScaleX >= VideoZoomMaximum) ||
@@ -129,10 +149,10 @@ namespace Timelapse.Controls
             {
                 location.Y = this.Video.ActualHeight;
             }
-
+            //Debug.Print(String.Format("Vlocation:   {0:0.0} , {1:0.0}", location.X, location.Y));
             // We will scale around the current point
-            Point beforeZoom = this.PointFromScreen(this.PointToScreen(location));
-
+            Point beforeZoom = this.PointFromScreen(this.Video.PointToScreen(location));
+            //Debug.Print(String.Format("VbeforeZoom: {0:0.0}, {1:0.0}", beforeZoom.X, beforeZoom.Y));
             // Calculate the scaling factor during zoom ins or out. Ensure that we keep within our
             // maximum and minimum scaling bounds. 
             if (zoomIn)
@@ -162,20 +182,23 @@ namespace Timelapse.Controls
                 {
                     this.videoTranslation.X = 0.0;
                     this.videoTranslation.Y = 0.0;
+                    return; // I THINK WE CAN DO THIS - CHECK;
                 }
             }
 
-            Point afterZoom = this.PointFromScreen(this.PointToScreen(location));
-
-            // Scale the image, and at the same time translate it so that the 
-            // point in the image under the cursor stays there
-            lock (this)
+            Point afterZoom = this.PointFromScreen(this.Video.PointToScreen(location));
+            //Debug.Print(String.Format("beforeZoom:{0}, afterZoom:{1}", beforeZoom, afterZoom));
+            // Scale the video, and at the same time translate it so that the 
+            // location in the video (which is the location of the cursor) stays there
+            lock (this.Video)
             {
-                double videoWidth = this.Video.ActualWidth * this.videoScale.ScaleX; // was Width before, but was NaN!!!
-                double videoHeight = this.Video.ActualHeight * this.videoScale.ScaleY;
-
-                Point center = this.PointFromScreen(this.PointToScreen(
-                    new Point(this.Video.ActualWidth / 2.0, this.Video.ActualHeight / 2.0))); // was Width before, but was NaN!!!
+                //double videoWidth = this.Video.ActualWidth * this.videoScale.ScaleX; 
+                //double videoHeight = this.Video.ActualHeight * this.videoScale.ScaleY;
+                double videoWidth = this.Video.Width * this.videoScale.ScaleX;
+                double videoHeight = this.Video.Height * this.videoScale.ScaleY;
+                //Debug.Print(String.Format("videoWidth:{0}, videoHeight:{1}, vActualWidth:{2}, vActualHeight:{3}", videoWidth, videoHeight, this.Video.ActualWidth, this.Video.ActualHeight));
+                Point center = this.PointFromScreen(this.Video.PointToScreen(
+                    new Point(this.Video.Width / 2.0, this.Video.Height / 2.0)));
 
                 double newX = center.X - (afterZoom.X - beforeZoom.X);
                 double newY = center.Y - (afterZoom.Y - beforeZoom.Y);
@@ -199,8 +222,48 @@ namespace Timelapse.Controls
                 }
                 this.videoTranslation.X += newX - center.X;
                 this.videoTranslation.Y += newY - center.Y;
+                //Debug.Print(String.Format("vTranslation:{0}, newX:{1}, center.X:{2}, videoWidth:{3}, vScaleX:{4}", this.videoTranslation.X, newX, center.X, videoWidth, this.videoScale.ScaleX));
             }
         }
+
+        // This is normally called from a left mouse move event
+        public void TranslateVideo(Point mousePosition, Point previousMousePosition)
+        {
+            // Get the center point on the image
+            Point center = this.PointFromScreen(this.Video.PointToScreen(new Point(this.Video.Width / 2.0, this.Video.Height / 2.0)));
+
+            // Calculate the delta position from the last location relative to the center
+            double newX = center.X + mousePosition.X - previousMousePosition.X;
+            double newY = center.Y + mousePosition.Y - previousMousePosition.Y;
+
+            // get the translated image width
+            double imageWidth = this.Video.Width * this.videoScale.ScaleX;
+            double imageHeight = this.Video.Height * this.videoScale.ScaleY;
+
+            // Limit the delta position so that the image stays on the screen
+            if (newX - imageWidth / 2.0 >= 0.0)
+            {
+                newX = imageWidth / 2.0;
+            }
+            else if (newX + imageWidth / 2.0 <= this.ActualWidth)
+            {
+                newX = this.ActualWidth - imageWidth / 2.0;
+            }
+
+            if (newY - imageHeight / 2.0 >= 0.0)
+            {
+                newY = imageHeight / 2.0;
+            }
+            else if (newY + imageHeight / 2.0 <= this.ActualHeight)
+            {
+                newY = this.ActualHeight - imageHeight / 2.0;
+            }
+
+            // Translate the canvas and redraw the markers
+            this.videoTranslation.X += newX - center.X;
+            this.videoTranslation.Y += newY - center.Y;
+        }
+
         #endregion
 
         #region Play/Pause
@@ -354,11 +417,16 @@ namespace Timelapse.Controls
             this.Pause();
         }
 
-        private void PlayPause_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void CBAutoPlay_CheckChanged(object sender, RoutedEventArgs e)
         {
-            // Simulate clicking of the play/pause button
-            PlayOrPause.IsChecked = !PlayOrPause.IsChecked;
-            PlayOrPause_Click(null, null);
+            if (CBAutoPlay.IsChecked == true)
+            {
+                this.Play();
+            }
+            else
+            {
+                this.Pause();
+            }
         }
     }
 }

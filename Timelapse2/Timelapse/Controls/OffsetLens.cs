@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
@@ -31,6 +32,26 @@ namespace Timelapse.Controls
         private AdornerLayer myAdornerLayer;
 
         public OffsetLensDirection Direction { get; set; }
+
+        public bool Show
+        {
+            get
+            {
+                return this.Visibility == Visibility.Visible;
+            }
+            set
+            {
+                this.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                if (this.magHandleAdorner != null)
+                { 
+                    // check condition - why would the maghandleadorner be null if this is not null?
+                    this.magHandleAdorner.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                    //Debug.Write(String.Format("magHandleAdorner: {0} : {1}", value, this.magHandleAdorner.Visibility));
+                    //string xxx = this.magHandleAdorner.Visibility == Visibility.Visible ? "." : "X";
+                    //Debug.Write(xxx);
+                }
+            }
+        }
         public OffsetLens()
         {
             // Lens appearance
@@ -44,15 +65,6 @@ namespace Timelapse.Controls
             // Makes mouse wheel operations (usually used to change the magnification level) into a no-op
             this.ZoomFactorOnMouseWheel = 0;
             this.IsUsingZoomOnMouseWheel = false;
-        }
-
-        private void OffsetLens_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            this.magHandleAdorner.Visibility = ((bool)e.NewValue) ? Visibility.Visible : Visibility.Collapsed;
-            if (this.Visibility == Visibility.Visible)
-            {
-                this.SetDirection(Direction);
-            }
         }
 
         private void OffsetLens_Loaded(object sender, RoutedEventArgs e)
@@ -69,7 +81,7 @@ namespace Timelapse.Controls
             TranslateTransform tt = new TranslateTransform(this.Offset.X, this.Offset.Y);
             magHandleAdorner.RenderTransform = tt;
             myAdornerLayer.Add(magHandleAdorner);
-            this.IsVisibleChanged += this.OffsetLens_IsVisibleChanged;
+            // this.IsVisibleChanged += this.OffsetLens_IsVisibleChanged;
 
             this.SetDirection(OffsetLensDirection.TopRight);
         }

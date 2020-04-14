@@ -27,7 +27,7 @@ namespace Timelapse
         private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)
         {
             this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = !this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MarkableCanvas.MagnifyingGlassEnabled = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MarkableCanvas.MagnifiersEnabled = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
         }
 

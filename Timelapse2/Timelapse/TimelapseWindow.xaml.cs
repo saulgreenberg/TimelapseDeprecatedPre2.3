@@ -209,7 +209,7 @@ namespace Timelapse
                 // sync image set properties
                 if (this.MarkableCanvas != null)
                 {
-                    this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = this.MarkableCanvas.MagnifyingGlassEnabled;
+                    this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = this.MarkableCanvas.MagnifiersEnabled;
                 }
 
                 // Persist the current ID in the database image set, so we can go back to that image when restarting timelapse
