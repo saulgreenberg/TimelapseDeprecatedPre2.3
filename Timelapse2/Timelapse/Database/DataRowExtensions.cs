@@ -102,7 +102,9 @@ namespace Timelapse.Database
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
 
-            TimeSpan utcOffset = TimeSpan.FromHours((double)row[column]);
+            // TimeSpan utcOffset = TimeSpan.FromHours((double)row[column]); 
+            // System.Diagnostics.Debug.Print(String.Format("column:{0}, row[column]:{1}", column, row[column]));
+            TimeSpan utcOffset = TimeSpan.FromHours(Convert.ToDouble(row[column]));
             Debug.Assert(utcOffset.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             return utcOffset;
         }

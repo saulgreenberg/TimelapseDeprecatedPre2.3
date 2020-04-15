@@ -77,7 +77,6 @@ namespace Timelapse.Controls
         private void OffsetLens_Loaded(object sender, RoutedEventArgs e)
         {
             this.IsEnabled = true;
-            this.ZoomFactor = 0.4;
 
             // Handle adorner, including calculating its original offset
             myAdornerLayer = AdornerLayer.GetAdornerLayer(this);

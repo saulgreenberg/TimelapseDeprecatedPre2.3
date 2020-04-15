@@ -430,11 +430,16 @@ namespace Timelapse.Constant
         public const double MagnifyingGlassDefaultZoom = 60;
         public const double MagnifyingGlassMaximumZoom = 15;  // Max is a smaller number
         public const double MagnifyingGlassMinimumZoom = 100; // Min is the larger number
-        public const double MagnifyingGlassZoomIncrement = 1.2;
+        public const double MagnifyingGlassZoomIncrement = 0.05;
 
         public const int MagnifyingGlassDiameter = 250;
         public const int MagnifyingGlassHandleStart = 200;
         public const int MagnifyingGlassHandleEnd = 250;
+
+        public const double OffsetLensDefaultZoom = .4;
+        public const double OffsetLensMaximumZoom = 0.9;
+        public const double OffsetLensMinimumZoom = 0.2;
+        public const double OffsetLensZoomIncrement = .05;
 
         public const int MarkerDiameter = 10;
         public const int MarkerGlowDiameterIncrease = 14;

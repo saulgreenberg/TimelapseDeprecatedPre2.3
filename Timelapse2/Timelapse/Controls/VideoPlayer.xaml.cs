@@ -82,8 +82,9 @@ namespace Timelapse.Controls
         // If the Video Player becomes visible, we need to start it playing if autoplay is true
         private void VideoPlayer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (this.CBAutoPlay.IsChecked == true)
+            if (this.CBAutoPlay.IsChecked == true && (bool)e.NewValue)
             {
+                // Only autoplay if the video is visible (i.e., NewValue is true)
                 this.autoPlayDelayTimer.Start();
             }
         }
@@ -272,7 +273,6 @@ namespace Timelapse.Controls
             this.ShowPosition();
         }
 
- 
         public bool TryTogglePlayOrPause()
         {
             if (this.Visibility != Visibility.Visible)

@@ -300,6 +300,7 @@ namespace Timelapse.Images
             // set up the magnifying glass
             this.magnifyingGlass = new MagnifyingGlass(this);
             this.magnifyingGlassZoomStep = Constant.MarkableCanvas.MagnifyingGlassZoomIncrement;
+            this.OffsetLens.ZoomFactor = Constant.MarkableCanvas.OffsetLensDefaultZoom;
 
             Canvas.SetZIndex(this.magnifyingGlass, 999); // Should always be in front
             this.Children.Add(this.magnifyingGlass);
@@ -628,8 +629,7 @@ namespace Timelapse.Images
 
             this.ClickableImagesGrid.Visibility = Visibility.Visible;
             this.SwitchedToClickableImagesGridEventAction();
-            // We shouldn't need this next line, as switching from  single to overview will have the same image selected, and thus the same data
-            // this.DataEntryControls.SetEnableState(Controls.ControlsEnableState.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
+
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.SetMagnifiersAccordingToCurrentState(false, false);
             this.VideoPlayer.Visibility = Visibility.Collapsed;
@@ -764,8 +764,9 @@ namespace Timelapse.Images
             }
             else if (this.OffsetLens.Show)
             {
-                // SAULXXX DO THESE AS CONSTANTS
-                this.OffsetLens.ZoomFactor = (this.OffsetLens.ZoomFactor - 0.05 <= 0.1) ? 0.1 : this.OffsetLens.ZoomFactor - 0.05;
+                // Adjust the new zoom level for the offset lens, making sure its not below the minimum
+                double newZoomLevel = this.OffsetLens.ZoomFactor - Constant.MarkableCanvas.OffsetLensZoomIncrement;
+                this.OffsetLens.ZoomFactor = (newZoomLevel <= Constant.MarkableCanvas.OffsetLensMinimumZoom) ? Constant.MarkableCanvas.OffsetLensMinimumZoom : newZoomLevel;
             }
         }
 
@@ -785,8 +786,9 @@ namespace Timelapse.Images
             }
             else if (this.OffsetLens.Show)
             {
-                // SAULXXX DO THESE AS CONSTANTS
-                this.OffsetLens.ZoomFactor = (this.OffsetLens.ZoomFactor + 0.05 >= .9) ? .9 : this.OffsetLens.ZoomFactor + 0.05;
+                // Adjust the new zoom level for the offset lens, making sure its not below the minimum
+                double newZoomLevel = this.OffsetLens.ZoomFactor + Constant.MarkableCanvas.OffsetLensZoomIncrement;
+                this.OffsetLens.ZoomFactor = (newZoomLevel > Constant.MarkableCanvas.OffsetLensMaximumZoom) ? Constant.MarkableCanvas.OffsetLensMaximumZoom : newZoomLevel;
             }
         }
 
@@ -854,9 +856,10 @@ namespace Timelapse.Images
             // Manage videos first
             if (this.IsClickableImagesGridVisible == false && this.ImageToDisplay.IsVisible == false)
             {
+                // 
                 lock (this.VideoPlayer)
                 {
-                    // Must be displaying the video
+                    // State: Video is currently being displayed
                     if (zoomIn || (zoomIn == false && this.VideoPlayer.IsUnScaled == false))
                     {
                         this.VideoPlayer.ScaleVideo(videoMousePosition, zoomIn);
@@ -871,7 +874,6 @@ namespace Timelapse.Images
                 // on the unscaled image or on the clickableImage
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
-
                     // State: already zoomed out the maximum allowable steps on clickable grid, so abort
                     if (this.ClickableImagesState >= 3)
                     {
@@ -1127,7 +1129,7 @@ namespace Timelapse.Images
                 else
                 {
                     // The video player is displayed and we are not panning)
-                    // Toggl Play or Pause 
+                    // Toggle Play or Pause 
                     this.VideoPlayer.TryTogglePlayOrPause();
                 }
             }
@@ -1147,6 +1149,7 @@ namespace Timelapse.Images
             this.RedrawMarkers();
         }
 
+
         private void ImageOrCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             bool zoomIn = e.Delta > 0; // Zooming in if delta is positive, else zooming out
@@ -1157,21 +1160,39 @@ namespace Timelapse.Images
             // 2. It introduces a longer time threshold to switch from the image to the clickable grid, in order to give a natural 'break point' between the two.
             // 3. A windows 10 bug (so it seems) generates 2 mouse wheel events for every mouse wheel click
             //    This tries to catch that and eliminate the second click. 
+            TimeSpan shortInterval = TimeSpan.FromMilliseconds(50);
+            TimeSpan longInterval = TimeSpan.FromMilliseconds(400);
+
             TimeSpan timeDifference = DateTime.Now - lastMouseWheelDateTime;
-            if ((timeDifference < TimeSpan.FromMilliseconds(50)))
+            if (timeDifference < shortInterval)
             {
-                lastMouseWheelDateTime = DateTime.Now;
-                return;
-            }
-            if (zoomIn == false && this.IsClickableImagesGridVisible == false // && this.ClickableImagesState == 0
-                && ((this.ImageToDisplay.IsVisible == true && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum) || this.VideoPlayer.IsUnScaled)
-                     && timeDifference < TimeSpan.FromMilliseconds(400))
-            {
+                // Always ignore mouse wheel clicks on very short time intervals. See above.
                 return;
             }
 
+            if (timeDifference < longInterval && zoomIn == false)
+            {
+                // If we are zooming out and on the transition between going from the image/video to the clickable view, or between clickable views 
+                // we need at least a longInterval of time between now and the last click
+                if (this.IsClickableImagesGridVisible == true)             // Always wait at least a long time interval if the clickable images grid is visible, to slow transitions between states
+                {
+                    // Always wait at least a long time interval if the clickable images grid is visible, to slow transitions between states
+                    return;
+                }
+                if (this.ImageToDisplay.IsVisible == true && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                {
+                    // we are viewing the unscaled image and on the transition to go to the clickable view
+                    return;
+                }
+                if (this.ImageToDisplay.IsVisible == false && this.VideoPlayer.IsUnScaled == true)                                 // or the unscaled video
+                {
+                    // we are viewing the unscaled video and on the transition to go to the clickable view
+                    return;
+                }
+            }
             lastMouseWheelDateTime = DateTime.Now;
 
+            // Zoom in or out
             Point imageMousePosition = e.GetPosition(this.ImageToDisplay);
             Point videoMousePosition = e.GetPosition(this.VideoPlayer.Video);
             this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
