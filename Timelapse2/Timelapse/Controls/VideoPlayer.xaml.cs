@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +11,7 @@ namespace Timelapse.Controls
 {
     public partial class VideoPlayer : UserControl
     {
+        #region Public properties
         /// <summary>
         /// True if the video is unscaled, false if it is zoomed in
         /// </summary>        
@@ -22,7 +22,9 @@ namespace Timelapse.Controls
                 return this.videoScale.ScaleX == 1;
             }
         }
+        #endregion
 
+        #region Private variables
         private bool isProgrammaticUpdate;
         private readonly DispatcherTimer positionUpdateTimer;
         private readonly DispatcherTimer autoPlayDelayTimer;
@@ -31,8 +33,9 @@ namespace Timelapse.Controls
         private readonly ScaleTransform videoScale;
         private readonly TranslateTransform videoTranslation;
         private TransformGroup transformGroup;
+        #endregion
 
-        #region Constructor, Loading, Unloading, SetSource
+        #region Constructor, Loading, Unloading
         public VideoPlayer()
         {
             this.InitializeComponent();
@@ -41,7 +44,7 @@ namespace Timelapse.Controls
             {
                 Interval = TimeSpan.FromMilliseconds(250.0)
             };
-            this.positionUpdateTimer.Tick += this.Timer_Tick;
+            this.positionUpdateTimer.Tick += this.TimerUpdatePosition_Tick;
 
             // Timer used to automatically start playing the videos after a modest interval
             this.autoPlayDelayTimer = new DispatcherTimer
@@ -70,6 +73,12 @@ namespace Timelapse.Controls
             this.IsVisibleChanged += this.VideoPlayer_IsVisibleChanged;
 
         }
+
+        private void Video_Unloaded(object sender, RoutedEventArgs e)
+        {
+            this.positionUpdateTimer.Stop();
+            this.IsEnabled = false;
+        }
         // If the Video Player becomes visible, we need to start it playing if autoplay is true
         private void VideoPlayer_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
@@ -78,34 +87,27 @@ namespace Timelapse.Controls
                 this.autoPlayDelayTimer.Start();
             }
         }
+        #endregion
 
-        private void VideoPlayer_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // Fit the video into the canvas
-            this.Video.Width = this.VideoCanvas.ActualWidth;
-            this.Video.Height = this.VideoCanvas.ActualHeight;
-            this.videoScale.CenterX = 0.5 * this.ActualWidth;
-            this.videoScale.CenterY = 0.5 * this.ActualHeight;
-        }
-
-        private void Video_Unloaded(object sender, RoutedEventArgs e)
-        {
-            this.positionUpdateTimer.Stop();
-            this.IsEnabled = false;
-        }
+        #region Public methods (SetSource, ScaleVideo, TranslateVideo)
+        /// <summary>
+        /// Play the Source Video provided in the URI
+        /// </summary>
+        /// <param name="source"></param>
         public void SetSource(Uri source)
         {
+            // Previous code to use cached thumbnails - Unused as it was only a test, but left here just in case I revisit it
             // If the source and the thumbnail exists, show that as the background. This avoids the annoying black frames that otherwise appear for a few moments.
-            string thumbnailpath = String.Empty;
-            if (source != null)
-            {
-                thumbnailpath = Path.Combine(Path.GetDirectoryName(source.LocalPath), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(source.LocalPath) + Constant.File.JpgFileExtension);
-            }
+            //string thumbnailpath = String.Empty;
+            //if (source != null)
+            //{
+            //    thumbnailpath = Path.Combine(Path.GetDirectoryName(source.LocalPath), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(source.LocalPath) + Constant.File.JpgFileExtension);
+            //}
 
-            if (File.Exists(thumbnailpath))
-            {
-                this.ThumbnailImage.Source = Images.BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath);
-            }
+            //if (File.Exists(thumbnailpath))
+            //{
+            //    this.ThumbnailImage.Source = Images.BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath);
+            //}
 
             // MediaElement seems only deterministic about displaying the first frame when LoadedBehaviour is set to Pause, which isn't helpful as calls to
             // Play() then have no effect.  This is a well known issue with various folks getting results.  The below combination of Play(), Pause() and Position
@@ -122,13 +124,12 @@ namespace Timelapse.Controls
             this.Video.Volume = originalVolume;
             // position updated through the media opened event
         }
-        #endregion
-
-        #region Pan and Zoom
-        // Scale the video by one increment around the screen location
-        public void ScaleVideo(Point location, bool zoomIn)
+       
+        /// <summary>
+        /// Scale (Zoom) the video in or out around the provided location, which should be the cursor location in video coordinates
+        /// </summary>
+        public void ScaleVideo(Point currentMousePosition, bool zoomIn)
         {
-            //Debug.Print(String.Format("Vlocation: {0:0.0} , {1:0.0}", location.X, location.Y));
             double VideoZoomMaximum = 4.0;
             double VideoZoomMinimum = 1; // Unscaled
             double VideoZoomStep = 1.1;  // Constant.MarkableCanvas.ImageZoomStep
@@ -141,18 +142,18 @@ namespace Timelapse.Controls
             }
 
             // If we are zooming in around a point off the image, then correct the location to the edge of the image
-            if (location.X > this.Video.ActualWidth)
+            if (currentMousePosition.X > this.Video.ActualWidth)
             {
-                location.X = this.Video.ActualWidth;
+                currentMousePosition.X = this.Video.ActualWidth;
             }
-            if (location.Y > this.Video.ActualHeight)
+            if (currentMousePosition.Y > this.Video.ActualHeight)
             {
-                location.Y = this.Video.ActualHeight;
+                currentMousePosition.Y = this.Video.ActualHeight;
             }
-            //Debug.Print(String.Format("Vlocation:   {0:0.0} , {1:0.0}", location.X, location.Y));
-            // We will scale around the current point
-            Point beforeZoom = this.PointFromScreen(this.Video.PointToScreen(location));
-            //Debug.Print(String.Format("VbeforeZoom: {0:0.0}, {1:0.0}", beforeZoom.X, beforeZoom.Y));
+
+            // We will scale around the current point (This may be a no-op, but am not sure.)
+            Point beforeZoom = this.PointFromScreen(this.Video.PointToScreen(currentMousePosition));
+
             // Calculate the scaling factor during zoom ins or out. Ensure that we keep within our
             // maximum and minimum scaling bounds. 
             if (zoomIn)
@@ -186,17 +187,15 @@ namespace Timelapse.Controls
                 }
             }
 
-            Point afterZoom = this.PointFromScreen(this.Video.PointToScreen(location));
-            //Debug.Print(String.Format("beforeZoom:{0}, afterZoom:{1}", beforeZoom, afterZoom));
+            Point afterZoom = this.PointFromScreen(this.Video.PointToScreen(currentMousePosition));
+
             // Scale the video, and at the same time translate it so that the 
             // location in the video (which is the location of the cursor) stays there
             lock (this.Video)
             {
-                //double videoWidth = this.Video.ActualWidth * this.videoScale.ScaleX; 
-                //double videoHeight = this.Video.ActualHeight * this.videoScale.ScaleY;
                 double videoWidth = this.Video.Width * this.videoScale.ScaleX;
                 double videoHeight = this.Video.Height * this.videoScale.ScaleY;
-                //Debug.Print(String.Format("videoWidth:{0}, videoHeight:{1}, vActualWidth:{2}, vActualHeight:{3}", videoWidth, videoHeight, this.Video.ActualWidth, this.Video.ActualHeight));
+
                 Point center = this.PointFromScreen(this.Video.PointToScreen(
                     new Point(this.Video.Width / 2.0, this.Video.Height / 2.0)));
 
@@ -222,19 +221,18 @@ namespace Timelapse.Controls
                 }
                 this.videoTranslation.X += newX - center.X;
                 this.videoTranslation.Y += newY - center.Y;
-                //Debug.Print(String.Format("vTranslation:{0}, newX:{1}, center.X:{2}, videoWidth:{3}, vScaleX:{4}", this.videoTranslation.X, newX, center.X, videoWidth, this.videoScale.ScaleX));
             }
         }
 
-        // This is normally called from a left mouse move event
-        public void TranslateVideo(Point mousePosition, Point previousMousePosition)
+        /// Translate the video afrom the previous mouse position the the current mouse position
+        public void TranslateVideo(Point currentMousePosition, Point previousMousePosition)
         {
             // Get the center point on the image
             Point center = this.PointFromScreen(this.Video.PointToScreen(new Point(this.Video.Width / 2.0, this.Video.Height / 2.0)));
 
             // Calculate the delta position from the last location relative to the center
-            double newX = center.X + mousePosition.X - previousMousePosition.X;
-            double newY = center.Y + mousePosition.Y - previousMousePosition.Y;
+            double newX = center.X + currentMousePosition.X - previousMousePosition.X;
+            double newY = center.Y + currentMousePosition.Y - previousMousePosition.Y;
 
             // get the translated image width
             double imageWidth = this.Video.Width * this.videoScale.ScaleX;
@@ -263,18 +261,9 @@ namespace Timelapse.Controls
             this.videoTranslation.X += newX - center.X;
             this.videoTranslation.Y += newY - center.Y;
         }
-
         #endregion
 
-        #region Play/Pause
-        // Set the video to automatically start playing after a brief delay 
-        // This helps when one is navigating across videos, as there is a brief moment before the play starts.
-        private void AutoPlayDelayTimer_Tick(object sender, EventArgs e)
-        {
-            this.Play();
-            this.autoPlayDelayTimer.Stop();
-        }
-
+        #region Public methods (Play, TryPlayOrPause)
         public void Pause()
         {
             this.positionUpdateTimer.Stop();
@@ -283,22 +272,8 @@ namespace Timelapse.Controls
             this.ShowPosition();
         }
 
-        private void Play()
-        {
-            this.PlayOrPause.IsChecked = true;
-
-            // start over from beginning if at end of video
-            if (this.Video.NaturalDuration.HasTimeSpan && this.Video.Position == this.Video.NaturalDuration.TimeSpan)
-            {
-                this.Video.Position = TimeSpan.Zero;
-                this.ShowPosition();
-            }
-
-            this.positionUpdateTimer.Start();
-            this.Video.Play();
-        }
-
-        public bool TryPlayOrPause()
+ 
+        public bool TryTogglePlayOrPause()
         {
             if (this.Visibility != Visibility.Visible)
             {
@@ -311,21 +286,9 @@ namespace Timelapse.Controls
             this.PlayOrPause_Click(this, null);
             return true;
         }
-
-        private void PlayOrPause_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.PlayOrPause.IsChecked == true)
-            {
-                this.Play();
-            }
-            else
-            {
-                this.Pause();
-            }
-        }
         #endregion
 
-        #region Play position
+        #region Private methods: Play position
         // Scrub the video to the current slider position
         private void VideoPosition_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -357,7 +320,7 @@ namespace Timelapse.Controls
             this.isProgrammaticUpdate = false;
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void TimerUpdatePosition_Tick(object sender, EventArgs e)
         {
             if (this.Video.Source != null)
             {
@@ -365,9 +328,57 @@ namespace Timelapse.Controls
             }
         }
         #endregion
- 
-        #region Video options callback handlers  (Speed, external player)
 
+        #region Private methods and callbacks: Play and AutoPlay
+        private void Play()
+        {
+            this.PlayOrPause.IsChecked = true;
+
+            // start over from beginning if at end of video
+            if (this.Video.NaturalDuration.HasTimeSpan && this.Video.Position == this.Video.NaturalDuration.TimeSpan)
+            {
+                this.Video.Position = TimeSpan.Zero;
+                this.ShowPosition();
+            }
+
+            this.positionUpdateTimer.Start();
+            this.Video.Play();
+        }
+        
+        // Set the video to automatically start playing after a brief delay 
+        // This helps when one is navigating across videos, as there is a brief moment before the play starts.
+        private void AutoPlayDelayTimer_Tick(object sender, EventArgs e)
+        {
+            this.Play();
+            this.autoPlayDelayTimer.Stop();
+        }
+
+        private void PlayOrPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.PlayOrPause.IsChecked == true)
+            {
+                this.Play();
+            }
+            else
+            {
+                this.Pause();
+            }
+        }
+
+        #endregion
+
+        #region Private Callbacks (Size Changed, various controls, etc)
+
+        // Scale the video by one increment around the screen location
+        private void VideoPlayer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Fit the video into the canvas
+            this.Video.Width = this.VideoCanvas.ActualWidth;
+            this.Video.Height = this.VideoCanvas.ActualHeight;
+            this.videoScale.CenterX = 0.5 * this.ActualWidth;
+            this.videoScale.CenterY = 0.5 * this.ActualHeight;
+        }
+        
         // Set the speed, which also causes the video to play (if currently paused)
         private void SetSpeed_Checked(object sender, RoutedEventArgs e)
         {
@@ -389,9 +400,9 @@ namespace Timelapse.Controls
                 ProcessExecution.TryProcessStart(uri);
             }
         }
-        #endregion
 
         // When the video finishes playing, pause it and automatically return it to the beginning
+        // Repeat playing if Auto play is on
         private void Video_MediaEnded(object sender, RoutedEventArgs e)
         {
             this.Pause();
@@ -402,6 +413,7 @@ namespace Timelapse.Controls
             }
         }
 
+        // When the video is first opened, Auto play it if Auto play is on
         private void Video_MediaOpened(object sender, RoutedEventArgs e)
         {
             this.ShowPosition();
@@ -428,5 +440,6 @@ namespace Timelapse.Controls
                 this.Pause();
             }
         }
+        #endregion
     }
 }

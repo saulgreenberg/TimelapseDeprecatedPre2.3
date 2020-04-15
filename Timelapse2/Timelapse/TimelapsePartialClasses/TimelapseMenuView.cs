@@ -42,7 +42,7 @@ namespace Timelapse
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
         {
             Point imageMousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoToDisplay.Video);
+            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoPlayer.Video);
             this.MarkableCanvas.TryZoomInOrOut(true, imageMousePosition, videoMousePosition);
         }
 
@@ -50,7 +50,7 @@ namespace Timelapse
         private void MenuItemZoomOut_Click(object sender, RoutedEventArgs e)
         {
             Point imageMousePosition = Mouse.GetPosition(this.MarkableCanvas.ImageToDisplay);
-            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoToDisplay.Video);
+            Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoPlayer.Video);
             this.MarkableCanvas.TryZoomInOrOut(false, imageMousePosition, videoMousePosition);
         }
 
