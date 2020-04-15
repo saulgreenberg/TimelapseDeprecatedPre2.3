@@ -71,7 +71,6 @@ namespace Timelapse.Controls
             this.Video.RenderTransform = this.transformGroup;
             this.SizeChanged += this.VideoPlayer_SizeChanged;
             this.IsVisibleChanged += this.VideoPlayer_IsVisibleChanged;
-
         }
 
         private void Video_Unloaded(object sender, RoutedEventArgs e)
