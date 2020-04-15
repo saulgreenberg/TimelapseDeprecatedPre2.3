@@ -63,7 +63,7 @@ namespace Timelapse
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.MarkableCanvas.IsEnabled = filesSelected;
-            this.MarkableCanvas.MagnifyingGlassEnabled = filesSelected && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MarkableCanvas.MagnifiersEnabled = filesSelected && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
 
             if (filesSelected == false)
             {

@@ -1,22 +1,20 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using Timelapse.Enums;
 using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
     /// <summary>
-    /// An implementation of the Offset lens, based on the XCEED toolkit Magnifier Adorner
+    /// An implementation of the Offset lens, which inherits the XCEED toolkit Magnifier Adorner
     /// Some things to work on here
-    /// - Direction can be explicitly set to four angles. However, I only use the NorthEast angle for now
+    /// - Direction can be explicitly set to four angles. However, I only use the NorthEast angle for now but left the code for angles intact
     /// - To implementation Direction rotation, I modified the XCEED manifier to:
     ///   - intercept RenderTransform, where it rotates the magnifier part differently from the entire object to keep it upright
     ///      as otherwise the magnified region would be rotated as well)
     ///   -implement a private RotateFactor, which when set will automatically rotate the magnifier part above
-    ///    All modified code is in a well defined region
+    ///    All modified code is in a well defined region. However, it can be discarded if needed if I decide to not use any magnifer render transforms.
     /// - Having said that, I don't use it as this current implementation just uses the NorthEast angle, so its for future work    
     ///     The problem is that animation doesn't seem to work on it, as part of the Magnifier uses Freeze - I have to look into that.
     ///     I also have to detect the edges of objects to decide when to do a rotation.
@@ -26,11 +24,41 @@ namespace Timelapse.Controls
     /// </summary>
     public class OffsetLens : Magnifier
     {
+        #region Public properties
+        /// <summary>
+        /// Set the direction of the offset lens. NorthEast is the default
+        /// Not really used publicly: see above
+        /// </summary>
+        public OffsetLensDirection Direction { get; set; }
+
+        /// <summary>
+        /// Set / Get whether the offset lens is visible (Showing)
+        /// </summary>
+        public bool Show
+        {
+            get
+            {
+                return this.Visibility == Visibility.Visible;
+            }
+            set
+            {
+                this.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                if (this.magHandleAdorner != null)
+                { 
+                    // check condition - why would the maghandleadorner be null if this is not null?
+                    this.magHandleAdorner.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+        }
+        #endregion
+
+        #region Private variables
         private Point Offset = new Point(125, -125);
         private MagHandleAdorner magHandleAdorner;
         private AdornerLayer myAdornerLayer;
+        #endregion
 
-        public OffsetLensDirection Direction { get; set; }
+        #region Constructors, Loading
         public OffsetLens()
         {
             // Lens appearance
@@ -44,15 +72,6 @@ namespace Timelapse.Controls
             // Makes mouse wheel operations (usually used to change the magnification level) into a no-op
             this.ZoomFactorOnMouseWheel = 0;
             this.IsUsingZoomOnMouseWheel = false;
-        }
-
-        private void OffsetLens_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            this.magHandleAdorner.Visibility = ((bool)e.NewValue) ? Visibility.Visible : Visibility.Collapsed;
-            if (this.Visibility == Visibility.Visible)
-            {
-                this.SetDirection(Direction);
-            }
         }
 
         private void OffsetLens_Loaded(object sender, RoutedEventArgs e)
@@ -69,24 +88,14 @@ namespace Timelapse.Controls
             TranslateTransform tt = new TranslateTransform(this.Offset.X, this.Offset.Y);
             magHandleAdorner.RenderTransform = tt;
             myAdornerLayer.Add(magHandleAdorner);
-            this.IsVisibleChanged += this.OffsetLens_IsVisibleChanged;
 
             this.SetDirection(OffsetLensDirection.TopRight);
         }
+        #endregion
 
-        private LinearGradientBrush MakeOutlineBrush()
-        {
-            LinearGradientBrush outlineBrush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(0, 1)
-            };
-            ColorConverter cc = new ColorConverter();
-            outlineBrush.GradientStops.Add(new GradientStop((Color)cc.ConvertFrom("#AAA"), 0));
-            outlineBrush.GradientStops.Add(new GradientStop((Color)cc.ConvertFrom("#111"), 1));
-            return outlineBrush;
-        }
-        public void SetDirection(OffsetLensDirection direction)
+        #region Private Methods (internal use)
+        // Actually set the direction of the offset lens
+        private void SetDirection(OffsetLensDirection direction)
         {
             double x;
             double y;
@@ -127,7 +136,19 @@ namespace Timelapse.Controls
             this.Direction = direction;
         }
 
-        #region Helpers
+        private LinearGradientBrush MakeOutlineBrush()
+        {
+            LinearGradientBrush outlineBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(0, 1)
+            };
+            ColorConverter cc = new ColorConverter();
+            outlineBrush.GradientStops.Add(new GradientStop((Color)cc.ConvertFrom("#AAA"), 0));
+            outlineBrush.GradientStops.Add(new GradientStop((Color)cc.ConvertFrom("#111"), 1));
+            return outlineBrush;
+        }
+
         private static TransformGroup CreateTransformGroup(double x, double y, double angle)
         {
             TransformGroup transformGroup = new TransformGroup();
@@ -140,11 +161,11 @@ namespace Timelapse.Controls
         #endregion
     }
 
-    #region Magnifier Handle and Crosshairs Adorner
+    #region Class: Magnifier Handle and Crosshairs Adorner. Used internal to construct the magnifying glass appearance
     // Create an adorner for the magnifier that attahces a handle to it and draws crosshairs at its center
     internal class MagHandleAdorner : Adorner
     {
-        public MagHandleAdorner(UIElement adornedElement)
+        internal MagHandleAdorner(UIElement adornedElement)
          : base(adornedElement)
         {
         }
@@ -158,7 +179,6 @@ namespace Timelapse.Controls
             }
             Rect adornedElementRect = new Rect(this.AdornedElement.DesiredSize);
             int centerOffset = 75;
-            //Point handleStartOffset = new Point(20, -20);
             Point handleStartOffset = new Point(0, 0);
             Point handleEndOffset = new Point(-39, 39);
             Point center = new Point(adornedElementRect.Width / 2, adornedElementRect.Height / 2);
