@@ -136,7 +136,7 @@ namespace Timelapse.Database
 
             // Calculate an ID offset (the current max Id), where we will be adding that to all Ids in the ddbFile to merge. 
             // This will guarantee that there are no duplicate primary keys 
-            int offsetId = destinationDDB.GetCountFromSelect(QueryGetMax(Constant.DatabaseColumn.ID, Constant.DBTables.FileData));
+            int offsetId = destinationDDB.ScalarGetCountFromSelect(QueryGetMax(Constant.DatabaseColumn.ID, Constant.DBTables.FileData));
 
             // Create the first part of the query to:
             // - Attach the ddbFile
@@ -205,7 +205,7 @@ namespace Timelapse.Database
                 // However, the offeset should be 0 if there are no detections in the main DB, so we can just reusue this as is.
                 // as we will be creating the detection table and then just adding to it.
                 int offsetDetectionId = (destinationDetectionsExists)
-                    ? destinationDDB.GetCountFromSelect(QueryGetMax(Constant.DetectionColumns.DetectionID, Constant.DBTables.Detections))
+                    ? destinationDDB.ScalarGetCountFromSelect(QueryGetMax(Constant.DetectionColumns.DetectionID, Constant.DBTables.Detections))
                     : 0;
                 query += QueryCreateTemporaryTableFromExistingTable(tempDetectionsTable, attachedDB, Constant.DBTables.Detections);
                 query += QueryAddOffsetToIDInTable(tempDetectionsTable, Constant.DatabaseColumn.ID, offsetId);
@@ -214,7 +214,7 @@ namespace Timelapse.Database
 
                 // Similar to the above, we also update the classifications
                 int offsetClassificationId = (destinationDetectionsExists)
-                    ? destinationDDB.GetCountFromSelect(QueryGetMax(Constant.ClassificationColumns.ClassificationID, Constant.DBTables.Classifications))
+                    ? destinationDDB.ScalarGetCountFromSelect(QueryGetMax(Constant.ClassificationColumns.ClassificationID, Constant.DBTables.Classifications))
                     : 0;
                 query += QueryCreateTemporaryTableFromExistingTable(tempClassificationsTable, attachedDB, Constant.DBTables.Classifications);
                 query += QueryAddOffsetToIDInTable(tempClassificationsTable, Constant.ClassificationColumns.ClassificationID, offsetClassificationId);

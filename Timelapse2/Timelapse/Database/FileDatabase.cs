@@ -230,12 +230,12 @@ namespace Timelapse.Database
                     long id = this.GetControlIDFromTemplateTable(dataLabel);
                     ControlRow control = this.Controls.Find(id);
                     ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
-                    this.Database.AddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
+                    this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
 
                     if (control.Type == Constant.Control.Counter)
                     {
                         ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Sql.Text);
-                        this.Database.AddColumnToEndOfTable(Constant.DBTables.Markers, markerColumnDefinition);
+                        this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Markers, markerColumnDefinition);
                     }
                 }
 
@@ -246,14 +246,14 @@ namespace Timelapse.Database
                 ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
                 foreach (string dataLabel in templateSyncResults.DataLabelsToDelete)
                 {
-                    this.Database.DeleteColumn(Constant.DBTables.FileData, dataLabel);
+                    this.Database.SchemaDeleteColumn(Constant.DBTables.FileData, dataLabel);
 
                     // Delete the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because we can't get the type of the data label as it no longer exists in the Template.
-                    if (this.Database.IsColumnInTable(Constant.DBTables.Markers, dataLabel))
+                    if (this.Database.SchemaIsColumnInTable(Constant.DBTables.Markers, dataLabel))
                     {
-                        this.Database.DeleteColumn(Constant.DBTables.Markers, dataLabel);
+                        this.Database.SchemaDeleteColumn(Constant.DBTables.Markers, dataLabel);
                     }
                 }
 
@@ -262,14 +262,14 @@ namespace Timelapse.Database
                 foreach (KeyValuePair<string, string> dataLabelToRename in templateSyncResults.DataLabelsToRename)
                 {
                     // Rename the column associated with that data label from the FileData table
-                    this.Database.RenameColumn(Constant.DBTables.FileData, dataLabelToRename.Key, dataLabelToRename.Value);
+                    this.Database.SchemaRenameColumn(Constant.DBTables.FileData, dataLabelToRename.Key, dataLabelToRename.Value);
 
                     // Rename the markers column associated with this data label (if it exists) from the Markers table
                     // Note that we do this for all column types, even though only counters have an associated entry in the Markers table.
                     // This is because its easiest to code, as the function handles attempts to delete a column that isn't there (which also returns false).
-                    if (this.Database.IsColumnInTable(Constant.DBTables.Markers, dataLabelToRename.Key))
+                    if (this.Database.SchemaIsColumnInTable(Constant.DBTables.Markers, dataLabelToRename.Key))
                     {
-                        this.Database.RenameColumn(Constant.DBTables.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
+                        this.Database.SchemaRenameColumn(Constant.DBTables.Markers, dataLabelToRename.Key, dataLabelToRename.Value);
                     }
                 }
 
@@ -353,7 +353,7 @@ namespace Timelapse.Database
                 return null;
             }
             FileDatabase fileDatabase = new FileDatabase(filePath);
-            if (fileDatabase.Database.GetPragmaQuickCheck() == false || fileDatabase.TableExists(Constant.DBTables.FileData) == false)
+            if (fileDatabase.Database.PragmaGetQuickCheck() == false || fileDatabase.TableExists(Constant.DBTables.FileData) == false)
             {
                 // Missing datatable i.e., the database file is likely corrupt or empty or otherwise unreadable
                 if (fileDatabase != null)
@@ -474,7 +474,7 @@ namespace Timelapse.Database
             }
 
             // Replace the schema in the FildDB table with the schema defined by the column definitions.
-            this.Database.ReplaceTableSchemaWithNewColumnDefinitionsSchema(Constant.DBTables.FileData, columnDefinitions);
+            this.Database.SchemaAlterTableWithNewColumnDefinitions(Constant.DBTables.FileData, columnDefinitions);
         }
 
         // Upgrade the database as needed from older to newer formats to preserve backwards compatability 
@@ -491,53 +491,53 @@ namespace Timelapse.Database
             // particular version numbers where known changes occured 
             // Note: if we can't retrieve the version number from the image set, then set it to a very low version number to guarantee all checks will be made
             string lowestVersionNumber = "1.0.0.0";
-            bool versionCompatabilityColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
+            bool versionCompatabilityColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.VersionCompatabily);
             string imageSetVersionNumber = versionCompatabilityColumnExists ? this.ImageSet.VersionCompatability
                 : lowestVersionNumber;
             string timelapseVersionNumberAsString = VersionChecks.GetTimelapseCurrentVersionNumber().ToString();
 
             // Step 1. Check the FileTable for missing columns
             // RelativePath column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath) == false)
+            if (this.Database.SchemaIsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath) == false)
             {
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
-                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
+                this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
             }
 
             // DateTime column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DateTime) == false)
+            if (this.Database.SchemaIsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DateTime) == false)
             {
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
-                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
+                this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
             }
 
             // UTCOffset column (if missing) needs to be added 
-            if (this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.UtcOffset) == false)
+            if (this.Database.SchemaIsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.UtcOffset) == false)
             {
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
-                this.Database.AddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
+                this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
             }
 
             // Remove MarkForDeletion column and add DeleteFlag column(if needed)
-            bool hasMarkForDeletion = this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
-            bool hasDeleteFlag = this.Database.IsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DeleteFlag);
+            bool hasMarkForDeletion = this.Database.SchemaIsColumnInTable(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
+            bool hasDeleteFlag = this.Database.SchemaIsColumnInTable(Constant.DBTables.FileData, Constant.DatabaseColumn.DeleteFlag);
             if (hasMarkForDeletion && (hasDeleteFlag == false))
             {
                 // migrate any existing MarkForDeletion column to DeleteFlag
                 // this is likely the most typical case
-                this.Database.RenameColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion, Constant.DatabaseColumn.DeleteFlag);
+                this.Database.SchemaRenameColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion, Constant.DatabaseColumn.DeleteFlag);
             }
             else if (hasMarkForDeletion && hasDeleteFlag)
             {
                 // if both MarkForDeletion and DeleteFlag are present drop MarkForDeletion
                 // this is not expected to occur
-                this.Database.DeleteColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
+                this.Database.SchemaDeleteColumn(Constant.DBTables.FileData, Constant.ControlsDeprecated.MarkForDeletion);
             }
             else if (hasDeleteFlag == false)
             {
@@ -545,7 +545,7 @@ namespace Timelapse.Database
                 long id = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DeleteFlag);
                 ControlRow control = this.Controls.Find(id);
                 ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
             }
 
             // STEP 2. Check the ImageTable for missing columns
@@ -554,11 +554,11 @@ namespace Timelapse.Database
             // Newer versions of Timelapse  trim the data as it is entered, but older versions did not, so this is to make it backwards-compatable.
             // The WhiteSpaceExists column in the ImageSet Table did not exist before this version, so we add it to the table if needed. If it exists, then 
             // we know the data has been trimmed and we don't have to do it again as the newer versions take care of trimmingon the fly.
-            bool whiteSpaceColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.WhiteSpaceTrimmed);
+            bool whiteSpaceColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.WhiteSpaceTrimmed);
             if (!whiteSpaceColumnExists)
             {
                 // create the whitespace column
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
 
                 // trim whitespace from the data table
                 this.Database.TrimWhitespace(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
@@ -587,16 +587,16 @@ namespace Timelapse.Database
             if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
             }
 
             // Sort Criteria Column: Make sure that the column containing the SortCriteria exists in the image set table. 
             // If not, add it and set it to the default
-            bool sortCriteriaColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SortTerms);
+            bool sortCriteriaColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SortTerms);
             if (!sortCriteriaColumnExists)
             {
                 // create the sortCriteria column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
             // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
@@ -605,30 +605,30 @@ namespace Timelapse.Database
             if (VersionChecks.IsVersion1GreaterOrEqualToVersion2(firstVersionWithSelectedFilesColumns, imageSetVersionNumber))
             {
                 // Because we may be running this several times on the same version, we should still check to see if the column exists before adding it
-                bool selectedFolderColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SelectedFolder);
+                bool selectedFolderColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.SelectedFolder);
                 if (!selectedFolderColumnExists)
                 {
                     // create the sortCriteria column and update the image set. Syncronization happens later
-                    this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
+                    this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
                     this.ImageSetLoadFromDatabase();
                 }
             }
             // Make sure that the column containing the QuickPasteXML exists in the image set table. 
             // If not, add it and set it to the default
-            bool quickPasteXMLColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            bool quickPasteXMLColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
             if (!quickPasteXMLColumnExists)
             {
                 // create the QuickPaste column and update the image set. Syncronization happens later
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
-            bool timeZoneColumnExists = this.Database.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone);
+            bool timeZoneColumnExists = this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone);
             bool timeZoneColumnIsNotPopulated = timeZoneColumnExists;
             if (!timeZoneColumnExists)
             {
                 // create default time zone entry and refresh the image set.
-                this.Database.AddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
                 this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
                 this.ImageSetLoadFromDatabase();
             }
@@ -800,7 +800,8 @@ namespace Timelapse.Database
                 command = queryColumns.ToString() + queryValues.ToString();
 
                 this.CreateBackupIfNeeded();
-                this.Database.ExecuteOneNonQueryCommand(command);
+                //this.Database.ExecuteOneNonQueryCommand(command);
+                this.Database.ExecuteNonQuery(command);
                 this.InsertRows(Constant.DBTables.Markers, markerRows);
 
                 if (onFileAdded != null)
@@ -1486,7 +1487,7 @@ namespace Timelapse.Database
             }
             // Uncommment this to see the actual complete query
             // System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
-            return this.Database.GetCountFromSelect(query);
+            return this.Database.ScalarGetCountFromSelect(query);
         }
         #endregion
 
@@ -1508,9 +1509,12 @@ namespace Timelapse.Database
         #endregion
 
         #region Exists matching files  
-        // Return true if there is at least one files matching the fileSelection condition in the entire database
+        // Return true if there is at least one file matching the fileSelection condition in the entire database
         // Form examples
         // - Select EXISTS  ( SELECT 1   FROM DataTable WHERE DeleteFlag='true')
+        // The performance of this query depends upon how many rows in the table has to be searched
+        // before the first exists appears. If there are no matching rows, the performance is more or
+        // less equivalent to COUNT as it has to go through every row. 
         public bool RowExistsWhere(FileSelectionEnum fileSelection)
         {
             string query = Sql.SelectExists + Sql.OpenParenthesis + Sql.SelectOne + Sql.From + Constant.DBTables.FileData;
@@ -1522,7 +1526,7 @@ namespace Timelapse.Database
             query += Sql.CloseParenthesis;
             // Uncommment this to see the actual complete query
             // System.Diagnostics.Debug.Print("Exists: " + query + Environment.NewLine);
-            return this.Database.GetExists(query);
+            return this.Database.ScalarBoolFromOneOrZero(query);
         }
         #endregion
 
@@ -1721,20 +1725,20 @@ namespace Timelapse.Database
         #region Index creation and dropping
         public void IndexCreateForDetectionsAndClassifications()
         {
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
         }
 
         public void IndexCreateForFileAndRelativePath()
         {
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-            this.Database.CreateIndex(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
         }
 
         public void IndexDropForFileAndRelativePath()
         {
-            this.Database.DropIndex(Constant.DatabaseValues.IndexRelativePath);
-            this.Database.DropIndex(Constant.DatabaseValues.IndexFile);
+            this.Database.IndexDrop(Constant.DatabaseValues.IndexRelativePath);
+            this.Database.IndexDrop(Constant.DatabaseValues.IndexFile);
         }
         #endregion
 
@@ -2268,7 +2272,7 @@ namespace Timelapse.Database
         {
             // Open the database if it exists
             SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
-            if (sqliteWrapper.IsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
+            if (sqliteWrapper.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
             {
                 // The column isn't in the table, so give up
                 return String.Empty;

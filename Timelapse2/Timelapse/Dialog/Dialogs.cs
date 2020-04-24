@@ -307,7 +307,7 @@ namespace Timelapse.Dialog
             messageBox.Message.Solution += String.Format("\u2022 email {0} describing what happened, attaching a copy of your {1} file.", Constant.ExternalLinks.EmailAddress, Constant.File.TemplateDatabaseFileExtension);
 
             messageBox.Message.Result = "Timelapse did not affect any of your other files.";
-            if (owner.Title.StartsWith(Constant.Defaults.MainWindowBaseTitle))
+            if (owner.Name.Equals("Timelapse"))
             {
                 // Only displayed in Timelapse, not the template editor
                 messageBox.Message.Hint = "See if you can open and examine the template file in the Timelapse Template Editor." + Environment.NewLine;

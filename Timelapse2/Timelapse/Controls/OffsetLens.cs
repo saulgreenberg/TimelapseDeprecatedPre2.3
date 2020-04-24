@@ -44,7 +44,7 @@ namespace Timelapse.Controls
             {
                 this.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
                 if (this.magHandleAdorner != null)
-                { 
+                {
                     // check condition - why would the maghandleadorner be null if this is not null?
                     this.magHandleAdorner.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
                 }
@@ -121,7 +121,7 @@ namespace Timelapse.Controls
                     break;
                 case OffsetLensDirection.BottomLeft: // Lower Right
                     x = -this.Offset.X;
-                    y = 3*this.Offset.Y;
+                    y = 3 * this.Offset.Y;
                     angle = -180;
                     break;
                 case OffsetLensDirection.BottomRight: // Lower Left
@@ -131,7 +131,7 @@ namespace Timelapse.Controls
                     break;
             }
             // Now rotate and position the entire magnifying glass
-            this.RenderTransform = CreateTransformGroup(x, y, angle); 
+            this.RenderTransform = CreateTransformGroup(x, y, angle);
             this.Direction = direction;
         }
 

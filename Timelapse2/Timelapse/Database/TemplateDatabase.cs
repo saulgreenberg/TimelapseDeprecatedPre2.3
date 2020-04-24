@@ -71,7 +71,7 @@ namespace Timelapse.Database
             {
                 // The database file exists. However, we still need to check if its valid. 
                 // We do this by checking the database integrity (which may raise an internal exception) and if that is ok, by checking if it has a TemplateTable. 
-                if (templateDatabase.Database.GetPragmaQuickCheck() == false || templateDatabase.TableExists(Constant.DBTables.Controls) == false)
+                if (templateDatabase.Database.PragmaGetQuickCheck() == false || templateDatabase.TableExists(Constant.DBTables.Controls) == false)
                 {
                     if (templateDatabase != null)
                     {
@@ -101,9 +101,9 @@ namespace Timelapse.Database
                 {
                     return false;
                 }
-                
+
                 // We do this by checking the database integrity (which may raise an internal exception) and if that is ok, by checking if it has a TemplateTable. 
-                if (this.Database.GetPragmaQuickCheck() == false || this.TableExists(tableNameToCheck) == false)
+                if (this.Database.PragmaGetQuickCheck() == false || this.TableExists(tableNameToCheck) == false)
                 {
                     return false;
                 }

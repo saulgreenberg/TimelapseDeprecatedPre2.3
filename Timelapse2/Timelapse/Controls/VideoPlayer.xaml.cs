@@ -124,7 +124,7 @@ namespace Timelapse.Controls
             this.Video.Volume = originalVolume;
             // position updated through the media opened event
         }
-       
+
         /// <summary>
         /// Scale (Zoom) the video in or out around the provided location, which should be the cursor location in video coordinates
         /// </summary>
@@ -343,7 +343,7 @@ namespace Timelapse.Controls
             this.positionUpdateTimer.Start();
             this.Video.Play();
         }
-        
+
         // Set the video to automatically start playing after a brief delay 
         // This helps when one is navigating across videos, as there is a brief moment before the play starts.
         private void AutoPlayDelayTimer_Tick(object sender, EventArgs e)
@@ -377,7 +377,7 @@ namespace Timelapse.Controls
             this.videoScale.CenterX = 0.5 * this.ActualWidth;
             this.videoScale.CenterY = 0.5 * this.ActualHeight;
         }
-        
+
         // Set the speed, which also causes the video to play (if currently paused)
         private void SetSpeed_Checked(object sender, RoutedEventArgs e)
         {

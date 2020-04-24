@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
     xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
         xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
-    AutomationProperties.AutomationId="Timelapse"
+    AutomationProperties.AutomationId="Timelapse" Name="Timelapse"
     Loaded="Window_Loaded" Closing="Window_Closing" PreviewKeyDown="Window_PreviewKeyDown" PreviewKeyUp="Window_PreviewKeyUp"
     Height="800" Width="1200"
     WindowState="Normal" Icon="Icons\Timelapse.ico" LocationChanged="Window_LocationChanged">

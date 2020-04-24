@@ -64,7 +64,7 @@
         public const string NotNull = " NOT NULL ";
         public const string Null = " NULL ";
         public const string NullAs = Null + " " + As;
-        public const string Ok = "ok"; 
+        public const string Ok = "ok";
         public const string On = " ON ";
         public const string OnConflict = " ON CONFLICT ";
         public const string OpenParenthesis = " ( ";
@@ -75,7 +75,7 @@
         public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1 ";
         public const string PragmaForeignKeysOff = " PRAGMA foreign_keys = OFF ";
         public const string PragmaForeignKeysOn = " PRAGMA foreign_keys = ON ";
-        public const string PragmaQuickCheck = "PRAGMA QUICK_CHECK "; 
+        public const string PragmaQuickCheck = "PRAGMA QUICK_CHECK ";
         public const string PrimaryKey = " PRIMARY KEY ";
         public const string RenameTo = " RENAME TO ";
         public const string Select = " SELECT ";

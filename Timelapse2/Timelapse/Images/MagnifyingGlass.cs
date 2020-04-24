@@ -44,13 +44,13 @@ namespace Timelapse.Images
 
         // The lens is constructed within a canvas
         private readonly Canvas lensCanvas;
-        
+
         // current angle of the lens
         private double lensAngle;
 
         // The lens part of the magnifying glass, which contains the magnified image
         private readonly Ellipse magnifierLens;
-        
+
         // current angle of the entire magnifying glass
         private double magnifyingGlassAngle;
         #endregion

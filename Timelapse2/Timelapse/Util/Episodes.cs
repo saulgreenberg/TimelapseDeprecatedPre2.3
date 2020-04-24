@@ -19,7 +19,7 @@ namespace Timelapse
         // - 1,(2,2) (1st file, 2 out of 2 images in the episode) 
         // - 2,(1,1) (2nd file, 1 out of 1 images in the episode) etc
         public static Dictionary<int, Tuple<int, int>> EpisodesDictionary { get; set; }
-       
+
         /// <summary>
         /// Whether or not Episodes should be displayed
         /// </summary>

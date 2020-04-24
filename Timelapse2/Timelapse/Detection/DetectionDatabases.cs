@@ -32,7 +32,7 @@ namespace Timelapse.Detection
                    Constant.DBTables.Detections,
                    Constant.DBTables.Classifications
                 };
-                database.ClearRowsInTables(tableList);
+                database.DeleteAllRowsInTables(tableList);
                 return;
             }
             columnDefinitions = new List<ColumnDefinition>
@@ -97,7 +97,7 @@ namespace Timelapse.Detection
                 Constant.DBTables.DetectionCategories,
                 Constant.DBTables.Detections
             };
-            database.ClearRowsInTables(detectionTables);
+            database.DeleteAllRowsInTables(detectionTables);
         }
 
         // Populate the various Detection Database Tables from the detection data structure.

@@ -9,14 +9,18 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
-    // A wrapper to make it easy to invoke some basic SQLite commands
-    // It is NOT a generalized wrapper, as it only handles a few simple things.
+    // A C# wrapper to interface with SQLite
+    // It is NOT a completely generalized wrapper to all SQLite commands, as there is much in SQLite that Timelapse does not use (although these can be added as needed).
+    // Importantly, the wrapper is agnostic to the particular schema used by Timelapse i.e., it is a reusable SQL interface.
+    // Typically, the FileDatabase acts as an intermediary between Timelapse and this wrapper, where FileDatabase creates the Timelapse-specific queries
+    // and invokes them using this SQLite wrapper
     public class SQLiteWrapper
     {
         // A connection string identifying the  database file. Takes the form:
         // "Data Source=filepath" 
         private readonly string connectionString;
 
+        #region Constructor
         /// <summary>
         /// Constructor: Create a database file if it does not exist, and then create a connection string to that file
         /// If the database file does not exist,iIt will be created
@@ -37,7 +41,9 @@ namespace Timelapse.Database
             connectionStringBuilder.ForeignKeys = true;
             this.connectionString = connectionStringBuilder.ConnectionString;
         }
+        #endregion
 
+        #region Create Table
         /// <summary>
         /// A simplified table creation routine. It expects the column definitions to be supplied
         /// as a column_name, data type key value pair. 
@@ -62,10 +68,11 @@ namespace Timelapse.Database
             query += Sql.CloseParenthesis + Sql.Semicolon;
             this.ExecuteNonQuery(query);
         }
+        #endregion
 
-        #region Indexes: Create or Drop
+        #region Indexes: Create or Drop (Public)
         // Create an index in table tableName named index name to the column names
-        public void CreateIndex(string indexName, string tableName, string columnNames)
+        public void IndexCreate(string indexName, string tableName, string columnNames)
         {
             // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
             string query = Sql.CreateIndex + Sql.IfNotExists + indexName + Sql.On + tableName + Sql.OpenParenthesis + columnNames + Sql.CloseParenthesis;
@@ -73,7 +80,7 @@ namespace Timelapse.Database
         }
 
         // Drop an index named indexName if it exists
-        public void DropIndex(string indexName)
+        public void IndexDrop(string indexName)
         {
             // Form: DROP INDEX IF EXISTS indexName 
             string query = Sql.DropIndex + Sql.IfExists + indexName;
@@ -81,56 +88,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        // Return a dictionary comprising each column in the schema and its default values (if any)
-        public Dictionary<string, string> SchemaGetColumnsAndDefaultValues(string tableName)
-        {
-            try
-            {
-                // Open the connection
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    SQLiteDataReader reader = GetSchema(connection, tableName);
-                    Dictionary<string, string> columndefaultsDict = new Dictionary<string, string>();
-                    while (reader.Read())
-                    {
-                        columndefaultsDict.Add(reader[1].ToString(), reader[4] != null ? reader[4].ToString() : String.Empty);
-                    }
-                    return columndefaultsDict;
-                }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumnsAndDefaultValues. {0}", exception.ToString()));
-                return null;
-            }
-        }
-
-        // Return a List of strings comprising each column in the schema
-        public List<string> SchemaGetColumns(string tableName)
-        {
-            try
-            {
-                // Open the connection
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    SQLiteDataReader reader = GetSchema(connection, tableName);
-                    List<string> columnsList = new List<string>();
-                    while (reader.Read())
-                    {
-                        columnsList.Add(reader[1].ToString());
-                    }
-                    return columnsList;
-                }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumns. {0}", exception.ToString()));
-                return null;
-            }
-        }
-
+        #region Event handlers (Private)
         private void DataTableColumns_Changed(object sender, CollectionChangeEventArgs columnChange)
         {
             // DateTime columns default to DataSetDateTime.UnspecifiedLocal, which converts fully qualified DateTimes returned from SQLite to DateTimeKind.Unspecified
@@ -142,53 +100,9 @@ namespace Timelapse.Database
                 columnChanged.DateTimeMode = DataSetDateTime.Utc;
             }
         }
+        #endregion
 
-        // Construct each individual query in the form 
-        // INSERT INTO table_name
-        //      colname1, colname12, ... colnameN VALUES
-        //      ('value1', 'value2', ... 'valueN');
-        public void Insert(string tableName, List<List<ColumnTuple>> insertionStatements)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(insertionStatements, nameof(insertionStatements));
-
-
-            List<string> queries = new List<string>();
-            foreach (List<ColumnTuple> columnsToUpdate in insertionStatements)
-            {
-                Debug.Assert(columnsToUpdate != null && columnsToUpdate.Count > 0, "No column updates are specified.");
-
-                string columns = String.Empty;
-                string values = String.Empty;
-                foreach (ColumnTuple column in columnsToUpdate)
-                {
-                    columns += String.Format(" {0}" + Sql.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
-                    values += String.Format(" {0}" + Sql.Comma, Sql.Quote(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
-                }
-                if (columns.Length > 0)
-                {
-                    columns = columns.Substring(0, columns.Length - Sql.Comma.Length);     // Remove last comma in the sequence to produce (col1, col2, ... coln)  
-                }
-                if (values.Length > 0)
-                {
-                    values = values.Substring(0, values.Length - Sql.Comma.Length);        // Remove last comma in the sequence 
-                }
-
-                // Construct the query. The newlines are to format it for pretty printing
-                string query = Sql.InsertInto + tableName;               // INSERT INTO table_name
-                query += Environment.NewLine;
-                query += String.Format("({0}) ", columns);                         // (col1, col2, ... coln)
-                query += Environment.NewLine;
-                query += Sql.Values;                                     // VALUES
-                query += Environment.NewLine;
-                query += String.Format("({0}); ", values);                         // ('value1', 'value2', ... 'valueN');
-                queries.Add(query);
-            }
-
-            // Now try to invoke the batch queries
-            this.ExecuteNonQueryWrappedInBeginEnd(queries);
-        }
-
+        #region Select
         public DataTable GetDataTableFromSelect(string query)
         {
             DataTable dataTable = new DataTable();
@@ -265,134 +179,57 @@ namespace Timelapse.Database
                 return null;
             }
         }
+        #endregion
 
-        /// <summary>
-        /// Allows the programmer to interact with the database for purposes other than a query.
-        /// </summary>
-        /// <param name="statement">The SQL to be run.</param>
-        public void ExecuteNonQuery(string statement)
-        {
-            try
-            {
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    using (SQLiteCommand command = new SQLiteCommand(connection))
-                    {
-                        command.CommandText = statement;
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", statement, exception.ToString()));
-            }
-        }
-
-        /// <summary>
-        /// Given a list of complete queries, wrap up to 500 of them in a BEGIN/END statement so they are all executed in one go for efficiency
-        /// Continue for the next up to 500, and so on.
-        // BEGIN
-        //      query1
-        //      query2
-        //      ...
-        //      queryn
-        // END
-        /// </summary>
-        public void ExecuteNonQueryWrappedInBeginEnd(List<string> statements)
+        #region Insert
+        // Construct each individual query in the form 
+        // INSERT INTO table_name
+        //      colname1, colname12, ... colnameN VALUES
+        //      ('value1', 'value2', ... 'valueN');
+        public void Insert(string tableName, List<List<ColumnTuple>> insertionStatements)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(statements, nameof(statements));
+            ThrowIf.IsNullArgument(insertionStatements, nameof(insertionStatements));
 
-            const int MaxStatementCount = 50000;
-            string mostRecentStatement = null;
-            try
+
+            List<string> queries = new List<string>();
+            foreach (List<ColumnTuple> columnsToUpdate in insertionStatements)
             {
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                Debug.Assert(columnsToUpdate != null && columnsToUpdate.Count > 0, "No column updates are specified.");
+
+                string columns = String.Empty;
+                string values = String.Empty;
+                foreach (ColumnTuple column in columnsToUpdate)
                 {
-                    connection.Open();
-
-                    using (SQLiteCommand command = new SQLiteCommand(connection))
-                    {
-                        // Invoke each query in the queries list
-                        int rowsUpdated = 0;
-                        int statementsInQuery = 0;
-                        foreach (string statement in statements)
-                        {
-                            // capture the most recent statement so it's available for debugging
-                            mostRecentStatement = statement;
-                            statementsInQuery++;
-
-                            // Insert a BEGIN if we are at the beginning of the count
-                            if (statementsInQuery == 1)
-                            {
-                                command.CommandText = Sql.BeginTransaction;
-                                command.ExecuteNonQuery();
-                            }
-
-                            command.CommandText = statement;
-                            rowsUpdated += command.ExecuteNonQuery();
-
-                            // END
-                            if (statementsInQuery >= MaxStatementCount)
-                            {
-                                command.CommandText = Sql.EndTransaction;
-                                rowsUpdated += command.ExecuteNonQuery();
-                                statementsInQuery = 0;
-                            }
-                        }
-                        // END
-                        if (statementsInQuery != 0)
-                        {
-                            command.CommandText = Sql.EndTransaction;
-                            rowsUpdated += command.ExecuteNonQuery();
-                        }
-                    }
+                    columns += String.Format(" {0}" + Sql.Comma, column.Name);      // transform dictionary entries into a string "col1, col2, ... coln"
+                    values += String.Format(" {0}" + Sql.Comma, Sql.Quote(column.Value));         // transform dictionary entries into a string "'value1', 'value2', ... 'valueN'"
                 }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
-            }
-        }
-
-        /// <summary>
-        /// Executes the incoming string as a Single SQL command/>.
-        /// </summary>
-        /// <param name="commandString">The command to execute.</param>
-        public void ExecuteOneNonQueryCommand(string commandString)
-        {
-            if (string.IsNullOrEmpty(commandString))
-            {
-                return;
-            }
-            SQLiteCommand command = new SQLiteCommand
-            {
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
-                CommandText = commandString
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
-            };
-
-            try
-            {
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                if (columns.Length > 0)
                 {
-                    connection.Open();
-                    command.Connection = connection;
-                    command.ExecuteNonQuery();
+                    columns = columns.Substring(0, columns.Length - Sql.Comma.Length);     // Remove last comma in the sequence to produce (col1, col2, ... coln)  
                 }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure near executing statement '{0}' In ExecuteCommand. {1}", command.CommandText, exception.ToString()));
-            }
-            if (command != null)
-            {
-                command.Dispose();
-            }
-        }
+                if (values.Length > 0)
+                {
+                    values = values.Substring(0, values.Length - Sql.Comma.Length);        // Remove last comma in the sequence 
+                }
 
+                // Construct the query. The newlines are to format it for pretty printing
+                string query = Sql.InsertInto + tableName;               // INSERT INTO table_name
+                query += Environment.NewLine;
+                query += String.Format("({0}) ", columns);                         // (col1, col2, ... coln)
+                query += Environment.NewLine;
+                query += Sql.Values;                                     // VALUES
+                query += Environment.NewLine;
+                query += String.Format("({0}); ", values);                         // ('value1', 'value2', ... 'valueN');
+                queries.Add(query);
+            }
+
+            // Now try to invoke the batch queries
+            this.ExecuteNonQueryWrappedInBeginEnd(queries);
+        }
+        #endregion
+
+        #region Update data: White space, all rows in a column, nulls to empty string
         // Trims all the white space from the data held in the list of column_names in table_name
         // Note: this is needed as earlier versions didn't trim the white space from the data. This allows us to trim it in the database after the fact.
         public void TrimWhitespace(string tableName, List<string> columnNames)
@@ -527,40 +364,9 @@ namespace Timelapse.Database
             query += Sql.Semicolon;
             return query;
         }
+        #endregion
 
-        /// <summary>
-        /// Retrieve a count of items from the DB. Select statement must be of the form "Select Count(*) FROM "
-        /// </summary>
-        /// <param name="query">The query to run.</param>
-        /// <returns>The number of items selected.</returns>
-        public int GetCountFromSelect(string query)
-        {
-            object obj = this.GetScalarFromSelect(query);
-            return (obj == DBNull.Value) ? 0 : Convert.ToInt32(obj);
-        }
-
-        // The EXISTS query should be in the form of 
-        // e.g., Select EXISTS  ( SELECT 1 FROM DataTable WHERE DeleteFlag='true')
-        // which returns a 1 (true) or a 0 (false) if any matching row exists.
-        // That result is transformed into a boolean true/false
-        // The performance of this query depends upon how many rows in the table has to be searched
-        // before the first exists appears. If there are no matching rows, the performance is more or
-        // less equivalent to COUNT as it has to go through every row. 
-        public bool GetExists(string query)
-        {
-            return (Convert.ToInt32(this.GetScalarFromSelect(query)) == 1);
-        }
-
-        // This method will create a column in a table of type TEXT, where it is added to its end
-        // It assumes that the value, if not empty, should be treated as the default value for that column
-        public void AddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
-
-            this.ExecuteNonQuery(Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition.ToString());
-        }
-
+        #region Delete Rows from Table (Public)
         /// <summary>delete specific rows from the DB where...</summary>
         /// <param name="tableName">The table from which to delete.</param>
         /// <param name="where">The where clause for the delete.</param>
@@ -609,295 +415,188 @@ namespace Timelapse.Database
             }
         }
 
-        #region Schema and Column Changes: Replace Schema, IsColumnInTable / Add / Delete / Rename / 
-        public void ReplaceTableSchemaWithNewColumnDefinitionsSchema(string sourceTable, List<ColumnDefinition> columnDefinitions)
+        /// <summary>
+        /// Delete all the rows in each table in the provided list 
+        /// </summary>
+        /// <param name="tables"></param>
+        public void DeleteAllRowsInTables(List<string> tables)
         {
-            string destTable = "TempTable";
-            try
+            if (tables == null || tables.Count == 0)
             {
-                // Create an empty table with the schema based on columnDefinitions
-                this.CreateTable(destTable, columnDefinitions);
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-
-                    // copy the contents from the source table to the destination table
-                    CopyAllValuesFromTable(connection, destTable, sourceTable, destTable);
-
-                    // delete the source table, and rename the destination table so it is the same as the source table
-                    DropTable(connection, sourceTable);
-                    RenameTable(connection, destTable, sourceTable);
-                }
+                return;
             }
-            catch (Exception exception)
+            string queries = String.Empty;                      // A list of SQL queries
+
+            // Turn pragma foreign_key off before the delete, as otherwise it takes forever on largish tables
+            // Notice that we do not wrap this in a begin / end, as the pragma does not work within that.
+            queries += Sql.PragmaForeignKeysOff + "; ";
+
+            // Construct a list containing queries of the form DELETE FROM table_name
+            foreach (string table in tables)
             {
-                TracePrint.PrintMessage(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
-                throw;
+                string query = Sql.DeleteFrom + table;     // DELETE FROM tablename
+                query += "; ";
+                queries += query;
             }
+
+            // Now turn pragma foreign_key on again after the delete
+            queries += Sql.PragmaForeignKeysOn + ";";
+
+            // Invoke the batched queries
+            this.ExecuteNonQuery(queries);
+        }
+        #endregion
+
+        #region Scalars
+        /// <summary>
+        /// Retrieve a count of items from the DB. Select statement. Must be of the form "Select Count(*) FROM "
+        /// </summary>
+        /// <param name="query">The query to run.</param>
+        /// <returns>The number of items selected.</returns>
+        public int ScalarGetCountFromSelect(string query)
+        {
+            object obj = this.GetScalarFromSelect(query);
+            return (obj == DBNull.Value) ? 0 : Convert.ToInt32(obj);
         }
 
-        public bool IsColumnInTable(string sourceTable, string currentColumnName)
+
+        // This query is used to transform scalar queries that
+        // which returns a 1  or a 0 into true or false respectively         
+        // For example, Select EXISTS ( SELECT 1 FROM DataTable WHERE DeleteFlag='true') returnes 1 if any matching row exists else 0
+        public bool ScalarBoolFromOneOrZero(string query)
         {
+            return (Convert.ToInt32(this.GetScalarFromSelect(query)) == 1);
+        }
+        #endregion
+
+        #region Execute Non-Queries: one statement, list of statements 
+        /// <summary>
+        /// Allows the programmer to interact with the database for purposes other than a query.
+        /// </summary>
+        /// <param name="commandString">The SQL command to be run.</param>
+        public void ExecuteNonQuery(string commandString)
+        {
+            if (string.IsNullOrEmpty(commandString))
+            {
+                // Nothing to execute
+                return;
+            }
             try
             {
                 using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
-                    List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
-                    return currentColumnNames.Contains(currentColumnName);
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
+                    {
+                        command.CommandText = commandString;
+                        command.ExecuteNonQuery();
+                    }
                 }
             }
             catch (Exception exception)
             {
-                TracePrint.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
-                return false;
+                TracePrint.PrintMessage(String.Format("Failure executing statement '{0}'. in ExecuteNonQuery:{1}", commandString, exception.ToString()));
             }
         }
 
         /// <summary>
-        /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
-        /// The value in columnDefinition is assumed to be the desired default value
+        /// Given a list of complete queries, wrap up to 500 of them in a BEGIN/END statement so they are all executed in one go for efficiency
+        /// Continue for the next up to 500, and so on.
+        // BEGIN
+        //      query1
+        //      query2
+        //      ...
+        //      queryn
+        // END
         /// </summary>
-        public void AddColumnToTable(string tableName, int columnNumber, ColumnDefinition columnDefinition)
+        public void ExecuteNonQueryWrappedInBeginEnd(List<string> statements)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
+            ThrowIf.IsNullArgument(statements, nameof(statements));
 
+            const int MaxStatementCount = 50000;
+            string mostRecentStatement = null;
             try
             {
                 using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
 
-                    // Some basic error checking to make sure we can do the operation
-                    List<string> columnNames = GetColumnNamesAsList(connection, tableName);
-
-                    // Check if a column named Name already exists in the source Table. If so, abort as we cannot add duplicate column names
-                    if (columnNames.Contains(columnDefinition.Name))
+                    using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
-                        throw new ArgumentException(String.Format("Column '{0}' is already present in table '{1}'.", columnDefinition.Name, tableName), nameof(columnDefinition));
+                        // Invoke each query in the queries list
+                        int rowsUpdated = 0;
+                        int statementsInQuery = 0;
+                        foreach (string statement in statements)
+                        {
+                            // capture the most recent statement so it's available for debugging
+                            mostRecentStatement = statement;
+                            statementsInQuery++;
+
+                            // Insert a BEGIN if we are at the beginning of the count
+                            if (statementsInQuery == 1)
+                            {
+                                command.CommandText = Sql.BeginTransaction;
+                                command.ExecuteNonQuery();
+                            }
+
+                            command.CommandText = statement;
+                            rowsUpdated += command.ExecuteNonQuery();
+
+                            // END
+                            if (statementsInQuery >= MaxStatementCount)
+                            {
+                                command.CommandText = Sql.EndTransaction;
+                                rowsUpdated += command.ExecuteNonQuery();
+                                statementsInQuery = 0;
+                            }
+                        }
+                        // END
+                        if (statementsInQuery != 0)
+                        {
+                            command.CommandText = Sql.EndTransaction;
+                            rowsUpdated += command.ExecuteNonQuery();
+                        }
                     }
-
-                    // If columnNumber would result in the column being inserted at the end of the table, then use the more efficient method to do so.
-                    if (columnNumber >= columnNames.Count)
-                    {
-                        this.AddColumnToEndOfTable(tableName, columnDefinition);
-                        return;
-                    }
-
-                    // We need to add a column elsewhere than the end. This requires us to 
-                    // create a new schema, create a new table from that schema, copy data over to it, remove the old table
-                    // and rename the new table to the name of the old one.
-
-                    // Get a schema definition identical to the schema in the existing table, 
-                    // but with a new column definition of type TEXT added at the given position, where the value is assumed to be the default value
-                    string newSchema = InsertColumnInSchema(connection, tableName, columnNumber, columnDefinition);
-
-                    // Create a new table 
-                    string destTable = tableName + "NEW";
-                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-
-                    // Copy the old table's contents to the new table
-                    CopyAllValuesFromTable(connection, tableName, tableName, destTable);
-
-                    // Now drop the source table and rename the destination table to that of the source table
-                    DropTable(connection, tableName);
-
-                    // Rename the table
-                    RenameTable(connection, destTable, tableName);
                 }
             }
             catch (Exception exception)
             {
-                TracePrint.PrintMessage(String.Format("Failure in AddColumn. {0}", exception.ToString()));
-                throw;
-            }
-        }
-
-        public bool DeleteColumn(string sourceTable, string columnName)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(columnName, nameof(columnName));
-
-            try
-            {
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    // Some basic error checking to make sure we can do the operation
-                    if (String.IsNullOrEmpty(columnName.Trim()))
-                    {
-                        return false;  // The provided column names= is an empty string
-                    }
-                    List<string> columnNames = GetColumnNamesAsList(connection, sourceTable);
-                    if (!columnNames.Contains(columnName))
-                    {
-                        return false; // There is no column called columnName in the source Table, so we can't delete ti
-                    }
-
-                    // Get a schema definition identical to the schema in the existing table, 
-                    // but with the column named columnName deleted from it
-                    string newSchema = RemoveColumnFromSchema(connection, sourceTable, columnName);
-
-                    // Create a new table 
-                    string destTable = sourceTable + "NEW";
-                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-
-                    // Copy the old table's contents to the new table
-                    CopyAllValuesFromTable(connection, destTable, sourceTable, destTable);
-
-                    // Now drop the source table and rename the destination table to that of the source table
-                    DropTable(connection, sourceTable);
-
-                    // Rename the table
-                    RenameTable(connection, destTable, sourceTable);
-                    return true;
-                }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
-                throw;
-            }
-        }
-
-        public void RenameColumn(string sourceTable, string currentColumnName, string newColumnName)
-        {
-            // Some basic error checking to make sure we can do the operation
-            if (String.IsNullOrWhiteSpace(currentColumnName))
-            {
-                throw new ArgumentOutOfRangeException(nameof(currentColumnName));
-            }
-            if (String.IsNullOrWhiteSpace(newColumnName))
-            {
-                throw new ArgumentOutOfRangeException(nameof(newColumnName));
-            }
-
-            try
-            {
-                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-                {
-                    connection.Open();
-                    List<string> currentColumnNames = GetColumnNamesAsList(connection, sourceTable);
-                    if (currentColumnNames.Contains(currentColumnName) == false)
-                    {
-                        throw new ArgumentException(String.Format("No column named '{0}' exists to rename.", currentColumnName), nameof(currentColumnName));
-                    }
-                    if (currentColumnNames.Contains(newColumnName) == true)
-                    {
-                        throw new ArgumentException(String.Format("Column '{0}' is already in use.", newColumnName), nameof(newColumnName));
-                    }
-
-                    string newSchema = CloneSchemaButRenameColumn(connection, sourceTable, currentColumnName, newColumnName);
-
-                    // Create a new table 
-                    string destTable = sourceTable + "NEW";
-                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
-                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-
-                    // Copy the old table's contents to the new table
-                    CopyAllValuesBetweenTables(connection, sourceTable, destTable, sourceTable, destTable);
-
-                    // Now drop the source table and rename the destination table to that of the source table
-                    DropTable(connection, sourceTable);
-
-                    // Rename the table
-                    RenameTable(connection, destTable, sourceTable);
-                }
-            }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
-                throw;
-            }
-        }
-
-
-
-        private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string columnDefinition)
-        {
-            string sql = Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition;
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
+                TracePrint.PrintMessage(String.Format("Failure near executing statement '{0}' n ExecuteNonQueryWrappedInBeginEnd. {1}", mostRecentStatement, exception.ToString()));
             }
         }
         #endregion
 
+        #region Get Schema (Private)
         /// <summary>
-        /// Copy all the values from the source table into the destination table. Assumes that both tables are populated with identically-named columns
-        /// </summary>
-        private static void CopyAllValuesFromTable(SQLiteConnection connection, string schemaFromTable, string dataSourceTable, string dataDestinationTable)
-        {
-            string commaSeparatedColumns = GetColumnNamesAsString(connection, schemaFromTable);
-            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumns + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumns + Sql.From + dataSourceTable;
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        /// <summary>
-        /// Copy all the values from the source table into the destination table. Assumes that both tables are populated with identically-named columns
-        /// </summary>
-        private static void CopyAllValuesBetweenTables(SQLiteConnection connection, string schemaFromSourceTable, string schemaFromDestinationTable, string dataSourceTable, string dataDestinationTable)
-        {
-            string commaSeparatedColumnsSource = GetColumnNamesAsString(connection, schemaFromSourceTable);
-            string commaSeparatedColumnsDestination = GetColumnNamesAsString(connection, schemaFromDestinationTable);
-            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumnsDestination + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumnsSource + Sql.From + dataSourceTable;
-
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        /// <summary>
-        /// Drop the database table 'tableName' from the connected database.
+        /// Get the Schema for a simple database table 'tableName' from the connected database.
+        /// For each column, it can retrieve schema settings including:
+        ///     Name, Type, If its the Primary Key, Constraints including its Default Value (if any) and Not Null 
+        /// However other constraints that may be set in the table schema are NOT returned, including:
+        ///     UNIQUE, CHECK, FOREIGN KEYS, AUTOINCREMENT 
+        /// If you use those, the schema may either ignore them or return odd values. So check it!
+        /// Usage example: SQLiteDataReader reader = this.GetSchema(connection, "tableName");
         /// </summary>
         /// <param name="connection">the open and valid connection to the database</param>
-        /// <param name="tableName">the name of the table</param>
-        private static void DropTable(SQLiteConnection connection, string tableName)
+        /// <param name="tableName">the  name of the table</param>
+        /// <returns>
+        /// The schema as a SQLiteDataReader.To examine it, do a while loop over reader.Read() to read a column at a time after every read
+        /// access the column's attributes, where 
+        /// -reader[0] is column number (e.g., 0)
+        /// -reader[1] is column name (e.g., Employee)
+        /// -reader[2] is type (e.g., STRING)
+        /// -reader[3] to [5] also returns values, but not yet sure what they stand for.. maybe 'Primary Key Autoincrement'?
+        /// </returns>
+        private static SQLiteDataReader GetSchema(SQLiteConnection connection, string tableName)
         {
-            // Turn foreign keys oof, do the operaton, then turn it backon. 
-            // This is because if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
-            // as otherwise it will delete the foreign key table contents.
-            SQLiteWrapper.SetPragmaForeignKeys(connection, false);
-
-            // Drop the table
-            string sql = Sql.DropTable + tableName;
+            string sql = Sql.PragmaTableInfo + Sql.OpenParenthesis + tableName + Sql.CloseParenthesis; // Syntax is: PRAGMA TABLE_INFO (tableName)
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
-                command.ExecuteNonQuery();
-            }
-
-            SQLiteWrapper.SetPragmaForeignKeys(connection, true);
-        }
-
-
-
-        public void DropTable(string tableName)
-        {
-            using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
-            {
-                connection.Open();
-                DropTable(connection, tableName);
+                return command.ExecuteReader();
             }
         }
 
-        private static List<string> GetColumnDefinitions(SQLiteConnection connection, string tableName)
+        private static List<string> GetSchemaColumnDefinitions(SQLiteConnection connection, string tableName)
         {
             using (SQLiteDataReader reader = GetSchema(connection, tableName))
             {
@@ -954,7 +653,7 @@ namespace Timelapse.Database
         /// <param name="connection">the open and valid connection to the database</param>
         /// <param name="tableName">the name of the table</param>
         /// <returns>a list of all the column names in the  table</returns>
-        private static List<string> GetColumnNamesAsList(SQLiteConnection connection, string tableName)
+        private static List<string> GetSchemaColumnNamesAsList(SQLiteConnection connection, string tableName)
         {
             SQLiteDataReader reader = GetSchema(connection, tableName);
             List<string> columnNames = new List<string>();
@@ -971,45 +670,332 @@ namespace Timelapse.Database
         /// <param name="connection">the open and valid connection to the database</param>
         /// <param name="tableName">the name of the table</param>
         /// <returns>a comma separated string of all the column names in the table</returns>
-        private static string GetColumnNamesAsString(SQLiteConnection connection, string tableName)
+        private static string GetSchemaColumnNamesAsString(SQLiteConnection connection, string tableName)
         {
-            return String.Join(", ", GetColumnNamesAsList(connection, tableName));
+            return String.Join(", ", GetSchemaColumnNamesAsList(connection, tableName));
         }
+        #endregion
 
+        #region Copy from source table to destination table
         /// <summary>
-        /// Get the Schema for a simple database table 'tableName' from the connected database.
-        /// For each column, it can retrieve schema settings including:
-        ///     Name, Type, If its the Primary Key, Constraints including its Default Value (if any) and Not Null 
-        /// However other constraints that may be set in the table schema are NOT returned, including:
-        ///     UNIQUE, CHECK, FOREIGN KEYS, AUTOINCREMENT 
-        /// If you use those, the schema may either ignore them or return odd values. So check it!
-        /// Usage example: SQLiteDataReader reader = this.GetSchema(connection, "tableName");
+        /// Copy all the values from the source table into the destination table. Assumes that both tables are populated with identically-named columns
         /// </summary>
-        /// <param name="connection">the open and valid connection to the database</param>
-        /// <param name="tableName">the  name of the table</param>
-        /// <returns>
-        /// The schema as a SQLiteDataReader.To examine it, do a while loop over reader.Read() to read a column at a time after every read
-        /// access the column's attributes, where 
-        /// -reader[0] is column number (e.g., 0)
-        /// -reader[1] is column name (e.g., Employee)
-        /// -reader[2] is type (e.g., STRING)
-        /// -reader[3] to [5] also returns values, but not yet sure what they stand for.. maybe 'Primary Key Autoincrement'?
-        /// </returns>
-        private static SQLiteDataReader GetSchema(SQLiteConnection connection, string tableName)
+        private static void CopyAllValuesFromTable(SQLiteConnection connection, string schemaFromTable, string dataSourceTable, string dataDestinationTable)
         {
-            string sql = Sql.PragmaTableInfo + Sql.OpenParenthesis + tableName + Sql.CloseParenthesis; // Syntax is: PRAGMA TABLE_INFO (tableName)
+            string commaSeparatedColumns = GetSchemaColumnNamesAsString(connection, schemaFromTable);
+            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumns + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumns + Sql.From + dataSourceTable;
+
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
             {
-                return command.ExecuteReader();
+                command.ExecuteNonQuery();
             }
         }
 
         /// <summary>
+        /// Copy all the values from the source table into the destination table. Assumes that both tables are populated with identically-named columns
+        /// </summary>
+        private static void CopyAllValuesBetweenTables(SQLiteConnection connection, string schemaFromSourceTable, string schemaFromDestinationTable, string dataSourceTable, string dataDestinationTable)
+        {
+            string commaSeparatedColumnsSource = GetSchemaColumnNamesAsString(connection, schemaFromSourceTable);
+            string commaSeparatedColumnsDestination = GetSchemaColumnNamesAsString(connection, schemaFromDestinationTable);
+            string sql = Sql.InsertInto + dataDestinationTable + Sql.OpenParenthesis + commaSeparatedColumnsDestination + Sql.CloseParenthesis + Sql.Select + commaSeparatedColumnsSource + Sql.From + dataSourceTable;
+
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+        #endregion
+
+        #region Schema and Column Changes: Replace Schema, IsColumnInTable / Add / Delete / Rename / 
+        public void SchemaAlterTableWithNewColumnDefinitions(string sourceTable, List<ColumnDefinition> columnDefinitions)
+        {
+            string destTable = "TempTable";
+            try
+            {
+                // Create an empty table with the schema based on columnDefinitions
+                this.CreateTable(destTable, columnDefinitions);
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+
+                    // copy the contents from the source table to the destination table
+                    CopyAllValuesFromTable(connection, destTable, sourceTable, destTable);
+
+                    // delete the source table, and rename the destination table so it is the same as the source table
+                    DropTable(connection, sourceTable);
+                    SchemaRenameTable(connection, destTable, sourceTable);
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in CopyTableContentsToEmptyTable. {0}", exception.ToString()));
+                throw;
+            }
+        }
+
+        // Return a List of strings comprising each column in the schema
+        public List<string> SchemaGetColumns(string tableName)
+        {
+            try
+            {
+                // Open the connection
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    SQLiteDataReader reader = GetSchema(connection, tableName);
+                    List<string> columnsList = new List<string>();
+                    while (reader.Read())
+                    {
+                        columnsList.Add(reader[1].ToString());
+                    }
+                    return columnsList;
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumns. {0}", exception.ToString()));
+                return null;
+            }
+        }
+
+
+        // Return a dictionary comprising each column in the schema and its default values (if any)
+        public Dictionary<string, string> SchemaGetColumnsAndDefaultValues(string tableName)
+        {
+            try
+            {
+                // Open the connection
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    SQLiteDataReader reader = GetSchema(connection, tableName);
+                    Dictionary<string, string> columndefaultsDict = new Dictionary<string, string>();
+                    while (reader.Read())
+                    {
+                        columndefaultsDict.Add(reader[1].ToString(), reader[4] != null ? reader[4].ToString() : String.Empty);
+                    }
+                    return columndefaultsDict;
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure executing getschema in SchemaGetColumnsAndDefaultValues. {0}", exception.ToString()));
+                return null;
+            }
+        }
+
+        public bool SchemaIsColumnInTable(string sourceTable, string currentColumnName)
+        {
+            try
+            {
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    List<string> currentColumnNames = GetSchemaColumnNamesAsList(connection, sourceTable);
+                    return currentColumnNames.Contains(currentColumnName);
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in ColumnExists. {0}", exception.ToString()));
+                return false;
+            }
+        }
+
+        // This method will create a column in a table of type TEXT, where it is added to its end
+        // It assumes that the value, if not empty, should be treated as the default value for that column
+        public void SchemaAddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
+
+            this.ExecuteNonQuery(Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition.ToString());
+        }
+
+        /// <summary>
+        /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
+        /// The value in columnDefinition is assumed to be the desired default value
+        /// </summary>
+        public void SchemaAddColumnToTable(string tableName, int columnNumber, ColumnDefinition columnDefinition)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
+
+            try
+            {
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+
+                    // Some basic error checking to make sure we can do the operation
+                    List<string> columnNames = GetSchemaColumnNamesAsList(connection, tableName);
+
+                    // Check if a column named Name already exists in the source Table. If so, abort as we cannot add duplicate column names
+                    if (columnNames.Contains(columnDefinition.Name))
+                    {
+                        throw new ArgumentException(String.Format("Column '{0}' is already present in table '{1}'.", columnDefinition.Name, tableName), nameof(columnDefinition));
+                    }
+
+                    // If columnNumber would result in the column being inserted at the end of the table, then use the more efficient method to do so.
+                    if (columnNumber >= columnNames.Count)
+                    {
+                        this.SchemaAddColumnToEndOfTable(tableName, columnDefinition);
+                        return;
+                    }
+
+                    // We need to add a column elsewhere than the end. This requires us to 
+                    // create a new schema, create a new table from that schema, copy data over to it, remove the old table
+                    // and rename the new table to the name of the old one.
+
+                    // Get a schema definition identical to the schema in the existing table, 
+                    // but with a new column definition of type TEXT added at the given position, where the value is assumed to be the default value
+                    string newSchema = SchemaInsertColumn(connection, tableName, columnNumber, columnDefinition);
+
+                    // Create a new table 
+                    string destTable = tableName + "NEW";
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Copy the old table's contents to the new table
+                    CopyAllValuesFromTable(connection, tableName, tableName, destTable);
+
+                    // Now drop the source table and rename the destination table to that of the source table
+                    DropTable(connection, tableName);
+
+                    // Rename the table
+                    SchemaRenameTable(connection, destTable, tableName);
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in AddColumn. {0}", exception.ToString()));
+                throw;
+            }
+        }
+
+        public bool SchemaDeleteColumn(string sourceTable, string columnName)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(columnName, nameof(columnName));
+
+            try
+            {
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    // Some basic error checking to make sure we can do the operation
+                    if (String.IsNullOrEmpty(columnName.Trim()))
+                    {
+                        return false;  // The provided column names= is an empty string
+                    }
+                    List<string> columnNames = GetSchemaColumnNamesAsList(connection, sourceTable);
+                    if (!columnNames.Contains(columnName))
+                    {
+                        return false; // There is no column called columnName in the source Table, so we can't delete ti
+                    }
+
+                    // Get a schema definition identical to the schema in the existing table, 
+                    // but with the column named columnName deleted from it
+                    string newSchema = SchemaRemoveColumn(connection, sourceTable, columnName);
+
+                    // Create a new table 
+                    string destTable = sourceTable + "NEW";
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Copy the old table's contents to the new table
+                    CopyAllValuesFromTable(connection, destTable, sourceTable, destTable);
+
+                    // Now drop the source table and rename the destination table to that of the source table
+                    DropTable(connection, sourceTable);
+
+                    // Rename the table
+                    SchemaRenameTable(connection, destTable, sourceTable);
+                    return true;
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in DeleteColumn. {0}", exception.ToString()));
+                throw;
+            }
+        }
+
+        public void SchemaRenameColumn(string sourceTable, string currentColumnName, string newColumnName)
+        {
+            // Some basic error checking to make sure we can do the operation
+            if (String.IsNullOrWhiteSpace(currentColumnName))
+            {
+                throw new ArgumentOutOfRangeException(nameof(currentColumnName));
+            }
+            if (String.IsNullOrWhiteSpace(newColumnName))
+            {
+                throw new ArgumentOutOfRangeException(nameof(newColumnName));
+            }
+
+            try
+            {
+                using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                {
+                    connection.Open();
+                    List<string> currentColumnNames = GetSchemaColumnNamesAsList(connection, sourceTable);
+                    if (currentColumnNames.Contains(currentColumnName) == false)
+                    {
+                        throw new ArgumentException(String.Format("No column named '{0}' exists to rename.", currentColumnName), nameof(currentColumnName));
+                    }
+                    if (currentColumnNames.Contains(newColumnName) == true)
+                    {
+                        throw new ArgumentException(String.Format("Column '{0}' is already in use.", newColumnName), nameof(newColumnName));
+                    }
+
+                    string newSchema = SchemaCloneButRenameColumn(connection, sourceTable, currentColumnName, newColumnName);
+
+                    // Create a new table 
+                    string destTable = sourceTable + "NEW";
+                    string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+
+                    // Copy the old table's contents to the new table
+                    CopyAllValuesBetweenTables(connection, sourceTable, destTable, sourceTable, destTable);
+
+                    // Now drop the source table and rename the destination table to that of the source table
+                    DropTable(connection, sourceTable);
+
+                    // Rename the table
+                    SchemaRenameTable(connection, destTable, sourceTable);
+                }
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in RenameColumn. {0}", exception.ToString()));
+                throw;
+            }
+        }
+
+        private static void SchemaAddColumnToEndOfTable(SQLiteConnection connection, string tableName, string columnDefinition)
+        {
+            string sql = Sql.AlterTable + tableName + Sql.AddColumn + columnDefinition;
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+        /// <summary>
         /// Add a column definition into the provided schema at the given column location
         /// </summary>
-        private static string InsertColumnInSchema(SQLiteConnection connection, string tableName, int newColumnNumber, ColumnDefinition newColumn)
+        private static string SchemaInsertColumn(SQLiteConnection connection, string tableName, int newColumnNumber, ColumnDefinition newColumn)
         {
-            List<string> columnDefinitions = GetColumnDefinitions(connection, tableName);
+            List<string> columnDefinitions = GetSchemaColumnDefinitions(connection, tableName);
             columnDefinitions.Insert(newColumnNumber, newColumn.ToString());
             return String.Join(", ", columnDefinitions);
         }
@@ -1017,9 +1003,9 @@ namespace Timelapse.Database
         /// <summary>
         /// Create a schema cloned from tableName, except with the column definition for columnName deleted
         /// </summary>
-        private static string RemoveColumnFromSchema(SQLiteConnection connection, string tableName, string columnName)
+        private static string SchemaRemoveColumn(SQLiteConnection connection, string tableName, string columnName)
         {
-            List<string> columnDefinitions = GetColumnDefinitions(connection, tableName);
+            List<string> columnDefinitions = GetSchemaColumnDefinitions(connection, tableName);
             int columnToRemove = -1;
             for (int column = 0; column < columnDefinitions.Count; ++column)
             {
@@ -1042,7 +1028,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Create a schema cloned from tableName, except with the column definition for columnName deleted
         /// </summary>
-        private static string CloneSchemaButRenameColumn(SQLiteConnection connection, string tableName, string existingColumnName, string newColumnName)
+        private static string SchemaCloneButRenameColumn(SQLiteConnection connection, string tableName, string existingColumnName, string newColumnName)
         {
             string newSchema = String.Empty;
             SQLiteDataReader reader = GetSchema(connection, tableName);
@@ -1098,7 +1084,7 @@ namespace Timelapse.Database
         /// <param name="connection">the open and valid connection to the database</param>
         /// <param name="tableName">the current name of the existing table</param> 
         /// <param name="newTableName">the new name of the table</param> 
-        private static void RenameTable(SQLiteConnection connection, string tableName, string newTableName)
+        private static void SchemaRenameTable(SQLiteConnection connection, string tableName, string newTableName)
         {
             string sql = Sql.AlterTable + tableName + Sql.RenameTo + newTableName;
             using (SQLiteCommand command = new SQLiteCommand(sql, connection))
@@ -1106,6 +1092,37 @@ namespace Timelapse.Database
                 command.ExecuteNonQuery();
             }
         }
+        #endregion
+
+        #region Drop Table
+        /// <summary>
+        /// Drop the database table 'tableName' from the connected database.
+        /// </summary>
+        public void DropTable(string tableName)
+        {
+            using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+            {
+                connection.Open();
+                DropTable(connection, tableName);
+            }
+        }
+        private static void DropTable(SQLiteConnection connection, string tableName)
+        {
+            // Turn foreign keys oof, do the operaton, then turn it backon. 
+            // This is because if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
+            // as otherwise it will delete the foreign key table contents.
+            SQLiteWrapper.PragmaSetForeignKeys(connection, false);
+
+            // Drop the table
+            string sql = Sql.DropTable + tableName;
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+
+            SQLiteWrapper.PragmaSetForeignKeys(connection, true);
+        }
+        #endregion
 
         #region Utilities
         // Open the SQLite connection
@@ -1115,35 +1132,6 @@ namespace Timelapse.Database
         public static SQLiteConnection GetNewSqliteConnection(string connectionString)
         {
             return new SQLiteConnection(connectionString, true);
-        }
-        #endregion
-
-        #region DetectionTable - related routines, put in normal places.
-        public void ClearRowsInTables(List<string> tables)
-        {
-            if (tables == null || tables.Count == 0)
-            {
-                return;
-            }
-            string queries = String.Empty;                      // A list of SQL queries
-
-            // Turn pragma foreign_key off before the delete, as otherwise it takes forever on largish tables
-            // Notice that we do not wrap this in a begin / end, as the pragma does not work within that.
-            queries += Sql.PragmaForeignKeysOff + "; ";
-
-            // Construct a list containing queries of the form DELETE FROM table_name
-            foreach (string table in tables)
-            {
-                string query = Sql.DeleteFrom + table;     // DELETE FROM tablename
-                query += "; ";
-                queries += query;
-            }
-
-            // Now turn pragma foreign_key on again after the delete
-            queries += Sql.PragmaForeignKeysOn + ";";
-
-            // Invoke the batched queries
-            this.ExecuteNonQuery(queries);
         }
         #endregion
 
@@ -1168,45 +1156,16 @@ namespace Timelapse.Database
                     return false;
                 }
                 query = String.Format("SELECT COUNT(*)_ FROM {0}", tableName);
-                return this.GetCountFromSelect(query) != 0;
+                return this.ScalarGetCountFromSelect(query) != 0;
             }
         }
         #endregion
 
         #region Pragmas
-        // PRAGMA Turn foreign keys on or off. 
-        // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
-        // as otherwise it will delete the foreign key table contents.
-        private static void SetPragmaForeignKeys(SQLiteConnection connection, bool state)
-        {
-            // Syntax is: PRAGMA foreign_keys = OFF;
-            // Syntax is: PRAGMA foreign_keys = On;
-            string sql = "PRAGMA foreign_keys = ";
-            sql += state ? "ON;" : "Off;";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        // PRAGMA Defer foreign keys. 
-#pragma warning disable IDE0051 // Remove unused private members
-        private static void SetPragmaDeferForeignKeys(SQLiteConnection connection, bool state)
-        {
-            // Syntax is: defer_foreign_keys = 1; True
-            //            defer_foreign_keys = 0; False
-            string sql = "PRAGMA defer_foreign_keys = ";
-            sql += state ? "1;" : "0;";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
         // PRAGMA Quick_Check
         // Checks for database integrity. Note that if it is really corrupt, it will generate an internal exception that is corrupt.
         // Also note that a zero-length database file will pass this test, so you need to do a further check i.e. to see if a particular table is in the database.
-        public bool GetPragmaQuickCheck()
+        public bool PragmaGetQuickCheck()
         {
             try
             {
@@ -1243,6 +1202,36 @@ namespace Timelapse.Database
             }
         }
 
+        // PRAGMA Turn foreign keys on or off. 
+        // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
+        // as otherwise it will delete the foreign key table contents.
+        private static void PragmaSetForeignKeys(SQLiteConnection connection, bool state)
+        {
+            // Syntax is: PRAGMA foreign_keys = OFF;
+            // Syntax is: PRAGMA foreign_keys = On;
+            string sql = "PRAGMA foreign_keys = ";
+            sql += state ? "ON;" : "Off;";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        // PRAGMA Defer foreign keys. 
+#pragma warning disable IDE0051 // Remove unused private members
+        private static void PragmaSetDeferForeignKeys(SQLiteConnection connection, bool state)
+        {
+            // Syntax is: defer_foreign_keys = 1; True
+            //            defer_foreign_keys = 0; False
+            string sql = "PRAGMA defer_foreign_keys = ";
+            sql += state ? "1;" : "0;";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+
 #pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
@@ -1261,7 +1250,7 @@ namespace Timelapse.Database
         private static void AddColumnToEndOfTable(SQLiteConnection connection, string tableName, string name, string type)
         {
             string columnDefinition = name + " " + type;
-            AddColumnToEndOfTable(connection, tableName, columnDefinition);
+            SchemaAddColumnToEndOfTable(connection, tableName, columnDefinition);
         }
 
         /// <summary>
@@ -1280,7 +1269,7 @@ namespace Timelapse.Database
             {
                 columnDefinition += " " + otherOptions;
             }
-            AddColumnToEndOfTable(connection, tableName, columnDefinition);
+            SchemaAddColumnToEndOfTable(connection, tableName, columnDefinition);
         }
 #pragma warning restore IDE0051 // Remove unused private members
         #endregion
