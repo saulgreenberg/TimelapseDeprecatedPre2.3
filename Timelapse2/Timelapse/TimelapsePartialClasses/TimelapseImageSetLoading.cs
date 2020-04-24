@@ -55,6 +55,7 @@ namespace Timelapse
             // First, check the file path length and notify the user the template couldn't be loaded because its path is too long
             if (IsCondition.IsPathLengthTooLong(templateDatabasePath))
             {
+                Mouse.OverrideCursor = null;
                 Dialogs.TemplatePathTooLongDialog(templateDatabasePath, this);
                 return false;
             }
@@ -66,6 +67,7 @@ namespace Timelapse
             if (!tupleResult.Item1)
             {
                 // Notify the user the template couldn't be loaded rather than silently doing nothing
+                Mouse.OverrideCursor = null;
                 Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabasePath, this);
                 return false;
             }
@@ -82,6 +84,7 @@ namespace Timelapse
             // Check the file path length of the .ddb file and notify the user the ddb couldn't be loaded because its path is too long
             if (IsCondition.IsPathLengthTooLong(fileDatabaseFilePath))
             {
+                Mouse.OverrideCursor = null;
                 Dialogs.DatabasePathTooLongDialog(fileDatabaseFilePath, this);
                 return false;
             }
@@ -89,6 +92,7 @@ namespace Timelapse
             // Check the expected file path length of the backup files, and warn the user if backups may not be made because thier path is too long
             if (IsCondition.IsBackupPathLengthTooLong(templateDatabasePath) || IsCondition.IsBackupPathLengthTooLong(fileDatabaseFilePath))
             {
+                Mouse.OverrideCursor = null;
                 Dialogs.BackupPathTooLongDialog(this);
             }
 
@@ -106,6 +110,7 @@ namespace Timelapse
                     {
                         // There are unresolvable syncronization issues. Report them now as we cannot use this template.
                         // Depending on the user response, we either abort Timelapse or use the template found in the ddb file
+                        Mouse.OverrideCursor = null;
                         Dialog.TemplateSynchronization templatesNotCompatibleDialog;
 
                         templatesNotCompatibleDialog = new Dialog.TemplateSynchronization(templateSyncResults.ControlSynchronizationErrors, templateSyncResults.ControlSynchronizationWarnings, this);
@@ -128,6 +133,7 @@ namespace Timelapse
                         // Depending on the user response, set the useTemplateDBTemplate to signal whether we should: 
                         // - update the template and image data columns in the image database 
                         // - use the old template
+                        Mouse.OverrideCursor = null;
                         TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(templateSyncResults, this);
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
                         templateSyncResults.UseTemplateDBTemplate = (result1 == true) ? true : false;
@@ -144,6 +150,7 @@ namespace Timelapse
                     // It is likely due to an empty or corrupt or otherwise unreadable database in the file.
                     // Raise an error message
                     bool isEmpty = File.Exists(fileDatabaseFilePath) && new FileInfo(fileDatabaseFilePath).Length == 0;
+                    Mouse.OverrideCursor = null;
                     Dialogs.DatabaseFileNotLoadedAsCorrupt(fileDatabaseFilePath, isEmpty, this);
                     return false;
                 }

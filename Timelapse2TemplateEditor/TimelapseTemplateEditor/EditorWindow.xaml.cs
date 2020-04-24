@@ -222,6 +222,7 @@ namespace Timelapse.Editor
                 // Open document 
                 if (false == await this.InitializeDataGridAsync(openFileDialog.FileName).ConfigureAwait(true))
                 {
+                    Mouse.OverrideCursor = null;
                     Dialogs.TemplateFileNotLoadedAsCorrupt(openFileDialog.FileName, this);
                     return;
                 }
@@ -244,6 +245,8 @@ namespace Timelapse.Editor
             }
             if (false == await this.InitializeDataGridAsync(recentTemplatePath).ConfigureAwait(true))
             {
+
+                Mouse.OverrideCursor = null; 
                 Dialogs.TemplateFileNotLoadedAsCorrupt(recentTemplatePath, this);
                 return;
             }
@@ -1478,6 +1481,7 @@ namespace Timelapse.Editor
             {
                 if (false == await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true))
                 {
+                    Mouse.OverrideCursor = null; 
                     Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabaseFilePath, this);
                     return;
                 }

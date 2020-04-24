@@ -355,7 +355,7 @@ namespace Timelapse.Database
             FileDatabase fileDatabase = new FileDatabase(filePath);
             if (fileDatabase.Database.PragmaGetQuickCheck() == false || fileDatabase.TableExists(Constant.DBTables.FileData) == false)
             {
-                // Missing datatable i.e., the database file is likely corrupt or empty or otherwise unreadable
+                // The database file is likely corrupt, possibly due to missing a key table, is an empty file, or is otherwise unreadable
                 if (fileDatabase != null)
                 {
                     fileDatabase.Dispose();
