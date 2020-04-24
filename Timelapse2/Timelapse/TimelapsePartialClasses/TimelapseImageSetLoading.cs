@@ -65,8 +65,8 @@ namespace Timelapse
             this.templateDatabase = tupleResult.Item2;
             if (!tupleResult.Item1)
             {
-                // notify the user the template couldn't be loaded rather than silently doing nothing
-                Dialogs.TemplateCouldNotBeLoadedDialog(templateDatabasePath, this);
+                // Notify the user the template couldn't be loaded rather than silently doing nothing
+                Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabasePath, this);
                 return false;
             }
 
@@ -96,6 +96,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
+
             using (FileDatabase fileDB = await FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults).ConfigureAwait(true))
             {
                 // A file database was available to open
@@ -137,8 +138,16 @@ namespace Timelapse
                         templateSyncResults.UseTemplateDBTemplate = true;
                     }
                 }
+                else if (File.Exists(fileDatabaseFilePath) == true)
+                {
+                    // The .ddb file (which exists) is for some reason unreadable.
+                    // It is likely due to an empty or corrupt or otherwise unreadable database in the file.
+                    // Raise an error message
+                    bool isEmpty = File.Exists(fileDatabaseFilePath) && new FileInfo(fileDatabaseFilePath).Length == 0;
+                    Dialogs.DatabaseFileNotLoadedAsCorrupt(fileDatabaseFilePath, isEmpty, this);
+                    return false;
+                }
             }
-
             // At this point:
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
             // - we should have a valid template and image database loaded

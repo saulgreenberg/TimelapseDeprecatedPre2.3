@@ -81,6 +81,14 @@ namespace Timelapse.Database
 
         public TRow Find(long id)
         {
+            //This check should no longer be needed, as we now check to see if the database file is corrupt or not. 
+            // And this should only be invoked if the database was determined to be non-corrupt. 
+            // Still... its worth keeping this bit of code handy just in case we have to revisit it.
+            //if (this.DataTable.PrimaryKey.Length == 0)
+            //{
+            //    // Check if there is a primary key. This will fail if the database was somehow corrupt i.e., if the table is not there or unreadable.
+            //    throw new MissingPrimaryKeyException("No Primary key. The database may be corrupt");
+            //}
             DataRow row = this.DataTable.Rows.Find(id);
             if (row == null)
             {

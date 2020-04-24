@@ -353,6 +353,15 @@ namespace Timelapse.Database
                 return null;
             }
             FileDatabase fileDatabase = new FileDatabase(filePath);
+            if (fileDatabase.Database.GetPragmaQuickCheck() == false || fileDatabase.TableExists(Constant.DBTables.FileData) == false)
+            {
+                // Missing datatable i.e., the database file is likely corrupt or empty or otherwise unreadable
+                if (fileDatabase != null)
+                {
+                    fileDatabase.Dispose();
+                }
+                return null;
+            }
             await fileDatabase.UpgradeDatabasesAndCompareTemplatesAsync(templateDatabase, templateSyncResults).ConfigureAwait(true);
             return fileDatabase;
         }
@@ -1482,19 +1491,20 @@ namespace Timelapse.Database
         #endregion
 
         #region Exists tables
-        public bool TableExists(string dataTable)
-        {
-            return this.Database.TableExists(dataTable);
-        }
+        // This code was moved to TemplateTable and now exists there
+        //public bool TableExists(string dataTable)
+        //{
+        //    return this.Database.TableExists(dataTable);
+        //}
 
-        // Check if the database table specified in the path has a detections table
-        public static bool TableExists(string dataTable, string dbPath)
-        {
-            // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
-            // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
-            SQLiteWrapper db = new SQLiteWrapper(dbPath);
-            return db.TableExists(dataTable);
-        }
+        //// Check if the database table specified in the path has a detections table
+        //public static bool TableExists(string dataTable, string dbPath)
+        //{
+        //    // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
+        //    // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
+        //    SQLiteWrapper db = new SQLiteWrapper(dbPath);
+        //    return db.TableExists(dataTable);
+        //}
         #endregion
 
         #region Exists matching files  

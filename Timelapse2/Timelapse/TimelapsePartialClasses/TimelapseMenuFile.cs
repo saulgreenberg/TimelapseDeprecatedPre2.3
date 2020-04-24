@@ -482,7 +482,7 @@ namespace Timelapse
         }
 
         // Close Image Set
-        private void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
+        public void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
         {
             // if we are actually viewing any files
             if (this.IsFileDatabaseAvailable())

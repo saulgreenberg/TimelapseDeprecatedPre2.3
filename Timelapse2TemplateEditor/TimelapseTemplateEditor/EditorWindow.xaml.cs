@@ -220,13 +220,17 @@ namespace Timelapse.Editor
             if (result == true)
             {
                 // Open document 
-                await this.InitializeDataGridAsync(openFileDialog.FileName).ConfigureAwait(true);
+                if (false == await this.InitializeDataGridAsync(openFileDialog.FileName).ConfigureAwait(true))
+                {
+                    Dialogs.TemplateFileNotLoadedAsCorrupt(openFileDialog.FileName, this);
+                    return;
+                }
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
                 this.MenuFileClose.IsEnabled = true;
             }
         }
 
-        // Open a rencently used template
+        // Open a recently used template
         private async void MenuItemRecentTemplate_Click(object sender, RoutedEventArgs e)
         {
             string recentTemplatePath = (string)((MenuItem)sender).ToolTip;
@@ -238,7 +242,11 @@ namespace Timelapse.Editor
                 messageBox.ShowDialog();
                 return;
             }
-            await this.InitializeDataGridAsync(recentTemplatePath).ConfigureAwait(true);
+            if (false == await this.InitializeDataGridAsync(recentTemplatePath).ConfigureAwait(true))
+            {
+                Dialogs.TemplateFileNotLoadedAsCorrupt(recentTemplatePath, this);
+                return;
+            }
             this.HelpMessageInitial.Visibility = Visibility.Collapsed;
         }
 
@@ -518,11 +526,14 @@ namespace Timelapse.Editor
         /// Some listeners are added to the DataTable, and the DataTable is bound. The add row buttons are enabled.
         /// </summary>
         /// <param name="templateDatabaseFilePath">The path of the DB file created or loaded</param>
-        private async Task InitializeDataGridAsync(string templateDatabaseFilePath)
+        private async Task<bool> InitializeDataGridAsync(string templateDatabaseFilePath)
         {
             // Create a new DB file if one does not exist, or load a DB file if there is one.
             this.templateDatabase = await TemplateDatabase.CreateOrOpenAsync(templateDatabaseFilePath).ConfigureAwait(true);
-
+            if (this.templateDatabase == null)
+            {
+                return false;
+            }
             // Map the data table to the data grid, and create a callback executed whenever the datatable row changes
             this.templateDatabase.BindToEditorDataGrid(this.TemplateDataGrid, this.TemplateDataTable_RowChanged);
 
@@ -533,6 +544,7 @@ namespace Timelapse.Editor
             // Enable/disable the various UI elements as needed.
             this.userSettings.MostRecentTemplates.SetMostRecent(templateDatabaseFilePath);
             this.ResetUIElements(true, this.templateDatabase.FilePath);
+            return true;
         }
         #endregion DataGrid and New Database Initialization
 
@@ -1464,7 +1476,11 @@ namespace Timelapse.Editor
         {
             if (DragDropFile.IsTemplateFileDragging(dropEvent, out string templateDatabaseFilePath))
             {
-                await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true);
+                if (false == await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true))
+                {
+                    Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabaseFilePath, this);
+                    return;
+                }
             }
         }
 

@@ -6,10 +6,13 @@ using System.Windows.Controls;
 
 namespace Timelapse.Controls
 {
+    /// <summary>
+    /// Implements an autocomplete textbox that retains memory of what was entered before
+    /// and shows autocomplete predictions based on initial text typed into it
+    /// </summary>
     public class AutocompleteTextBox : TextBox
     {
-        private string mostRecentAutocompletion;
-
+        #region Public Properties
         // XamlWriter doesn't support generics so this property breaks anything triggering XamlWriter.Save(), such as clearing UI object collections
         // containing the text box since the clear triggers undo and undo relies on serialization.
         // If needed serialization support can be added via a TypeConverter.
@@ -20,18 +23,28 @@ namespace Timelapse.Controls
         // Values are always null. It works better than lists, where we would have to check the list to see if each entry was in it before adding it.
         // Yes, its a hack but a reasonable one
         public Dictionary<string, string> Autocompletions { get; set; }
+        #endregion
 
+        #region Public Events
         /// <summary>
         /// Since auto-completion hooks the TextChanged event provide a follow on event to callers as event sequencing can be fragile.
         /// </summary>
         public event Action<object, TextChangedEventArgs> TextAutocompleted;
+        #endregion
 
+        #region Private variables
+        private string mostRecentAutocompletion;
+        #endregion
+
+        #region Constructore
         public AutocompleteTextBox()
         {
             this.mostRecentAutocompletion = null;
             this.TextChanged += this.OnTextChanged;
         }
+        #endregion
 
+        #region Private (internal) methods including Event Callbacks
         private void OnTextChanged(object sender, TextChangedEventArgs eventArgs)
         {
             // Don't allow leading whitespace
@@ -100,5 +113,6 @@ namespace Timelapse.Controls
             }
             return false;
         }
+        #endregion
     }
 }

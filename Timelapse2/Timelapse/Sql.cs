@@ -64,6 +64,7 @@
         public const string NotNull = " NOT NULL ";
         public const string Null = " NULL ";
         public const string NullAs = Null + " " + As;
+        public const string Ok = "ok"; 
         public const string On = " ON ";
         public const string OnConflict = " ON CONFLICT ";
         public const string OpenParenthesis = " ( ";
@@ -74,6 +75,7 @@
         public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1 ";
         public const string PragmaForeignKeysOff = " PRAGMA foreign_keys = OFF ";
         public const string PragmaForeignKeysOn = " PRAGMA foreign_keys = ON ";
+        public const string PragmaQuickCheck = "PRAGMA QUICK_CHECK "; 
         public const string PrimaryKey = " PRIMARY KEY ";
         public const string RenameTo = " RENAME TO ";
         public const string Select = " SELECT ";
@@ -83,6 +85,7 @@
         public const string SelectCount = " Select Count ";
         public const string SelectCountStarFrom = Sql.SelectCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
         public const string SelectExists = " SELECT EXISTS ";
+        public const string SelectNameFromSqliteMasterWhereTypeEqualTableAndNameEquals = " SELECT name FROM sqlite_master WHERE TYPE = 'table' AND name = ";
         public const string Semicolon = " ; ";
         public const string Set = " SET ";
         public const string Star = "*";

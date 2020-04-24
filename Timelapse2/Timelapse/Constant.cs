@@ -277,6 +277,7 @@ namespace Timelapse.Constant
         public static readonly Uri UserManualLink = new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf");
         public static readonly Uri CreativeCommonsLicenseLink = new Uri("https://creativecommons.org/licenses/by-nc-sa/4.0/");
         public static readonly Uri AdditionalLicenseDetailsLink = new Uri("https://github.com/saulgreenberg/Timelapse/blob/master/LICENSE.md");
+        public static readonly string EmailAddress = "saul@ucalgary.ca";
     }
 
     public static class File
@@ -306,7 +307,7 @@ namespace Timelapse.Constant
         public const int MaxPathLength = 250;
         public const int MaxAdditionalLengthOfBackupFiles = 28;
 
-        public static readonly TimeSpan BackupInterval = TimeSpan.FromMinutes(10);
+        public static readonly TimeSpan BackupInterval = TimeSpan.FromMinutes(30);
 
         public const string TraceFile = "Trace.txt"; // FIle name for file containing debug information. Usually written in the same folder containing the template.
     }

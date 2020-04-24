@@ -69,11 +69,63 @@ namespace Timelapse.Database
             }
             else
             {
+                // The database file exists. However, we still need to check if its valid. 
+                // We do this by checking the database integrity (which may raise an internal exception) and if that is ok, by checking if it has a TemplateTable. 
+                if (templateDatabase.Database.GetPragmaQuickCheck() == false || templateDatabase.TableExists(Constant.DBTables.Controls) == false)
+                {
+                    if (templateDatabase != null)
+                    {
+                        templateDatabase.Dispose();
+                    }
+                    return null;
+                }
                 // if it's an existing database check if it needs updating to current structure and load data tables
                 await templateDatabase.OnExistingDatabaseOpenedAsync(null, null).ConfigureAwait(true);
             }
             return templateDatabase;
         }
+
+        // Check if the database is valid. 
+        public bool IsDatabaseFileValid(string filePath, string tableNameToCheck)
+        {
+            // check if a database file exists, and if so that it is not corrupt
+            if (!File.Exists(filePath))
+            {
+                return false;
+            }
+
+            // The database file exists. However, we still need to check if its valid. 
+            using (TemplateDatabase database = new TemplateDatabase(filePath))
+            {
+                if (database?.Database == null)
+                {
+                    return false;
+                }
+                
+                // We do this by checking the database integrity (which may raise an internal exception) and if that is ok, by checking if it has a TemplateTable. 
+                if (this.Database.GetPragmaQuickCheck() == false || this.TableExists(tableNameToCheck) == false)
+                {
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        #region Exists tables
+        public bool TableExists(string dataTable)
+        {
+            return this.Database.TableExists(dataTable);
+        }
+
+        // Check if the database table specified in the path has a detections table
+        public static bool TableExists(string dataTable, string dbPath)
+        {
+            // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
+            // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
+            SQLiteWrapper db = new SQLiteWrapper(dbPath);
+            return db.TableExists(dataTable);
+        }
+        #endregion
 
         public ControlRow AddUserDefinedControl(string controlType)
         {
@@ -340,7 +392,9 @@ namespace Timelapse.Database
             {
                 disposableTemplateDB = await CreateOrOpenAsync(filePath).ConfigureAwait(true);
                 TemplateDatabase returnableTemplateDB = disposableTemplateDB;
-                return new Tuple<bool, TemplateDatabase>(true, returnableTemplateDB);
+                // the returnableTemplateDB will be null if its not a valid template, e.g., if no TemplateTable exists in it
+                bool successOrFail = returnableTemplateDB != null;
+                return new Tuple<bool, TemplateDatabase>(successOrFail, returnableTemplateDB);
             }
             catch (Exception exception)
             {
@@ -349,7 +403,10 @@ namespace Timelapse.Database
             }
             finally
             {
-                disposableTemplateDB.Dispose();
+                if (disposableTemplateDB != null)
+                {
+                    disposableTemplateDB.Dispose();
+                }
             }
         }
 

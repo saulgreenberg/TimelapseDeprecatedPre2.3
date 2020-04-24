@@ -13,6 +13,8 @@ namespace Timelapse.Dialog
 {
     public static class Dialogs
     {
+        #region Dialog Messages: Corrupted .DDB file (no primary key)
+        #endregion
         #region Dialog Box Positioning and Fitting
         // Most (but not all) invocations of SetDefaultDialogPosition and TryFitDialogWndowInWorkingArea 
         // are done together, so collapse it into a single call
@@ -291,17 +293,55 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Dialog Message: Problem loading the template
-        public static void TemplateCouldNotBeLoadedDialog(string templateDatabasePath, Window owner)
+        public static void TemplateFileNotLoadedAsCorrupt(string templateDatabasePath, Window owner)
         {
+            Util.ThrowIf.IsNullArgument(owner, nameof(owner));
             // notify the user the template couldn't be loaded rather than silently doing nothing
-            MessageBox messageBox = new MessageBox("Timelapse could not load the template.", owner);
-            messageBox.Message.Problem = "Timelapse could not load the Template File:" + Environment.NewLine;
+            MessageBox messageBox = new MessageBox("Timelapse could not load the Template file.", owner);
+            messageBox.Message.Problem = "Timelapse could not load the Template File :" + Environment.NewLine;
             messageBox.Message.Problem += "\u2022 " + templateDatabasePath;
-            messageBox.Message.Reason = "The template may be corrupted or somehow otherwise invalid. ";
-            messageBox.Message.Solution = "You may have to recreate the template, or use another copy of it (check the Backups folder).";
-            messageBox.Message.Result = "Timelapse won't do anything. You can try to select another template file.";
-            messageBox.Message.Hint = "See if you can examine the template file in the Timelapse Template Editor.";
-            messageBox.Message.Hint += "If you can't, there is likley something wrong with it and you will have to recreate it.";
+            messageBox.Message.Reason = String.Format("The template ({0}) file may be corrupted, unreadable, or otherwise invalid.", Constant.File.TemplateDatabaseFileExtension);
+            messageBox.Message.Solution = "Try one or more of the following:" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 recreate the template, or use another copy of it." + Environment.NewLine;
+            messageBox.Message.Solution += String.Format("\u2022 check if there is a valid template file in your {0} folder.", Constant.File.BackupFolder) + Environment.NewLine;
+            messageBox.Message.Solution += String.Format("\u2022 email {0} describing what happened, attaching a copy of your {1} file.", Constant.ExternalLinks.EmailAddress, Constant.File.TemplateDatabaseFileExtension);
+
+            messageBox.Message.Result = "Timelapse did not affect any of your other files.";
+            if (owner.Title.StartsWith(Constant.Defaults.MainWindowBaseTitle))
+            {
+                // Only displayed in Timelapse, not the template editor
+                messageBox.Message.Hint = "See if you can open and examine the template file in the Timelapse Template Editor." + Environment.NewLine;
+                messageBox.Message.Hint += "If you can't, and if you don't have a copy elsewhere, you will have to recreate it.";
+            }
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region Dialog Messages: Corrupted .DDB file (no primary key)
+        public static void DatabaseFileNotLoadedAsCorrupt(string ddbDatabasePath, bool isEmpty, Window owner)
+        {
+            // notify the user the database couldn't be loaded because there is a problem with it
+            MessageBox messageBox = new MessageBox("Timelapse could not load your database file.", owner);
+            messageBox.Message.Problem = "Timelapse could not load your .ddb database file:" + Environment.NewLine;
+            messageBox.Message.Problem += "\u2022 " + ddbDatabasePath;
+            if (isEmpty)
+            {
+                messageBox.Message.Reason = "Your database file is empty. Possible reasons include:" + Environment.NewLine;
+            }
+            else
+            {
+                messageBox.Message.Reason = "Your database is unreadable or corrupted. Possible reasons include:" + Environment.NewLine;
+            }
+            messageBox.Message.Reason += "\u2022 Timelapse was shut down (or crashed) in the midst of:" + Environment.NewLine;
+            messageBox.Message.Reason += "    - loading your image set for the first time, or" + Environment.NewLine;
+            messageBox.Message.Reason += "    - writing your data into the file, or" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 system, security or network  restrictions prohibited file reading and writing, or," + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 some other unkown reason.";
+            messageBox.Message.Solution = "\u2022 If you have not analyzed any images yet, delete the .ddb file and try again." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 Also, check for valid backups of your database in your " + Constant.File.BackupFolder + " folder that you can reuse.";
+            messageBox.Message.Hint = "IMPORTANT: Send a copy of your .ddb and .tdb files along with an explanatory note to saul@ucalgary.ca." + Environment.NewLine;
+            messageBox.Message.Hint += "He will check those files to see if there is a fixable bug.";
             messageBox.Message.Icon = MessageBoxImage.Error;
             messageBox.ShowDialog();
         }

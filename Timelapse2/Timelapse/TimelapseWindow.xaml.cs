@@ -334,6 +334,10 @@ namespace Timelapse
             }
             this.disposed = true;
         }
+
+        #endregion
+
+        #region Exception Management
         // If we get an exception that wasn't handled, show a dialog asking the user to send the bug report to us.
         private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {

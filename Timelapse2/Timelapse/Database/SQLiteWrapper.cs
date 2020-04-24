@@ -1145,24 +1145,22 @@ namespace Timelapse.Database
             // Invoke the batched queries
             this.ExecuteNonQuery(queries);
         }
+        #endregion
 
+        #region Table Exists (and also its not empty)
         public bool TableExists(string tableName)
         {
-            // DETECTIONS: Move statements into constants
-            string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
-            DataTable datatable = this.GetDataTableFromSelect(query);
-            bool rowsExist = datatable.Rows.Count != 0;
-            if (datatable != null)
+            string query = Sql.SelectNameFromSqliteMasterWhereTypeEqualTableAndNameEquals + Sql.Quote(tableName) + Sql.Semicolon;
+            using (DataTable datatable = this.GetDataTableFromSelect(query))
             {
-                datatable.Dispose();
+                bool rowsExist = datatable.Rows.Count != 0;
+                return rowsExist;
             }
-            return rowsExist;
         }
 
         public bool TableExistsAndNotEmpty(string tableName)
         {
-            // DETECTIONS: Move statements into constants
-            string query = String.Format("SELECT name FROM sqlite_master WHERE type = 'table' AND name = '{0}'; ", tableName);
+            string query = Sql.SelectNameFromSqliteMasterWhereTypeEqualTableAndNameEquals + Sql.Quote(tableName) + Sql.Semicolon;
             using (DataTable datatable = this.GetDataTableFromSelect(query))
             {
                 if (datatable.Rows.Count == 0)
@@ -1173,6 +1171,79 @@ namespace Timelapse.Database
                 return this.GetCountFromSelect(query) != 0;
             }
         }
+        #endregion
+
+        #region Pragmas
+        // PRAGMA Turn foreign keys on or off. 
+        // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
+        // as otherwise it will delete the foreign key table contents.
+        private static void SetPragmaForeignKeys(SQLiteConnection connection, bool state)
+        {
+            // Syntax is: PRAGMA foreign_keys = OFF;
+            // Syntax is: PRAGMA foreign_keys = On;
+            string sql = "PRAGMA foreign_keys = ";
+            sql += state ? "ON;" : "Off;";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        // PRAGMA Defer foreign keys. 
+#pragma warning disable IDE0051 // Remove unused private members
+        private static void SetPragmaDeferForeignKeys(SQLiteConnection connection, bool state)
+        {
+            // Syntax is: defer_foreign_keys = 1; True
+            //            defer_foreign_keys = 0; False
+            string sql = "PRAGMA defer_foreign_keys = ";
+            sql += state ? "1;" : "0;";
+            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        // PRAGMA Quick_Check
+        // Checks for database integrity. Note that if it is really corrupt, it will generate an internal exception that is corrupt.
+        // Also note that a zero-length database file will pass this test, so you need to do a further check i.e. to see if a particular table is in the database.
+        public bool GetPragmaQuickCheck()
+        {
+            try
+            {
+                using (DataTable dataTable = new DataTable())
+                {
+                    // Open the connection
+                    using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
+                    {
+                        connection.Open();
+                        using (SQLiteCommand command = new SQLiteCommand(connection))
+                        {
+                            command.CommandText = Sql.PragmaQuickCheck;
+                            using (SQLiteDataReader reader = command.ExecuteReader())
+                            {
+                                dataTable.Columns.CollectionChanged += this.DataTableColumns_Changed;
+                                dataTable.Load(reader);
+                                if (dataTable.Rows.Count == 1 && String.Equals((string)dataTable.Rows[0].ItemArray[0], Sql.Ok, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // this will be a System.Data.SQLite.SQLiteException
+                return false;
+            }
+        }
+
+#pragma warning restore IDE0051 // Remove unused private members
         #endregion
 
         #region Unused methods
@@ -1210,38 +1281,6 @@ namespace Timelapse.Database
                 columnDefinition += " " + otherOptions;
             }
             AddColumnToEndOfTable(connection, tableName, columnDefinition);
-        }
-#pragma warning restore IDE0051 // Remove unused private members
-        #endregion
-
-        #region Pragmas
-        // PRAGMA Turn foreign keys on or off. 
-        // For example, if we drop a table that has foreign keys in it, we need to make sure foreign keys are off
-        // as otherwise it will delete the foreign key table contents.
-        private static void SetPragmaForeignKeys(SQLiteConnection connection, bool state)
-        {
-            // Syntax is: PRAGMA foreign_keys = OFF;
-            // Syntax is: PRAGMA foreign_keys = On;
-            string sql = "PRAGMA foreign_keys = ";
-            sql += state ? "ON;" : "Off;";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
-        }
-
-        // PRAGMA Defer foreign keys. 
-#pragma warning disable IDE0051 // Remove unused private members
-        private static void SetPragmaDeferForeignKeys(SQLiteConnection connection, bool state)
-        {
-            // Syntax is: defer_foreign_keys = 1; True
-            //            defer_foreign_keys = 0; False
-            string sql = "PRAGMA defer_foreign_keys = ";
-            sql += state ? "1;" : "0;";
-            using (SQLiteCommand command = new SQLiteCommand(sql, connection))
-            {
-                command.ExecuteNonQuery();
-            }
         }
 #pragma warning restore IDE0051 // Remove unused private members
         #endregion
