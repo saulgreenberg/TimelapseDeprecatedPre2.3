@@ -343,7 +343,7 @@ namespace Timelapse
         {
             if (e.ExceptionObject.ToString().Contains("System.IO.PathTooLongException"))
             {
-                Dialogs.FilePathTooLongDialog(e, this);
+                Dialogs.FilePathTooLongDialog(this, e);
             }
             else
             {

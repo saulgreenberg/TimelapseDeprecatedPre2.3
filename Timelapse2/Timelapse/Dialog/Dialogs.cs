@@ -13,8 +13,6 @@ namespace Timelapse.Dialog
 {
     public static class Dialogs
     {
-        #region Dialog Messages: Corrupted .DDB file (no primary key)
-        #endregion
         #region Dialog Box Positioning and Fitting
         // Most (but not all) invocations of SetDefaultDialogPosition and TryFitDialogWndowInWorkingArea 
         // are done together, so collapse it into a single call
@@ -116,9 +114,8 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Dialog Messages: Prompt to apply operation if partial selection.
-
         // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-        public static bool MaybePromptToApplyOperationOnSelection(Window window, FileDatabase fileDatabase, bool promptState, string operationDescription, Action<bool> persistOptOut)
+        public static bool MaybePromptToApplyOperationOnSelectionDialog(Window owner, FileDatabase fileDatabase, bool promptState, string operationDescription, Action<bool> persistOptOut)
         {
             if (Dialogs.CheckIfPromptNeeded(promptState, fileDatabase, out int filesTotalCount, out int filesSelectedCount) == false)
             {
@@ -128,7 +125,7 @@ namespace Timelapse.Dialog
 
             // Warn the user that the operation will only be applied to an image set.
             string title = "Apply " + operationDescription + " to this selection?";
-            MessageBox messageBox = new MessageBox(title, window, MessageBoxButton.OKCancel);
+            MessageBox messageBox = new MessageBox(title, owner, MessageBoxButton.OKCancel);
 
             messageBox.Message.What = operationDescription + " will be applied only to a subset of your images." + Environment.NewLine;
             messageBox.Message.What += "Is this what you want?";
@@ -205,7 +202,7 @@ namespace Timelapse.Dialog
 
         #region Dialog Messages: Path too long warnings
         // This version is for hard crashes. however, it may disappear from display too fast as the program will be shut down.
-        public static void FilePathTooLongDialog(UnhandledExceptionEventArgs e, Window owner)
+        public static void FilePathTooLongDialog(Window owner, UnhandledExceptionEventArgs e)
         {
             string title = "Your File Path Names are Too Long to Handle";
             MessageBox messageBox = new MessageBox(title, owner);
@@ -224,7 +221,7 @@ namespace Timelapse.Dialog
         }
 
         // This version detects and displays warning messages.
-        public static void FilePathTooLongDialog(List<string> folders, Window owner)
+        public static void FilePathTooLongDialog(Window owner, List<string> folders)
         {
             ThrowIf.IsNullArgument(folders, nameof(folders));
 
@@ -250,7 +247,7 @@ namespace Timelapse.Dialog
         }
 
         // notify the user when the path is too long
-        public static void TemplatePathTooLongDialog(string templateDatabasePath, Window owner)
+        public static void TemplatePathTooLongDialog(Window owner, string templateDatabasePath)
         {
             MessageBox messageBox = new MessageBox("Timelapse could not open the template ", owner);
             messageBox.Message.Problem = "Timelapse could not open the Template File as its name is too long:" + Environment.NewLine;
@@ -263,7 +260,7 @@ namespace Timelapse.Dialog
         }
 
         // notify the user the template couldn't be loaded because its path is too long
-        public static void DatabasePathTooLongDialog(string databasePath, Window owner)
+        public static void DatabasePathTooLongDialog(Window owner, string databasePath)
         {
             MessageBox messageBox = new MessageBox("Timelapse could not load the database ", owner);
             messageBox.Message.Problem = "Timelapse could not load the Template File as its name is too long:" + Environment.NewLine;
@@ -292,8 +289,8 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Message: Problem loading the template
-        public static void TemplateFileNotLoadedAsCorrupt(string templateDatabasePath, Window owner)
+        #region Dialog Message: Corrupted template
+        public static void TemplateFileNotLoadedAsCorruptDialog(Window owner, string templateDatabasePath)
         {
             Util.ThrowIf.IsNullArgument(owner, nameof(owner));
             // notify the user the template couldn't be loaded rather than silently doing nothing
@@ -319,7 +316,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Dialog Messages: Corrupted .DDB file (no primary key)
-        public static void DatabaseFileNotLoadedAsCorrupt(string ddbDatabasePath, bool isEmpty, Window owner)
+        public static void DatabaseFileNotLoadedAsCorruptDialog(Window owner, string ddbDatabasePath, bool isEmpty)
         {
             // notify the user the database couldn't be loaded because there is a problem with it
             MessageBox messageBox = new MessageBox("Timelapse could not load your database file.", owner);
@@ -343,6 +340,115 @@ namespace Timelapse.Dialog
             messageBox.Message.Hint = "IMPORTANT: Send a copy of your .ddb and .tdb files along with an explanatory note to saul@ucalgary.ca." + Environment.NewLine;
             messageBox.Message.Hint += "He will check those files to see if there is a fixable bug.";
             messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region DialogMessages: DataEntryHandler Confirmations / Warnings for Propagate, Copy Forward, Propagate to here
+        /// <summary>
+        /// Display a dialog box saying there is nothing to propagate. 
+        /// </summary>
+        public static void DataEntryNothingToPropagateDialog(Window owner)
+        {
+
+            MessageBox messageBox = new MessageBox("Nothing to Propagate to Here.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Exclamation;
+            messageBox.Message.Reason = "All the earlier files have nothing in this field, so there are no values to propagate.";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Display a dialog box saying there is nothing to copy forward. 
+        /// </summary>
+        public static void DataEntryNothingToCopyForwardDialog(Window owner)
+        {
+            // Display a dialog box saying there is nothing to propagate. Note that this should never be displayed, as the menu shouldn't be highlit if there is nothing to propagate
+            // But just in case...
+            MessageBox messageBox = new MessageBox("Nothing to copy forward.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Exclamation;
+            messageBox.Message.Reason = "As you are on the last file, there are no files after this.";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Ask the user to confirm value propagation from the last value
+        /// </summary>
+        public static bool? DataEntryConfirmCopyForwardDialog(Window owner, string text, int imagesAffected, bool checkForZero)
+        {
+            text = String.IsNullOrEmpty(text) ? String.Empty : text.Trim();
+
+            MessageBox messageBox = new MessageBox("Please confirm 'Copy Forward' for this field...", owner, MessageBoxButton.YesNo);
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.Message.What = "Copy Forward is not undoable, and can overwrite existing values.";
+            messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
+            if (!checkForZero && String.IsNullOrEmpty(text))
+            {
+                messageBox.Message.Result += "\u2022 copy the (empty) value \u00AB" + text + "\u00BB in this field from here to the last file of your selected files.";
+            }
+            else
+            {
+                messageBox.Message.Result += "\u2022 copy the value \u00AB" + text + "\u00BB in this field from here to the last file of your selected files.";
+            }
+            messageBox.Message.Result += Environment.NewLine + "\u2022 over-write any existing data values in those fields";
+            messageBox.Message.Result += Environment.NewLine + "\u2022 will affect " + imagesAffected.ToString() + " files.";
+            return messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Ask the user to confirm value propagation to all selected files
+        /// </summary>
+        public static bool? DataEntryConfirmCopyCurrentValueToAllDialog(Window owner, String text, int filesAffected, bool checkForZero)
+        {
+            text = String.IsNullOrEmpty(text) ? String.Empty : text.Trim();
+
+            MessageBox messageBox = new MessageBox("Please confirm 'Copy to All' for this field...", owner, MessageBoxButton.YesNo);
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.Message.What = "Copy to All is not undoable, and can overwrite existing values.";
+            messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
+            if (!checkForZero && String.IsNullOrEmpty(text))
+            {
+                messageBox.Message.Result += "\u2022 clear this field across all " + filesAffected.ToString() + " of your selected files.";
+            }
+            else
+            {
+                messageBox.Message.Result += "\u2022 set this field to \u00AB" + text + "\u00BB across all " + filesAffected.ToString() + " of your selected files.";
+            }
+            messageBox.Message.Result += Environment.NewLine + "\u2022 over-write any existing data values in those fields";
+            return messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Ask the user to confirm value propagation from the last value
+        /// </summary>
+        public static bool? DataEntryConfirmPropagateFromLastValueDialog(Window owner, String text, int imagesAffected)
+        {
+            text = String.IsNullOrEmpty(text) ? String.Empty : text.Trim();
+            MessageBox messageBox = new MessageBox("Please confirm 'Propagate to Here' for this field.", owner, MessageBoxButton.YesNo);
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.Message.What = "Propagate to Here is not undoable, and can overwrite existing values.";
+            messageBox.Message.Reason = "\u2022 The last non-empty value \u00AB" + text + "\u00BB was seen " + imagesAffected.ToString() + " files back." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 That field's value will be copied across all files between that file and this one of your selected files";
+            messageBox.Message.Result = "If you select yes: " + Environment.NewLine;
+            messageBox.Message.Result = "\u2022 " + imagesAffected.ToString() + " files will be affected.";
+            return messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region MarkableCanvas: Cant Open External PhotoViewer
+        /// <summary>
+        /// // Can't Open the External Photo Viewer. 
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="extension"></param>
+        public static void MarkableCanvasCantOpenExternalPhotoViewerDialog(Window owner, string extension)
+        {
+            // Can't open the image file. Note that file must exist at this pint as we checked for that above.
+            MessageBox messageBox = new MessageBox("Can't open a photo viewer.", owner);
+            messageBox.Message.Icon = System.Windows.MessageBoxImage.Error;
+            messageBox.Message.Reason = "You probably don't have a default program set up to display a photo viewer for " + extension + " files";
+            messageBox.Message.Solution = "Set up a photo viewer in your Windows Settings." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 go to 'Default apps', select 'Photo Viewer' and choose a desired photo viewer." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 or right click on an " + extension + " file and set the default viewer that way";
             messageBox.ShowDialog();
         }
         #endregion
@@ -404,6 +510,472 @@ namespace Timelapse.Dialog
             messageBox.Message.Icon = MessageBoxImage.Information;
             messageBox.ShowDialog();
         }
+        #endregion
+
+        #region  Dialog Message: File Selection
+        /// <summary>
+        /// // No files were missing in the current selection
+        /// </summary>
+        public static void FileSelectionNoFilesAreMissingDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("No Files are Missing.", owner);
+            messageBox.Message.Title = "No Files are Missing in the Current Selection.";
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.Message.What = "No files are missing in the current selection.";
+            messageBox.Message.Reason = "All files in the current selection were checked, and all are present. None were missing.";
+            messageBox.Message.Result = "No changes were made.";
+            messageBox.ShowDialog();
+        }
+
+        public static void FileSelectionResettngSelectionToAllFilesDialog(Window owner, FileSelectionEnum selection)
+        {
+            // These cases are reached when 
+            // 1) datetime modifications result in no files matching a custom selection
+            // 2) all files which match the selection get deleted
+            MessageBox messageBox = new MessageBox("Resetting selection to All files (no files currently match the current selection)", owner);
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.Message.Result = "The 'All files' selection will be applied, where all files in your image set are displayed.";
+
+            switch (selection)
+            {
+                case FileSelectionEnum.Custom:
+                    messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
+                    messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
+                    messageBox.Message.Hint = "Create a different custom selection and apply it view the matching files.";
+                    break;
+                case FileSelectionEnum.Folders:
+                    messageBox.Message.Problem = "No files and/or image data were found for the selected folder.";
+                    messageBox.Message.Reason = "Perhaps they were deleted during this session?";
+                    messageBox.Message.Hint = "Try other folders or another selection. ";
+                    break;
+                case FileSelectionEnum.Dark:
+                    messageBox.Message.Problem = "Dark files were previously selected but no files are currently dark so nothing can be shown.";
+                    messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Dark.";
+                    messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
+                    break;
+                case FileSelectionEnum.Missing:
+                    // We should never invoke this, as its handled earlier.
+                    messageBox.Message.Problem = "Missing files were previously selected. However, none of the files appear to be missing, so nothing can be shown.";
+                    break;
+                case FileSelectionEnum.MarkedForDeletion:
+                    messageBox.Message.Problem = "Files marked for deletion were previously selected but no files are currently marked so nothing can be shown.";
+                    messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
+                    messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
+                    break;
+                case FileSelectionEnum.Ok:
+                    messageBox.Message.Problem = "Light files were previously selected but no files are currently marked 'Light' so nothing can be shown.";
+                    messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Light.";
+                    messageBox.Message.Hint = "If you have files you think should be marked as 'Light', set their 'ImageQuality' field to 'Light' and then reselect Light files.";
+                    break;
+                default:
+                    throw new NotSupportedException(String.Format("Unhandled selection {0}.", selection));
+            }
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region Dialog Message: ImageSetLoading
+        /// <summary>
+        /// If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
+        /// </summary>
+        public static bool? ImageSetLoadingMultipleImageFoldersNotFoundDialog(Window owner, List<string> missingRelativePaths)
+        {
+            if (missingRelativePaths == null)
+            {
+                // this should never happen
+                missingRelativePaths = new List<string>();
+            }
+            MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", owner, MessageBoxButton.OKCancel);
+            messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
+            foreach (string relativePath in missingRelativePaths)
+            {
+                messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
+            }
+            messageBox.Message.Solution = "Selecting OK will raise additional dialog boxes, each asking you to locate a particular missing folder" + Environment.NewLine;
+            messageBox.Message.Solution += "Selecting Cancel will still display the image's data, along with a 'missing' image placeholder";
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            return messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// No images were found in the root folder or subfolders, so there is nothing to do
+        /// </summary>
+        public static void ImageSetLoadingNoImagesOrVideosWereFoundDialog(Window owner, string selectedFolderPath)
+        {
+            MessageBox messageBox = new MessageBox("No images or videos were found", owner, MessageBoxButton.OK);
+            messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
+            messageBox.Message.Problem += "\u2022 " + selectedFolderPath + Environment.NewLine;
+            messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
+            messageBox.Message.Solution = "Timelapse aborted the load operation." + Environment.NewLine;
+            messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
+            messageBox.Message.Icon = MessageBoxImage.Exclamation;
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Data imported from old XML file
+        /// </summary>
+        public static void ImageSetLoadingDataImportedFromOldXMLFileDialog(Window owner, int unskipped, int skipped)
+        {
+            MessageBox messageBox = new MessageBox("Data imported from old XML file", owner);
+            messageBox.Message.What = "Data imported " + unskipped.ToString() + " existing images, each with an entry in your ImageData.xml file." + Environment.NewLine;
+            if (skipped != 0)
+            {
+                messageBox.Message.What += Environment.NewLine + "However, " + skipped.ToString() + " data entries in the ImageData.xml file were skipped, as they did not match any existing files.";
+                messageBox.Message.What += Environment.NewLine + "This can occur if you moved, renamed, or deleted some of your original files.";
+                messageBox.Message.What += Environment.NewLine + "This is not necessarily an error, but you should check to make sure you have what you need.";
+            }
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region DialogMessages: MenuFile
+        /// <summary>
+        /// No matching folders in the DB and the detector
+        /// </summary>
+        public static void MenuFileRecognitionDataNotImportedDialog(Window owner, string details)
+        {
+            MessageBox messageBox = new MessageBox("Recognition data not imported.", owner);
+            messageBox.Message.Problem = "No recognition information was imported, as none of its image folder paths were found in your Database file." + Environment.NewLine;
+            messageBox.Message.Problem += "Thus no recognition information could be assigned to your images.";
+            messageBox.Message.Reason = "The recognizer may have been run on a folder containing various image sets, each in a sub-folder. " + Environment.NewLine;
+            messageBox.Message.Reason += "For example, if the recognizer was run on 'AllFolders/Camera1/' but your template and database is in 'Camera1/'," + Environment.NewLine;
+            messageBox.Message.Reason += "the folder paths won't match, since AllFolders/Camera1/ \u2260 Camera1/.";
+            messageBox.Message.Solution = "Microsoft provides a program to extract a subset of recognitions in the Recognition file" + Environment.NewLine;
+            messageBox.Message.Solution += "that you can use to extract recognitions matching your sub-folder: " + Environment.NewLine;
+            messageBox.Message.Solution += "  http://aka.ms/cameratraps-detectormismatch";
+            messageBox.Message.Result = "Recognition information was not imported.";
+            messageBox.Message.Details = details;
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        ///  Some folders missing - show which folder paths in the DB are not in the detector
+        /// </summary>
+        public static void MenuFileRecognitionDataImportedOnlyForSomeFoldersDialog(Window owner, string details)
+        {
+            // Some folders missing - show which folder paths in the DB are not in the detector
+            MessageBox messageBox = new MessageBox("Recognition data imported for only some of your folders.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.Message.Problem = "Some of the sub-folders in your image set's Database file have no corresponding entries in the Recognition file." + Environment.NewLine;
+            messageBox.Message.Problem += "While not an error, we just wanted to bring it to your attention.";
+            messageBox.Message.Reason = "This could happen if you have added, moved, or renamed the folders since supplying the originals to the recognizer:" + Environment.NewLine;
+            messageBox.Message.Result = "Recognition data will still be imported for the other folders.";
+            messageBox.Message.Hint = "You can also view which images are missing recognition data by choosing" + Environment.NewLine;
+            messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+            messageBox.Message.Details = details;
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Detections successfully imported message
+        /// </summary>
+        public static void MenuFileDetectionsSuccessfulyImportedDialog(Window owner, string details)
+        {
+            MessageBox messageBox = new MessageBox("Recognitions imported.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.Message.Result = "Recognition data imported. You can select images matching particular recognitions by choosing 'Select|Custom Selection...'";
+            messageBox.Message.Hint = "You can also view which images (if any) are missing recognition data by choosing" + Environment.NewLine;
+            messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
+            messageBox.Message.Details = details;
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Export data for this image set as a.csv file, but confirm, as only a subset will be exported since a selection is active
+        /// </summary>
+        public static bool? MenuFileExportCSVOnSelectionDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", owner, MessageBoxButton.OKCancel);
+            messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
+            messageBox.Message.Reason = "As your selection (in the Selection menu) is not set to view 'All', ";
+            messageBox.Message.Reason += "only data for these selected files will be exported. ";
+            messageBox.Message.Solution = "If you want to export just this subset, then " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 click Okay" + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Solution += "If you want to export data for all your files, then " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 click Cancel," + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 select 'All Files' in the Selection menu, " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 retry exporting your data as a .csv file.";
+            messageBox.Message.Hint = "If you check don't show this message this dialog can be turned back on via the Options menu.";
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool? exportCsv = messageBox.ShowDialog();
+            if (messageBox.DontShowAgain.IsChecked.HasValue)
+            {
+                Util.GlobalReferences.TimelapseState.SuppressSelectedCsvExportPrompt = messageBox.DontShowAgain.IsChecked.Value;
+            }
+            return exportCsv;
+        }
+
+        /// <summary>
+        /// Cant write the spreadsheet file
+        /// </summary>
+        public static void MenuFileCantWriteSpreadsheetFileDialog(Window owner, string csvFilePath, string exceptionName, string exceptionMessage)
+        {
+            MessageBox messageBox = new MessageBox("Can't write the spreadsheet file.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = "The following file can't be written: " + csvFilePath;
+            messageBox.Message.Reason = "You may already have it open in Excel or another application.";
+            messageBox.Message.Solution = "If the file is open in another application, close it and try again.";
+            messageBox.Message.Hint = String.Format("{0}: {1}", exceptionName, exceptionMessage);
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Cant open the file using Excel
+        /// </summary>
+        public static void MenuFileCantOpenExcelDialog(Window owner, string csvFilePath)
+        {
+            MessageBox messageBox = new MessageBox("Can't open Excel.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = "Excel could not be opened to display " + csvFilePath;
+            messageBox.Message.Solution = "Try again, or just manually start Excel and open the .csv file ";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Give the user some feedback about the CSV export operation
+        /// </summary>
+        public static void MenuFileCSVDataExportedDialog(Window owner, string csvFileName)
+        {
+            // since the exported file isn't shown give the user some feedback about the export operation
+            MessageBox csvExportInformation = new MessageBox("Data exported.", owner);
+            csvExportInformation.Message.What = "The selected files were exported to " + csvFileName;
+            csvExportInformation.Message.Result = String.Format("This file is overwritten every time you export it (backups can be found in the {0} folder).", Constant.File.BackupFolder);
+            csvExportInformation.Message.Hint = "\u2022 You can open this file with most spreadsheet programs, such as Excel." + Environment.NewLine;
+            csvExportInformation.Message.Hint += "\u2022 If you make changes in the spreadsheet file, you will need to import it to see those changes." + Environment.NewLine;
+            csvExportInformation.Message.Hint += "\u2022 If you check don't show this message again you can still see the name of the .csv file in the status bar at the lower right corner of the main Carnassial window.  This dialog can also be turned back on through the Options menu.";
+            csvExportInformation.Message.Icon = MessageBoxImage.Information;
+            csvExportInformation.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool? result = csvExportInformation.ShowDialog();
+            if (result.HasValue && result.Value && csvExportInformation.DontShowAgain.IsChecked.HasValue)
+            {
+                Util.GlobalReferences.TimelapseState.SuppressCsvExportDialog = csvExportInformation.DontShowAgain.IsChecked.Value;
+            }
+        }
+
+        /// <summary>
+        /// Tell the user how importing CSV files work. Give them the opportunity to abort.
+        /// </summary>
+        public static bool? MenuFileHowImportingCSVWorksDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("How importing .csv data works", owner, MessageBoxButton.OKCancel);
+            messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below.";
+            messageBox.Message.Reason = "\u2022 The first row in the CSV file must comprise column Headers that match the DataLabels in the .tdb template file." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 The column Header 'File' must be included." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 Subsequent rows defines the data for each File ." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 Column data should match the Header type. In particular," + Environment.NewLine;
+            messageBox.Message.Reason += "  \u2022\u2022 File values should define name of the file you want to update." + Environment.NewLine;
+            messageBox.Message.Reason += "  \u2022\u2022 Counter values must be blank or a positive integer. " + Environment.NewLine;
+            messageBox.Message.Reason += "  \u2022\u2022 Flag and DeleteFlag values must be 'true' or 'false'." + Environment.NewLine;
+            messageBox.Message.Reason += "  \u2022\u2022 FixedChoice values should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
+            messageBox.Message.Result = "Image values for identified files will be updated, except for values relating to a File's location or its dates / times.";
+            messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 Warning will be generated for non-matching CSV fields, which you can then fix." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 If you check 'Don't show this message again' this dialog can be turned back on via the Options menu.";
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool? result = messageBox.ShowDialog();
+            if (messageBox.DontShowAgain.IsChecked.HasValue)
+            {
+                Util.GlobalReferences.TimelapseState.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Can't import CSV File
+        /// </summary>
+        public static void MenuFileCantImportCSVFileDialog(Window owner, string csvFileName, List<string> resultAndImportErrors)
+        {
+            MessageBox messageBox = new MessageBox("Can't import the .csv file.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = String.Format("The file {0} could not be read.", csvFileName);
+            messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
+            messageBox.Message.Solution = "Check that:" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 Choice and ImageQuality values are in that DataLabel's Choice list." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 Counter values are numbers or blanks." + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 Flag and DeleteFlag values are either 'true' or 'false'.";
+            messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
+            if (resultAndImportErrors != null)
+            {
+                messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
+                foreach (string importError in resultAndImportErrors)
+                {
+                    messageBox.Message.Hint += Environment.NewLine + "\u2022 " + importError;
+                }
+            }
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// CSV file imported
+        /// </summary>
+        public static void MenuFileCSVFileImportedDialog(Window owner, string csvFileName)
+        {
+            MessageBox messageBox = new MessageBox("CSV file imported", owner);
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.Message.What = String.Format("The file {0} was successfully imported.", csvFileName);
+            messageBox.Message.Hint = "\u2022 Check your data. If it is not what you expect, restore your data by using latest backup file in " + Constant.File.BackupFolder + ".";
+            messageBox.ShowDialog();
+
+        }
+
+        /// <summary>
+        /// Can't import the .csv file
+        /// </summary>
+        public static void MenuFileCantImportCSVFileDialog(Window owner, string csvFileName, string exceptionMessage)
+        {
+            MessageBox messageBox = new MessageBox("Can't import the .csv file.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = String.Format("The file {0} could not be opened.", csvFileName);
+            messageBox.Message.Reason = "Most likely the file is open in another program. The technical reason is:" + Environment.NewLine;
+            messageBox.Message.Reason += exceptionMessage;
+            messageBox.Message.Solution = "If the file is open in another program, close it.";
+            messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
+            messageBox.Message.Hint = "Is the file open in Excel?";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Can't export the currently displayed image as a file
+        /// </summary>
+        public static void MenuFileCantExportCurrentImageDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Can't export this file!", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = "Timelapse can't export the currently displayed image or video file.";
+            messageBox.Message.Reason = "It is likely a corrupted or missing file.";
+            messageBox.Message.Solution = "Make sure you have navigated to, and are displaying, a valid file before you try to export it.";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
+        /// Show a message that explains how merging databases works and its constraints. Give the user an opportunity to abort
+        /// </summary>
+        public static bool? MenuFileMergeDatabasesExplainedDialog(Window owner)
+        {
+
+            MessageBox messageBox = new MessageBox("Merge Databases.", owner, MessageBoxButton.OKCancel);
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.Message.Title = "Merge Databases Explained.";
+            messageBox.Message.What = "Merging databases works as follows. Timelapse will:" + Environment.NewLine;
+            messageBox.Message.What += "\u2022 ask you to locate a root folder containing a template (a.tdb file)," + Environment.NewLine;
+            messageBox.Message.What += String.Format("\u2022 create a new database (.ddb) file in that folder, called {0},{1}", Constant.File.MergedFileName, Environment.NewLine);
+            messageBox.Message.What += "\u2022 search for other database (.ddb) files in that folder's sub-folders, " + Environment.NewLine;
+            messageBox.Message.What += "\u2022 try to merge all data found in those found databases into the new database.";
+            messageBox.Message.Details = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 Databases found in the Backup folders are ignored." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 Detections and Classifications (if any) are merged; categories are taken from the first database found with detections." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 The merged database is independent of the found databases: updates will not propagate between them." + Environment.NewLine;
+            messageBox.Message.Details += "\u2022 The merged database is a normal Timelapse database, which you can open and use as expected.";
+            messageBox.Message.Hint = "Press Ok to continue with the merge, otherwise Cancel.";
+            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+            messageBox.ShowDialog();
+
+            if (messageBox.DontShowAgain.IsChecked.HasValue)
+            {
+                Util.GlobalReferences.TimelapseState.SuppressMergeDatabasesPrompt = messageBox.DontShowAgain.IsChecked.Value;
+            }
+            return messageBox.DialogResult;
+        }
+
+        /// <summary>
+        /// Merge databases: Show errors and/or warnings, if any.
+        /// </summary>
+        public static void MenuFileMergeDatabasesErrorsAndWarningsDialog(Window owner, ErrorsAndWarnings errorMessages)
+        {
+            if (errorMessages == null)
+            {
+                return;
+            }
+            MessageBox messageBox = new MessageBox("Merge Databases Results.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            if (errorMessages.Errors.Count != 0)
+            {
+                messageBox.Message.Title = "Merge Databases Failed.";
+                messageBox.Message.What = "The merged database could not be created for the following reasons:";
+            }
+            else if (errorMessages.Warnings.Count != 0)
+            {
+                messageBox.Message.Title = "Merge Databases Left Out Some Files.";
+                messageBox.Message.What = "The merged database left out some files for the following reasons:";
+            }
+
+            if (errorMessages.Errors.Count != 0)
+            {
+                messageBox.Message.What += String.Format("{0}{0}Errors:", Environment.NewLine);
+                foreach (string error in errorMessages.Errors)
+                {
+                    messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, error);
+                }
+            }
+            if (errorMessages.Warnings.Count != 0)
+            {
+                messageBox.Message.What += String.Format("{0}{0}Warnings:", Environment.NewLine);
+            }
+            foreach (string warning in errorMessages.Warnings)
+            {
+                messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, warning);
+            }
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region DialogMessages: MenuEdit
+        public static void MenuEditCouldNotImportQuickPasteEntriesDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Could not import QuickPaste entries", owner);
+            messageBox.Message.Problem = "Timelapse could not find any QuickPaste entries in the selected database";
+            messageBox.Message.Reason = "When an analyst creates QuickPaste entries, those entries are stored in the database file " + Environment.NewLine;
+            messageBox.Message.Reason += "associated with the image set being analyzed. Since none where found, " + Environment.NewLine;
+            messageBox.Message.Reason += "its likely that no one had created any quickpaste entries when analyzing that image set.";
+            messageBox.Message.Hint = "Perhaps they are in a different database?";
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
+        /// <summary>
+        /// There are no displayable images, and thus no metadata to choose from
+        /// </summary>
+        public static void MenuEditPopulateDataFieldWithMetadataDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", owner);
+            messageBox.Message.Problem = "Timelapse can't extract any metadata, as the currently displayed image or video is missing or corrupted." + Environment.NewLine;
+            messageBox.Message.Reason = "Timelapse tries to examines the currently displayed image or video for its metadata.";
+            messageBox.Message.Hint = "Navigate to a displayable image or video, and try again.";
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+
+        public static void MenuEditNoFilesMarkedForDeletionDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("No files are marked for deletion", owner);
+            messageBox.Message.Problem = "You are trying to delete files marked for deletion, but no files have their 'Delete?' field checked.";
+            messageBox.Message.Hint = "If you have files that you think should be deleted, check their Delete? field.";
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
+        #endregion
+
+        #region DialogMessages related to DateTime
+        public static void DateTimeNewTimeShouldBeLaterThanEarlierTimeDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Your new time has to be later than the earliest time", owner);
+            messageBox.Message.Icon = MessageBoxImage.Exclamation;
+            messageBox.Message.Problem = "Your new time has to be later than the earliest time   ";
+            messageBox.Message.Reason = "Even the slowest clock gains some time.";
+            messageBox.Message.Solution = "The date/time was unchanged from where you last left it.";
+            messageBox.Message.Hint = "The image on the left shows the earliest time recorded for images in this filtered view  shown over the left image";
+            messageBox.ShowDialog();
+        }
+
         #endregion
     }
 }

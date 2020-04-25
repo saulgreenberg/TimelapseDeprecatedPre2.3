@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Timelapse.Database;
+using Timelapse.Dialog;
 using Timelapse.Images;
 using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
@@ -292,18 +293,16 @@ namespace Timelapse.Controls
             string newContent = valueToCopy;
             if (indexToCopyFrom < 0)
             {
-                // Display a dialog box saying there is nothing to propagate. Note that this should never be displayed, as the menu shouldn't be highlit if there is nothing to propagate
+                // Display a dialog box saying there is nothing to propagate. 
+                // Note that this should never be displayed, as the menu shouldn't be highlit if there is nothing to propagate
                 // But just in case...
-                MessageBox messageBox = new MessageBox("Nothing to Propagate to Here.", Application.Current.MainWindow);
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.Message.Reason = "All the earlier files have nothing in this field, so there are no values to propagate.";
-                messageBox.ShowDialog();
+                Dialogs.DataEntryNothingToPropagateDialog(Application.Current.MainWindow);
                 newContent = this.FileDatabase.FileTable[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
             // Display the appropriate dialog box that explains what will happen. Arguments indicate what is to be propagated and how many files will be affected
             int filesAffected = currentRowIndex - indexToCopyFrom;
-            if (ConfirmPropagateFromLastValue(valueToCopy, filesAffected) != true)
+            if (Dialogs.DataEntryConfirmPropagateFromLastValueDialog(Application.Current.MainWindow, valueToCopy, filesAffected) != true)
             {
                 newContent = this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
@@ -331,7 +330,7 @@ namespace Timelapse.Controls
             // Display a dialog box that explains what will happen. Arguments indicate how many files will be affected, and is tuned to the type of control 
             bool checkForZero = control is DataEntryCounter;
             int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles;
-            if (ConfirmCopyCurrentValueToAll(control.Content, filesAffected, checkForZero) != true)
+            if (Dialogs.DataEntryConfirmCopyCurrentValueToAllDialog(Application.Current.MainWindow, control.Content, filesAffected, checkForZero) != true)
             {
                 return;
             }
@@ -360,12 +359,10 @@ namespace Timelapse.Controls
             int imagesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRowIndex - 1;
             if (imagesAffected == 0)
             {
-                // Display a dialog box saying there is nothing to propagate. Note that this should never be displayed, as the menu shouldn't be highlit if we are on the last image
+                // Display a dialog box saying there is nothing to copy forward. 
+                // Note that this should never be displayed, as the menu shouldn't be highlit if we are on the last image
                 // But just in case...
-                MessageBox messageBox = new MessageBox("Nothing to copy forward.", Application.Current.MainWindow);
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.Message.Reason = "As you are on the last file, there are no files after this.";
-                messageBox.ShowDialog();
+                Dialogs.DataEntryNothingToCopyForwardDialog(Application.Current.MainWindow);
                 return;
             }
 
@@ -373,7 +370,7 @@ namespace Timelapse.Controls
             ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
             string valueToCopy = imageRow.GetValueDisplayString(control.DataLabel);
             bool checkForZero = control is DataEntryCounter;
-            if (ConfirmCopyForward(valueToCopy, imagesAffected, checkForZero) != true)
+            if (Dialogs.DataEntryConfirmCopyForwardDialog(Application.Current.MainWindow,valueToCopy, imagesAffected, checkForZero) != true)
             {
                 return;
             }
@@ -442,65 +439,6 @@ namespace Timelapse.Controls
                 }
             }
             return (nearestRowWithCopyableValue >= 0) ? true : false;
-        }
-        #endregion
-
-        #region Confirmation Dialogs for Copy Forward/Backwards, etc
-        // Ask the user to confirm value propagation from the last value
-        private static bool? ConfirmCopyForward(string text, int imagesAffected, bool checkForZero)
-        {
-            text = text.Trim();
-
-            MessageBox messageBox = new MessageBox("Please confirm 'Copy Forward' for this field...", Application.Current.MainWindow, MessageBoxButton.YesNo);
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            messageBox.Message.What = "Copy Forward is not undoable, and can overwrite existing values.";
-            messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
-            if (!checkForZero && String.IsNullOrEmpty(text))
-            {
-                messageBox.Message.Result += "\u2022 copy the (empty) value \u00AB" + text + "\u00BB in this field from here to the last file of your selected files.";
-            }
-            else
-            {
-                messageBox.Message.Result += "\u2022 copy the value \u00AB" + text + "\u00BB in this field from here to the last file of your selected files.";
-            }
-            messageBox.Message.Result += Environment.NewLine + "\u2022 over-write any existing data values in those fields";
-            messageBox.Message.Result += Environment.NewLine + "\u2022 will affect " + imagesAffected.ToString() + " files.";
-            return messageBox.ShowDialog();
-        }
-
-        // Ask the user to confirm value propagation to all selected files
-        private static bool? ConfirmCopyCurrentValueToAll(String text, int filesAffected, bool checkForZero)
-        {
-            text = text.Trim();
-
-            MessageBox messageBox = new MessageBox("Please confirm 'Copy to All' for this field...", Application.Current.MainWindow, MessageBoxButton.YesNo);
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            messageBox.Message.What = "Copy to All is not undoable, and can overwrite existing values.";
-            messageBox.Message.Result = "If you select yes, this operation will:" + Environment.NewLine;
-            if (!checkForZero && String.IsNullOrEmpty(text))
-            {
-                messageBox.Message.Result += "\u2022 clear this field across all " + filesAffected.ToString() + " of your selected files.";
-            }
-            else
-            {
-                messageBox.Message.Result += "\u2022 set this field to \u00AB" + text + "\u00BB across all " + filesAffected.ToString() + " of your selected files.";
-            }
-            messageBox.Message.Result += Environment.NewLine + "\u2022 over-write any existing data values in those fields";
-            return messageBox.ShowDialog();
-        }
-
-        // Ask the user to confirm value propagation from the last value
-        private static bool? ConfirmPropagateFromLastValue(String text, int imagesAffected)
-        {
-            text = text.Trim();
-            MessageBox messageBox = new MessageBox("Please confirm 'Propagate to Here' for this field.", Application.Current.MainWindow, MessageBoxButton.YesNo);
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            messageBox.Message.What = "Propagate to Here is not undoable, and can overwrite existing values.";
-            messageBox.Message.Reason = "\u2022 The last non-empty value \u00AB" + text + "\u00BB was seen " + imagesAffected.ToString() + " files back." + Environment.NewLine;
-            messageBox.Message.Reason += "\u2022 That field's value will be copied across all files between that file and this one of your selected files";
-            messageBox.Message.Result = "If you select yes: " + Environment.NewLine;
-            messageBox.Message.Result = "\u2022 " + imagesAffected.ToString() + " files will be affected.";
-            return messageBox.ShowDialog();
         }
         #endregion
 

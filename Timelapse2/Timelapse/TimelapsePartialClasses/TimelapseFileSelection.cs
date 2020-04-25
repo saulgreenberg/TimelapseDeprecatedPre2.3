@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Controls;
+using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Util;
 using MessageBox = Timelapse.Dialog.MessageBox;
@@ -60,14 +61,8 @@ namespace Timelapse
                 if (anyFilesMissing == false)
                 {
                     // No files were missing. Inform the user, and don't change anything.
-                    MessageBox messageBox = new MessageBox("No Files are Missing.", this);
-                    messageBox.Message.Title = "No Files are Missing in the Current Selection.";
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.Message.What = "No files are missing in the current selection.";
-                    messageBox.Message.Reason = "All files in the current selection were checked, and all are present. None were missing.";
-                    messageBox.Message.Result = "No changes were made.";
-                    messageBox.ShowDialog();
-                    Mouse.OverrideCursor = null;
+                    Mouse.OverrideCursor = null; 
+                    Dialogs.FileSelectionNoFilesAreMissingDialog(this);
                     return;
                 }
             }
@@ -88,50 +83,10 @@ namespace Timelapse
 
             if ((this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles < 1) && (selection != FileSelectionEnum.All))
             {
-                // These cases are reached when 
-                // 1) datetime modifications result in no files matching a custom selection
-                // 2) all files which match the selection get deleted
-                MessageBox messageBox = new MessageBox("Resetting selection to All files (no files currently match the current selection)", this);
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                messageBox.Message.Result = "The 'All files' selection will be applied, where all files in your image set are displayed.";
-
-                switch (selection)
-                {
-                    case FileSelectionEnum.Custom:
-                        messageBox.Message.Problem = "No files currently match the custom selection so nothing can be shown.";
-                        messageBox.Message.Reason = "No files match the criteria set in the current Custom selection.";
-                        messageBox.Message.Hint = "Create a different custom selection and apply it view the matching files.";
-                        break;
-                    case FileSelectionEnum.Folders:
-                        messageBox.Message.Problem = "No files and/or image data were found for the selected folder.";
-                        messageBox.Message.Reason = "Perhaps they were deleted during this session?";
-                        messageBox.Message.Hint = "Try other folders or another selection. ";
-                        break;
-                    case FileSelectionEnum.Dark:
-                        messageBox.Message.Problem = "Dark files were previously selected but no files are currently dark so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Dark.";
-                        messageBox.Message.Hint = "If you have files you think should be marked as 'Dark', set their 'ImageQuality' field to 'Dark' and then reselect dark files.";
-                        break;
-                    case FileSelectionEnum.Missing:
-                        // We should never invoke this, as its handled earlier.
-                        messageBox.Message.Problem = "Missing files were previously selected. However, none of the files appear to be missing, so nothing can be shown.";
-                        break;
-                    case FileSelectionEnum.MarkedForDeletion:
-                        messageBox.Message.Problem = "Files marked for deletion were previously selected but no files are currently marked so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'Delete?' field checked.";
-                        messageBox.Message.Hint = "If you have files you think should be marked for deletion, check their 'Delete?' field and then reselect files marked for deletion.";
-                        break;
-                    case FileSelectionEnum.Ok:
-                        messageBox.Message.Problem = "Light files were previously selected but no files are currently marked 'Light' so nothing can be shown.";
-                        messageBox.Message.Reason = "No files have their 'ImageQuality' field set to Light.";
-                        messageBox.Message.Hint = "If you have files you think should be marked as 'Light', set their 'ImageQuality' field to 'Light' and then reselect Light files.";
-                        break;
-                    default:
-                        throw new NotSupportedException(String.Format("Unhandled selection {0}.", selection));
-                }
+                // Tell the user that we are resetting the selection to all files
+                Dialogs.FileSelectionResettngSelectionToAllFilesDialog(this, selection);
+ 
                 this.StatusBar.SetMessage("Resetting selection to All files.");
-                messageBox.ShowDialog();
-
                 selection = FileSelectionEnum.All;
 
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow

@@ -275,13 +275,7 @@ namespace Timelapse
             // Inform the user if the date picker date goes below the earlest time,  
             if (this.dateTimePickerLatestDateTime.Value.Value <= this.earliestImageDateTime)
             {
-                MessageBox messageBox = new MessageBox("Your new time has to be later than the earliest time", this);
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.Message.Problem = "Your new time has to be later than the earliest time   ";
-                messageBox.Message.Reason = "Even the slowest clock gains some time.";
-                messageBox.Message.Solution = "The date/time was unchanged from where you last left it.";
-                messageBox.Message.Hint = "The image on the left shows the earliest time recorded for images in this filtered view  shown over the left image";
-                messageBox.ShowDialog();
+                Dialogs.DateTimeNewTimeShouldBeLaterThanEarlierTimeDialog(this);
             }
 
             // Enable the Ok button only if the latest time has actually changed from its original version

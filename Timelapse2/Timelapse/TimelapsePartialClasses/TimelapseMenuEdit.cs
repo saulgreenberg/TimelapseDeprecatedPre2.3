@@ -57,14 +57,7 @@ namespace Timelapse
                 List<QuickPasteEntry> qpe = QuickPasteOperations.QuickPasteImportFromDB(this.DataHandler.FileDatabase, ddbFile);
                 if (qpe.Count == 0)
                 {
-                    MessageBox messageBox = new MessageBox("Could not import QuickPaste entries", this);
-                    messageBox.Message.Problem = "Timelapse could not find any QuickPaste entries in the selected database";
-                    messageBox.Message.Reason = "When an analyst creates QuickPaste entries, those entries are stored in the database file " + Environment.NewLine;
-                    messageBox.Message.Reason += "associated with the image set being analyzed. Since none where found, " + Environment.NewLine;
-                    messageBox.Message.Reason += "its likely that no one had created any quickpaste entries when analyzing that image set.";
-                    messageBox.Message.Hint = "Perhaps they are in a different database?";
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.ShowDialog();
+                    Dialogs.MenuEditCouldNotImportQuickPasteEntriesDialog(this);
                     return;
                 }
                 else
@@ -91,17 +84,12 @@ namespace Timelapse
             if (this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
             {
                 // There are no displayable images, and thus no metadata to choose from, so abort
-                MessageBox messageBox = new MessageBox("Populate a data field with image metadata of your choosing.", this);
-                messageBox.Message.Problem = "Timelapse can't extract any metadata, as the currently displayed image or video is missing or corrupted." + Environment.NewLine;
-                messageBox.Message.Reason = "Timelapse tries to examines the currently displayed image or video for its metadata.";
-                messageBox.Message.Hint = "Navigate to a displayable image or video, and try again.";
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.ShowDialog();
+                Dialogs.MenuEditPopulateDataFieldWithMetadataDialog(this);
                 return;
             }
 
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
                                                                            "'Populate a data field with image metadata...'",
                                                                (bool optOut) =>
                                                                {
@@ -197,11 +185,7 @@ namespace Timelapse
             // if there aren't any images to delete. Still,...
             if (filesToDelete == null || filesToDelete.Count < 1)
             {
-                MessageBox messageBox = new MessageBox("No files are marked for deletion", this);
-                messageBox.Message.Problem = "You are trying to delete files marked for deletion, but no files have their 'Delete?' field checked.";
-                messageBox.Message.Hint = "If you have files that you think should be deleted, check their Delete? field.";
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                messageBox.ShowDialog();
+                Dialogs.MenuEditNoFilesMarkedForDeletionDialog(this);
                 return;
             }
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
@@ -251,7 +235,7 @@ namespace Timelapse
         private async void MenuItemRereadDateTimesfromFiles_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(
                 this,
                 this.DataHandler.FileDatabase,
                 this.State.SuppressSelectedRereadDatesFromFilesPrompt,
@@ -271,7 +255,7 @@ namespace Timelapse
         private async void MenuItemDaylightSavingsTimeCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(
                 this,
                 this.DataHandler.FileDatabase,
                 this.State.SuppressSelectedDaylightSavingsCorrectionPrompt,
@@ -291,7 +275,7 @@ namespace Timelapse
         private async void MenuItemDateTimeFixedCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedDateTimeFixedCorrectionPrompt,
                                                                            "'Add a fixed correction value to every date/time...'",
                                                                (bool optOut) =>
                                                                {
@@ -311,7 +295,7 @@ namespace Timelapse
         private async void MenuItemDateTimeLinearCorrection_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(
                 this,
                 this.DataHandler.FileDatabase,
                 this.State.SuppressSelectedDateTimeLinearCorrectionPrompt,
@@ -331,7 +315,7 @@ namespace Timelapse
         private async void MenuItemCorrectAmbiguousDates_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(
                 this, this.DataHandler.FileDatabase, this.State.SuppressSelectedAmbiguousDatesPrompt,
                 "'Correct ambiguous dates...'",
                 (bool optOut) =>
@@ -351,7 +335,7 @@ namespace Timelapse
         private async void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedSetTimeZonePrompt,
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedSetTimeZonePrompt,
                                                                            "'Set the time zone of every date/time...'",
                                                                (bool optOut) =>
                                                                {
@@ -370,7 +354,7 @@ namespace Timelapse
         private void MenuItemEditClassifyDarkImages_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelection(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedDarkThresholdPrompt,
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedDarkThresholdPrompt,
                                                                            "'(Re-) classify dark files...'",
                                                                (bool optOut) =>
                                                                {

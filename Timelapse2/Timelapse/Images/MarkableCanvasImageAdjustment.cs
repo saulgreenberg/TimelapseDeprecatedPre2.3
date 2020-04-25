@@ -80,15 +80,8 @@ namespace Timelapse.Images
                 // Note that we don't do any image processing on this event if if this is the case.
                 if (ProcessExecution.TryProcessStart(path) == false)
                 {
-                    string extension = Path.GetExtension(path);
-                    // Can't open the image file. Note that file must exist at this pint as we checked for that above.
-                    MessageBox messageBox = new MessageBox("Can't open a photo viewer.", Util.GlobalReferences.MainWindow);
-                    messageBox.Message.Icon = System.Windows.MessageBoxImage.Error;
-                    messageBox.Message.Reason = "You probably don't have a default program set up to display a photo viewer for " + extension + " files";
-                    messageBox.Message.Solution = "Set up a photo viewer in your Windows Settings." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 go to 'Default apps', select 'Photo Viewer' and choose a desired photo viewer." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 or right click on an " + extension + " file and set the default viewer that way";
-                    messageBox.ShowDialog();
+                    // Can't open the image file with an external view. Note that file must exist at this point as we checked for that above.
+                    Dialogs.MarkableCanvasCantOpenExternalPhotoViewerDialog(Util.GlobalReferences.MainWindow, Path.GetExtension(path));
                 }
                 return;
             }

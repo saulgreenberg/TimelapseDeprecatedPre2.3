@@ -56,7 +56,7 @@ namespace Timelapse
             if (IsCondition.IsPathLengthTooLong(templateDatabasePath))
             {
                 Mouse.OverrideCursor = null;
-                Dialogs.TemplatePathTooLongDialog(templateDatabasePath, this);
+                Dialogs.TemplatePathTooLongDialog(this, templateDatabasePath);
                 return false;
             }
             // Second, check to see if we can actually open it. 
@@ -68,7 +68,7 @@ namespace Timelapse
             {
                 // Notify the user the template couldn't be loaded rather than silently doing nothing
                 Mouse.OverrideCursor = null;
-                Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabasePath, this);
+                Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, templateDatabasePath);
                 return false;
             }
 
@@ -85,7 +85,7 @@ namespace Timelapse
             if (IsCondition.IsPathLengthTooLong(fileDatabaseFilePath))
             {
                 Mouse.OverrideCursor = null;
-                Dialogs.DatabasePathTooLongDialog(fileDatabaseFilePath, this);
+                Dialogs.DatabasePathTooLongDialog(this, fileDatabaseFilePath);
                 return false;
             }
 
@@ -151,7 +151,7 @@ namespace Timelapse
                     // Raise an error message
                     bool isEmpty = File.Exists(fileDatabaseFilePath) && new FileInfo(fileDatabaseFilePath).Length == 0;
                     Mouse.OverrideCursor = null;
-                    Dialogs.DatabaseFileNotLoadedAsCorrupt(fileDatabaseFilePath, isEmpty, this);
+                    Dialogs.DatabaseFileNotLoadedAsCorruptDialog(this, fileDatabaseFilePath, isEmpty);
                     return false;
                 }
             }
@@ -285,17 +285,7 @@ namespace Timelapse
             // If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
             if (missingRelativePaths?.Count > 1)
             {
-                Mouse.OverrideCursor = null;
-                MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", this, MessageBoxButton.OKCancel);
-                messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
-                foreach (string relativePath in missingRelativePaths)
-                {
-                    messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
-                }
-                messageBox.Message.Solution = "Selecting OK will raise additional dialog boxes, each asking you to locate a particular missing folder" + Environment.NewLine;
-                messageBox.Message.Solution += "Selecting Cancel will still display the image's data, along with a 'missing' image placeholder";
-                messageBox.Message.Icon = MessageBoxImage.Question;
-                if (messageBox.ShowDialog() == false)
+                if (Dialogs.ImageSetLoadingMultipleImageFoldersNotFoundDialog(this, missingRelativePaths) == false)
                 {
                     Mouse.OverrideCursor = cursor;
                     return;
@@ -343,16 +333,7 @@ namespace Timelapse
             if (filesToAdd.Count == 0)
             {
                 // No images were found in the root folder or subfolders, so there is nothing to do
-                MessageBox messageBox = new MessageBox("No images or videos were found", this, MessageBoxButton.OK);
-                messageBox.Message.Problem = "No images or videos were found in this folder or its subfolders:" + Environment.NewLine;
-                messageBox.Message.Problem += "\u2022 " + selectedFolderPath + Environment.NewLine;
-                messageBox.Message.Reason = "Neither the folder nor its sub-folders contain:" + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 image files (ending in '.jpg') " + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 video files (ending in '.avi or .mp4')";
-                messageBox.Message.Solution = "Timelapse aborted the load operation." + Environment.NewLine;
-                messageBox.Message.Hint = "Locate your template in a folder containing (or whose subfolders contain) image or video files ." + Environment.NewLine;
-                messageBox.Message.Icon = MessageBoxImage.Exclamation;
-                messageBox.ShowDialog();
+                Dialogs.ImageSetLoadingNoImagesOrVideosWereFoundDialog(this, selectedFolderPath);
                 return false;
             }
 
@@ -395,7 +376,7 @@ namespace Timelapse
 
                 if (filesSkipped.Count > 0)
                 {
-                    Dialogs.FilePathTooLongDialog(filesSkipped, this);
+                    Dialogs.FilePathTooLongDialog(this, filesSkipped);
                 }
                 if (folderLoadProgress.CurrentPass == 1 && folderLoadProgress.CurrentFile == 0)
                 {
@@ -456,15 +437,7 @@ namespace Timelapse
                     {
                         Tuple<int, int> SuccessSkippedFileCounter = ImageDataXml.Read(Path.Combine(this.FolderPath, Constant.File.XmlDataFileName), this.DataHandler.FileDatabase);
                         await this.FilesSelectAndShowAsync(this.DataHandler.FileDatabase.ImageSet.MostRecentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true); // to regenerate the controls and markers for this image
-                        MessageBox messageBox = new MessageBox("Data imported from old XML file", this);
-                        messageBox.Message.What = "Data imported " + SuccessSkippedFileCounter.Item1 + " existing images, each with an entry in your ImageData.xml file." + Environment.NewLine;
-                        if (SuccessSkippedFileCounter.Item2 != 0)
-                        {
-                            messageBox.Message.What += Environment.NewLine + "However, " + SuccessSkippedFileCounter.Item2.ToString() + " data entries in the ImageData.xml file were skipped, as they did not match any existing files.";
-                            messageBox.Message.What += Environment.NewLine + "This can occur if you moved, renamed, or deleted some of your original files.";
-                            messageBox.Message.What += Environment.NewLine + "This is not necessarily an error, but you should check to make sure you have what you need.";
-                        }
-                        messageBox.ShowDialog();
+                        Dialogs.ImageSetLoadingDataImportedFromOldXMLFileDialog(this, SuccessSkippedFileCounter.Item1, SuccessSkippedFileCounter.Item2);
                     }
                 }
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator

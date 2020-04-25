@@ -99,46 +99,21 @@ namespace Timelapse
             }
             this.BusyCancelIndicator.IsBusy = false;
 
+            string details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
             if (result == false)
             {
                 // No matching folders in the DB and the detector
-                MessageBox messageBox = new MessageBox("Recognition data not imported.", this);
-                messageBox.Message.Problem = "No recognition information was imported, as none of its image folder paths were found in your Database file." + Environment.NewLine;
-                messageBox.Message.Problem += "Thus no recognition information could be assigned to your images.";
-                messageBox.Message.Reason = "The recognizer may have been run on a folder containing various image sets, each in a sub-folder. " + Environment.NewLine;
-                messageBox.Message.Reason += "For example, if the recognizer was run on 'AllFolders/Camera1/' but your template and database is in 'Camera1/'," + Environment.NewLine;
-                messageBox.Message.Reason += "the folder paths won't match, since AllFolders/Camera1/ \u2260 Camera1/.";
-                messageBox.Message.Solution = "Microsoft provides a program to extract a subset of recognitions in the Recognition file" + Environment.NewLine;
-                messageBox.Message.Solution += "that you can use to extract recognitions matching your sub-folder: " + Environment.NewLine;
-                messageBox.Message.Solution += "  http://aka.ms/cameratraps-detectormismatch";
-                messageBox.Message.Result = "Recognition information was not imported.";
-                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
-                messageBox.ShowDialog();
+                Dialogs.MenuFileRecognitionDataNotImportedDialog(this, details);
             }
             else if (foldersInDBListButNotInJSon.Count > 0)
             {
                 // Some folders missing - show which folder paths in the DB are not in the detector
-                MessageBox messageBox = new MessageBox("Recognition data imported for only some of your folders.", this);
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                messageBox.Message.Problem = "Some of the sub-folders in your image set's Database file have no corresponding entries in the Recognition file." + Environment.NewLine;
-                messageBox.Message.Problem += "While not an error, we just wanted to bring it to your attention.";
-                messageBox.Message.Reason = "This could happen if you have added, moved, or renamed the folders since supplying the originals to the recognizer:" + Environment.NewLine;
-                messageBox.Message.Result = "Recognition data will still be imported for the other folders.";
-                messageBox.Message.Hint = "You can also view which images are missing recognition data by choosing" + Environment.NewLine;
-                messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
-                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
-                messageBox.ShowDialog();
+                Dialogs.MenuFileRecognitionDataImportedOnlyForSomeFoldersDialog(this, details);
             }
             else
             {
                 // Detections successfully imported message
-                MessageBox messageBox = new MessageBox("Recognitions imported.", this);
-                messageBox.Message.Icon = MessageBoxImage.Information;
-                messageBox.Message.Result = "Recognition data imported. You can select images matching particular recognitions by choosing 'Select|Custom Selection...'";
-                messageBox.Message.Hint = "You can also view which images (if any) are missing recognition data by choosing" + Environment.NewLine;
-                messageBox.Message.Hint += "'Select|Custom Selection...' and checking the box titled 'Show all files with no recognition data'";
-                messageBox.Message.Details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
-                messageBox.ShowDialog();
+                Dialogs.MenuFileDetectionsSuccessfulyImportedDialog(this, details);
             }
         }
 
@@ -191,29 +166,10 @@ namespace Timelapse
             if (this.State.SuppressSelectedCsvExportPrompt == false &&
                 this.DataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
             {
-                MessageBox messageBox = new MessageBox("Exporting to a .csv file on a selected view...", this, MessageBoxButton.OKCancel);
-                messageBox.Message.What = "Only a subset of your data will be exported to the .csv file.";
-                messageBox.Message.Reason = "As your selection (in the Selection menu) is not set to view 'All', ";
-                messageBox.Message.Reason += "only data for these selected files will be exported. ";
-                messageBox.Message.Solution = "If you want to export just this subset, then " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 click Okay" + Environment.NewLine + Environment.NewLine;
-                messageBox.Message.Solution += "If you want to export data for all your files, then " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 click Cancel," + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 select 'All Files' in the Selection menu, " + Environment.NewLine;
-                messageBox.Message.Solution += "\u2022 retry exporting your data as a .csv file.";
-                messageBox.Message.Hint = "If you check don't show this message this dialog can be turned back on via the Options menu.";
-                messageBox.Message.Icon = MessageBoxImage.Warning;
-                messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? exportCsv = messageBox.ShowDialog();
-                if (exportCsv != true)
+                // Export data for this image set as a.csv file, but confirm, as only a subset will be exported since a selection is active
+                if (Dialogs.MenuFileExportCSVOnSelectionDialog(this) == false)
                 {
                     return;
-                }
-
-                if (messageBox.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.State.SuppressSelectedCsvExportPrompt = messageBox.DontShowAgain.IsChecked.Value;
                 }
             }
 
@@ -238,30 +194,13 @@ namespace Timelapse
             catch (IOException exception)
             {
                 // Can't write the spreadsheet file
-                MessageBox messageBox = new MessageBox("Can't write the spreadsheet file.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = "The following file can't be written: " + csvFilePath;
-                messageBox.Message.Reason = "You may already have it open in Excel or another application.";
-                messageBox.Message.Solution = "If the file is open in another application, close it and try again.";
-                messageBox.Message.Hint = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
-                messageBox.ShowDialog();
+                Dialogs.MenuFileCantWriteSpreadsheetFileDialog(this, csvFilePath, exception.GetType().FullName, exception.Message);
                 return;
             }
 
             MenuItem mi = (MenuItem)sender;
             if (mi == this.MenuItemExportAsCsvAndPreview)
             {
-                if (ProcessExecution.TryProcessStart(csvFilePath) == false)
-                {
-                    // Can't open excel
-                    MessageBox messageBox = new MessageBox("Can't open Excel.", this);
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.Message.Problem = "Excel could not be opened to display " + csvFilePath;
-                    messageBox.Message.Solution = "Try again, or just manually start Excel and open the .csv file ";
-                    messageBox.ShowDialog();
-                    return;
-                }
-
                 // Show the file in excel
                 // Create a process that will try to show the file
                 ProcessStartInfo processStartInfo = new ProcessStartInfo
@@ -273,31 +212,13 @@ namespace Timelapse
                 if (ProcessExecution.TryProcessStart(processStartInfo) == false)
                 {
                     // Can't open excel
-                    MessageBox messageBox = new MessageBox("Can't open Excel.", this);
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.Message.Problem = "Excel could not be opened to display " + csvFilePath;
-                    messageBox.Message.Solution = "Try again, or just manually start Excel and open the .csv file ";
-                    messageBox.ShowDialog();
+                    Dialogs.MenuFileCantOpenExcelDialog(this, csvFilePath);
                     return;
                 }
             }
             else if (this.State.SuppressCsvExportDialog == false)
             {
-                // since the exported file isn't shown give the user some feedback about the export operation
-                MessageBox csvExportInformation = new MessageBox("Data exported.", this);
-                csvExportInformation.Message.What = "The selected files were exported to " + csvFileName;
-                csvExportInformation.Message.Result = String.Format("This file is overwritten every time you export it (backups can be found in the {0} folder).", Constant.File.BackupFolder);
-                csvExportInformation.Message.Hint = "\u2022 You can open this file with most spreadsheet programs, such as Excel." + Environment.NewLine;
-                csvExportInformation.Message.Hint += "\u2022 If you make changes in the spreadsheet file, you will need to import it to see those changes." + Environment.NewLine;
-                csvExportInformation.Message.Hint += "\u2022 If you check don't show this message again you can still see the name of the .csv file in the status bar at the lower right corner of the main Carnassial window.  This dialog can also be turned back on through the Options menu.";
-                csvExportInformation.Message.Icon = MessageBoxImage.Information;
-                csvExportInformation.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? result = csvExportInformation.ShowDialog();
-                if (result.HasValue && result.Value && csvExportInformation.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.State.SuppressCsvExportDialog = csvExportInformation.DontShowAgain.IsChecked.Value;
-                }
+                Dialogs.MenuFileCSVDataExportedDialog(this, csvFileName);
             }
             this.StatusBar.SetMessage("Data exported to " + csvFileName);
         }
@@ -307,32 +228,10 @@ namespace Timelapse
         {
             if (this.State.SuppressCsvImportPrompt == false)
             {
-                MessageBox messageBox = new MessageBox("How importing .csv data works", this, MessageBoxButton.OKCancel);
-                messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below.";
-                messageBox.Message.Reason = "\u2022 The first row in the CSV file must comprise column Headers that match the DataLabels in the .tdb template file." + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 The column Header 'File' must be included." + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 Subsequent rows defines the data for each File ." + Environment.NewLine;
-                messageBox.Message.Reason += "\u2022 Column data should match the Header type. In particular," + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 File values should define name of the file you want to update." + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 Counter values must be blank or a positive integer. " + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 Flag and DeleteFlag values must be 'true' or 'false'." + Environment.NewLine;
-                messageBox.Message.Reason += "  \u2022\u2022 FixedChoice values should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
-                messageBox.Message.Result = "Image values for identified files will be updated, except for values relating to a File's location or its dates / times.";
-                messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 Warning will be generated for non-matching CSV fields, which you can then fix." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 If you check 'Don't show this message again' this dialog can be turned back on via the Options menu.";
-                messageBox.Message.Icon = MessageBoxImage.Warning;
-                messageBox.DontShowAgain.Visibility = Visibility.Visible;
-
-                bool? proceeed = messageBox.ShowDialog();
-                if (proceeed != true)
+                // Tell the user how importing CSV files work. Give them the opportunity to abort.
+                if (Dialogs.MenuFileHowImportingCSVWorksDialog(this) == false)
                 {
                     return;
-                }
-
-                if (messageBox.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.State.SuppressCsvImportPrompt = messageBox.DontShowAgain.IsChecked.Value;
                 }
             }
 
@@ -369,32 +268,13 @@ namespace Timelapse
 
                 if (resultAndImportErrors.Item1 == false)
                 {
-                    MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
-                    messageBox.Message.Icon = MessageBoxImage.Error;
-                    messageBox.Message.Problem = String.Format("The file {0} could not be read.", Path.GetFileName(csvFilePath));
-                    messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
-                    messageBox.Message.Solution = "Check that:" + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Choice and ImageQuality values are in that DataLabel's Choice list." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Counter values are numbers or blanks." + Environment.NewLine;
-                    messageBox.Message.Solution += "\u2022 Flag and DeleteFlag values are either 'true' or 'false'.";
-                    messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
-                    messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
-                    foreach (string importError in resultAndImportErrors.Item2)
-                    {
-                        messageBox.Message.Hint += Environment.NewLine + "\u2022 " + importError;
-                    }
-                    messageBox.ShowDialog();
+                    // Can't import CSV File
+                    Dialogs.MenuFileCantImportCSVFileDialog(this, Path.GetFileName(csvFilePath), resultAndImportErrors.Item2);
                 }
                 else
                 {
                     // Importing done.
-                    MessageBox messageBox = new MessageBox("CSV file imported", this);
-                    messageBox.Message.Icon = MessageBoxImage.Information;
-                    messageBox.Message.What = String.Format("The file {0} was successfully imported.", Path.GetFileName(csvFilePath));
-                    messageBox.Message.Hint = "\u2022 Check your data. If it is not what you expect, restore your data by using latest backup file in " + Constant.File.BackupFolder + ".";
-                    messageBox.ShowDialog();
+                    Dialogs.MenuFileCSVFileImportedDialog(this, Path.GetFileName(csvFilePath));
 
                     // Reload the data
                     this.BusyCancelIndicator.IsBusy = true;
@@ -405,16 +285,8 @@ namespace Timelapse
             }
             catch (Exception exception)
             {
-                MessageBox messageBox = new MessageBox("Can't import the .csv file.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = String.Format("The file {0} could not be opened.", Path.GetFileName(csvFilePath));
-                messageBox.Message.Reason = "Most likely the file is open in another program. The technical reason is:" + Environment.NewLine;
-                messageBox.Message.Reason += exception.Message;
-                messageBox.Message.Solution = "If the file is open in another program, close it.";
-                //messageBox.Message.Result = String.Format("{0}: {1}", exception.GetType().FullName, exception.Message);
-                messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
-                messageBox.Message.Hint = "Is the file open in Excel?";
-                messageBox.ShowDialog();
+                // Can't import the .csv file
+                Dialogs.MenuFileCantImportCSVFileDialog(this, Path.GetFileName(csvFilePath), exception.Message);
             }
         }
 
@@ -423,12 +295,8 @@ namespace Timelapse
         {
             if (!this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
             {
-                MessageBox messageBox = new MessageBox("Can't export this file!", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                messageBox.Message.Problem = "Timelapse can't export the currently displayed file.";
-                messageBox.Message.Reason = "It is likely a corrupted or missing file.";
-                messageBox.Message.Solution = "Make sure you have navigated to, and are displaying, a valid file before you try to export it.";
-                messageBox.ShowDialog();
+                // Can't export the currently displayed image as a file
+                Dialogs.MenuFileCantExportCurrentImageDialog(this);
                 return;
             }
             // Get the file name of the current image 
@@ -545,7 +413,6 @@ namespace Timelapse
             }
         }
 
-
         // Exit Timelapse
         private void MenuItemExit_Click(object sender, RoutedEventArgs e)
         {
@@ -557,31 +424,9 @@ namespace Timelapse
         {
             if (this.State.SuppressMergeDatabasesPrompt == false)
             {
-                // Show a message that explains how merging databases works, and its constraints
-                MessageBox messageBox = new MessageBox("Merge Databases.", this, MessageBoxButton.OKCancel);
-                messageBox.Message.Icon = MessageBoxImage.Question;
-                messageBox.Message.Title = "Merge Databases Explained.";
-                messageBox.Message.What = "Merging databases works as follows. Timelapse will:" + Environment.NewLine;
-                messageBox.Message.What += "\u2022 ask you to locate a root folder containing a template (a.tdb file)," + Environment.NewLine;
-                messageBox.Message.What += String.Format("\u2022 create a new database (.ddb) file in that folder, called {0},{1}", Constant.File.MergedFileName, Environment.NewLine);
-                messageBox.Message.What += "\u2022 search for other database (.ddb) files in that folder's sub-folders, " + Environment.NewLine;
-                messageBox.Message.What += "\u2022 try to merge all data found in those found databases into the new database.";
-                messageBox.Message.Details = "\u2022 All databases must be based on the same template, otherwise the merge will fail." + Environment.NewLine;
-                messageBox.Message.Details += "\u2022 Databases found in the Backup folders are ignored." + Environment.NewLine;
-                messageBox.Message.Details += "\u2022 Detections and Classifications (if any) are merged; categories are taken from the first database found with detections." + Environment.NewLine;
-                messageBox.Message.Details += "\u2022 The merged database is independent of the found databases: updates will not propagate between them." + Environment.NewLine;
-                messageBox.Message.Details += "\u2022 The merged database is a normal Timelapse database, which you can open and use as expected.";
-                messageBox.Message.Hint = "Press Ok to continue with the merge, otherwise Cancel.";
-                messageBox.DontShowAgain.Visibility = Visibility.Visible;
-                messageBox.ShowDialog();
-                if (messageBox.DialogResult == false)
+                if (Dialogs.MenuFileMergeDatabasesExplainedDialog(this) == false)
                 {
                     return;
-                }
-
-                if (messageBox.DontShowAgain.IsChecked.HasValue)
-                {
-                    this.State.SuppressMergeDatabasesPrompt = messageBox.DontShowAgain.IsChecked.Value;
                 }
             }
             // Get the location of the template, which also determines the root folder
@@ -608,39 +453,10 @@ namespace Timelapse
             this.EnableBusyCancelIndicatorForSelection(false);
             Mouse.OverrideCursor = null;
 
-            // Show errors and/or warnings, if any.
             if (errorMessages.Errors.Count != 0 || errorMessages.Warnings.Count != 0)
             {
-                MessageBox messageBox = new MessageBox("Merge Databases Results.", this);
-                messageBox.Message.Icon = MessageBoxImage.Error;
-                if (errorMessages.Errors.Count != 0)
-                {
-                    messageBox.Message.Title = "Merge Databases Failed.";
-                    messageBox.Message.What = "The merged database could not be created for the following reasons:";
-                }
-                else if (errorMessages.Warnings.Count != 0)
-                {
-                    messageBox.Message.Title = "Merge Databases Left Out Some Files.";
-                    messageBox.Message.What = "The merged database left out some files for the following reasons:";
-                }
-
-                if (errorMessages.Errors.Count != 0)
-                {
-                    messageBox.Message.What += String.Format("{0}{0}Errors:", Environment.NewLine);
-                    foreach (string error in errorMessages.Errors)
-                    {
-                        messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, error);
-                    }
-                }
-                if (errorMessages.Warnings.Count != 0)
-                {
-                    messageBox.Message.What += String.Format("{0}{0}Warnings:", Environment.NewLine);
-                }
-                foreach (string warning in errorMessages.Warnings)
-                {
-                    messageBox.Message.What += String.Format("{0}\u2022 {1},", Environment.NewLine, warning);
-                }
-                messageBox.ShowDialog();
+                // Merge databases: Show errors and/or warnings, if any.
+                Dialogs.MenuFileMergeDatabasesErrorsAndWarningsDialog(this, errorMessages);
             }
         }
 

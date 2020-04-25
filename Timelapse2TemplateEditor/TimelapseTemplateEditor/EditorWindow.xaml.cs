@@ -172,7 +172,7 @@ namespace Timelapse.Editor
                 // so we test for that too as it also indicates a too longpath name
                 if (IsCondition.IsPathLengthTooLong(templateFileName) || templateFileName.Equals(Path.GetFileNameWithoutExtension(Constant.File.DefaultTemplateDatabaseFileName)))
                 {
-                    Dialogs.TemplatePathTooLongDialog(templateFileName, this);
+                    Dialogs.TemplatePathTooLongDialog(this, templateFileName);
                     return;
                 }
 
@@ -212,7 +212,7 @@ namespace Timelapse.Editor
             // This likely isn't needed as the OpenFileDialog won't let us do that anyways. But just in case...
             if (IsCondition.IsPathLengthTooLong(openFileDialog.FileName))
             {
-                Dialogs.TemplatePathTooLongDialog(openFileDialog.FileName, this);
+                Dialogs.TemplatePathTooLongDialog(this, openFileDialog.FileName);
                 return;
             }
 
@@ -223,7 +223,7 @@ namespace Timelapse.Editor
                 if (false == await this.InitializeDataGridAsync(openFileDialog.FileName).ConfigureAwait(true))
                 {
                     Mouse.OverrideCursor = null;
-                    Dialogs.TemplateFileNotLoadedAsCorrupt(openFileDialog.FileName, this);
+                    Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, openFileDialog.FileName);
                     return;
                 }
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
@@ -247,7 +247,7 @@ namespace Timelapse.Editor
             {
 
                 Mouse.OverrideCursor = null; 
-                Dialogs.TemplateFileNotLoadedAsCorrupt(recentTemplatePath, this);
+                Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, recentTemplatePath);
                 return;
             }
             this.HelpMessageInitial.Visibility = Visibility.Collapsed;
@@ -1482,7 +1482,7 @@ namespace Timelapse.Editor
                 if (false == await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true))
                 {
                     Mouse.OverrideCursor = null; 
-                    Dialogs.TemplateFileNotLoadedAsCorrupt(templateDatabaseFilePath, this);
+                    Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, templateDatabaseFilePath);
                     return;
                 }
             }
