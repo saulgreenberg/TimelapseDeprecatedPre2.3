@@ -149,6 +149,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Dialog\EditorDialogs.cs" />
     <Compile Include="Dialog\InspectMetadata.xaml.cs">
       <DependentUpon>InspectMetadata.xaml</DependentUpon>
     </Compile>

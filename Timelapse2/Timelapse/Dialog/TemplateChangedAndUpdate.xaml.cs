@@ -296,8 +296,7 @@ namespace Timelapse.Dialog
                 }
 
                 // If this is a Delete action row and a previously selected data label matches it, hide it. 
-                Label labelAction = this.GetUIElement(row, 2) as Label;
-                if (labelAction == null || labelAction.Content.ToString() != this.actionAdd)
+                if (!(this.GetUIElement(row, 2) is Label labelAction) || labelAction.Content.ToString() != this.actionAdd)
                 {
                     continue;
                 }
