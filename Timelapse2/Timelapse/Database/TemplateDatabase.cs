@@ -520,20 +520,20 @@ namespace Timelapse.Database
             await Task.Run(() =>
             {
                 List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
-            {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
-                new ColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
-                new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.IntegerType),
-                new ColumnDefinition(Constant.Control.Type, Sql.Text),
-                new ColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
-                new ColumnDefinition(Constant.Control.Label, Sql.Text),
-                new ColumnDefinition(Constant.Control.DataLabel, Sql.Text),
-                new ColumnDefinition(Constant.Control.Tooltip, Sql.Text),
-                new ColumnDefinition(Constant.Control.TextBoxWidth, Sql.Text),
-                new ColumnDefinition(Constant.Control.Copyable, Sql.Text),
-                new ColumnDefinition(Constant.Control.Visible, Sql.Text),
-                new ColumnDefinition(Constant.Control.List, Sql.Text)
-            };
+                {
+                    new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
+                    new ColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
+                    new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.IntegerType),
+                    new ColumnDefinition(Constant.Control.Type, Sql.Text),
+                    new ColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
+                    new ColumnDefinition(Constant.Control.Label, Sql.Text),
+                    new ColumnDefinition(Constant.Control.DataLabel, Sql.Text),
+                    new ColumnDefinition(Constant.Control.Tooltip, Sql.Text),
+                    new ColumnDefinition(Constant.Control.TextBoxWidth, Sql.Text),
+                    new ColumnDefinition(Constant.Control.Copyable, Sql.Text),
+                    new ColumnDefinition(Constant.Control.Visible, Sql.Text),
+                    new ColumnDefinition(Constant.Control.List, Sql.Text)
+                };
                 this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
 
                 // if an existing table was passed, clone its contents into this database

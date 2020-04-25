@@ -9,7 +9,6 @@ using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Util;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse
 {

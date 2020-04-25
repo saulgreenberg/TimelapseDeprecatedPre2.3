@@ -11,7 +11,6 @@ using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Util;
 using DialogResult = System.Windows.Forms.DialogResult;
-using MessageBox = Timelapse.Dialog.MessageBox;
 using SaveFileDialog = System.Windows.Forms.SaveFileDialog;
 
 // File Menu Callbacks

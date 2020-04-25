@@ -9,7 +9,6 @@ using Timelapse.Dialog;
 using Timelapse.Images;
 using Timelapse.Util;
 using Xceed.Wpf.Toolkit;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Controls
 {
@@ -370,7 +369,7 @@ namespace Timelapse.Controls
             ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
             string valueToCopy = imageRow.GetValueDisplayString(control.DataLabel);
             bool checkForZero = control is DataEntryCounter;
-            if (Dialogs.DataEntryConfirmCopyForwardDialog(Application.Current.MainWindow,valueToCopy, imagesAffected, checkForZero) != true)
+            if (Dialogs.DataEntryConfirmCopyForwardDialog(Application.Current.MainWindow, valueToCopy, imagesAffected, checkForZero) != true)
             {
                 return;
             }

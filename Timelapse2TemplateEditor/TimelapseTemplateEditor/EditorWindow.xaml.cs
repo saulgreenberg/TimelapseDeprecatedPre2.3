@@ -19,7 +19,6 @@ using Timelapse.Dialog;
 using Timelapse.Editor.Dialog;
 using Timelapse.Editor.Util;
 using Timelapse.Util;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse.Editor
 {
@@ -243,7 +242,7 @@ namespace Timelapse.Editor
             if (false == await this.InitializeDataGridAsync(recentTemplatePath).ConfigureAwait(true))
             {
 
-                Mouse.OverrideCursor = null; 
+                Mouse.OverrideCursor = null;
                 Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, recentTemplatePath);
                 return;
             }
@@ -404,7 +403,7 @@ namespace Timelapse.Editor
             if (mi.IsChecked == true)
             {
                 // Confirm Showing UTC Date/Time Settings
-                mi.IsChecked = EditorDialogs.EditorConfirmShowingUTCDateTimeDialog(this) == true;         
+                mi.IsChecked = EditorDialogs.EditorConfirmShowingUTCDateTimeDialog(this) == true;
             }
             this.userSettings.ShowUtcOffset = mi.IsChecked ? true : false;
             this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
@@ -717,7 +716,7 @@ namespace Timelapse.Editor
                     // Only allow alphanumeric and '_' in data labels
                     if ((!IsCondition.IsLetterOrDigit(e.Text)) && !e.Text.Equals("_"))
                     {
-                        EditorDialogs.EditorDataLabelRequirementsDialog(this); 
+                        EditorDialogs.EditorDataLabelRequirementsDialog(this);
                         e.Handled = true;
                     }
                     break;
@@ -1104,7 +1103,7 @@ namespace Timelapse.Editor
                         List<string> choices = control.GetChoices(true);
                         if (choices.Contains(textBox.Text) == false)
                         {
-                            EditorDialogs.EditorDefaultChoicValuesMustMatchChoiceListsDialog(this, textBox.Text); 
+                            EditorDialogs.EditorDefaultChoicValuesMustMatchChoiceListsDialog(this, textBox.Text);
                             textBox.Text = String.Empty;
                         }
                     }
@@ -1382,7 +1381,7 @@ namespace Timelapse.Editor
             {
                 if (false == await this.InitializeDataGridAsync(templateDatabaseFilePath).ConfigureAwait(true))
                 {
-                    Mouse.OverrideCursor = null; 
+                    Mouse.OverrideCursor = null;
                     Dialogs.TemplateFileNotLoadedAsCorruptDialog(this, templateDatabaseFilePath);
                     return;
                 }

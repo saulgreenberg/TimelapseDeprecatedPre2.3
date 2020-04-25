@@ -10,7 +10,6 @@ using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 // Edit Menu Callbacks
 namespace Timelapse

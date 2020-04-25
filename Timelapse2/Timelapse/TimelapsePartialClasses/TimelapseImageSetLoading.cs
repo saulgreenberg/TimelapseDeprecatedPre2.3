@@ -16,7 +16,6 @@ using Timelapse.Images;
 using Timelapse.ImageSetLoadingPipeline;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 // Image Set Loading
 namespace Timelapse
@@ -61,7 +60,6 @@ namespace Timelapse
             }
             // Second, check to see if we can actually open it. 
             // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
-            // Original form: if (!(await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath, out this.templateDatabase).ConfigureAwait(true))
             Tuple<bool, TemplateDatabase> tupleResult = await TemplateDatabase.TryCreateOrOpenAsync(templateDatabasePath).ConfigureAwait(true);
             this.templateDatabase = tupleResult.Item2;
             if (!tupleResult.Item1)

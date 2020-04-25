@@ -6,7 +6,6 @@ using Timelapse.Controls;
 using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Util;
-using MessageBox = Timelapse.Dialog.MessageBox;
 
 namespace Timelapse
 {
@@ -61,7 +60,7 @@ namespace Timelapse
                 if (anyFilesMissing == false)
                 {
                     // No files were missing. Inform the user, and don't change anything.
-                    Mouse.OverrideCursor = null; 
+                    Mouse.OverrideCursor = null;
                     Dialogs.FileSelectionNoFilesAreMissingDialog(this);
                     return;
                 }
@@ -85,7 +84,7 @@ namespace Timelapse
             {
                 // Tell the user that we are resetting the selection to all files
                 Dialogs.FileSelectionResettngSelectionToAllFilesDialog(this, selection);
- 
+
                 this.StatusBar.SetMessage("Resetting selection to All files.");
                 selection = FileSelectionEnum.All;
 
