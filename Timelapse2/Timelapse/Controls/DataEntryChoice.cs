@@ -15,6 +15,7 @@ namespace Timelapse.Controls
     // - a combobox (containing the content) at the given width
     public class DataEntryChoice : DataEntryControl<ComboBox, Label>
     {
+        #region Public properties
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
@@ -42,12 +43,12 @@ namespace Timelapse.Controls
             get { return this.ContentControl.IsReadOnly; }
             set { this.ContentControl.IsReadOnly = value; }
         }
+        #endregion
 
+        #region Constructor
         public DataEntryChoice(ControlRow control, DataEntryControls styleProvider)
             : base(control, styleProvider, ControlContentStyleEnum.ChoiceComboBox, ControlLabelStyleEnum.DefaultLabel)
         {
-
-
             // The behaviour of the combo box
             this.ContentControl.Focusable = true;
             this.ContentControl.IsEditable = false;
@@ -99,21 +100,7 @@ namespace Timelapse.Controls
             ((ComboBoxItem)this.ContentControl.Items[0]).Visibility = System.Windows.Visibility.Collapsed;
             this.ContentControl.SelectedIndex = 1;
         }
-
-        public void HideItems(List<String> itemsToHide)
-        {
-            if (this.ContentControl == null || this.ContentControl.Items == null || itemsToHide == null)
-            {
-                return;
-            }
-            foreach (ComboBoxItem cbi in this.ContentControl.Items)
-            {
-                if (itemsToHide.Contains((string)cbi.Content))
-                {
-                    cbi.Height = 0;
-                }
-            }
-        }
+        #endregion
 
         #region Event Handlers
         // Users may want to use the text search facility on the combobox, where they type the first letter and then enter
@@ -203,7 +190,23 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        #region Visual Effects and Popup Previews
+        #region Hiding, visual Effects and Popup Previews
+
+        public void HideItems(List<String> itemsToHide)
+        {
+            if (this.ContentControl == null || this.ContentControl.Items == null || itemsToHide == null)
+            {
+                return;
+            }
+            foreach (ComboBoxItem cbi in this.ContentControl.Items)
+            {
+                if (itemsToHide.Contains((string)cbi.Content))
+                {
+                    cbi.Height = 0;
+                }
+            }
+        }
+
         // Flash the content area of the control
         public override void FlashContentControl()
         {

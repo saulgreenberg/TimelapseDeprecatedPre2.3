@@ -89,17 +89,6 @@ namespace Timelapse.Controls
         }
         #endregion
 
-
-        // For each clickable image in the cache (i.e., those that are currently being displayed)
-        // show or hide the bounding boxes 
-        public void ShowOrHideBoundingBoxes(bool visibility)
-        {
-            foreach (ClickableImage ci in this.cachedImageList)
-            {
-                ci.ShowOrHideBoundingBoxes(visibility);
-            }
-        }
-
         #region Public Refresh
         // Rebuild the grid, based on 
         // - fitting the image of a desired width into as many cells of the same size that can fit within the grid
@@ -295,6 +284,18 @@ namespace Timelapse.Controls
         public void InvalidateCache()
         {
             this.cachedImageList = null;
+        }
+        #endregion
+
+        #region Public BoundingBoxes
+        // For each clickable image in the cache (i.e., those that are currently being displayed)
+        // show or hide the bounding boxes 
+        public void ShowOrHideBoundingBoxes(bool visibility)
+        {
+            foreach (ClickableImage ci in this.cachedImageList)
+            {
+                ci.ShowOrHideBoundingBoxes(visibility);
+            }
         }
         #endregion
 
