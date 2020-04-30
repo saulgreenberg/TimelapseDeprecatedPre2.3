@@ -37,6 +37,9 @@ namespace Timelapse.Util
         {
             "Microsoft.WindowsAPICodePack.dll", // required by Microsoft.WindowsAPICodePack.Shell.dll
             "Microsoft.WindowsAPICodePack.Shell.dll", // just for TimelapseWindow's use of CommonOpenFileDialog
+            // For getting thumbnails from videos
+            "ffmpeg.exe",
+            "NReco.VideoConverter.dll"
         };
 
         private static readonly List<string> EditorRequiredBinaries = new List<string>()
