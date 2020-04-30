@@ -14,7 +14,7 @@ using Timelapse.Util;
 namespace Timelapse.Controls
 {
     /// <summary>
-    /// ThumbnailInCell User Control, which is used to fill each cell in the Clickable ImagesGrid
+    /// ThumbnailInCell User Control, which is used to fill each cell in the ThumbnailGrid
     /// </summary>
     public partial class ThumbnailInCell : UserControl
     {
@@ -78,7 +78,7 @@ namespace Timelapse.Controls
             }
         }
 
-        // Whether the Checkbox is checked i.e., the ClickableImage is selected
+        // Whether the Checkbox is checked i.e., the ThumbnailInCell is selected
         private bool isSelected = false;
         public bool IsSelected
         {

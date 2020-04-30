@@ -224,7 +224,7 @@ namespace Timelapse.Dialog
                     // Second, release the image cache   
                     this.imageCache.TryInvalidate(image.ID);
                     // Third, clear images from the multiple image view so it can be moved
-                    this.markableCanvas.ClickableImagesGrid.InvalidateCache();
+                    this.markableCanvas.ThumbnailGrid.InvalidateCache();
 
                     // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
                     // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlag and ImageQuality values. 
@@ -258,7 +258,7 @@ namespace Timelapse.Dialog
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
 
                 // Invalidate the overview cache as well, so Missing placeholder will be displayed.
-                this.markableCanvas.ClickableImagesGrid.InvalidateCache();
+                this.markableCanvas.ThumbnailGrid.InvalidateCache();
 
                 if (deleteFilesAndData)
                 {

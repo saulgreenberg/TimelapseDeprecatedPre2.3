@@ -12,9 +12,9 @@ using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
 {
-    // PERFORMANCE Clickable Grid Overview
+    // Thumbnail Grid Overview
     // A user can use the mouse wheel to not only zoom into an image, but also to zoom out into an overview that displays 
-    // multiple images at the same time in a grid. There are currently three levels of overviews, where the largest overview can 
+    // multiple thumbnails at the same time in a grid. There are currently three levels of overviews, where the largest overview can 
     // – depending on the size of the display – display a good number of images (e.g., ~100) and let the user choose between them 
     // (e.g., any data entered will be applied to the images the user has checked).  However, I implemented this by brute force: 
     // I construct a fixed size grid, read images into it, and then display the grid. I don’t use infinite scroll. 
@@ -25,12 +25,12 @@ namespace Timelapse.Controls
     // so users can start looking at images as they are being loaded. However, there may be better approaches. 
     // Another approach could use infinite scroll, but that could introduce some issues  in how user selections are done, 
     // where mis-selections are possible.
-    // The ClickableImagesGrid class does all the above.I suspect it could be completely re-implemented 
+    // The ThumbnailGrid class does all the above.I suspect it could be completely re-implemented 
     // as an infinite scroll.However, if it is possible to change the existing class to load images asynchronously, 
     // that would help too.The catch is that the current implementation checks the size of each image to determine the size of the grid, 
     // so I am not sure how to get around that (except by using a heuristic).
 
-    public partial class ClickableImagesGrid : UserControl
+    public partial class ThumbnailGrid : UserControl
     {
         #region Public properties
 
@@ -56,7 +56,7 @@ namespace Timelapse.Controls
             }
         }
 
-        // The number of rows that currently exist in the ClickableImagesGrid
+        // The number of rows that currently exist in the ThumbnailGrid
         public int RowsInGrid
         {
             get
@@ -68,7 +68,7 @@ namespace Timelapse.Controls
 
         #region Private variables
 
-        private List<ThumbnailInCell> clickableImagesList;
+        private List<ThumbnailInCell> thumbnailInCellsList;
 
         // Cache copies of the images we display plus associated information
         // This is done both to save existing image state and so we don't repeatedly rebuild that information
@@ -82,7 +82,7 @@ namespace Timelapse.Controls
         #endregion
 
         #region Constructor
-        public ClickableImagesGrid()
+        public ThumbnailGrid()
         {
             this.InitializeComponent();
             this.FileTableStartIndex = 0;
@@ -124,8 +124,8 @@ namespace Timelapse.Controls
             Double maxImageHeight = 0;
             Double combinedRowHeight = 0;
             ThumbnailInCell ci;
-            this.clickableImagesList = new List<ThumbnailInCell>();
-            List<ThumbnailInCell> clickableImagesRow = new List<ThumbnailInCell>();
+            this.thumbnailInCellsList = new List<ThumbnailInCell>();
+            List<ThumbnailInCell> thumbnailGridRow = new List<ThumbnailInCell>();
 
             // If forceUpdate is true, remove the cache so that images have to be regenerated
             if (forceUpdate && this.cachedImageList != null)
@@ -141,21 +141,21 @@ namespace Timelapse.Controls
                     // Process each cell in a row. Use the image in the cache if available, otherwise create it.  
                     string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
 
-                    ci = TryGetCachedClickableImage(path, desiredWidth, state, fileTableIndex, ref maxImageHeight);
+                    ci = TryGetCachedThumbnailInCell(path, desiredWidth, state, fileTableIndex, ref maxImageHeight);
                     if (ci != null)
                     {
-                        clickableImagesRow.Add(ci);
+                        thumbnailGridRow.Add(ci);
                     }
                     else
                     {
-                        ci = CreateClickableImage(fileTableIndex, state, desiredWidth, ref maxImageHeight);
-                        clickableImagesRow.Add(ci);
+                        ci = CreateThumbnailInCell(fileTableIndex, state, desiredWidth, ref maxImageHeight);
+                        thumbnailGridRow.Add(ci);
                     }
                     fileTableIndex++;
                 } 
 
                 // We've reached the end of the row. Create a new row if there is space for it, otherwise abort
-                if (false == CreateNewRowIfSpaceExists(clickableImagesRow, availableSize, rowNumber, combinedRowHeight, maxImageHeight))
+                if (false == CreateNewRowIfSpaceExists(thumbnailGridRow, availableSize, rowNumber, combinedRowHeight, maxImageHeight))
                 {
                     // We are done
                     break;
@@ -164,7 +164,7 @@ namespace Timelapse.Controls
                 // Initialize the (empty) row and adjust the various heights
                 rowNumber++; // we are now on the next row
                 combinedRowHeight += maxImageHeight; // The amount of consumed space
-                clickableImagesRow.Clear();
+                thumbnailGridRow.Clear();
                 maxImageHeight = 0; // as we will have to recalculate the max height for this row
 
                 // If we've gone beyond the last image in the image set, then we are done.
@@ -181,9 +181,9 @@ namespace Timelapse.Controls
             }
 
             // save cache parameters if the cache has changed 
-            if (this.cachedImageList == null || this.cachedImageList.Count < this.clickableImagesList.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
+            if (this.cachedImageList == null || this.cachedImageList.Count < this.thumbnailInCellsList.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
             {
-                this.cachedImageList = this.clickableImagesList;
+                this.cachedImageList = this.thumbnailInCellsList;
                 this.cachedImagePathsStartIndex = this.FileTableStartIndex;
             }
             Mouse.OverrideCursor = null;
@@ -228,7 +228,7 @@ namespace Timelapse.Controls
                 this.modifierKeyPressedOnMouseDown = true;
                 if (Equals(this.cellChosenOnMouseDown, currentCell))
                 {
-                    ci = this.GetClickableImageFromCell(currentCell);
+                    ci = this.GetThumbnailInCellFromCell(currentCell);
                     if (ci != null)
                     {
                         ci.IsSelected = !ci.IsSelected;
@@ -245,7 +245,7 @@ namespace Timelapse.Controls
             {
                 // Left mouse down, no modifiers keys. 
                 // Select only the current cell, unselecting others.
-                ci = this.GetClickableImageFromCell(currentCell);
+                ci = this.GetThumbnailInCellFromCell(currentCell);
                 if (ci != null)
                 {
                     this.SelectNone();
@@ -256,13 +256,13 @@ namespace Timelapse.Controls
             // If this is a double click, raise the Double click event, e.g., so that the calling app can navigate to that image.
             if (e.ClickCount == 2)
             {
-                ci = this.GetClickableImageFromCell(currentCell);
-                ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, ci?.ImageRow);
+                ci = this.GetThumbnailInCellFromCell(currentCell);
+                ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, ci?.ImageRow);
                 this.OnDoubleClick(eventArgs);
                 e.Handled = true; // Stops the double click from generating a marker on the MarkableImageCanvas
             }
             this.EnableOrDisableControlsAsNeeded();
-            ClickableImagesGridEventArgs selectionEventArgs = new ClickableImagesGridEventArgs(this, null);
+            ThumbnailGridEventArgs selectionEventArgs = new ThumbnailGridEventArgs(this, null);
             this.OnSelectionChanged(selectionEventArgs);
         }
 
@@ -310,19 +310,19 @@ namespace Timelapse.Controls
         public void SelectInitialCellOnly()
         {
             this.SelectNone(); // Clear the selections
-            if (this.clickableImagesList.Any())
+            if (this.thumbnailInCellsList.Any())
             {
-                ThumbnailInCell ci = this.clickableImagesList[0];
+                ThumbnailInCell ci = this.thumbnailInCellsList[0];
                 ci.IsSelected = true;
             }
-            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, null);
             this.OnSelectionChanged(eventArgs);
         }
 
         private void SelectNone()
         {
             // Unselect all ThumbnailInCells
-            foreach (ThumbnailInCell ci in this.clickableImagesList)
+            foreach (ThumbnailInCell ci in this.thumbnailInCellsList)
             {
                 ci.IsSelected = false;
             }
@@ -348,8 +348,8 @@ namespace Timelapse.Controls
             ThumbnailInCell ci;
             while (true)
             {
-                ci = this.GetClickableImageFromCell(indexCell);
-                // If the cell doesn't contain a ClickableImage, then we are at the end.
+                ci = this.GetThumbnailInCellFromCell(indexCell);
+                // If the cell doesn't contain a ThumbnailInCell, then we are at the end.
                 if (ci == null)
                 {
                     break;
@@ -363,7 +363,7 @@ namespace Timelapse.Controls
                 }
                 indexCell = nextCell;
             }
-            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, null);
             this.OnSelectionChanged(eventArgs);
         }
 
@@ -378,8 +378,8 @@ namespace Timelapse.Controls
             ThumbnailInCell ci;
             while (true)
             {
-                ci = this.GetClickableImageFromCell(indexCell);
-                // This shouldn't happen, but ensure that the cell contains a ClickableImage.
+                ci = this.GetThumbnailInCellFromCell(indexCell);
+                // This shouldn't happen, but ensure that the cell contains a ThumbnailInCell.
                 if (ci == null)
                 {
                     break;
@@ -393,7 +393,7 @@ namespace Timelapse.Controls
                 }
                 indexCell = nextCell;
             }
-            ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
+            ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, null);
             this.OnSelectionChanged(eventArgs);
         }
 
@@ -414,11 +414,11 @@ namespace Timelapse.Controls
         public List<int> GetSelected()
         {
             List<int> selected = new List<int>();
-            if (this.clickableImagesList == null)
+            if (this.thumbnailInCellsList == null)
             {
                 return selected;
             }
-            foreach (ThumbnailInCell ci in this.clickableImagesList)
+            foreach (ThumbnailInCell ci in this.thumbnailInCellsList)
             {
                 if (ci.IsSelected)
                 {
@@ -454,7 +454,7 @@ namespace Timelapse.Controls
             return columnCount;
         }
 
-        private bool CreateNewRowIfSpaceExists(List<ThumbnailInCell> clickableImagesRow, Size availableSize, int rowNumber, double combinedRowHeight, double maxImageHeight)
+        private bool CreateNewRowIfSpaceExists(List<ThumbnailInCell> thumbnailGridRow, Size availableSize, int rowNumber, double combinedRowHeight, double maxImageHeight)
         {
             // We've reached the end of the row.
             // Check if there is enough space to add a new row
@@ -462,11 +462,11 @@ namespace Timelapse.Controls
             {
                 // Don't bother adding a new row, as there is not enough room
                 // Even so, we may as well add these images to the cache as they have been processed
-                foreach (ThumbnailInCell clickableImage in clickableImagesRow)
+                foreach (ThumbnailInCell thumbnailInCell in thumbnailGridRow)
                 {
-                    this.clickableImagesList.Add(clickableImage);
+                    this.thumbnailInCellsList.Add(thumbnailInCell);
                 }
-                clickableImagesRow.Clear();
+                thumbnailGridRow.Clear();
                 return false;
             }
             else
@@ -474,12 +474,12 @@ namespace Timelapse.Controls
                 // Create a new row
                 this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
                 int columnNumber = 0;
-                foreach (ThumbnailInCell clickableImage in clickableImagesRow)
+                foreach (ThumbnailInCell thumbnailInCell in thumbnailGridRow)
                 {
-                    this.clickableImagesList.Add(clickableImage);
-                    Grid.SetRow(clickableImage, rowNumber);
-                    Grid.SetColumn(clickableImage, columnNumber);
-                    this.Grid.Children.Add(clickableImage);
+                    this.thumbnailInCellsList.Add(thumbnailInCell);
+                    Grid.SetRow(thumbnailInCell, rowNumber);
+                    Grid.SetColumn(thumbnailInCell, columnNumber);
+                    this.Grid.Children.Add(thumbnailInCell);
                     columnNumber++;
                 }
                 return true;
@@ -488,7 +488,7 @@ namespace Timelapse.Controls
         #endregion
 
         #region Set the image to the cached image if it is available
-        private ThumbnailInCell TryGetCachedClickableImage(string path, double desiredWidth, int state, int fileTableIndex, ref double maxImageHeight)
+        private ThumbnailInCell TryGetCachedThumbnailInCell(string path, double desiredWidth, int state, int fileTableIndex, ref double maxImageHeight)
         {
             ThumbnailInCell ci;
             Double imageHeight;
@@ -530,7 +530,7 @@ namespace Timelapse.Controls
         }
 
         // Create a ThumbnailInCell for the file at fileTableIndex
-        private ThumbnailInCell CreateClickableImage(int fileTableIndex, int state, double desiredWidth, ref double maxImageHeight)
+        private ThumbnailInCell CreateThumbnailInCell(int fileTableIndex, int state, double desiredWidth, ref double maxImageHeight)
         {
             // The image is not in the cache. Create a new ThumbnailInCell
             ThumbnailInCell ci = new ThumbnailInCell(desiredWidth)
@@ -560,7 +560,7 @@ namespace Timelapse.Controls
 
             while (this.GridGetNextCell(cell, lastCell, out nextCell))
             {
-                ci = this.GetClickableImageFromCell(nextCell);
+                ci = this.GetThumbnailInCellFromCell(nextCell);
 
                 // If there is no cell, we've reached the end, 
                 if (ci == null)
@@ -584,7 +584,7 @@ namespace Timelapse.Controls
 
             while (this.GridGetPreviousCell(cell, lastCell, out previousCell))
             {
-                ci = this.GetClickableImageFromCell(previousCell);
+                ci = this.GetThumbnailInCellFromCell(previousCell);
 
                 // If there is no cell, terminate as we've reached the beginning
                 if (ci == null)
@@ -685,7 +685,7 @@ namespace Timelapse.Controls
         }
 
         // Get the ThumbnailInCell held by the Grid's specified row,column coordinates 
-        private ThumbnailInCell GetClickableImageFromCell(RowColumn cell)
+        private ThumbnailInCell GetThumbnailInCellFromCell(RowColumn cell)
         {
             return this.Grid.Children.Cast<ThumbnailInCell>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
         }
@@ -707,15 +707,15 @@ namespace Timelapse.Controls
         #endregion
 
         #region Events
-        public event EventHandler<ClickableImagesGridEventArgs> DoubleClick;
-        public event EventHandler<ClickableImagesGridEventArgs> SelectionChanged;
+        public event EventHandler<ThumbnailGridEventArgs> DoubleClick;
+        public event EventHandler<ThumbnailGridEventArgs> SelectionChanged;
 
-        protected virtual void OnDoubleClick(ClickableImagesGridEventArgs e)
+        protected virtual void OnDoubleClick(ThumbnailGridEventArgs e)
         {
             this.DoubleClick?.Invoke(this, e);
         }
 
-        protected virtual void OnSelectionChanged(ClickableImagesGridEventArgs e)
+        protected virtual void OnSelectionChanged(ThumbnailGridEventArgs e)
         {
             this.SelectionChanged?.Invoke(this, e);
         }

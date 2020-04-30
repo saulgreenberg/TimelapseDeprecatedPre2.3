@@ -148,10 +148,10 @@ namespace Timelapse
                 this.FileNavigatorSlider.TickFrequency = 0.02 * this.FileNavigatorSlider.Maximum;
             }
 
-            // Reset the clickable grid selection after every change in the selection
+            // Reset the ThumbnailGrid selection after every change in the selection
             if (this.IsDisplayingMultipleImagesInOverview())
             {
-                this.MarkableCanvas.ClickableImagesGrid.SelectInitialCellOnly();
+                this.MarkableCanvas.ThumbnailGrid.SelectInitialCellOnly();
             }
 
             this.DataEntryControls.AutocompletionPopulateAllNotesWithFileTableValues(this.DataHandler.FileDatabase);

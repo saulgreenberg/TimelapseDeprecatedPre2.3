@@ -180,8 +180,8 @@
     <Compile Include="Controls\ThumbnailInCell.xaml.cs">
       <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
-      <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
+    <Compile Include="Controls\ThumbnailGrid.xaml.cs">
+      <DependentUpon>ThumbnailGrid.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\DialogWindow.cs" />
     <Compile Include="Controls\OffsetLens.cs" />
@@ -406,7 +406,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ClickableImagesGrid.xaml">
+    <Page Include="Controls\ThumbnailGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

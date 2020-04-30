@@ -30,8 +30,8 @@ namespace Timelapse.Controls
         public ImageCache ImageCache { get; private set; }
         public bool IsProgrammaticControlUpdate { get; set; }
 
-        // We need to get selected files from the clickableimages grid, so we need this reference
-        public ClickableImagesGrid ClickableImagesGrid { get; set; }
+        // We need to get selected files from the ThumbnailGrid, so we need this reference
+        public ThumbnailGrid ThumbnailGrid { get; set; }
         public MarkableCanvas MarkableCanvas { get; set; }
         #region Loading, Disposing
         public DataEntryHandler(FileDatabase fileDatabase)
@@ -266,7 +266,7 @@ namespace Timelapse.Controls
             string valueToCopy = checkForZero ? "0" : String.Empty;
 
             // Search for the row with some value in it, starting from the previous row
-            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
+            int currentRowIndex = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
             for (int previousIndex = currentRowIndex - 1; previousIndex >= 0; previousIndex--)
             {
                 ImageRow file = this.FileDatabase.FileTable[previousIndex];
@@ -336,7 +336,7 @@ namespace Timelapse.Controls
 
             // Update all files to match the value of the control (identified by the data label) in the currently selected image row.
             Mouse.OverrideCursor = Cursors.Wait;
-            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
+            ImageRow imageRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ThumbnailGrid.GetSelected()[0]];
             this.FileDatabase.UpdateFiles(imageRow, control.DataLabel);
             Mouse.OverrideCursor = null;
         }
@@ -354,7 +354,7 @@ namespace Timelapse.Controls
                 return;
             }
 
-            int currentRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ClickableImagesGrid.GetSelected()[0];
+            int currentRowIndex = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
             int imagesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRowIndex - 1;
             if (imagesAffected == 0)
             {
@@ -366,7 +366,7 @@ namespace Timelapse.Controls
             }
 
             // Display the appropriate dialog box that explains what will happen. Arguments indicate how many files will be affected, and is tuned to the type of control 
-            ImageRow imageRow = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ClickableImagesGrid.GetSelected()[0]];
+            ImageRow imageRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.Current : this.FileDatabase.FileTable[this.ThumbnailGrid.GetSelected()[0]];
             string valueToCopy = imageRow.GetValueDisplayString(control.DataLabel);
             bool checkForZero = control is DataEntryCounter;
             if (Dialogs.DataEntryConfirmCopyForwardDialog(Application.Current.MainWindow, valueToCopy, imagesAffected, checkForZero) != true)
@@ -376,7 +376,7 @@ namespace Timelapse.Controls
 
             // Update the files from the next row (as we are copying from the current row) to the end.
             Mouse.OverrideCursor = Cursors.Wait;
-            int nextRowIndex = (this.ClickableImagesGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ClickableImagesGrid.GetSelected()[0] + 1;
+            int nextRowIndex = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow + 1 : this.ThumbnailGrid.GetSelected()[0] + 1;
             this.FileDatabase.UpdateFiles(imageRow, control.DataLabel, nextRowIndex, this.FileDatabase.CountAllCurrentlySelectedFiles - 1);
             Mouse.OverrideCursor = null;
         }
@@ -397,7 +397,7 @@ namespace Timelapse.Controls
             // Behaviour: 
             // - if the ThumbnailInCell is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
             // - otherwise enable the menut item only if the resulting action is coherent
-            bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
+            bool enabledIsPossible = this.ThumbnailGrid.IsVisible == false || this.ThumbnailGrid.SelectedCount() == 1;
             menuItemCopyToAll.IsEnabled = enabledIsPossible;
             menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible() : false;
             menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
@@ -586,7 +586,7 @@ namespace Timelapse.Controls
             control.ContentChanged = true;
 
             // Note that  trailing whitespace is removed only from the database as further edits may use it.
-            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content.Trim());
+            this.UpdateRowsDependingOnThumbnailGridState(control.DataLabel, control.Content.Trim());
         }
 
         // When the number in a particular counter box changes, update the particular counter field(s) in the database
@@ -601,7 +601,7 @@ namespace Timelapse.Controls
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)integerUpDown.Tag;
             control.SetContentAndTooltip(integerUpDown.Value.ToString());
-            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnThumbnailGridState(control.DataLabel, control.Content);
         }
 
         // When a choice changes, update the particular choice field(s) in the database
@@ -622,7 +622,7 @@ namespace Timelapse.Controls
             // Get the key identifying the control, and then add its value to the database
             DataEntryControl control = (DataEntryControl)comboBox.Tag;
             control.SetContentAndTooltip(((ComboBoxItem)comboBox.SelectedItem).Content.ToString());
-            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnThumbnailGridState(control.DataLabel, control.Content);
         }
 
         // When a flag changes, update the particular flag field(s) in the database
@@ -637,16 +637,16 @@ namespace Timelapse.Controls
             string value = ((bool)checkBox.IsChecked) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
 
             control.SetContentAndTooltip(value);
-            this.UpdateRowsDependingOnClickableImageGridState(control.DataLabel, control.Content);
+            this.UpdateRowsDependingOnThumbnailGridState(control.DataLabel, control.Content);
         }
         #endregion
 
         #region Update Rows
         // Update either the current row or the selected rows in the database, 
-        // depending upon whether we are in the single image or  the ClickableImagesGrid view respectively.
-        private void UpdateRowsDependingOnClickableImageGridState(string datalabel, string content)
+        // depending upon whether we are in the single image or  theThumbnailGrid view respectively.
+        private void UpdateRowsDependingOnThumbnailGridState(string datalabel, string content)
         {
-            if (this.ClickableImagesGrid.IsVisible == false && this.MarkableCanvas.ClickableImagesState == 0)
+            if (this.ThumbnailGrid.IsVisible == false && this.MarkableCanvas.ThumbnailGridState == 0)
             {
                 // Only a single image is displayed: update the database for the current row with the control's value
                 this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, datalabel, content);
@@ -654,7 +654,7 @@ namespace Timelapse.Controls
             else
             {
                 // Multiple images are displayed: update the database for all selected rows with the control's value
-                this.FileDatabase.UpdateFiles(this.ClickableImagesGrid.GetSelected(), datalabel, content.Trim());
+                this.FileDatabase.UpdateFiles(this.ThumbnailGrid.GetSelected(), datalabel, content.Trim());
             }
         }
         #endregion
@@ -694,8 +694,8 @@ namespace Timelapse.Controls
         // If the is a common (trimmed) data value for the provided data label in the given fileIDs, return that value, otherwise null.
         public string GetValueDisplayStringCommonToFileIds(string dataLabel)
         {
-            List<int> fileIds = this.ClickableImagesGrid.GetSelected();
-            // There used to be a bug in this code, which resulted from this being invoked in SwitchToClickableGridView() when the grid was already being displayed.
+            List<int> fileIds = this.ThumbnailGrid.GetSelected();
+            // There used to be a bug in this code, which resulted from this being invoked in SwitchToThumbnailGridView() when the grid was already being displayed.
             //  I have kept the try/catch in just in case it rears its ugly head elsewhere. Commented out Debug statements are here just in case we need to reexamine it.
             try
             {
