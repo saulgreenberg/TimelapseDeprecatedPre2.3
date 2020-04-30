@@ -56,7 +56,7 @@ namespace Timelapse.Controls
         public int FileTableIndex { get; set; }
 
         public ImageRow ImageRow { get; set; }
-        // Whether the Checkbox is checked
+
 
         // A canvas used to display the bounding boxes
         private readonly Canvas bboxCanvas = new Canvas();
@@ -79,6 +79,7 @@ namespace Timelapse.Controls
             }
         }
 
+        // Whether the Checkbox is checked i.e., the ClickableImage is selected
         private bool isSelected = false;
         public bool IsSelected
         {
@@ -225,7 +226,7 @@ namespace Timelapse.Controls
         // Return a shortened version of the file name so that it fits in the available space 
         // Note that we left trim it, and we show an ellipsis on the left side if it doesn't fit.
         // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
-        public static string ShortenFileNameIfNeeded(string filename, int state)
+        private static string ShortenFileNameIfNeeded(string filename, int state)
         {
             // Check the arguments for null 
             if (filename == null)
@@ -267,7 +268,7 @@ namespace Timelapse.Controls
         }
 
         // Draw bounding boxes into a boundingbox canvas that overlays the MarkableCanvas 
-        public void DrawBoundingBox(Size canvasRenderSize)
+        private void DrawBoundingBox(Size canvasRenderSize)
         {
             // Remove existing bounding boxes, if any.
             // Note that we do this even if detections may not exist, as we need to clear things if the user had just toggled
