@@ -14,9 +14,9 @@ using Timelapse.Util;
 namespace Timelapse.Controls
 {
     /// <summary>
-    /// Clickable Image User Control, which is used to fill each cell in the Clickable ImagesGrid
+    /// ThumbnailInCell User Control, which is used to fill each cell in the Clickable ImagesGrid
     /// </summary>
-    public partial class ClickableImage : UserControl
+    public partial class ThumbnailInCell : UserControl
     {
         #region Public Properties
         public double DesiredRenderWidth
@@ -32,24 +32,24 @@ namespace Timelapse.Controls
                 this.Image.MaxWidth = value;
             }
         }
-        public Point DesiredRenderSize
+        public Size DesiredRenderSize
         {
             get
             {
                 if (this.Image == null || this.Image.Source == null)
                 {
-                    this.point.X = 0;
-                    this.point.Y = 0;
+                    this.size.Width = 0;
+                    this.size.Height = 0;
                 }
                 else
                 {
-                    this.point.X = this.Image.Source.Width;
+                    this.size.Width = this.Image.Source.Width;
                     if (this.Image.Source.Width != 0)
                     {
-                        this.point.Y = this.Image.Width * this.Image.Source.Height / this.Image.Source.Width;
+                        this.size.Height = this.Image.Width * this.Image.Source.Height / this.Image.Source.Width;
                     }
                 }
-                return this.point;
+                return this.size;
             }
         }
 
@@ -72,9 +72,8 @@ namespace Timelapse.Controls
             }
             set
             {
-                // update bounding boxes
+                // update and render bounding boxes
                 this.boundingBoxes = value;
-                // render new bounding boxes and update display image
                 this.ShowOrHideBoundingBoxes(true);
             }
         }
@@ -120,13 +119,13 @@ namespace Timelapse.Controls
         #endregion
 
         #region Private Variables
-        private Point point = new Point(0, 0);
+        private Size size = new Size(0, 0);
         private readonly Brush unselectedBrush = Brushes.Black;
         private readonly Brush selectedBrush = Brushes.LightBlue;
         #endregion
 
         // Constructors: Width is the desired width of the image
-        public ClickableImage(double width)
+        public ThumbnailInCell(double width)
         {
             this.InitializeComponent();
             this.DesiredRenderWidth = width;
@@ -140,9 +139,9 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public Double Rerender(FileTable fileTable, double width, int state, int fileIndex)
+        public Double Rerender(FileTable fileTable, int fileIndex, double desiredWidth, int state)
         {
-            this.DesiredRenderWidth = width;
+            this.DesiredRenderWidth = desiredWidth;
             BitmapSource bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent, out _);
             this.Image.Source = bf;
 
@@ -154,7 +153,7 @@ namespace Timelapse.Controls
             // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.
             if (bf == Constant.ImageValues.FileNoLongerAvailable.Value || bf == Constant.ImageValues.Corrupt.Value)
             {
-                this.Image.Height = 0.75 * width;
+                this.Image.Height = 0.75 * desiredWidth;
             }
             else
             {
@@ -175,7 +174,7 @@ namespace Timelapse.Controls
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
                 string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.File);
-                filename = ClickableImage.ShortenFileNameIfNeeded(filename, state);
+                filename = ThumbnailInCell.ShortenFileNameIfNeeded(filename, state);
                 this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
@@ -250,14 +249,14 @@ namespace Timelapse.Controls
 
         #region Draw Bounding Box
         /// <summary>
-        /// Remove all and then draw all the bounding boxes
+        /// Redraw  or clear the bounding boxes depending on the visibility state
         /// </summary>
         /// 
         public void ShowOrHideBoundingBoxes(bool visibility)
         {
             if (visibility && this.Image != null)
             {
-                Size size = new Size(this.Image.Width, this.DesiredRenderSize.Y);
+                Size size = new Size(this.Image.Width, this.DesiredRenderSize.Height);
                 this.DrawBoundingBox(size);
             }
             else
@@ -276,7 +275,6 @@ namespace Timelapse.Controls
             this.bboxCanvas.Children.Clear();
             this.Cell.Children.Remove(this.bboxCanvas);
 
-            // if (GlobalReferences.DetectionsExists == false || Keyboard.IsKeyDown(Key.H)) 
             if (GlobalReferences.DetectionsExists == false || Keyboard.IsKeyDown(Key.H))
             {
                 // As detection don't exist, there won't be any bounding boxes to draw.

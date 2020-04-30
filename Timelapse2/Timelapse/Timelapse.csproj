@@ -177,8 +177,8 @@
     <Compile Include="Controls\BusyCancelIndicator.xaml.cs">
       <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImage.xaml.cs">
-      <DependentUpon>ClickableImage.xaml</DependentUpon>
+    <Compile Include="Controls\ThumbnailInCell.xaml.cs">
+      <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
       <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
@@ -402,7 +402,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ClickableImage.xaml">
+    <Page Include="Controls\ThumbnailInCell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -68,12 +68,12 @@ namespace Timelapse.Controls
 
         #region Private variables
 
-        private List<ClickableImage> clickableImagesList;
+        private List<ThumbnailInCell> clickableImagesList;
 
         // Cache copies of the images we display plus associated information
         // This is done both to save existing image state and so we don't repeatedly rebuild that information
         private int cachedImagePathsStartIndex = -1;
-        private List<ClickableImage> cachedImageList;
+        private List<ThumbnailInCell> cachedImageList;
 
         // Track states between mouse down / move and up 
         private RowColumn cellChosenOnMouseDown;
@@ -123,9 +123,9 @@ namespace Timelapse.Controls
 
             Double maxImageHeight = 0;
             Double combinedRowHeight = 0;
-            ClickableImage ci;
-            this.clickableImagesList = new List<ClickableImage>();
-            List<ClickableImage> clickableImagesRow = new List<ClickableImage>();
+            ThumbnailInCell ci;
+            this.clickableImagesList = new List<ThumbnailInCell>();
+            List<ThumbnailInCell> clickableImagesRow = new List<ThumbnailInCell>();
 
             // If forceUpdate is true, remove the cache so that images have to be regenerated
             if (forceUpdate && this.cachedImageList != null)
@@ -192,7 +192,7 @@ namespace Timelapse.Controls
             return (this.Grid.RowDefinitions.Count < 1) ? false : true;
         }
 
-        // Invalidate the clickable images cache.
+        // Invalidate the ThumbnailInCells cache.
         // Used to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
         public void InvalidateCache()
         {
@@ -201,11 +201,11 @@ namespace Timelapse.Controls
         #endregion
 
         #region Public BoundingBoxes
-        // For each clickable image in the cache (i.e., those that are currently being displayed)
+        // For each ThumbnailInCell in the cache (i.e., those that are currently being displayed)
         // show or hide the bounding boxes 
         public void ShowOrHideBoundingBoxes(bool visibility)
         {
-            foreach (ClickableImage ci in this.cachedImageList)
+            foreach (ThumbnailInCell ci in this.cachedImageList)
             {
                 ci.ShowOrHideBoundingBoxes(visibility);
             }
@@ -217,7 +217,7 @@ namespace Timelapse.Controls
         // The selection behaviours depend upon whether the CTL or SHIFT modifier key is pressed, or whether this is a double click 
         private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            ClickableImage ci;
+            ThumbnailInCell ci;
             this.cellChosenOnMouseDown = this.GetCellFromPoint(Mouse.GetPosition(this.Grid));
             RowColumn currentCell = this.GetCellFromPoint(Mouse.GetPosition(this.Grid));
             this.cellWithLastMouseOver = currentCell;
@@ -312,7 +312,7 @@ namespace Timelapse.Controls
             this.SelectNone(); // Clear the selections
             if (this.clickableImagesList.Any())
             {
-                ClickableImage ci = this.clickableImagesList[0];
+                ThumbnailInCell ci = this.clickableImagesList[0];
                 ci.IsSelected = true;
             }
             ClickableImagesGridEventArgs eventArgs = new ClickableImagesGridEventArgs(this, null);
@@ -321,8 +321,8 @@ namespace Timelapse.Controls
 
         private void SelectNone()
         {
-            // Unselect all clickable images
-            foreach (ClickableImage ci in this.clickableImagesList)
+            // Unselect all ThumbnailInCells
+            foreach (ThumbnailInCell ci in this.clickableImagesList)
             {
                 ci.IsSelected = false;
             }
@@ -345,7 +345,7 @@ namespace Timelapse.Controls
             // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
             RowColumn indexCell = startCell;
 
-            ClickableImage ci;
+            ThumbnailInCell ci;
             while (true)
             {
                 ci = this.GetClickableImageFromCell(indexCell);
@@ -375,7 +375,7 @@ namespace Timelapse.Controls
             // Select the cells defined by the cells running from the topLeft cell to the BottomRight cell
             RowColumn indexCell = startCell;
 
-            ClickableImage ci;
+            ThumbnailInCell ci;
             while (true)
             {
                 ci = this.GetClickableImageFromCell(indexCell);
@@ -418,7 +418,7 @@ namespace Timelapse.Controls
             {
                 return selected;
             }
-            foreach (ClickableImage ci in this.clickableImagesList)
+            foreach (ThumbnailInCell ci in this.clickableImagesList)
             {
                 if (ci.IsSelected)
                 {
@@ -454,7 +454,7 @@ namespace Timelapse.Controls
             return columnCount;
         }
 
-        private bool CreateNewRowIfSpaceExists(List<ClickableImage> clickableImagesRow, Size availableSize, int rowNumber, double combinedRowHeight, double maxImageHeight)
+        private bool CreateNewRowIfSpaceExists(List<ThumbnailInCell> clickableImagesRow, Size availableSize, int rowNumber, double combinedRowHeight, double maxImageHeight)
         {
             // We've reached the end of the row.
             // Check if there is enough space to add a new row
@@ -462,7 +462,7 @@ namespace Timelapse.Controls
             {
                 // Don't bother adding a new row, as there is not enough room
                 // Even so, we may as well add these images to the cache as they have been processed
-                foreach (ClickableImage clickableImage in clickableImagesRow)
+                foreach (ThumbnailInCell clickableImage in clickableImagesRow)
                 {
                     this.clickableImagesList.Add(clickableImage);
                 }
@@ -474,7 +474,7 @@ namespace Timelapse.Controls
                 // Create a new row
                 this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(maxImageHeight, GridUnitType.Pixel) });
                 int columnNumber = 0;
-                foreach (ClickableImage clickableImage in clickableImagesRow)
+                foreach (ThumbnailInCell clickableImage in clickableImagesRow)
                 {
                     this.clickableImagesList.Add(clickableImage);
                     Grid.SetRow(clickableImage, rowNumber);
@@ -488,9 +488,9 @@ namespace Timelapse.Controls
         #endregion
 
         #region Set the image to the cached image if it is available
-        private ClickableImage TryGetCachedClickableImage(string path, double desiredWidth, int state, int fileTableIndex, ref double maxImageHeight)
+        private ThumbnailInCell TryGetCachedClickableImage(string path, double desiredWidth, int state, int fileTableIndex, ref double maxImageHeight)
         {
-            ClickableImage ci;
+            ThumbnailInCell ci;
             Double imageHeight;
             int cachedImageListIndex = 0;
             while (this.cachedImageList != null && cachedImageListIndex < this.cachedImageList.Count)
@@ -499,16 +499,16 @@ namespace Timelapse.Controls
                 {
                     // The image is in the cache.
                     ci = this.cachedImageList[cachedImageListIndex];
-                    if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.X < desiredWidth)
+                    if (ci.DesiredRenderWidth < desiredWidth && ci.DesiredRenderSize.Width < desiredWidth)
                     {
                         // Re-render the cached image, as its smaller than the resolution width 
-                        imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, cachedImageListIndex);
+                        imageHeight = ci.Rerender(this.FileTable, cachedImageListIndex, desiredWidth, state);
                     }
                     else
                     {
                         // Reuse the cached image, as its at least of the same or greater resolution width. 
                         ci.Image.Width = desiredWidth; // Adjust the image width to the new size
-                        imageHeight = ci.DesiredRenderSize.Y;
+                        imageHeight = ci.DesiredRenderSize.Height;
 
                         // Rerender the episode text in case it has changed
                         ci.DisplayEpisodeTextIfWarranted(this.FileTable, fileTableIndex, state);
@@ -529,18 +529,18 @@ namespace Timelapse.Controls
             return null;
         }
 
-        // Create a clickable image for the file at fileTableIndex
-        private ClickableImage CreateClickableImage(int fileTableIndex, int state, double desiredWidth, ref double maxImageHeight)
+        // Create a ThumbnailInCell for the file at fileTableIndex
+        private ThumbnailInCell CreateClickableImage(int fileTableIndex, int state, double desiredWidth, ref double maxImageHeight)
         {
-            // The image is not in the cache. Create a new clickable image
-            ClickableImage ci = new ClickableImage(desiredWidth)
+            // The image is not in the cache. Create a new ThumbnailInCell
+            ThumbnailInCell ci = new ThumbnailInCell(desiredWidth)
             {
                 RootFolder = this.FolderPath,
                 ImageRow = this.FileTable[fileTableIndex],
                 DesiredRenderWidth = desiredWidth,
                 BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
             };
-            double imageHeight = ci.Rerender(this.FileTable, desiredWidth, state, fileTableIndex);
+            double imageHeight = ci.Rerender(this.FileTable, fileTableIndex, desiredWidth, state);
             ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
             ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
@@ -556,7 +556,7 @@ namespace Timelapse.Controls
         private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
         {
             RowColumn lastCell = new RowColumn(this.Grid.RowDefinitions.Count - 1, this.Grid.ColumnDefinitions.Count - 1);
-            ClickableImage ci;
+            ThumbnailInCell ci;
 
             while (this.GridGetNextCell(cell, lastCell, out nextCell))
             {
@@ -580,7 +580,7 @@ namespace Timelapse.Controls
         private bool GridGetPreviousSelectedCell(RowColumn cell, out RowColumn previousCell)
         {
             RowColumn lastCell = new RowColumn(0, 0);
-            ClickableImage ci;
+            ThumbnailInCell ci;
 
             while (this.GridGetPreviousCell(cell, lastCell, out previousCell))
             {
@@ -684,10 +684,10 @@ namespace Timelapse.Controls
             return cell;
         }
 
-        // Get the clickable image held by the Grid's specified row,column coordinates 
-        private ClickableImage GetClickableImageFromCell(RowColumn cell)
+        // Get the ThumbnailInCell held by the Grid's specified row,column coordinates 
+        private ThumbnailInCell GetClickableImageFromCell(RowColumn cell)
         {
-            return this.Grid.Children.Cast<ClickableImage>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
+            return this.Grid.Children.Cast<ThumbnailInCell>().FirstOrDefault(exp => Grid.GetColumn(exp) == cell.Y && Grid.GetRow(exp) == cell.X);
         }
         #endregion
 

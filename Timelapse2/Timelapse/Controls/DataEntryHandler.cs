@@ -395,7 +395,7 @@ namespace Timelapse.Controls
             MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
 
             // Behaviour: 
-            // - if the clickable image is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
+            // - if the ThumbnailInCell is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
             // - otherwise enable the menut item only if the resulting action is coherent
             bool enabledIsPossible = this.ClickableImagesGrid.IsVisible == false || this.ClickableImagesGrid.SelectedCount() == 1;
             menuItemCopyToAll.IsEnabled = enabledIsPossible;
