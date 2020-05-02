@@ -789,6 +789,12 @@ namespace Timelapse
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
+            if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
+            {
+                this.DataGrid.UpdateLayout();
+                this.DataGridSelectionsTimer.Stop();
+                return;
+            }    
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
             if (this.IsDisplayingSingleImage())

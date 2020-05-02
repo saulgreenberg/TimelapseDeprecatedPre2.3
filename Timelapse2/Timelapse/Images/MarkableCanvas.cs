@@ -178,18 +178,6 @@ namespace Timelapse.Images
         // Timer for resizing the ThumbnailGrid only after resizing is (likely) completed
         private readonly DispatcherTimer timerResize = new DispatcherTimer();
 
-        // zoomed out state for ThumbnailGrid. 
-        // 0 - not zoomed out; 
-        // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
-        // These widths can be altered if needed
-        private readonly Dictionary<int, int> thumbnailGridZoomedOutStates = new Dictionary<int, int>
-        {
-            { 0, 0 },
-            { 1, 640 },
-            { 2, 320 },
-            { 3, 256 }
-        };
-
         // Timer for delaying updates in the midst of rapid navigation with the slider
         private readonly DispatcherTimer timerSlider = new DispatcherTimer();
 
@@ -855,7 +843,6 @@ namespace Timelapse.Images
             // Manage videos first
             if (this.IsThumbnailGridVisible == false && this.ImageToDisplay.IsVisible == false)
             {
-                // 
                 lock (this.VideoPlayer)
                 {
                     // State: Video is currently being displayed
@@ -874,7 +861,7 @@ namespace Timelapse.Images
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
                     // State: already zoomed out the maximum allowable steps on ThumbnailGrid, so abort
-                    if (this.ThumbnailGridState >= 3)
+                    if (this.ThumbnailGridState >= Constant.ThumbnailGrid.MaxRows)
                     {
                         return;
                     }
@@ -886,9 +873,24 @@ namespace Timelapse.Images
                     this.SwitchToThumbnailGridView();
                     if (this.RefreshThumbnailGrid(this.ThumbnailGridState) == false)
                     {
-                        // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
+                        // SAULXXX OLD-NO LONGER NEEDED SO DELETE THESE LINESwe couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming out another step
-                        this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
+                        //this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
+
+                        // We couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state, or 
+                        // because we are at the minimum size. So revert...
+                        this.ThumbnailGridState--;
+                        if (this.ThumbnailGridState == 0)
+                        {
+                            if (this.displayingImage)
+                            {
+                                this.SwitchToImageView();
+                            }
+                            else
+                            {
+                                this.SwitchToVideoView();
+                            }
+                        }
                     }
                     if (isInitialSwitchToThumbnailGrid)
                     {
@@ -981,9 +983,11 @@ namespace Timelapse.Images
             {
                 return false;
             }
-            this.thumbnailGridZoomedOutStates.TryGetValue(state, out int desiredWidth);
-            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out _);
-            return this.ThumbnailGrid.Refresh(unitX, new Size(this.ThumbnailGrid.Width, this.ThumbnailGrid.Height), forceUpdate, state);
+            // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
+            // However, if the resulting image is less than a minimum height, then ignore it.
+            int desiredHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
+            if (desiredHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
+            return this.ThumbnailGrid.Refresh(desiredHeight, new Size(this.ThumbnailGrid.Width, this.ThumbnailGrid.Height), forceUpdate, state);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
