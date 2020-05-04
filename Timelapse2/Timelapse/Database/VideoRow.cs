@@ -35,7 +35,6 @@ namespace Timelapse.Database
         // TODO Update so it works with cached thumbnails
         // Get the bitmap representing a video file
         // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
-
         public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {
             isCorruptOrMissing = true;
@@ -62,21 +61,43 @@ namespace Timelapse.Database
 
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                bitmap.DecodePixelWidth = desiredWidth.Value;
+                if (desiredWidth != null)
+                { 
+                    bitmap.DecodePixelWidth = desiredWidth.Value;
+                }
                 bitmap.CacheOption = BitmapCacheOption.None;
                 bitmap.StreamSource = outputBitmapAsStream;
                 bitmap.EndInit();
                 bitmap.Freeze();
                 return bitmap;
             }
-            catch
+            catch (FFMpegException e)
             {
+                System.Diagnostics.Debug.Print(e.Message);
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
                 return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
         }
 
+        // Return the aspect ratio (as Width/Height) of a bitmap or its placeholder as efficiently as possible
+        // Timing tests suggests this can be done very quickly i.e., 0 - 10 msecs
+        //public override double GetBitmapAspectRatioFromFile(string rootFolderPath)
+        //{
+        //    string path = this.GetFilePath(rootFolderPath);
+        //    if (!System.IO.File.Exists(path))
+        //    {
+        //        return Constant.ImageValues.FileNoLongerAvailable.Value.Width / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
+        //    }
+        //    try
+        //    {
+        //        // FFMpegConverter ffMpeg = new NReco.VideoInfo.FFProbe();
+        //    }
+        //    catch
+        //    {
+        //        return Constant.ImageValues.Corrupt.Value.Width / Constant.ImageValues.Corrupt.Value.Height;
+        //    }
+        //}
         // This alternate way to get an image from a video file used the media encoder. 
         // While it works, its ~twice as slow as using NRECO FFMPeg
         //public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)

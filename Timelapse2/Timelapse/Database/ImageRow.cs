@@ -4,6 +4,7 @@ using MetadataExtractor.Formats.Exif.Makernotes;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -423,22 +424,22 @@ namespace Timelapse.Database
             return Constant.ImageValues.FileNoLongerAvailable.Value;
         }
 
-        /// <summary>
-        /// Wrapper for GetBitmapFromFile to allow async await use.
-        /// </summary>
-        /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
+        // An async version of GetBitmapFromFile. 
+        // Not that as 'out' arguments are not allowed in tasks, it returns a tuple containg the 
+        // bitmap and the isCorruptOrMissingflag flag indicating if the bitmap wasn't retrieved 
         public Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent)
         {
             return Task.Run(() =>
             {
-                // Note to bridge the gap between the out parameter and the requirements of the task, this uses
-                // a tuple to carry both.
                 BitmapSource bitmap = this.GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, out bool isCorruptOrMissing);
                 return Tuple.Create(bitmap, isCorruptOrMissing);
             });
         }
 
-        // Load full form
+        /// <summary>
+        /// Get a bitmap of the desired width. If its not there or something is wrong it will return a placeholder bitmap displaying the 'error'.
+        /// Also sets a flag (isCorruptOrMissing) indicating if the bitmap wasn't retrieved (signalling a placeholder bitmap was returned)
+        /// </summary>
         public virtual BitmapSource GetBitmapFromFile(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {
             isCorruptOrMissing = true;
@@ -465,6 +466,7 @@ namespace Timelapse.Database
                 // and  http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
                 if (desiredWidth.HasValue == false)
                 {
+                    // retunrs the full size bitmap
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
                     frame.Freeze();
                     isCorruptOrMissing = false;
@@ -492,7 +494,35 @@ namespace Timelapse.Database
                 {
                     // TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
                 }
+                isCorruptOrMissing = true;
                 return Constant.ImageValues.Corrupt.Value;
+            }
+        }
+
+        // Return the aspect ratio (as Width/Height) of a bitmap or its placeholder as efficiently as possible
+        // Timing tests suggests this can be done very quickly i.e., 0 - 10 msecs
+        public virtual double GetBitmapAspectRatioFromFile(string rootFolderPath)
+        {
+            string path = this.GetFilePath(rootFolderPath);
+            if (!System.IO.File.Exists(path))
+            {
+                return Constant.ImageValues.FileNoLongerAvailable.Value.Width / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
+            }
+            try
+            {
+                BitmapImage bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.DecodePixelWidth = 0;
+                bitmap.CacheOption = BitmapCacheOption.None;
+                bitmap.CreateOptions = BitmapCreateOptions.DelayCreation;
+                bitmap.UriSource = new Uri(path);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return (bitmap.Width / bitmap.Height);
+            }
+            catch
+            {
+                return Constant.ImageValues.Corrupt.Value.Width / Constant.ImageValues.Corrupt.Value.Height;
             }
         }
         #endregion

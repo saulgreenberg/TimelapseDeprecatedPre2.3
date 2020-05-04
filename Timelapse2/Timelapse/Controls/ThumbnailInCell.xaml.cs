@@ -32,6 +32,11 @@ namespace Timelapse.Controls
                 this.Image.MaxWidth = value;
             }
         }
+
+        public int Row { get; set; }
+        public int Column { get; set; }
+
+        public int Position { get; set; } = 0;
         public Size DesiredRenderSize
         {
             get
@@ -56,7 +61,6 @@ namespace Timelapse.Controls
         public int FileTableIndex { get; set; }
 
         public ImageRow ImageRow { get; set; }
-
 
         // A canvas used to display the bounding boxes
         private readonly Canvas bboxCanvas = new Canvas();
@@ -93,14 +97,14 @@ namespace Timelapse.Controls
                 if (this.isSelected)
                 {
                     this.Cell.Background = this.selectedBrush;
-                    this.Checkmark.Text = "\u2713"; // Checkmark in unicode
-                    this.Checkmark.Background.Opacity = 0.7;
+                    this.SelectionTextBlock.Text = "\u2713"; // Checkmark in unicode
+                    this.SelectionTextBlock.Background.Opacity = 0.7;
                 }
                 else
                 {
                     this.Cell.Background = this.unselectedBrush;
-                    this.Checkmark.Text = "   ";
-                    this.Checkmark.Background.Opacity = 0.35;
+                    this.SelectionTextBlock.Text = "   ";
+                    this.SelectionTextBlock.Background.Opacity = 0.35;
                 }
             }
         }
@@ -134,26 +138,89 @@ namespace Timelapse.Controls
 
         public void SetTextFontSize(double value)
         {
-            this.ImageNameText.FontSize = value;
-            this.EpisodeText.FontSize = value;
+            this.SelectionTextBlock.FontSize = value;
+            this.FileNameTextBlock.FontSize = value;
+            this.EpisodeTextBlock.FontSize = value;
+        }
+
+        // Get the bitmap, scaled to fit the cellWidth/Height, from the image row's image or video 
+        public BitmapSource GetThumbnail(double cellWidth, double cellHeight)
+        {
+            BitmapSource bf;
+            double finalDesiredWidth;
+            if (this.ImageRow.IsVideo == false)
+            {
+                // Calculate scale factor to ensure that images of different aspect ratios completely fit in the cell
+                double desiredHeight = cellWidth / this.ImageRow.GetBitmapAspectRatioFromFile(this.RootFolder);
+                double scale = Math.Min(cellWidth / cellWidth, cellHeight / desiredHeight); // 1st term is ScaleWidth, 2nd term is ScaleHeight
+                finalDesiredWidth = (cellWidth * scale - 8);  // Subtract another 2 pixels for the grid border (I think)
+
+                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(finalDesiredWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+            }
+            else
+            {
+                // Get it from the video - for some reason the scale adjustment doesn't seem to be needed, not sure why.
+                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(cellWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+            }
+            return bf;
         }
 
         // Rerender the image to the given width
-        public Double Rerender(FileTable fileTable, int fileIndex, double desiredWidth, int state)
+        public void DisplayEpisodeAndBoundingBoxesIfWarranted(FileTable fileTable, int fileIndex, int state)
         {
-            this.DesiredRenderWidth = desiredWidth;
-            BitmapSource bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.Persistent, out _);
+            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
+            this.ShowOrHideBoundingBoxes(true);
+        }
+
+        public void SetSource (BitmapSource bitmapSource)
+        {
+            try
+            { 
+                this.Image.Source = bitmapSource;
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.Print("SetSource: Could not set the bitmapSource: " + e.Message);
+            }
+        }
+
+        // Rerender the image to the given width
+        public Double Rerender(FileTable fileTable, int fileIndex, double desiredWidth, int state, double cellWidth, double cellHeight)
+        {
+            BitmapSource bf;
+            if (this.ImageRow.IsVideo == false)
+            {
+                // Calculate scale factor to ensure that images of different aspect ratios completely fit in the cell
+                double desiredHeight = desiredWidth / this.ImageRow.GetBitmapAspectRatioFromFile(this.RootFolder);
+                double scale = Math.Min(cellWidth / desiredWidth, cellHeight / desiredHeight); // 1st term is ScaleWidth, 2nd term is ScaleHeight
+                this.DesiredRenderWidth = (desiredWidth * scale - this.Image.Margin.Left - this.Image.Margin.Right - 2);  // Subtract another 2 pixels for the grid border (I think)
+
+                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+            }
+            else
+            {
+                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(this.DesiredRenderWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+
+                // Calculate scale factor to ensure that images of different aspect ratios completely fit in the cell
+                double aspectRatio = bf.Width / bf.Height;
+                double desiredHeight = desiredWidth / aspectRatio;
+                double scale = Math.Min(cellWidth / desiredWidth, cellHeight / desiredHeight); // 1st term is ScaleWidth, 2nd term is ScaleHeight
+                this.DesiredRenderWidth = (desiredWidth * scale - this.Image.Margin.Left - this.Image.Margin.Right - 2);  // Subtract another 2 pixels for the grid border (I think)
+                bf = new TransformedBitmap(bf, new ScaleTransform(this.DesiredRenderWidth / bf.Width, this.DesiredRenderWidth / bf.Width));
+            }
             this.Image.Source = bf;
 
-            // Render the episode text if needed
-            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex, state);
+
+            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
+
+
 
             // A bit of a hack to calculate the height on stock error images. When the loaded image is one of the ones held in the resource,
             // the size is in pixels rather than in device-independent pixels. To get the correct size,
             // we know that these images are 640x480, so we just multiple the desired width by .75 (i.e., 480/640)to get the desired height.
             if (bf == Constant.ImageValues.FileNoLongerAvailable.Value || bf == Constant.ImageValues.Corrupt.Value)
             {
-                this.Image.Height = 0.75 * desiredWidth;
+                this.Image.Height = 0.75 * this.DesiredRenderWidth;
             }
             else
             {
@@ -165,7 +232,7 @@ namespace Timelapse.Controls
         }
 
         // Get and display the episode text if various conditions are met
-        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex, int state)
+        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
         {
             if (Episodes.ShowEpisodes)
             {
@@ -174,8 +241,8 @@ namespace Timelapse.Controls
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
                 string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.File);
-                filename = ThumbnailInCell.ShortenFileNameIfNeeded(filename, state);
-                this.ImageNameText.Text = filename + " (" + timeInHHMM + ")";
+                filename = ThumbnailInCell.ShortenFileNameIfNeeded(filename, 1);
+                this.FileNameTextBlock.Text = filename + " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
@@ -184,17 +251,17 @@ namespace Timelapse.Controls
                 Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
                 if (episode.Item1 == int.MaxValue)
                 {
-                    this.EpisodeText.Text = "\u221E";
+                    this.EpisodeTextBlock.Text = "\u221E";
                 }
                 else
                 {
-                    this.EpisodeText.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
+                    this.EpisodeTextBlock.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
                 }
-                this.EpisodeText.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
-                this.EpisodeText.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
+                this.EpisodeTextBlock.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
+                this.EpisodeTextBlock.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
             }
-            this.EpisodeText.Visibility = Episodes.ShowEpisodes ? Visibility.Visible : Visibility.Hidden;
-            this.ImageNameText.Visibility = this.EpisodeText.Visibility;
+            this.EpisodeTextBlock.Visibility = Episodes.ShowEpisodes ? Visibility.Visible : Visibility.Hidden;
+            this.FileNameTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
         }
 
         // Most images have a black bar at its bottom and top. We want to aligh 
@@ -217,9 +284,9 @@ namespace Timelapse.Controls
                     margin = 12;
                     break;
             }
-            this.ImageNameText.Margin = new Thickness(0, margin, margin, 0);
-            this.EpisodeText.Margin = this.ImageNameText.Margin;
-            this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
+            this.FileNameTextBlock.Margin = new Thickness(0, margin, margin, 0);
+            this.EpisodeTextBlock.Margin = this.FileNameTextBlock.Margin;
+            //this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
         }
 
         // Return a shortened version of the file name so that it fits in the available space 
@@ -254,13 +321,14 @@ namespace Timelapse.Controls
         /// 
         public void ShowOrHideBoundingBoxes(bool visibility)
         {
-            if (visibility && this.Image != null)
+            if (visibility && this.Image?.Source != null)
             {
                 Size size = new Size(this.Image.Width, this.DesiredRenderSize.Height);
                 this.DrawBoundingBox(size);
             }
             else
             {
+                // There is no image visible, so remove the bounding boxes
                 this.bboxCanvas.Children.Clear();
                 this.Cell.Children.Remove(this.bboxCanvas);
             }

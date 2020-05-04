@@ -7,40 +7,39 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid Name="Cell" Background="Black">
         <Grid.RowDefinitions>
-            <RowDefinition Name="RowDef"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Name="ColDef" />
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        
-        <Viewbox Name="Viewbox" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Image Name="Image" Margin="5" Grid.Row="0" Grid.Column="0"  HorizontalAlignment="Left" VerticalAlignment="Top" Stretch="Uniform" />
-        </Viewbox>
 
-        <TextBlock Name="ImageNameText" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16">  <!--Margin="10,12,0,0"-->
+        <!--The image-->
+        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top"  />
+        
+        <!--File name (only visible with episode on)-->
+        <TextBlock Name="FileNameTextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16">  <!--Margin="10,12,0,0"-->
             <TextBlock.Background>
                 <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
             </TextBlock.Background>
         </TextBlock>
 
         <StackPanel Orientation="Horizontal">
-            <Viewbox Height="35" Name="CheckboxViewbox" HorizontalAlignment="Left" VerticalAlignment="Top" >
-                <Border BorderThickness="2" BorderBrush="Black">
-
-                    <TextBlock Name="Checkmark" Text="   " HorizontalAlignment="Left" 
-                       VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="66" >
-                        <TextBlock.Background>
-                            <SolidColorBrush Color="AliceBlue" Opacity="0.35" />
-                        </TextBlock.Background>
-                    </TextBlock>
-                </Border>
-            </Viewbox>
             
-            <TextBlock Name="EpisodeText" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" FontSize="16" Margin="5,0,0,0">
+            <!--Selection checkmark-->
+            <Border BorderThickness="2" BorderBrush="Black" HorizontalAlignment="Left" VerticalAlignment="Top" >
+                <TextBlock Name="SelectionTextBlock" Text="   " HorizontalAlignment="Left" 
+                       VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="40">
+                    <TextBlock.Background>
+                        <SolidColorBrush Color="AliceBlue" Opacity="0.35" />
+                    </TextBlock.Background>
+                </TextBlock>
+            </Border>
+
+            <!-- Episode number (only visible with episode on)-->
+            <TextBlock Name="EpisodeTextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" FontSize="16" Margin="5,0,0,0" Visibility="Collapsed">
                 <TextBlock.Background>
                     <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
                 </TextBlock.Background>
-                             Hello
             </TextBlock>
         </StackPanel>
 

@@ -987,7 +987,7 @@ namespace Timelapse.Images
             // However, if the resulting image is less than a minimum height, then ignore it.
             int desiredHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
             if (desiredHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
-            return this.ThumbnailGrid.Refresh(desiredHeight, new Size(this.ThumbnailGrid.Width, this.ThumbnailGrid.Height), forceUpdate, state);
+            return this.ThumbnailGrid.Refresh(desiredHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height, forceUpdate);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
