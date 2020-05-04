@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
-using Timelapse.Util;
 using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
@@ -73,7 +70,7 @@ namespace Timelapse.Controls
 
         #region Private variables
 
-        private List<ThumbnailInCell> thumbnailInCellsList;
+        private List<ThumbnailInCell> thumbnailInCells;
 
         // Cache copies of the images we display plus associated information
         // This is done both to save existing image state and so we don't repeatedly rebuild that information
@@ -373,9 +370,9 @@ namespace Timelapse.Controls
         public void SelectInitialCellOnly()
         {
             this.SelectNone(); // Clear the selections
-            if (this.thumbnailInCellsList.Any())
+            if (this.thumbnailInCells.Any())
             {
-                ThumbnailInCell ci = this.thumbnailInCellsList[0];
+                ThumbnailInCell ci = this.thumbnailInCells[0];
                 ci.IsSelected = true;
             }
             ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, null);
@@ -385,7 +382,7 @@ namespace Timelapse.Controls
         private void SelectNone()
         {
             // Unselect all ThumbnailInCells
-            foreach (ThumbnailInCell ci in this.thumbnailInCellsList)
+            foreach (ThumbnailInCell ci in this.thumbnailInCells)
             {
                 ci.IsSelected = false;
             }
@@ -476,11 +473,11 @@ namespace Timelapse.Controls
         public List<int> GetSelected()
         {
             List<int> selected = new List<int>();
-            if (this.thumbnailInCellsList == null)
+            if (this.thumbnailInCells == null)
             {
                 return selected;
             }
-            foreach (ThumbnailInCell ci in this.thumbnailInCellsList)
+            foreach (ThumbnailInCell ci in this.thumbnailInCells)
             {
                 if (ci.IsSelected)
                 {
@@ -497,13 +494,9 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        private List<ThumbnailInCell> emptyThumbnailInCells;
         private BackgroundWorker BackgroundWorker;
-        // Return the number of rows/columns in the grid as a Tuple.
-        // If either the row or column is 0, then there is no meaningful grid to display images
-        #region Reconstruct the grid, including clearing it
-        // private Tuple<int, int> ReconstructGrid(double desiredWidth, double desiredHeight, Size availableSize, int fileTableStartIndex, int state)
 
+        #region Reconstruct the grid, including clearing it
         private void ReconstructGrid(double cellWidth, double cellHeight, double gridWidth, double gridHeight, int fileTableStartIndex, bool forceUpdate)
         {
             int fileTableIndex;
@@ -518,7 +511,7 @@ namespace Timelapse.Controls
                 try
                 {
                     fileTableIndex = fileTableStartIndex;
-                    foreach (ThumbnailInCell emptyThumbnailInCell in emptyThumbnailInCells)
+                    foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
                     {
                         if (this.BackgroundWorker.CancellationPending == true)
                         {
@@ -526,17 +519,16 @@ namespace Timelapse.Controls
                             return;
                         }
 
-                        BitmapSource bm = emptyThumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                        BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
                         LoadImageProgressStatus lip = new LoadImageProgressStatus
                         {
-                            ThumbnailInCell = emptyThumbnailInCell,
+                            ThumbnailInCell = thumbnailInCell,
                             BitmapSource = bm,
-                            Position = emptyThumbnailInCell.Position,
+                            Position = thumbnailInCell.GridIndex,
                             DesiredWidth = cellWidth,
                             FileTableIndex = fileTableIndex,
                         };
                         this.BackgroundWorker.ReportProgress(0, lip);
-                        this.thumbnailInCellsList.Add(emptyThumbnailInCell);
                         fileTableIndex++;
                     }
 
@@ -605,37 +597,45 @@ namespace Timelapse.Controls
                 }
 
                 // save cache parameters if the cache has changed 
-                if (this.cachedImageList == null || this.cachedImageList.Count < this.thumbnailInCellsList.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
+                if (this.cachedImageList == null || this.cachedImageList.Count < this.thumbnailInCells.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
                 {
-                    this.cachedImageList = this.thumbnailInCellsList;
+                    this.cachedImageList = this.thumbnailInCells;
                     this.cachedImagePathsStartIndex = this.FileTableStartIndex;
                 }
                 this.BackgroundWorker.Dispose();
                 return;
             };
 
-            this.CancelThumbnailUpdate();
+            // SET AN ARG OR CALL TO ONLY UPDATE THE EPISODE AND BOUNDING BOX (MAYBE) INFO??? AS OTHERWISE IT REBUILDS EVERYTHNG
+            //if (forceUpdate == false && thumbnailInCellsList != null)
+            //{
+            //    fileTableIndex = fileTableStartIndex;
+            //    foreach (ThumbnailInCell etic in thumbnailInCellsList)
+            //    {
+            //        etic.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, fileTableIndex, 1);
+            //        fileTableIndex++;
+            //    }
+            //    return;
+            //}
 
-            // Calculated the number of columns that can fit into the available space,
-            int columnCount = Convert.ToInt32(Math.Floor(gridWidth / cellWidth));
+            // Calculated the number of rows/columns that can fit into the available space,
             int rowCount = Convert.ToInt32(Math.Floor(gridHeight / cellHeight));
-            Tuple<int, int> rowsColumns = new Tuple<int, int>(rowCount, columnCount);
-            this.emptyThumbnailInCells = new List<ThumbnailInCell>();
-            this.thumbnailInCellsList = new List<ThumbnailInCell>();
-            fileTableIndex = fileTableStartIndex;
-            ThumbnailInCell emptyTumbnailInCell;
+            int columnCount = Convert.ToInt32(Math.Floor(gridWidth / cellWidth));
+            if (rowCount == 0 || columnCount == 0)
+            {
+                // We can't even fit a single row or column in, so no point in continuing.
+                return; // rowsColumns;
+            }
+            // Cancel the background worker if it is still active
+            this.CancelThumbnailUpdate();
 
             // Clear the Grid so we can start afresh
             this.Grid.RowDefinitions.Clear();
             this.Grid.ColumnDefinitions.Clear();
             this.Grid.Children.Clear();
-            this.thumbnailInCellsList = new List<ThumbnailInCell>();
 
-            if (rowsColumns.Item1 == 0 || rowsColumns.Item2 == 0)
-            {
-                // We can't even fit a single row or column in, so no point in continuing.
-                return; // rowsColumns;
-            }
+
+
 
             // Add as many columns of the desired width, and rows of the desired height as can fit into the grid's available space
             for (int currentColumn = 0; currentColumn < columnCount; currentColumn++)
@@ -647,27 +647,22 @@ namespace Timelapse.Controls
                 this.Grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(cellHeight, GridUnitType.Pixel) });
             }
 
-            int position = 0;
-            // Now add an empty thumbnailInCell to the grid going in left/right order then down each row until we run out of either cells or files to display
+            int gridIndex = 0;
+            int fileTableCount = this.FileTable.RowCount;
+            fileTableIndex = fileTableStartIndex;
+            ThumbnailInCell emptyThumbnailInCell;
+            this.thumbnailInCells = new List<ThumbnailInCell>();
+
+            // Add an empty thumbnailInCell to each grid cell until no more cells or files to display. The bitmap will be added via the backgroundWorker.
             for (int currentRow = 0; currentRow < rowCount; currentRow++)
             {
-                for (int currentColumn = 0; currentColumn < columnCount && fileTableIndex < this.FileTable.Count(); currentColumn++)
+                for (int currentColumn = 0; currentColumn < columnCount && fileTableIndex < fileTableCount; currentColumn++)
                 {
-                    // Process each cell in a row. Use the image in the cache if available, otherwise create it.  
-                    string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
-                    //emptyTumbnailInCell = TryGetCachedThumbnailInCell(path, cellWidth, state, fileTableIndex);
-                    //if (emptyTumbnailInCell == null)
-                    //{
-                    emptyTumbnailInCell = CreateEmptyThumbnail(fileTableIndex, cellWidth, cellHeight, position, currentRow, currentColumn); //SAULXXX CHANGE TO DESIRED HEIGHT, ALTHOUGH IT WILL HAVE THE SAME EFFECT
-                    //}
-                    Grid.SetRow(emptyTumbnailInCell, currentRow);
-                    Grid.SetColumn(emptyTumbnailInCell, currentColumn);
-                    this.Grid.Children.Add(emptyTumbnailInCell);
-                    this.thumbnailInCellsList.Add(emptyTumbnailInCell);
-
-                    emptyThumbnailInCells.Add(emptyTumbnailInCell);
-                    fileTableIndex++;
-                    position++;
+                    emptyThumbnailInCell = CreateEmptyThumbnail(fileTableIndex++, gridIndex++, cellWidth, cellHeight, currentRow, currentColumn);
+                    Grid.SetRow(emptyThumbnailInCell, currentRow);
+                    Grid.SetColumn(emptyThumbnailInCell, currentColumn);
+                    this.Grid.Children.Add(emptyThumbnailInCell);
+                    this.thumbnailInCells.Add(emptyThumbnailInCell);
                 }
             }
             this.BackgroundWorker.RunWorkerAsync();
@@ -691,12 +686,13 @@ namespace Timelapse.Controls
         {
             try
             {
-                if (lip.ThumbnailInCell.Position < this.emptyThumbnailInCells.Count && lip.BitmapSource != null)
+                // As we are cancelling updates rapidly, check to make sure that we can still access the variables
+                if (lip.ThumbnailInCell.GridIndex < this.thumbnailInCells.Count && lip.BitmapSource != null)
                 {
-                    ThumbnailInCell etic = this.emptyThumbnailInCells[lip.Position];
-                    etic.SetSource(lip.BitmapSource);
-                    etic.DesiredRenderWidth = lip.DesiredWidth;
-                    etic.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, lip.FileTableIndex, 1);
+                    ThumbnailInCell thumbnailInCell = this.thumbnailInCells[lip.Position];
+                    thumbnailInCell.SetSource(lip.BitmapSource);
+                    thumbnailInCell.DesiredRenderWidth = lip.DesiredWidth;
+                    thumbnailInCell.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, lip.FileTableIndex);
                 }
                 // Uncomment for tracing purposes
                 //else
@@ -727,7 +723,7 @@ namespace Timelapse.Controls
                     {
                         // Re-render the cached image, as its smaller than the resolution width 
                         double FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR = 1;
-                        imageHeight = ci.Rerender(this.FileTable, cachedImageListIndex, desiredWidth, state, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR);
+                        imageHeight = ci.Rerender(this.FileTable, cachedImageListIndex, desiredWidth, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR);
                     }
                     else
                     {
@@ -762,7 +758,7 @@ namespace Timelapse.Controls
                 BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
             };
             double FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR = 1;
-            double imageHeight = ci.Rerender(this.FileTable, fileTableIndex, desiredWidth, state, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR);
+            double imageHeight = ci.Rerender(this.FileTable, fileTableIndex, desiredWidth, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR, FOOBARBARFOOBARBARFOOBARBARFOOBARBARFOOBARBAR);
             ci.FileTableIndex = fileTableIndex; // Set the filetableindex so we can retrieve it later
             int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
             ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
@@ -770,16 +766,17 @@ namespace Timelapse.Controls
             return ci;
         }
 
-        private ThumbnailInCell CreateEmptyThumbnail(int fileTableIndex, double desiredWidth, double desiredHeight, int position, int row, int column)
+        private ThumbnailInCell CreateEmptyThumbnail(int fileTableIndex, int gridIndex, double desiredWidth, double desiredHeight, int row, int column)
         {
             ThumbnailInCell ci = new ThumbnailInCell(desiredWidth)
             {
-                Position = position,
+                GridIndex = gridIndex,
                 Row = row,
                 Column = column,
                 RootFolder = this.FolderPath,
                 ImageRow = this.FileTable[fileTableIndex],
                 DesiredRenderWidth = desiredWidth,
+                FileTableIndex = fileTableIndex,
                 BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
             };
             //double imageHeight = ci.Rerender(this.FileTable, fileTableIndex, desiredWidth, state);

@@ -36,7 +36,7 @@ namespace Timelapse.Controls
         public int Row { get; set; }
         public int Column { get; set; }
 
-        public int Position { get; set; } = 0;
+        public int GridIndex { get; set; } = 0;
         public Size DesiredRenderSize
         {
             get
@@ -166,7 +166,7 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public void DisplayEpisodeAndBoundingBoxesIfWarranted(FileTable fileTable, int fileIndex, int state)
+        public void DisplayEpisodeAndBoundingBoxesIfWarranted(FileTable fileTable, int fileIndex)
         {
             this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
             this.ShowOrHideBoundingBoxes(true);
@@ -185,7 +185,7 @@ namespace Timelapse.Controls
         }
 
         // Rerender the image to the given width
-        public Double Rerender(FileTable fileTable, int fileIndex, double desiredWidth, int state, double cellWidth, double cellHeight)
+        public Double Rerender(FileTable fileTable, int fileIndex, double desiredWidth, double cellWidth, double cellHeight)
         {
             BitmapSource bf;
             if (this.ImageRow.IsVideo == false)

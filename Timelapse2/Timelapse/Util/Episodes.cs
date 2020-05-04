@@ -55,7 +55,7 @@ namespace Timelapse
             int index = fileTableIndex;
 
             // Ensure the argument is valid
-            if (fileTable == null || index < 0 || index >= fileTable.Count())
+            if (fileTable == null || index < 0 || index >= fileTable.RowCount)
             {
                 return;
             }
