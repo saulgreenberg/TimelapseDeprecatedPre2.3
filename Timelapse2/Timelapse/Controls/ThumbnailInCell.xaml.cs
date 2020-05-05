@@ -155,7 +155,7 @@ namespace Timelapse.Controls
                 double scale = Math.Min(cellWidth / cellWidth, cellHeight / desiredHeight); // 1st term is ScaleWidth, 2nd term is ScaleHeight
                 finalDesiredWidth = (cellWidth * scale - 8);  // Subtract another 2 pixels for the grid border (I think)
 
-                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(finalDesiredWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(finalDesiredWidth), ImageDisplayIntentEnum.TransientNavigating, out _);
             }
             else
             {

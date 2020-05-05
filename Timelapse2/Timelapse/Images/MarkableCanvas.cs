@@ -1163,33 +1163,23 @@ namespace Timelapse.Images
             // 2. It introduces a longer time threshold to switch from the image to the ThumbnailGrid, in order to give a natural 'break point' between the two.
             // 3. A windows 10 bug (so it seems) generates 2 mouse wheel events for every mouse wheel click
             //    This tries to catch that and eliminate the second click. 
-            TimeSpan shortInterval = TimeSpan.FromMilliseconds(50);
-            TimeSpan longInterval = TimeSpan.FromMilliseconds(400);
 
             TimeSpan timeDifference = DateTime.Now - lastMouseWheelDateTime;
-            if (timeDifference < shortInterval)
+            if (timeDifference < TimeSpan.FromMilliseconds(500)) // At least a 500 msecs delay in use of the scroll wheel is needed between transitions
             {
-                // Always ignore mouse wheel clicks on very short time intervals. See above.
-                return;
-            }
+                if (zoomIn == true &&
+                    (   (this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                     || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
+                {
+                    // Pause on the transition from unzoomed image/video to zoomed image/video
+                    return;
+                }
 
-            if (timeDifference < longInterval && zoomIn == false)
-            {
-                // If we are zooming out and on the transition between going from the image/video to the ThumbnailGrid view, or between ThumbnailGrid views 
-                // we need at least a longInterval of time between now and the last click
-                if (this.IsThumbnailGridVisible == true)             
+                if (zoomIn == false &&
+                    (    (this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum) 
+                      || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
                 {
-                    // Always wait at least a long time interval if the ThumbnailGrid is visible, to slow transitions between states
-                    return;
-                }
-                if (this.ImageToDisplay.IsVisible == true && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {
-                    // we are viewing the unscaled image and on the transition to go to the ThumbnailGrid
-                    return;
-                }
-                if (this.ImageToDisplay.IsVisible == false && this.VideoPlayer.IsUnScaled == true)     // or the unscaled video
-                {
-                    // we are viewing the unscaled video and on the transition to go to the ThumbnailGrid view
+                    // Pause on the transition from unscaled image/video to thumbnail Grid
                     return;
                 }
             }
