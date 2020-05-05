@@ -140,6 +140,7 @@ namespace Timelapse.Controls
         {
             this.SelectionTextBlock.FontSize = value;
             this.FileNameTextBlock.FontSize = value;
+            this.TimeTextBlock.FontSize = value;
             this.EpisodeTextBlock.FontSize = value;
         }
 
@@ -241,8 +242,9 @@ namespace Timelapse.Controls
                 string timeInHHMM = (this.ImageRow.Time.Length > 3) ? this.ImageRow.Time.Remove(this.ImageRow.Time.Length - 3) : String.Empty;
 
                 string filename = System.IO.Path.GetFileNameWithoutExtension(this.ImageRow.File);
-                filename = ThumbnailInCell.ShortenFileNameIfNeeded(filename, 1);
-                this.FileNameTextBlock.Text = filename + " (" + timeInHHMM + ")";
+                filename = ThumbnailInCell.ShortenFileNameIfNeeded(filename, this.DesiredRenderWidth);
+                this.FileNameTextBlock.Text = filename;
+                this.TimeTextBlock.Text = " (" + timeInHHMM + ")";
 
                 if (Episodes.EpisodesDictionary.ContainsKey(fileIndex) == false)
                 {
@@ -258,41 +260,30 @@ namespace Timelapse.Controls
                     this.EpisodeTextBlock.Text = (episode.Item2 == 1) ? "Single" : String.Format("{0}/{1}", episode.Item1, episode.Item2);
                 }
                 this.EpisodeTextBlock.Foreground = (episode.Item1 == 1) ? Brushes.Red : Brushes.Black;
-                this.EpisodeTextBlock.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;
+                this.EpisodeTextBlock.FontWeight = (episode.Item1 == 1 && episode.Item2 != 1) ? FontWeights.Bold : FontWeights.Normal;;
             }
             this.EpisodeTextBlock.Visibility = Episodes.ShowEpisodes ? Visibility.Visible : Visibility.Hidden;
             this.FileNameTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
+            this.TimeTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
         }
 
-        // Most images have a black bar at its bottom and top. We want to aligh 
+        // Most images have a black bar at its bottom and top. We want to align 
         // the checkbox / text label to be just outside that black bar. This is guesswork, 
         // but the margin should line up within reason most of the time
         // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
-        public void AdjustMargin(int state)
+        public void AdjustMargin(int margin)
         {
-            int margin;
-            switch (state)
-            {
-                case 2:
-                    margin = 8;
-                    break;
-                case 3:
-                    margin = 6;
-                    break;
-                case 1:
-                default:
-                    margin = 12;
-                    break;
-            }
             this.FileNameTextBlock.Margin = new Thickness(0, margin, margin, 0);
-            this.EpisodeTextBlock.Margin = this.FileNameTextBlock.Margin;
-            //this.CheckboxViewbox.Margin = new Thickness(margin, margin, 0, 0);
+            this.TimeTextBlock.Margin = this.FileNameTextBlock.Margin;
+            this.SelectionAndEpisodePanel.Margin = this.FileNameTextBlock.Margin;
+            //this.EpisodeTextBlock.Margin = this.FileNameTextBlock.Margin;
+            //this.SelectionTextBlock.Margin = this.FileNameTextBlock.Margin;
         }
 
         // Return a shortened version of the file name so that it fits in the available space 
         // Note that we left trim it, and we show an ellipsis on the left side if it doesn't fit.
         // Also, values are hard-coded vs. dynamic. Ok until we change the standard width or layout of the display space.
-        private static string ShortenFileNameIfNeeded(string filename, int state)
+        private static string ShortenFileNameIfNeeded(string filename, double desiredWidth)
         {
             // Check the arguments for null 
             if (filename == null)
@@ -303,15 +294,17 @@ namespace Timelapse.Controls
             }
 
             string ellipsis = "\u2026";
-            switch (state)
-            {
-                case 2:
-                case 3:
-                    return filename.Length <= 10 ? filename : ellipsis + filename.Remove(0, filename.Length - 10);
-                case 1:
-                default:
-                    return filename.Length <= 20 ? filename : ellipsis + filename.Remove(0, filename.Length - 20);
-            }
+            int scale = Convert.ToInt32(desiredWidth / 30);
+            return filename.Length <= scale ? filename : ellipsis + filename.Remove(0, filename.Length - scale);
+            //switch (state)
+            //{
+            //    case 2:
+            //    case 3:
+            //        return filename.Length <= 10 ? filename : ellipsis + filename.Remove(0, filename.Length - 10);
+            //    case 1:
+            //    default:
+            //        return filename.Length <= 20 ? filename : ellipsis + filename.Remove(0, filename.Length - 20);
+            //}
         }
 
         #region Draw Bounding Box

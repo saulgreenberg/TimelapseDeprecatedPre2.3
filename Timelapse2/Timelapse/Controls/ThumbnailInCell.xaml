@@ -10,23 +10,31 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!--The image-->
-        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Top"  />
-        
-        <!--File name (only visible with episode on)-->
-        <TextBlock Name="FileNameTextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16">  <!--Margin="10,12,0,0"-->
-            <TextBlock.Background>
-                <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
-            </TextBlock.Background>
-        </TextBlock>
+        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top"  />
 
-        <StackPanel Orientation="Horizontal">
-            
+        <!--File name (only visible with episode on)-->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
+            <TextBlock Name="FileNameTextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" TextAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16">  <!--Margin="10,12,0,0"-->
+                <TextBlock.Background>
+                    <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
+                </TextBlock.Background>
+            </TextBlock>
+            <TextBlock Name="TimeTextBlock" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16">  <!--Margin="10,12,0,0"-->
+                <TextBlock.Background>
+                    <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
+                </TextBlock.Background>
+            </TextBlock>
+        </StackPanel>
+
+        <StackPanel Name="SelectionAndEpisodePanel" Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+
             <!--Selection checkmark-->
-            <Border BorderThickness="2" BorderBrush="Black" HorizontalAlignment="Left" VerticalAlignment="Top" >
+            <Border BorderThickness="2" BorderBrush="Black" HorizontalAlignment="Left" VerticalAlignment="Top"  >
                 <TextBlock Name="SelectionTextBlock" Text="   " HorizontalAlignment="Left" 
                        VerticalAlignment="Bottom" Foreground="MediumBlue" FontWeight="Bold" FontSize="40">
                     <TextBlock.Background>

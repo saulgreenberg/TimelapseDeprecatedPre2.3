@@ -557,8 +557,10 @@ namespace Timelapse.Controls
             //int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
             //ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
             //ci.AdjustMargin(state);
-            double fontSizeCorrectionFactor = desiredHeight / 10 > 40 ? 40 : desiredHeight / 10;// = (state == 1) ? 20 : 15;
+            double fontSizeCorrectionFactor = desiredHeight / 10 > 30 ? 30 : desiredHeight / 10;// = (state == 1) ? 20 : 15;
             thumbnailInCell.SetTextFontSize(fontSizeCorrectionFactor);
+
+            thumbnailInCell.AdjustMargin(Convert.ToInt32(Math.Ceiling(desiredHeight/25)) + 1);
             return thumbnailInCell;
         }
         #endregion
