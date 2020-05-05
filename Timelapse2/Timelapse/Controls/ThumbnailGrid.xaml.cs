@@ -379,6 +379,7 @@ namespace Timelapse.Controls
             {
                 try
                 {
+                    // Render the images first (as they render faster)
                     fileTableIndex = fileTableStartIndex;
                     foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
                     {
@@ -387,18 +388,45 @@ namespace Timelapse.Controls
                             ea.Cancel = true;
                             return;
                         }
-
-                        BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
-                        LoadImageProgressStatus lip = new LoadImageProgressStatus
+                        if (thumbnailInCell.Path.EndsWith("jpg", StringComparison.OrdinalIgnoreCase)) 
                         {
-                            ThumbnailInCell = thumbnailInCell,
-                            BitmapSource = bm,
-                            Position = thumbnailInCell.GridIndex,
-                            DesiredWidth = cellWidth,
-                            FileTableIndex = fileTableIndex,
-                        };
-                        this.BackgroundWorker.ReportProgress(0, lip);
-                        fileTableIndex++;
+                            BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                            LoadImageProgressStatus lip = new LoadImageProgressStatus
+                            {
+                                ThumbnailInCell = thumbnailInCell,
+                                BitmapSource = bm,
+                                Position = thumbnailInCell.GridIndex,
+                                DesiredWidth = cellWidth, 
+                                FileTableIndex = fileTableIndex,
+                            };
+                            this.BackgroundWorker.ReportProgress(0, lip);
+                            fileTableIndex++;
+                        }
+                    }
+
+                    // Then render the videos
+                    fileTableIndex = fileTableStartIndex;
+                    foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
+                    {
+                        if (this.BackgroundWorker.CancellationPending == true)
+                        {
+                            ea.Cancel = true;
+                            return;
+                        }
+                        if (thumbnailInCell.Path.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) == false)
+                        {
+                            BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                            LoadImageProgressStatus lip = new LoadImageProgressStatus
+                            {
+                                ThumbnailInCell = thumbnailInCell,
+                                BitmapSource = bm,
+                                Position = thumbnailInCell.GridIndex,
+                                DesiredWidth = cellWidth,
+                                FileTableIndex = fileTableIndex,
+                            };
+                            this.BackgroundWorker.ReportProgress(0, lip);
+                            fileTableIndex++;
+                        }
                     }
                 }
                 catch
@@ -452,7 +480,7 @@ namespace Timelapse.Controls
         #endregion
 
         // Clear the grid, and recreate it with a thumbnailInCell user control in each cell
-        private bool RebuildGrid (double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableIndex)
+        private bool RebuildGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableIndex)
         {
             // Calculated the number of rows/columns that can fit into the available space,
             int rowCount = Convert.ToInt32(Math.Floor(gridHeight / cellHeight));
@@ -507,7 +535,7 @@ namespace Timelapse.Controls
                 if (lip.ThumbnailInCell.GridIndex < this.thumbnailInCells.Count && lip.BitmapSource != null)
                 {
                     ThumbnailInCell thumbnailInCell = this.thumbnailInCells[lip.Position];
-                    thumbnailInCell.SetSource(lip.BitmapSource);
+                    thumbnailInCell.SetThumbnail(lip.BitmapSource);
                     thumbnailInCell.DesiredRenderWidth = lip.DesiredWidth;
                     thumbnailInCell.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, lip.FileTableIndex);
                 }
@@ -543,7 +571,7 @@ namespace Timelapse.Controls
         #region CreateThumbnail
         private ThumbnailInCell CreateEmptyThumbnail(int fileTableIndex, int gridIndex, double desiredWidth, double desiredHeight, int row, int column)
         {
-            ThumbnailInCell thumbnailInCell = new ThumbnailInCell(desiredWidth)
+            ThumbnailInCell thumbnailInCell = new ThumbnailInCell(desiredWidth, desiredHeight)
             {
                 GridIndex = gridIndex,
                 Row = row,
@@ -554,13 +582,6 @@ namespace Timelapse.Controls
                 FileTableIndex = fileTableIndex,
                 BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
             };
-            //int fontSizeCorrectionFactor = (state == 1) ? 20 : 15;
-            //ci.SetTextFontSize(desiredWidth / fontSizeCorrectionFactor);
-            //ci.AdjustMargin(state);
-            double fontSizeCorrectionFactor = desiredHeight / 10 > 30 ? 30 : desiredHeight / 10;// = (state == 1) ? 20 : 15;
-            thumbnailInCell.SetTextFontSize(fontSizeCorrectionFactor);
-
-            thumbnailInCell.AdjustMargin(Convert.ToInt32(Math.Ceiling(desiredHeight/25)) + 1);
             return thumbnailInCell;
         }
         #endregion
