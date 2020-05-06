@@ -947,8 +947,14 @@ namespace Timelapse.Images
             }
         }
 
+        // Refresh only the episode information in the thumbnail grid
+        public void DisplayEpisodeTextInThumbnailGridIfWarranted()
+        {
+            this.ThumbnailGrid.DisplayEpisodeTextIfWarranted();
+        }
+
         // If the ThumbnailGrid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
-        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation, bool forceUpdate)
+        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation)
         {
             if (this.IsThumbnailGridVisible == true)
             {
@@ -964,20 +970,13 @@ namespace Timelapse.Images
                 }
                 else
                 {
-                    this.RefreshThumbnailGrid(this.ThumbnailGridState, forceUpdate);
+                    this.RefreshThumbnailGrid(this.ThumbnailGridState);
                 }
             }
         }
 
         // Refresh the ThumbnailGrid
         private bool RefreshThumbnailGrid(int state)
-        {
-            // when called without a forceUpdate argument, assume
-            // that we don't need to force the update of all images
-            return this.RefreshThumbnailGrid(state, false);
-        }
-
-        private bool RefreshThumbnailGrid(int state, bool forceUpdate)
         {
             if (this.ThumbnailGrid == null)
             {
@@ -987,7 +986,7 @@ namespace Timelapse.Images
             // However, if the resulting image is less than a minimum height, then ignore it.
             int desiredHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
             if (desiredHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
-            return this.ThumbnailGrid.Refresh(desiredHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height, forceUpdate);
+            return this.ThumbnailGrid.Refresh(desiredHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
@@ -1309,7 +1308,7 @@ namespace Timelapse.Images
                         }
                         else
                         {
-                            this.ThumbnailGrid.ShowOrHideBoundingBoxes(false);
+                            this.ThumbnailGrid.ShowHideEpisodesAndBoundingBoxes();
                         }
                     }
                     break;
@@ -1360,7 +1359,7 @@ namespace Timelapse.Images
                         }
                         else
                         {
-                            this.ThumbnailGrid.ShowOrHideBoundingBoxes(true);
+                            this.ThumbnailGrid.ShowHideEpisodesAndBoundingBoxes();
                         }
                     }
                     break;

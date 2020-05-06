@@ -729,7 +729,7 @@ namespace Timelapse
 
             if (this.DataHandler != null)
             {
-                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextInImageIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 

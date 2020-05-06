@@ -107,8 +107,8 @@ namespace Timelapse.Images
             return target;
         }
 
-        // Return  3 points (vertices) that inscribe a triangle into the circle defined by a center point and a radius, 
-        private static PointCollection GetTriangleVerticesInscribedInCircle(Point center, float radius)
+         // Return  3 points (vertices) that inscribe a triangle into the circle defined by a center point and a radius, 
+        public static PointCollection GetTriangleVerticesInscribedInCircle(Point center, float radius)
         {
             PointCollection points = new PointCollection();
             for (int i = 0; i < 3; i++)

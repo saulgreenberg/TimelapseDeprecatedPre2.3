@@ -64,7 +64,6 @@ namespace Timelapse.Controls
 
         public ImageRow ImageRow { get; set; }
 
-
         // bounding boxes for detection
         private BoundingBoxes boundingBoxes;
         // Bounding boxes for detection. Whenever one is set, it is redrawn
@@ -125,6 +124,7 @@ namespace Timelapse.Controls
         // A canvas used to display the bounding boxes
         private readonly Canvas bboxCanvas = new Canvas();
         private double CellHeight { get; set; }
+        private double CellWidth { get; set; }
 
         private readonly Brush unselectedBrush = Brushes.Black;
         private readonly Brush selectedBrush = Brushes.LightBlue;
@@ -136,12 +136,20 @@ namespace Timelapse.Controls
             this.InitializeComponent();
             this.DesiredRenderWidth = width;
             this.CellHeight = height;
+            this.CellWidth = width;
             this.RootFolder = String.Empty;
+        }
 
+        private void ThumbnailInCell_Loaded(object sender, RoutedEventArgs e)
+        {
             // Heuristic for setting font sizes
             this.SetTextFontSize();
             this.AdjustMargin();
-
+            if (this.ImageRow.IsVideo)
+            {
+                this.InitializePlayButton();
+                this.PlayButton.Visibility = Visibility.Visible;
+            }
         }
         #endregion
 
@@ -206,9 +214,59 @@ namespace Timelapse.Controls
             }
         }
 
-        // Get and display the episode text if various conditions are met
-        private void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
+        public void InitializePlayButton()
         {
+            // Already initialized
+            if (PlayButton.Children.Count > 0)
+            {
+                return;
+            }
+            double canvasHeight = this.CellHeight / 5;
+            double canvasWidth = this.CellWidth;
+            double ellipseDiameter = canvasHeight * .5;
+            double ellipseRadius = ellipseDiameter / 2;
+            this.PlayButton.Height = canvasHeight;
+
+            Ellipse ellipse = new Ellipse
+            {
+                Width = ellipseDiameter,
+                Height = ellipseDiameter,
+                Fill = new SolidColorBrush
+                {
+                    Color = Colors.LightBlue,
+                    Opacity = 0.5
+                }
+            };
+            Canvas.SetLeft(ellipse, canvasWidth / 2 - ellipseDiameter / 2);
+
+            Point center = new Point(ellipseRadius, ellipseRadius);
+            PointCollection trianglePoints = BitmapUtilities.GetTriangleVerticesInscribedInCircle(center, (float)ellipseDiameter / 2);
+
+            // Construct the triangle
+            Polygon triangle = new Polygon
+            {
+                Points = trianglePoints,
+                Fill = new SolidColorBrush
+                {
+                    Color = Colors.Blue,
+                    Opacity = 0.5
+                },
+            };
+            Canvas.SetLeft(triangle, canvasWidth / 2 - ellipseDiameter / 2);
+
+            this.PlayButton.Children.Add(ellipse);
+            this.PlayButton.Children.Add(triangle);
+        }
+        // Get and display the episode text if various conditions are met
+        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
+        {
+            if (Keyboard.IsKeyDown(Key.H))
+            {
+                this.EpisodeTextBlock.Visibility = Visibility.Hidden;
+                this.FileNameTextBlock.Visibility = Visibility.Hidden;
+                this.TimeTextBlock.Visibility = Visibility.Hidden;
+                return;
+            }
             if (Episodes.ShowEpisodes)
             {
                 // Episode number
@@ -239,7 +297,7 @@ namespace Timelapse.Controls
             this.TimeTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
         }
 
- 
+
         // Draw bounding boxes into a boundingbox canvas that overlays the MarkableCanvas 
         private void DrawBoundingBox()
         {
@@ -360,5 +418,6 @@ namespace Timelapse.Controls
             this.InfoPanel.Margin = new Thickness(0, margin, margin, 0);
         }
         #endregion
+
     }
 }

@@ -180,14 +180,14 @@ namespace Timelapse
             }
 
             // Refresh the markable canvas if needed
-            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
 
             // Display the episode text as needed
-            this.DisplayEpisodeTextIfWarranted(fileIndex);
+            this.DisplayEpisodeTextInImageIfWarranted(fileIndex);
         }
 
         // Get and display the episode text if various conditions are met
-        private void DisplayEpisodeTextIfWarranted(int fileIndex)
+        private void DisplayEpisodeTextInImageIfWarranted(int fileIndex)
         {
             if (Episodes.ShowEpisodes && this.IsDisplayingSingleImage())
             {

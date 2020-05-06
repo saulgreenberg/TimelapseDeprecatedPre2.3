@@ -4,11 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
+using Timelapse.Images;
 using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
@@ -63,11 +65,6 @@ namespace Timelapse.Controls
 
         private List<ThumbnailInCell> thumbnailInCells;
 
-        // Cache copies of the images we display plus associated information
-        // This is done both to save existing image state and so we don't repeatedly rebuild that information
-        private int cachedImagePathsStartIndex = -1;
-        private List<ThumbnailInCell> cachedImageList;
-
         // Track states between mouse down / move and up 
         private RowColumn cellChosenOnMouseDown;
         private bool modifierKeyPressedOnMouseDown = false;
@@ -88,7 +85,7 @@ namespace Timelapse.Controls
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that every refresh unselects previously selected images
-        public bool Refresh(double desiredHeight, double gridWidth, double gridHeight, bool forceUpdate)
+        public bool Refresh(double desiredHeight, double gridWidth, double gridHeight)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
             if (this.FileTable == null || !this.FileTable.Any() || desiredHeight == 0)
@@ -108,7 +105,7 @@ namespace Timelapse.Controls
             double desiredWidth = (bm == null || bm.PixelHeight == 0) ? desiredHeight * Constant.ThumbnailGrid.AspectRatioDefault : desiredHeight * bm.PixelWidth / bm.PixelHeight;
 
             // Reconstruct the Grid with the appropriate rows/columns 
-            if (this.ReconstructGrid(desiredWidth, desiredHeight, gridWidth, gridHeight, FileTableStartIndex, forceUpdate) == false)
+            if (this.ReconstructGrid(desiredWidth, desiredHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
             {
                 // Abort as the grid cannot  display even a single image
                 Mouse.OverrideCursor = null;
@@ -119,27 +116,6 @@ namespace Timelapse.Controls
             this.SelectInitialCellOnly();
             Mouse.OverrideCursor = null;
             return true;
-        }
-        #endregion
-
-        #region Public Refresh
-        // Invalidate the ThumbnailInCells cache.
-        // Used to force a redraw of images, e.g., such as when an image is deleted (but not its data) so that the missing image is shown in its place
-        public void InvalidateCache()
-        {
-            this.cachedImageList = null;
-        }
-        #endregion
-
-        #region Public BoundingBoxes
-        // For each ThumbnailInCell in the cache (i.e., those that are currently being displayed)
-        // show or hide the bounding boxes 
-        public void ShowOrHideBoundingBoxes(bool visibility)
-        {
-            foreach (ThumbnailInCell ci in this.cachedImageList)
-            {
-                ci.ShowOrHideBoundingBoxes(visibility);
-            }
         }
         #endregion
 
@@ -366,7 +342,7 @@ namespace Timelapse.Controls
         private BackgroundWorker BackgroundWorker;
 
         #region Reconstruct the grid, including clearing it
-        private bool ReconstructGrid(double cellWidth, double cellHeight, double gridWidth, double gridHeight, int fileTableStartIndex, bool forceUpdate)
+        private bool ReconstructGrid(double cellWidth, double cellHeight, double gridWidth, double gridHeight, int fileTableStartIndex)
         {
             int fileTableIndex;
             this.BackgroundWorker = new BackgroundWorker()
@@ -383,25 +359,23 @@ namespace Timelapse.Controls
                     fileTableIndex = fileTableStartIndex;
                     foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
                     {
+                        LoadImageProgressStatus lip;
                         if (this.BackgroundWorker.CancellationPending == true)
                         {
                             ea.Cancel = true;
                             return;
                         }
-                        if (thumbnailInCell.Path.EndsWith("jpg", StringComparison.OrdinalIgnoreCase)) 
+                        BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                        lip = new LoadImageProgressStatus
                         {
-                            BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
-                            LoadImageProgressStatus lip = new LoadImageProgressStatus
-                            {
-                                ThumbnailInCell = thumbnailInCell,
-                                BitmapSource = bm,
-                                Position = thumbnailInCell.GridIndex,
-                                DesiredWidth = cellWidth, 
-                                FileTableIndex = fileTableIndex,
-                            };
-                            this.BackgroundWorker.ReportProgress(0, lip);
-                            fileTableIndex++;
-                        }
+                            ThumbnailInCell = thumbnailInCell,
+                            BitmapSource = bm,
+                            Position = thumbnailInCell.GridIndex,
+                            DesiredWidth = cellWidth,
+                            FileTableIndex = fileTableIndex,
+                        };
+                        this.BackgroundWorker.ReportProgress(0, lip);
+                        fileTableIndex++;
                     }
 
                     // Then render the videos
@@ -446,24 +420,6 @@ namespace Timelapse.Controls
 
             this.BackgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
-                // If forceUpdate is true, remove the cache so that images have to be regenerated
-                if (forceUpdate && this.cachedImageList != null)
-                {
-                    this.cachedImageList.Clear();
-                }
-
-                // Reset the selection to the first image in the grid if the first displayable image isn't the same
-                if (this.cachedImagePathsStartIndex != this.FileTableStartIndex)
-                {
-                    this.SelectInitialCellOnly();
-                }
-
-                // save cache parameters if the cache has changed 
-                if (this.cachedImageList == null || this.cachedImageList.Count < this.thumbnailInCells.Count || this.cachedImagePathsStartIndex != this.FileTableStartIndex)
-                {
-                    this.cachedImageList = this.thumbnailInCells;
-                    this.cachedImagePathsStartIndex = this.FileTableStartIndex;
-                }
                 this.BackgroundWorker.Dispose();
                 return;
             };
@@ -586,6 +542,21 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        public void DisplayEpisodeTextIfWarranted()
+        {
+            foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
+            {
+                thumbnailInCell.DisplayEpisodeTextIfWarranted(this.FileTable, thumbnailInCell.FileTableIndex);
+            }
+        }
+
+        public void ShowHideEpisodesAndBoundingBoxes()
+        {
+            foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
+            {
+                thumbnailInCell.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, thumbnailInCell.FileTableIndex);
+            }
+        }
         #region Cell Navigation methods
         private bool GridGetNextSelectedCell(RowColumn cell, out RowColumn nextCell)
         {
@@ -599,13 +570,11 @@ namespace Timelapse.Controls
                 // If there is no cell, we've reached the end, 
                 if (ci == null)
                 {
-                    System.Diagnostics.Debug.Print("false");
                     return false;
                 }
                 // We've found a selected cell
                 if (ci.IsSelected)
                 {
-                    System.Diagnostics.Debug.Print("true");
                     return true;
                 }
                 cell = nextCell;

@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="300" d:DesignWidth="300" Loaded="ThumbnailInCell_Loaded">
     <Grid Name="Cell" Background="Black">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,8 +15,9 @@
         </Grid.ColumnDefinitions>
 
         <!--The image-->
-        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top"  />
 
+        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top"  />
+        <Canvas Name="PlayButton" VerticalAlignment="Bottom" Grid.Row="2" Height="50" HorizontalAlignment="Stretch" Visibility="Collapsed" />
         <!--File name (only visible with episode on)-->
         <Grid Name="InfoPanel"  Grid.Row="0" Grid.Column="0" >
             <Grid.ColumnDefinitions>
@@ -42,7 +43,7 @@
                 </TextBlock.Background>
             </TextBlock>
 
-            <TextBlock Name="FileNameTextBlock" Grid.Column="2" HorizontalAlignment="Right" TextAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16" Margin="3,0,0,0">  
+            <TextBlock Name="FileNameTextBlock" Grid.Column="2" HorizontalAlignment="Right" TextAlignment="Right" VerticalAlignment="Top" Foreground="Black" FontSize="16" Margin="3,0,0,0">
                 <TextBlock.Background>
                     <SolidColorBrush Color="AliceBlue" Opacity="0.7" />
                 </TextBlock.Background>
