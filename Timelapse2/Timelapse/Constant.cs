@@ -363,6 +363,7 @@ namespace Timelapse.Constant
         public const int PreviewWidth384 = 384;
         public const int PreviewWidth300 = 300;
         public const int PreviewWidth128 = 128;
+        public const int PreviewWidth32 = 32;
 
         public static readonly Lazy<BitmapImage> Corrupt = ImageValues.Load("Corrupted.jpg");
         public static readonly Lazy<BitmapImage> FileNoLongerAvailable = ImageValues.Load("FileNoLongerAvailable.jpg");

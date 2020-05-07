@@ -145,12 +145,12 @@ namespace Timelapse.Controls
                 double scale = Math.Min(cellWidth / cellWidth, cellHeight / desiredHeight); // 1st term is ScaleWidth, 2nd term is ScaleHeight
                 finalDesiredWidth = (cellWidth * scale - 8);  // Subtract another 2 pixels for the grid border (I think)
 
-                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(finalDesiredWidth), ImageDisplayIntentEnum.TransientNavigating, out _);
+                bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(finalDesiredWidth), ImageDisplayIntentEnum.TransientNavigating, ImageDimensionEnum.UseWidth, out _);
             }
             else
             {
                 // Get it from the video - for some reason the scale adjustment doesn't seem to be needed, not sure why.
-                bf = this.ImageRow.GetBitmapFromFile(this.RootFolder, Convert.ToInt32(cellWidth), ImageDisplayIntentEnum.TransientLoading, out _);
+                bf = this.ImageRow.LoadBitmap(this.RootFolder, Convert.ToInt32(cellWidth), ImageDisplayIntentEnum.TransientLoading, ImageDimensionEnum.UseWidth, out _);
             }
             return bf;
         }

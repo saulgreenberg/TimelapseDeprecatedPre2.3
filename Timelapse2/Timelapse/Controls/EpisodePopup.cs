@@ -181,7 +181,7 @@ namespace Timelapse.Controls
         {
             Image image = new Image
             {
-                Source = imageRow.GetBitmapFromFile(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(imageHeight), ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing)
+                Source = imageRow.LoadBitmap(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(imageHeight), ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseHeight, out bool isCorruptOrMissing)
             };
 
             // Need to scale the image to the correct height

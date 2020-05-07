@@ -174,10 +174,8 @@ namespace Timelapse
                 }
             }
 
-            // We have to change the way the current image is displayed, as otherwise it cannot be deleted as there is still a reference to the file.
-            // NOTE THAT WE NEED TO DO THIS FOR VIDEOS AND FOR MULTIPLEIMAGEVIEW
-            // MAYBE CLEAR THE IMAGE CACHE TOO? 
-            this.DataHandler.ImageCache.Current.GetBitmapFromFile(this.FolderPath, 128, ImageDisplayIntentEnum.TransientNavigating, out _);
+            // SAULXXX Delete this line - not sure why its here, as it doesn't do anything! Maybe a hangover from prior refactoring
+            //this.DataHandler.ImageCache.Current.GetBitmapFromFile(this.FolderPath, 128, ImageDisplayIntentEnum.TransientNavigating, ImageDimensionEnum.UseWidth, out _);
 
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)

@@ -209,6 +209,7 @@
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\FlashEnum.cs" />
+    <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
