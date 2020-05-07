@@ -1,6 +1,7 @@
 ﻿using NReco.VideoConverter;
 using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -73,145 +74,119 @@ namespace Timelapse.Database
                 isCorruptOrMissing = false;
                 return bitmap;
             }
-            catch (FFMpegException e)
+            catch // (FFMpegException e)
             {
-                System.Diagnostics.Debug.Print(e.Message);
+                // Couldn't get the thumbnail using FFMPEG. Fallback to try getting it using the MediaEncoder
+                return GetBitmapFromFileUsingMediaEncoder(imageFolderPath, desiredWidthOrHeight, displayIntent, imageDimension, out isCorruptOrMissing);
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-                isCorruptOrMissing = true;
-                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidthOrHeight);
             }
         }
 
-        // Return the aspect ratio (as Width/Height) of a bitmap or its placeholder as efficiently as possible
-        // Timing tests suggests this can be done very quickly i.e., 0 - 10 msecs
-        //public override double GetBitmapAspectRatioFromFile(string rootFolderPath)
-        //{
-        //    string path = this.GetFilePath(rootFolderPath);
-        //    if (!System.IO.File.Exists(path))
-        //    {
-        //        return Constant.ImageValues.FileNoLongerAvailable.Value.Width / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
-        //    }
-        //    try
-        //    {
-        //        // FFMpegConverter ffMpeg = new NReco.VideoInfo.FFProbe();
-        //    }
-        //    catch
-        //    {
-        //        return Constant.ImageValues.Corrupt.Value.Width / Constant.ImageValues.Corrupt.Value.Height;
-        //    }
-        //}
         // This alternate way to get an image from a video file used the media encoder. 
-        // While it works, its ~twice as slow as using NRECO FFMPeg
-        //public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
-        //{
-        //    isCorruptOrMissing = true;
-        //    string path = this.GetFilePath(imageFolderPath);
-        //    if (!System.IO.File.Exists(path))
-        //    {
-        //        return Constant.ImageValues.FileNoLongerAvailable.Value;
-        //    }
+        // While it works, its ~twice as slow as using NRECO FFMPeg.
+        // We do include it as a fallback for the odd case where ffmpeg doesn't work (I had that with a single video).
+        public BitmapSource GetBitmapFromFileUsingMediaEncoder(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum _, out bool isCorruptOrMissing)
+        {
+            isCorruptOrMissing = true;
+            string path = this.GetFilePath(imageFolderPath);
+            if (!System.IO.File.Exists(path))
+            {
+                return Constant.ImageValues.FileNoLongerAvailable.Value;
+            }
 
-        //    MediaPlayer mediaPlayer = new MediaPlayer
-        //    {
-        //        Volume = 0.0
-        //    };
-        //    try
-        //    {
-        //        // If the thumbnail exists, show that.
-        //        string thumbnailpath = Path.Combine(Path.GetDirectoryName(path), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(path) + Constant.File.JpgFileExtension);
-        //        if (System.IO.File.Exists(thumbnailpath))
-        //        {
-        //            isCorruptOrMissing = false;
-        //            return BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath, desiredWidth);
-        //        }
+            MediaPlayer mediaPlayer = new MediaPlayer
+            {
+                Volume = 0.0
+            };
+            try
+            {
+                // In this method, we open  mediaplayer and play it until we actually get a video frame.
+                // Unfortunately, its very time inefficient...
+                mediaPlayer.Open(new Uri(path));
+                mediaPlayer.Play();
 
-        //        // As there isn't any thumbnail to show, we hae to open the mediaplayer and play it until we actually get a video frame.
-        //        // Unfortunately, its very time inefficient...
-        //        mediaPlayer.Open(new Uri(path));
-        //        mediaPlayer.Play();
+                // MediaPlayer is not actually synchronous despite exposing synchronous APIs, so wait for it get the video loaded.  Otherwise
+                // the width and height properties are zero and only black pixels are drawn.  The properties will populate with just a call to
+                // Open() call but without also Play() only black is rendered
 
-        //        // MediaPlayer is not actually synchronous despite exposing synchronous APIs, so wait for it get the video loaded.  Otherwise
-        //        // the width and height properties are zero and only black pixels are drawn.  The properties will populate with just a call to
-        //        // Open() call but without also Play() only black is rendered
+                // TODO Rapidly show videos as it is too slow now, where:
+                // - ONLOAD It currently loads a blank video image when scouring thorugh the videos 
+                // - Rapid navigation: loads a blank video image in the background, then the video on pause
+                // - Multiview: very slow as only loads the  video.
+                // This will be fixed when we pre-process thumbnails
+                int timesTried = (displayIntent == ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
+                while ((mediaPlayer.NaturalVideoWidth < 1) || (mediaPlayer.NaturalVideoHeight < 1))
+                {
+                    // back off briefly to let MediaPlayer do its loading, which typically takes perhaps 75ms
+                    // a brief Sleep() is used rather than Yield() to reduce overhead as 500k to 1M+ yields typically occur
+                    Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
+                    if (timesTried-- <= 0)
+                    {
+                        isCorruptOrMissing = false;
+                        return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
+                    }
+                }
 
-        //        // TODO Rapidly show videos as it is too slow now, where:
-        //        // - ONLOAD It currently loads a blank video image when scouring thorugh the videos 
-        //        // - Rapid navigation: loads a blank video image in the background, then the video on pause
-        //        // - Multiview: very slow as only loads the  video.
-        //        // This will be fixed when we pre-process thumbnails
-        //        int timesTried = (displayIntent == ImageDisplayIntentEnum.Persistent) ? 1000 : 0;
-        //        while ((mediaPlayer.NaturalVideoWidth < 1) || (mediaPlayer.NaturalVideoHeight < 1))
-        //        {
-        //            // back off briefly to let MediaPlayer do its loading, which typically takes perhaps 75ms
-        //            // a brief Sleep() is used rather than Yield() to reduce overhead as 500k to 1M+ yields typically occur
-        //            Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
-        //            if (timesTried-- <= 0)
-        //            {
-        //                isCorruptOrMissing = false;
-        //                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
-        //            }
-        //        }
+                // sleep one more time as MediaPlayer has a tendency to still return black frames for a moment after the width and height have populated
+                Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
 
-        //        // sleep one more time as MediaPlayer has a tendency to still return black frames for a moment after the width and height have populated
-        //        Thread.Sleep(Constant.ThrottleValues.PollIntervalForVideoLoad);
+                int pixelWidth = mediaPlayer.NaturalVideoWidth;
+                int pixelHeight = mediaPlayer.NaturalVideoHeight;
+                if (desiredWidth.HasValue)
+                {
+                    double scaling = desiredWidth.Value / (double)pixelWidth;
+                    pixelWidth = (int)(scaling * pixelWidth);
+                    pixelHeight = (int)(scaling * pixelHeight);
+                }
 
-        //        int pixelWidth = mediaPlayer.NaturalVideoWidth;
-        //        int pixelHeight = mediaPlayer.NaturalVideoHeight;
-        //        if (desiredWidth.HasValue)
-        //        {
-        //            double scaling = desiredWidth.Value / (double)pixelWidth;
-        //            pixelWidth = (int)(scaling * pixelWidth);
-        //            pixelHeight = (int)(scaling * pixelHeight);
-        //        }
+                // set up to render frame from the video
+                mediaPlayer.Pause();
+                mediaPlayer.Position = TimeSpan.FromMilliseconds(1.0);
 
-        //        // set up to render frame from the video
-        //        mediaPlayer.Pause();
-        //        mediaPlayer.Position = TimeSpan.FromMilliseconds(1.0);
+                DrawingVisual drawingVisual = new DrawingVisual();
+                using (DrawingContext drawingContext = drawingVisual.RenderOpen())
+                {
+                    drawingContext.DrawVideo(mediaPlayer, new Rect(0, 0, pixelWidth, pixelHeight));
+                }
 
-        //        DrawingVisual drawingVisual = new DrawingVisual();
-        //        using (DrawingContext drawingContext = drawingVisual.RenderOpen())
-        //        {
-        //            drawingContext.DrawVideo(mediaPlayer, new Rect(0, 0, pixelWidth, pixelHeight));
-        //        }
+                // render and check for black frame
+                // it's assumed the camera doesn't yield all black frames
+                for (int renderAttempt = 1; renderAttempt <= Constant.ThrottleValues.MaximumRenderAttempts; ++renderAttempt)
+                {
+                    // try render
+                    RenderTargetBitmap renderBitmap = new RenderTargetBitmap(pixelWidth, pixelHeight, 96, 96, PixelFormats.Default);
+                    renderBitmap.Render(drawingVisual);
+                    renderBitmap.Freeze();
 
-        //        // render and check for black frame
-        //        // it's assumed the camera doesn't yield all black frames
-        //        for (int renderAttempt = 1; renderAttempt <= Constant.ThrottleValues.MaximumRenderAttempts; ++renderAttempt)
-        //        {
-        //            // try render
-        //            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(pixelWidth, pixelHeight, 96, 96, PixelFormats.Default);
-        //            renderBitmap.Render(drawingVisual);
-        //            renderBitmap.Freeze();
+                    // check if render succeeded
+                    // hopefully it did and most of the overhead here is WriteableBitmap conversion though, at 2-3ms for a 1280x720 frame, this 
+                    // is not an especially expensive operation relative to the  O(175ms) cost of this function
+                    WriteableBitmap writeableBitmap = renderBitmap.AsWriteable();
+                    if (writeableBitmap.IsBlack() == false)
+                    {
+                        // if the media player is closed before Render() only black is rendered
+                        // TraceDebug.PrintMessage(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
+                        mediaPlayer.Close();
+                        isCorruptOrMissing = false;
+                        return writeableBitmap;
+                    }
 
-        //            // check if render succeeded
-        //            // hopefully it did and most of the overhead here is WriteableBitmap conversion though, at 2-3ms for a 1280x720 frame, this 
-        //            // is not an especially expensive operation relative to the  O(175ms) cost of this function
-        //            WriteableBitmap writeableBitmap = renderBitmap.AsWriteable();
-        //            if (writeableBitmap.IsBlack() == false)
-        //            {
-        //                // if the media player is closed before Render() only black is rendered
-        //                // TraceDebug.PrintMessage(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
-        //                mediaPlayer.Close();
-        //                isCorruptOrMissing = false;
-        //                return writeableBitmap;
-        //            }
+                    // SAULXX: Original version, replaced by the line below, uses linear backoff which is too long on some machines.
+                    // SAULXX:black frame was rendered; apply linear backoff and try again
+                    // SAULXX:Thread.Sleep(TimeSpan.FromMilliseconds(Constant.ThrottleValues.RenderingBackoffTime.TotalMilliseconds * renderAttempt));
 
-        //            // SAULXX: Original version, replaced by the line below, uses linear backoff which is too long on some machines.
-        //            // SAULXX:black frame was rendered; apply linear backoff and try again
-        //            // SAULXX:Thread.Sleep(TimeSpan.FromMilliseconds(Constant.ThrottleValues.RenderingBackoffTime.TotalMilliseconds * renderAttempt));
-
-        //            // black frame was rendered; backoff slightly to try again
-        //            Thread.Sleep(TimeSpan.FromMilliseconds(Constant.ThrottleValues.VideoRenderingBackoffTime.TotalMilliseconds));
-        //        }
-        //        throw new ApplicationException(String.Format("Limit of {0} render attempts was reached.", Constant.ThrottleValues.MaximumRenderAttempts));
-        //    }
-        //    catch
-        //    {
-        //        // We don't print the exception // (Exception exception)
-        //        // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
-        //        return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
-        //    }
-        //}
+                    // black frame was rendered; backoff slightly to try again
+                    Thread.Sleep(TimeSpan.FromMilliseconds(Constant.ThrottleValues.VideoRenderingBackoffTime.TotalMilliseconds));
+                }
+                throw new ApplicationException(String.Format("Limit of {0} render attempts was reached.", Constant.ThrottleValues.MaximumRenderAttempts));
+            }
+            catch
+            {
+                // We don't print the exception // (Exception exception)
+                // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
+                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
+            }
+        }
     }
 }

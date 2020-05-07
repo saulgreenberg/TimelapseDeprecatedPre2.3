@@ -161,9 +161,10 @@ namespace Timelapse.Controls
             {
                 this.Image.Source = bitmapSource;
             }
-            catch (Exception e)
+            catch // (Exception e)
             {
-                System.Diagnostics.Debug.Print("SetSource: Could not set the bitmapSource: " + e.Message);
+                // Uncomment for debugging
+                //System.Diagnostics.Debug.Print("SetSource: Could not set the bitmapSource: " + e.Message);
             }
         }
         #endregion

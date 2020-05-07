@@ -379,6 +379,11 @@ namespace Timelapse.Controls
                                 CellWidth = cellWidth,
                                 FileTableIndex = fileTableIndex,
                             };
+                            if (this.BackgroundWorker.CancellationPending == true)
+                            {
+                                ea.Cancel = true;
+                                return;
+                            }
                             this.BackgroundWorker.ReportProgress(0, lip);
                         }
                         fileTableIndex++;
@@ -404,6 +409,11 @@ namespace Timelapse.Controls
                                 CellWidth = cellWidth,
                                 FileTableIndex = fileTableIndex,
                             };
+                            if (this.BackgroundWorker.CancellationPending == true)
+                            {
+                                ea.Cancel = true;
+                                return;
+                            }
                             this.BackgroundWorker.ReportProgress(0, lip);
                         }
                         fileTableIndex++;
@@ -412,7 +422,7 @@ namespace Timelapse.Controls
                 catch
                 {
                     // Uncomment to trace 
-                    System.Diagnostics.Debug.Print("DoWork Aborted");
+                    // System.Diagnostics.Debug.Print("DoWork Aborted");
                     return;
                 }
             };
@@ -470,7 +480,6 @@ namespace Timelapse.Controls
 
             int gridIndex = 0;
             int fileTableCount = this.FileTable.RowCount;
-            //fileTableIndex = fileTableStartIndex;
             ThumbnailInCell emptyThumbnailInCell;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 
@@ -500,7 +509,7 @@ namespace Timelapse.Controls
                     thumbnailInCell.SetThumbnail(lip.BitmapSource);
                     thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, lip.FileTableIndex);
                 }
-                // Uncomment for tracing purposes
+                
                 //else
                 //{
                 //    System.Diagnostics.Debug.Print(String.Format("UpdateThumbnailsLoadProgress Aborted | IndexoutOfRange={0}, BitmapSource is null={1}", lip.ThumbnailInCell.Position >= this.emptyThumbnailInCells.Count, lip.BitmapSource == null));
@@ -508,7 +517,8 @@ namespace Timelapse.Controls
             }
             catch
             {
-                //System.Diagnostics.Debug.Print("UpdateThumbnailsLoadProgress Aborted | Catch");
+                // Uncomment for tracing purposes
+                // System.Diagnostics.Debug.Print("UpdateThumbnailsLoadProgress Aborted | Catch");
             }
         }
 
