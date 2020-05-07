@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -182,10 +183,23 @@ namespace Timelapse.Controls
             {
                 Source = imageRow.GetBitmapFromFile(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(imageHeight), ImageDisplayIntentEnum.Persistent, out bool isCorruptOrMissing)
             };
+
+            // Need to scale the image to the correct height
             if (isCorruptOrMissing)
             {
-                image.Source = Constant.ImageValues.FileNoLongerAvailable.Value;
+                if (image.Height <= 0 || Constant.ImageValues.FileNoLongerAvailable.Value.Height <= 0)
+                {
+                    image.Source = null;
+                }
+                else
+                {
+                    double scale = (double)imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
+                    image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
+                    System.Diagnostics.Debug.Print("Placehoder: "  + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
+                }
             }
+            else System.Diagnostics.Debug.Print("Image: " + image.Source.Width + "," + image.Source.Height);
+
             image.Margin = new Thickness(margin);
             return image;
         }

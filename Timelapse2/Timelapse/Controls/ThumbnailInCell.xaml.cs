@@ -19,49 +19,22 @@ namespace Timelapse.Controls
     public partial class ThumbnailInCell : UserControl
     {
         #region Public Properties
-        public double DesiredRenderWidth
+        // ImageHeight is calculated from the width * the image's aspect ratio, but checks for nulls, etc. 
+        // Note: while the image width should always be the cell width, the height depends on the aspect ratio
+        public double ImageHeight
         {
             get
             {
-                return this.Image.Width;
-            }
-            set
-            {
-                this.Image.Width = value;
-                this.Image.MinWidth = value;
-                this.Image.MaxWidth = value;
+                return (this.Image == null || this.Image.Source == null || this.Image.Source.Width == 0)
+                        ? 0
+                        : this.Image.Width * this.Image.Source.Height / this.Image.Source.Width;
             }
         }
 
         public int Row { get; set; }
         public int Column { get; set; }
-
         public int GridIndex { get; set; } = 0;
-
-        private Size desiredRenderSize = new Size(0, 0);
-        public Size DesiredRenderSize
-        {
-            get
-            {
-                if (this.Image == null || this.Image.Source == null)
-                {
-                    this.desiredRenderSize.Width = 0;
-                    this.desiredRenderSize.Height = 0;
-                }
-                else
-                {
-                    this.desiredRenderSize.Width = this.Image.Source.Width;
-                    if (this.Image.Source.Width != 0)
-                    {
-                        this.desiredRenderSize.Height = this.Image.Width * this.Image.Source.Height / this.Image.Source.Width;
-                    }
-                }
-                return this.desiredRenderSize;
-            }
-        }
-
         public int FileTableIndex { get; set; }
-
         public ImageRow ImageRow { get; set; }
 
         // bounding boxes for detection
@@ -77,7 +50,7 @@ namespace Timelapse.Controls
             {
                 // update and render bounding boxes
                 this.boundingBoxes = value;
-                this.ShowOrHideBoundingBoxes(true);
+                this.RefreshBoundingBoxes(true);
             }
         }
 
@@ -128,15 +101,21 @@ namespace Timelapse.Controls
 
         private readonly Brush unselectedBrush = Brushes.Black;
         private readonly Brush selectedBrush = Brushes.LightBlue;
+        private readonly Color selectedColor = Colors.LightBlue;
         #endregion
 
         #region Constructor: Width / height is the desired size of the image
-        public ThumbnailInCell(double width, double height)
+        public ThumbnailInCell(double cellWidth, double cellHeight)
         {
             this.InitializeComponent();
-            this.DesiredRenderWidth = width;
-            this.CellHeight = height;
-            this.CellWidth = width;
+
+            this.CellHeight = cellHeight;
+            this.CellWidth = cellWidth;
+
+            this.Image.Width = cellWidth;
+            this.Image.MinWidth = cellWidth;
+            this.Image.MaxWidth = cellWidth;
+
             this.RootFolder = String.Empty;
         }
 
@@ -190,17 +169,17 @@ namespace Timelapse.Controls
         #endregion
 
         #region Episodes and Bounding Boxes
-        public void DisplayEpisodeAndBoundingBoxesIfWarranted(FileTable fileTable, int fileIndex)
+        public void RefreshBoundingBoxesAndEpisodeInfo(FileTable fileTable, int fileIndex)
         {
-            this.DisplayEpisodeTextIfWarranted(fileTable, fileIndex);
-            this.ShowOrHideBoundingBoxes(true);
+            this.RefreshEpisodeInfo(fileTable, fileIndex);
+            this.RefreshBoundingBoxes(true);
         }
 
         /// <summary>
         /// Redraw  or clear the bounding boxes depending on the visibility state
         /// </summary>
         /// 
-        public void ShowOrHideBoundingBoxes(bool visibility)
+        public void RefreshBoundingBoxes(bool visibility)
         {
             if (visibility && this.Image?.Source != null)
             {
@@ -233,7 +212,7 @@ namespace Timelapse.Controls
                 Height = ellipseDiameter,
                 Fill = new SolidColorBrush
                 {
-                    Color = Colors.LightBlue,
+                    Color = selectedColor,
                     Opacity = 0.5
                 }
             };
@@ -258,7 +237,7 @@ namespace Timelapse.Controls
             this.PlayButton.Children.Add(triangle);
         }
         // Get and display the episode text if various conditions are met
-        public void DisplayEpisodeTextIfWarranted(FileTable fileTable, int fileIndex)
+        public void RefreshEpisodeInfo(FileTable fileTable, int fileIndex)
         {
             if (Keyboard.IsKeyDown(Key.H))
             {
@@ -327,7 +306,7 @@ namespace Timelapse.Controls
             }
 
             this.bboxCanvas.Width = this.Image.Width;
-            this.bboxCanvas.Height = this.DesiredRenderSize.Height;
+            this.bboxCanvas.Height = this.ImageHeight;
             foreach (BoundingBox bbox in this.BoundingBoxes.Boxes)
             {
                 if (bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxDisplayThreshold && bbox.Confidence + correction < Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride)
@@ -366,7 +345,7 @@ namespace Timelapse.Controls
                 rect.Stroke = brush;
 
                 // Use slightly thicker bounding box outline for larger vs. smaller images
-                int stroke_thickness = Math.Min(this.Image.Width, this.DesiredRenderSize.Height) > 400 ? 2 : 1;
+                int stroke_thickness = Math.Min(this.Image.Width, this.ImageHeight) > 400 ? 2 : 1;
                 rect.StrokeThickness = stroke_thickness;
                 rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
                 foreach (KeyValuePair<string, string> classification in bbox.Classifications)
@@ -375,8 +354,8 @@ namespace Timelapse.Controls
                 }
 
                 // Calculate the actual position of the bounding box from the ratios
-                Point screenPositionTopLeft = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, this.Image.Width, this.DesiredRenderSize.Height);
-                Point screenPositionBottomRight = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, this.Image.Width, this.DesiredRenderSize.Height);
+                Point screenPositionTopLeft = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left, bbox.Rectangle.Top, this.Image.Width, this.ImageHeight);
+                Point screenPositionBottomRight = BoundingBox.ConvertRatioToPoint(bbox.Rectangle.Left + bbox.Rectangle.Width, bbox.Rectangle.Top + bbox.Rectangle.Height, this.Image.Width, this.ImageHeight);
                 Point screenPostionWidthHeight = new Point(screenPositionBottomRight.X - screenPositionTopLeft.X, screenPositionBottomRight.Y - screenPositionTopLeft.Y);
 
                 // We also adjust the rect width and height to take into account the stroke thickness, to avoid the stroke overlapping the contained item

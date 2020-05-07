@@ -81,31 +81,31 @@ namespace Timelapse.Controls
 
         #region Public Refresh
         // Rebuild the grid, based on 
-        // - fitting the image of a desired width into as many cells of the same size that can fit within the grid
+        // - fitting the image into as many cells of the same size that can fit within the grid
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that every refresh unselects previously selected images
-        public bool Refresh(double desiredHeight, double gridWidth, double gridHeight)
+        public bool Refresh(double cellHeight, double gridWidth, double gridHeight)
         {
             // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
-            if (this.FileTable == null || !this.FileTable.Any() || desiredHeight == 0)
+            if (this.FileTable == null || !this.FileTable.Any() || cellHeight == 0)
             {
                 return false;
             }
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
             // Get the first image as a sample to determine the apect ration, which we will use the set the width of all columns. 
-            // It may not be a representative aspect ration of all images, but its a reasonably heuristic. 
+            // It may not be a representative aspect ratio of all images, but its a reasonably heuristic. 
             // Note that the choice for getting the aspect ratio this way is a bit complicated. We can't just get the 'imageToDisplay' as it may
             // not be the correct one if we are navigating on the thumbnailGrid, or if it happens to be a video. So the easiest - albeit slightly less efficient -
             // way to do it is to grab the aspect ratio of the first image that will be displayed in the Thumbnail Grid. If it doesn't exist, we just use a default aspect ratio
-            // ANother option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
+            // Another option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
             // use FFMPEG Probe (but that may mean another dll?)
             BitmapSource bm = this.FileTable[FileTableStartIndex].GetBitmapFromFile(this.FolderPath, 64, ImageDisplayIntentEnum.TransientNavigating, out _);
-            double desiredWidth = (bm == null || bm.PixelHeight == 0) ? desiredHeight * Constant.ThumbnailGrid.AspectRatioDefault : desiredHeight * bm.PixelWidth / bm.PixelHeight;
+            double cellWidth = (bm == null || bm.PixelHeight == 0) ? cellHeight * Constant.ThumbnailGrid.AspectRatioDefault : cellHeight * bm.PixelWidth / bm.PixelHeight;
 
             // Reconstruct the Grid with the appropriate rows/columns 
-            if (this.ReconstructGrid(desiredWidth, desiredHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
+            if (this.ReconstructGrid(cellWidth, cellHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
             {
                 // Abort as the grid cannot  display even a single image
                 Mouse.OverrideCursor = null;
@@ -355,52 +355,58 @@ namespace Timelapse.Controls
             {
                 try
                 {
-                    // Render the images first (as they render faster)
-                    fileTableIndex = fileTableStartIndex;
-                    foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
-                    {
-                        LoadImageProgressStatus lip;
-                        if (this.BackgroundWorker.CancellationPending == true)
-                        {
-                            ea.Cancel = true;
-                            return;
-                        }
-                        BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
-                        lip = new LoadImageProgressStatus
-                        {
-                            ThumbnailInCell = thumbnailInCell,
-                            BitmapSource = bm,
-                            Position = thumbnailInCell.GridIndex,
-                            DesiredWidth = cellWidth,
-                            FileTableIndex = fileTableIndex,
-                        };
-                        this.BackgroundWorker.ReportProgress(0, lip);
-                        fileTableIndex++;
-                    }
+                    LoadImageProgressStatus lip;
 
-                    // Then render the videos
+                    // Pass 1: Render the images (as they render faster)
                     fileTableIndex = fileTableStartIndex;
                     foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
                     {
-                        if (this.BackgroundWorker.CancellationPending == true)
+
+                        if (thumbnailInCell.ImageRow.IsVideo == false)
                         {
-                            ea.Cancel = true;
-                            return;
-                        }
-                        if (thumbnailInCell.Path.EndsWith("jpg", StringComparison.OrdinalIgnoreCase) == false)
-                        {
+                            if (this.BackgroundWorker.CancellationPending == true)
+                            {
+                                ea.Cancel = true;
+                                return;
+                            }
+
                             BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
-                            LoadImageProgressStatus lip = new LoadImageProgressStatus
+                            lip = new LoadImageProgressStatus
                             {
                                 ThumbnailInCell = thumbnailInCell,
                                 BitmapSource = bm,
-                                Position = thumbnailInCell.GridIndex,
-                                DesiredWidth = cellWidth,
+                                GridIndex = thumbnailInCell.GridIndex,
+                                CellWidth = cellWidth,
                                 FileTableIndex = fileTableIndex,
                             };
                             this.BackgroundWorker.ReportProgress(0, lip);
-                            fileTableIndex++;
                         }
+                        fileTableIndex++;
+                    }
+
+                    // Pass 2: Then render the videos (as these are slower)
+                    fileTableIndex = fileTableStartIndex;
+                    foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
+                    {
+                        if (thumbnailInCell.ImageRow.IsVideo)
+                        {
+                            if (this.BackgroundWorker.CancellationPending == true)
+                            {
+                                ea.Cancel = true;
+                                return;
+                            }
+                            BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                            lip = new LoadImageProgressStatus
+                            {
+                                ThumbnailInCell = thumbnailInCell,
+                                BitmapSource = bm,
+                                GridIndex = thumbnailInCell.GridIndex,
+                                CellWidth = cellWidth,
+                                FileTableIndex = fileTableIndex,
+                            };
+                            this.BackgroundWorker.ReportProgress(0, lip);
+                        }
+                        fileTableIndex++;
                     }
                 }
                 catch
@@ -452,7 +458,7 @@ namespace Timelapse.Controls
             this.Grid.ColumnDefinitions.Clear();
             this.Grid.Children.Clear();
 
-            // Add as many columns of the desired width, and rows of the desired height as can fit into the grid's available space
+            // Add as many columns of the and rows of the given cell width and height as can fit into the grid's available space
             for (int currentColumn = 0; currentColumn < columnCount; currentColumn++)
             {
                 this.Grid.ColumnDefinitions.Add(new System.Windows.Controls.ColumnDefinition() { Width = new GridLength(cellWidth, GridUnitType.Pixel) });
@@ -490,10 +496,9 @@ namespace Timelapse.Controls
                 // As we are cancelling updates rapidly, check to make sure that we can still access the variables
                 if (lip.ThumbnailInCell.GridIndex < this.thumbnailInCells.Count && lip.BitmapSource != null)
                 {
-                    ThumbnailInCell thumbnailInCell = this.thumbnailInCells[lip.Position];
+                    ThumbnailInCell thumbnailInCell = this.thumbnailInCells[lip.GridIndex];
                     thumbnailInCell.SetThumbnail(lip.BitmapSource);
-                    thumbnailInCell.DesiredRenderWidth = lip.DesiredWidth;
-                    thumbnailInCell.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, lip.FileTableIndex);
+                    thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, lip.FileTableIndex);
                 }
                 // Uncomment for tracing purposes
                 //else
@@ -525,16 +530,15 @@ namespace Timelapse.Controls
         #endregion
 
         #region CreateThumbnail
-        private ThumbnailInCell CreateEmptyThumbnail(int fileTableIndex, int gridIndex, double desiredWidth, double desiredHeight, int row, int column)
+        private ThumbnailInCell CreateEmptyThumbnail(int fileTableIndex, int gridIndex, double cellWidth, double cellHeight, int row, int column)
         {
-            ThumbnailInCell thumbnailInCell = new ThumbnailInCell(desiredWidth, desiredHeight)
+            ThumbnailInCell thumbnailInCell = new ThumbnailInCell(cellWidth, cellHeight)
             {
                 GridIndex = gridIndex,
                 Row = row,
                 Column = column,
                 RootFolder = this.FolderPath,
                 ImageRow = this.FileTable[fileTableIndex],
-                DesiredRenderWidth = desiredWidth,
                 FileTableIndex = fileTableIndex,
                 BoundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(this.FileTable[fileTableIndex].ID)
             };
@@ -546,15 +550,15 @@ namespace Timelapse.Controls
         {
             foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
             {
-                thumbnailInCell.DisplayEpisodeTextIfWarranted(this.FileTable, thumbnailInCell.FileTableIndex);
+                thumbnailInCell.RefreshEpisodeInfo(this.FileTable, thumbnailInCell.FileTableIndex);
             }
         }
 
-        public void ShowHideEpisodesAndBoundingBoxes()
+        public void RefreshBoundingBoxesAndEpisodeInfo()
         {
             foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
             {
-                thumbnailInCell.DisplayEpisodeAndBoundingBoxesIfWarranted(this.FileTable, thumbnailInCell.FileTableIndex);
+                thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, thumbnailInCell.FileTableIndex);
             }
         }
         #region Cell Navigation methods
@@ -732,8 +736,8 @@ namespace Timelapse.Controls
     {
         public ThumbnailInCell ThumbnailInCell { get; set; } = null;
         public BitmapSource BitmapSource { get; set; } = null;
-        public int Position { get; set; } = 0;
-        public double DesiredWidth { get; set; } = 0;
+        public int GridIndex { get; set; } = 0;
+        public double CellWidth { get; set; } = 0;
         public int FileTableIndex { get; set; }
         public LoadImageProgressStatus() { }
     }

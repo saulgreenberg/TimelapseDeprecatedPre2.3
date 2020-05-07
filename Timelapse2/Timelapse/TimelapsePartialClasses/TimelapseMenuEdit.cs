@@ -113,10 +113,10 @@ namespace Timelapse
                 bool deletedImages = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages;
-                this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                ImageRow imageRow = this.DataHandler.ImageCache.Current;
 
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
+                // Enable the delete current file option only if we are not on the thumbnail grid 
+                this.MenuItemDeleteCurrentFileAndData.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false; // Only show this option if the thumbnail grid is visible
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false && this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)
             {

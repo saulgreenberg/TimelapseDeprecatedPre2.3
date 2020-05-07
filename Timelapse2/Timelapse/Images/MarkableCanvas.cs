@@ -43,7 +43,7 @@ namespace Timelapse.Images
                 // update bounding boxes
                 this.boundingBoxes = value;
                 // render new bounding boxes and update display image
-                this.RedrawBoundingBoxes();
+                this.RefreshBoundingBoxes();
             }
         }
 
@@ -90,9 +90,8 @@ namespace Timelapse.Images
         public Image ImageToMagnify { get; private set; }
 
         /// <summary>
-        /// Gets the video displayed across the MarkableCanvas for video files
+        /// Whether the thumbnail grid is visible or not
         /// </summary>
-        // Use the  mouse wheel to scale the image
         public bool IsThumbnailGridVisible
         {
             get
@@ -505,7 +504,7 @@ namespace Timelapse.Images
                 this.imageToDisplayTranslation.Y += newY - center.Y;
             }
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
 
 
@@ -517,7 +516,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.X = 0.0;
             this.imageToDisplayTranslation.Y = 0.0;
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -558,7 +557,7 @@ namespace Timelapse.Images
         {
             this.bookmark.Apply(this.imageToDisplayScale, this.imageToDisplayTranslation);
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -725,7 +724,7 @@ namespace Timelapse.Images
         /// <summary>
         /// Remove all and then draw all the bounding boxes
         /// </summary>
-        private void RedrawBoundingBoxes()
+        private void RefreshBoundingBoxes()
         {
             if (this.ImageToDisplay != null)
             {
@@ -984,9 +983,9 @@ namespace Timelapse.Images
             }
             // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
             // However, if the resulting image is less than a minimum height, then ignore it.
-            int desiredHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
-            if (desiredHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
-            return this.ThumbnailGrid.Refresh(desiredHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height);
+            int cellHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
+            if (cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
+            return this.ThumbnailGrid.Refresh(cellHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
@@ -1249,7 +1248,7 @@ namespace Timelapse.Images
         {
             // redraw markers so they're in the right place to appear in the magnifying glass
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
             // update the magnifying glass's contents
             this.RedrawMagnifyingGlassIfVisible();
         }
@@ -1258,14 +1257,14 @@ namespace Timelapse.Images
         private void ImageToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
 
         // Whenever the image size changes, refresh the markers so they appear in the correct place
         private void VideoToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -1304,11 +1303,11 @@ namespace Timelapse.Images
                     {
                         if (IsThumbnailGridVisible == false)
                         {
-                            this.RedrawBoundingBoxes();
+                            this.RefreshBoundingBoxes();
                         }
                         else
                         {
-                            this.ThumbnailGrid.ShowHideEpisodesAndBoundingBoxes();
+                            this.ThumbnailGrid.RefreshBoundingBoxesAndEpisodeInfo();
                         }
                     }
                     break;
@@ -1320,7 +1319,7 @@ namespace Timelapse.Images
                     }
                     break;
                 //case Key.X:
-                //  Used for testing changes of the OffsetLens direction
+                //  Used for testing changes of the OffsetLens direction, which is currently turned off
                 //    if (this.OffsetLens.Direction == OffsetLensDirection.NorthEast)
                 //    {
                 //        this.OffsetLens.SetDirection(OffsetLensDirection.NorthWest);
@@ -1355,11 +1354,11 @@ namespace Timelapse.Images
                     {
                         if (IsThumbnailGridVisible == false)
                         {
-                            this.RedrawBoundingBoxes();
+                            this.RefreshBoundingBoxes();
                         }
                         else
                         {
-                            this.ThumbnailGrid.ShowHideEpisodesAndBoundingBoxes();
+                            this.ThumbnailGrid.RefreshBoundingBoxesAndEpisodeInfo();
                         }
                     }
                     break;
@@ -1417,7 +1416,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.Y += newY - center.Y;
 
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 

@@ -37,10 +37,10 @@ namespace Timelapse.Database
         // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
         public override BitmapSource GetBitmapFromFile(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, out bool isCorruptOrMissing)
         {
-            isCorruptOrMissing = true;
             string path = this.GetFilePath(imageFolderPath);
             if (!System.IO.File.Exists(path))
             {
+                isCorruptOrMissing = true;
                 return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
 
@@ -69,6 +69,7 @@ namespace Timelapse.Database
                 bitmap.StreamSource = outputBitmapAsStream;
                 bitmap.EndInit();
                 bitmap.Freeze();
+                isCorruptOrMissing = false;
                 return bitmap;
             }
             catch (FFMpegException e)
@@ -76,6 +77,7 @@ namespace Timelapse.Database
                 System.Diagnostics.Debug.Print(e.Message);
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
+                isCorruptOrMissing = true;
                 return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
         }
