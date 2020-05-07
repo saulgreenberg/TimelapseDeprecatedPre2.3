@@ -814,14 +814,6 @@
     <Resource Include="Resources\BlankVideo.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\BlankVideo128.jpg" />
-    <Resource Include="Resources\BlankVideo256.jpg" />
-    <Resource Include="Resources\BlankVideo512.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\BlankVideoWIthoutLargePlayButton.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Icons\JSONImport_32x.png" />
   </ItemGroup>
   <ItemGroup>

@@ -202,7 +202,7 @@ namespace Timelapse.Controls
             }
             double canvasHeight = this.CellHeight / 5;
             double canvasWidth = this.CellWidth;
-            double ellipseDiameter = canvasHeight * .5;
+            double ellipseDiameter = canvasHeight * .7;
             double ellipseRadius = ellipseDiameter / 2;
             this.PlayButton.Height = canvasHeight;
 
@@ -219,7 +219,7 @@ namespace Timelapse.Controls
             Canvas.SetLeft(ellipse, canvasWidth / 2 - ellipseDiameter / 2);
 
             Point center = new Point(ellipseRadius, ellipseRadius);
-            PointCollection trianglePoints = BitmapUtilities.GetTriangleVerticesInscribedInCircle(center, (float)ellipseDiameter / 2);
+            PointCollection trianglePoints = BitmapUtilities.GetTriangleVerticesInscribedInCircle(center, (float)ellipseDiameter * .7f / 2);
 
             // Construct the triangle
             Polygon triangle = new Polygon

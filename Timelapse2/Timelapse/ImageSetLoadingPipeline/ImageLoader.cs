@@ -16,7 +16,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     {
         private readonly FileInfo fileInfo;
         private readonly DataEntryHandler dataHandler;
-        private readonly TimelapseState state;
+       // private readonly TimelapseState state;
         private readonly string relativePath;
         private readonly string imageSetFolderPath;
 
@@ -65,11 +65,11 @@ namespace Timelapse.ImageSetLoadingPipeline
             }
         }
 
-        public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler)
         {
             this.fileInfo = fileInfo;
             this.dataHandler = dataHandler;
-            this.state = state;
+            //this.state = state;
             this.imageSetFolderPath = imageSetFolderPath;
             this.relativePath = relativePath;
         }
