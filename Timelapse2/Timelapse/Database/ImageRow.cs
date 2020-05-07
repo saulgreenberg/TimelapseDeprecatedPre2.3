@@ -383,34 +383,33 @@ namespace Timelapse.Database
         #endregion
 
         #region LoadBitmap - Various Forms
-        // Load: defaults to full size image, Persistent. UseWidth doesn't do anything in this context
+        // LoadBitmap Wrapper: defaults to full size image, Persistent. UseWidth doesn't do anything in this context
         public BitmapSource LoadBitmap(string baseFolderPath, out bool isCorruptOrMissing)
         {
-            return this.GetBitmapFromFile(baseFolderPath, null, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
+            return this.LoadBitmap(baseFolderPath, null, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
         }
 
-        // Load: defaults to Persistent, Decode to given width
+        // LoadBitmap Wrapper: defaults to Persistent, Decode to given width
         public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, out bool isCorruptOrMissing)
         {
-            return this.GetBitmapFromFile(baseFolderPath, desiredWidth, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
+            return this.LoadBitmap(baseFolderPath, desiredWidth, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
         }
 
-        // Load: If we are TransientNavigating, decodes to a 128 thumbnail width suitable for previewing. Otherwise full size
+        // LoadBitmap Wrapper: If we are TransientNavigating, decodes to a 128 thumbnail width suitable for previewing. Otherwise full size
         public virtual BitmapSource LoadBitmap(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage, out bool isCorruptOrMissing)
         {
-            return this.GetBitmapFromFile(baseFolderPath,
+            return this.LoadBitmap(baseFolderPath,
                      imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
                      imageExpectedUsage,
                      ImageDimensionEnum.UseWidth,
                      out isCorruptOrMissing);
         }
 
-        // Load: Full form, just invokes LoadBitmap with all the same arguments
-        public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum imageExpectedUsage, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
-        {
-            return this.GetBitmapFromFile(baseFolderPath, desiredWidth, imageExpectedUsage, imageDimension, out isCorruptOrMissing);
-        }
-
+        //// Load: Full form, just invokes LoadBitmap with all the same arguments
+        //public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum imageExpectedUsage, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
+        //{
+        //    return this.GetBitmapFromFile(baseFolderPath, desiredWidth, imageExpectedUsage, imageDimension, out isCorruptOrMissing);
+        //}
 
         /// <summary>
         /// Async Wrapper for LoadBitmap
@@ -422,36 +421,20 @@ namespace Timelapse.Database
             // bitmap and the isCorruptOrMissingflag flag indicating if the bitmap wasn't retrieved 
             return Task.Run(() =>
             {
-                BitmapSource bitmap = this.GetBitmapFromFile(baseFolderPath, imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
+                BitmapSource bitmap = this.LoadBitmap(baseFolderPath, imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
                                                imageExpectedUsage, 
                                                ImageDimensionEnum.UseWidth, 
                                                out bool isCorruptOrMissing);
                 return Tuple.Create(bitmap, isCorruptOrMissing);
             });
-
-            //return this.GetBitmapFromFileAsync(baseFolderPath,
-            //imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
-            //                                   ImageDimensionEnum.UseWidth,
-            //                                   imageExpectedUsage);
         }
 
-        // An async version of GetBitmapFromFile. 
-        // Note: as 'out' arguments are not allowed in tasks, it returns a tuple containg the 
-        // bitmap and the isCorruptOrMissingflag flag indicating if the bitmap wasn't retrieved 
-        //private Task<Tuple<BitmapSource, bool>> GetBitmapFromFileAsync(string rootFolderPath, Nullable<int> desiredWidth, ImageDimensionEnum imageDimension, ImageDisplayIntentEnum displayIntent)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        BitmapSource bitmap = this.GetBitmapFromFile(rootFolderPath, desiredWidth, displayIntent, imageDimension, out bool isCorruptOrMissing);
-        //        return Tuple.Create(bitmap, isCorruptOrMissing);
-        //    });
-        //}
-
         /// <summary>
+        //// Load: Full form
         /// Get a bitmap of the desired width. If its not there or something is wrong it will return a placeholder bitmap displaying the 'error'.
         /// Also sets a flag (isCorruptOrMissing) indicating if the bitmap wasn't retrieved (signalling a placeholder bitmap was returned)
         /// </summary>
-        public virtual BitmapSource GetBitmapFromFile(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
+        public virtual BitmapSource LoadBitmap(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
             isCorruptOrMissing = true;
             // If its a transient image, BitmapCacheOption of None as its faster than OnLoad. 
