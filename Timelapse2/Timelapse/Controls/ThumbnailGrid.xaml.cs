@@ -101,7 +101,7 @@ namespace Timelapse.Controls
             // way to do it is to grab the aspect ratio of the first image that will be displayed in the Thumbnail Grid. If it doesn't exist, we just use a default aspect ratio
             // Another option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
             // use FFMPEG Probe (but that may mean another dll?)
-            BitmapSource bm = this.FileTable[FileTableStartIndex].LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth32, ImageDisplayIntentEnum.TransientNavigating, ImageDimensionEnum.UseWidth, out _);
+            BitmapSource bm = this.FileTable[FileTableStartIndex].LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth32, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth, out _);
             double cellWidth = (bm == null || bm.PixelHeight == 0) ? cellHeight * Constant.ThumbnailGrid.AspectRatioDefault : cellHeight * bm.PixelWidth / bm.PixelHeight;
 
             // Reconstruct the Grid with the appropriate rows/columns 

@@ -383,33 +383,28 @@ namespace Timelapse.Database
         #endregion
 
         #region LoadBitmap - Various Forms
-        // LoadBitmap Wrapper: defaults to full size image, Persistent. UseWidth doesn't do anything in this context
+        // LoadBitmap Wrapper: defaults to full size image, Persistent. 
         public BitmapSource LoadBitmap(string baseFolderPath, out bool isCorruptOrMissing)
         {
+            // ImageDimension doesn't do anything in this context, as the full size image is returned
             return this.LoadBitmap(baseFolderPath, null, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
         }
 
-        // LoadBitmap Wrapper: defaults to Persistent, Decode to given width
+        // LoadBitmap Wrapper: defaults to Persistent, Decode to the given width
         public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, out bool isCorruptOrMissing)
         {
             return this.LoadBitmap(baseFolderPath, desiredWidth, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseWidth, out isCorruptOrMissing);
         }
 
-        // LoadBitmap Wrapper: If we are TransientNavigating, decodes to a 128 thumbnail width suitable for previewing. Otherwise full size
+        // LoadBitmap Wrapper: If Ephemeral, generate a low-res thumbnail suitable for previewing. Otherwise full size
         public virtual BitmapSource LoadBitmap(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage, out bool isCorruptOrMissing)
         {
             return this.LoadBitmap(baseFolderPath,
-                     imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
+                     imageExpectedUsage == ImageDisplayIntentEnum.Ephemeral ? (int?)Constant.ImageValues.PreviewWidth128 : null,
                      imageExpectedUsage,
                      ImageDimensionEnum.UseWidth,
                      out isCorruptOrMissing);
         }
-
-        //// Load: Full form, just invokes LoadBitmap with all the same arguments
-        //public virtual BitmapSource LoadBitmap(string baseFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum imageExpectedUsage, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
-        //{
-        //    return this.GetBitmapFromFile(baseFolderPath, desiredWidth, imageExpectedUsage, imageDimension, out isCorruptOrMissing);
-        //}
 
         /// <summary>
         /// Async Wrapper for LoadBitmap
@@ -417,11 +412,10 @@ namespace Timelapse.Database
         /// <returns>Tuple of the BitmapSource and boolean isCorruptOrMissing output of the underlying load logic</returns>
         public virtual Task<Tuple<BitmapSource, bool>> LoadBitmapAsync(string baseFolderPath, ImageDisplayIntentEnum imageExpectedUsage, ImageDimensionEnum imageDimension)
         {
-            // Note: as 'out' arguments are not allowed in tasks, it returns a tuple containg the 
-            // bitmap and the isCorruptOrMissingflag flag indicating if the bitmap wasn't retrieved 
+            // 'out' arguments not allowed in tasks, so it returns a tuple containg the bitmap and the isCorruptOrMissingflag flag indicating bitmap retrieval state 
             return Task.Run(() =>
             {
-                BitmapSource bitmap = this.LoadBitmap(baseFolderPath, imageExpectedUsage == ImageDisplayIntentEnum.TransientNavigating ? (int?)Constant.ImageValues.PreviewWidth128 : null,
+                BitmapSource bitmap = this.LoadBitmap(baseFolderPath, imageExpectedUsage == ImageDisplayIntentEnum.Ephemeral ? (int?)Constant.ImageValues.PreviewWidth128 : null,
                                                imageExpectedUsage, 
                                                ImageDimensionEnum.UseWidth, 
                                                out bool isCorruptOrMissing);
@@ -434,12 +428,15 @@ namespace Timelapse.Database
         /// Get a bitmap of the desired width. If its not there or something is wrong it will return a placeholder bitmap displaying the 'error'.
         /// Also sets a flag (isCorruptOrMissing) indicating if the bitmap wasn't retrieved (signalling a placeholder bitmap was returned)
         /// </summary>
-        public virtual BitmapSource LoadBitmap(string rootFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
+        public virtual BitmapSource LoadBitmap(string rootFolderPath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
             isCorruptOrMissing = true;
-            // If its a transient image, BitmapCacheOption of None as its faster than OnLoad. 
-            // TODOSAUL: why isn't the other case, ImageDisplayIntent.TransientNavigating, also treated as transient?
-            BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntentEnum.TransientLoading) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
+
+            // BitmapCacheOption.None is significantly faster than other options. 
+            // However, it locks the file as it is being accessed (rather than a memory copy being created when using a cache)
+            // This means we cannot do any file operations on it (such as deleting the currently displayed image) as it will produce an access violation.
+            // This is ok for TransientLoading, which just temporarily displays the image
+            BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntentEnum.Ephemeral) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
             string path = this.GetFilePath(rootFolderPath);
             if (!System.IO.File.Exists(path))
             {
@@ -447,20 +444,10 @@ namespace Timelapse.Database
             }
             try
             {
-                // PERFORMANCE Image loading is somewhat slow given that some operations need to do this very frequently. 
-                // What makes this even more problematic is that we can't use image caching effectively (see below). Are there better / faster alternatives?
-                // CA1001 https://msdn.microsoft.com/en-us/library/ms182172.aspx describes a different strategy, but I am not sure its any better. 
-                // Scanning through images with BitmapCacheOption.None results in less than 6% CPU in BitmapFrame.Create() and
-                // 90% in System.Windows.Application.Run(), suggesting little scope for optimization within Timelapse proper
-                // this is significantly faster than BitmapCacheOption.Default
-                // However, using BitmapCacheOption.None locks the file as it is being accessed (rather than a memory copy being created when using a cache)
-                // This means we cannot do any file operations on it as it will produce an access violation.
-                // For now, we use the (slower) form of BitmapCacheOption.OnLoad.
-                // Also look at: https://stackoverflow.com/questions/1684489/how-do-you-make-sure-wpf-releases-large-bitmapsource-from-memory 
-                // and  http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
-                if (desiredWidth.HasValue == false)
+                // Exception workarounds to consider: see  http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
+                if (desiredWidthOrHeight.HasValue == false)
                 {
-                    // retunrs the full size bitmap
+                    // returns the full size bitmap
                     BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
                     frame.Freeze();
                     isCorruptOrMissing = false;
@@ -471,11 +458,11 @@ namespace Timelapse.Database
                 bitmap.BeginInit();
                 if (imageDimension == ImageDimensionEnum.UseWidth)
                 {
-                    bitmap.DecodePixelWidth = desiredWidth.Value;
+                    bitmap.DecodePixelWidth = desiredWidthOrHeight.Value;
                 }
                 else
                 {
-                    bitmap.DecodePixelHeight = desiredWidth.Value;
+                    bitmap.DecodePixelHeight = desiredWidthOrHeight.Value;
                 }
                 bitmap.CacheOption = bitmapCacheOption;
                 bitmap.UriSource = new Uri(path);

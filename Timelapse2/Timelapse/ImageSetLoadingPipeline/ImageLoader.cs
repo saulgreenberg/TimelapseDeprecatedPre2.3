@@ -50,7 +50,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 if (this.bitmapSource == null)
                 {
                     // Lazy load
-                    var task = this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading, ImageDimensionEnum.UseWidth);
+                    var task = this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth);
                     task.Wait();
 
                     var loadResult = task.Result;

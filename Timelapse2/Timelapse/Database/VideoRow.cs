@@ -32,10 +32,9 @@ namespace Timelapse.Database
             get { return true; }
         }
 
-        // TODO Update so it works with cached thumbnails
         // Get the bitmap representing a video file
-        // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames (#77, to some exent)
-        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
+        // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames
+        public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
             string path = this.GetFilePath(imageFolderPath);
             if (!System.IO.File.Exists(path))
@@ -50,26 +49,21 @@ namespace Timelapse.Database
                 // Note: not sure of the cost of creating a new converter every time. May be better to reuse it?
                 Stream outputBitmapAsStream = new MemoryStream();
                 FFMpegConverter ffMpeg = new NReco.VideoConverter.FFMpegConverter();
-
-                // SAULXXX: Experiment with getting smaller thumbnails from FFMpeg. My initial attept (commented out) doesn't seem to make a huge difference.
-                // Note that we can use NRECO probe to get the aspect ratio and thus set a reasonable frame size
-                //ConvertSettings convertSettings = new ConvertSettings();
-                //convertSettings.SetVideoFrameSize(desiredWidth.Value, desiredHeight.Value);
-                //ffMpeg.GetVideoThumbnail(path, outputBitmapAsStream, 1, convertSettings);
                 ffMpeg.GetVideoThumbnail(path, outputBitmapAsStream);
-                outputBitmapAsStream.Position = 0;
 
+                // Scale the video to the desired dimension
+                outputBitmapAsStream.Position = 0;
                 BitmapImage bitmap = new BitmapImage();
                 bitmap.BeginInit();
-                if (desiredWidth != null)
+                if (desiredWidthOrHeight != null)
                 {
                     if (imageDimension == ImageDimensionEnum.UseWidth)
                     {
-                        bitmap.DecodePixelWidth = desiredWidth.Value;
+                        bitmap.DecodePixelWidth = desiredWidthOrHeight.Value;
                     }
                     else
                     {
-                        bitmap.DecodePixelHeight = desiredWidth.Value;
+                        bitmap.DecodePixelHeight = desiredWidthOrHeight.Value;
                     }
                 }
                 bitmap.CacheOption = BitmapCacheOption.None;
@@ -85,7 +79,7 @@ namespace Timelapse.Database
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
                 isCorruptOrMissing = true;
-                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
+                return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidthOrHeight);
             }
         }
 
