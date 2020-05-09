@@ -62,13 +62,13 @@ namespace Timelapse
         // Scroll Row - a row of images the ThumbnailGrid
         private void FilePlayer_ScrollRow()
         {
-            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, this.MarkableCanvas.ThumbnailGrid.ImagesInRow);
+            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, this.MarkableCanvas.ThumbnailGrid.AvailableColumns);
         }
 
         // ScrollPage: a page of images the ThumbnailGrid
         private void FilePlayer_ScrollPage()
         {
-            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, this.MarkableCanvas.ThumbnailGrid.ImagesInRow * this.MarkableCanvas.ThumbnailGrid.RowsInGrid);
+            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, this.MarkableCanvas.ThumbnailGrid.AvailableColumns * this.MarkableCanvas.ThumbnailGrid.AvailableRows);
         }
 
         // TimerTick: On every tick, try to show the next/previous file as indicated by the direction

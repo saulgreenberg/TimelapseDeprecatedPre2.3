@@ -193,9 +193,9 @@ namespace Timelapse.Controls
                 }
                 else
                 {
-                    double scale = (double)imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
+                    double scale = imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
                     image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
-                    System.Diagnostics.Debug.Print("Placehoder: "  + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
+                    System.Diagnostics.Debug.Print("Placehoder: " + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
                 }
             }
             else System.Diagnostics.Debug.Print("Image: " + image.Source.Width + "," + image.Source.Height);

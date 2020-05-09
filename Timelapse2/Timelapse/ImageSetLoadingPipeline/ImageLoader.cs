@@ -5,7 +5,6 @@ using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline
 {
@@ -16,7 +15,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     {
         private readonly FileInfo fileInfo;
         private readonly DataEntryHandler dataHandler;
-       // private readonly TimelapseState state;
+        // private readonly TimelapseState state;
         private readonly string relativePath;
         private readonly string imageSetFolderPath;
 

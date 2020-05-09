@@ -211,6 +211,7 @@
     <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
+    <Compile Include="Enums\ThumbnailGridRefreshStatus.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />

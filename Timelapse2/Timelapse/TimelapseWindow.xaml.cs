@@ -794,7 +794,7 @@ namespace Timelapse
                 this.DataGrid.UpdateLayout();
                 this.DataGridSelectionsTimer.Stop();
                 return;
-            }    
+            }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
             if (this.IsDisplayingSingleImage())

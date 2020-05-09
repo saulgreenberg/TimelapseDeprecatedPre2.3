@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.EventArguments;
-using Timelapse.Images;
 using RowColumn = System.Drawing.Point;
 
 namespace Timelapse.Controls
@@ -42,8 +41,8 @@ namespace Timelapse.Controls
         // The root folder containing the template
         public string FolderPath { get; set; }
 
-        // The number of images that currently exist in a row
-        public int ImagesInRow
+        // The number of columns that exist in the grid
+        public int AvailableColumns
         {
             get
             {
@@ -52,13 +51,15 @@ namespace Timelapse.Controls
         }
 
         // The number of rows that currently exist in the ThumbnailGrid
-        public int RowsInGrid
+        public int AvailableRows
         {
             get
             {
                 return this.Grid.RowDefinitions.Count;
             }
         }
+
+        public bool IsAtMinimum { get; private set; } = false;
         #endregion
 
         #region Private variables
@@ -69,6 +70,9 @@ namespace Timelapse.Controls
         private RowColumn cellChosenOnMouseDown;
         private bool modifierKeyPressedOnMouseDown = false;
         private RowColumn cellWithLastMouseOver = new RowColumn(-1, -1);
+        private List<ThumbnailInCell> thumbnailsAlreadyInGrid;
+        private double oldGridWidth = 0;
+        private double oldGridHeight = 0;
         #endregion
 
         #region Constructor
@@ -85,39 +89,105 @@ namespace Timelapse.Controls
         // - retaining information about images previously shown on this grid, which importantly includes its selection status.
         //   this means users can do some selections, then change the zoom level.
         //   Note that every refresh unselects previously selected images
-        public bool Refresh(double cellHeight, double gridWidth, double gridHeight)
+        public ThumbnailGridRefreshStatus Refresh(double cellHeight, double gridWidth, double gridHeight)
         {
-            // If nothing is loaded, or if there is no desiredWidth, then there is nothing to refresh
+            // If nothing is loaded, or if there is no cell height provided, then there is nothing to refresh
             if (this.FileTable == null || !this.FileTable.Any() || cellHeight == 0)
             {
-                return false;
+                return ThumbnailGridRefreshStatus.Aborted;
             }
+
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
 
-            // Get the first image as a sample to determine the apect ration, which we will use the set the width of all columns. 
-            // It may not be a representative aspect ratio of all images, but its a reasonably heuristic. 
-            // Note that the choice for getting the aspect ratio this way is a bit complicated. We can't just get the 'imageToDisplay' as it may
-            // not be the correct one if we are navigating on the thumbnailGrid, or if it happens to be a video. So the easiest - albeit slightly less efficient -
-            // way to do it is to grab the aspect ratio of the first image that will be displayed in the Thumbnail Grid. If it doesn't exist, we just use a default aspect ratio
-            // Another option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
-            // use FFMPEG Probe (but that may mean another dll?)
-            BitmapSource bm = this.FileTable[FileTableStartIndex].LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth32, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth, out _);
-            double cellWidth = (bm == null || bm.PixelHeight == 0) ? cellHeight * Constant.ThumbnailGrid.AspectRatioDefault : cellHeight * bm.PixelWidth / bm.PixelHeight;
+            double cellWidth;
+            int fileTableCount = this.FileTable.RowCount;
+
+            // Check for existing thumbnails only if the grid size hasn't changed (i.e. it hasn't been resized)
+            // as otherwise we have to rebuild the grid anyways
+            // ALTERNATE: MAYBE CHECK # cells that could fit in grid against cell width/height? This means we would not rebuild the grid if there was just
+            // a small change in size that didn't affect cell number...
+            if (gridWidth == this.oldGridWidth && gridHeight == this.oldGridHeight)
+            {
+                // Set the thumbnailAlreadyInGrid list to contain a list of thumbnails that are 
+                this.thumbnailsAlreadyInGrid = this.GetThumbnailsAlreadyInGrid(cellHeight, fileTableCount);
+            }
+            else
+            {
+                // an empty list, signalling the grid will have to be rebuilt from scratch
+                this.thumbnailsAlreadyInGrid = new List<ThumbnailInCell>();
+            }
+            this.oldGridWidth = gridWidth;
+            this.oldGridHeight = gridHeight;
+
+            if (this.thumbnailsAlreadyInGrid.Count > 0)
+            {
+                // If we are reusing thumbnails, use the existing cell width (retrieved from one of the thumbnails)
+                cellWidth = this.thumbnailsAlreadyInGrid[0].CellWidth;
+            }
+            else
+            {
+                // As we are not reusing thumbnails, we have to calculate the cell width.
+                // Get the first image as a sample to determine the apect ration, which we will use the set the width of all columns. 
+                // It may not be a representative aspect ratio of all images, but its a reasonably heuristic. 
+                // Note that the choice for getting the aspect ratio this way is a bit complicated. We can't just get the 'imageToDisplay' as it may
+                // not be the correct one if we are navigating on the thumbnailGrid, or if it happens to be a video. So the easiest - albeit slightly less efficient -
+                // way to do it is to grab the aspect ratio of the first image that will be displayed in the Thumbnail Grid. If it doesn't exist, we just use a default aspect ratio
+                // Another option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
+                // use FFMPEG Probe (but that may mean another dll?)
+                BitmapSource bm = this.FileTable[this.FileTableStartIndex].LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth32, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth, out _);
+                cellWidth = (bm == null || bm.PixelHeight == 0) ? cellHeight * Constant.ThumbnailGrid.AspectRatioDefault : cellHeight * bm.PixelWidth / bm.PixelHeight;
+            }
 
             // Reconstruct the Grid with the appropriate rows/columns 
             if (this.ReconstructGrid(cellWidth, cellHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
             {
                 // Abort as the grid cannot  display even a single image
                 Mouse.OverrideCursor = null;
-                return false;
+                return ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell;
             }
 
             // Unselect all cells except the first one
             this.SelectInitialCellOnly();
             Mouse.OverrideCursor = null;
-            return true;
+            return ThumbnailGridRefreshStatus.Ok;
         }
         #endregion
+
+        // Returns a list of reusable thumbnails that are already in the grid. 
+        // Note that if the existing grid's cell height does not match the desired cell height, there will be no reusable thumbnails
+        // as they have to be re-rendered to the new size anyways
+        private List<ThumbnailInCell> GetThumbnailsAlreadyInGrid(double cellHeight, int fileTableCount)
+        {
+            List<ThumbnailInCell> thumbnailsAlreadyInGrid = new List<ThumbnailInCell>();
+            int fileTableIndex = this.FileTableStartIndex;
+            int cellsInGrid = this.AvailableColumns * this.AvailableRows;
+
+            if (cellsInGrid <= 0 || this.Grid.RowDefinitions[0].ActualHeight != cellHeight)
+            {
+                // If The grid has nothing in it, or if the requested cell height isn't the same as the current one, return an empty list
+                // i.e., assumes this is a change in zoom level, thus we don't reuse thumbnails as we have to resize them anyways
+                return thumbnailsAlreadyInGrid;
+            }
+
+            // For each image row we want to display as a thumbnail, check if its thumbnail is already in the grid in a reusable form where:
+            // - its path is already in the list
+            // - the bitmap image is present (and thus renderable)
+            for (int i = 0; i < cellsInGrid && fileTableIndex < fileTableCount; i++)
+            {
+                string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
+                foreach (ThumbnailInCell tic in this.thumbnailInCells)
+                {
+                    if (String.Equals(tic.Path, path) && tic.Image.Source != null)
+                    {
+                        // a reusuable thumbnail exists, so add it to the list
+                        thumbnailsAlreadyInGrid.Add(tic);
+                        break;
+                    }
+                }
+                fileTableIndex++;
+            }
+            return thumbnailsAlreadyInGrid;
+        }
 
         #region Mouse callbacks
         // Mouse left down. Select images
@@ -361,16 +431,28 @@ namespace Timelapse.Controls
                     fileTableIndex = fileTableStartIndex;
                     foreach (ThumbnailInCell thumbnailInCell in thumbnailInCells)
                     {
-
                         if (thumbnailInCell.ImageRow.IsVideo == false)
                         {
                             if (this.BackgroundWorker.CancellationPending == true)
                             {
                                 ea.Cancel = true;
+                                this.BackgroundWorker.WorkerReportsProgress = false;
                                 return;
                             }
 
+                            // This may be somewhat expensive, maybe a better way to do this (e.g., set a flag in tic to say its rendered?
+                            //ThumbnailInCell tic = this.thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, thumbnailInCell.Path));
+                            //if (tic != null)
+                            if (thumbnailInCell.IsBitmapSet)
+                            {
+                                //System.Diagnostics.Debug.Print(String.Format("Existing: {0} {1} {2} {3} {4}", tic.GridIndex, tic.Row, tic.Column, tic.Path, tic.IsBitmapSet));// == 0 ? "null" : "bitmap"
+                                fileTableIndex++;
+                                continue;
+                            };
+                            //System.Diagnostics.Debug.Print(String.Format("New: {0} {1} {2} {3} {4}", thumbnailInCell.GridIndex, thumbnailInCell.Row, thumbnailInCell.Column, thumbnailInCell.Path, thumbnailInCell.IsBitmapSet));//.ActualWidth == 0 ? "null" : "bitmap"
+
                             BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                            thumbnailInCell.DateTimeLastBitmapWasSet = DateTime.Now;
                             lip = new LoadImageProgressStatus
                             {
                                 ThumbnailInCell = thumbnailInCell,
@@ -378,7 +460,9 @@ namespace Timelapse.Controls
                                 GridIndex = thumbnailInCell.GridIndex,
                                 CellWidth = cellWidth,
                                 FileTableIndex = fileTableIndex,
+                                DateTimeLipInvoked = thumbnailInCell.DateTimeLastBitmapWasSet
                             };
+
                             if (this.BackgroundWorker.CancellationPending == true)
                             {
                                 ea.Cancel = true;
@@ -395,12 +479,20 @@ namespace Timelapse.Controls
                     {
                         if (thumbnailInCell.ImageRow.IsVideo)
                         {
+                            //ThumbnailInCell tic = this.thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, thumbnailInCell.Path));
+                            //if (tic != null)
+                            if (thumbnailInCell.IsBitmapSet)
+                            {
+                                fileTableIndex++;
+                                continue;
+                            };
                             if (this.BackgroundWorker.CancellationPending == true)
                             {
                                 ea.Cancel = true;
                                 return;
                             }
                             BitmapSource bm = thumbnailInCell.GetThumbnail(cellWidth, cellHeight);
+                            thumbnailInCell.DateTimeLastBitmapWasSet = DateTime.Now;
                             lip = new LoadImageProgressStatus
                             {
                                 ThumbnailInCell = thumbnailInCell,
@@ -408,6 +500,7 @@ namespace Timelapse.Controls
                                 GridIndex = thumbnailInCell.GridIndex,
                                 CellWidth = cellWidth,
                                 FileTableIndex = fileTableIndex,
+                                DateTimeLipInvoked = thumbnailInCell.DateTimeLastBitmapWasSet
                             };
                             if (this.BackgroundWorker.CancellationPending == true)
                             {
@@ -430,26 +523,91 @@ namespace Timelapse.Controls
             this.BackgroundWorker.ProgressChanged += (o, ea) =>
             {
                 // this gets called on the UI thread
-                LoadImageProgressStatus lip = (LoadImageProgressStatus)ea.UserState;
-                this.UpdateThumbnailsLoadProgress(lip);
+                //LoadImageProgressStatus lip = (LoadImageProgressStatus)ea.UserState;
+                this.UpdateThumbnailsLoadProgress((LoadImageProgressStatus)ea.UserState);
             };
 
             this.BackgroundWorker.RunWorkerCompleted += (o, ea) =>
             {
+                //if (ea.Cancelled)
+                //{
+                //    System.Diagnostics.Debug.Print("Complete but cancelled");
+                //}
+                //else
+                //{
+                //    System.Diagnostics.Debug.Print("Complete ");
+                //}
                 this.BackgroundWorker.Dispose();
                 return;
             };
 
             this.CancelThumbnailUpdate();
-            if (this.RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableStartIndex) == false)
+
+            if (this.thumbnailsAlreadyInGrid.Count > 0)
             {
-                // We can't even fit a single cell into the grid, so abort
-                return false;
+                //// We can reuse the grid (any any reusable thumbnails that should be in it) as the grid layout / size hasn't changed
+                this.ReuseGrid(cellWidth, cellHeight, fileTableStartIndex);
+            }
+            else
+            {
+                // We have to rebuild the grid - all thumbnails have to be rebuilt from scratch
+                if (this.RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableStartIndex) == false)
+                {
+                    // We can't even fit a single cell into the grid, so abort
+                    return false;
+                }
             }
             this.BackgroundWorker.RunWorkerAsync();
             return true;
         }
         #endregion
+
+        #region Private: Reuse or Rebuild the grid
+        // The grid can be reused as its cell number and size has not changed. As part of this, reset any 
+        // reusable thumbnails to its new position in the grid.
+        private void ReuseGrid(double cellWidth, double cellHeight, int fileTableIndex)
+        {
+            if (this.thumbnailsAlreadyInGrid.Count > 0)
+            {
+                // We can reuse the grid as it hasn't changed
+                this.Grid.Children.Clear();
+                int gridIndex = 0;
+                int rowCount = this.AvailableRows;
+                int columnCount = this.AvailableColumns;
+                int fileTableCount = this.FileTable.RowCount;
+                this.thumbnailInCells = new List<ThumbnailInCell>();
+
+                // Add an existing thumbnail to the grid.
+                for (int currentRow = 0; currentRow < rowCount; currentRow++)
+                {
+                    for (int currentColumn = 0; currentColumn < columnCount && fileTableIndex < fileTableCount; currentColumn++)
+                    {
+                        // Check to see if the thumbnail already exists in a reusable form in the grid. 
+                        string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
+                        ThumbnailInCell tic = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
+                        if (tic == null || tic.Image.Source == null)
+                        {
+                            // A reusable thumbnail isn't available, so create one
+                            tic = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
+                        }
+                        else
+                        {
+                            // A reusable thumbnail is available. Reset its position in the grid
+                            tic.GridIndex = gridIndex;
+                            tic.Row = currentRow;
+                            tic.Column = currentColumn;
+                            tic.DateTimeLastBitmapWasSet = DateTime.Now;
+                        }
+                        Grid.SetRow(tic, currentRow);
+                        Grid.SetColumn(tic, currentColumn);
+                        this.Grid.Children.Add(tic);
+                        this.thumbnailInCells.Add(tic);
+                        fileTableIndex++;
+                        gridIndex++;
+                    }
+                }
+            }
+        }
 
         // Clear the grid, and recreate it with a thumbnailInCell user control in each cell
         private bool RebuildGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableIndex)
@@ -497,6 +655,9 @@ namespace Timelapse.Controls
             }
             return true;
         }
+
+        #endregion
+
         #region Progress and Cancelling 
         private void UpdateThumbnailsLoadProgress(LoadImageProgressStatus lip)
         {
@@ -506,10 +667,17 @@ namespace Timelapse.Controls
                 if (lip.ThumbnailInCell.GridIndex < this.thumbnailInCells.Count && lip.BitmapSource != null)
                 {
                     ThumbnailInCell thumbnailInCell = this.thumbnailInCells[lip.GridIndex];
+                    if (thumbnailInCell.DateTimeLastBitmapWasSet != lip.DateTimeLipInvoked)
+                    {
+                        // If the dates don't match, this means that the bitmap we are trying to set is stale 
+                        // i.e., its the wrong one. As some async operations are slower than others, this could
+                        // be an 'old' request trying to overwrite a newer request to set the bitmap
+                        return;
+                    }
                     thumbnailInCell.SetThumbnail(lip.BitmapSource);
                     thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, lip.FileTableIndex);
                 }
-                
+
                 //else
                 //{
                 //    System.Diagnostics.Debug.Print(String.Format("UpdateThumbnailsLoadProgress Aborted | IndexoutOfRange={0}, BitmapSource is null={1}", lip.ThumbnailInCell.Position >= this.emptyThumbnailInCells.Count, lip.BitmapSource == null));
@@ -749,6 +917,7 @@ namespace Timelapse.Controls
         public int GridIndex { get; set; } = 0;
         public double CellWidth { get; set; } = 0;
         public int FileTableIndex { get; set; }
+        public DateTime DateTimeLipInvoked { get; set; }
         public LoadImageProgressStatus() { }
     }
     #endregion

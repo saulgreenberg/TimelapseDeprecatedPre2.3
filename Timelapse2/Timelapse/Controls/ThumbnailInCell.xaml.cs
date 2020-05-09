@@ -36,6 +36,10 @@ namespace Timelapse.Controls
         public int GridIndex { get; set; } = 0;
         public int FileTableIndex { get; set; }
         public ImageRow ImageRow { get; set; }
+        public double CellHeight { get; private set; }
+        public double CellWidth { get; private set; }
+        public DateTime DateTimeLastBitmapWasSet { get; set; }
+        public bool IsBitmapSet { get; private set; } = false;
 
         // bounding boxes for detection
         private BoundingBoxes boundingBoxes;
@@ -96,8 +100,6 @@ namespace Timelapse.Controls
         #region Private Variables
         // A canvas used to display the bounding boxes
         private readonly Canvas bboxCanvas = new Canvas();
-        private double CellHeight { get; set; }
-        private double CellWidth { get; set; }
 
         private readonly Brush unselectedBrush = Brushes.Black;
         private readonly Brush selectedBrush = Brushes.LightBlue;
@@ -160,6 +162,7 @@ namespace Timelapse.Controls
             try
             {
                 this.Image.Source = bitmapSource;
+                this.IsBitmapSet = true;
             }
             catch // (Exception e)
             {

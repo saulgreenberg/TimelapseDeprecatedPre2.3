@@ -844,7 +844,7 @@ namespace Timelapse.Images
             {
                 lock (this.VideoPlayer)
                 {
-                    // State: Video is currently being displayed
+                    // Request Zoom out on a zoomed-in Video
                     if (zoomIn || (zoomIn == false && this.VideoPlayer.IsUnScaled == false))
                     {
                         this.VideoPlayer.ScaleVideo(videoMousePosition, zoomIn);
@@ -855,46 +855,42 @@ namespace Timelapse.Images
             }
             lock (this)
             {
-                // Zoom out requested, and the image is unscaled. This means that we may be
-                // on the unscaled image or on the ThumbnailGrid
+                // Request Zoom out on either an unscaled image or the thumbnail grid. 
+                // Note on why this is ambiguous: if the thumbnail grid is visible, it means the (hidden) image is also unscaled
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
-                    // State: already zoomed out the maximum allowable steps on ThumbnailGrid, so abort
+                    // Option 1. Request zoom out on Thumbnail Grid,
+                    //           Aborted as we are already at the maximum allowable steps on ThumbnailGrid
                     if (this.ThumbnailGridState >= Constant.ThumbnailGrid.MaxRows)
                     {
                         return;
                     }
 
-                    // State: zoomed out on ThumbnailGrid, but not at the maximum step. Zoom out another step
+                    // Option 2. Request zoom out on either the ThumbnailGrid an unscaled image. 
                     bool isInitialSwitchToThumbnailGrid = (this.ThumbnailGridState == 0) ? true : false;
                     this.ThumbnailGridState++;
-
                     this.SwitchToThumbnailGridView();
-                    if (this.RefreshThumbnailGrid(this.ThumbnailGridState) == false)
-                    {
-                        // SAULXXX OLD-NO LONGER NEEDED SO DELETE THESE LINESwe couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
-                        // So try again by zooming out another step
-                        //this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
 
-                        // We couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state, or 
-                        // because we are at the minimum size. So revert...
-                        this.ThumbnailGridState--;
-                        if (this.ThumbnailGridState == 0)
-                        {
-                            if (this.displayingImage)
-                            {
-                                this.SwitchToImageView();
-                            }
-                            else
-                            {
-                                this.SwitchToVideoView();
-                            }
-                        }
+                    // Option 2a. We tried to refresh, but there isn't enough space available on the thumbnail grid.
+                    //            Thus try to zoom out again at the next zoom-out level
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(this.ThumbnailGridState);
+                    if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
+                    {
+                        System.Diagnostics.Debug.Print(ThumbnailGridState.ToString());
+                        this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition); // STOPPING CONDITION AT MINIMUM???
+                        return;
                     }
+                    // Option 2b: Zoom out request failed for an unknown reason.
+                    else if (status == ThumbnailGridRefreshStatus.Aborted || status == ThumbnailGridRefreshStatus.AtMinimumCellSize)
+                    {
+                        this.ThumbnailGridState--; // As aborted this change in state
+                        return;
+                    }
+
+                    // Option 2c. We've gone from the single image to the multi-image view.
+                    // By default, select the first item (as we want the data for the first item to remain displayed)
                     if (isInitialSwitchToThumbnailGrid)
                     {
-                        // We've gone from the single image to the multi-image view.
-                        // By default, select the first item (as we want the data for the first item to remain displayed)
                         this.ThumbnailGrid.SelectInitialCellOnly();
                         this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ThumbnailGrid.SelectedCount());
                     }
@@ -904,11 +900,16 @@ namespace Timelapse.Images
                     // State: currently zoomed in on ThumbnailGrid, but not at the minimum step
                     // Zoom in another step
                     this.ThumbnailGridState--;
-                    if (this.RefreshThumbnailGrid(this.ThumbnailGridState) == false)
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(this.ThumbnailGridState);
+                    if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
                     {
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming in another step
                         this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
+                    }
+                    else if (status == ThumbnailGridRefreshStatus.AtMinimumCellSize || status == ThumbnailGridRefreshStatus.Aborted)
+                    {
+                        return;
                     }
                 }
                 else if (this.IsThumbnailGridVisible == true)
@@ -974,17 +975,21 @@ namespace Timelapse.Images
             }
         }
 
+        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(int state)
+        {
+            return this.RefreshThumbnailGrid(state, false);
+        }
         // Refresh the ThumbnailGrid
-        private bool RefreshThumbnailGrid(int state)
+        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(int state, bool resizing)
         {
             if (this.ThumbnailGrid == null)
             {
-                return false;
+                return ThumbnailGridRefreshStatus.Aborted;
             }
             // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
             // However, if the resulting image is less than a minimum height, then ignore it.
             int cellHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
-            if (cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return false; // NEED TO MAKE SURE WE DON"T INCREMENT STATE
+            if (!resizing && cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return ThumbnailGridRefreshStatus.AtMinimumCellSize;
             return this.ThumbnailGrid.Refresh(cellHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height);
         }
 
@@ -1166,7 +1171,7 @@ namespace Timelapse.Images
             if (timeDifference < TimeSpan.FromMilliseconds(500)) // At least a 500 msecs delay in use of the scroll wheel is needed between transitions
             {
                 if (zoomIn == true &&
-                    (   (this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                    ((this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                      || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
                 {
                     // Pause on the transition from unzoomed image/video to zoomed image/video
@@ -1174,7 +1179,7 @@ namespace Timelapse.Images
                 }
 
                 if (zoomIn == false &&
-                    (    (this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum) 
+                    ((this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                       || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
                 {
                     // Pause on the transition from unscaled image/video to thumbnail Grid
@@ -1237,7 +1242,7 @@ namespace Timelapse.Images
         private void TimerResize_Tick(object sender, EventArgs e)
         {
             this.timerResize.Stop();
-            if (this.RefreshThumbnailGrid(this.ThumbnailGridState) == false)
+            if (ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell == this.RefreshThumbnailGrid(this.ThumbnailGridState, true))
             {
                 // We couldn't show at least one image in the overview, so go back to the normal view
                 this.SwitchToImageView();

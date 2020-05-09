@@ -4,7 +4,6 @@ using MetadataExtractor.Formats.Exif.Makernotes;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -416,8 +415,8 @@ namespace Timelapse.Database
             return Task.Run(() =>
             {
                 BitmapSource bitmap = this.LoadBitmap(baseFolderPath, imageExpectedUsage == ImageDisplayIntentEnum.Ephemeral ? (int?)Constant.ImageValues.PreviewWidth128 : null,
-                                               imageExpectedUsage, 
-                                               ImageDimensionEnum.UseWidth, 
+                                               imageExpectedUsage,
+                                               ImageDimensionEnum.UseWidth,
                                                out bool isCorruptOrMissing);
                 return Tuple.Create(bitmap, isCorruptOrMissing);
             });
