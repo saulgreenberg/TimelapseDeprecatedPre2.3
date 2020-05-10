@@ -64,7 +64,7 @@ namespace Timelapse.Controls
         {
             get
             {
-                return ZoomOutLevel > 0;
+                return Level > 0;
             }
         }
         public bool IsAtMinimum { get; private set; } = false;
@@ -81,7 +81,9 @@ namespace Timelapse.Controls
         private List<ThumbnailInCell> thumbnailsAlreadyInGrid = new List<ThumbnailInCell>();
         private double oldGridWidth = 0;
         private double oldGridHeight = 0;
-        private int ZoomOutLevel = 0; // 0 Grid not active, 1 to max progressively zooms out
+        private int oldCellWidth = 0;
+        private int oldCellHeight = 0;
+        private int Level = 0; // 0 Grid not active, 1 to max progressively zooms out
         #endregion
 
         #region Constructor
@@ -97,95 +99,115 @@ namespace Timelapse.Controls
         // - fitting the image into as many cells of the same size that can fit within the grid
         // - retaining information about images previously shown on this grid.
         //   Note that every refresh unselects previously selected images
-        public ThumbnailGridRefreshStatus Refresh(double gridWidth, double gridHeight, bool? zoomIn)
+        public ThumbnailGridRefreshStatus Refresh(double gridWidth, double gridHeight, bool? showFewerCells)
         {
-            // Set the zoomOut levels, but abort if we are at either zoom limit
-            if (zoomIn == false && this.ZoomOutLevel >= Constant.ThumbnailGrid.MaxRows)
+            if (this.FileTable == null || !this.FileTable.Any())
             {
-                // Zooming Out aborted as already displaying the maximum amount of rows. 
-                return ThumbnailGridRefreshStatus.AtMaximumZoomLevel;
-            }
-            else if (zoomIn == false)
-            {
-                // Zooming out, so increase the zoom out by one level
-                this.ZoomOutLevel++;
+                // There aren't any images to show, so no point in going on
+                return ThumbnailGridRefreshStatus.Aborted;
             }
 
-            else if (zoomIn == true)
+            bool? showMoreCells = !showFewerCells;
+            // Set the zoomOut levels, but abort if we are at either zoom limit
+            if (showMoreCells == true && this.Level >= Constant.ThumbnailGrid.MaxRows)
             {
-                // Zooming in, so decrease the zoom out by one level
-                this.ZoomOutLevel--;
-                if (this.ZoomOutLevel <= 0)
+                // Showing more cells aborted as already displaying the maximum amount of rows. 
+                //System.Diagnostics.Debug.Print(String.Format("0 ThumbnailGridRefreshStatus.AtMaximumZoomLevel {0}", this.Level));
+                return ThumbnailGridRefreshStatus.AtMaximumZoomLevel;
+            }
+            else if (showMoreCells == true)
+            {
+                // Showing more cells, so increase the zoom out by one level
+                this.Level++;
+                //System.Diagnostics.Debug.Print(String.Format("1 Level++ {0}", this.Level));
+            }
+
+            else if (showFewerCells == true)
+            {
+                // Showing fewer cells, so decrease the zoom out by one level
+                this.Level--;
+                //System.Diagnostics.Debug.Print(String.Format("2a Level-- {0}", this.Level));
+                if (this.Level <= 0)
                 {
-                    // Zooming in aborted as at or below zero 
-                    this.ZoomOutLevel = 0;
+                    // Showing fewer cells aborted as we are already at or below zero 
+                    //System.Diagnostics.Debug.Print(String.Format("2b this.Level <= 0 {0}", this.Level));
+                    this.Level = 0;
                     return ThumbnailGridRefreshStatus.AtZeroZoomLevel;
                 }
             }
 
             // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
-            int cellHeight = Convert.ToInt32(gridHeight / (this.ZoomOutLevel + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
-
-            // If nothing is loaded, there is nothing to refresh
-            if (this.FileTable == null || !this.FileTable.Any() || cellHeight == 0)
+            // Note that the level should be unaltered if its a resize or navigation
+            int desiredCellHeight = Convert.ToInt32(gridHeight / (this.Level + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
+            if (desiredCellHeight <= 0)
             {
+                // this shouldn't happen, but just in case...
+                //System.Diagnostics.Debug.Print(String.Format("3 desiredCellHeight <= 0 {0}", desiredCellHeight));
                 return ThumbnailGridRefreshStatus.Aborted;
             }
 
-
-            if (zoomIn != null && cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight)
+            if (showFewerCells != null && desiredCellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight)
             {
                 //Zoom in or out aborted, as the desired cell height at the new zoom level is less than our minimum height.
-                this.ZoomOutLevel = this.ZoomOutLevel == 0 ? 0 : this.ZoomOutLevel - 1; // Revert the ZoomOutLevel as its currently too small
+                this.Level = this.Level == 0 ? 0 : this.Level - 1; // Revert the ZoomOutLevel as its currently too small
+                //System.Diagnostics.Debug.Print(String.Format("4 desiredCellHeight < MinumumThumbnailHeight {0} {1}", Level, desiredCellHeight));
                 return ThumbnailGridRefreshStatus.AtMaximumZoomLevel;
             }
-
-
-            // Various checks if the refresh was due to a navigation or resize (i.e., a change in zoom level was not explicitly requested when zoomIn is null)
+            //System.Diagnostics.Debug.Print(String.Format("5 Cell sizes {0} {1}", desiredCellHeight, this.oldCellHeight));
+            
+            // Now perform various checks if the refresh was due to a navigation or resize (i.e., a change in zoom level was not explicitly requested when zoomIn is null)
             int fileTableCount = this.FileTable.RowCount;
+
             this.thumbnailsAlreadyInGrid.Clear(); // we will fill this only if we are navigating
-            // Use the cell width from the first cell
-            double currentCellWidth = (this.thumbnailInCells == null || this.thumbnailInCells.Count == 0)
-                ? 0
-                : this.thumbnailInCells[0].CellWidth;
-            double currentCellHeight = (this.thumbnailInCells == null || this.thumbnailInCells.Count == 0)
-                ? 0
-                : this.thumbnailInCells[0].CellHeight;
-            if (zoomIn == null)
+            int desiredCellWidth = 0;
+            if (showFewerCells == null)
             {
+                // On a resize, we try to keep the cell size constant
+                desiredCellHeight = oldCellHeight;
+                desiredCellWidth = (this.thumbnailInCells == null || this.thumbnailInCells.Count == 0)
+                    ? 0
+                    : Convert.ToInt32(desiredCellHeight * this.thumbnailInCells[0].CellWidth / this.thumbnailInCells[0].CellHeight); // From the aspect ratio
+               
                 if (gridWidth == this.oldGridWidth && gridHeight == this.oldGridHeight)
                 {
+                    System.Diagnostics.Debug.Print(String.Format("6 Navigating {0}", Level));
                     // We are navigating. Reuse the thumbnails already in the grid, if any
-                    this.thumbnailsAlreadyInGrid = this.GetThumbnailsAlreadyInGrid(cellHeight, fileTableCount);
+                    this.thumbnailsAlreadyInGrid = this.GetThumbnailsAlreadyInGrid(desiredCellHeight, fileTableCount);
                 }
                 else
                 {
-                    // We are resizing
-                    if (currentCellWidth == 0 || currentCellHeight == 0)
+                    if (desiredCellWidth == 0 || desiredCellHeight == 0)
                     {
-                        // Clear the thumbnails already in the grid, which signal that the grid should be reconstructed
-                        //this.thumbnailsAlreadyInGrid.Clear();
+                        // This shouldn't happen, but lets print this out just in case its a result of setting a bogus desiredCellWidth above
+                        // And it is a check for 0 which would otherwise crash the next test
+                        //System.Diagnostics.Debug.Print(String.Format("8 oldCellWidth == 0 || this.oldCellHeight == 0 {0}", Level));
                     }
-                    else if (this.AvailableRows == Convert.ToInt32(Math.Floor(gridHeight / currentCellHeight))
-                    && this.AvailableColumns == Convert.ToInt32(Math.Floor(gridWidth / currentCellWidth)))
+                    else if (this.AvailableRows == Convert.ToInt32(Math.Floor(gridHeight / desiredCellHeight))
+                          && this.AvailableColumns == Convert.ToInt32(Math.Floor(gridWidth / desiredCellWidth)))
                     {
+                        //System.Diagnostics.Debug.Print(String.Format("9 AvailableRows/Columns hasn't changed {0}", Level));
                         // Resize aborted, as the number of available rows/columns hasn't changed, then we don't have to do anything
-                        //this.oldGridWidth = gridWidth;
-                        //this.oldGridHeight = gridHeight;
                         return ThumbnailGridRefreshStatus.Ok;
                     }
-                    else if (currentCellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight)
+                    else if (desiredCellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight)
                     {
+                        //System.Diagnostics.Debug.Print(String.Format("10a Cell height less than MinumumThumbnailHeight {0}  {1}", Level, desiredCellHeight));
                         // Resizing, but we are trying to shrink it smaller than the minimum cell size
                         // Thus try refreshing again. but at a lesser level
-                        this.ZoomOutLevel--;
-                        if (this.ZoomOutLevel < 0)
+                        this.Level--;
+                        if (this.Level < 0)
                         {
+                            //System.Diagnostics.Debug.Print(String.Format("10b ZoomOutLevel < {0} {1}", Level, desiredCellHeight));
                             // Zoomed in all the way, so inform the calling app that we can't do this.
-                            this.ZoomOutLevel = 0;
+                            this.Level = 0;
                             return ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell;
                         }
-                        return Refresh(gridWidth, gridHeight, zoomIn);
+                        //System.Diagnostics.Debug.Print(String.Format("11 Refreshing {0} ", Level));
+                        //return Refresh(gridWidth, gridHeight, zoomIn);
+
+                        // We are resizing with the same cell size. Reuse the thumbnails already in the grid, if any
+                        this.thumbnailsAlreadyInGrid = this.GetThumbnailsAlreadyInGrid(desiredCellHeight, fileTableCount);
+                        return Refresh(gridWidth, gridHeight, null);
                     }
                 }
             }
@@ -193,7 +215,7 @@ namespace Timelapse.Controls
             this.oldGridHeight = gridHeight;
 
             Mouse.OverrideCursor = Cursors.Wait;
-            double cellWidth;
+            int cellWidth;
             if (this.thumbnailsAlreadyInGrid == null || this.thumbnailsAlreadyInGrid.Count == 0)
             {
                 // As we are not reusing thumbnails, we have to calculate the cell width.
@@ -205,20 +227,24 @@ namespace Timelapse.Controls
                 // Another option - to avoid the cost of gettng a bitmap on a video - is to check if its a video (jut check the path suffix) and if so use the default aspect ratio OR
                 // use FFMPEG Probe (but that may mean another dll?)
                 BitmapSource bm = this.FileTable[this.FileTableStartIndex].LoadBitmap(this.FolderPath, Constant.ImageValues.PreviewWidth32, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth, out _);
-                cellWidth = (bm == null || bm.PixelHeight == 0) ? cellHeight * Constant.ThumbnailGrid.AspectRatioDefault : cellHeight * bm.PixelWidth / bm.PixelHeight;
+                cellWidth = (bm == null || bm.PixelHeight == 0) ? Convert.ToInt32(desiredCellHeight * Constant.ThumbnailGrid.AspectRatioDefault) : Convert.ToInt32(desiredCellHeight * bm.PixelWidth / bm.PixelHeight);
+                //System.Diagnostics.Debug.Print(String.Format("Bitmap {0} {1}", cellWidth, desiredCellHeight));
             }
             else
             {
-                cellWidth = currentCellWidth;
+                cellWidth = desiredCellWidth;
             }
 
             // Reconstruct the Grid with the appropriate rows/columns 
-            if (this.ReconstructGrid(cellWidth, cellHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
+            if (this.ReconstructGrid(cellWidth, desiredCellHeight, gridWidth, gridHeight, FileTableStartIndex) == false)
             {
                 // Abort as the grid cannot  display even a single image
                 Mouse.OverrideCursor = null;
                 return ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell;
             }
+
+            this.oldCellWidth = cellWidth;
+            this.oldCellHeight = desiredCellHeight;
 
             // Unselect all cells except the first one
             this.SelectInitialCellOnly();
@@ -308,7 +334,7 @@ namespace Timelapse.Controls
             if (e.ClickCount == 2)
             {
                 thumbnailInCell = this.GetThumbnailInCellFromCell(currentCell);
-                this.ZoomOutLevel = 0; // So we won't be zoomed out anymore
+                this.Level = 0; // So we won't be zoomed out anymore
                 ThumbnailGridEventArgs eventArgs = new ThumbnailGridEventArgs(this, thumbnailInCell?.ImageRow);
                 this.OnDoubleClick(eventArgs);
                 e.Handled = true; // Stops the double click from generating a marker on the MarkableImageCanvas
