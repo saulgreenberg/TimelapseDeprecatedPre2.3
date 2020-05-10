@@ -646,7 +646,7 @@ namespace Timelapse.Controls
         // depending upon whether we are in the single image or  theThumbnailGrid view respectively.
         private void UpdateRowsDependingOnThumbnailGridState(string datalabel, string content)
         {
-            if (this.ThumbnailGrid.IsVisible == false && this.MarkableCanvas.ThumbnailGridState == 0)
+            if (this.ThumbnailGrid.IsVisible == false && this.ThumbnailGrid.IsGridActive == false)
             {
                 // Only a single image is displayed: update the database for the current row with the control's value
                 this.FileDatabase.UpdateFile(this.ImageCache.Current.ID, datalabel, content);

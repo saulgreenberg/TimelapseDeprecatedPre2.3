@@ -8,6 +8,7 @@
         Ok,
         Aborted,
         NotEnoughSpaceForEvenOneCell,
-        AtMinimumCellSize
+        AtMaximumZoomLevel,
+        AtZeroZoomLevel
     }
 }

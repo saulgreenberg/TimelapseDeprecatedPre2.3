@@ -53,11 +53,6 @@ namespace Timelapse.Images
         public ThumbnailGrid ThumbnailGrid { get; private set; }
 
         /// <summary>
-        /// from 0-4. 0 is ThumbnailGrid not showing, 1-3 are progressive Overview levels
-        /// </summary>
-        public int ThumbnailGridState { get; private set; }
-
-        /// <summary>
         /// We need a reference to the DataEntry Controls so we can enable and disable some of them
         /// </summary>
         private DataEntryControls dataEntryControls;
@@ -265,7 +260,7 @@ namespace Timelapse.Images
             // Set up zoomed out grid showing multitude of images
             this.ThumbnailGrid = new ThumbnailGrid();
             this.ThumbnailGrid.Visibility = Visibility.Collapsed;
-            this.ThumbnailGridState = 0;
+
             Canvas.SetZIndex(this.ThumbnailGrid, 1000); // High Z-index so that it appears above other objects and magnifier
             Canvas.SetLeft(this.ThumbnailGrid, 0);
             Canvas.SetTop(this.ThumbnailGrid, 0);
@@ -377,7 +372,7 @@ namespace Timelapse.Images
             this.GenerateImageStateChangeEvent(true, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
-            if (this.ThumbnailGridState == 0)
+            if (this.ThumbnailGrid.IsGridActive == false)
             {
                 this.SwitchToImageView();
             }
@@ -401,7 +396,7 @@ namespace Timelapse.Images
             this.VideoPlayer.SetSource(new Uri(videoFile.FullName));
             this.displayingImage = false;
 
-            if (this.ThumbnailGridState == 0)
+            if (this.ThumbnailGrid.IsGridActive == false)
             {
                 this.SwitchToVideoView();
             }
@@ -578,7 +573,6 @@ namespace Timelapse.Images
                 return;
             }
             // These operations are only needed if we weren't in the single image view
-            this.ThumbnailGridState = 0;
             this.ThumbnailGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
@@ -599,7 +593,6 @@ namespace Timelapse.Images
             }
             // These operations are only needed if we weren't in the single image view
             this.ThumbnailGrid.Visibility = Visibility.Collapsed;
-            this.ThumbnailGridState = 0;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
@@ -861,29 +854,27 @@ namespace Timelapse.Images
                 {
                     // Option 1. Request zoom out on Thumbnail Grid,
                     //           Aborted as we are already at the maximum allowable steps on ThumbnailGrid
-                    if (this.ThumbnailGridState >= Constant.ThumbnailGrid.MaxRows)
-                    {
-                        return;
-                    }
+                    //if (this.ThumbnailGridState >= Constant.ThumbnailGrid.MaxRows)
+                    //{
+                    //    return;
+                    //}
 
                     // Option 2. Request zoom out on either the ThumbnailGrid an unscaled image. 
-                    bool isInitialSwitchToThumbnailGrid = (this.ThumbnailGridState == 0) ? true : false;
-                    this.ThumbnailGridState++;
+                    bool isInitialSwitchToThumbnailGrid = (this.ThumbnailGrid.IsGridActive) ? true : false;
+                    // this.ThumbnailGridState++;
                     this.SwitchToThumbnailGridView();
 
                     // Option 2a. We tried to refresh, but there isn't enough space available on the thumbnail grid.
                     //            Thus try to zoom out again at the next zoom-out level
-                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(this.ThumbnailGridState);
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(zoomIn);
                     if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
                     {
-                        System.Diagnostics.Debug.Print(ThumbnailGridState.ToString());
                         this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition); // STOPPING CONDITION AT MINIMUM???
                         return;
                     }
-                    // Option 2b: Zoom out request failed for an unknown reason.
-                    else if (status == ThumbnailGridRefreshStatus.Aborted || status == ThumbnailGridRefreshStatus.AtMinimumCellSize)
+                    // Option 2b: Zoom out request denied.
+                    else if (status == ThumbnailGridRefreshStatus.Aborted || status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel)
                     {
-                        this.ThumbnailGridState--; // As aborted this change in state
                         return;
                     }
 
@@ -895,24 +886,38 @@ namespace Timelapse.Images
                         this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ThumbnailGrid.SelectedCount());
                     }
                 }
-                else if (this.IsThumbnailGridVisible == true && this.ThumbnailGridState > 1)
-                {
+                //else if (this.IsThumbnailGridVisible == true && this.ThumbnailGridState > 1)
+                else if (this.IsThumbnailGridVisible == true)
+                    {
                     // State: currently zoomed in on ThumbnailGrid, but not at the minimum step
                     // Zoom in another step
-                    this.ThumbnailGridState--;
-                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(this.ThumbnailGridState);
+                    //this.ThumbnailGridState--;
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(zoomIn);
                     if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
                     {
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming in another step
                         this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
                     }
-                    else if (status == ThumbnailGridRefreshStatus.AtMinimumCellSize || status == ThumbnailGridRefreshStatus.Aborted)
+                    else if (status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel 
+                        || status == ThumbnailGridRefreshStatus.Aborted)
+
                     {
                         return;
                     }
+                    else if (status == ThumbnailGridRefreshStatus.AtZeroZoomLevel)
+                    {
+                        if (this.displayingImage)
+                        {
+                            this.SwitchToImageView();
+                        }
+                        else
+                        {
+                            this.SwitchToVideoView();
+                        }
+                    }
                 }
-                else if (this.IsThumbnailGridVisible == true)
+                else if (this.IsThumbnailGridVisible == true )
                 {
                     // State: zoomed in on ThumbnailGrid, but at the minimum step
                     // Switch to the image or video, depending on what was last displayed
@@ -941,7 +946,6 @@ namespace Timelapse.Images
                             imageMousePosition.Y = this.ImageToDisplay.ActualHeight;
                         }
                         this.ScaleImage(imageMousePosition, zoomIn);
-                        this.ThumbnailGridState = 0;
                     }
                 }
             }
@@ -970,17 +974,13 @@ namespace Timelapse.Images
                 }
                 else
                 {
-                    this.RefreshThumbnailGrid(this.ThumbnailGridState);
+                    this.RefreshThumbnailGrid(null); // null signals a refresh at the current zoom level
                 }
             }
         }
 
-        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(int state)
-        {
-            return this.RefreshThumbnailGrid(state, false);
-        }
         // Refresh the ThumbnailGrid
-        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(int state, bool resizing)
+        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(bool? zoomIn)
         {
             if (this.ThumbnailGrid == null)
             {
@@ -988,15 +988,14 @@ namespace Timelapse.Images
             }
             // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
             // However, if the resulting image is less than a minimum height, then ignore it.
-            int cellHeight = Convert.ToInt32(this.ThumbnailGrid.Height / (state + 1)) - 1;  // Should be 2 rows, 3 rows, 4 rows.
-            if (!resizing && cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return ThumbnailGridRefreshStatus.AtMinimumCellSize;
-            return this.ThumbnailGrid.Refresh(cellHeight, this.ThumbnailGrid.Width, this.ThumbnailGrid.Height);
+            //if (!resizing && cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return ThumbnailGridRefreshStatus.AtMaximumZoomLevel;
+            return this.ThumbnailGrid.Refresh(this.ThumbnailGrid.Width, this.ThumbnailGrid.Height, zoomIn);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
         {
             this.timerSlider.Stop();
-            this.RefreshThumbnailGrid(this.ThumbnailGridState);
+            this.RefreshThumbnailGrid(null); // null signals a refresh at the current zoom level
         }
         #endregion
 
@@ -1242,7 +1241,7 @@ namespace Timelapse.Images
         private void TimerResize_Tick(object sender, EventArgs e)
         {
             this.timerResize.Stop();
-            if (ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell == this.RefreshThumbnailGrid(this.ThumbnailGridState, true))
+            if (ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell == this.RefreshThumbnailGrid(null)) // null signals a refresh at the current zoom level
             {
                 // We couldn't show at least one image in the overview, so go back to the normal view
                 this.SwitchToImageView();
