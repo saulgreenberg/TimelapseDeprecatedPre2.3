@@ -954,7 +954,7 @@ namespace Timelapse.Images
         // Refresh only the episode information in the thumbnail grid
         public void DisplayEpisodeTextInThumbnailGridIfWarranted()
         {
-            this.ThumbnailGrid.DisplayEpisodeTextIfWarranted();
+            this.ThumbnailGrid.RefreshEpisodeTextIfWarranted();
         }
 
         // If the ThumbnailGrid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
