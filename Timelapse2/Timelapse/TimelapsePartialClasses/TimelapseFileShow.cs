@@ -77,12 +77,12 @@ namespace Timelapse
                 return;
             }
 
-            // Reset the Clickable Images Grid to the current image
+            // Reset the ThumbnailGrid to the current image
             // SAULXX: COULD SET FOLDER PATH AND FILEDATABASE ON LOAD, BUT MAY BE BETTER TO JUST KEEP ON DOING IT HERE
             // SAULXX: Note that this used to be before the above if statement. Not sure if it would be a problem having it here (in case of failur)
-            this.MarkableCanvas.ClickableImagesGrid.FolderPath = this.FolderPath;
-            this.MarkableCanvas.ClickableImagesGrid.FileTableStartIndex = fileIndex;
-            this.MarkableCanvas.ClickableImagesGrid.FileTable = this.DataHandler.FileDatabase.FileTable;
+            this.MarkableCanvas.ThumbnailGrid.FolderPath = this.FolderPath;
+            this.MarkableCanvas.ThumbnailGrid.FileTableStartIndex = fileIndex;
+            this.MarkableCanvas.ThumbnailGrid.FileTable = this.DataHandler.FileDatabase.FileTable;
 
             // Update each control with the data for the now current image
             // This is always done as it's assumed either the image changed or that a control refresh is required due to database changes
@@ -149,6 +149,7 @@ namespace Timelapse
                     this.MarkableCanvas_UpdateMarkers();
                 }
             }
+
             this.DataGridSelectionsTimer_Reset();
 
             // Set the file player status
@@ -180,14 +181,14 @@ namespace Timelapse
             }
 
             // Refresh the markable canvas if needed
-            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation, forceUpdate);
+            this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
 
             // Display the episode text as needed
-            this.DisplayEpisodeTextIfWarranted(fileIndex);
+            this.DisplayEpisodeTextInImageIfWarranted(fileIndex);
         }
 
         // Get and display the episode text if various conditions are met
-        private void DisplayEpisodeTextIfWarranted(int fileIndex)
+        private void DisplayEpisodeTextInImageIfWarranted(int fileIndex)
         {
             if (Episodes.ShowEpisodes && this.IsDisplayingSingleImage())
             {

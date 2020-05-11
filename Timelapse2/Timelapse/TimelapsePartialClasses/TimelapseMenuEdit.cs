@@ -113,10 +113,10 @@ namespace Timelapse
                 bool deletedImages = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages;
-                this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
-                ImageRow imageRow = this.DataHandler.ImageCache.Current;
 
-                this.MenuItemDeleteCurrentFile.IsEnabled = this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
+                // Enable the delete current file option only if we are not on the thumbnail grid 
+                this.MenuItemDeleteCurrentFileAndData.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false; // Only show this option if the thumbnail grid is visible
+                this.MenuItemDeleteCurrentFile.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false && this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
             }
             catch (Exception exception)
             {
@@ -174,11 +174,6 @@ namespace Timelapse
                 }
             }
 
-            // We have to change the way the current image is displayed, as otherwise it cannot be deleted as there is still a reference to the file.
-            // NOTE THAT WE NEED TO DO THIS FOR VIDEOS AND FOR MULTIPLEIMAGEVIEW
-            // MAYBE CLEAR THE IMAGE CACHE TOO? 
-            this.DataHandler.ImageCache.Current.GetBitmapFromFile(this.FolderPath, 128, ImageDisplayIntentEnum.TransientNavigating, out _);
-
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...
@@ -188,7 +183,7 @@ namespace Timelapse
                 return;
             }
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
-            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, this.MarkableCanvas, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
+            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();
             if (result == true)
             {

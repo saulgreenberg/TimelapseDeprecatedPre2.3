@@ -186,7 +186,7 @@ namespace Timelapse
             this.DataEntryControls.CreateControls(fileDatabase, this.DataHandler);
             this.SetUserInterfaceCallbacks();
             this.MarkableCanvas.DataEntryControls = this.DataEntryControls; // so the markable canvas can access the controls
-            this.DataHandler.ClickableImagesGrid = this.MarkableCanvas.ClickableImagesGrid;
+            this.DataHandler.ThumbnailGrid = this.MarkableCanvas.ThumbnailGrid;
             this.DataHandler.MarkableCanvas = this.MarkableCanvas;
 
             this.Title = Constant.Defaults.MainWindowBaseTitle + " (" + Path.GetFileName(fileDatabase.FilePath) + ")";
@@ -356,7 +356,7 @@ namespace Timelapse
 
             backgroundWorker.DoWork += (ow, ea) =>
             {
-                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.DataHandler, this.State);
+                ImageSetLoader loader = new ImageSetLoader(imageSetFolderPath, filesToAdd, this.DataHandler);
 
                 backgroundWorker.ReportProgress(0, folderLoadProgress);
 

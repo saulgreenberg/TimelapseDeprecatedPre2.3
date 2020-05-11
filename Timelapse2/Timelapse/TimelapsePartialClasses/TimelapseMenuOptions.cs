@@ -67,11 +67,11 @@ namespace Timelapse
 
             if (this.IsDisplayingMultipleImagesInOverview())
             {
-                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+                this.MarkableCanvas.DisplayEpisodeTextInThumbnailGridIfWarranted();
             }
             else
             {
-                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextInImageIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 
@@ -89,11 +89,11 @@ namespace Timelapse
 
             if (this.IsDisplayingMultipleImagesInOverview())
             {
-                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false, false);
+                this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(false);
             }
             else
             {
-                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextInImageIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 

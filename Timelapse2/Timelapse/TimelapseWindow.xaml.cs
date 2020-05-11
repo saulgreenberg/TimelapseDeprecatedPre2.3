@@ -80,9 +80,9 @@ namespace Timelapse
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
             this.MarkableCanvas.MarkerEvent += new EventHandler<MarkerEventArgs>(this.MarkableCanvas_RaiseMarkerEvent);
-            this.MarkableCanvas.ClickableImagesGrid.DoubleClick += this.ClickableImagesGrid_DoubleClick;
-            this.MarkableCanvas.ClickableImagesGrid.SelectionChanged += this.ClickableImagesGrid_SelectionChanged;
-            this.MarkableCanvas.SwitchedToClickableImagesGridEventAction += this.SwitchedToClickableImagesGrid;
+            this.MarkableCanvas.ThumbnailGrid.DoubleClick += this.ThumbnailGrid_DoubleClick;
+            this.MarkableCanvas.ThumbnailGrid.SelectionChanged += this.ThumbanilGrid_SelectionChanged;
+            this.MarkableCanvas.SwitchedToThumbnailGridViewEventAction += this.SwitchedToThumbnailGrid;
             this.MarkableCanvas.SwitchedToSingleImageViewEventAction += this.SwitchedToSingleImagesView;
 
             // Save/restore the focus whenever we leave / enter the control grid (which contains controls pluse the copy previous button, or the file navigator
@@ -695,7 +695,7 @@ namespace Timelapse
         private bool IsDisplayingSingleImage()
         {
             // Always false If we are in the overiew
-            if (this.MarkableCanvas.IsClickableImagesGridVisible == true) return false;
+            if (this.MarkableCanvas.IsThumbnailGridVisible == true) return false;
 
             // True only if we are displaying at least one file in an image set
             return this.IsFileDatabaseAvailable() &&
@@ -704,10 +704,10 @@ namespace Timelapse
 
         private bool IsDisplayingMultipleImagesInOverview()
         {
-            return this.MarkableCanvas.IsClickableImagesGridVisible && this.ImageSetPane.IsActive ? true : false;
+            return this.MarkableCanvas.IsThumbnailGridVisible && this.ImageSetPane.IsActive ? true : false;
         }
 
-        private void SwitchedToClickableImagesGrid()
+        private void SwitchedToThumbnailGrid()
         {
             this.FilePlayer_Stop();
             this.FilePlayer.SwitchFileMode(false);
@@ -729,12 +729,12 @@ namespace Timelapse
 
             if (this.DataHandler != null)
             {
-                this.DisplayEpisodeTextIfWarranted(this.DataHandler.ImageCache.CurrentRow);
+                this.DisplayEpisodeTextInImageIfWarranted(this.DataHandler.ImageCache.CurrentRow);
             }
         }
 
-        // If the DoubleClick on the ClickableImagesGrid selected an image or video, display it.
-        private void ClickableImagesGrid_DoubleClick(object sender, ClickableImagesGridEventArgs e)
+        // If the DoubleClick on the ThumbnailGrid selected an image or video, display it.
+        private void ThumbnailGrid_DoubleClick(object sender, ThumbnailGridEventArgs e)
         {
             if (e.ImageRow != null)
             {
@@ -781,7 +781,7 @@ namespace Timelapse
         // This event handler is invoked whenever the user does a selection in the overview.
         // It is used to refresh (and match) what rows are selected in the DataGrid. 
         // However, because user selections can change rapidly (e.g., by dragging within the overview), we throttle the refresh using a timer 
-        private void ClickableImagesGrid_SelectionChanged(object sender, ClickableImagesGridEventArgs e)
+        private void ThumbanilGrid_SelectionChanged(object sender, ThumbnailGridEventArgs e)
         {
             this.DataGridSelectionsTimer_Reset();
         }
@@ -789,6 +789,12 @@ namespace Timelapse
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
+            if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
+            {
+                this.DataGrid.UpdateLayout();
+                this.DataGridSelectionsTimer.Stop();
+                return;
+            }
             //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
             List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
             if (this.IsDisplayingSingleImage())
@@ -800,7 +806,7 @@ namespace Timelapse
             else
             {
                 // multiple selections are possible in the 
-                foreach (int rowIndex in this.MarkableCanvas.ClickableImagesGrid.GetSelected())
+                foreach (int rowIndex in this.MarkableCanvas.ThumbnailGrid.GetSelected())
                 {
                     IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
                 }

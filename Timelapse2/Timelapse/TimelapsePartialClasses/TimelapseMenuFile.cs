@@ -395,6 +395,11 @@ namespace Timelapse
             this.DataGrid.ItemsSource = null;
 
             // Reset the UX 
+            if (this.MarkableCanvas.ThumbnailGrid != null)
+            {
+                this.MarkableCanvas.ThumbnailGrid.Reset();
+            }
+
             this.State.Reset();
             this.MarkableCanvas.ZoomOutAllTheWay();
             this.FileNavigatorSliderReset();

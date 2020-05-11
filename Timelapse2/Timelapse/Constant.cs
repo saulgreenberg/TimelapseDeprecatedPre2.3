@@ -363,14 +363,12 @@ namespace Timelapse.Constant
         public const int PreviewWidth384 = 384;
         public const int PreviewWidth300 = 300;
         public const int PreviewWidth128 = 128;
+        public const int PreviewWidth32 = 32;
 
         public static readonly Lazy<BitmapImage> Corrupt = ImageValues.Load("Corrupted.jpg");
         public static readonly Lazy<BitmapImage> FileNoLongerAvailable = ImageValues.Load("FileNoLongerAvailable.jpg");
         public static readonly Lazy<BitmapImage> NoFilesAvailable = ImageValues.Load("NoFilesAvailable.jpg");
         public static readonly Lazy<BitmapImage> BlankVideo = ImageValues.Load("BlankVideo.jpg");
-        public static readonly Lazy<BitmapImage> BlankVideo512 = ImageValues.Load("BlankVideo512.jpg");
-        public static readonly Lazy<BitmapImage> BlankVideo256 = ImageValues.Load("BlankVideo256.jpg");
-        public static readonly Lazy<BitmapImage> BlankVideo128 = ImageValues.Load("BlankVideo128.jpg");
         public static readonly Lazy<BitmapImage> FileAlreadyLoaded = ImageValues.Load("FileAlreadyLoaded.jpg");
 
         private static Lazy<BitmapImage> Load(string fileName)
@@ -393,6 +391,7 @@ namespace Timelapse.Constant
             });
         }
     }
+
     public static class ImageXml
     {
         // standard elements, always included but not always made visible
@@ -575,6 +574,12 @@ namespace Timelapse.Constant
         public static readonly TimeSpan ProgressBarRefreshInterval = TimeSpan.FromMilliseconds(100);
     }
 
+    public static class ThumbnailGrid
+    {
+        public static readonly int MaxRows = 15;
+        public static readonly double AspectRatioDefault = 1.77777777777778;
+        public static readonly double MinumumThumbnailHeight = 96;
+    }
     public static class Time
     {
         // The standard date format, e.g., 05-Apr-2011

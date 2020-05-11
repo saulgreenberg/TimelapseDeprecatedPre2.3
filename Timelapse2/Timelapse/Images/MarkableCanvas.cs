@@ -43,19 +43,14 @@ namespace Timelapse.Images
                 // update bounding boxes
                 this.boundingBoxes = value;
                 // render new bounding boxes and update display image
-                this.RedrawBoundingBoxes();
+                this.RefreshBoundingBoxes();
             }
         }
 
         /// <summary>
         /// Gets the grid containing a multitude of zoomed out images
         /// </summary>
-        public ClickableImagesGrid ClickableImagesGrid { get; private set; }
-
-        /// <summary>
-        /// from 0-4. 0 is ClickableImages not showing, 1-3 are progressive Overview levels
-        /// </summary>
-        public int ClickableImagesState { get; private set; }
+        public ThumbnailGrid ThumbnailGrid { get; private set; }
 
         /// <summary>
         /// We need a reference to the DataEntry Controls so we can enable and disable some of them
@@ -69,7 +64,7 @@ namespace Timelapse.Images
             }
             set
             {
-                this.ClickableImagesGrid.DataEntryControls = value;
+                this.ThumbnailGrid.DataEntryControls = value;
                 this.dataEntryControls = value;
             }
         }
@@ -90,14 +85,13 @@ namespace Timelapse.Images
         public Image ImageToMagnify { get; private set; }
 
         /// <summary>
-        /// Gets the video displayed across the MarkableCanvas for video files
+        /// Whether the thumbnail grid is visible or not
         /// </summary>
-        // Use the  mouse wheel to scale the image
-        public bool IsClickableImagesGridVisible
+        public bool IsThumbnailGridVisible
         {
             get
             {
-                return this.ClickableImagesGrid.Visibility == Visibility.Visible;
+                return this.ThumbnailGrid.Visibility == Visibility.Visible;
             }
         }
 
@@ -175,20 +169,8 @@ namespace Timelapse.Images
         // Time of the last mousewheel event
         private DateTime lastMouseWheelDateTime = DateTime.Now;
 
-        // Timer for resizing the clickable images grid only after resizing is (likely) completed
+        // Timer for resizing the ThumbnailGrid only after resizing is (likely) completed
         private readonly DispatcherTimer timerResize = new DispatcherTimer();
-
-        // zoomed out state for ClickableImages. 
-        // 0 - not zoomed out; 
-        // 1 - 3 zoom out, where each state specifies a hard-wired desired cell width in pixels
-        // These widths can be altered if needed
-        private readonly Dictionary<int, int> clickableImagesZoomedOutStates = new Dictionary<int, int>
-        {
-            { 0, 0 },
-            { 1, 640 },
-            { 2, 320 },
-            { 3, 256 }
-        };
 
         // Timer for delaying updates in the midst of rapid navigation with the slider
         private readonly DispatcherTimer timerSlider = new DispatcherTimer();
@@ -215,7 +197,7 @@ namespace Timelapse.Images
 
         #region Events
         public event EventHandler<MarkerEventArgs> MarkerEvent;
-        public event Action SwitchedToClickableImagesGridEventAction;
+        public event Action SwitchedToThumbnailGridViewEventAction;
         public event Action SwitchedToSingleImageViewEventAction;
 
         private void SendMarkerEvent(MarkerEventArgs e)
@@ -276,13 +258,13 @@ namespace Timelapse.Images
             this.Children.Add(this.VideoPlayer);
 
             // Set up zoomed out grid showing multitude of images
-            this.ClickableImagesGrid = new ClickableImagesGrid();
-            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.ClickableImagesState = 0;
-            Canvas.SetZIndex(this.ClickableImagesGrid, 1000); // High Z-index so that it appears above other objects and magnifier
-            Canvas.SetLeft(this.ClickableImagesGrid, 0);
-            Canvas.SetTop(this.ClickableImagesGrid, 0);
-            this.Children.Add(this.ClickableImagesGrid);
+            this.ThumbnailGrid = new ThumbnailGrid();
+            this.ThumbnailGrid.Visibility = Visibility.Collapsed;
+
+            Canvas.SetZIndex(this.ThumbnailGrid, 1000); // High Z-index so that it appears above other objects and magnifier
+            Canvas.SetLeft(this.ThumbnailGrid, 0);
+            Canvas.SetTop(this.ThumbnailGrid, 0);
+            this.Children.Add(this.ThumbnailGrid);
 
             // set up image to magnify
             this.ImageToMagnify = new Image();
@@ -315,11 +297,11 @@ namespace Timelapse.Images
             this.PreviewKeyUp += this.MarkableCanvas_PreviewKeyUp;
             this.Loaded += this.MarkableCanvas_Loaded;
 
-            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
+            // When started, refreshes the ThumbnailGrid after 100 msecs (unless the timer is reset or stopped)
             this.timerResize.Interval = TimeSpan.FromMilliseconds(200);
             this.timerResize.Tick += this.TimerResize_Tick;
 
-            // When started, refreshes the clickable image grid after 100 msecs (unless the timer is reset or stopped)
+            // When started, refreshes the ThumbnailGrid after 100 msecs (unless the timer is reset or stopped)
             this.timerSlider.Interval = TimeSpan.FromMilliseconds(200);
             this.timerSlider.Tick += this.TimerSlider_Tick;
 
@@ -390,13 +372,13 @@ namespace Timelapse.Images
             this.GenerateImageStateChangeEvent(true, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
-            if (this.ClickableImagesState == 0)
+            if (this.ThumbnailGrid.IsGridActive == false)
             {
                 this.SwitchToImageView();
             }
             else
             {
-                this.SwitchToClickableGridView();
+                this.SwitchToThumbnailGridView();
             }
         }
 
@@ -414,13 +396,13 @@ namespace Timelapse.Images
             this.VideoPlayer.SetSource(new Uri(videoFile.FullName));
             this.displayingImage = false;
 
-            if (this.ClickableImagesState == 0)
+            if (this.ThumbnailGrid.IsGridActive == false)
             {
                 this.SwitchToVideoView();
             }
             else
             {
-                this.SwitchToClickableGridView();
+                this.SwitchToThumbnailGridView();
             }
         }
         #endregion
@@ -517,7 +499,7 @@ namespace Timelapse.Images
                 this.imageToDisplayTranslation.Y += newY - center.Y;
             }
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
 
 
@@ -529,7 +511,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.X = 0.0;
             this.imageToDisplayTranslation.Y = 0.0;
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -570,7 +552,7 @@ namespace Timelapse.Images
         {
             this.bookmark.Apply(this.imageToDisplayScale, this.imageToDisplayTranslation);
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -586,13 +568,12 @@ namespace Timelapse.Images
 
             this.GenerateImageStateChangeEvent(false, true); //  Signal change in image state (consumed by ImageAdjuster)
 
-            if (this.IsClickableImagesGridVisible == false)
+            if (this.IsThumbnailGridVisible == false)
             {
                 return;
             }
             // These operations are only needed if we weren't in the single image view
-            this.ClickableImagesState = 0;
-            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
+            this.ThumbnailGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
@@ -606,28 +587,27 @@ namespace Timelapse.Images
 
             this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
 
-            if (this.IsClickableImagesGridVisible == false)
+            if (this.IsThumbnailGridVisible == false)
             {
                 return;
             }
             // These operations are only needed if we weren't in the single image view
-            this.ClickableImagesGrid.Visibility = Visibility.Collapsed;
-            this.ClickableImagesState = 0;
+            this.ThumbnailGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
         }
 
-        public void SwitchToClickableGridView()
+        public void SwitchToThumbnailGridView()
         {
             // No need to switch as we are already in it
-            if (this.IsClickableImagesGridVisible == true)
+            if (this.IsThumbnailGridVisible == true)
             {
                 return;
             }
             this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
 
-            this.ClickableImagesGrid.Visibility = Visibility.Visible;
-            this.SwitchedToClickableImagesGridEventAction();
+            this.ThumbnailGrid.Visibility = Visibility.Visible;
+            this.SwitchedToThumbnailGridViewEventAction();
 
             this.ImageToDisplay.Visibility = Visibility.Collapsed;
             this.SetMagnifiersAccordingToCurrentState(false, false);
@@ -737,7 +717,7 @@ namespace Timelapse.Images
         /// <summary>
         /// Remove all and then draw all the bounding boxes
         /// </summary>
-        private void RedrawBoundingBoxes()
+        private void RefreshBoundingBoxes()
         {
             if (this.ImageToDisplay != null)
             {
@@ -753,7 +733,7 @@ namespace Timelapse.Images
         public void MagnifierZoomIn()
         {
             // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
-            if (this.IsClickableImagesGridVisible)
+            if (this.IsThumbnailGridVisible)
             {
                 return;
             }
@@ -775,7 +755,7 @@ namespace Timelapse.Images
         public void MagnifierZoomOut()
         {
             // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
-            if (this.IsClickableImagesGridVisible)
+            if (this.IsThumbnailGridVisible)
             {
                 return;
             }
@@ -831,7 +811,7 @@ namespace Timelapse.Images
         {
             this.magnifyingGlass.Show = showMagnifier ? this.MagnifiersEnabled && this.displayingImage : false;
 
-            if (showOffset & this.MagnifiersEnabled && this.displayingImage == false && this.VideoPlayer.IsUnScaled & this.IsClickableImagesGridVisible == false)
+            if (showOffset & this.MagnifiersEnabled && this.displayingImage == false && this.VideoPlayer.IsUnScaled & this.IsThumbnailGridVisible == false)
             {
                 // Check if the cursor is over the video
                 Point mousePositionOnVideo = Mouse.GetPosition(this.VideoPlayer.Video);
@@ -848,17 +828,16 @@ namespace Timelapse.Images
         }
         #endregion
 
-        #region Public / Private methods: ClickableImages Grid
+        #region Public / Private methods: ThumbnailGrid
         // Zoom in (or out) of single image and/or overview 
         public void TryZoomInOrOut(bool zoomIn, Point imageMousePosition, Point videoMousePosition)
         {
             // Manage videos first
-            if (this.IsClickableImagesGridVisible == false && this.ImageToDisplay.IsVisible == false)
+            if (this.IsThumbnailGridVisible == false && this.ImageToDisplay.IsVisible == false)
             {
-                // 
                 lock (this.VideoPlayer)
                 {
-                    // State: Video is currently being displayed
+                    // Request Zoom out on a zoomed-in Video
                     if (zoomIn || (zoomIn == false && this.VideoPlayer.IsUnScaled == false))
                     {
                         this.VideoPlayer.ScaleVideo(videoMousePosition, zoomIn);
@@ -869,50 +848,78 @@ namespace Timelapse.Images
             }
             lock (this)
             {
-                // Zoom out requested, and the image is unscaled. This means that we may be
-                // on the unscaled image or on the clickableImage
+                // Request Zoom out on either an unscaled image or the thumbnail grid. 
+                // Note on why this is ambiguous: if the thumbnail grid is visible, it means the (hidden) image is also unscaled
                 if (zoomIn == false && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
                 {
-                    // State: already zoomed out the maximum allowable steps on clickable grid, so abort
-                    if (this.ClickableImagesState >= 3)
+                    // Option 1. Request zoom out on Thumbnail Grid,
+                    //           Aborted as we are already at the maximum allowable steps on ThumbnailGrid
+                    //if (this.ThumbnailGridState >= Constant.ThumbnailGrid.MaxRows)
+                    //{
+                    //    return;
+                    //}
+
+                    // Option 2. Request zoom out on either the ThumbnailGrid an unscaled image. 
+                    bool isInitialSwitchToThumbnailGrid = (this.ThumbnailGrid.IsGridActive) ? true : false;
+                    // this.ThumbnailGridState++;
+                    this.SwitchToThumbnailGridView();
+
+                    // Option 2a. We tried to refresh, but there isn't enough space available on the thumbnail grid.
+                    //            Thus try to zoom out again at the next zoom-out level
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(zoomIn);
+                    if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
+                    {
+                        this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition); // STOPPING CONDITION AT MINIMUM???
+                        return;
+                    }
+                    // Option 2b: Zoom out request denied.
+                    else if (status == ThumbnailGridRefreshStatus.Aborted || status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel)
                     {
                         return;
                     }
 
-                    // State: zoomed out on clickable grid, but not at the maximum step. Zoom out another step
-                    bool isInitialSwitchToClickableImagesGrid = (this.ClickableImagesState == 0) ? true : false;
-                    this.ClickableImagesState++;
-
-                    this.SwitchToClickableGridView();
-                    if (this.RefreshClickableImagesGrid(this.ClickableImagesState) == false)
+                    // Option 2c. We've gone from the single image to the multi-image view.
+                    // By default, select the first item (as we want the data for the first item to remain displayed)
+                    if (isInitialSwitchToThumbnailGrid)
                     {
-                        // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
-                        // So try again by zooming out another step
-                        this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
-                    }
-                    if (isInitialSwitchToClickableImagesGrid)
-                    {
-                        // We've gone from the single image to the multi-image view.
-                        // By default, select the first item (as we want the data for the first item to remain displayed)
-                        this.ClickableImagesGrid.SelectInitialCellOnly();
-                        this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ClickableImagesGrid.SelectedCount());
+                        this.ThumbnailGrid.SelectInitialCellOnly();
+                        this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.MultipleImageView, this.ThumbnailGrid.SelectedCount());
                     }
                 }
-                else if (this.IsClickableImagesGridVisible == true && this.ClickableImagesState > 1)
+                //else if (this.IsThumbnailGridVisible == true && this.ThumbnailGridState > 1)
+                else if (this.IsThumbnailGridVisible == true)
                 {
-                    // State: currently zoomed in on clickable grid, but not at the minimum step
+                    // State: currently zoomed in on ThumbnailGrid, but not at the minimum step
                     // Zoom in another step
-                    this.ClickableImagesState--;
-                    if (this.RefreshClickableImagesGrid(this.ClickableImagesState) == false)
+                    //this.ThumbnailGridState--;
+                    ThumbnailGridRefreshStatus status = this.RefreshThumbnailGrid(zoomIn);
+                    if (status == ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell)
                     {
                         // we couldn't refresh the grid, likely because there is not enough space available to show even a single image at this image state
                         // So try again by zooming in another step
                         this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
                     }
+                    else if (status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel
+                        || status == ThumbnailGridRefreshStatus.Aborted)
+
+                    {
+                        return;
+                    }
+                    else if (status == ThumbnailGridRefreshStatus.AtZeroZoomLevel)
+                    {
+                        if (this.displayingImage)
+                        {
+                            this.SwitchToImageView();
+                        }
+                        else
+                        {
+                            this.SwitchToVideoView();
+                        }
+                    }
                 }
-                else if (this.IsClickableImagesGridVisible == true)
+                else if (this.IsThumbnailGridVisible == true)
                 {
-                    // State: zoomed in on clickable grid, but at the minimum step
+                    // State: zoomed in on ThumbnailGrid, but at the minimum step
                     // Switch to the image or video, depending on what was last displayed
                     // update the magnifying glass
 
@@ -939,57 +946,56 @@ namespace Timelapse.Images
                             imageMousePosition.Y = this.ImageToDisplay.ActualHeight;
                         }
                         this.ScaleImage(imageMousePosition, zoomIn);
-                        this.ClickableImagesState = 0;
                     }
                 }
             }
         }
 
-        // If the clickable images grid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
-        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation, bool forceUpdate)
+        // Refresh only the episode information in the thumbnail grid
+        public void DisplayEpisodeTextInThumbnailGridIfWarranted()
         {
-            if (this.IsClickableImagesGridVisible == true)
+            this.ThumbnailGrid.RefreshEpisodeTextIfWarranted();
+        }
+
+        // If the ThumbnailGrid is displayed, refresh it. Use a timer if the we are navigating via a slider (to avoid excessive refreshes)
+        public void RefreshIfMultipleImagesAreDisplayed(bool isInSliderNavigation)
+        {
+            if (this.IsThumbnailGridVisible == true)
             {
-                // State: zoomed in on clickable grid.
+                // State: zoomed in on ThumbnailGrid.
                 // Updating it ensures that the correct image is shown as the first cell
                 // However, if we are navigating with the slider, delay update as otherwise it can't keep up
                 if (isInSliderNavigation)
                 {
-                    // Refresh the clickable image grid only via the timer, where it will 
+                    // Refresh the ThumbnailGrid only via the timer, where it will 
                     // try to refresh only when the user pauses (or ends) navigation via the slider
                     this.timerSlider.Stop();
                     this.timerSlider.Start();
                 }
                 else
                 {
-                    this.RefreshClickableImagesGrid(this.ClickableImagesState, forceUpdate);
+                    this.RefreshThumbnailGrid(null); // null signals a refresh at the current zoom level
                 }
             }
         }
 
-        // Refresh the Clickable Images Grid
-        private bool RefreshClickableImagesGrid(int state)
+        // Refresh the ThumbnailGrid
+        public ThumbnailGridRefreshStatus RefreshThumbnailGrid(bool? zoomIn)
         {
-            // when called without a forceUpdate argument, assume
-            // that we don't need to force the update of all images
-            return this.RefreshClickableImagesGrid(state, false);
-        }
-
-        private bool RefreshClickableImagesGrid(int state, bool forceUpdate)
-        {
-            if (this.ClickableImagesGrid == null)
+            if (this.ThumbnailGrid == null)
             {
-                return false;
+                return ThumbnailGridRefreshStatus.Aborted;
             }
-            this.clickableImagesZoomedOutStates.TryGetValue(state, out int desiredWidth);
-            Util.NativeMethods.TransformPixelsToDeviceIndependentPixels(desiredWidth, desiredWidth, out double unitX, out _);
-            return this.ClickableImagesGrid.Refresh(unitX, new Size(this.ClickableImagesGrid.Width, this.ClickableImagesGrid.Height), forceUpdate, state);
+            // Find the current height of the available space and split it the number of rows defined by the state. i.e. state 1 is 2 rows, 2 is 3 rows, etc.
+            // However, if the resulting image is less than a minimum height, then ignore it.
+            //if (!resizing && cellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight) return ThumbnailGridRefreshStatus.AtMaximumZoomLevel;
+            return this.ThumbnailGrid.Refresh(this.ThumbnailGrid.Width, this.ThumbnailGrid.Height, zoomIn);
         }
 
         private void TimerSlider_Tick(object sender, EventArgs e)
         {
             this.timerSlider.Stop();
-            this.RefreshClickableImagesGrid(this.ClickableImagesState);
+            this.RefreshThumbnailGrid(null); // null signals a refresh at the current zoom level
         }
         #endregion
 
@@ -1006,7 +1012,7 @@ namespace Timelapse.Images
                     ? e.GetPosition(this.ImageToDisplay)
                     : e.GetPosition(this.VideoPlayer.Video);
                 this.mouseDownSender = (UIElement)sender;
-
+                mouseDownLocation = this.transformGroup.Transform(mouseDownLocation); // In case we are panning
                 // If its more than the given time interval since the last click, then we are on the 2nd click of a double click
                 // If we aren't then we are on the first click and thus we want to reset the time.
                 TimeSpan timeSinceLastClick = DateTime.Now - this.mouseDoubleClickTime;
@@ -1054,6 +1060,7 @@ namespace Timelapse.Images
 
             if (this.isPanning)
             {
+
                 // If the left button is pressed, translate (pan) across the scaled image or video
                 // We hide the magnifying glass during panning so it won't be distracting.
                 if (e.LeftButton == MouseButtonState.Pressed)
@@ -1066,6 +1073,7 @@ namespace Timelapse.Images
                         if (this.imageToDisplayScale.ScaleX != 1.0 || this.imageToDisplayScale.ScaleY != 1.0)
                         {
                             this.Cursor = Cursors.ScrollAll;    // Change the cursor to a panning cursor
+                            mousePosition = this.transformGroup.Transform(mousePosition);
                             this.TranslateImage(mousePosition);
                         }
                     }
@@ -1156,36 +1164,26 @@ namespace Timelapse.Images
             // Eliminate overly exuberant mouse wheel events
             // Check the time interval between mouse wheel events. If below a threshold, ignore the event.
             // 1. This manages rapid turns of the wheel that would otherwise cause over-shooting of desired zoom.
-            // 2. It introduces a longer time threshold to switch from the image to the clickable grid, in order to give a natural 'break point' between the two.
+            // 2. It introduces a longer time threshold to switch from the image to the ThumbnailGrid, in order to give a natural 'break point' between the two.
             // 3. A windows 10 bug (so it seems) generates 2 mouse wheel events for every mouse wheel click
             //    This tries to catch that and eliminate the second click. 
-            TimeSpan shortInterval = TimeSpan.FromMilliseconds(50);
-            TimeSpan longInterval = TimeSpan.FromMilliseconds(400);
 
             TimeSpan timeDifference = DateTime.Now - lastMouseWheelDateTime;
-            if (timeDifference < shortInterval)
+            if (timeDifference < TimeSpan.FromMilliseconds(500)) // At least a 500 msecs delay in use of the scroll wheel is needed between transitions
             {
-                // Always ignore mouse wheel clicks on very short time intervals. See above.
-                return;
-            }
+                if (zoomIn == true &&
+                    ((this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                     || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
+                {
+                    // Pause on the transition from unzoomed image/video to zoomed image/video
+                    return;
+                }
 
-            if (timeDifference < longInterval && zoomIn == false)
-            {
-                // If we are zooming out and on the transition between going from the image/video to the clickable view, or between clickable views 
-                // we need at least a longInterval of time between now and the last click
-                if (this.IsClickableImagesGridVisible == true)             // Always wait at least a long time interval if the clickable images grid is visible, to slow transitions between states
+                if (zoomIn == false &&
+                    ((this.ImageToDisplay.Visibility == Visibility.Visible && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
+                      || (this.VideoPlayer.Visibility == Visibility.Visible && this.VideoPlayer.IsUnScaled == true)))
                 {
-                    // Always wait at least a long time interval if the clickable images grid is visible, to slow transitions between states
-                    return;
-                }
-                if (this.ImageToDisplay.IsVisible == true && this.imageToDisplayScale.ScaleX == Constant.MarkableCanvas.ImageZoomMinimum)
-                {
-                    // we are viewing the unscaled image and on the transition to go to the clickable view
-                    return;
-                }
-                if (this.ImageToDisplay.IsVisible == false && this.VideoPlayer.IsUnScaled == true)                                 // or the unscaled video
-                {
-                    // we are viewing the unscaled video and on the transition to go to the clickable view
+                    // Pause on the transition from unscaled image/video to thumbnail Grid
                     return;
                 }
             }
@@ -1222,11 +1220,11 @@ namespace Timelapse.Images
             this.VideoPlayer.Width = this.ActualWidth;
             this.VideoPlayer.Height = this.ActualHeight;
 
-            this.ClickableImagesGrid.Width = this.ActualWidth;
-            this.ClickableImagesGrid.Height = this.ActualHeight;
-            if (this.ClickableImagesGrid.Visibility == Visibility.Visible)
+            this.ThumbnailGrid.Width = this.ActualWidth;
+            this.ThumbnailGrid.Height = this.ActualHeight;
+            if (this.ThumbnailGrid.Visibility == Visibility.Visible)
             {
-                // Refresh the clickable image grid only via the timer, where it will 
+                // Refresh the ThumbnailGrid only via the timer, where it will 
                 // try to refresh only if the SizeChanged event doesn't refire after the given interval i.e.,
                 // when the user pauses or completes the manual resizing action
                 this.timerResize.Stop();
@@ -1241,11 +1239,11 @@ namespace Timelapse.Images
             // this.bookmark.Reset();
         }
 
-        // Refresh the clickable image grid when the timer fires 
+        // Refresh the ThumbnailGrid when the timer fires 
         private void TimerResize_Tick(object sender, EventArgs e)
         {
             this.timerResize.Stop();
-            if (this.RefreshClickableImagesGrid(this.ClickableImagesState) == false)
+            if (ThumbnailGridRefreshStatus.NotEnoughSpaceForEvenOneCell == this.RefreshThumbnailGrid(null)) // null signals a refresh at the current zoom level
             {
                 // We couldn't show at least one image in the overview, so go back to the normal view
                 this.SwitchToImageView();
@@ -1256,7 +1254,7 @@ namespace Timelapse.Images
         {
             // redraw markers so they're in the right place to appear in the magnifying glass
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
             // update the magnifying glass's contents
             this.RedrawMagnifyingGlassIfVisible();
         }
@@ -1265,14 +1263,14 @@ namespace Timelapse.Images
         private void ImageToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
 
         // Whenever the image size changes, refresh the markers so they appear in the correct place
         private void VideoToDisplay_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 
@@ -1309,25 +1307,25 @@ namespace Timelapse.Images
                     // Will hide detection boxes, if any
                     if (!e.IsRepeat)
                     {
-                        if (IsClickableImagesGridVisible == false)
+                        if (IsThumbnailGridVisible == false)
                         {
-                            this.RedrawBoundingBoxes();
+                            this.RefreshBoundingBoxes();
                         }
                         else
                         {
-                            this.ClickableImagesGrid.ShowOrHideBoundingBoxes(false);
+                            this.ThumbnailGrid.RefreshBoundingBoxesAndEpisodeInfo();
                         }
                     }
                     break;
                 case Key.P:
                     // Show previous/next image in epesode in a popup, regardless of the current selection
-                    if (!this.IsClickableImagesGridVisible && !e.IsRepeat)
+                    if (!this.IsThumbnailGridVisible && !e.IsRepeat)
                     {
                         this.EpisodePopupIsVisible(true);
                     }
                     break;
                 //case Key.X:
-                //  Used for testing changes of the OffsetLens direction
+                //  Used for testing changes of the OffsetLens direction, which is currently turned off
                 //    if (this.OffsetLens.Direction == OffsetLensDirection.NorthEast)
                 //    {
                 //        this.OffsetLens.SetDirection(OffsetLensDirection.NorthWest);
@@ -1360,13 +1358,13 @@ namespace Timelapse.Images
                     // Will show detection boxes, if any
                     if (!e.IsRepeat)
                     {
-                        if (IsClickableImagesGridVisible == false)
+                        if (IsThumbnailGridVisible == false)
                         {
-                            this.RedrawBoundingBoxes();
+                            this.RefreshBoundingBoxes();
                         }
                         else
                         {
-                            this.ClickableImagesGrid.ShowOrHideBoundingBoxes(true);
+                            this.ThumbnailGrid.RefreshBoundingBoxesAndEpisodeInfo();
                         }
                     }
                     break;
@@ -1424,7 +1422,7 @@ namespace Timelapse.Images
             this.imageToDisplayTranslation.Y += newY - center.Y;
 
             this.RedrawMarkers();
-            this.RedrawBoundingBoxes();
+            this.RefreshBoundingBoxes();
         }
         #endregion
 

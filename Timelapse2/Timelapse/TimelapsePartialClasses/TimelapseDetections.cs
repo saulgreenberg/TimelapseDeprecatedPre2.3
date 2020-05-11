@@ -10,7 +10,7 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // for each image, get a list of detections and fill in the bounding box information for it. 
-        // ADD TEST FOR MULTIPLE CLICKABLE IMAGE GRID AND FOR VIDEO
+        // ADD TEST FOR MULTIPLE THUMBNAILGRID AND FOR VIDEO
         public BoundingBoxes GetBoundingBoxesForCurrentFile(long fileID)
         {
             BoundingBoxes bboxes = new BoundingBoxes();

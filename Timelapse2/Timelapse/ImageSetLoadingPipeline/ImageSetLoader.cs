@@ -57,7 +57,7 @@ namespace Timelapse.ImageSetLoadingPipeline
         }
 
         public List<string> ImagesSkippedAsFilePathTooLong { get; set; }
-        public ImageSetLoader(string imageSetFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageSetLoader(string imageSetFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(dataHandler, nameof(dataHandler));
@@ -122,7 +122,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                     }
                     string relativePath = directoryName.Replace(absolutePathPart, string.Empty).TrimEnd(Path.DirectorySeparatorChar);
 
-                    ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler, state);
+                    ImageLoader loader = new ImageLoader(imageSetFolderPath, relativePath, fileInfo, dataHandler);
 
                     Task loaderTask = loader.LoadImageAsync(() =>
                     {
@@ -172,7 +172,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 {
                     if (this.LastLoadComplete.File.IsVideo)
                     {
-                        folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo512.Value;
+                        folderLoadProgress.BitmapSource = Constant.ImageValues.BlankVideo.Value;
                     }
                     else
                     {

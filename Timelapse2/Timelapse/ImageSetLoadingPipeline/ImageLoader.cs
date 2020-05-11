@@ -5,7 +5,6 @@ using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline
 {
@@ -16,7 +15,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     {
         private readonly FileInfo fileInfo;
         private readonly DataEntryHandler dataHandler;
-        private readonly TimelapseState state;
+        // private readonly TimelapseState state;
         private readonly string relativePath;
         private readonly string imageSetFolderPath;
 
@@ -50,7 +49,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 if (this.bitmapSource == null)
                 {
                     // Lazy load
-                    var task = this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.TransientLoading);
+                    var task = this.File.LoadBitmapAsync(this.FolderPath, ImageDisplayIntentEnum.Ephemeral, ImageDimensionEnum.UseWidth);
                     task.Wait();
 
                     var loadResult = task.Result;
@@ -65,11 +64,11 @@ namespace Timelapse.ImageSetLoadingPipeline
             }
         }
 
-        public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler, TimelapseState state)
+        public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler)
         {
             this.fileInfo = fileInfo;
             this.dataHandler = dataHandler;
-            this.state = state;
+            //this.state = state;
             this.imageSetFolderPath = imageSetFolderPath;
             this.relativePath = relativePath;
         }

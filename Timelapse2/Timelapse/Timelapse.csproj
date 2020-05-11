@@ -177,11 +177,11 @@
     <Compile Include="Controls\BusyCancelIndicator.xaml.cs">
       <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImage.xaml.cs">
-      <DependentUpon>ClickableImage.xaml</DependentUpon>
+    <Compile Include="Controls\ThumbnailInCell.xaml.cs">
+      <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ClickableImagesGrid.xaml.cs">
-      <DependentUpon>ClickableImagesGrid.xaml</DependentUpon>
+    <Compile Include="Controls\ThumbnailGrid.xaml.cs">
+      <DependentUpon>ThumbnailGrid.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\DialogWindow.cs" />
     <Compile Include="Controls\OffsetLens.cs" />
@@ -209,7 +209,9 @@
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\FlashEnum.cs" />
+    <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
+    <Compile Include="Enums\ThumbnailGridRefreshStatus.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />
     <Compile Include="Controls\DataEntryDateTime.cs" />
     <Compile Include="Controls\DataEntryUtcOffset.cs" />
@@ -402,11 +404,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ClickableImage.xaml">
+    <Page Include="Controls\ThumbnailInCell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ClickableImagesGrid.xaml">
+    <Page Include="Controls\ThumbnailGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -811,14 +813,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\BlankVideo.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\BlankVideo128.jpg" />
-    <Resource Include="Resources\BlankVideo256.jpg" />
-    <Resource Include="Resources\BlankVideo512.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\BlankVideoWIthoutLargePlayButton.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\JSONImport_32x.png" />

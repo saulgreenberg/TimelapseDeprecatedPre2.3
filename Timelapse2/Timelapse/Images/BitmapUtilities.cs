@@ -52,13 +52,6 @@ namespace Timelapse.Images
             }
         }
 
-        // Return true only if the video file exists - we then assume its also displayable.
-        // Not the best, but ...
-        public static bool IsVideoFileDisplayable(string path)
-        {
-            return File.Exists(path);
-        }
-
         // TODO Check this, as we changed the bitmap cache options from OnDemand to OnLoad to ensure file deletions would work
         public static BitmapSource GetBitmapFromFileWithPlayButton(string path, Nullable<int> desiredWidth = null, BitmapCacheOption bitmapCacheOption = BitmapCacheOption.OnLoad)
         {
@@ -108,7 +101,7 @@ namespace Timelapse.Images
         }
 
         // Return  3 points (vertices) that inscribe a triangle into the circle defined by a center point and a radius, 
-        private static PointCollection GetTriangleVerticesInscribedInCircle(Point center, float radius)
+        public static PointCollection GetTriangleVerticesInscribedInCircle(Point center, float radius)
         {
             PointCollection points = new PointCollection();
             for (int i = 0; i < 3; i++)

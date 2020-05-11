@@ -86,6 +86,10 @@ namespace Timelapse.Controls
                 // Only autoplay if the video is visible (i.e., NewValue is true)
                 this.autoPlayDelayTimer.Start();
             }
+            else
+            {
+                this.autoPlayDelayTimer.Stop();
+            }
         }
         #endregion
 
@@ -363,7 +367,6 @@ namespace Timelapse.Controls
                 this.Pause();
             }
         }
-
         #endregion
 
         #region Private Callbacks (Size Changed, various controls, etc)
@@ -416,7 +419,7 @@ namespace Timelapse.Controls
         private void Video_MediaOpened(object sender, RoutedEventArgs e)
         {
             this.ShowPosition();
-            if (this.CBAutoPlay.IsChecked == true)
+            if (this.CBAutoPlay.IsChecked == true && this.Visibility == Visibility.Visible)
             {
                 this.autoPlayDelayTimer.Start();
             }
