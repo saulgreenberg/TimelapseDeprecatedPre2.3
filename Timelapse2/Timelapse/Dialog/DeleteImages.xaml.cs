@@ -23,7 +23,6 @@ namespace Timelapse.Dialog
         // these variables will hold the values of the passed in parameters
         private readonly FileDatabase fileDatabase;
         private readonly ImageCache imageCache;
-        private readonly MarkableCanvas markableCanvas;
         private readonly List<ImageRow> filesToDelete;
         private readonly bool deleteImageAndData;
         private readonly bool deleteCurrentImageOnly;
@@ -38,19 +37,17 @@ namespace Timelapse.Dialog
         /// -deleteData is true when the data associated with that image should be deleted.
         /// -useDeleteFlags is true when the user is trying to delete images with the deletion flag set, otherwise its the current image being deleted
         /// </summary>
-        public DeleteImages(Window owner, FileDatabase fileDatabase, ImageCache imageCache, MarkableCanvas markableCanvas, List<ImageRow> filesToDelete, bool deleteImageAndData, bool deleteCurrentImageOnly) : base(owner)
+        public DeleteImages(Window owner, FileDatabase fileDatabase, ImageCache imageCache, List<ImageRow> filesToDelete, bool deleteImageAndData, bool deleteCurrentImageOnly) : base(owner)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
             ThrowIf.IsNullArgument(imageCache, nameof(imageCache));
-            ThrowIf.IsNullArgument(markableCanvas, nameof(markableCanvas));
             ThrowIf.IsNullArgument(filesToDelete, nameof(filesToDelete));
 
             this.InitializeComponent();
 
             this.fileDatabase = fileDatabase;
             this.imageCache = imageCache;
-            this.markableCanvas = markableCanvas;
             this.filesToDelete = filesToDelete;
             this.deleteImageAndData = deleteImageAndData;
             this.deleteCurrentImageOnly = deleteCurrentImageOnly;
@@ -216,14 +213,15 @@ namespace Timelapse.Dialog
                 foreach (ImageRow image in imagesToDelete)
                 {
                     // We need to release the file handle to various images as otherwise we won't be able to move them
-                    // First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
-                    if (currentFileID == image.ID)
-                    {
-                        ImageRow.ClearBitmap();
-                    }
-                    // Second, release the image cache   
+                    //// First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
+                    //if (currentFileID == image.ID)
+                    //{
+                    //    // SAULXXX THIS DOESNT DO ANYTHING!!!
+                    //    ImageRow.ClearBitmap();
+                    //}
+                    // Release the image cache for this ID, if its actually in the cache  
                     this.imageCache.TryInvalidate(image.ID);
-
+                    GC.Collect(); // See if this actually gets rid of the pointer to the image, as otherwise we get occassional exceptions
                     // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
                     // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlag and ImageQuality values. 
                     // SAULXXX A good way is to put an 'image.ImageFileExists' field in, and then do various tests on that.

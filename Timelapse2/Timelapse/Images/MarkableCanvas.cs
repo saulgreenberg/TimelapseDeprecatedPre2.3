@@ -888,7 +888,7 @@ namespace Timelapse.Images
                 }
                 //else if (this.IsThumbnailGridVisible == true && this.ThumbnailGridState > 1)
                 else if (this.IsThumbnailGridVisible == true)
-                    {
+                {
                     // State: currently zoomed in on ThumbnailGrid, but not at the minimum step
                     // Zoom in another step
                     //this.ThumbnailGridState--;
@@ -899,7 +899,7 @@ namespace Timelapse.Images
                         // So try again by zooming in another step
                         this.TryZoomInOrOut(zoomIn, imageMousePosition, videoMousePosition);
                     }
-                    else if (status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel 
+                    else if (status == ThumbnailGridRefreshStatus.AtMaximumZoomLevel
                         || status == ThumbnailGridRefreshStatus.Aborted)
 
                     {
@@ -917,7 +917,7 @@ namespace Timelapse.Images
                         }
                     }
                 }
-                else if (this.IsThumbnailGridVisible == true )
+                else if (this.IsThumbnailGridVisible == true)
                 {
                     // State: zoomed in on ThumbnailGrid, but at the minimum step
                     // Switch to the image or video, depending on what was last displayed

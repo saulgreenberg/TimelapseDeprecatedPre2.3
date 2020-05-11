@@ -149,6 +149,7 @@ namespace Timelapse
                     this.MarkableCanvas_UpdateMarkers();
                 }
             }
+
             this.DataGridSelectionsTimer_Reset();
 
             // Set the file player status

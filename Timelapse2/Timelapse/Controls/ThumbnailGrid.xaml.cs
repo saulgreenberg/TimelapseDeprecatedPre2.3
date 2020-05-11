@@ -696,7 +696,7 @@ namespace Timelapse.Controls
             }
 
             int gridIndex = 0;
-   
+
             ThumbnailInCell tic;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 

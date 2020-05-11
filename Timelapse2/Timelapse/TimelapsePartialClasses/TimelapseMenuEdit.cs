@@ -183,7 +183,7 @@ namespace Timelapse
                 return;
             }
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
-            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, this.MarkableCanvas, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
+            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();
             if (result == true)
             {
