@@ -92,6 +92,13 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        #region Public Reset
+        public void Reset()
+        {
+            this.thumbnailInCells = null;
+            this.Level = 0;
+        }
+        #endregion
         #region Public Refresh 
         // Rebuild the grid, based on 
         // - fitting the image into as many cells of the same size that can fit within the grid
@@ -107,7 +114,7 @@ namespace Timelapse.Controls
                 return ThumbnailGridRefreshStatus.Aborted;
             }
 
-            bool? showMoreCells = !showFewerCells;
+            bool? showMoreCells = !showFewerCells; // For clarity in reading code
             // Set the zoomOut levels, but abort if we are at either zoom limit
             if (showMoreCells == true && this.Level >= Constant.ThumbnailGrid.MaxRows)
             {
@@ -225,7 +232,7 @@ namespace Timelapse.Controls
             }
 
             // Reconstruct the Grid with the appropriate rows/columns 
-            if (this.ReconstructGrid(cellWidth, desiredCellHeight, gridWidth, gridHeight, FileTableStartIndex, navigating) == false)
+            if (this.ReconstructGrid(cellWidth, desiredCellHeight, gridWidth, gridHeight, fileTableCount, FileTableStartIndex, navigating) == false)
             {
                 // Abort as the grid cannot  display even a single image
                 Mouse.OverrideCursor = null;
@@ -463,7 +470,7 @@ namespace Timelapse.Controls
 
         #region Reconstruct the grid (using a background worker to display thumbnails dynamically), including clearing it
         private BackgroundWorker BackgroundWorker;
-        private bool ReconstructGrid(double cellWidth, double cellHeight, double gridWidth, double gridHeight, int fileTableStartIndex, bool navigating)
+        private bool ReconstructGrid(double cellWidth, double cellHeight, double gridWidth, double gridHeight, int fileTableCount, int fileTableStartIndex, bool navigating)
         {
             int fileTableIndex;
             this.BackgroundWorker = new BackgroundWorker()
@@ -586,13 +593,13 @@ namespace Timelapse.Controls
                 {
                     // Navigation. The grid layout / cell size doesn't change during navigation,
                     // so this method uses the grid as is while reusing any thumbnails it can
-                    this.ReuseGrid(cellWidth, cellHeight, fileTableStartIndex);
+                    this.ReuseGrid(cellWidth, cellHeight, fileTableCount, fileTableStartIndex);
                 }
                 else
                 {
                     // Resize. The grid layout changes, so it has to be reconstructed.  
                     // However, because the cell size is the same, we can reusue existing thumbnails 
-                    if (this.RebuildButReuseGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableStartIndex) == false)
+                    if (this.RebuildButReuseGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableCount, fileTableStartIndex) == false)
                     {
                         // We can't even fit a single cell into the grid, so abort
                         return false;
@@ -604,7 +611,7 @@ namespace Timelapse.Controls
                 // Zoom level change, 
                 // The grid and /or cell size will have changed.
                 // We have to rebuild the grid from scratch, including regenerating all thumbnails sized to fit into the grid
-                if (this.RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableStartIndex) == false)
+                if (this.RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableCount, fileTableStartIndex) == false)
                 {
                     // We can't even fit a single cell into the grid, so abort
                     return false;
@@ -657,12 +664,12 @@ namespace Timelapse.Controls
         // Rebuild the grid with a thumbnailInCell user control in each cell, but try to reuse thumbnails.
         // Note that this should be called only if the thumbnail size is known not to have changed (e.g., during navigation or resize events) 
         // Typically invoked for resizing actions.
-        private bool RebuildButReuseGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableIndex)
+        private bool RebuildButReuseGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableCount, int fileTableIndex)
         {
             if (this.thumbnailsAlreadyInGrid.Count == 0)
             {
                 // Since there are no reusable thumbnails, we may as well rebuild the grid from scratch
-                return RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableIndex);
+                return RebuildGrid(gridWidth, gridHeight, cellWidth, cellHeight, fileTableCount, fileTableIndex);
             }
             // Calculated the number of rows/columns that can fit into the available space,
             int rowCount = Convert.ToInt32(Math.Floor(gridHeight / cellHeight));
@@ -689,7 +696,7 @@ namespace Timelapse.Controls
             }
 
             int gridIndex = 0;
-            int fileTableCount = this.FileTable.RowCount;
+   
             ThumbnailInCell tic;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 
@@ -729,7 +736,7 @@ namespace Timelapse.Controls
 
         // Reuse the grid (including reusing existing thumbnails) as the grid nor cell size has  changed.
         // Typically invoked for navigation actions.
-        private void ReuseGrid(double cellWidth, double cellHeight, int fileTableIndex)
+        private void ReuseGrid(double cellWidth, double cellHeight, int fileTableCount, int fileTableIndex)
         {
             if (this.thumbnailsAlreadyInGrid.Count > 0)
             {
@@ -738,7 +745,6 @@ namespace Timelapse.Controls
                 int gridIndex = 0;
                 int rowCount = this.AvailableRows;
                 int columnCount = this.AvailableColumns;
-                int fileTableCount = this.FileTable.RowCount;
                 this.thumbnailInCells = new List<ThumbnailInCell>();
 
                 // Add an existing thumbnail to the grid.
@@ -746,10 +752,11 @@ namespace Timelapse.Controls
                 {
                     for (int currentColumn = 0; currentColumn < columnCount && fileTableIndex < fileTableCount; currentColumn++)
                     {
-                        // Check to see if the thumbnail already exists in a reusable form in the grid. 
+                        // Check to see if the thumbnail already exists in a reusable form in the grid 
+                        // and that it hasn't been deleted since the last refresh. 
                         string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
                         ThumbnailInCell thumbnailInCell = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
-                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null)
+                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null || File.Exists(path) == false)
                         {
                             // A reusable thumbnail isn't available, so create one
                             thumbnailInCell = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
@@ -775,7 +782,7 @@ namespace Timelapse.Controls
 
         // Rebuild the grid by clearing it, and then recreating it with an empty thumbnailInCell user control in each cell
         // Typically invoked for zooming in/out actions.
-        private bool RebuildGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableIndex)
+        private bool RebuildGrid(double gridWidth, double gridHeight, double cellWidth, double cellHeight, int fileTableCount, int fileTableIndex)
         {
             // Calculated the number of rows/columns that can fit into the available space,
             int rowCount = Convert.ToInt32(Math.Floor(gridHeight / cellHeight));
@@ -802,7 +809,6 @@ namespace Timelapse.Controls
             }
 
             int gridIndex = 0;
-            int fileTableCount = this.FileTable.RowCount;
             ThumbnailInCell thumbnailInCell;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 

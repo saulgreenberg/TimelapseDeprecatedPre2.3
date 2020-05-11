@@ -980,7 +980,7 @@ namespace Timelapse.Images
         }
 
         // Refresh the ThumbnailGrid
-        private ThumbnailGridRefreshStatus RefreshThumbnailGrid(bool? zoomIn)
+        public ThumbnailGridRefreshStatus RefreshThumbnailGrid(bool? zoomIn)
         {
             if (this.ThumbnailGrid == null)
             {
@@ -1012,7 +1012,7 @@ namespace Timelapse.Images
                     ? e.GetPosition(this.ImageToDisplay)
                     : e.GetPosition(this.VideoPlayer.Video);
                 this.mouseDownSender = (UIElement)sender;
-
+                mouseDownLocation = this.transformGroup.Transform(mouseDownLocation); // In case we are panning
                 // If its more than the given time interval since the last click, then we are on the 2nd click of a double click
                 // If we aren't then we are on the first click and thus we want to reset the time.
                 TimeSpan timeSinceLastClick = DateTime.Now - this.mouseDoubleClickTime;
@@ -1060,6 +1060,7 @@ namespace Timelapse.Images
 
             if (this.isPanning)
             {
+
                 // If the left button is pressed, translate (pan) across the scaled image or video
                 // We hide the magnifying glass during panning so it won't be distracting.
                 if (e.LeftButton == MouseButtonState.Pressed)
@@ -1072,6 +1073,7 @@ namespace Timelapse.Images
                         if (this.imageToDisplayScale.ScaleX != 1.0 || this.imageToDisplayScale.ScaleY != 1.0)
                         {
                             this.Cursor = Cursors.ScrollAll;    // Change the cursor to a panning cursor
+                            mousePosition = this.transformGroup.Transform(mousePosition);
                             this.TranslateImage(mousePosition);
                         }
                     }
