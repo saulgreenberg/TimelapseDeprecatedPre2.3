@@ -20,7 +20,7 @@ namespace Timelapse.Images
         /// <summary>
         /// Set / Get the Zoom value on the magnifying glass
         /// </summary>
-        public double Zoom { get; set; }
+        public double ZoomFactor { get; set; }
 
         /// <summary>
         /// Set/Get whether the magnifying lens is showing (visible)
@@ -64,7 +64,7 @@ namespace Timelapse.Images
             this.Parent = markableCanvas;
             this.VerticalAlignment = VerticalAlignment.Top;
             this.Visibility = Visibility.Collapsed;
-            this.Zoom = Constant.MarkableCanvas.MagnifyingGlassDefaultZoom;
+            this.ZoomFactor = Constant.MarkableCanvas.MagnifyingGlassDefaultZoom; // A 'just in case' default
 
             this.lensAngle = 0;
             this.magnifyingGlassAngle = 0;
@@ -192,7 +192,7 @@ namespace Timelapse.Images
                 ViewboxUnits = BrushMappingMode.Absolute,
                 ViewportUnits = BrushMappingMode.RelativeToBoundingBox,
                 Viewport = new Rect(0, 0, 1, 1),
-                Viewbox = new Rect(magnifiedLocation.X - this.Zoom / 2.0, magnifiedLocation.Y - this.Zoom / 2.0, this.Zoom, this.Zoom)
+                Viewbox = new Rect(magnifiedLocation.X - this.ZoomFactor / 2.0, magnifiedLocation.Y - this.ZoomFactor / 2.0, this.ZoomFactor, this.ZoomFactor)
             };
             // Finally, fill the magnifying glass with this brush
             this.magnifierLens.Fill = magnifierBrush;

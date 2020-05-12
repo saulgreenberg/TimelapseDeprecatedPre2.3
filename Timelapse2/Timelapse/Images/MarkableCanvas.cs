@@ -164,7 +164,7 @@ namespace Timelapse.Images
 
         // magnifying glass, including increment for increasing or decreasing magnifying glass zoom
         private readonly MagnifyingGlass magnifyingGlass;
-        private readonly double magnifyingGlassZoomStep;
+        private double magnifyingGlassZoomStep;
 
         // Time of the last mousewheel event
         private DateTime lastMouseWheelDateTime = DateTime.Now;
@@ -280,8 +280,7 @@ namespace Timelapse.Images
 
             // set up the magnifying glass
             this.magnifyingGlass = new MagnifyingGlass(this);
-            this.magnifyingGlassZoomStep = Constant.MarkableCanvas.MagnifyingGlassZoomIncrement;
-            this.OffsetLens.ZoomFactor = Constant.MarkableCanvas.OffsetLensDefaultZoom;
+
 
             Canvas.SetZIndex(this.magnifyingGlass, 999); // Should always be in front
             this.Children.Add(this.magnifyingGlass);
@@ -318,10 +317,17 @@ namespace Timelapse.Images
             this.SetMagnifiersAccordingToCurrentState(false, false);
         }
 
+        // Set the various magnifier / offset lens states.
         // Hide the magnifiers initially, as the mouse pointer may not be atop the canvas
         private void MarkableCanvas_Loaded(object sender, RoutedEventArgs e)
         {
             MagnifierManager.SetMagnifier(VideoPlayer.Video, OffsetLens);
+            this.magnifyingGlass.ZoomFactor = Util.GlobalReferences.TimelapseState.MagnifyingGlassZoomFactor;
+            this.magnifyingGlassZoomStep = Constant.MarkableCanvas.MagnifyingGlassZoomIncrement;
+            this.OffsetLens.ZoomFactor = Util.GlobalReferences.TimelapseState.OffsetLensZoomFactor;
+
+            // Hide the magnifiers initially:
+            // the mouse pointer may not be atop the canvas and it would appear in an odd place
             this.SetMagnifiersAccordingToCurrentState(false, false);
         }
 
@@ -728,9 +734,9 @@ namespace Timelapse.Images
 
         #region Public / Private methods: Magnifier Drawing and Zooming
         /// <summary>
-        /// Zoom in the magnifying glass image  by the amount defined by the property MagnifierZoomDelta
+        /// Zoom in/out of the magnifying glass / offset lens image (whichever is currently visible) by the zoom step
         /// </summary>
-        public void MagnifierZoomIn()
+        public void MagnifierOrOffsetChangeZoomLevel(ZoomDirection zoomDirection)
         {
             // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
             if (this.IsThumbnailGridVisible)
@@ -739,35 +745,25 @@ namespace Timelapse.Images
             }
             if (this.magnifyingGlass.IsVisible)
             {
-                this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() - this.magnifyingGlassZoomStep);
+                double zoomStep = (zoomDirection == ZoomDirection.ZoomIn) ? -this.magnifyingGlassZoomStep : this.magnifyingGlassZoomStep;
+                this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoomFactor() + zoomStep);
             }
             else if (this.OffsetLens.Show)
             {
                 // Adjust the new zoom level for the offset lens, making sure its not below the minimum
-                double newZoomLevel = this.OffsetLens.ZoomFactor - Constant.MarkableCanvas.OffsetLensZoomIncrement;
-                this.OffsetLens.ZoomFactor = (newZoomLevel <= Constant.MarkableCanvas.OffsetLensMinimumZoom) ? Constant.MarkableCanvas.OffsetLensMinimumZoom : newZoomLevel;
-            }
-        }
+                double zoomStep = (zoomDirection == ZoomDirection.ZoomIn) ? -Constant.MarkableCanvas.OffsetLensZoomIncrement : Constant.MarkableCanvas.OffsetLensZoomIncrement;
+                double newZoomFactor = this.OffsetLens.ZoomFactor + zoomStep;
 
-        /// <summary>
-        /// Zoom out the magnifying glass image  by the amount defined by the property MagnifierZoomDelta
-        /// </summary>
-        public void MagnifierZoomOut()
-        {
-            // Process zoom requests only if the magnifiers are visible, and only when the particular image/video magnifier is being displayed
-            if (this.IsThumbnailGridVisible)
-            {
-                return;
-            }
-            if (this.magnifyingGlass.IsVisible)
-            {
-                this.SetMagnifyingGlassZoom(this.GetMagnifyingGlassZoom() + this.magnifyingGlassZoomStep);
-            }
-            else if (this.OffsetLens.Show)
-            {
-                // Adjust the new zoom level for the offset lens, making sure its not below the minimum
-                double newZoomLevel = this.OffsetLens.ZoomFactor + Constant.MarkableCanvas.OffsetLensZoomIncrement;
-                this.OffsetLens.ZoomFactor = (newZoomLevel > Constant.MarkableCanvas.OffsetLensMaximumZoom) ? Constant.MarkableCanvas.OffsetLensMaximumZoom : newZoomLevel;
+                // Make sure the zoom factor is within bounds
+                if (newZoomFactor <= Constant.MarkableCanvas.OffsetLensMinimumZoom)
+                {
+                    newZoomFactor = Constant.MarkableCanvas.OffsetLensMinimumZoom;
+                }
+                else if (newZoomFactor > Constant.MarkableCanvas.OffsetLensMaximumZoom)
+                {
+                    newZoomFactor = Constant.MarkableCanvas.OffsetLensMaximumZoom;
+                }
+                this.OffsetLens.ZoomFactor = newZoomFactor;
             }
         }
 
@@ -785,7 +781,8 @@ namespace Timelapse.Images
             {
                 value = Constant.MarkableCanvas.MagnifyingGlassMinimumZoom;
             }
-            this.magnifyingGlass.Zoom = value;
+            this.magnifyingGlass.ZoomFactor = value;
+            Util.GlobalReferences.TimelapseState.MagnifyingGlassZoomFactor = value;
 
             // update magnifier content if there is something to magnify
             if (this.ImageToMagnify.Source != null && this.ImageToDisplay.ActualWidth > 0)
@@ -797,9 +794,9 @@ namespace Timelapse.Images
         /// <summary>
         /// Gets or sets the amount we should zoom (scale) the image in the magnifying glass
         /// </summary>
-        private double GetMagnifyingGlassZoom()
+        private double GetMagnifyingGlassZoomFactor()
         {
-            return this.magnifyingGlass.Zoom;
+            return this.magnifyingGlass.ZoomFactor;
         }
 
         private void RedrawMagnifyingGlassIfVisible()

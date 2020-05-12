@@ -38,6 +38,7 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.Log, value); }
         }
 
+        // This is depracated, but we have to leave it in as the database requires this field
         public bool MagnifyingGlassEnabled
         {
             get { return this.Row.GetBooleanField(Constant.DatabaseColumn.MagnifyingGlass); }
@@ -88,6 +89,7 @@ namespace Timelapse.Database
             {
                 new ColumnTuple(Constant.DatabaseColumn.Selection, (int)this.FileSelection),
                 new ColumnTuple(Constant.DatabaseColumn.Log, this.Log),
+                // The MagnifyingGlass is deprecated, but we have to leave it in as the database requires it
                 new ColumnTuple(Constant.DatabaseColumn.MagnifyingGlass, this.MagnifyingGlassEnabled),
                 new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, this.MostRecentFileID),
                 new ColumnTuple(Constant.DatabaseColumn.TimeZone, this.TimeZone),

@@ -43,7 +43,7 @@ namespace Timelapse
             this.MenuItemEpisodeOptions.IsEnabled = filesSelected;
             this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.State.MagnifyingGlassOffsetLensEnabled;
             this.MenuItemImageAdjuster.IsEnabled = filesSelected;
             this.MenuItemDialogsOnOrOff.IsEnabled = imageSetAvailable;
             this.MenuItemAdvancedTimelapseOptions.IsEnabled = true;
@@ -63,7 +63,7 @@ namespace Timelapse
             this.ControlsPanel.IsEnabled = filesSelected;  // If images don't exist, the user shouldn't be allowed to interact with the control tray
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.MarkableCanvas.IsEnabled = filesSelected;
-            this.MarkableCanvas.MagnifiersEnabled = filesSelected && this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.MarkableCanvas.MagnifiersEnabled = filesSelected && this.State.MagnifyingGlassOffsetLensEnabled;
 
             if (filesSelected == false)
             {

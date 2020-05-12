@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using Timelapse.Dialog;
+using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
 
@@ -26,9 +27,9 @@ namespace Timelapse
         // Display Magnifier: toggle on / off
         private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)
         {
-            this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = !this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MarkableCanvas.MagnifiersEnabled = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
-            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled;
+            this.State.MagnifyingGlassOffsetLensEnabled = !this.State.MagnifyingGlassOffsetLensEnabled;
+            this.MarkableCanvas.MagnifiersEnabled = this.State.MagnifyingGlassOffsetLensEnabled;
+            this.MenuItemDisplayMagnifyingGlass.IsChecked = this.State.MagnifyingGlassOffsetLensEnabled;
         }
 
         // Increase magnification of the magnifying glass. 
@@ -38,7 +39,7 @@ namespace Timelapse
             // the effect more visible through a menu option versus the keyboard equivalent
             for (int i = 0; i < 6; i++)
             {
-                this.MarkableCanvas.MagnifierZoomIn();
+                this.MarkableCanvas.MagnifierOrOffsetChangeZoomLevel(ZoomDirection.ZoomIn);
             }
         }
 
@@ -49,7 +50,7 @@ namespace Timelapse
             // the effect more visible through a menu option versus the keyboard equivalent
             for (int i = 0; i < 6; i++)
             {
-                this.MarkableCanvas.MagnifierZoomOut();
+                this.MarkableCanvas.MagnifierOrOffsetChangeZoomLevel(ZoomDirection.ZoomOut);
             }
         }
 

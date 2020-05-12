@@ -22,6 +22,9 @@ namespace Timelapse.Util
         public DeleteFolderManagementEnum DeleteFolderManagement { get; set; }
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
+        public bool MagnifyingGlassOffsetLensEnabled { get; set; }
+        public double MagnifyingGlassZoomFactor { get; set; }
+        public double OffsetLensZoomFactor { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
         public RecencyOrderedList<string> MostRecentImageSets { get; private set; }
         public Rect QuickPasteWindowPosition { get; set; }
@@ -59,6 +62,7 @@ namespace Timelapse.Util
             this.ReadSettingsFromRegistry();
         }
         #endregion
+
         #region Read from registry
         /// <summary>
         /// Read all standard settings from registry
@@ -78,8 +82,11 @@ namespace Timelapse.Util
                 this.EpisodeTimeThreshold = registryKey.GetTimeSpanAsSeconds(Constant.WindowRegistryKeys.EpisodeTimeThreshold, TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault));
                 this.FilePlayerSlowValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
+                this.MagnifyingGlassOffsetLensEnabled = registryKey.GetBoolean(Constant.WindowRegistryKeys.MagnifyingGlassOffsetLensEnabled, true);
+                this.MagnifyingGlassZoomFactor = registryKey.GetDouble(Constant.WindowRegistryKeys.MagnifyingGlassZoomFactor, Constant.MarkableCanvas.MagnifyingGlassDefaultZoom);
                 this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentImageSets = registryKey.GetRecencyOrderedList(Constant.WindowRegistryKeys.MostRecentlyUsedImageSets);
+                this.OffsetLensZoomFactor = registryKey.GetDouble(Constant.WindowRegistryKeys.OffsetLensZoomFactor, Constant.MarkableCanvas.OffsetLensDefaultZoom);
                 this.QuickPasteWindowPosition = registryKey.GetRect(Constant.WindowRegistryKeys.QuickPasteWindowPosition, new Rect(0.0, 0.0, 0.0, 0.0));
                 this.SuppressAmbiguousDatesDialog = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressAmbiguousDatesDialog, false);
                 this.SuppressCsvExportDialog = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressCsvExportDialog, false);
@@ -176,6 +183,9 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.FilePlayerSlowValue, this.FilePlayerSlowValue);
                 registryKey.Write(Constant.WindowRegistryKeys.FilePlayerFastValue, this.FilePlayerFastValue);
                 registryKey.Write(Constant.WindowRegistryKeys.DesiredImageRendersPerSecond, this.Throttles.DesiredImageRendersPerSecond);
+                registryKey.Write(Constant.WindowRegistryKeys.MagnifyingGlassOffsetLensEnabled, this.MagnifyingGlassOffsetLensEnabled);
+                registryKey.Write(Constant.WindowRegistryKeys.MagnifyingGlassZoomFactor, this.MagnifyingGlassZoomFactor);
+                registryKey.Write(Constant.WindowRegistryKeys.OffsetLensZoomFactor, this.OffsetLensZoomFactor);
                 registryKey.Write(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(Constant.WindowRegistryKeys.MostRecentlyUsedImageSets, this.MostRecentImageSets);
                 registryKey.Write(Constant.WindowRegistryKeys.QuickPasteWindowPosition, this.QuickPasteWindowPosition);

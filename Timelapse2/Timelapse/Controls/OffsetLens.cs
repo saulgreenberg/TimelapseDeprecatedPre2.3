@@ -50,6 +50,23 @@ namespace Timelapse.Controls
                 }
             }
         }
+
+        // We override the base class as we have to save the current state of the current zoom.
+        // In reality, we could just eliminate ZoomFactor and just used the saved state, but its
+        // best to keep it part of the offset lens object for clarity
+        public new double ZoomFactor
+        {
+            get
+            {
+                return base.ZoomFactor;
+            }
+            set
+            {
+                base.ZoomFactor = value;
+                Util.GlobalReferences.TimelapseState.OffsetLensZoomFactor = value;
+            }
+        }
+
         #endregion
 
         #region Private variables

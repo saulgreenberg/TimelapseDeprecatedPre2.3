@@ -430,7 +430,7 @@ namespace Timelapse.Constant
         public const double MagnifyingGlassDefaultZoom = 60;
         public const double MagnifyingGlassMaximumZoom = 15;  // Max is a smaller number
         public const double MagnifyingGlassMinimumZoom = 100; // Min is the larger number
-        public const double MagnifyingGlassZoomIncrement = 0.05;
+        public const double MagnifyingGlassZoomIncrement = 5;
 
         public const int MagnifyingGlassDiameter = 250;
         public const int MagnifyingGlassHandleStart = 200;
@@ -463,6 +463,11 @@ namespace Timelapse.Constant
 
         // Avalon doc state
         public const string AvalonDockSavedLayout = "AvalonDockSavedLayout";
+
+        // Magnifying / Offset lens glass
+        public const string MagnifyingGlassOffsetLensEnabled = "MagnifyingGlassOffsetLensEnabled";
+        public const string MagnifyingGlassZoomFactor = "MagnifyingGlassZoomFactor";
+        public const string OffsetLensZoomFactor = "OffsetLensZoomFactor";
 
         // Various Recognition-related values
         public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";

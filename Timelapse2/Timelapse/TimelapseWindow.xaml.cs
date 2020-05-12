@@ -75,7 +75,6 @@ namespace Timelapse
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
 
-
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);
@@ -209,7 +208,7 @@ namespace Timelapse
                 // sync image set properties
                 if (this.MarkableCanvas != null)
                 {
-                    this.DataHandler.FileDatabase.ImageSet.MagnifyingGlassEnabled = this.MarkableCanvas.MagnifiersEnabled;
+                    this.State.MagnifyingGlassOffsetLensEnabled = this.MarkableCanvas.MagnifiersEnabled;
                 }
 
                 // Persist the current ID in the database image set, so we can go back to that image when restarting timelapse
@@ -898,8 +897,7 @@ namespace Timelapse
                 this.speechSynthesizer.SpeakAsync(text);
             }
         }
-
-
         #endregion
+
     }
 }

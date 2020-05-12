@@ -110,11 +110,11 @@ namespace Timelapse
                     break;
                 case Key.U:                 // Increase the magnifing glass zoom level
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
-                    this.MarkableCanvas.MagnifierZoomIn();
+                    this.MarkableCanvas.MagnifierOrOffsetChangeZoomLevel(ZoomDirection.ZoomIn);
                     break;
                 case Key.D:                 // Decrease the magnifing glass zoom level
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
-                    this.MarkableCanvas.MagnifierZoomOut();
+                    this.MarkableCanvas.MagnifierOrOffsetChangeZoomLevel(ZoomDirection.ZoomOut);
                     break;
                 case Key.Right:             // next /previous image
                 case Key.Left:              // previous image
