@@ -177,7 +177,8 @@ namespace Timelapse
             // So we just create that list here, where we also reset the emphasis of some of the markers
             List<Marker> markers = new List<Marker>();
             DataEntryCounter selectedCounter = this.FindSelectedCounter();
-            for (int counter = 0; counter < this.markersOnCurrentFile.Count; counter++)
+            int markersOnCurrentFileCount = this.markersOnCurrentFile.Count;
+            for (int counter = 0; counter < markersOnCurrentFileCount; counter++)
             {
                 MarkersForCounter markersForCounter = this.markersOnCurrentFile[counter];
                 if (this.DataEntryControls.ControlsByDataLabel.TryGetValue(markersForCounter.DataLabel, out _) == false)

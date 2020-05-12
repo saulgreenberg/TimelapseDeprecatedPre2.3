@@ -716,7 +716,8 @@ namespace Timelapse.Controls
 
                 // If the values of success imagerows (as defined by the fileIDs) are the same as the first one,
                 // then return that as they all have a common value. Otherwise return an empty string.
-                for (int i = 1; i < fileIds.Count; i++)
+                int fileIdsCount = (fileIds == null) ? 0 : fileIds.Count;
+                for (int i = 1; i < fileIdsCount; i++)
                 {
                     imageRow = this.FileDatabase.FileTable[fileIds[i]];
                     string new_contents = imageRow.GetValueDisplayString(dataLabel);

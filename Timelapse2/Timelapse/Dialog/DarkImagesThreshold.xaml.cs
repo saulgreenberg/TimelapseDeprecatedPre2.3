@@ -237,6 +237,7 @@ namespace Timelapse.Dialog
                 List<ImageRow> selectedFiles = this.fileDatabase.FileTable.ToList();
                 List<ColumnTuplesWithWhere> filesToUpdate = new List<ColumnTuplesWithWhere>();
                 int fileIndex = 0;
+                int selectedFilesCount = (selectedFiles == null) ? 0 : selectedFiles.Count;
                 foreach (ImageRow file in selectedFiles)
                 {
                     if (Token.IsCancellationRequested)
@@ -283,8 +284,8 @@ namespace Timelapse.Dialog
                     fileIndex++;
                     if (this.ReadyToRefresh())
                     {
-                        int percentDone = (int)(100.0 * fileIndex / selectedFiles.Count);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFiles.Count, file.File), true, false));
+                        int percentDone = (int)(100.0 * fileIndex / selectedFilesCount);
+                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFilesCount, file.File), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }
@@ -296,8 +297,8 @@ namespace Timelapse.Dialog
                 this.IsAnyDataUpdated = true;
                 this.fileDatabase.UpdateFiles(filesToUpdate);
                 return filesToUpdate.Count > 0
-                ? String.Format("{0} files examined, with {1} updated to reflect changes.", selectedFiles.Count, filesToUpdate.Count)
-                : String.Format("{0} files examined. None were updated as nothing has changed.", selectedFiles.Count);
+                ? String.Format("{0} files examined, with {1} updated to reflect changes.", selectedFilesCount, filesToUpdate.Count)
+                : String.Format("{0} files examined. None were updated as nothing has changed.", selectedFilesCount);
             }, this.Token).ConfigureAwait(true);
         }
         #endregion

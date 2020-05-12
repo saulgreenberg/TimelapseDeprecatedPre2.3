@@ -226,7 +226,7 @@ namespace Timelapse.Dialog
 
                 double totalImages = this.fileDatabase.CountAllCurrentlySelectedFiles;
                 Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
-                for (int imageIndex = 0; imageIndex < this.fileDatabase.CountAllCurrentlySelectedFiles; ++imageIndex)
+                for (int imageIndex = 0; imageIndex < totalImages; ++imageIndex)
                 {
                     // Provide feedback if the operation was cancelled during the database update
                     if (Token.IsCancellationRequested == true)

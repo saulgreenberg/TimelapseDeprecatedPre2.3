@@ -694,7 +694,8 @@ namespace Timelapse.Database
             // We should now have a partial SQL expression in the form of: INSERT INTO DataTable ( File, RelativePath, Folder, DateTime, ... )  VALUES 
             // Create a dataline from each of the image properties, add it to a list of data lines, then do a multiple insert of the list of datalines to the database
             // We limit the datalines to RowsPerInsert
-            for (int image = 0; image < files.Count; image += Constant.DatabaseValues.RowsPerInsert)
+            int fileCount = (files == null) ? 0 : files.Count;
+            for (int image = 0; image < fileCount; image += Constant.DatabaseValues.RowsPerInsert)
             {
                 // PERFORMANCE: Reimplement Markers as a foreign key, as many rows will be empty. However, this will break backwards/forwards compatability
                 List<List<ColumnTuple>> markerRows = new List<List<ColumnTuple>>();
@@ -704,7 +705,7 @@ namespace Timelapse.Database
                 StringBuilder queryValues = new StringBuilder();
 
                 // This loop creates a dataline containing this image's property values, e.g., ( 'IMG_1.JPG', 'relpath', 'folderfoo', ...) ,  
-                for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < files.Count); insertIndex++)
+                for (int insertIndex = image; (insertIndex < (image + Constant.DatabaseValues.RowsPerInsert)) && (insertIndex < fileCount); insertIndex++)
                 {
                     queryValues.Append(Sql.OpenParenthesis);
 
@@ -806,7 +807,7 @@ namespace Timelapse.Database
 
                 if (onFileAdded != null)
                 {
-                    int lastImageInserted = Math.Min(files.Count - 1, image + Constant.DatabaseValues.RowsPerInsert);
+                    int lastImageInserted = Math.Min(fileCount - 1, image + Constant.DatabaseValues.RowsPerInsert);
                     onFileAdded.Invoke(files[lastImageInserted], lastImageInserted);
                 }
             }
@@ -1603,7 +1604,8 @@ namespace Timelapse.Database
         // If there is no next displayable file, then find the closest previous file before the provided row that is displayable.
         public int GetCurrentOrNextDisplayableFile(int startIndex)
         {
-            for (int index = startIndex; index < this.CountAllCurrentlySelectedFiles; index++)
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
+            for (int index = startIndex; index < countAllCurrentlySelectedFiles; index++)
             {
                 if (this.IsFileDisplayable(index))
                 {
@@ -1633,14 +1635,15 @@ namespace Timelapse.Database
         // However, if there is no greater ID (i.e., we are at the end) return the last row. 
         public int FindClosestImageRow(long fileID)
         {
-            for (int rowIndex = 0; rowIndex < this.CountAllCurrentlySelectedFiles; ++rowIndex)
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
+            for (int rowIndex = 0, maxCount = countAllCurrentlySelectedFiles; rowIndex < maxCount; ++rowIndex)
             {
                 if (this.FileTable[rowIndex].ID >= fileID)
                 {
                     return rowIndex;
                 }
             }
-            return this.CountAllCurrentlySelectedFiles - 1;
+            return countAllCurrentlySelectedFiles - 1;
         }
 
         // Find the file whose ID is closest to the provided ID in the current image set
@@ -1662,6 +1665,7 @@ namespace Timelapse.Database
             // if this proves too troublesome.
             int firstIndex = 0;
             int lastIndex = this.CountAllCurrentlySelectedFiles - 1;
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
             while (firstIndex <= lastIndex)
             {
                 int midpointIndex = (firstIndex + lastIndex) / 2;
@@ -1686,9 +1690,9 @@ namespace Timelapse.Database
             }
 
             // all IDs in the selection are smaller than fileID
-            if (firstIndex >= this.CountAllCurrentlySelectedFiles)
+            if (firstIndex >= countAllCurrentlySelectedFiles)
             {
-                return this.CountAllCurrentlySelectedFiles - 1;
+                return countAllCurrentlySelectedFiles - 1;
             }
 
             // all IDs in the selection are larger than fileID
@@ -2154,7 +2158,8 @@ namespace Timelapse.Database
             {
                 using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
                 {
-                    for (int i = 0; i < dataTable.Rows.Count; i++)
+                    int dataTableRowCount = dataTable.Rows.Count;
+                    for (int i = 0; i < dataTableRowCount; i++)
                     {
                         DataRow row = dataTable.Rows[i];
                         this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
@@ -2178,7 +2183,8 @@ namespace Timelapse.Database
                 this.detectionCategoriesDictionary = new Dictionary<string, string>();
 
                 DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
-                for (int i = 0; i < dataTable.Rows.Count; i++)
+                int dataTableRowCount = dataTable.Rows.Count;
+                for (int i = 0; i < dataTableRowCount; i++)
                 {
                     DataRow row = dataTable.Rows[i];
                     this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
@@ -2234,7 +2240,8 @@ namespace Timelapse.Database
                     this.classificationCategoriesDictionary = new Dictionary<string, string>();
                 }
                 DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories);
-                for (int i = 0; i < dataTable.Rows.Count; i++)
+                int dataTableRowCount = dataTable.Rows.Count;
+                for (int i = 0; i < dataTableRowCount; i++)
                 {
                     DataRow row = dataTable.Rows[i];
                     this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);

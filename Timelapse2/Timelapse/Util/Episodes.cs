@@ -60,7 +60,7 @@ namespace Timelapse
                 return;
             }
 
-            bool inRange = Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, out int first, out int last, out int count);
+            bool inRange = Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, out int first, out int count);
 
             // foreach fileindex within the episode, ranging from first to last, add its episode information to the episode dictionary
             for (int i = 1; i <= count; i++)
@@ -77,15 +77,15 @@ namespace Timelapse
         /// <summary>
         /// Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
         /// </summary>
-        private static bool EpisodeGetAroundIndex(FileTable files, int index, out int first, out int last, out int count)
+        private static bool EpisodeGetAroundIndex(FileTable files, int index, out int first, out int count)
         {
             DateTime date1;
             DateTime date2;
             ImageRow file;
-
+            int fileCount = files.RowCount;
             // Default in case there is only one file in this episode
             first = index;
-            last = index;
+            int last = index;
             count = 1;
 
             // Note that numberOfFiles should never return zero if the provided index is valid
@@ -123,7 +123,7 @@ namespace Timelapse
             current = index + 1;
             file = files[index];
             date1 = file.DateTime;
-            while (current < files.Count() && maxSearch != 0)
+            while (current < fileCount && maxSearch != 0)
             {
                 file = files[current];
                 date2 = file.DateTime;

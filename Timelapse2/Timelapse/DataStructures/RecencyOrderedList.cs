@@ -100,7 +100,7 @@ namespace Timelapse.Util
                 leastRecent = this.list.Last.Value;
                 return true;
             }
-            leastRecent = default(TElement);
+            leastRecent = default;
             return false;
         }
 

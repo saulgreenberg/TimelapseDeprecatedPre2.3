@@ -430,7 +430,8 @@ namespace Timelapse.Database
             }
 
             uniqueOrderValues.Sort();
-            for (int control = 0; control < uniqueOrderValues.Count; ++control)
+            int uniqueOrderValuesCount = uniqueOrderValues.Count;
+            for (int control = 0; control < uniqueOrderValuesCount; ++control)
             {
                 int expectedOrder = control + 1;
                 if (uniqueOrderValues[control] != expectedOrder)

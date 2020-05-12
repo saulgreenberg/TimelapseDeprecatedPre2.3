@@ -41,7 +41,8 @@ namespace Timelapse.Database
 
                 // For each row in the data table, write out the columns in the same order as the 
                 // data labels in the template file
-                for (int row = 0; row < database.CountAllCurrentlySelectedFiles; row++)
+                int countAllCurrentlySelectedFiles = database.CountAllCurrentlySelectedFiles;
+                for (int row = 0; row < countAllCurrentlySelectedFiles; row++)
                 {
                     StringBuilder csvRow = new StringBuilder();
                     ImageRow image = database.FileTable[row];

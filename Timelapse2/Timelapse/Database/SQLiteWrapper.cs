@@ -1007,7 +1007,8 @@ namespace Timelapse.Database
         {
             List<string> columnDefinitions = GetSchemaColumnDefinitions(connection, tableName);
             int columnToRemove = -1;
-            for (int column = 0; column < columnDefinitions.Count; ++column)
+            int columnDefinitionsCount = columnDefinitions.Count;
+            for (int column = 0; column < columnDefinitionsCount; ++column)
             {
                 string columnDefinition = columnDefinitions[column];
                 if (columnDefinition.StartsWith(columnName))

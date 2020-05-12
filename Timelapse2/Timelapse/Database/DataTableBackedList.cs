@@ -68,7 +68,8 @@ namespace Timelapse.Database
             // Manipulation of data in a DataTable from within a foreach is common practice, suggesting whatever framework issue which invalidates the enumerator 
             // manifests only infrequently, but MSDN is ambiguous as to the level of support.  Enumerators returning the same row multiple times has been observed,
             // skipping of rows has not been.
-            for (int rowIndex = 0; rowIndex < this.DataTable.Rows.Count; ++rowIndex)
+            int rowCount = this.DataTable.Rows.Count;
+            for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
             {
                 yield return this.createRow(this.DataTable.Rows[rowIndex]);
             }

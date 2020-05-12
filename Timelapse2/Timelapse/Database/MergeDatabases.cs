@@ -70,14 +70,15 @@ namespace Timelapse.Database
             // We will later check to see if they match their counterparts in each database to merge in
             List<string> mergedDDBDataLabels = destinationDDB.SchemaGetColumns(Constant.DBTables.FileData);
 
-            for (int i = 0; i < sourceDDBFilePaths.Count; i++)
+            int sourceDDBFilePathsCount = sourceDDBFilePaths.Count;
+            for (int i = 0; i < sourceDDBFilePathsCount; i++)
             {
                 // Try to merge each database into the merged database
                 await Task.Run(() =>
                 {
                     // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
-                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)sourceDDBFilePaths.Count * 100.0),
-                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, sourceDDBFilePaths.Count),
+                    progress.Report(new ProgressBarArguments((int)((i + 1) / (double)sourceDDBFilePathsCount * 100.0),
+                        String.Format("Merging {0}/{1} databases. Please wait...", i + 1, sourceDDBFilePathsCount),
                         "Processing detections...",
                         false, false));
                     Thread.Sleep(250);
@@ -264,6 +265,7 @@ namespace Timelapse.Database
         }
 
         // Form: UPDATE dataTable SET IDColumn = (offset + dataTable.Id);
+        // UNUSED
         private static string QuerySetFolderInTable(string tableName, string folder)
         {
             return Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Sql.Quote(folder) + Sql.Semicolon;

@@ -77,8 +77,8 @@ namespace Timelapse.Util
             int topmostRowIndex = int.MaxValue; // Keeps track of the topmost row index, as this is the one we will want to scroll too
             DataRowView currentRow;                   // The current row being examined
             List<int> rowIndexesToSelect = new List<int>();
-            long currentID = 0;
-            int currentRowIndexThatMayContainID = 0;
+            long currentID;
+            int currentRowIndexThatMayContainID;
 
             foreach (Tuple<long, int> idRowIndex in idRowIndexes)
             {
@@ -106,7 +106,8 @@ namespace Timelapse.Util
                 {
                     // The ID is not in the row indicated by rowIndex. Search the datagrid for that ID, and then add it as one of the rows we should select
                     bool idFound = false;
-                    for (int index = 0; index < dataGrid.Items.Count; index++)
+                    int dataGridItemsCount = dataGrid.Items.Count;
+                    for (int index = 0; index < dataGridItemsCount; index++)
                     {
                         currentRow = dataGrid.Items[index] as DataRowView;
                         if ((long)currentRow.Row.ItemArray[0] == currentID)
