@@ -2110,7 +2110,8 @@ namespace Timelapse.Database
             {
                 foldersInJsonButNotInDB.Add(s);
             }
-            return foldersInDBListButNotInJSon.Count == 0;
+            // if there is at least one folder in both, it means that we have some recognition data that we can import.
+            return foldersInBoth.Count > 0;
         }
 
 
