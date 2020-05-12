@@ -42,9 +42,15 @@ namespace Timelapse.Database
                 isCorruptOrMissing = true;
                 return Constant.ImageValues.FileNoLongerAvailable.Value;
             }
-
+            // Our FFMPEG installation is the 64 bit version. In case someone is using a 32 bit machine, we use the MediaEncoder instead.
+            if (Environment.Is64BitOperatingSystem == false)
+            {
+                System.Diagnostics.Debug.Print("Can't use ffmpeg as this is a 32 bit machine. Using MediaEncoder instead");
+                return GetBitmapFromFileUsingMediaEncoder(imageFolderPath, desiredWidthOrHeight, displayIntent, imageDimension, out isCorruptOrMissing);
+            }
             try
             {
+
                 //Saul TO DO:
                 // Note: not sure of the cost of creating a new converter every time. May be better to reuse it?
                 Stream outputBitmapAsStream = new MemoryStream();
@@ -87,8 +93,11 @@ namespace Timelapse.Database
         // We do include it as a fallback for the odd case where ffmpeg doesn't work (I had that with a single video).
         public BitmapSource GetBitmapFromFileUsingMediaEncoder(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum _, out bool isCorruptOrMissing)
         {
+
             isCorruptOrMissing = true;
             string path = this.GetFilePath(imageFolderPath);
+            System.Diagnostics.Debug.Print("FFMPEG failed for some reason, so using MediaEncoder Instead on " + path);
+            
             if (!System.IO.File.Exists(path))
             {
                 return Constant.ImageValues.FileNoLongerAvailable.Value;
