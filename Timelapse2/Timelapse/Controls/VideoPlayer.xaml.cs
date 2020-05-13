@@ -100,23 +100,10 @@ namespace Timelapse.Controls
         /// <param name="source"></param>
         public void SetSource(Uri source)
         {
-            // Previous code to use cached thumbnails - Unused as it was only a test, but left here just in case I revisit it
-            // If the source and the thumbnail exists, show that as the background. This avoids the annoying black frames that otherwise appear for a few moments.
-            //string thumbnailpath = String.Empty;
-            //if (source != null)
-            //{
-            //    thumbnailpath = Path.Combine(Path.GetDirectoryName(source.LocalPath), Constant.File.VideoThumbnailFolderName, Path.GetFileNameWithoutExtension(source.LocalPath) + Constant.File.JpgFileExtension);
-            //}
+           // I think this is needed to release resources, but may be redundant
+            this.Video.Stop();
+            this.Video.Source = null;
 
-            //if (File.Exists(thumbnailpath))
-            //{
-            //    this.ThumbnailImage.Source = Images.BitmapUtilities.GetBitmapFromFileWithPlayButton(thumbnailpath);
-            //}
-
-            // MediaElement seems only deterministic about displaying the first frame when LoadedBehaviour is set to Pause, which isn't helpful as calls to
-            // Play() then have no effect.  This is a well known issue with various folks getting results.  The below combination of Play(), Pause() and Position
-            // seems to work, though neither Pause() or Position is sufficent on its own and black frames still get rendered if Position is set to zero or
-            // an especially small value.
             this.Video.Source = source;
             this.IsEnabled = true;
             double originalVolume = this.Video.Volume;

@@ -93,7 +93,6 @@ namespace Timelapse.Database
         // We do include it as a fallback for the odd case where ffmpeg doesn't work (I had that with a single video).
         public BitmapSource GetBitmapFromFileUsingMediaEncoder(string imageFolderPath, Nullable<int> desiredWidth, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum _, out bool isCorruptOrMissing)
         {
-
             isCorruptOrMissing = true;
             string path = this.GetFilePath(imageFolderPath);
             System.Diagnostics.Debug.Print("FFMPEG failed for some reason, so using MediaEncoder Instead on " + path);
@@ -132,6 +131,7 @@ namespace Timelapse.Database
                     if (timesTried-- <= 0)
                     {
                         isCorruptOrMissing = false;
+                        mediaPlayer.Stop();
                         return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
                     }
                 }
@@ -177,6 +177,7 @@ namespace Timelapse.Database
                         // TraceDebug.PrintMessage(String.Format("Video render returned a non-black frame after {0} times.", renderAttempt - 1));
                         mediaPlayer.Close();
                         isCorruptOrMissing = false;
+                        mediaPlayer.Stop();
                         return writeableBitmap;
                     }
 
@@ -193,6 +194,7 @@ namespace Timelapse.Database
             {
                 // We don't print the exception // (Exception exception)
                 // TraceDebug.PrintMessage(String.Format("VideoRow/LoadBitmap: Loading of {0} failed in Video - LoadBitmap. {0}", imageFolderPath));
+                mediaPlayer.Stop();
                 return BitmapUtilities.GetBitmapFromFileWithPlayButton("pack://application:,,,/Resources/BlankVideo.jpg", desiredWidth);
             }
         }
