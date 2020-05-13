@@ -170,6 +170,7 @@ namespace Timelapse.Controls
 
                 if (gridWidth == this.oldGridWidth && gridHeight == this.oldGridHeight)
                 {
+                    // If the grid size hasn't changed, we must be navigating
                     navigating = true;
                 }
                 else
@@ -756,7 +757,7 @@ namespace Timelapse.Controls
                         // and that it hasn't been deleted since the last refresh. 
                         string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
                         ThumbnailInCell thumbnailInCell = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
-                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null || File.Exists(path) == false)
+                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null)
                         {
                             // A reusable thumbnail isn't available, so create one
                             thumbnailInCell = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
