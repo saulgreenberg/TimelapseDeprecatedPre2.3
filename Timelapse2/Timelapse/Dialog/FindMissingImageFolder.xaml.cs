@@ -39,7 +39,7 @@ namespace Timelapse.Dialog
         {
             using (CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
             {
-                Title = "Select one or more folders ...",
+                Title = "Locate the folder" + this.missingFolderName + "...",
                 DefaultDirectory = this.folderPath,
                 IsFolderPicker = true,
                 Multiselect = false

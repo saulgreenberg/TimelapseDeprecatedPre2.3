@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -293,25 +294,95 @@ namespace Timelapse
 
             cursor = Mouse.OverrideCursor;
             Mouse.OverrideCursor = null;
+            string newFolderName = String.Empty;
+            
+
+            int attempt = 0;
+            string changePrefixFrom = String.Empty;
+            string changePrefixTo = String.Empty;
+            bool addPrefix = false;
+            bool removePrefix = false;
+            bool changePrefix = false;
             // Raise a dialog box for each image asking the user to locate the missing folder
             foreach (string relativePath in missingRelativePaths)
             {
-
+                //if (attempt == 1)
+                //{
+                //    string s = Path.Combine(fileDatabase.FolderPath, changePrefixTo, relativePath);
+                //    System.Diagnostics.Debug.Print("1 " + s);
+                //    s = Path.Combine(fileDatabase.FolderPath, relativePath.Remove(0, changePrefixFrom.Length));
+                //    System.Diagnostics.Debug.Print("2 " + s);
+                //    s = Path.Combine(fileDatabase.FolderPath, new Regex(Regex.Escape(changePrefixFrom)).Replace(relativePath, changePrefixTo, 1));
+                //    System.Diagnostics.Debug.Print("3 " + s);
+                //}
                 Dialog.FindMissingImageFolder findMissingImageFolderDialog;
-                findMissingImageFolderDialog = new Dialog.FindMissingImageFolder(this, fileDatabase.FolderPath, relativePath);
-                bool? result = findMissingImageFolderDialog.ShowDialog();
-                if (result == true)
+                if (attempt == 1 && addPrefix && Directory.Exists(Path.Combine(fileDatabase.FolderPath, changePrefixTo, relativePath)))
                 {
-                    ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, findMissingImageFolderDialog.NewFolderName);
-                    ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
-                    fileDatabase.UpdateFiles(columnToUpdateWithWhere);
+                    // We found the next folder by Adding a prefix to it
+                    newFolderName = Path.Combine(changePrefixTo, relativePath);
+                    //System.Diagnostics.Debug.Print("Found prefix " + newFolderName);
                 }
-                else if (findMissingImageFolderDialog.CancelAll)
+                // else if (attempt == 1 && removePrefix && Directory.Exists(Path.Combine(fileDatabase.FolderPath, relativePath.Remove(0, relativePath.IndexOf(changePrefixFrom)))))
+                else if (attempt == 1 && removePrefix && Directory.Exists(Path.Combine(fileDatabase.FolderPath, relativePath.Remove(0, changePrefixFrom.Length))))
                 {
-                    // stop trying to locate missing folders
-                    Mouse.OverrideCursor = cursor;
-                    break;
+                    // newFolderName = relativePath.Remove(0, relativePath.IndexOf(changePrefixFrom));
+                    newFolderName = relativePath.Remove(0, changePrefixFrom.Length);
+                    // System.Diagnostics.Debug.Print("removed prefix " + newFolderName);
                 }
+                //else if (attempt == 1 && changePrefix && Directory.Exists(Path.Combine(fileDatabase.FolderPath, Regex.Replace(relativePath, "\\" + changePrefixFrom + "\\" + changePrefixTo, "$1"))))
+                else if (attempt == 1 && changePrefix && Directory.Exists(Path.Combine(fileDatabase.FolderPath, new Regex(Regex.Escape(changePrefixFrom)).Replace(relativePath, changePrefixTo, 1))))
+                {
+                    newFolderName = new Regex(Regex.Escape(changePrefixFrom)).Replace(relativePath, changePrefixTo, 1);
+                    // System.Diagnostics.Debug.Print("changed prefix " + newFolderName);
+                }
+                else 
+                {
+                    // System.Diagnostics.Debug.Print("Did not find " + newFolderName);
+                    findMissingImageFolderDialog = new Dialog.FindMissingImageFolder(this, fileDatabase.FolderPath, relativePath);
+
+                    bool? result = findMissingImageFolderDialog.ShowDialog();
+                    if (result == true)
+                    {
+                        newFolderName = findMissingImageFolderDialog.NewFolderName;
+                        if (attempt == 0)
+                        {
+                            // at this point, the user has specified the first new folder location.
+                            // Try to find out how it differs, so we can modify and test other folder paths to see if we can find them.
+                            string commonSuffix = Compare.LongestCommonSuffix(newFolderName, relativePath);
+                            int suffixIndexInNewFolderName = newFolderName.LastIndexOf(commonSuffix);
+                            int suffixIndexInRelativePath = relativePath.LastIndexOf(commonSuffix);
+                            if (suffixIndexInNewFolderName > 0 && suffixIndexInRelativePath > 0)
+                            {
+                                // System.Diagnostics.Debug.Print("Change from " + relativePath.Remove(suffixIndexInRelativePath) + " to " + newFolderName.Remove(suffixIndexInNewFolderName));
+                                changePrefixFrom = relativePath.Remove(suffixIndexInRelativePath);
+                                changePrefixTo = newFolderName.Remove(suffixIndexInNewFolderName);
+                                changePrefix = true;
+                            }
+                            else if (suffixIndexInNewFolderName > 0)
+                            {
+                                changePrefixTo = newFolderName.Remove(suffixIndexInNewFolderName);
+                                addPrefix = true;
+                                // System.Diagnostics.Debug.Print("Add Prefix " + newFolderName.Remove(suffixIndexInNewFolderName));
+                            }
+                            else // suffixIndexInRelativePath > 0
+                            {
+                                // System.Diagnostics.Debug.Print("Remove Prefix " + relativePath.Remove(suffixIndexInRelativePath));
+                                changePrefixFrom = relativePath.Remove(suffixIndexInRelativePath);
+                                removePrefix = true;
+                            }
+                        }
+                        attempt++;
+                    }
+                    else if (findMissingImageFolderDialog.CancelAll)
+                    {
+                        // stop trying to locate missing folders
+                        Mouse.OverrideCursor = cursor;
+                        break;
+                    }
+                }
+                ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, newFolderName);
+                ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, relativePath);
+                fileDatabase.UpdateFiles(columnToUpdateWithWhere);
             }
             Mouse.OverrideCursor = cursor;
         }

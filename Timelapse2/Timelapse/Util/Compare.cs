@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Timelapse.Util
@@ -51,6 +52,36 @@ namespace Timelapse.Util
             List<string> firstNotSecond = list1.Except(list2).ToList();
             List<string> secondNotFirst = list2.Except(list1).ToList();
             return !firstNotSecond.Any() && !secondNotFirst.Any();
+        }
+
+        public static string LongestCommonSuffix(string s1, string s2)
+        {
+            string suffix = String.Empty;
+            if (s1 == null || s2 == null)
+            {
+                return suffix;
+            }
+            List<string> result = new List<string>();
+            int s1length = s1.Length;
+            int s2length = s2.Length;
+            int length = Math.Min(s1length, s2length);
+
+            // Starting from the last character of each string
+            for (int i = 0; i < length; i++)
+            {
+                
+                if (s1[s1length - i - 1] == s2[s2length - i - 1])
+                {
+                    // If the character is the same, add it to the suffix. 
+                    suffix = s1[s1length - i - 1] + suffix;
+                }
+                else
+                {
+                    // Otherwise we are done as we have the longest common suffix
+                    break;
+                }
+            }
+            return suffix;
         }
     }
 }

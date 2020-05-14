@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         mc:Ignorable="d"
-        Title="An image folder is missing"  Height="400" Width="650" MinHeight="425" MinWidth="400" Loaded="Window_Loaded">
+        Title="An image folder is missing"  Height="450" Width="650" MinHeight="425" MinWidth="400" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -19,12 +19,13 @@
         </Grid.RowDefinitions>
         <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"
                            
-                            Title="An Image Folder is Missing"
+                            Title="Locate the missing folder."
                             Problem="Timelapse could not locate an image folder."
                             Reason="You may have renamed the folder, or moved its images to another folder."
                             Solution="Locate the renamed folder that contains your images."
                             Result="Timelapse will 
                                       &#10;&#x2022; try to find those images within the new folder location;
+                                      &#10;&#x2022; check if any other missing folders are in that new folder location;
                                       &#10;&#x2022; update the 'Relative Path' field to that location." 
                             Hint="&#x2022;'Skip Folder' will still show the image's data, but will display a 'missing' placeholder image.
                                   &#10;&#x2022; 'Cancel All' will cancel all attempts to find any missing folder, including this one"  />

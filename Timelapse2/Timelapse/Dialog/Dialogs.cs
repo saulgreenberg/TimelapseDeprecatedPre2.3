@@ -585,14 +585,14 @@ namespace Timelapse.Dialog
                 // this should never happen
                 missingRelativePaths = new List<string>();
             }
-            MessageBox messageBox = new MessageBox("Multiple image folders cannot be found", owner, MessageBoxButton.OKCancel);
+            MessageBox messageBox = new MessageBox("Multiple image folders cannot be found. Locate them?", owner, MessageBoxButton.OKCancel);
             messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
             foreach (string relativePath in missingRelativePaths)
             {
                 messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
             }
-            messageBox.Message.Solution = "Selecting OK will raise additional dialog boxes, each asking you to locate a particular missing folder" + Environment.NewLine;
-            messageBox.Message.Solution += "Selecting Cancel will still display the image's data, along with a 'missing' image placeholder";
+            messageBox.Message.Solution = "OK raises one or more dialog boxes asking you to locate a particular missing folder." + Environment.NewLine;
+            messageBox.Message.Solution += "Cancel will still display the image's data, along with a 'missing' image placeholder";
             messageBox.Message.Icon = MessageBoxImage.Question;
             return messageBox.ShowDialog();
         }
