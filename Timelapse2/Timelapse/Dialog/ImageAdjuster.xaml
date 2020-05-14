@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Timelapse.Dialog"
         mc:Ignorable="d"
-        Title="Adjust image appearance" Height="150" Width="260" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Adjust image appearance" Height="175" Width="260" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closing="Window_Closing">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -16,26 +17,29 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <RadioButton Name="CBNone" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="0" Content="None" Margin="5" IsChecked="True" VerticalAlignment="Center" ToolTip="Clear special effects"/>
         <RadioButton Name="CBEdges" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="1" Content="Edges" Margin="0,5,5,5" VerticalAlignment="Center" ToolTip="Detect and show edges in the image"/>
         <RadioButton Name="CBSharpen" GroupName="SingleManipulation" Grid.Row="0" Grid.Column="2" Content="Sharpen" Margin="5,5,5,5" VerticalAlignment="Center" ToolTip="Sharpen the image (a subtle effect)" />
-        <Button Grid.Row="0" Grid.Column="3" Name="ButtonImageViewer"  Content="Open" Margin="5" HorizontalAlignment="Right" VerticalAlignment="Top" Click="ButtonImageViewer_Click" ToolTip="Open the image in an external photo viewer" />
-        <Button Grid.Row="1" Grid.Column="3" Name="ButtonReset" Content="Reset" Margin="5"  HorizontalAlignment="Right" Click="ButtonReset_Click" ToolTip="Reset the controls to their default (neutral) values" />
+
 
         <Label Name="ContrastLabel" Grid.Row="1" Grid.Column="0"  Content="Contrast" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-        <Slider Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Name="ContrastSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" IsMoveToPointEnabled="True"
+        <Slider Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Name="ContrastSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" Margin="0,0,5,0" IsMoveToPointEnabled="True"
                 Thumb.DragCompleted="ImageSliders_DragCompleted" ToolTip="Change the image contrast"/>
 
         <Label Name="BrightnessLabel" Grid.Row="2" Grid.Column="0" Content="Brightness" HorizontalAlignment="Right" VerticalAlignment="Top" />
-        <Slider Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Name="BrightnessSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" IsMoveToPointEnabled="True"
+        <Slider Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Name="BrightnessSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" Margin="0,0,5,0" IsMoveToPointEnabled="True"
                 Thumb.DragCompleted="ImageSliders_DragCompleted" ToolTip="Change the image brightness"/>
 
-
         <CheckBox  Name="CBGamma" Grid.Row="3" Grid.Column="0" Content="Gamma" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5,5,5,5" IsChecked="False" Checked="CBGamma_CheckedChanged" Unchecked="CBGamma_CheckedChanged"/>
-        <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Name="GammaSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" IsMoveToPointEnabled="True"
+        <Slider Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Name="GammaSlider" Maximum="100" Minimum="-100" Value="0" VerticalAlignment="Center" IsMoveToPointEnabled="True" Margin="0,0,5,0"
                 Thumb.DragCompleted="ImageSliders_DragCompleted"  IsEnabled="false" ToolTip="Change the image gamma. Use for clarifying very light and dark areas"/>
+        <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Top" Margin="10,0,10,0" Background="LightGray"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Margin="5,8,5,5">
+            <CheckBox Name="CBResetWhileNavigating" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="Reset on each image" ToolTip="Reset the image adjustments when navigating to a different image" HorizontalAlignment="Left" VerticalAlignment="Center" IsChecked="True"></CheckBox>
+            <Button Grid.Row="4" Grid.Column="2" Name="ButtonReset" Content="Defaults" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ButtonReset_Click" ToolTip="Reset the controls to their default (neutral) values" Margin="10,0,10,0"/>
+            <Button Grid.Row="4" Grid.Column="3" Name="ButtonImageViewer"  Content="Open"  HorizontalAlignment="Right" VerticalAlignment="Center" Click="ButtonImageViewer_Click" ToolTip="Open the image in an external photo viewer" />
+        </StackPanel>
     </Grid>
 </Window>

@@ -87,7 +87,7 @@ namespace Timelapse.Images
             }
 
             // Process the image based on the current image processing arguments. 
-            if (e.Contrast == this.lastContrast && e.Brightness == this.lastBrightness && e.DetectEdges == this.lastDetectEdges && e.Sharpen == this.lastSharpen && e.UseGamma == this.lastUseGamma && e.GammaValue == this.lastGammaValue)
+            if (e.ForceUpdate == false && (e.Contrast == this.lastContrast && e.Brightness == this.lastBrightness && e.DetectEdges == this.lastDetectEdges && e.Sharpen == this.lastSharpen && e.UseGamma == this.lastUseGamma && e.GammaValue == this.lastGammaValue))
             {
                 // If there is no change from the last time we processed an image, abort as it would not make any difference to what the user sees
                 return;

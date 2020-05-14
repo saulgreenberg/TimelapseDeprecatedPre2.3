@@ -75,12 +75,17 @@ namespace Timelapse.Dialog
         private void ConfigureWindowState(object sender, ImageStateEventArgs e)
         {
             // Reset the controls if its a new image
-            if (e.IsNewImage)
+            if (e.IsNewImage && this.CBResetWhileNavigating.IsChecked == true)
             {
                 this.ResetControlsToNeutralValues();
             }
+
             // Enable the controls only if a primary (non-differenced) single image is being displayed
             this.EnableControls(e.IsPrimaryImage);
+            if (e.IsPrimaryImage)
+            {
+                this.UpdateImageParametersAndGenerateEvent(true);
+            }
         }
 
         private void EnableControls(bool enabledState)
@@ -98,8 +103,6 @@ namespace Timelapse.Dialog
             this.ContrastLabel.Foreground = isEnabledAndNotGamma;
 
             this.CBGamma.Foreground = isEnabled; // Gamma always reflects enabled state
-
-
         }
         #endregion
 
@@ -108,14 +111,18 @@ namespace Timelapse.Dialog
         // Then generate an event to inform the Markable Canvase to update the image according to those paraemeters
         private void UpdateImageParametersAndGenerateEvent()
         {
+            UpdateImageParametersAndGenerateEvent(false);
+        }
+        private void UpdateImageParametersAndGenerateEvent(bool forceUpdate)
+        {
             if (this.AbortUpdate)
             {
                 return;
             }
 
             // We only update everything and send the event if the final values differ from the current values
-            if (this.Contrast != Convert.ToInt32(ContrastSlider.Value) || this.Brightness != Convert.ToInt32(BrightnessSlider.Value) || this.GammaValue != this.GammaSlider.Value
-                || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked || this.UseGamma != this.CBGamma.IsChecked)
+            if (forceUpdate || (this.Contrast != Convert.ToInt32(ContrastSlider.Value) || this.Brightness != Convert.ToInt32(BrightnessSlider.Value) || this.GammaValue != this.GammaSlider.Value
+                || this.DetectEdges != CBEdges.IsChecked || this.Sharpen != CBSharpen.IsChecked || this.UseGamma != this.CBGamma.IsChecked))
             {
                 this.Contrast = Convert.ToInt32(ContrastSlider.Value);
                 this.Brightness = Convert.ToInt32(BrightnessSlider.Value);
@@ -126,7 +133,7 @@ namespace Timelapse.Dialog
 
                 // Generate an event to inform the Markable Canvase to update the image. 
                 // Note that the last argument (to invoke an external image viewer) is always false, as that is handeld separately
-                this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, false));
+                this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, false, forceUpdate));
             }
         }
 
@@ -138,10 +145,9 @@ namespace Timelapse.Dialog
             this.BrightnessSlider.Value = 0;
             this.ContrastSlider.Value = 0;
             this.CBNone.IsChecked = true;
-            this.CBGamma.IsChecked = false;
             this.GammaSlider.Value = 1;
+            this.CBGamma.IsChecked = false;
             this.AbortUpdate = false;
-
         }
         #endregion
 
@@ -196,7 +202,7 @@ namespace Timelapse.Dialog
 
         protected virtual void OnImageProcessingParametersChanged(ImageAdjusterEventArgs e)
         {
-            ImageProcessingParametersChanged?.Invoke(this, e);
+            this.ImageProcessingParametersChanged?.Invoke(this, e);
         }
 
         #endregion
@@ -205,7 +211,12 @@ namespace Timelapse.Dialog
         {
             // Generate an event to inform the Markable Canvas, in this case to invoke the file viewer 
             // The only thing of importance in this call is that the final argument (openExternalViewer) is true. The other values will be ignored. 
-            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, true));
+            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, true, false));
+        }
+
+        private void ButtonSpinner_Spin(object sender, Xceed.Wpf.Toolkit.SpinEventArgs e)
+        {
+
         }
     }
 }
