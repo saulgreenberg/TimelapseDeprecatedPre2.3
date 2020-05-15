@@ -96,13 +96,47 @@ namespace Timelapse.Util
             return foundFiles;
         }
 
+        // Match each missing Folder name with one (and only one) counterpart in the allFolderPaths list.
+        // If even one missing folder name either does not match or matches more than one counterpart, return null
+        // Otherwise return a dictionary where the key is each missing folder path, and the value is its counterpart path
+        public static Dictionary<string, string> TryFindMissingFolders(string rootPath, List<string> missingFolderPaths)
+        {
+            if (missingFolderPaths == null)
+            {
+                return null;
+            }
+            List<string> allFolderPaths = new List<string>();
+            Util.FilesFolders.GetAllFoldersContainingAnImageOrVideo(rootPath, allFolderPaths, rootPath);
+            Dictionary<string, string> matchingFolders = new Dictionary<string, string>();
+            int matchingFoldersCount;
+            foreach (string missingFolderPath in missingFolderPaths)
+            {
+                string missingFolderName = Path.GetFileName(missingFolderPath);
+                matchingFoldersCount = 0;
+                foreach (string oneFolderPath in allFolderPaths)
+                {
+                    string allRelativePathName = Path.GetFileName(oneFolderPath);
+                    if (String.Equals(missingFolderName, allRelativePathName))
+                    {
+                        matchingFoldersCount++;
+                        matchingFolders.Add(missingFolderPath, oneFolderPath);
+                    }
+                }
+                if (matchingFoldersCount != 1)
+                {
+                    return null;
+                }
+            }
+            return matchingFolders;
+        }
         #region Private (internal) methods
         /// <summary>
         /// Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
+        /// If prefixPath is provided, it is stripped from the beginning of the matching folder paths, otherwise the full path is returned
         /// </summary>
         /// <param name="folderRoot"></param>
         /// <param name="folderPaths"></param>
-        private static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths)
+        private static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths, string prefixPath)
         {
             // Check the arguments for null 
             if (folderPaths == null)
@@ -121,7 +155,14 @@ namespace Timelapse.Util
             // Add a folder only if it contains one of the desired extensions
             if (CheckFolderForAtLeastOneImageOrVideoFiles(folderRoot) == true)
             {
+                if (String.IsNullOrEmpty(prefixPath) == false)
+                {
+                    folderPaths.Add(folderRoot.Substring(prefixPath.Length + 1));
+                }
+                else
+                { 
                 folderPaths.Add(folderRoot);
+                }
             }
 
             // Recursively descend subfolders, collecting directory info on the way
@@ -135,7 +176,7 @@ namespace Timelapse.Util
                 {
                     continue;
                 }
-                GetAllFoldersContainingAnImageOrVideo(subDir.FullName, folderPaths);
+                GetAllFoldersContainingAnImageOrVideo(subDir.FullName, folderPaths, prefixPath);
             }
         }
 
