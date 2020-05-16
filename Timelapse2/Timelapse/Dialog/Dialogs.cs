@@ -581,7 +581,7 @@ namespace Timelapse.Dialog
         /// DEPRACATED - CAN DELETE
         //public static bool? ImageSetLoadingMultipleImageFoldersNotFoundDialog(Window owner, List<string> missingRelativePaths)
         //{
-            
+
         //    if (missingRelativePaths == null)
         //    {
         //        // this should never happen

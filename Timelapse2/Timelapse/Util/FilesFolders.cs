@@ -164,8 +164,8 @@ namespace Timelapse.Util
                     folderPaths.Add(folderRoot.Substring(prefixPath.Length + 1));
                 }
                 else
-                { 
-                folderPaths.Add(folderRoot);
+                {
+                    folderPaths.Add(folderRoot);
                 }
             }
 

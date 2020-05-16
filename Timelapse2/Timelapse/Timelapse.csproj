@@ -204,8 +204,8 @@
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\MissingFoldersLocateEachFolder.xaml.cs">
-      <DependentUpon>MissingFoldersLocateEachFolder.xaml</DependentUpon>
+    <Compile Include="Dialog\MissingFoldersLocateFolders.xaml.cs">
+      <DependentUpon>MissingFoldersLocateFolders.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\SkipHiddenFiles.xaml.cs">
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
@@ -441,7 +441,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\MissingFoldersLocateEachFolder.xaml">
+    <Page Include="Dialog\MissingFoldersLocateFolders.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

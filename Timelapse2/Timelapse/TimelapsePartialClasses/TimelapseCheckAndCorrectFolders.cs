@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Timelapse.Database;
@@ -92,7 +91,7 @@ namespace Timelapse
                 Mouse.OverrideCursor = null;
                 // Present a dialog box that shows the possible match for each folder.
                 // The user can then confirm that they are correct, or request manual locaton of those folders, or cancel altogether.
-                MissingFoldersLocateEachFolder dialog = new MissingFoldersLocateEachFolder(fileDatabase.FolderPath, matchingFolderNames);
+                MissingFoldersLocateFolders dialog = new MissingFoldersLocateFolders(fileDatabase.FolderPath, matchingFolderNames);
                 result = dialog.ShowDialog();
                 Mouse.OverrideCursor = cursor;
                 if (result == true)

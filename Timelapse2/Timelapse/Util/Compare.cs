@@ -69,7 +69,7 @@ namespace Timelapse.Util
             // Starting from the last character of each string
             for (int i = 0; i < length; i++)
             {
-                
+
                 if (s1[s1length - i - 1] == s2[s2length - i - 1])
                 {
                     // If the character is the same, add it to the suffix. 

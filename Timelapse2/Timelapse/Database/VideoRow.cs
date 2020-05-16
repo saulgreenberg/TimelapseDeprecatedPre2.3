@@ -96,7 +96,7 @@ namespace Timelapse.Database
             isCorruptOrMissing = true;
             string path = this.GetFilePath(imageFolderPath);
             System.Diagnostics.Debug.Print("FFMPEG failed for some reason, so using MediaEncoder Instead on " + path);
-            
+
             if (!System.IO.File.Exists(path))
             {
                 return Constant.ImageValues.FileNoLongerAvailable.Value;
