@@ -96,9 +96,10 @@ namespace Timelapse.Util
             return foundFiles;
         }
 
-        // Match each missing Folder name with one (and only one) counterpart in the allFolderPaths list.
-        // If even one missing folder name either does not match or matches more than one counterpart, return null
-        // Otherwise return a dictionary where the key is each missing folder path, and the value is its counterpart path
+        // For each missingFolderPath, gets its folder name and search for its first counterpart in the subdirectory under rootPath.
+        // Returns a dictionary where 
+        // - key is each missing relativePath, 
+        // - value is the possible found relativePath, or String.Empty if there is no match
         public static Dictionary<string, string> TryFindMissingFolders(string rootPath, List<string> missingFolderPaths)
         {
             if (missingFolderPaths == null)
@@ -118,13 +119,16 @@ namespace Timelapse.Util
                     string allRelativePathName = Path.GetFileName(oneFolderPath);
                     if (String.Equals(missingFolderName, allRelativePathName))
                     {
+                        // We only return the first match, even if another match may exist 
                         matchingFoldersCount++;
                         matchingFolders.Add(missingFolderPath, oneFolderPath);
+                        continue;
                     }
                 }
-                if (matchingFoldersCount != 1)
+                if (matchingFoldersCount == 0)
                 {
-                    return null;
+                    // No match to this particular folder
+                    matchingFolders.Add(missingFolderPath, String.Empty);
                 }
             }
             return matchingFolders;

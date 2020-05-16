@@ -128,7 +128,7 @@ namespace Timelapse
 
             // Attempt 3. Generate multiple dialog boxes asking for the loation of each folder. 
             Mouse.OverrideCursor = null;
-            MissingFoldersLocateEachFolder missingFoldersLocateEachFolderDialog = new MissingFoldersLocateEachFolder(fileDatabase.FolderPath, missingRelativePaths);
+            MissingFoldersLocateEachFolder missingFoldersLocateEachFolderDialog = new MissingFoldersLocateEachFolder(fileDatabase.FolderPath, matchingFolderNames);
             result = missingFoldersLocateEachFolderDialog.ShowDialog();
             return;
 
