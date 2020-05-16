@@ -24,17 +24,6 @@ namespace Timelapse.Util
                 try
                 {
                     process.Start();
-                    // While the DEPRACATED code below seems like it would be more robust, process.Start() is not reliable in terms of 
-                    // how it returns true or false. For example, if that process is already running (such as a single instance video player), it would return false
-                    //if (process.Start())
-                    //{
-                    //    // success
-                    //    return true;
-                    //}
-                    //else
-                    //{
-                    //    return false;
-                    //}
                 }
                 catch (Exception exception)
                 {

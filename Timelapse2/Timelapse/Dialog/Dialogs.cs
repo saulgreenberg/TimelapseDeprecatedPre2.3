@@ -578,24 +578,26 @@ namespace Timelapse.Dialog
         /// <summary>
         /// If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
         /// </summary>
-        public static bool? ImageSetLoadingMultipleImageFoldersNotFoundDialog(Window owner, List<string> missingRelativePaths)
-        {
-            if (missingRelativePaths == null)
-            {
-                // this should never happen
-                missingRelativePaths = new List<string>();
-            }
-            MessageBox messageBox = new MessageBox("Multiple image folders cannot be found. Locate them?", owner, MessageBoxButton.OKCancel);
-            messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
-            foreach (string relativePath in missingRelativePaths)
-            {
-                messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
-            }
-            messageBox.Message.Solution = "OK raises one or more dialog boxes asking you to locate a particular missing folder." + Environment.NewLine;
-            messageBox.Message.Solution += "Cancel will still display the image's data, along with a 'missing' image placeholder";
-            messageBox.Message.Icon = MessageBoxImage.Question;
-            return messageBox.ShowDialog();
-        }
+        /// DEPRACATED - CAN DELETE
+        //public static bool? ImageSetLoadingMultipleImageFoldersNotFoundDialog(Window owner, List<string> missingRelativePaths)
+        //{
+
+        //    if (missingRelativePaths == null)
+        //    {
+        //        // this should never happen
+        //        missingRelativePaths = new List<string>();
+        //    }
+        //    MessageBox messageBox = new MessageBox("Multiple image folders cannot be found. Locate them?", owner, MessageBoxButton.OKCancel);
+        //    messageBox.Message.Problem = "Timelapse could not locate the following image folders" + Environment.NewLine;
+        //    foreach (string relativePath in missingRelativePaths)
+        //    {
+        //        messageBox.Message.Problem += "\u2022 " + relativePath + Environment.NewLine;
+        //    }
+        //    messageBox.Message.Solution = "OK raises one or more dialog boxes asking you to locate a particular missing folder." + Environment.NewLine;
+        //    messageBox.Message.Solution += "Cancel will still display the image's data, along with a 'missing' image placeholder";
+        //    messageBox.Message.Icon = MessageBoxImage.Question;
+        //    return messageBox.ShowDialog();
+        //}
 
         /// <summary>
         /// No images were found in the root folder or subfolders, so there is nothing to do

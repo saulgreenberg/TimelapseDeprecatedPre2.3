@@ -100,7 +100,7 @@ namespace Timelapse.Controls
         /// <param name="source"></param>
         public void SetSource(Uri source)
         {
-           // I think this is needed to release resources, but may be redundant
+            // I think this is needed to release resources, but may be redundant
             this.Video.Stop();
             this.Video.Source = null;
 
