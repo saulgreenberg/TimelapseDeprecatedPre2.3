@@ -163,6 +163,10 @@
                         <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" />
                     </MenuItem>
 
+                    <!-- Missing folders  or files -->
+                    <MenuItem Name="MenuItemFindMissingImage" Header="Try to find this missing image ..." IsEnabled="True" Click="MenuItemEditFindMissingImage_Click" ToolTip="Classify (or re-classify) files (excluding videos) that are dark (usualy night-time shots)"  />
+
+                   
                     <!-- Classify dark files...-->
                     <MenuItem Name="MenuItemOptionsDarkImages" Header="Classify dar_k images now..." IsEnabled="True" Click="MenuItemEditClassifyDarkImages_Click" ToolTip="Classify (or re-classify) files (excluding videos) that are dark (usualy night-time shots)"  />
 

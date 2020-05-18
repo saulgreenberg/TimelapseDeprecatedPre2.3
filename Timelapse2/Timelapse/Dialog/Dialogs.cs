@@ -574,6 +574,28 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Dialog Message: MissingFilesNotFound
+        public static void MissingFileSearchNoMatchesFoundDialog(Window owner, string fileName)
+        {
+            string title = "Timelapse could not find any matches to " + fileName;
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = "Timelapse tried to find the missing image with no success.";
+
+            messageBox.Message.Reason = "Timelapse searched the other folders in this image set, but could not find another file that: " + Environment.NewLine;
+            messageBox.Message.Reason += " - was named " + fileName + ", and  " + Environment.NewLine;
+            messageBox.Message.Reason += " - was not already associated with another image entry.";
+
+            messageBox.Message.Hint = "If the original file was:" + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 deleted, check your " + Constant.File.DeletedFilesFolder + " folder to see if its there." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 moved outside of this image set, then you will have to find it and move it back in." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 renamed, then you have to find it yourself and restore its original name." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Hint += "Of course, you can just leave things as they are, or delete this image's data field if it has little value to you.";
+
+            messageBox.Message.Icon = MessageBoxImage.Question;
+            messageBox.ShowDialog();
+        }
+        #endregion
         #region Dialog Message: ImageSetLoading
         /// <summary>
         /// If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.

@@ -201,6 +201,7 @@
     <Compile Include="Dialog\ExceptionShutdownDialog.xaml.cs">
       <DependentUpon>ExceptionShutdownDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\FileFolderSelection.cs" />
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
@@ -295,8 +296,8 @@
     <Compile Include="Dialog\FilePlayerOptions.xaml.cs">
       <DependentUpon>FilePlayerOptions.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\FindMissingImageFolder.xaml.cs">
-      <DependentUpon>FindMissingImageFolder.xaml</DependentUpon>
+    <Compile Include="Dialog\MissingImageLocateRelativePaths.xaml.cs">
+      <DependentUpon>MissingImageLocateRelativePaths.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\NewVersionNotification.xaml.cs">
       <DependentUpon>NewVersionNotification.xaml</DependentUpon>
@@ -533,7 +534,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\FindMissingImageFolder.xaml">
+    <Page Include="Dialog\MissingImageLocateRelativePaths.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -65,5 +65,23 @@ namespace Timelapse.Util
             };
             return ProcessExecution.TryProcessStart(processStartInfo);
         }
+
+        /// Try to start the Windows file explorer on the provided folder path.
+        /// <param name="folderpath">should contain a valid file path, as its otherwise aborted</param>
+        /// <returns>true/false if the process started or not</returns>
+        public static bool TryProcessStartUsingFileExplorer(string folderPath)
+        {
+            if (Directory.Exists(folderPath) == false)
+            {
+                // Don't even try to start the process if the file doesn't exist.
+                return false;
+            }
+            ProcessStartInfo processStartInfo = new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = folderPath
+            };
+            return ProcessExecution.TryProcessStart(processStartInfo);
+        }
     }
 }

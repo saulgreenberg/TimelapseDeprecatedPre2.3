@@ -24,6 +24,12 @@ namespace Timelapse
             // Enable / disable various edit menu items depending on whether we are looking at the single image view or overview
             bool state = this.IsDisplayingSingleImage();
             this.MenuItemCopyPreviousValues.IsEnabled = state;
+
+            // Enable the FindMissingImage menu only if the current image is missing
+            ImageRow currentImage = this.DataHandler?.ImageCache?.Current;
+            this.MenuItemFindMissingImage.IsEnabled =
+                this.DataHandler?.ImageCache?.Current != null
+                && false == File.Exists(FilesFolders.GetFullPath(this.DataHandler.FileDatabase, currentImage));
         }
 
         // Find image 
@@ -341,6 +347,108 @@ namespace Timelapse
                 {
                     await this.FilesSelectAndShowAsync().ConfigureAwait(true);
                 }
+            }
+        }
+
+        //Try to find a missing image
+        private async void MenuItemEditFindMissingImage_Click(object sender, RoutedEventArgs e)
+        {
+            // Don't do anything if the image actually exists. This should not fire, as this menu item is only enabled 
+            // if there is a current image that doesn't exist. But just in case...
+            if (null == this.DataHandler?.ImageCache?.Current || File.Exists(FilesFolders.GetFullPath(this.DataHandler.FileDatabase.FolderPath, this.DataHandler?.ImageCache?.Current)))
+            {
+                return;
+            }
+
+            string folderPath = this.DataHandler.FileDatabase.FolderPath;
+            ImageRow currentImage = this.DataHandler?.ImageCache?.Current;
+
+            // Search for - and return as list of relative path / filename tuples -  all folders under the root folder for files with the same name as the fileName.
+            List<Tuple<string,string>> matchingRelativePathFileNameList = Util.FilesFolders.SearchForFoldersContainingFileName(folderPath, currentImage.File);
+
+            // Remove any of the tuples that are spoken for i.e., that are already associated with a row in the database
+            for (int i = matchingRelativePathFileNameList.Count - 1; i >= 0; i--)
+            {
+                if (this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingRelativePathFileNameList[i].Item1, matchingRelativePathFileNameList[i].Item2))
+                {
+                    // We only want matching files that are not already assigned to another datafield in the database
+                    matchingRelativePathFileNameList.RemoveAt(i);
+                }
+            }
+
+            // If there are no remaining tuples, it means no potential matches were found. 
+            // Display a message saying so and abort.
+            if (matchingRelativePathFileNameList.Count == 0)
+            {
+                Dialogs.MissingFileSearchNoMatchesFoundDialog(this, currentImage.File);
+                return;
+            }
+
+            // Now retrieve a list of all filenames located in the same folder (i.e., that have the same relative path) as the missing file.
+            List<string> otherMissingFiles = this.DataHandler.FileDatabase.SelectFileNamesWithRelativePathFromDatabase(currentImage.RelativePath);
+
+            // Remove the current missing file from the list, as well as any file that exists.
+            // This should leave a list of other missing files.
+            for (int i = otherMissingFiles.Count - 1; i >= 0; i--)
+            {
+                if (String.Equals(otherMissingFiles[i], currentImage.File) || File.Exists(Path.Combine(folderPath, currentImage.RelativePath, otherMissingFiles[i])))
+                {
+                    otherMissingFiles.RemoveAt(i);
+                }
+            }
+
+            // For those that are left (if any), see if other files in the returned locations are in each path. Get their count, save them, and pass the count as a parameter e.g., a Dict with matching files, etc. 
+            // Or perhapse even better, a list of file names for each path Dict<string, List<string>>
+            // As we did above, go through the other missing files and remove those that are spoken for i.e., that are already associated with a row in the database.
+            // What remains will be a list of  root paths, each with a list of  missing (unassociated) files that could be candidates for locating
+            Dictionary<string, List<string>> otherMissingFileCandidates = new Dictionary<string, List<string>>();
+            foreach (Tuple<string, string> matchingPath in matchingRelativePathFileNameList)
+            {
+                List<string> orphanMissingFiles = new List<string>();
+                foreach (string otherMissingFile in otherMissingFiles)
+                {
+                    if (false == this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingPath.Item1, otherMissingFile))
+                    {
+                        orphanMissingFiles.Add(otherMissingFile);
+                    }
+                }
+                otherMissingFileCandidates.Add(matchingPath.Item1, orphanMissingFiles);
+            }
+
+            Dialog.MissingImageLocateRelativePaths dialog = new Dialog.MissingImageLocateRelativePaths(this, this.DataHandler.FileDatabase, currentImage.RelativePath, currentImage.File, otherMissingFileCandidates);
+
+            bool? result = dialog.ShowDialog();
+            if (result == true)
+            {
+                Tuple<string, string> locatedMissingFile = dialog.LocatedMissingFile;
+                if (String.IsNullOrEmpty(locatedMissingFile.Item2))
+                {
+                    return;
+                }
+               // Tuple<string, string, string> splitPath = Util.FilesFolders.SplitFullPath(folderPath, dialog.LocatedFullPathToMissingFile);
+
+
+                //string originalFileName = Path.GetFileName(dialog.LocatedFullPathToMissingFile);
+
+                // Update the original missing file
+                List<ColumnTuplesWithWhere> columnTuplesWithWhereList = new List<ColumnTuplesWithWhere>();
+                ColumnTuplesWithWhere columnTuplesWithWhere = new ColumnTuplesWithWhere();
+                columnTuplesWithWhere.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.RelativePath, locatedMissingFile.Item1)); // The new relative path
+                columnTuplesWithWhere.SetWhere(currentImage.RelativePath, currentImage.File); // Where the original relative path/file terms are met
+                columnTuplesWithWhereList.Add(columnTuplesWithWhere);
+
+                // Update the other missing files in the database, if any
+                foreach (string otherMissingFileName in otherMissingFileCandidates[locatedMissingFile.Item1])
+                {
+                    columnTuplesWithWhere = new ColumnTuplesWithWhere();
+                    columnTuplesWithWhere.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.RelativePath, locatedMissingFile.Item1)); // The new value
+                    columnTuplesWithWhere.SetWhere(currentImage.RelativePath, otherMissingFileName); // Where the original relative path/file terms are met
+                    columnTuplesWithWhereList.Add(columnTuplesWithWhere);
+                }
+
+                // Now update the database
+                this.DataHandler.FileDatabase.UpdateFiles(columnTuplesWithWhereList);
+                await this.FilesSelectAndShowAsync().ConfigureAwait(true);
             }
         }
 

@@ -834,6 +834,23 @@ namespace Timelapse.Database
         }
         #endregion
 
+        #region Exists (all return true or false)
+        /// <summary>
+        /// Return true/false if the relativePath and filename exist in the Database DataTable  
+        /// </summary>
+        /// <param name="relativePath"></param>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        public bool ExistsRelativePathAndFileInDataTable(string relativePath, string filename)
+        {
+            // Form: Select Exists(Select 1 from DataTable where RelativePath='cameras\Camera1' AND File='IMG_001.JPG')
+            string query = Sql.SelectExists + Sql.OpenParenthesis + Sql.SelectOne + Sql.From + Constant.DBTables.FileData;
+            query += Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(relativePath);
+            query += Sql.And + Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(filename) + Sql.CloseParenthesis;
+            return this.Database.ScalarBoolFromOneOrZero(query);
+        }
+        #endregion
+
         #region Select Files in the file table
         /// <summary> 
         /// Rebuild the file table with all files in the database table which match the specified selection.
@@ -1008,6 +1025,21 @@ namespace Timelapse.Database
             this.FileTable = this.SelectFilesInDataTableByCommaSeparatedIds(commaSeparatedListOfIDs);
             this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
             return true;
+        }
+
+        public List<string> SelectFileNamesWithRelativePathFromDatabase(string relativePath)
+        {
+            List<string> files = new List<string>();
+            // Form: Select * From DataTable Where RelativePath = '<relativePath>'
+            string query = Sql.Select + Constant.DatabaseColumn.File + Sql.From + Constant.DBTables.FileData + Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(relativePath);
+            DataTable images = this.Database.GetDataTableFromSelect(query);
+            int count = images.Rows.Count;
+            for (int i = 0; i < count; i++)
+            {
+                files.Add((string)images.Rows[i].ItemArray[0]);
+            }
+            images.Dispose();
+            return files;
         }
 
         // Select only those files that are marked for deletion i.e. DeleteFlag = true
@@ -1490,23 +1522,6 @@ namespace Timelapse.Database
             // System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
             return this.Database.ScalarGetCountFromSelect(query);
         }
-        #endregion
-
-        #region Exists tables
-        // This code was moved to TemplateTable and now exists there
-        //public bool TableExists(string dataTable)
-        //{
-        //    return this.Database.TableExists(dataTable);
-        //}
-
-        //// Check if the database table specified in the path has a detections table
-        //public static bool TableExists(string dataTable, string dbPath)
-        //{
-        //    // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
-        //    // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
-        //    SQLiteWrapper db = new SQLiteWrapper(dbPath);
-        //    return db.TableExists(dataTable);
-        //}
         #endregion
 
         #region Exists matching files  
@@ -2684,7 +2699,6 @@ namespace Timelapse.Database
         //    // Load / refresh the marker table from the database to keep it in sync - Doing so here will make sure that there is one row for each image.
         //    this.MarkersLoadRowsFromDatabase();
         //}
-
         #endregion
     }
 }

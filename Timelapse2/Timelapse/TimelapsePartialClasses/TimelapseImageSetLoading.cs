@@ -178,7 +178,7 @@ namespace Timelapse
             this.CheckAndCorrectRootFolder(fileDatabase);
 
             // Check to see if there are any missing folders as specified by the relative paths. For those missing, ask the user to try to locate those folders.
-            TimelapseWindow.CheckAndCorrectForMissingFolders(fileDatabase);
+            TimelapseWindow.CheckAndCorrectForMissingFolders(this, fileDatabase);
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.DataHandler = new DataEntryHandler(fileDatabase);

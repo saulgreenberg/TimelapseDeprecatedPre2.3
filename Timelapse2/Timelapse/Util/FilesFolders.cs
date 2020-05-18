@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Timelapse.Database;
 
 namespace Timelapse.Util
 {
@@ -69,7 +70,7 @@ namespace Timelapse.Util
         /// <param name="ignoreBackupFolder">Skip the Backup folder</param>
         /// <param name="foundFiles"></param>
         /// <returns></returns>
-        public static List<string> GetAllFilesInFoldersAndSubfoldersMatchingPattern(string startFolder, string pattern, bool ignoreBackupFolder, List<string> foundFiles)
+        public static List<string> GetAllFilesInFoldersAndSubfoldersMatchingPattern(string startFolder, string pattern, bool ignoreBackupFolder, bool ignoreDeletedFolder, List<string> foundFiles)
         {
             if (foundFiles == null)
             {
@@ -81,12 +82,13 @@ namespace Timelapse.Util
                 foreach (string directory in Directory.GetDirectories(startFolder))
                 {
                     string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
-                    if (ignoreBackupFolder && foldername == Constant.File.BackupFolder)
+                    if ( (ignoreBackupFolder && foldername == Constant.File.BackupFolder) || (ignoreDeletedFolder && foldername == Constant.File.DeletedFilesFolder))
                     {
                         continue;
                     }
-                    foundFiles.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
-                    GetAllFilesInFoldersAndSubfoldersMatchingPattern(directory, pattern, true, foundFiles);
+                    // SAULXXX -> THIS WAS A MISTAKE, REMOVE foundFiles.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
+                    foundFiles.AddRange(System.IO.Directory.GetFiles(directory, pattern, SearchOption.TopDirectoryOnly));
+                    GetAllFilesInFoldersAndSubfoldersMatchingPattern(directory, pattern, true, true, foundFiles);
                 }
             }
             catch (System.Exception)
@@ -133,6 +135,71 @@ namespace Timelapse.Util
             }
             return matchingFolders;
         }
+
+        /// <summary>
+        /// Search for and return the relative path to all folders under the root folder that have a file with the same name as the fileName.
+        /// </summary>
+        /// <param name="rootFolder">the path to the root folder containing the template</param>
+        /// <param name="fileName">the name of the file</param>
+        /// <returns>List<Tuple<string,string>>a list of tuples, each tuple comprising the RelativePath as Item1, and the File's name as Item2</returns>
+        public static List<Tuple<string,string>> SearchForFoldersContainingFileName(string rootFolder, string fileName)
+        {
+            List<string> foundFiles = new List<string>();
+            GetAllFilesInFoldersAndSubfoldersMatchingPattern(rootFolder, fileName, true, true, foundFiles);
+            // strip off the root folder, leaving just the relative path/filename portion
+
+            List<Tuple<string, string>> relativePathFileNameList  = new List<Tuple<string, string>>();
+            foreach (string foundFile in foundFiles)
+            {
+                Tuple<string, string, string> tuple = SplitFullPath(rootFolder, foundFile);
+                if  (null == tuple)
+                {
+                    continue;
+                }
+                relativePathFileNameList.Add(new Tuple<string, string>(tuple.Item2, tuple.Item3));
+            }
+            return relativePathFileNameList;
+        }
+
+        // Given a root path (e.g., C:/user/timelapseStuff) and a full path e.g., C:/user/timelapseStuff/Sites/Camera1/img1.jpg)
+        // return a tuple as the root path, the relativePath, and the filename. e.g.,  C:/user/timelapseStuff, Sites/Camera1, img1.jpg)
+        public static Tuple<string,string,string> SplitFullPath(string rootPath, string fullPath)
+        {
+            if (fullPath == null || rootPath == null)
+            {
+                return null;
+            }
+            string fileName = Path.GetFileName(fullPath);
+            string relativePath = fullPath.Substring(rootPath.Length + 1, fullPath.Length - fileName.Length - rootPath.Length - 2);
+            return new Tuple<string, string, string>(rootPath, relativePath, fileName);
+        }
+
+
+        #region  Various forms to get the full path of a file
+        public static string GetFullPath(FileDatabase fileDatabase, ImageRow imageRow)
+        {
+            if (fileDatabase == null || imageRow == null)
+            {
+                return String.Empty;
+            }
+            return Path.Combine(fileDatabase.FolderPath, imageRow.RelativePath, imageRow.File);
+        }
+
+        public static string GetFullPath(string rootPath, ImageRow imageRow)
+        {
+            if (imageRow == null)
+            {
+                return String.Empty;
+            }
+            return Path.Combine(rootPath, imageRow.RelativePath, imageRow.File);
+        }
+
+        public static string GetFullPath(string rootPath, string relativePath, string fileName)
+        {
+            return Path.Combine(rootPath, relativePath, fileName);
+        }
+        #endregion
+
         #region Private (internal) methods
         /// <summary>
         /// Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
