@@ -91,7 +91,7 @@ namespace Timelapse
                 Mouse.OverrideCursor = null;
                 // Present a dialog box that shows the possible match for each folder.
                 // The user can then confirm that they are correct, or request manual locaton of those folders, or cancel altogether.
-                MissingFoldersLocateFolders dialog = new MissingFoldersLocateFolders(owner, fileDatabase.FolderPath, matchingFolderNames);
+                MissingFoldersLocateAllFolders dialog = new MissingFoldersLocateAllFolders(owner, fileDatabase.FolderPath, matchingFolderNames);
                 result = dialog.ShowDialog();
                 Mouse.OverrideCursor = cursor;
                 if (result == true)
