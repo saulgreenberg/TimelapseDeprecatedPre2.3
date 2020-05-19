@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse.Util
 {
@@ -12,45 +12,6 @@ namespace Timelapse.Util
     /// </summary>
     public static class FilesFolders
     {
-        /// <summary>
-        /// Get a location for the template database from the user and put it in selectedFilePath
-        /// </summary>
-        /// <returns>True if the user indicated one, else false</returns>
-        public static bool TryGetFileFromUser(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
-        {
-            // Get the template file, which should be located where the images reside
-            using (OpenFileDialog openFileDialog = new OpenFileDialog()
-            {
-                Title = title,
-                CheckFileExists = true,
-                CheckPathExists = true,
-                Multiselect = false,
-                AutoUpgradeEnabled = true,
-
-                // Set filter for file extension and default file extension 
-                DefaultExt = defaultExtension,
-                Filter = filter
-            })
-            {
-                if (String.IsNullOrWhiteSpace(defaultFilePath))
-                {
-                    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                }
-                else
-                {
-                    openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
-                    openFileDialog.FileName = Path.GetFileName(defaultFilePath);
-                }
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    selectedFilePath = openFileDialog.FileName;
-                    return true;
-                }
-                selectedFilePath = null;
-                return false;
-            }
-        }
 
         /// <summary>
         /// Populate fileInfoList  with the .jpg, .avi, and .mp4 files found in the rootFolderPath and its sub-folders
@@ -79,16 +40,25 @@ namespace Timelapse.Util
             }
             try
             {
-                foreach (string directory in Directory.GetDirectories(startFolder))
+                string foldername = startFolder.Split(Path.DirectorySeparatorChar).Last();
+                if ((ignoreBackupFolder && foldername == Constant.File.BackupFolder) || (ignoreDeletedFolder && foldername == Constant.File.DeletedFilesFolder))
                 {
-                    string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
-                    if ( (ignoreBackupFolder && foldername == Constant.File.BackupFolder) || (ignoreDeletedFolder && foldername == Constant.File.DeletedFilesFolder))
+
+                }
+                else
+                {
+                    foundFiles.AddRange(System.IO.Directory.GetFiles(startFolder, pattern, SearchOption.TopDirectoryOnly));
+                    foreach (string directory in Directory.GetDirectories(startFolder))
                     {
-                        continue;
+                        //string foldername = directory.Split(Path.DirectorySeparatorChar).Last();
+                        //if ((ignoreBackupFolder && foldername == Constant.File.BackupFolder) || (ignoreDeletedFolder && foldername == Constant.File.DeletedFilesFolder))
+                        //{
+                        //    continue;
+                        //}
+                        // SAULXXX -> THIS WAS A MISTAKE, REMOVE foundFiles.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
+                        //foundFiles.AddRange(System.IO.Directory.GetFiles(directory, pattern, SearchOption.TopDirectoryOnly));
+                        GetAllFilesInFoldersAndSubfoldersMatchingPattern(directory, pattern, true, true, foundFiles);
                     }
-                    // SAULXXX -> THIS WAS A MISTAKE, REMOVE foundFiles.AddRange(System.IO.Directory.GetFiles(directory, "*.ddb", SearchOption.TopDirectoryOnly));
-                    foundFiles.AddRange(System.IO.Directory.GetFiles(directory, pattern, SearchOption.TopDirectoryOnly));
-                    GetAllFilesInFoldersAndSubfoldersMatchingPattern(directory, pattern, true, true, foundFiles);
                 }
             }
             catch (System.Exception)
@@ -124,7 +94,7 @@ namespace Timelapse.Util
                         // We only return the first match, even if another match may exist 
                         matchingFoldersCount++;
                         matchingFolders.Add(missingFolderPath, oneFolderPath);
-                        continue;
+                        break;
                     }
                 }
                 if (matchingFoldersCount == 0)
@@ -142,17 +112,17 @@ namespace Timelapse.Util
         /// <param name="rootFolder">the path to the root folder containing the template</param>
         /// <param name="fileName">the name of the file</param>
         /// <returns>List<Tuple<string,string>>a list of tuples, each tuple comprising the RelativePath as Item1, and the File's name as Item2</returns>
-        public static List<Tuple<string,string>> SearchForFoldersContainingFileName(string rootFolder, string fileName)
+        public static List<Tuple<string, string>> SearchForFoldersContainingFileName(string rootFolder, string fileName)
         {
             List<string> foundFiles = new List<string>();
             GetAllFilesInFoldersAndSubfoldersMatchingPattern(rootFolder, fileName, true, true, foundFiles);
             // strip off the root folder, leaving just the relative path/filename portion
 
-            List<Tuple<string, string>> relativePathFileNameList  = new List<Tuple<string, string>>();
+            List<Tuple<string, string>> relativePathFileNameList = new List<Tuple<string, string>>();
             foreach (string foundFile in foundFiles)
             {
                 Tuple<string, string, string> tuple = SplitFullPath(rootFolder, foundFile);
-                if  (null == tuple)
+                if (null == tuple)
                 {
                     continue;
                 }
@@ -163,14 +133,18 @@ namespace Timelapse.Util
 
         // Given a root path (e.g., C:/user/timelapseStuff) and a full path e.g., C:/user/timelapseStuff/Sites/Camera1/img1.jpg)
         // return a tuple as the root path, the relativePath, and the filename. e.g.,  C:/user/timelapseStuff, Sites/Camera1, img1.jpg)
-        public static Tuple<string,string,string> SplitFullPath(string rootPath, string fullPath)
+        public static Tuple<string, string, string> SplitFullPath(string rootPath, string fullPath)
         {
             if (fullPath == null || rootPath == null)
             {
                 return null;
             }
             string fileName = Path.GetFileName(fullPath);
-            string relativePath = fullPath.Substring(rootPath.Length + 1, fullPath.Length - fileName.Length - rootPath.Length - 2);
+            string directoryName = Path.GetDirectoryName(fullPath).TrimEnd('\\');
+
+            //string relativePath = fullPath.Substring(rootPath.Length + 1, fullPath.Length - fileName.Length - rootPath.Length - 1);
+            string relativePath = rootPath.Equals(directoryName) ? rootPath : directoryName.Substring(rootPath.Length + 1);
+            //string relativePath = directoryName.Substring(rootPath.Length + 1);
             return new Tuple<string, string, string>(rootPath, relativePath, fileName);
         }
 
@@ -315,6 +289,32 @@ namespace Timelapse.Util
                     fileInfoList.OrderBy(file => file.FullName).ToList();
                 }
             }
+        }
+        #endregion
+
+        #region File/Folder tests
+        /// <summary>
+        /// // return true iff the file path ends with .jpg
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static FileExtensionEnum GetFileTypeByItsExtension(string path)
+        {
+            if (String.IsNullOrEmpty(path))
+            {
+                return FileExtensionEnum.IsNotImageOrVideo;
+            }
+            if (path.EndsWith(Constant.File.JpgFileExtension, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return FileExtensionEnum.IsImage;
+            }
+            if (path.EndsWith(Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(Constant.File.ASFFileExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileExtensionEnum.IsVideo;
+            }
+            return FileExtensionEnum.IsNotImageOrVideo;
         }
 
         // Return true if any of the files in the fileinfo list includes at least  image or video

@@ -201,7 +201,6 @@
     <Compile Include="Dialog\ExceptionShutdownDialog.xaml.cs">
       <DependentUpon>ExceptionShutdownDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\FileFolderSelection.cs" />
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
@@ -212,6 +211,7 @@
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
+    <Compile Include="Enums\FileExtensionEnum.cs" />
     <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />

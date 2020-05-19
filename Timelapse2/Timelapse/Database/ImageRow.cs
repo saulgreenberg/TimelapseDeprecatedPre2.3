@@ -429,93 +429,17 @@ namespace Timelapse.Database
         /// </summary>
         public virtual BitmapSource LoadBitmap(string rootFolderPath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
-            isCorruptOrMissing = true;
-
-            // BitmapCacheOption.None is significantly faster than other options. 
-            // However, it locks the file as it is being accessed (rather than a memory copy being created when using a cache)
-            // This means we cannot do any file operations on it (such as deleting the currently displayed image) as it will produce an access violation.
-            // This is ok for TransientLoading, which just temporarily displays the image
-            BitmapCacheOption bitmapCacheOption = (displayIntent == ImageDisplayIntentEnum.Ephemeral) ? BitmapCacheOption.None : BitmapCacheOption.OnLoad;
-            string path = this.GetFilePath(rootFolderPath);
-            if (!System.IO.File.Exists(path))
-            {
-                return Constant.ImageValues.FileNoLongerAvailable.Value;
-            }
-            try
-            {
-                // Exception workarounds to consider: see  http://faithlife.codes/blog/2010/07/exceptions_thrown_by_bitmapimage_and_bitmapframe/ 
-                if (desiredWidthOrHeight.HasValue == false)
-                {
-                    // returns the full size bitmap
-                    BitmapFrame frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.None, bitmapCacheOption);
-                    frame.Freeze();
-                    isCorruptOrMissing = false;
-                    return frame;
-                }
-
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                if (imageDimension == ImageDimensionEnum.UseWidth)
-                {
-                    bitmap.DecodePixelWidth = desiredWidthOrHeight.Value;
-                }
-                else
-                {
-                    bitmap.DecodePixelHeight = desiredWidthOrHeight.Value;
-                }
-                bitmap.CacheOption = bitmapCacheOption;
-                bitmap.UriSource = new Uri(path);
-                bitmap.EndInit();
-                bitmap.Freeze();
-                isCorruptOrMissing = false;
-                return bitmap;
-            }
-            catch (Exception exception)
-            {
-                // Optional messages for eventual debugging of catch errors, 
-                if (exception is InsufficientMemoryException)
-                {
-                    TracePrint.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.** Insufficient Memory Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.File, exception.Message, exception.StackTrace));
-                }
-                else
-                {
-                    // TraceDebug.PrintMessage(String.Format("ImageRow/LoadBitmap: General exception: {0}\n.**Exception: {1}.\n--------------\n**StackTrace: {2}.\nXXXXXXXXXXXXXX\n\n", this.FileName, exception.Message, exception.StackTrace));
-                }
-                isCorruptOrMissing = true;
-                return Constant.ImageValues.Corrupt.Value;
-            }
-        }
-
-        public static BitmapSource ClearBitmap()
-        {
-            return Constant.ImageValues.FileNoLongerAvailable.Value;
+            // Invoke the static version. The only change is that we get the full file path and pass that as a parameter
+            return BitmapUtilities.GetBitmapFromImageFile(this.GetFilePath(rootFolderPath), desiredWidthOrHeight, displayIntent, imageDimension, out isCorruptOrMissing);
         }
 
         // Return the aspect ratio (as Width/Height) of a bitmap or its placeholder as efficiently as possible
         // Timing tests suggests this can be done very quickly i.e., 0 - 10 msecs
+        // While this is marked as virtual, there is currently no over-ride for getting it from a video.
+        // So it should only be invoked if we know the file is an image
         public virtual double GetBitmapAspectRatioFromFile(string rootFolderPath)
         {
-            string path = this.GetFilePath(rootFolderPath);
-            if (!System.IO.File.Exists(path))
-            {
-                return Constant.ImageValues.FileNoLongerAvailable.Value.Width / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
-            }
-            try
-            {
-                BitmapImage bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.DecodePixelWidth = 0;
-                bitmap.CacheOption = BitmapCacheOption.None;
-                bitmap.CreateOptions = BitmapCreateOptions.DelayCreation;
-                bitmap.UriSource = new Uri(path);
-                bitmap.EndInit();
-                bitmap.Freeze();
-                return (bitmap.Width / bitmap.Height);
-            }
-            catch
-            {
-                return Constant.ImageValues.Corrupt.Value.Width / Constant.ImageValues.Corrupt.Value.Height;
-            }
+            return BitmapUtilities.GetBitmapAspectRatioFromImageFile(this.GetFilePath(rootFolderPath));
         }
         #endregion
     }

@@ -26,7 +26,7 @@ namespace Timelapse
         {
             // Default the template selection dialog to the most recently opened database
             this.State.MostRecentImageSets.TryGetMostRecent(out string defaultTemplateDatabasePath);
-            if (FilesFolders.TryGetFileFromUser(
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog(
                 "Select a TimelapseTemplate.tdb file, which should be located in the root folder containing your images and videos",
                                              defaultTemplateDatabasePath,
                                              String.Format("Template files (*{0})|*{0}", Constant.File.TemplateDatabaseFileExtension),

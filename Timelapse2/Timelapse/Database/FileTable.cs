@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -15,22 +16,18 @@ namespace Timelapse.Database
         // Return a new image or video row
         private static ImageRow CreateRow(DataRow row)
         {
-            string fileName = row.GetStringField(Constant.DatabaseColumn.File);
-
-            // Return a video row if its a video file (as identified by its suffix)
-            string fileExtension = Path.GetExtension(fileName);
-            if (String.Equals(fileExtension, Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
-                String.Equals(fileExtension, Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase) ||
-                String.Equals(fileExtension, Constant.File.ASFFileExtension, StringComparison.OrdinalIgnoreCase))
+            // Return a image row or video row if its an image or video file respectively (as identified by its suffix)
+            switch (Util.FilesFolders.GetFileTypeByItsExtension(row.GetStringField(Constant.DatabaseColumn.File)))
             {
-                return new VideoRow(row);
+                case FileExtensionEnum.IsImage:
+                    return new ImageRow(row);
+                case FileExtensionEnum.IsVideo:
+                    return new VideoRow(row);
+                case FileExtensionEnum.IsNotImageOrVideo:
+                default:
+                    // This should never be reached
+                    throw new NotSupportedException(String.Format("Unhandled extension for file '{0}'.", row.GetStringField(Constant.DatabaseColumn.File)));
             }
-            if (String.Equals(fileExtension, Constant.File.JpgFileExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                return new ImageRow(row);
-            }
-            // This should never be reached
-            throw new NotSupportedException(String.Format("Unhandled extension '{0}' for file '{1}'.", fileExtension, fileName));
         }
 
         public ImageRow NewRow(FileInfo file)

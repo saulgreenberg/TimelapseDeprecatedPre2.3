@@ -19,7 +19,7 @@ namespace Timelapse.Editor.Dialog
         private string metadataName = String.Empty;
 
 
-        private string imageFilePath;
+        private readonly string imageFilePath;
         private ExifToolWrapper exifTool;
 
         public InspectMetadata(Window owner)

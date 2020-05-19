@@ -53,7 +53,7 @@ namespace Timelapse
         // Import QuickPaste Items from .ddb file
         private void MenuItemQuickPasteImportFromDB_Click(object sender, RoutedEventArgs e)
         {
-            if (FilesFolders.TryGetFileFromUser("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
                                              Path.Combine(this.DataHandler.FileDatabase.FolderPath, Constant.File.DefaultFileDatabaseFileName),
                                              String.Format("Database files (*{0})|*{0}", Constant.File.FileDatabaseFileExtension),
                                              Constant.File.FileDatabaseFileExtension,
@@ -350,6 +350,21 @@ namespace Timelapse
             }
         }
 
+        private async void MenuItemEditFindMissingFolder_Click(object sender, RoutedEventArgs e)
+        {
+            bool? result = TimelapseWindow.CheckAndCorrectForMissingFolders(this, this.DataHandler.FileDatabase);
+            if (true == result)
+            {
+                await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                return;
+            }
+            if (result != null && false == result.Value)
+            {
+                Dialogs.MenuEditNoFoldersAreMissing(this);
+            }
+            // if result is null, it means that folders were missing but not updated.
+        }
+
         //Try to find a missing image
         private async void MenuItemEditFindMissingImage_Click(object sender, RoutedEventArgs e)
         {
@@ -364,7 +379,7 @@ namespace Timelapse
             ImageRow currentImage = this.DataHandler?.ImageCache?.Current;
 
             // Search for - and return as list of relative path / filename tuples -  all folders under the root folder for files with the same name as the fileName.
-            List<Tuple<string,string>> matchingRelativePathFileNameList = Util.FilesFolders.SearchForFoldersContainingFileName(folderPath, currentImage.File);
+            List<Tuple<string, string>> matchingRelativePathFileNameList = Util.FilesFolders.SearchForFoldersContainingFileName(folderPath, currentImage.File);
 
             // Remove any of the tuples that are spoken for i.e., that are already associated with a row in the database
             for (int i = matchingRelativePathFileNameList.Count - 1; i >= 0; i--)
@@ -387,8 +402,7 @@ namespace Timelapse
             // Now retrieve a list of all filenames located in the same folder (i.e., that have the same relative path) as the missing file.
             List<string> otherMissingFiles = this.DataHandler.FileDatabase.SelectFileNamesWithRelativePathFromDatabase(currentImage.RelativePath);
 
-            // Remove the current missing file from the list, as well as any file that exists.
-            // This should leave a list of other missing files.
+            // Remove the current missing file from the list, as well as any file that exists i.e., that is not missing.
             for (int i = otherMissingFiles.Count - 1; i >= 0; i--)
             {
                 if (String.Equals(otherMissingFiles[i], currentImage.File) || File.Exists(Path.Combine(folderPath, currentImage.RelativePath, otherMissingFiles[i])))
@@ -407,7 +421,9 @@ namespace Timelapse
                 List<string> orphanMissingFiles = new List<string>();
                 foreach (string otherMissingFile in otherMissingFiles)
                 {
-                    if (false == this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingPath.Item1, otherMissingFile))
+                    // Its a potential candidate if its not already referenced but it exists in that relative path folder
+                    if (false == this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingPath.Item1, otherMissingFile) 
+                        && File.Exists(FilesFolders.GetFullPath(FolderPath, matchingPath.Item1, otherMissingFile)))
                     {
                         orphanMissingFiles.Add(otherMissingFile);
                     }
@@ -425,10 +441,6 @@ namespace Timelapse
                 {
                     return;
                 }
-               // Tuple<string, string, string> splitPath = Util.FilesFolders.SplitFullPath(folderPath, dialog.LocatedFullPathToMissingFile);
-
-
-                //string originalFileName = Path.GetFileName(dialog.LocatedFullPathToMissingFile);
 
                 // Update the original missing file
                 List<ColumnTuplesWithWhere> columnTuplesWithWhereList = new List<ColumnTuplesWithWhere>();

@@ -1,8 +1,6 @@
-﻿using Microsoft.WindowsAPICodePack.Dialogs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -64,7 +62,9 @@ namespace Timelapse.Dialog
             this.observableCollection = new ObservableCollection<Tuple<string, string, string, bool>>();
             foreach (KeyValuePair<string, string> pair in missingFoldersAndLikelyLocations)
             {
-                this.observableCollection.Add(new Tuple<string, string, string, bool>(Path.GetFileName(pair.Key), pair.Key, missingFoldersAndLikelyLocations[pair.Key], true));
+                // if the likely location is empty, ensure that the Use flag is not checked as there is no folder to replace it with.
+                bool isLikelyLocationAvailable = false == String.IsNullOrWhiteSpace(missingFoldersAndLikelyLocations[pair.Key]);
+                this.observableCollection.Add(new Tuple<string, string, string, bool>(Path.GetFileName(pair.Key), pair.Key, missingFoldersAndLikelyLocations[pair.Key], isLikelyLocationAvailable));
             }
             this.DataGrid.ItemsSource = observableCollection;
         }
@@ -123,11 +123,12 @@ namespace Timelapse.Dialog
             string possibleLocation = GetPossibleLocationFromSelection();
             Tuple<string, string, string, bool> rowValues;
             ObservableCollection<Tuple<string, string, string, bool>> obsCollection;
+            bool isLikelyLocationAvailable;
             switch (selectedColumn)
             {
                 case 0:
                     // Locate the folder via a dialog
-                    string newLocation = Dialog.FileFolderSelection.LocateRelativePathUsingOpenFileDialog(this.RootPath, missingFolderName);
+                    string newLocation = Dialogs.LocateRelativePathUsingOpenFileDialog(this.RootPath, missingFolderName);
                     if (newLocation == null)
                     {
                         return;
@@ -144,7 +145,9 @@ namespace Timelapse.Dialog
                         }
                         else
                         {
-                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, newLocation, rowValues.Item4));
+                            // if the likely location is empty, ensure that the Use flag is unchecked as there is no folder to replace it with. Otherwise automatically check it
+                            isLikelyLocationAvailable = false == String.IsNullOrWhiteSpace(newLocation);
+                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, newLocation, isLikelyLocationAvailable ? true : false));
                         }
                     }
                     this.observableCollection = obsCollection;
@@ -166,7 +169,9 @@ namespace Timelapse.Dialog
                         }
                         else
                         {
-                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, rowValues.Item3, !rowValues.Item4));
+                            // if the likely location is empty, ensure that the Use flag is unchecked as there is no folder to replace it with. Otherwise keep its state
+                            isLikelyLocationAvailable = false == String.IsNullOrWhiteSpace(rowValues.Item3);
+                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, rowValues.Item3, isLikelyLocationAvailable ? !rowValues.Item4 : false));
                         }
                     }
                     this.observableCollection = obsCollection;

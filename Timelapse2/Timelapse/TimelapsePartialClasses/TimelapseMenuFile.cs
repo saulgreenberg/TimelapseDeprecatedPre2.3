@@ -68,7 +68,7 @@ namespace Timelapse
         private async void MenuItemImportDetectionData_Click(object sender, RoutedEventArgs e)
         {
             string jsonFileName = Constant.File.RecognitionJsonDataFileName;
-            if (FilesFolders.TryGetFileFromUser(
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog(
                       "Select a .json file that contains the recognition data. It will be merged into the current image set",
                       Path.Combine(this.DataHandler.FileDatabase.FolderPath, jsonFileName),
                       String.Format("JSon files (*{0})|*{0}", Constant.File.JsonFileExtension),
@@ -235,7 +235,7 @@ namespace Timelapse
             }
 
             string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + Constant.File.CsvFileExtension;
-            if (FilesFolders.TryGetFileFromUser(
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog(
                                  "Select a .csv file to merge into the current image set",
                                  Path.Combine(this.DataHandler.FileDatabase.FolderPath, csvFileName),
                                  String.Format("Comma separated value files (*{0})|*{0}", Constant.File.CsvFileExtension),

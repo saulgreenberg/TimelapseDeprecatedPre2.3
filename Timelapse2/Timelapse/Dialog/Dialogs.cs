@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
@@ -113,7 +115,100 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Messages: Prompt to apply operation if partial selection.
+        #region OpenFileDialog: Get file or folder
+        /// <summary>
+        /// Prompt the user for a file location via an an open file dialog. Set selectedFilePath.
+        /// </summary>
+        /// <returns>True if the user indicated one, else false. selectedFilePath contains the selected path, if any, otherwise null </returns>
+        public static bool TryGetFileFromUserUsingOpenFileDialog(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
+        {
+            // Get the template file, which should be located where the images reside
+            using (OpenFileDialog openFileDialog = new OpenFileDialog()
+            {
+                Title = title,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = false,
+                AutoUpgradeEnabled = true,
+
+                // Set filter for file extension and default file extension 
+                DefaultExt = defaultExtension,
+                Filter = filter
+            })
+            {
+                if (String.IsNullOrWhiteSpace(defaultFilePath))
+                {
+                    openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
+                else
+                {
+                    openFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
+                    openFileDialog.FileName = Path.GetFileName(defaultFilePath);
+                }
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    selectedFilePath = openFileDialog.FileName;
+                    return true;
+                }
+                selectedFilePath = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Folder dialog where the user can only select a sub-folder of the root folder path
+        /// It returns the relative path to the selected folder
+        /// If folderNameToLocate is not empty, it displays that a desired folder to select in the dialog title.
+        /// </summary>
+        /// <param name="initialFolder">The path to the root folder containing the template</param>
+        /// <param name="folderNameToLocate">If folderNameToLocate is not empty, it displays that a desired folder to select.</param>
+        /// <returns></returns>
+
+        public static string LocateRelativePathUsingOpenFileDialog(string initialFolder, string folderNameToLocate)
+        {
+            if (initialFolder == null)
+            {
+                return String.Empty;
+            }
+            using (CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            {
+                Title = "Locate folder" + folderNameToLocate + "...",
+                DefaultDirectory = initialFolder,
+                IsFolderPicker = true,
+                Multiselect = false
+            })
+            {
+                folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+                folderSelectionDialog.FolderChanging += FolderSelectionDialog_FolderChanging;
+                if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    // Trim the root folder path from the folder name to produce a relative path. 
+                    return (folderSelectionDialog.FileName.Length > initialFolder.Length) ? folderSelectionDialog.FileName.Substring(initialFolder.Length + 1) : String.Empty;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        // Limit the folder selection to only those that are sub-folders of the folder path
+        private static void FolderSelectionDialog_FolderChanging(object sender, CommonFileDialogFolderChangeEventArgs e)
+        {
+            if (!(sender is CommonOpenFileDialog dialog))
+            {
+                return;
+            }
+            // require folders to be loaded be either the same folder as the .tdb and .ddb or subfolders of it
+            if (e.Folder.StartsWith(dialog.DefaultDirectory, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                e.Cancel = true;
+            }
+        }
+        #endregion
+
+        #region MessageBox: Prompt to apply operation if partial selection.
         // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
         public static bool MaybePromptToApplyOperationOnSelectionDialog(Window owner, FileDatabase fileDatabase, bool promptState, string operationDescription, Action<bool> persistOptOut)
         {
@@ -176,10 +271,9 @@ namespace Timelapse.Dialog
             filesSelectedCount = fileDatabase.FileTable.RowCount;
             return filesTotalCount != filesSelectedCount;
         }
-
         #endregion
 
-        #region Dialog Messages: Missing dependencies
+        #region MessageBox: Missing dependencies
         public static void DependencyFilesMissingDialog(string applicationName)
         {
             // can't use DialogMessageBox to show this message as that class requires the Timelapse window to be displayed.
@@ -200,7 +294,7 @@ namespace Timelapse.Dialog
 
         #endregion
 
-        #region Dialog Messages: Path too long warnings
+        #region MessageBox: Path too long warnings
         // This version is for hard crashes. however, it may disappear from display too fast as the program will be shut down.
         public static void FilePathTooLongDialog(Window owner, UnhandledExceptionEventArgs e)
         {
@@ -289,7 +383,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Message: Corrupted template
+        #region MessageBox: Corrupted template
         public static void TemplateFileNotLoadedAsCorruptDialog(Window owner, string templateDatabasePath)
         {
             Util.ThrowIf.IsNullArgument(owner, nameof(owner));
@@ -315,7 +409,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Messages: Corrupted .DDB file (no primary key)
+        #region MessageBox: Corrupted .DDB file (no primary key)
         public static void DatabaseFileNotLoadedAsCorruptDialog(Window owner, string ddbDatabasePath, bool isEmpty)
         {
             // notify the user the database couldn't be loaded because there is a problem with it
@@ -344,7 +438,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region DialogMessages: DataEntryHandler Confirmations / Warnings for Propagate, Copy Forward, Propagate to here
+        #region MessageBox: DataEntryHandler Confirmations / Warnings for Propagate, Copy Forward, Propagate to here
         /// <summary>
         /// Display a dialog box saying there is nothing to propagate. 
         /// </summary>
@@ -434,7 +528,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region MarkableCanvas: Cant Open External PhotoViewer
+        #region MessageBox: MarkableCanvas Can't Open External PhotoViewer
         /// <summary>
         /// // Can't Open the External Photo Viewer. 
         /// </summary>
@@ -453,7 +547,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Message: Show Exception Reporting  
+        #region MessageBox: Show Exception Reporting  
         // REPLACED BY ExceptionShutdownDialog  - DELETE after we are sure that other method works 
         /// <summary>
         /// Display a dialog showing unhandled exceptions. The dialog text is also placed in the clipboard so that the user can paste it into their email
@@ -502,7 +596,7 @@ namespace Timelapse.Dialog
         //}
         #endregion
 
-        #region Dialog Message: No Updates Available
+        #region MessageBox: No Updates Available
         public static void NoUpdatesAvailableDialog(Window owner, string applicationName, Version currentVersionNumber)
         {
             MessageBox messageBox = new MessageBox(String.Format("No updates to {0} are available.", applicationName), owner);
@@ -512,7 +606,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region  Dialog Message: File Selection
+        #region MessageBox: File Selection
         /// <summary>
         /// // No files were missing in the current selection
         /// </summary>
@@ -574,7 +668,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Dialog Message: MissingFilesNotFound
+        #region MessageBox: MissingFilesNotFound
         public static void MissingFileSearchNoMatchesFoundDialog(Window owner, string fileName)
         {
             string title = "Timelapse could not find any matches to " + fileName;
@@ -596,7 +690,8 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
         #endregion
-        #region Dialog Message: ImageSetLoading
+
+        #region MessageBox: ImageSetLoading
         /// <summary>
         /// If there are multiple missing folders, it will generate multiple dialog boxes. Thus we explain what is going on.
         /// </summary>
@@ -655,7 +750,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region DialogMessages: MenuFile
+        #region MessageBox: MenuFile
         /// <summary>
         /// No matching folders in the DB and the detector
         /// </summary>
@@ -953,7 +1048,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region DialogMessages: MenuEdit
+        #region MessageBox: MenuEdit
         public static void MenuEditCouldNotImportQuickPasteEntriesDialog(Window owner)
         {
             MessageBox messageBox = new MessageBox("Could not import QuickPaste entries", owner);
@@ -986,9 +1081,18 @@ namespace Timelapse.Dialog
             messageBox.Message.Icon = MessageBoxImage.Information;
             messageBox.ShowDialog();
         }
+
+        public static void MenuEditNoFoldersAreMissing(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("No folders appear to be missing", owner);
+            messageBox.Message.What = "You asked to to find any missing folders, but none appear to be missing.";
+            messageBox.Message.Hint = "You don't normally have to do this check yourself, as a check for missing folders is done automatically whenever you start Timelapse.";
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
         #endregion
 
-        #region DialogMessages related to DateTime
+        #region MessageBox: related to DateTime
         public static void DateTimeNewTimeShouldBeLaterThanEarlierTimeDialog(Window owner)
         {
             MessageBox messageBox = new MessageBox("Your new time has to be later than the earliest time", owner);

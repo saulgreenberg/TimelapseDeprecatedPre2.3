@@ -25,7 +25,7 @@
                             Problem ="Timelapse failed to find the image folders listed below in their expected location.
 "
                             Reason="Someone may have moved or renamed these folders."
-                            Solution="If Timelapse found similarly named folders elsewhere, it listed them below as possible new locations. 
+                            Solution="Timelapse searched for similarly named folders, whre they are listed below as possible new locations. 
                                       &#10;&#x2022; verify each possible new location: select 'View' to examine that location in Window's File Explorer. 
                                       &#10;&#x2022; if the list location is wrong or empty: select 'Locate' to navigate to the correct location.
                                       &#10;&#x2022; uncheck the 'Use' checkbox to leave that folder's location untouched.

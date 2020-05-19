@@ -65,7 +65,7 @@ namespace Timelapse
         // Get all the distinct relative folder paths and check to see if the folder exists.
         // If not, try to find the best matching folder for each of them
         // Then ask the user to verify and - if needed - to try to locate each missing folder.
-        public static void CheckAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
+        public static bool? CheckAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
@@ -75,7 +75,7 @@ namespace Timelapse
             if (missingRelativePaths?.Count == 0)
             {
                 // No folders are missing, so nothing to do.
-                return;
+                return false;
             }
 
             // We want to show the normal cursor when we display dialog boxes, so save the current cursor so we can store it.
@@ -105,9 +105,10 @@ namespace Timelapse
                         ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, key);
                         fileDatabase.UpdateFiles(columnToUpdateWithWhere);
                     }
-                    return;
+                    return true;
                 }
             }
+            return null;
         }
 
         // Return a list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.
