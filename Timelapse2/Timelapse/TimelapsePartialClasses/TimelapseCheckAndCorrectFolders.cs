@@ -82,9 +82,10 @@ namespace Timelapse
             Cursor cursor = Mouse.OverrideCursor;
 
             // We know that at least one or more folders are missing.
-            // For each missing folder path, try to find one (and only one) folder with the same name under the root folder.
-            // If there are more than one, just return the first one. 
-            Dictionary<string, string> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
+            // For each missing folder path, try to find all folders with the same name under the root folder.
+ 
+            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
+            Dictionary<string, string> finalFileLocations;
             bool? result;
             if (matchingFolderNames != null)
             {
@@ -97,11 +98,11 @@ namespace Timelapse
                 if (result == true)
                 {
                     // Get the updated folder locations
-                    matchingFolderNames = dialog.FinalFolderLocations;
+                    finalFileLocations = dialog.FinalFolderLocations;
                     // User accepted the folder matches. Update the database
-                    foreach (string key in matchingFolderNames.Keys)
+                    foreach (string key in finalFileLocations.Keys)
                     {
-                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, matchingFolderNames[key]);
+                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, finalFileLocations[key]);
                         ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, key);
                         fileDatabase.UpdateFiles(columnToUpdateWithWhere);
                     }
