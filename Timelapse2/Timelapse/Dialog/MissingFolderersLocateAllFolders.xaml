@@ -71,9 +71,9 @@
                     <DataGridTemplateColumn Width="*" Header="Possible new locations">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Border BorderBrush="White" BorderThickness=".5">
-                                    <ComboBox Height="Auto" Name="Part_Combo"/>
-                                </Border>
+                                <!--<Border BorderBrush="White" BorderThickness=".5">-->
+                                    <ComboBox Height="Auto" Name="Part_Combo" SelectionChanged="Part_Combo_SelectionChanged" />
+                                <!--</Border>-->
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -87,17 +87,6 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!--<DataGridTemplateColumn Width="Auto">
-
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="White" BorderThickness=".5">
-                                    <TextBlock Text=" Locate " Background="LightGray" ToolTip="Navigate to the correct folder location using the Open Folder dialog"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>-->
-
                     <DataGridTemplateColumn Width="Auto">
 
                         <DataGridTemplateColumn.CellTemplate>
@@ -108,17 +97,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    
-
-                    <!--<DataGridTemplateColumn Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="White" BorderThickness=".5">
-                                    <TextBlock Text=" View " Background="LightGray"/>
-                                </Border>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>-->
                     
                     <DataGridTemplateColumn Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
