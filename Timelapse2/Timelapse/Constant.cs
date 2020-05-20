@@ -262,7 +262,7 @@ namespace Timelapse.Constant
         public static readonly double TimeThresholdDefault = 2; // 2 Minutes
         public static readonly double TimeThresholdMinimum = 0.25; // 15 seconds
         public static readonly double TimeThresholdMaximum = 10; // 10 minutes
-        public static readonly int MaxRangeToSearch = 40; // How many files ahead / behind to search for the episode limits
+        public static readonly int MaxRangeToSearch = 100; // How many files ahead / behind to search for the episode limits
     }
 
     public static class ExceptionTypes

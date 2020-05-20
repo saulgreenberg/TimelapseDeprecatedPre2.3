@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Timelapse.Database;
+using Timelapse.Enums;
 
 namespace Timelapse
 {
@@ -71,6 +72,96 @@ namespace Timelapse
                     Episodes.EpisodesDictionary.Add(currentFileIndex, tuple);
                 }
             }
+        }
+
+        /// <summary>
+        /// Depending on the direction, get - as an increment - the following.
+        /// - if going forward, the number of files that we need to increment to get to the beginning of the next episode
+        /// - if going backwards, the number of files that we need to decrement to get to 
+        /// - a) the beginning of the current episode if we are not already on the 1st image or 
+        /// - b) the previous episode if we are on the first image of the current episode.
+        /// </summary>
+        public static bool GetIncrementToNextEpisode(FileTable files, int index, DirectionEnum direction, out int increment)
+        {
+            increment = 1;
+            if (files == null)
+            {
+                return false;
+            }
+            DateTime date1;
+            DateTime date2;
+            ImageRow file;
+            int fileCount = files.RowCount;
+
+            // Default in case there is only one file in this episode
+            
+            int first = index;
+            int last = index;
+            int current = index;
+            // Note that numberOfFiles should never return zero if the provided index is valid
+            if (files == null)
+            {
+                return false;
+            }
+
+            file = files[index];
+            date1 = file.DateTime;
+            
+            // We want the next Episode in the forward direction
+            if (direction == DirectionEnum.Next)
+            {
+                // go forwards in the filetable until we find the last file in the episode, or we fail
+                // as we have gone forwards maxSearch times
+                int maxSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+                while (current < fileCount && maxSearch != 0)
+                {
+                    file = files[current];
+                    date2 = file.DateTime;
+                    TimeSpan difference = date2 - date1;
+                    bool aboveThreshold = difference.Duration() > Episodes.TimeThreshold;
+                    if (aboveThreshold)
+                    {
+                        break;
+                    }
+                    date1 = date2;
+                    last = current;
+                    current++;
+                    maxSearch--;
+                }
+                increment = last - first + 1;
+                return !(maxSearch == 0);
+            }
+
+            // What is left is direction == DirectionEnum.Previous
+            // If we are on the first image in the episode, we want the previous Episode in the backwards direction
+            // Otherwise we want the first image in the episode (maybe??)
+            int minSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+            current = index - 1;
+            // Go backwards in the filetable until we find the first file in the episode, or we fail
+            // as we have gone back minSearch times
+            bool onFirstTwoImages = true;
+            while (current >= 0 && minSearch != 0)
+            {
+                file = files[current];
+                date2 = file.DateTime;
+                TimeSpan difference = date1 - date2;
+                bool aboveThreshold = difference.Duration() > Episodes.TimeThreshold;
+                if (aboveThreshold && onFirstTwoImages == false)
+                {
+                    break;
+                }
+                onFirstTwoImages = false;
+                first = current;
+                date1 = date2;
+                current--;
+                minSearch--;
+            }
+            increment = last - first + 1;
+            if (increment > 1)
+            {
+                increment--; 
+            }
+            return !(minSearch == 0);
         }
 
         /// <summary>
