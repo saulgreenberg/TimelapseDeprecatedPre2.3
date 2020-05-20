@@ -72,7 +72,7 @@ namespace Timelapse.Util
         // Returns a dictionary where 
         // - key is each missing relativePath, 
         // - value is the possible found relativePath, or String.Empty if there is no match
-        public static Dictionary<string, string> TryFindMissingFolders(string rootPath, List<string> missingFolderPaths)
+        public static Dictionary<string, List<string>> TryFindMissingFolders(string rootPath, List<string> missingFolderPaths)
         {
             if (missingFolderPaths == null)
             {
@@ -80,28 +80,21 @@ namespace Timelapse.Util
             }
             List<string> allFolderPaths = new List<string>();
             Util.FilesFolders.GetAllFoldersContainingAnImageOrVideo(rootPath, allFolderPaths, rootPath);
-            Dictionary<string, string> matchingFolders = new Dictionary<string, string>();
-            int matchingFoldersCount;
+            Dictionary<string, List<string>> matchingFolders = new Dictionary<string, List<string>>();
             foreach (string missingFolderPath in missingFolderPaths)
             {
                 string missingFolderName = Path.GetFileName(missingFolderPath);
-                matchingFoldersCount = 0;
+                List<string> matches = new List<string>();
                 foreach (string oneFolderPath in allFolderPaths)
                 {
                     string allRelativePathName = Path.GetFileName(oneFolderPath);
                     if (String.Equals(missingFolderName, allRelativePathName))
-                    {
-                        // We only return the first match, even if another match may exist 
-                        matchingFoldersCount++;
-                        matchingFolders.Add(missingFolderPath, oneFolderPath);
-                        break;
+                    { 
+                        matches.Add(oneFolderPath);
+                        continue;
                     }
                 }
-                if (matchingFoldersCount == 0)
-                {
-                    // No match to this particular folder
-                    matchingFolders.Add(missingFolderPath, String.Empty);
-                }
+                matchingFolders.Add(missingFolderPath, matches);
             }
             return matchingFolders;
         }

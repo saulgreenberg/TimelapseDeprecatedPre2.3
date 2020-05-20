@@ -352,7 +352,7 @@ namespace Timelapse
 
         private async void MenuItemEditFindMissingFolder_Click(object sender, RoutedEventArgs e)
         {
-            bool? result = TimelapseWindow.CheckAndCorrectForMissingFolders(this, this.DataHandler.FileDatabase);
+            bool? result = TimelapseWindow.GetAndCorrectForMissingFolders(this, this.DataHandler.FileDatabase);
             if (true == result)
             {
                 await this.FilesSelectAndShowAsync().ConfigureAwait(true);
@@ -362,7 +362,7 @@ namespace Timelapse
             {
                 Dialogs.MenuEditNoFoldersAreMissing(this);
             }
-            // if result is null, it means that folders were missing but not updated.
+            // if result is null, it means that the operation was aborted for some reason, or the folders were missing but not updated.
         }
 
         //Try to find a missing image

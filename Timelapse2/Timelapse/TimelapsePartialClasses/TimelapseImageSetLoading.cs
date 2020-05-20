@@ -178,7 +178,11 @@ namespace Timelapse
             this.CheckAndCorrectRootFolder(fileDatabase);
 
             // Check to see if there are any missing folders as specified by the relative paths. For those missing, ask the user to try to locate those folders.
-            TimelapseWindow.CheckAndCorrectForMissingFolders(this, fileDatabase);
+            int missingFoldersCount = TimelapseWindow.GetMissingFolders(fileDatabase).Count;
+            if (missingFoldersCount > 0)
+            {
+                Dialogs.MissingFoldersInformationDialog(this, missingFoldersCount);
+            }
 
             // Generate and render the data entry controls, regardless of whether there are actually any files in the files database.
             this.DataHandler = new DataEntryHandler(fileDatabase);
@@ -450,6 +454,7 @@ namespace Timelapse
             // if this is completion of an existing .ddb open, set the current selection and the image index to the ones from the previous session with the image set
             // also if this is completion of import to a new .ddb
             long mostRecentFileID = this.DataHandler.FileDatabase.ImageSet.MostRecentFileID;
+
             FileSelectionEnum fileSelection = this.DataHandler.FileDatabase.ImageSet.FileSelection;
             if (fileSelection == FileSelectionEnum.Folders)
             {

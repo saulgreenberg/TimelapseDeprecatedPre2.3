@@ -351,6 +351,8 @@ namespace Timelapse
         // Close Image Set
         public void MenuFileCloseImageSet_Click(object sender, RoutedEventArgs e)
         {
+            this.MenuItemSelectByFolder_ClearAllCheckmarks();
+
             // if we are actually viewing any files
             if (this.IsFileDatabaseAvailable())
             {
@@ -359,14 +361,16 @@ namespace Timelapse
                 {
                     this.Window_Closing(null, null);
                     // revert to custom selections to all 
-                    if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
-                    {
-                        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                    }
-                    if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
-                    {
-                        this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
-                    }
+                    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                    // Depracated. We no longer save the selection state, but just revert to All files
+                    //if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
+                    //{
+                    //    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                    //}
+                    //if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
+                    //{
+                    //    this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
+                    //}
 
                     // write image set properties to the database
                     this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();

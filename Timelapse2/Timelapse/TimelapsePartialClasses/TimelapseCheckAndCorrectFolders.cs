@@ -62,56 +62,23 @@ namespace Timelapse
             }
         }
 
-        // Get all the distinct relative folder paths and check to see if the folder exists.
-        // If not, try to find the best matching folder for each of them
-        // Then ask the user to verify and - if needed - to try to locate each missing folder.
-        public static bool? CheckAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
+        /// <summary>
+        /// A convenience wrapper function for checking for missing folders, and correcting them if they are missing
+        /// </summary>
+        /// returns 
+        /// - true if folders were corrected, 
+        /// - false if no folders are missing, 
+        ///  - null if the operation was aborted for some reason, or the folders were missing but not updated..
+        public static bool? GetAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
         {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(fileDatabase, nameof(fileDatabase));
-
-            // Get a list of missing folders, if any.
+            if (fileDatabase == null) return null;
             List<string> missingRelativePaths = GetMissingFolders(fileDatabase);
-            if (missingRelativePaths?.Count == 0)
-            {
-                // No folders are missing, so nothing to do.
-                return false;
-            }
-
-            // We want to show the normal cursor when we display dialog boxes, so save the current cursor so we can store it.
-            Cursor cursor = Mouse.OverrideCursor;
-
-            // We know that at least one or more folders are missing.
-            // For each missing folder path, try to find one (and only one) folder with the same name under the root folder.
-            // If there are more than one, just return the first one. 
-            Dictionary<string, string> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
-            bool? result;
-            if (matchingFolderNames != null)
-            {
-                Mouse.OverrideCursor = null;
-                // Present a dialog box that shows the possible match for each folder.
-                // The user can then confirm that they are correct, or request manual locaton of those folders, or cancel altogether.
-                MissingFoldersLocateFolders dialog = new MissingFoldersLocateFolders(owner, fileDatabase.FolderPath, matchingFolderNames);
-                result = dialog.ShowDialog();
-                Mouse.OverrideCursor = cursor;
-                if (result == true)
-                {
-                    // Get the updated folder locations
-                    matchingFolderNames = dialog.FinalFolderLocations;
-                    // User accepted the folder matches. Update the database
-                    foreach (string key in matchingFolderNames.Keys)
-                    {
-                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, matchingFolderNames[key]);
-                        ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, key);
-                        fileDatabase.UpdateFiles(columnToUpdateWithWhere);
-                    }
-                    return true;
-                }
-            }
-            return null;
+            return (missingRelativePaths.Count == 0) ? false : CorrectForMissingFolders(owner, fileDatabase, missingRelativePaths);
         }
 
-        // Return a list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.
+        /// <summary>
+        /// Returns a (possible empty) list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.
+        /// </summary>
         private static List<string> GetMissingFolders(FileDatabase fileDatabase)
         {
             List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
@@ -125,6 +92,54 @@ namespace Timelapse
                 }
             }
             return missingRelativePaths;
+        }
+
+        /// <summary>
+        /// If there are missing folders, search for possible matches and raise a dialog box asking the user to locate them
+        /// </summary>
+        /// <param name="owner"></param>
+        /// <param name="fileDatabase"></param>
+        /// <param name="missingFolders"></param>
+        /// <returns>whether any folder are actually missing </returns>
+        public static bool? CorrectForMissingFolders(Window owner, FileDatabase fileDatabase, List<string> missingRelativePaths)
+        {
+            // Abort if the arguments for null 
+            if (null == fileDatabase) return null;
+            if (null == missingRelativePaths) return null;
+
+            // We know that at least one or more folders are missing.
+            // For each missing folder path, try to find all folders with the same name under the root folder.
+            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
+            Dictionary<string, string> finalFileLocations;
+
+            // We want to show the normal cursor when we display dialog boxes, so save the current cursor so we can store it.
+            Cursor cursor = Mouse.OverrideCursor;
+
+            bool? result;
+            if (matchingFolderNames != null)
+            {
+                Mouse.OverrideCursor = null;
+                // Present a dialog box that asks the user to locate the missing folders. It will show possible locations for each folder (if any).
+                // The user can then confirm correct locations, manually set the locaton of those folders, or cancel altogether.
+                MissingFoldersLocateAllFolders dialog = new MissingFoldersLocateAllFolders(owner, fileDatabase.FolderPath, matchingFolderNames);
+                result = dialog.ShowDialog();
+                
+                if (result == true)
+                {
+                    // Get the updated folder locations and update the database
+                    finalFileLocations = dialog.FinalFolderLocations;
+                    foreach (string key in finalFileLocations.Keys)
+                    {
+                        ColumnTuple columnToUpdate = new ColumnTuple(Constant.DatabaseColumn.RelativePath, finalFileLocations[key]);
+                        ColumnTuplesWithWhere columnToUpdateWithWhere = new ColumnTuplesWithWhere(columnToUpdate, key);
+                        fileDatabase.UpdateFiles(columnToUpdateWithWhere);
+                    }
+                    Mouse.OverrideCursor = cursor;
+                    return true;
+                }
+            }
+            Mouse.OverrideCursor = cursor;
+            return null; // Operaton aborted
         }
     }
 }

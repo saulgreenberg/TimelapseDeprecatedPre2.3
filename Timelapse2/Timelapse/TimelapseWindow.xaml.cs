@@ -191,19 +191,21 @@ namespace Timelapse
                 (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0))
             {
                 // save image set properties to the database
-                if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom)
-                {
-                    // don't save custom selections, revert to All 
-                    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                }
-                else if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
-                {
-                    // If the last selection was a non-empty folder, save it as the folder selection
-                    if (String.IsNullOrEmpty(this.DataHandler.FileDatabase.ImageSet.SelectedFolder))
-                    {
-                        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                    }
-                }
+                this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                // Depracated - we no longer save the selection, but just revert to All when re-opening an image set.
+                // if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom || this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Missing )
+                //{
+                //    // don't save custom selections, revert to All 
+                //    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                //}
+                //else if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
+                //{
+                //    // If the last selection was a non-empty folder, save it as the folder selection
+                //    if (String.IsNullOrEmpty(this.DataHandler.FileDatabase.ImageSet.SelectedFolder))
+                //    {
+                //        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
+                //    }
+                //}
 
                 // sync image set properties
                 if (this.MarkableCanvas != null)
@@ -216,7 +218,6 @@ namespace Timelapse
                 {
                     this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
                 }
-
                 this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
 
                 // ensure custom filter operator is synchronized in state for writing to user's registry
