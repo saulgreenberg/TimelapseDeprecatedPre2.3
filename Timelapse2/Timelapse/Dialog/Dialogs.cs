@@ -5,10 +5,12 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
 using Clipboard = System.Windows.Clipboard;
+using Cursor = System.Windows.Input.Cursor;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace Timelapse.Dialog
@@ -668,7 +670,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region MessageBox: MissingFilesNotFound
+        #region MessageBox: MissingFilesNotFound / Missing Folders
         public static void MissingFileSearchNoMatchesFoundDialog(Window owner, string fileName)
         {
             string title = "Timelapse could not find any matches to " + fileName;
@@ -688,6 +690,31 @@ namespace Timelapse.Dialog
 
             messageBox.Message.Icon = MessageBoxImage.Question;
             messageBox.ShowDialog();
+        }
+
+        public static void MissingFoldersInformationDialog(Window owner, int count)
+        {
+            Cursor cursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = null;
+
+            string title = count.ToString() + " of your folders could not be found";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.Problem = "Timelapse checked for the folders containing your image and video files, and noticed that " + count.ToString() + " are missing.";
+
+            messageBox.Message.Reason = "These folders may have been moved, renamed, or deleted since Timelapse last recorded their location.";
+
+            messageBox.Message.Solution = "If you want to try to locate missing folders and files, select: " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Edit | Try to find missing folders...' to have Timelapse help locate those folders, or" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Edit | Try to find this (and other) missing files...' to have Timelapse help locate one or more missing files in a particular folder.";
+
+            messageBox.Message.Hint = "Everything will still work as normal, except that a 'Missing file' image will be displayed instead of the actual image." + Environment.NewLine;
+            
+            messageBox.Message.Hint += "Searching for the missing folders is optional.";
+
+            messageBox.Message.Icon = MessageBoxImage.Exclamation;
+            messageBox.ShowDialog();
+            Mouse.OverrideCursor = cursor;
         }
         #endregion
 

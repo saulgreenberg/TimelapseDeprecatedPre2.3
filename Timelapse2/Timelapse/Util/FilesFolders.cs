@@ -90,8 +90,8 @@ namespace Timelapse.Util
                     string allRelativePathName = Path.GetFileName(oneFolderPath);
                     if (String.Equals(missingFolderName, allRelativePathName))
                     { 
-                       matches.Add(oneFolderPath);
-                        break;
+                        matches.Add(oneFolderPath);
+                        continue;
                     }
                 }
                 matchingFolders.Add(missingFolderPath, matches);

@@ -165,7 +165,7 @@
 
                     <Separator/>
                     <!-- Missing folders  or files -->
-                    <MenuItem Name="MenuItemFindMissingImage" Header="Try to find this (and other) missing images ..." IsEnabled="True" Click="MenuItemEditFindMissingImage_Click" ToolTip="Try to find the currently displayed missing image, as well as other missing images in the same folder as this one "  />
+                    <MenuItem Name="MenuItemFindMissingImage" Header="Try to find this (and other) missing files ..." IsEnabled="True" Click="MenuItemEditFindMissingImage_Click" ToolTip="Try to find the currently displayed missing file, as well as other missing images in the same folder as this one "  />
                     <MenuItem Name="MenuItemFindMissingFolder" Header="Try to find any missing folders ..." IsEnabled="True" Click="MenuItemEditFindMissingFolder_Click" ToolTip="Check to see if any folders are missing. If so, try to find them."  />
                     <Separator/>
 
