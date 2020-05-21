@@ -52,12 +52,14 @@ namespace Timelapse.Dialog
 
             // Detections
             this.CheckBoxUseDetections.IsChecked = this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
         }
 
         #region Delete Folder Management
@@ -107,6 +109,7 @@ namespace Timelapse.Dialog
             this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
         }
         #endregion
+
         #region Tab Controls to Include / Exclude
         private void CheckBoxTabOrder_Click(object sender, RoutedEventArgs e)
         {
@@ -151,6 +154,7 @@ namespace Timelapse.Dialog
             this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
         }
         #endregion
+
         // Callback: The user has changed the maximum zoom value
         private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -176,6 +180,7 @@ namespace Timelapse.Dialog
         {
             this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
         }
 
         private void ResetDetections_Click(object sender, RoutedEventArgs e)
@@ -211,6 +216,11 @@ namespace Timelapse.Dialog
                 this.BoundingBoxThresholdDisplayText.Text = "Always display bounding boxes above this confidence threshold";
             }
             this.timelapseState.BoundingBoxDisplayThreshold = slider.Value;
+        }
+
+        private void CheckBoxBounidngBoxColorBLindRinedlyColors_Click(object sender, RoutedEventArgs e)
+        {
+            this.timelapseState.BoundingBoxColorBlindFriendlyColors = this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked == true;
         }
     }
 }

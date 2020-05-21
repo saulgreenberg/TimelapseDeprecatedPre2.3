@@ -328,22 +328,35 @@ namespace Timelapse.Controls
 
                 // The color of the bounding box depends upon its category
                 SolidColorBrush brush;
+                bool colorblind = Util.GlobalReferences.TimelapseState.BoundingBoxColorBlindFriendlyColors;
                 switch (bbox.DetectionCategory)
                 {
                     case "0":
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 0)); // Green
+                        brush = (colorblind)
+                            ? new SolidColorBrush(Color.FromArgb(255, 0, 255, 0)) // Green, no transparency
+                            : new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 0)); // Green
                         break;
                     case "1":
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0)); // Red
+                        brush = (colorblind)
+                            ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF00BFFF")) // Deep sky blue  new SolidColorBrush(Color.FromArgb(255, 0, 0, 255)) // Blue
+                            : new SolidColorBrush(Color.FromArgb(transparency, 255, 0, 0)); // Red
+
                         break;
                     case "2":
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 0, 255)); // Blue
+                        brush = (colorblind)
+                            ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF00")) // Yellow
+                            : new SolidColorBrush(Color.FromArgb(255, 0, 0, 255)); // Blue
                         break;
                     case "3":
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255)); // Peacock green/blue
+                        brush = (colorblind)
+                            ? new SolidColorBrush(Color.FromArgb(255, 255, 255, 255)) // White
+                            : new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255)); // White
+
                         break;
                     default:
-                        brush = new SolidColorBrush(Color.FromArgb(transparency, 255, 255, 255)); // White
+                        brush = (colorblind)
+                               ? new SolidColorBrush(Color.FromArgb(255, 0, 255, 255)) // Peacock green/blue
+                               : new SolidColorBrush(Color.FromArgb(transparency, 0, 255, 255)); // Peacock green/blue
                         break;
                 }
                 rect.Stroke = brush;

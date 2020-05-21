@@ -471,6 +471,7 @@ namespace Timelapse.Constant
 
         // Various Recognition-related values
         public const string BoundingBoxDisplayThreshold = "BoundingBoxDisplayThreshold";
+        public const string BoundingBoxColorBlindFriendlyColors = "BoundingBoxColorBlindFriendlyColors";
         public const string SpeciesDetectedThreshold = "SpeciesDetectedThreshold";
         public const string UseDetections = "UseDetections";
 
