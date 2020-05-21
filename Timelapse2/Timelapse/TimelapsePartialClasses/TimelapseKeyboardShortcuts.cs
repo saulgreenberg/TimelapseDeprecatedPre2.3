@@ -118,11 +118,26 @@ namespace Timelapse
                     break;
                 case Key.Right:             // next /previous image
                 case Key.Left:              // previous image
+                    int increment = 1;
                     this.FilePlayer_Stop();      // In case the FilePlayer is going
                     direction = currentKey.Key == Key.Right ? DirectionEnum.Next : DirectionEnum.Previous;
+                    if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftCtrl))
+                    {
+                        long currentFileID = this.DataHandler.ImageCache.Current.ID;
+                        bool result = Episodes.GetIncrementToNextEpisode(this.DataHandler.FileDatabase.FileTable, this.DataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID), direction, out increment);
+                        if (result == true)
+                        {
+                            if (Episodes.ShowEpisodes == false)
+                            {
+                                // turn on Episode display if its not already on
+                                this.EpisodeShowHide(true);
+                            }
+                            // At this point, the episodes should be showing and the increment amount should be reset (see the out parameter above)
+                        }
+                    }
                     if (currentKey.IsRepeat == false || (currentKey.IsRepeat == true && keyRepeatCount % this.State.Throttles.RepeatedKeyAcceptanceInterval == 0))
                     {
-                        this.TryFileShowWithoutSliderCallback(direction);
+                        this.TryFileShowWithoutSliderCallback(direction, increment);
                     }
                     break;
                 case Key.Up:                // show visual difference to next image

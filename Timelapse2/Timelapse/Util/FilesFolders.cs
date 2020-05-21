@@ -26,16 +26,16 @@ namespace Timelapse.Util
         /// <summary>
         /// Populate foundFiles with files matching the patternfound by recursively descending the startFolder path.
         /// </summary>
-        /// <param name="startFolder"></param>
-        /// <param name="pattern"></param>
-        /// <param name="ignoreBackupFolder">Skip the Backup folder</param>
-        /// <param name="foundFiles"></param>
-        /// <returns></returns>
         public static List<string> GetAllFilesInFoldersAndSubfoldersMatchingPattern(string startFolder, string pattern, bool ignoreBackupFolder, bool ignoreDeletedFolder, List<string> foundFiles)
         {
+            if (startFolder == null)
+            {
+                // This should not happen, but just in case
+                return null;
+            }
             if (foundFiles == null)
             {
-                // This should not happen, as it should be initialized before this call
+                // This should not be required, as it should have been initialized before this call
                 foundFiles = new List<string>();
             }
             try
