@@ -19,7 +19,7 @@ namespace Timelapse.Editor.Dialog
         private string metadataName = String.Empty;
 
 
-        private readonly string imageFilePath;
+        private string imageFilePath;
         private ExifToolWrapper exifTool;
 
         public InspectMetadata(Window owner)
@@ -150,7 +150,7 @@ namespace Timelapse.Editor.Dialog
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             string filter = String.Format("Images and videos (*{0};*{1};*{2};*{3})|*{0};*{1};*{2};*{3}", Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension);
-            if (FilesFolders.TryGetFileFromUser("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.imageFilePath) == true)
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.imageFilePath) == true)
             {
                 this.ImageName.Content = Path.GetFileName(this.imageFilePath);
                 this.ImageName.ToolTip = this.ImageName.Content;

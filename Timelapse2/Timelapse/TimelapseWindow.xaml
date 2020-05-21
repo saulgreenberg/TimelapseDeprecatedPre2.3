@@ -224,6 +224,9 @@
                     <MenuItem Name="MenuItemViewNextImage" Header="View _next file" Click="MenuItemShowNextFile_Click" InputGestureText="&#x2192;" ToolTip="View the next file in the image set"/>
                     <MenuItem Name="MenuItemViewPreviousImage" Header="View _previous file" Click="MenuItemShowPreviousFile_Click" InputGestureText="&#x2190;" ToolTip="View the previous file in the image set"/>
                     <Separator/>
+                    <MenuItem Name="MenuItemViewNextEpisode" Header="View _next episode" Click="MenuItemShowNextEpisode_Click" InputGestureText="&#60;control&#62; &#x2192;" ToolTip="View the 1st file in the next episode in the image set"/>
+                    <MenuItem Name="MenuItemViewPreviousEpisode" Header="View _previous episode" Click="MenuItemShowPreviousEpisode_Click" InputGestureText="&#60;control&#62; &#x2190;" ToolTip="View the 1st file in the previous episode in the image set"/>
+                    <Separator/>
                     <MenuItem Name="MenuItemZoomIn" Header="Zoom _in" Click="MenuItemZoomIn_Click" InputGestureText="&#x2039;" ToolTip="Zoom into this file"/>
                     <MenuItem Name="MenuItemZoomOut" Header="Zoom _out" Click="MenuItemZoomOut_Click" InputGestureText="&#x203A;" ToolTip="Zoom out in this file"/>
                     <Separator/>

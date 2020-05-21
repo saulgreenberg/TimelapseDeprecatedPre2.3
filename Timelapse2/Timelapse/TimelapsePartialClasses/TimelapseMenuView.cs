@@ -38,6 +38,33 @@ namespace Timelapse
             this.TryFileShowWithoutSliderCallback(DirectionEnum.Previous);
         }
 
+        // View next episdoe in this image set
+        private void MenuItemShowNextEpisode_Click(object sender, RoutedEventArgs e)
+        {
+            EpisodeShowNextOrPrevious_Click(DirectionEnum.Next);
+        }
+        private void MenuItemShowPreviousEpisode_Click(object sender, RoutedEventArgs e)
+        {
+            EpisodeShowNextOrPrevious_Click(DirectionEnum.Previous);
+        }
+
+        // View previous episode in this image set
+        private void EpisodeShowNextOrPrevious_Click(DirectionEnum direction)
+        {
+            long currentFileID = this.DataHandler.ImageCache.Current.ID;
+            bool result = Episodes.GetIncrementToNextEpisode(this.DataHandler.FileDatabase.FileTable, this.DataHandler.FileDatabase.GetFileOrNextFileIndex(currentFileID), direction, out int increment);
+            if (result == true)
+            {
+                if (Episodes.ShowEpisodes == false)
+                {
+                    // turn on Episode display if its not already on
+                    this.EpisodeShowHide(true);
+                }
+                // At this point, the episodes should be showing and the increment amount should be reset (see the out parameter above)
+                this.TryFileShowWithoutSliderCallback(direction, increment);
+            }
+        }
+
         // Zoom in
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
         {
