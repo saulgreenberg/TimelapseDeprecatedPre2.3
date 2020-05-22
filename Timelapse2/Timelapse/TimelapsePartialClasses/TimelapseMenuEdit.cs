@@ -481,7 +481,6 @@ namespace Timelapse
                     if (darkThreshold.ShowDialog() == true)
                     {
                         // Force an update of the current image in case the current values have changed
-                        System.Diagnostics.Debug.Print("Updating Files with Dark");
                         this.FileShow(this.DataHandler.ImageCache.CurrentRow, true);
                     }
                 }
