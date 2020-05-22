@@ -422,7 +422,7 @@ namespace Timelapse
                 foreach (string otherMissingFile in otherMissingFiles)
                 {
                     // Its a potential candidate if its not already referenced but it exists in that relative path folder
-                    if (false == this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingPath.Item1, otherMissingFile) 
+                    if (false == this.DataHandler.FileDatabase.ExistsRelativePathAndFileInDataTable(matchingPath.Item1, otherMissingFile)
                         && File.Exists(FilesFolders.GetFullPath(FolderPath, matchingPath.Item1, otherMissingFile)))
                     {
                         orphanMissingFiles.Add(otherMissingFile);

@@ -709,7 +709,7 @@ namespace Timelapse.Dialog
             messageBox.Message.Solution += "\u2022 'Edit | Try to find this (and other) missing files...' to have Timelapse help locate one or more missing files in a particular folder.";
 
             messageBox.Message.Hint = "Everything will still work as normal, except that a 'Missing file' image will be displayed instead of the actual image." + Environment.NewLine;
-            
+
             messageBox.Message.Hint += "Searching for the missing folders is optional.";
 
             messageBox.Message.Icon = MessageBoxImage.Exclamation;

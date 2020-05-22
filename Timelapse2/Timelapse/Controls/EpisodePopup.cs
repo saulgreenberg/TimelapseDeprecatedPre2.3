@@ -66,11 +66,12 @@ namespace Timelapse.Controls
 
             // Add a visual marker to show the position of the label in the image list
             Label label = EpisodePopup.CreateLabel("^", this.ImageHeight);
+            label.VerticalAlignment = VerticalAlignment.Top;
             width += label.Width;
-            height = Math.Max(height, label.Height);
+            height = label.Height;
             sp.Children.Add(label);
 
-            int margin = 5;
+            int margin = 2;
             FileTable fileTable; // To hold the results of the database selection as a table of ImageRows
 
             // We will only consider images whose relative path is the same as the current file
@@ -128,7 +129,9 @@ namespace Timelapse.Controls
                                 Image image = EpisodePopup.CreateImage(fileTable[0], margin, this.ImageHeight);
                                 width += image.Source.Width;
                                 height = Math.Max(height, image.Source.Height);
-                                sp.Children.Insert(0, image);
+
+                                // Create a canvas containing the image and bounding boxes (if detections are on)
+                                sp.Children.Insert(0, CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID));
                                 imagesLeftToDisplay--;
                                 lastBackwardsDateTime = fileTable[0].DateTime;
                             }
@@ -154,9 +157,11 @@ namespace Timelapse.Controls
                                 Image image = EpisodePopup.CreateImage(fileTable[0], margin, this.ImageHeight);
                                 width += image.Source.Width;
                                 height = Math.Max(height, image.Source.Height);
-                                sp.Children.Add(image);
+
+                                // Create a canvas containing the image and bounding box
+                                sp.Children.Add(CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID));
                                 imagesLeftToDisplay--;
-                                lastForwardsDateTime = fileTable[0].DateTime;
+                                lastBackwardsDateTime = fileTable[0].DateTime;
                             }
                             else
                             {
@@ -168,6 +173,8 @@ namespace Timelapse.Controls
                     goForwardsRow++;
                 }
             }
+
+            label.Height = Math.Max(label.Height, height); // So it extends to the top of the popup
             // Position and open the popup so it appears horizontallhy centered just above the cursor
             this.HorizontalOffset = this.markableCanvas.ActualWidth / 2.0 - width / 2.0;
             this.VerticalOffset = -height - 2 * margin;
@@ -175,6 +182,24 @@ namespace Timelapse.Controls
 
             // Cleanup
             dt.Dispose();
+        }
+
+        // Create a canvas containging the image as well as the  bounding boxes defined by the filetable id 
+        private static Canvas CreateCanvasWithBoundingBoxesAndImage(Image image, double height, int margin, long fileTableID)
+        {
+            Canvas canvas = new Canvas();
+            canvas.Width = image.Source.Width; ;
+            canvas.Height = height;
+            canvas.Background = Brushes.Gray;
+
+            Canvas.SetLeft(image, 0);
+            Canvas.SetTop(image, 0);
+            canvas.Children.Add(image);
+
+
+            BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
+            boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
+            return (canvas);
         }
 
         private static Image CreateImage(ImageRow imageRow, int margin, double imageHeight)
@@ -195,10 +220,10 @@ namespace Timelapse.Controls
                 {
                     double scale = imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
                     image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
-                    System.Diagnostics.Debug.Print("Placehoder: " + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
+                    // System.Diagnostics.Debug.Print("Placehoder: " + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
                 }
             }
-            else System.Diagnostics.Debug.Print("Image: " + image.Source.Width + "," + image.Source.Height);
+            // else System.Diagnostics.Debug.Print("Image: " + image.Source.Width + "," + image.Source.Height);
 
             image.Margin = new Thickness(margin);
             return image;

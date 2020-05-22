@@ -94,7 +94,7 @@ namespace Timelapse
             int fileCount = files.RowCount;
 
             // Default in case there is only one file in this episode
-            
+
             int first = index;
             int last = index;
             int current = index;
@@ -106,7 +106,7 @@ namespace Timelapse
 
             file = files[index];
             date1 = file.DateTime;
-            
+
             // We want the next Episode in the forward direction
             if (direction == DirectionEnum.Next)
             {
@@ -159,7 +159,7 @@ namespace Timelapse
             increment = last - first + 1;
             if (increment > 1)
             {
-                increment--; 
+                increment--;
             }
             return !(minSearch == 0);
         }
