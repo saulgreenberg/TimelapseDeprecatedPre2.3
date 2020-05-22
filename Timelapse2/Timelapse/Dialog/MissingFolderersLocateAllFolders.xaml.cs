@@ -50,9 +50,9 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Private variables
-        private string useLocateButtonText = "0 matches. Try [Locate]";
+        private readonly string useLocateButtonText = "0 matches. Try [Locate]";
         private readonly string RootPath;
-        private ObservableCollection<MissingFolderRow> observableCollection; // A tuple defining the contents of the datagrid
+        private readonly ObservableCollection<MissingFolderRow> observableCollection; // A tuple defining the contents of the datagrid
         private IList<DataGridCellInfo> selectedRowValues; // Will contain the tuple of the row corresponding to the selected cell
         #endregion
 

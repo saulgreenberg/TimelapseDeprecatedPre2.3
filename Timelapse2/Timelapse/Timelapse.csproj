@@ -325,6 +325,7 @@
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
+    <Compile Include="Util\ColorsAndBrushes.cs" />
     <Compile Include="Util\Compare.cs" />
     <Compile Include="Util\DragDropFile.cs" />
     <Compile Include="Util\Episodes.cs" />

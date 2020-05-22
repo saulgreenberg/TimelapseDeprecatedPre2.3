@@ -123,7 +123,7 @@ namespace Timelapse
                 // The user can then confirm correct locations, manually set the locaton of those folders, or cancel altogether.
                 MissingFoldersLocateAllFolders dialog = new MissingFoldersLocateAllFolders(owner, fileDatabase.FolderPath, matchingFolderNames);
                 result = dialog.ShowDialog();
-                
+
                 if (result == true)
                 {
                     // Get the updated folder locations and update the database
