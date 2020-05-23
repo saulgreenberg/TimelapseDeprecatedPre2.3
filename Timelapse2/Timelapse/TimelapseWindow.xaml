@@ -42,16 +42,16 @@
                 <!-- File Menu -->
                 <MenuItem Header="_File" IsTabStop="false" SubmenuOpened="File_SubmenuOpening">
                     <!-- Load template, images, and video files... -->
-                    <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing database, or creates a new database after asking for the image/video locations">
+                    <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing image set database, or creates a new image set database">
                         <MenuItem.Icon>
                             <Image Source="Icons/OpenFile_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
 
                     <!-- Load a recently used image set -->
-                    <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
+                    <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set from the chosen location"/>
 
-                    <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
+                    <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to this image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                         <MenuItem.Icon>
                             <Image Source="Icons/NewFile_40x.png" />
                         </MenuItem.Icon>
@@ -60,7 +60,7 @@
                     <Separator />
                     
                     <!-- Merge -->
-                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merges databases in sub-folders into a single new database"  Click="MenuItemMergeDatabases_Click" />
+                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge data (.ddb) files into a single file..." IsEnabled="true" ToolTip="Asks for a location, searches its sub-folders for databases (.ddb files) and merges their contents into a new database file."  Click="MenuItemMergeDatabases_Click" />
 
                     <Separator />
 
@@ -77,15 +77,8 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <!-- Export the current image or video _file...-->
-                    <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
-                        <MenuItem.Icon>
-                            <Image Source="Icons/ImageExport_32x.png" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-
                     <!-- Import data from a .csv file...-->
-                    <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data for the selected files in the image set from a CSV (comma separated value) file">
+                    <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file ..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data in this image set from a CSV (comma separated value) file">
                         <MenuItem.Icon>
                             <Image Source="Icons/CSVImport_32x.png" />
                         </MenuItem.Icon>
@@ -102,21 +95,28 @@
 
                     <Separator />
 
+
+                    <!-- Export the current image or video _file...-->
+                    <MenuItem Name="MenuItemExportThisImage" Header="Export a copy of the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/ImageExport_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    
                     <!-- Rename the _data file...-->
-                    <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data file..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the image data file to a name of your choosing"/>
+                    <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data (.ddb) file for this image set..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the database (.ddb) file  for this image set to a name of your choosing"/>
                     <Separator />
 
+                    <Separator />
                     <!-- Close Image Set-->
-                    <MenuItem Name="MenuFileCloseImageSet" Header="C_lose image set" Click="MenuFileCloseImageSet_Click" IsEnabled="False">
+                    <MenuItem Name="MenuFileCloseImageSet" Header="C_lose image set" Click="MenuFileCloseImageSet_Click" IsEnabled="False" ToolTip="Close the currently opened image set. You can then open another image set if you wish" >
                         <MenuItem.Icon>
                             <Image Source="Icons/CloseFile_40x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <Separator />
-
                     <!-- Exit -->
-                    <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Quits the program">
+                    <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Exit Timelapse">
                         <MenuItem.Icon>
                             <Image Source="Icons/Exit_22x.png" />
                         </MenuItem.Icon>
@@ -160,7 +160,7 @@
                         <MenuItem Name="MenuItemDateTimeFixedCorrection" Header="Correct for cameras not set to the right date and time..." Click="MenuItemDateTimeFixedCorrection_Click"  ToolTip="Correct for cameras  not initially set to the right date and/or time." IsEnabled="True" />
                         <MenuItem Name="MenuItemDateTimeLinearCorrection" Header="Correct for cameras whose cloc_k runs fast or slow..." Click="MenuItemDateTimeLinearCorrection_Click"  ToolTip="Correct for a camera's clock running fast or slow" IsEnabled="True" />
                         <MenuItem Name="MenuItemModifyAmbiguousDates" Header="Check and correct _ambiguous dates..." Click="MenuItemCorrectAmbiguousDates_Click"  ToolTip="Check and optionally correct ambiguous dates, where day-month could have been read as month-day" IsEnabled="True" />
-                        <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" />
+                        <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" Visibility="Collapsed"/>
                     </MenuItem>
 
                     <Separator/>

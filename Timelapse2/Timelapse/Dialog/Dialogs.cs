@@ -997,9 +997,9 @@ namespace Timelapse.Dialog
         {
             MessageBox messageBox = new MessageBox("Can't export this file!", owner);
             messageBox.Message.Icon = MessageBoxImage.Error;
-            messageBox.Message.Problem = "Timelapse can't export the currently displayed image or video file.";
+            messageBox.Message.Problem = "Timelapse can't export a copy of the current image or video file.";
             messageBox.Message.Reason = "It is likely a corrupted or missing file.";
-            messageBox.Message.Solution = "Make sure you have navigated to, and are displaying, a valid file before you try to export it.";
+            messageBox.Message.Solution = "Make sure you have navigated to, and are displaying, a valid file before you try to export a copy of it.";
             messageBox.ShowDialog();
         }
 

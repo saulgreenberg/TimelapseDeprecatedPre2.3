@@ -1352,12 +1352,6 @@ namespace Timelapse.Database
             {
                 this.CreateBackupIfNeeded();
                 this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
-
-                // Add an entry into the log detailing what we just did
-                StringBuilder log = new StringBuilder(Environment.NewLine);
-                log.AppendFormat("System entry: Adjusted dates and times of {0} selected files.{1}", filesToAdjust.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}', the last '{1}', and the last file was adjusted by {2}.{3}", filesToAdjust[0].File, filesToAdjust[filesToAdjust.Count - 1].File, mostRecentAdjustment, Environment.NewLine);
-                this.ImageSetUpdateLog(log);
             }
         }
 
@@ -1418,12 +1412,6 @@ namespace Timelapse.Database
             {
                 this.CreateBackupIfNeeded();
                 this.Database.Update(Constant.DBTables.FileData, imagesToUpdate);
-
-                StringBuilder log = new StringBuilder(Environment.NewLine);
-                log.AppendFormat("System entry: Swapped days and months for {0} files.{1}", imagesToUpdate.Count, Environment.NewLine);
-                log.AppendFormat("The first file adjusted was '{0}' and the last '{1}'.{2}", firstImage.File, lastImage.File, Environment.NewLine);
-                log.AppendFormat("The last file's date was changed from '{0}' to '{1}'.{2}", DateTimeHandler.ToDisplayDateString(mostRecentOriginalDateTime), DateTimeHandler.ToDisplayDateString(mostRecentReversedDateTime), Environment.NewLine);
-                this.ImageSetUpdateLog(log);
             }
         }
         #endregion
@@ -1915,12 +1903,6 @@ namespace Timelapse.Database
             {
                 imageSetTable.Dispose();
             }
-        }
-
-        public void ImageSetUpdateLog(StringBuilder logEntry)
-        {
-            this.ImageSet.Log += logEntry;
-            this.UpdateSyncImageSetToDatabase();
         }
         #endregion
 

@@ -16,7 +16,7 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Edit Submenu Opening 
+        #region Edit Submenu Opening 
         private void Edit_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
@@ -28,17 +28,20 @@ namespace Timelapse
             // Enable the FindMissingImage menu only if the current image is missing
             ImageRow currentImage = this.DataHandler?.ImageCache?.Current;
             this.MenuItemFindMissingImage.IsEnabled =
-                this.DataHandler?.ImageCache?.Current != null
+                   this.DataHandler?.ImageCache?.Current != null
                 && false == File.Exists(FilesFolders.GetFullPath(this.DataHandler.FileDatabase, currentImage));
         }
+        #endregion
 
-        // Find image 
+        #region Find image 
         private void MenuItemFindByFileName_Click(object sender, RoutedEventArgs e)
         {
             this.FindBoxSetVisibility(true);
         }
+        #endregion
 
-        // Show QuickPaste Window 
+        #region QuickPaste
+        /// Show the QuickPaste Window 
         private void MenuItemQuickPasteWindowShow_Click(object sender, RoutedEventArgs e)
         {
             if (this.quickPasteWindow == null)
@@ -50,7 +53,7 @@ namespace Timelapse
             this.QuickPasteWindowShow();
         }
 
-        // Import QuickPaste Items from .ddb file
+        /// Import QuickPaste Items from a .ddb file
         private void MenuItemQuickPasteImportFromDB_Click(object sender, RoutedEventArgs e)
         {
             if (Dialogs.TryGetFileFromUserUsingOpenFileDialog("Import QuickPaste entries by selecting the Timelapse database (.ddb) file from the image folder where you had used them.",
@@ -74,13 +77,16 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
-        // Copy Previous Values
+        #region  Copy Previous Values
         private void MenuItemCopyPreviousValues_Click(object sender, RoutedEventArgs e)
         {
             this.CopyPreviousValues_Click();
         }
+        #endregion
 
+        #region Populate metadata
         // Populate a data field from metadata (example metadata displayed from the currently selected image)
         private async void MenuItemPopulateFieldFromMetadata_Click(object sender, RoutedEventArgs e)
         {
@@ -110,7 +116,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
+        #region Delete (including sub-menu opening)
         // Delete sub-menu opening
         private void MenuItemDelete_SubmenuOpening(object sender, RoutedEventArgs e)
         {
@@ -221,8 +229,9 @@ namespace Timelapse
                 Mouse.OverrideCursor = null;
             }
         }
+        #endregion
 
-        // Date Correction sub-menu opening
+        #region Date Correction (including sub-menu opening)
         private void MenuItemDateCorrection_SubmenuOpened(object sender, RoutedEventArgs e)
         {
             if (this.IsUTCOffsetControlHidden())
@@ -332,6 +341,7 @@ namespace Timelapse
         }
 
         // Reassign a group of images to a particular time zone
+        // SAULXXX DEPRACATED. THE MENU ITEM IS THERE BUT DISABLED and INVISIBLE. NEED TO SEE IF IT ACTUALLY WORKS BEFORE ENABLING IT
         private async void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
@@ -349,22 +359,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
-        private async void MenuItemEditFindMissingFolder_Click(object sender, RoutedEventArgs e)
-        {
-            bool? result = TimelapseWindow.GetAndCorrectForMissingFolders(this, this.DataHandler.FileDatabase);
-            if (true == result)
-            {
-                await this.FilesSelectAndShowAsync().ConfigureAwait(true);
-                return;
-            }
-            if (result != null && false == result.Value)
-            {
-                Dialogs.MenuEditNoFoldersAreMissing(this);
-            }
-            // if result is null, it means that the operation was aborted for some reason, or the folders were missing but not updated.
-        }
-
+        #region Find Missing Files and Folders
         //Try to find a missing image
         private async void MenuItemEditFindMissingImage_Click(object sender, RoutedEventArgs e)
         {
@@ -464,7 +461,24 @@ namespace Timelapse
             }
         }
 
-        // Identify or reclassify dark files.
+        // Find missing folders
+        private async void MenuItemEditFindMissingFolder_Click(object sender, RoutedEventArgs e)
+        {
+            bool? result = TimelapseWindow.GetAndCorrectForMissingFolders(this, this.DataHandler.FileDatabase);
+            if (true == result)
+            {
+                await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                return;
+            }
+            if (result != null && false == result.Value)
+            {
+                Dialogs.MenuEditNoFoldersAreMissing(this);
+            }
+            // if result is null, it means that the operation was aborted for some reason, or the folders were missing but not updated.
+        }
+        #endregion
+
+        #region Identify or reclassify dark files.
         private void MenuItemEditClassifyDarkImages_Click(object sender, RoutedEventArgs e)
         {
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
@@ -486,8 +500,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
-        // Edit notes for this image set
+        #region Edit notes for this image set
         private void MenuItemLog_Click(object sender, RoutedEventArgs e)
         {
             EditLog editImageSetLog = new EditLog(this.DataHandler.FileDatabase.ImageSet.Log, this)
@@ -501,8 +516,9 @@ namespace Timelapse
                 this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             }
         }
+        #endregion
 
-        // HELPER FUNCTION, only referenced by the above menu callbacks.
+        #region Helper function, only referenced by the above menu callbacks.
         // Various dialogs perform a bulk edit, after which various states have to be refreshed
         // This method shows the dialog and (if a bulk edit is done) refreshes those states.
         private bool ShowDialogAndCheckIfChangesWereMade(Window dialog)
@@ -510,5 +526,6 @@ namespace Timelapse
             dialog.Owner = this;
             return (dialog.ShowDialog() == true);
         }
+        #endregion
     }
 }
