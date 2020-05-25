@@ -177,17 +177,22 @@
     <Compile Include="Controls\BusyCancelIndicator.xaml.cs">
       <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\BusyCancelIndicatorExtensions.cs" />
     <Compile Include="Controls\ThumbnailInCell.xaml.cs">
       <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ThumbnailGrid.xaml.cs">
       <DependentUpon>ThumbnailGrid.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\DialogWindow.cs" />
+    <Compile Include="Controls\BusyableDialogWindow.cs" />
     <Compile Include="Controls\OffsetLens.cs" />
     <Compile Include="Controls\ProgressBarArguments.cs" />
     <Compile Include="Controls\EpisodePopup.cs" />
     <Compile Include="Database\MergeDatabases.cs" />
+    <Compile Include="DEPRACATED\AdvancedImageSetOptionsDialogPlusXaml.cs" />
+    <Compile Include="DEPRACATED\DepracatedFileDatabase.cs" />
+    <Compile Include="DEPRACATED\DepracatedMenuItems.cs" />
+    <Compile Include="DEPRACATED\DepracatedXaml.cs" />
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
@@ -253,9 +258,6 @@
     <Compile Include="Database\ImageSetRow.cs" />
     <Compile Include="Database\MarkerRow.cs" />
     <Compile Include="Database\VideoRow.cs" />
-    <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
-      <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
-    </Compile>
     <Compile Include="EventArguments\ImageAdjusterEventArgs.cs" />
     <Compile Include="EventArguments\ImageStateEventArgs.cs" />
     <Compile Include="ExifTool\ExifToolException.cs" />
@@ -266,7 +268,7 @@
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />
     <Compile Include="Images\MarkableCanvasImageAdjustment.cs" />
-    <Compile Include="Images\VideoThumbnailer.cs" />
+    <Compile Include="DEPRACATED\DepracatedVideoThumbnailer.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
@@ -475,10 +477,6 @@
     <Page Include="StyleResources\CopyPreviousButtonStyle.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\AdvancedImageSetOptions.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialog\CustomSort.xaml">
       <SubType>Designer</SubType>

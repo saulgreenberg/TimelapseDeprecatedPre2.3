@@ -19,7 +19,7 @@ using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
-    public partial class DarkImagesThreshold : DialogWindow, IDisposable
+    public partial class DarkImagesThreshold : BusyableDialogWindow, IDisposable
     {
         private readonly FileDatabase fileDatabase;
         private readonly TimelapseUserRegistrySettings state;
@@ -227,7 +227,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 

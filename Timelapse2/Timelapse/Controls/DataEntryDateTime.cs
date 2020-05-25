@@ -10,6 +10,7 @@ namespace Timelapse.Controls
 {
     public class DataEntryDateTime : DataEntryControl<DateTimePicker, Label>
     {
+        #region Public Properties
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
@@ -39,7 +40,9 @@ namespace Timelapse.Controls
 
         public DataEntryNote DateControl { get; set; }
         public DataEntryNote TimeControl { get; set; }
+        #endregion
 
+        #region Constructor
         public DataEntryDateTime(ControlRow control, DataEntryControls styleProvider) :
             base(control, styleProvider, ControlContentStyleEnum.DateTimeBox, ControlLabelStyleEnum.DefaultLabel)
         {
@@ -48,6 +51,7 @@ namespace Timelapse.Controls
             this.ContentControl.GotKeyboardFocus += this.ContentControl_GotKeyboardFocus;
             this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
         }
+        #endregion
 
         #region Event Handlers
 

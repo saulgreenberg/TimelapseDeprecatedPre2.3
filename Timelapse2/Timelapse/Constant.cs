@@ -475,9 +475,6 @@ namespace Timelapse.Constant
         public const string SpeciesDetectedThreshold = "SpeciesDetectedThreshold";
         public const string UseDetections = "UseDetections";
 
-        // whether audio feedback is enabled
-        public const string AudioFeedback = "AudioFeedback";
-
         // key containing the top left location of the Timelapse Window, as a point
         public const string TimelapseWindowLocation = "TimelapseWindowLocation";
         // key containing the size of the Timelapse Window, as a Height

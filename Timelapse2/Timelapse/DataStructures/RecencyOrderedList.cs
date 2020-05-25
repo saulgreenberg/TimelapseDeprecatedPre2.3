@@ -9,9 +9,22 @@ namespace Timelapse.Util
     /// <typeparam name="TElement"></typeparam>
     public class RecencyOrderedList<TElement> : IEnumerable<TElement>
     {
+        #region Public Properties
+        /// <summary>
+        /// Number of items in the collection
+        /// </summary>
+        public int Count
+        {
+            get { return this.list.Count; }
+        }
+        #endregion
+
+        #region Private variables
         private readonly LinkedList<TElement> list;
         private readonly int maximumItems;
+        #endregion
 
+        #region Constructor
         /// <summary>
         /// Initalize a recency order collection that holds maximumItems
         /// When the collection is full, adding an item drops off the oldest item 
@@ -24,25 +37,9 @@ namespace Timelapse.Util
             // subtract one off the list's maximum size as SetMostRecent() checks it after 
             this.maximumItems = maximumItems;
         }
+        #endregion
 
-        /// <summary>
-        /// Number of items in the collection
-        /// </summary>
-        public int Count
-        {
-            get { return this.list.Count; }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.list.GetEnumerator();
-        }
-
-        public IEnumerator<TElement> GetEnumerator()
-        {
-            return this.list.GetEnumerator();
-        }
-
+        #region Public Methods
         /// <summary>
         /// Whether or not the collection is full i.e, it has the maximum number of items
         /// </summary>
@@ -113,5 +110,18 @@ namespace Timelapse.Util
         {
             return this.list.Remove(value);
         }
+        #endregion
+        
+        #region Enumerator-related
+        public IEnumerator<TElement> GetEnumerator()
+        {
+            return this.list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.list.GetEnumerator();
+        }
+        #endregion
     }
 }

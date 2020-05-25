@@ -8,12 +8,16 @@ using Timelapse.Util;
 
 namespace Timelapse.Controls
 {
-    // A specialized window to be used as a dialog, where:
+    // A specialized window to be used as an inherited dialog, where:
+    // - it is 'busyable' i.e., 
+    // -- it can display a passed in busy indicator, where the dialog window would then be greyed out if the busyindicator is enabled
+    // -- it can disable the window's close button (e.g., if its in the middle of something that should not be cancelled)
     // - it fits the window into the calling window
+
     // - Cancellation tokens (and disposes of them afterwards) are include
     // - CloseButtonIsEnabled(bool enable): the window's close button can be enabled or disabled
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. Reason: Handled in Closed event
-    public class DialogWindow : Window
+    public class BusyableDialogWindow : Window
 #pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
     {
         // Token to let us cancel the task
@@ -28,6 +32,8 @@ namespace Timelapse.Controls
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
         [DllImport("user32.dll")]
+
+        // These are used by the close button when it is enabled / disablwed
         static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
         private const uint MF_BYCOMMAND = 0x00000000;
         private const uint MF_GRAYED = 0x00000001;
@@ -35,18 +41,18 @@ namespace Timelapse.Controls
         private const uint SC_CLOSE = 0xF060;
 
         #region Initialization 
-        public DialogWindow(Window owner)
+        public BusyableDialogWindow(Window owner)
         {
             this.Owner = owner;
             // Initialize the cancellation token
             this.tokenSource = new CancellationTokenSource();
             this.Token = this.tokenSource.Token;
-            this.Loaded += this.DialogWindow_Loaded;
-            this.Closed += this.DialogWindow_Closed;
+            this.Loaded += this.BusyableDialogWindow_Loaded;
+            this.Closed += this.BusyableDialogWindow_Closed;
         }
 
         // Fit the dialog into the calling window
-        private void DialogWindow_Loaded(object sender, RoutedEventArgs e)
+        private void BusyableDialogWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
@@ -54,23 +60,23 @@ namespace Timelapse.Controls
 
         #region Protected methods
         // Show progress information in the passed in progress bar as indicated
-        protected static void UpdateProgressBar(BusyCancelIndicator BusyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
+        protected static void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
             // Check the arguments for null 
-            ThrowIf.IsNullArgument(BusyCancelIndicator, nameof(BusyCancelIndicator));
+            ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
 
             // Set it as a progressive or indeterminate bar
-            BusyCancelIndicator.IsIndeterminate = isIndeterminate;
+            busyCancelIndicator.IsIndeterminate = isIndeterminate;
 
             // Set the progress bar position (only visible if determinate)
-            BusyCancelIndicator.Percent = percent;
+            busyCancelIndicator.Percent = percent;
 
             // Update the text message
-            BusyCancelIndicator.Message = message;
+            busyCancelIndicator.Message = message;
 
             // Update the cancel button to reflect the cancelEnabled argument
-            BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
-            BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
+            busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
 
         protected bool ReadyToRefresh()
@@ -85,14 +91,14 @@ namespace Timelapse.Controls
         }
 
         // Set the Window's Close Button Enable state
-        protected void CloseButtonIsEnabled(bool enable)
+        protected void WindowCloseButtonIsEnabled(bool enableCloseButton)
         {
             Window window = Window.GetWindow(this);
             var wih = new WindowInteropHelper(window);
             IntPtr hwnd = wih.Handle;
 
             IntPtr hMenu = GetSystemMenu(hwnd, false);
-            uint enableAction = enable ? MF_ENABLED : MF_GRAYED;
+            uint enableAction = enableCloseButton ? MF_ENABLED : MF_GRAYED;
             if (hMenu != IntPtr.Zero)
             {
                 EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | enableAction);
@@ -101,7 +107,7 @@ namespace Timelapse.Controls
         #endregion
 
         #region Internal methods
-        private void DialogWindow_Closed(object sender, EventArgs e)
+        private void BusyableDialogWindow_Closed(object sender, EventArgs e)
         {
             // TokenSources need to be disposed, so here it is.
             if (TokenSource != null)

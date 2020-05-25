@@ -14,7 +14,7 @@ namespace Timelapse.Dialog
     /// This dialog lets the user specify a corrected date and time of an file. All other dates and times are then corrected by the same amount.
     /// This is useful if (say) the camera was not initialized to the correct date and time.
     /// </summary>
-    public partial class DateTimeFixedCorrection : DialogWindow
+    public partial class DateTimeFixedCorrection : BusyableDialogWindow
     {
         // Remember passed in arguments
         private readonly FileDatabase fileDatabase;
@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -173,7 +173,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             // This call does all the actual updating...
             ObservableCollection<DateTimeFeedbackTuple> feedbackRows = await this.TaskFixedCorrectionAsync(adjustment).ConfigureAwait(true);
@@ -191,7 +191,7 @@ namespace Timelapse.Dialog
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
         }
 
         private void Done_Click(object sender, RoutedEventArgs e)

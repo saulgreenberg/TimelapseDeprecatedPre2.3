@@ -6,13 +6,12 @@ using System.Windows.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
 
-// Selection Menu Callbacks
 namespace Timelapse
 {
-    // Select Menu Callbacks
+    // Select Menu Callbacks - runs database queries that creates a subset of images to display
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Select sub-menu opening
+        # region Select sub-menu opening
         private void MenuItemSelect_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
@@ -41,7 +40,9 @@ namespace Timelapse
             this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionEnum.MarkedForDeletion;
             this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
         }
+        #endregion
 
+        #region  ImageQuality_SubmenuOpening
         private void MenuItemSelectImageQuality_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             bool existsDark = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.Dark);
@@ -62,7 +63,59 @@ namespace Timelapse
             }
             this.MenuItemSelectDarkFiles.IsEnabled = existsDark;
         }
+        #endregion
+        
+        #region Select callback: All file, ImageQuality, Missing, Marked for Deletion
+        private async void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
+        {
+            MenuItem item = (MenuItem)sender;
+            FileSelectionEnum selection;
 
+            // find out which selection was selected
+            if (item == this.MenuItemSelectAllFiles)
+            {
+                selection = FileSelectionEnum.All;
+            }
+            else if (item == this.MenuItemSelectOkFiles)
+            {
+                selection = FileSelectionEnum.Ok;
+            }
+            else if (item == this.MenuItemSelectMissingFiles)
+            {
+                selection = FileSelectionEnum.Missing;
+            }
+            else if (item == this.MenuItemSelectDarkFiles)
+            {
+                selection = FileSelectionEnum.Dark;
+            }
+            else if (item == this.MenuItemSelectFilesMarkedForDeletion)
+            {
+                selection = FileSelectionEnum.MarkedForDeletion;
+            }
+            else if (item == this.MenuItemSelectByFolder)
+            {
+                // MenuItemSelectByFolder and its child folders should not be activated from here, but we add this test just as a reminder
+                return;
+            }
+            else
+            {
+                selection = FileSelectionEnum.All;   // Just in case
+            }
+            this.MenuItemSelectByFolder_ClearAllCheckmarks();
+
+            // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
+            if (this.DataHandler.ImageCache.Current == null)
+            {
+                await this.FilesSelectAndShowAsync(selection).ConfigureAwait(true);
+            }
+            else
+            {
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+            }
+        }
+        #endregion
+        
+        #region Select by Folder Submenu(including submenu opening)
         private void MenuItemSelectByFolder_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             // We don't have to do anything if the folder menu item list has previously been populated
@@ -74,6 +127,7 @@ namespace Timelapse
             // Repopulate the menu if needed. Get the folders from the database, and create a menu item representing it
             this.MenuItemSelectByFolder_ResetFolderList();
         }
+
         // Populate the menu. Get the folders from the database, and create a menu item representing it
         private void MenuItemSelectByFolder_ResetFolderList()
         {
@@ -146,57 +200,9 @@ namespace Timelapse
                 mi.IsChecked = false;
             }
         }
+        #endregion
 
-        // Select callback: handles all standard menu selection items
-        private async void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem item = (MenuItem)sender;
-            FileSelectionEnum selection;
-
-            // find out which selection was selected
-            if (item == this.MenuItemSelectAllFiles)
-            {
-                selection = FileSelectionEnum.All;
-            }
-            else if (item == this.MenuItemSelectOkFiles)
-            {
-                selection = FileSelectionEnum.Ok;
-            }
-            else if (item == this.MenuItemSelectMissingFiles)
-            {
-                selection = FileSelectionEnum.Missing;
-            }
-            else if (item == this.MenuItemSelectDarkFiles)
-            {
-                selection = FileSelectionEnum.Dark;
-            }
-            else if (item == this.MenuItemSelectFilesMarkedForDeletion)
-            {
-                selection = FileSelectionEnum.MarkedForDeletion;
-            }
-            else if (item == this.MenuItemSelectByFolder)
-            {
-                // MenuItemSelectByFolder and its child folders should not be activated from here, but we add this test just as a reminder
-                return;
-            }
-            else
-            {
-                selection = FileSelectionEnum.All;   // Just in case
-            }
-            this.MenuItemSelectByFolder_ClearAllCheckmarks();
-
-            // Treat the checked status as a radio button i.e., toggle their states so only the clicked menu item is checked.
-            if (this.DataHandler.ImageCache.Current == null)
-            {
-                await this.FilesSelectAndShowAsync(selection).ConfigureAwait(true);
-            }
-            else
-            {
-                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
-            }
-        }
-
-        // Custom Selection: raises a dialog letting the user specify their selection criteria
+        #region Custom Selection: raises a dialog letting the user specify their selection criteria
         private async void MenuItemSelectCustomSelection_Click(object sender, RoutedEventArgs e)
         {
             // the first time the custom selection dialog is launched update the DateTime and UtcOffset search terms to the time of the current image
@@ -233,7 +239,9 @@ namespace Timelapse
                 this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
             }
         }
+        #endregion
 
+        #region Refresh the Selection
         // Refresh the selection: based on the current select criteria. 
         // Useful when, for example, the user has selected a view, but then changed some data values where items no longer match the current selection.
         private async void MenuItemSelectReselect_Click(object sender, RoutedEventArgs e)
@@ -241,17 +249,6 @@ namespace Timelapse
             // Reselect the images, which re-sorts them to the current sort criteria. 
             await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
-
-
-        #region Depracated
-        // There really is no reason to have a special menu item for this, as one can see the counts
-        // when selecting. However, we keep the dialog box around as we still use that
-        // for displaying the total numbers after a manual dark threshold operation is done.
-        // Show file counts: how many images were loaded, types in categories, etc.
-        // public void MenuItemImageCounts_Click(object sender, RoutedEventArgs e)
-        // {
-        //    this.MaybeFileShowCountsDialog(false, this);
-        // }
         #endregion
     }
 }

@@ -9,8 +9,7 @@ namespace Timelapse.Controls
 {
     public partial class StockMessageControl : UserControl
     {
-        private MessageBoxImage iconType = MessageBoxImage.Information;
-
+        #region Public Properties
         public MessageBoxImage Icon
         {
             get
@@ -174,13 +173,21 @@ namespace Timelapse.Controls
                 this.SetExplanationVisibility();
             }
         }
+        #endregion
 
+        #region Private Variables
+        private MessageBoxImage iconType = MessageBoxImage.Information;
+        #endregion
+
+        #region Constructor
         public StockMessageControl()
         {
             this.InitializeComponent();
             this.SetExplanationVisibility();
         }
+        #endregion
 
+        #region Private methods
         private void SetExplanationVisibility()
         {
             GridLength zeroHeight = new GridLength(0.0);
@@ -211,5 +218,6 @@ namespace Timelapse.Controls
         {
             this.SetExplanationVisibility();
         }
+        #endregion
     }
 }

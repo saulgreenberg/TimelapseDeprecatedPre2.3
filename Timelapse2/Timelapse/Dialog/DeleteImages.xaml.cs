@@ -18,7 +18,7 @@ namespace Timelapse.Dialog
     /// What actually happens is that the image is replaced by a 'dummy' placeholder image,
     /// and the original image is copied into a subfolder called Deleted.
     /// </summary>
-    public partial class DeleteImages : DialogWindow
+    public partial class DeleteImages : BusyableDialogWindow
     {
         // these variables will hold the values of the passed in parameters
         private readonly FileDatabase fileDatabase;
@@ -360,14 +360,14 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show how many files were deleted
             this.BusyIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
             this.DoneMessagePanel.Content = "Deleted ";
             this.DoneMessagePanel.Content += this.filesToDelete.Count == 1 ? this.filesToDelete[0].File : this.filesToDelete.Count.ToString() + " files";
             this.ShowDoneMessageView();

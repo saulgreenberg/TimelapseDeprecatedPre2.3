@@ -8,6 +8,7 @@ namespace Timelapse.Controls
 {
     public class DataEntryUtcOffset : DataEntryControl<UtcOffsetUpDown, Label>
     {
+        #region Public Properties
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
@@ -34,7 +35,9 @@ namespace Timelapse.Controls
             get { return this.ContentControl.IsReadOnly; }
             set { this.ContentControl.IsReadOnly = value; }
         }
+        #endregion
 
+        #region Constructor
         public DataEntryUtcOffset(ControlRow control, DataEntryControls styleProvider) :
             base(control, styleProvider, ControlContentStyleEnum.UTCOffsetBox, ControlLabelStyleEnum.DefaultLabel)
         {
@@ -43,6 +46,7 @@ namespace Timelapse.Controls
             this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
             // configure the various elements
         }
+        #endregion
 
         #region Event Handlers
         // Highlight the border whenever the control gets the keyboard focus
@@ -66,7 +70,7 @@ namespace Timelapse.Controls
             {
                 if (this.ContentControl.Template.FindName("PART_TextBox", this.ContentControl) is Xceed.Wpf.Toolkit.WatermarkTextBox textBox)
                 {
-                    textBox.Text = (value != null) ? value : Constant.Unicode.Ellipsis;
+                    textBox.Text = value ?? Constant.Unicode.Ellipsis;
                 }
             }
             else

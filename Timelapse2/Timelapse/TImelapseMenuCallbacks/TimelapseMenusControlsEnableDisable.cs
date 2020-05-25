@@ -7,10 +7,11 @@ namespace Timelapse
     // Enabling or Disabling Menus and Controls
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Enable Or disable menus and controls
         private void EnableOrDisableMenusAndControls()
         {
-            bool imageSetAvailable = this.IsFileDatabaseAvailable();
-            bool filesSelected = (imageSetAvailable && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
+            bool imageSetAvailable = this.IsFileDatabaseAvailable(); // A possible empty image set is loaded
+            bool filesSelected = (imageSetAvailable && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false; // A non-empty image set is loaded
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
@@ -33,20 +34,16 @@ namespace Timelapse
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
 
-            // this.MenuItemAdvancedImageSetOptions.IsEnabled = imagesExist; SAULXXX: I don't think we need this anymore, as there is now a date correction option that does this. Remove it from the XAML as well, and delete that dialog?
-
             // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;
-            // this.MenuItemAdvancedDeleteDuplicates.IsEnabled = filesSelected; // DEPRACATED
-            this.MenuItemAudioFeedback.IsEnabled = filesSelected;
             this.MenuItemEpisodeOptions.IsEnabled = filesSelected;
             this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;
             this.MenuItemDisplayMagnifyingGlass.IsChecked = imageSetAvailable && this.State.MagnifyingGlassOffsetLensEnabled;
             this.MenuItemImageAdjuster.IsEnabled = filesSelected;
             this.MenuItemDialogsOnOrOff.IsEnabled = imageSetAvailable;
-            this.MenuItemAdvancedTimelapseOptions.IsEnabled = true;
+            this.MenuItemPreferences.IsEnabled = true;
 
             // View menu
             this.MenuItemView.IsEnabled = filesSelected;
@@ -73,8 +70,9 @@ namespace Timelapse
                 this.StatusBar.SetCount(0);
             }
         }
+        #endregion
 
-        // Enable or disable the various menu items that allow images to be manipulated
+        #region Enable or disable the various menu items that allow images to be manipulated
         private void EnableImageManipulationMenus(bool enable)
         {
             this.MenuItemZoomIn.IsEnabled = enable;
@@ -88,14 +86,6 @@ namespace Timelapse
             this.MenuItemBookmarkSetPanZoom.IsEnabled = enable;
             this.MenuItemBookmarkDefaultPanZoom.IsEnabled = enable;
         }
-
-        // Configure the BusyCancelIndicator to show appropriate feedback during a selection
-        private void EnableBusyCancelIndicatorForSelection(bool isBusy)
-        {
-            this.BusyCancelIndicator.IsBusy = isBusy;
-            this.BusyCancelIndicator.Message = isBusy ? "Selecting Files from the database. Please wait..." : "Please wait...";
-            this.BusyCancelIndicator.CancelButtonIsEnabled = false;
-            this.BusyCancelIndicator.CancelButtonText = isBusy ? "Querying the database" : "Cancel";
-        }
+        #endregion
     }
 }

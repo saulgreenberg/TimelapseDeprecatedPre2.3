@@ -94,7 +94,6 @@ namespace Timelapse
             // NOTE: this must be kept in sync with the menu definitions in XAML
             if (this.MenuItemExit.IsVisible ||
                 this.MenuItemCopyPreviousValues.IsVisible ||
-                this.MenuItemAudioFeedback.IsVisible ||
                 this.MenuItemViewNextImage.IsVisible ||
                 this.MenuItemSelectAllFiles.IsVisible ||
                 this.MenuItemAbout.IsVisible)

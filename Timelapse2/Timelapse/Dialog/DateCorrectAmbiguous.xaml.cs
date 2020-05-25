@@ -13,7 +13,7 @@ namespace Timelapse.Dialog
     /// <summary>
     /// Detects and displays ambiguous dates, and allows the user to select which ones (if any) should be swapped.
     /// </summary>
-    public partial class DateCorrectAmbiguous : DialogWindow
+    public partial class DateCorrectAmbiguous : BusyableDialogWindow
     {
         // Remember passed in arguments
         private readonly FileDatabase fileDatabase;
@@ -152,7 +152,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -215,14 +215,14 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             int totalFileCount = await this.ApplyDateTimeChangesAsync().ConfigureAwait(true);
 
             // Update the UI final state
             this.BusyCancelIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
             // Show the final message
             if (totalFileCount > 0)
             {

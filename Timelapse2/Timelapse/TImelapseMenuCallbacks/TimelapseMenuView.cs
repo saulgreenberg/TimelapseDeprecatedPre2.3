@@ -9,9 +9,9 @@ namespace Timelapse
     // View Menu Callbacks
     public partial class TimelapseWindow : Window, IDisposable
     {
-        ImageAdjuster ImageAdjuster;
 
-        // View sub-menu opening
+
+        #region View sub-menu opening
         private void View_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
@@ -25,8 +25,10 @@ namespace Timelapse
             this.MenuItemBookmarkSavePanZoom.IsEnabled = state;
             this.MenuItemBookmarkSetPanZoom.IsEnabled = state;
         }
+        #endregion
 
-        // View next filein this image set
+        #region View next / previous file
+        // View next file in this image set
         private void MenuItemShowNextFile_Click(object sender, RoutedEventArgs e)
         {
             this.TryFileShowWithoutSliderCallback(DirectionEnum.Next);
@@ -37,8 +39,10 @@ namespace Timelapse
         {
             this.TryFileShowWithoutSliderCallback(DirectionEnum.Previous);
         }
+        #endregion
 
-        // View next episdoe in this image set
+        #region  View next / previous episode
+        // View next episode in this image set
         private void MenuItemShowNextEpisode_Click(object sender, RoutedEventArgs e)
         {
             EpisodeShowNextOrPrevious_Click(DirectionEnum.Next);
@@ -48,7 +52,7 @@ namespace Timelapse
             EpisodeShowNextOrPrevious_Click(DirectionEnum.Previous);
         }
 
-        // View previous episode in this image set
+        // View Episode helper function
         private void EpisodeShowNextOrPrevious_Click(DirectionEnum direction)
         {
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
@@ -64,7 +68,9 @@ namespace Timelapse
                 this.TryFileShowWithoutSliderCallback(direction, increment);
             }
         }
+        #endregion
 
+        #region Zoom in / out
         // Zoom in
         private void MenuItemZoomIn_Click(object sender, RoutedEventArgs e)
         {
@@ -80,7 +86,9 @@ namespace Timelapse
             Point videoMousePosition = Mouse.GetPosition(this.MarkableCanvas.VideoPlayer.Video);
             this.MarkableCanvas.TryZoomInOrOut(false, imageMousePosition, videoMousePosition);
         }
+        #endregion
 
+        #region Zoom Bookmarks
         // Save a Bookmark of the current pan / zoom region 
         private void MenuItem_BookmarkSavePanZoom(object sender, RoutedEventArgs e)
         {
@@ -98,7 +106,9 @@ namespace Timelapse
         {
             this.MarkableCanvas.ZoomOutAllTheWay();
         }
+        #endregion
 
+        #region View Image differences
         // Cycle through the image differences
         private void MenuItemViewDifferencesCycleThrough_Click(object sender, RoutedEventArgs e)
         {
@@ -110,5 +120,6 @@ namespace Timelapse
         {
             this.TryViewCombinedDifference();
         }
+        #endregion
     }
 }

@@ -12,7 +12,7 @@ using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
-    public partial class DateTimeRereadFromFiles : DialogWindow
+    public partial class DateTimeRereadFromFiles : BusyableDialogWindow
     {
         private readonly FileDatabase fileDatabase;
 
@@ -58,7 +58,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -247,7 +247,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             // Reread the Date/Times from each file
             // feedbackRows will hold key / value pairs that will be bound to the datagrid feedback, 
@@ -260,7 +260,7 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.Visibility = Visibility.Visible;
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

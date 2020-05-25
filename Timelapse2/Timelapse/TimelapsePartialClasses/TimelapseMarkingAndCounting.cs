@@ -81,7 +81,6 @@ namespace Timelapse
             if (markersForCounter != null)
             {
                 markersForCounter.RemoveMarker(e.Marker);
-                this.Speak(counter.Content); // Speak the current count
                 this.DataHandler.FileDatabase.MarkersUpdateMarkerRow(this.DataHandler.ImageCache.Current.ID, markersForCounter);
             }
             this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
@@ -155,7 +154,6 @@ namespace Timelapse
             // update this counter's list of points in the database
             this.DataHandler.FileDatabase.MarkersUpdateMarkerRow(this.DataHandler.ImageCache.Current.ID, markersForCounter);
             this.MarkableCanvas.Markers = this.GetDisplayMarkers();
-            this.Speak(counter.Content + " " + counter.Label); // Speak the current count
         }
 
         // Create a list of markers from those stored in each image's counters, 

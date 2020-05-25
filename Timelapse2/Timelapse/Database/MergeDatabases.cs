@@ -79,7 +79,7 @@ namespace Timelapse.Database
                     // Report progress, introducing a delay to allow the UI thread to update and to make the progress bar linger on the display
                     progress.Report(new ProgressBarArguments((int)((i + 1) / (double)sourceDDBFilePathsCount * 100.0),
                         String.Format("Merging {0}/{1} databases. Please wait...", i + 1, sourceDDBFilePathsCount),
-                        "Processing detections...",
+                        "Merging...",
                         false, false));
                     Thread.Sleep(250);
                     if (MergeDatabases.InsertSourceDataBaseTablesintoDestinationDatabase(destinationDDB, sourceDDBFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)

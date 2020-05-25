@@ -306,6 +306,5 @@ namespace Timelapse.Controls
             this.InfoPanel.Margin = new Thickness(0, margin, margin, 0);
         }
         #endregion
-
     }
 }

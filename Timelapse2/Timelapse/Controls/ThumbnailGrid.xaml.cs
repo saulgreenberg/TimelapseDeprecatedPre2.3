@@ -99,6 +99,7 @@ namespace Timelapse.Controls
             this.Level = 0;
         }
         #endregion
+
         #region Public Refresh 
         // Rebuild the grid, based on 
         // - fitting the image into as many cells of the same size that can fit within the grid

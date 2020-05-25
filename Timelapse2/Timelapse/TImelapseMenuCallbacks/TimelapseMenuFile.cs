@@ -96,7 +96,7 @@ namespace Timelapse
             Mouse.OverrideCursor = Cursors.Wait;
             this.StatusBar.SetMessage("Creating a merged database, please wait...");
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
-            this.EnableBusyCancelIndicatorForSelection(true);
+            this.BusyCancelIndicator.EnableForMerging(true);
 
             // Find all the .DDB files located in subfolders under the root folder (excluding backup folders)
             string startFolder = Path.GetDirectoryName(templateDatabasePath);
@@ -108,7 +108,7 @@ namespace Timelapse
             ErrorsAndWarnings errorMessages = await MergeDatabases.TryMergeDatabasesAsync(templateDatabasePath, allDDBFiles, progress).ConfigureAwait(true);
 
             // Turn off progress indicators
-            this.EnableBusyCancelIndicatorForSelection(false);
+            this.BusyCancelIndicator.EnableForSelection(false);
             Mouse.OverrideCursor = null;
 
             if (errorMessages.Errors.Count != 0 || errorMessages.Warnings.Count != 0)

@@ -10,12 +10,13 @@ namespace Timelapse
     // Sort Menu Callbacks
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Sort sub-menu opening
+        #region Sort sub-menu opening
         private void Sort_SubmenuOpening(object sender, RoutedEventArgs e)
         {
             this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
-
+        #endregion
+        
         // Sort callback: handles all standard menu sorting items
         private async void MenuItemSort_Click(object sender, RoutedEventArgs e)
         {

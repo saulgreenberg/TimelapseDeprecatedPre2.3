@@ -8,15 +8,20 @@ namespace Timelapse
     // Window Menu Callbacks
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Window / Restore sub-menu opening
+        // Each menu item has a tag in it (defined in the XAML) that corresponds to a Registry Key name. 
+        // That tag is then used to save or restore a particular layout.
+
+        #region Window - Restore sub-menu opening
         private void MenuItemWindowLoadCustom_SubmenuOpening(object sender, RoutedEventArgs e)
         {
+            this.FilePlayer_Stop(); // In case the FilePlayer is going
             this.MenuItemWindowCustom1Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom1);
             this.MenuItemWindowCustom2Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom2);
             this.MenuItemWindowCustom3Load.IsEnabled = this.State.IsRegistryKeyExists(Constant.AvalonLayoutTags.Custom3);
         }
+        #endregion
 
-        // Restore a particular window layout as identified in the menu's tag
+        #region Restore a particular window layout as identified in the menu's tag
         private void MenuItemWindowRestore_Click(object sender, RoutedEventArgs e)
         {
             MenuItem mi = sender as MenuItem;
@@ -33,8 +38,9 @@ namespace Timelapse
                 this.InstructionPane.IsActive = true;
             }
         }
+        #endregion
 
-        // Save a particular window layout, where the layout name is identified in the menu's tag
+        #region Save a particular window layout, where the layout name is identified in the menu's tag
         private void MenuItemWindowSave_Click(object sender, RoutedEventArgs e)
         {
             // Save the window layout to the registry, where the registry key name is found in the menu tag
@@ -46,5 +52,6 @@ namespace Timelapse
             this.AvalonLayout_TrySave(mi.Tag.ToString());
             this.DataEntryControlPanel.IsVisible = visibilityState;
         }
+        #endregion
     }
 }

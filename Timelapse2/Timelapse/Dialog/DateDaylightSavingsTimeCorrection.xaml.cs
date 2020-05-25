@@ -14,7 +14,7 @@ namespace Timelapse.Dialog
     /// This dialog lets a user enter a time change correction of +/-1 hour, which is propagated backwards/forwards.
     /// The current image as set by the user in the radio buttons.
     /// </summary>
-    public partial class DateDaylightSavingsTimeCorrection : DialogWindow
+    public partial class DateDaylightSavingsTimeCorrection : BusyableDialogWindow
     {
         private readonly int currentImageRow;
         private readonly FileDatabase fileDatabase;
@@ -73,7 +73,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -155,7 +155,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             // Calculate the required adjustment
             bool forward = (bool)this.rbForward.IsChecked;
@@ -193,7 +193,7 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
         }
 
         // Examine the checkboxes to see what state our selection is in, and provide feedback as appropriate

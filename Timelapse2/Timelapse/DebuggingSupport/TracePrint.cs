@@ -11,6 +11,7 @@ namespace Timelapse.Util
     /// </summary>
     public static class TracePrint
     {
+        #region Public methods
         /// <summary>
         /// Print a message and stack trace to a file
         /// </summary>
@@ -60,6 +61,7 @@ namespace Timelapse.Util
         {
             Debug.Print(GetMethodNameStack(message, level));
         }
+        #endregion
 
         #region Private (Internal) methods
         [MethodImpl(MethodImplOptions.NoInlining)]

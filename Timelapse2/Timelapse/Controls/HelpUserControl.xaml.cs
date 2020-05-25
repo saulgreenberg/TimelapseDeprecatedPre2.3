@@ -16,7 +16,7 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class HelpUserControl : UserControl
     {
-        private FlowDocument flowDocument;
+        #region Public properties and Private variables
         // Substitute for parameter passing: 
         // The HelpFileProperty/ HelpFile lets us specify the location of the helpfile resource in the XAML
         // The Xaml using this user control should contain something like HelpFile="pack://application:,,/Resources/TimelapseHelp.rtf"
@@ -31,6 +31,10 @@ namespace Timelapse.Controls
         // Set this (before the control is loaded) to a non-English (US or CAD) language, which will be used to add a warning about regions to the document.
         public string WarningRegionLanguage { get; set; }
 
+        private FlowDocument flowDocument;
+        #endregion
+
+        #region Constructor / Loaded
         public HelpUserControl()
         {
             this.InitializeComponent();
@@ -46,58 +50,9 @@ namespace Timelapse.Controls
                 this.InsertCultureWarning();
             }
         }
+        #endregion
 
-        // Create a flow document containing the contents of the resource specified in HelpFile
-        private void CreateFlowDocument()
-        {
-            this.flowDocument = new FlowDocument();
-            try
-            {
-                // create a string containing the help text from the rtf help file
-                StreamResourceInfo sri = Application.GetResourceStream(new Uri(this.HelpFile));
-                StreamReader reader = new StreamReader(sri.Stream);
-                string helpText = reader.ReadToEnd();
-
-                // Write the help text to a stream
-                MemoryStream stream = new MemoryStream();
-                StreamWriter writer = new StreamWriter(stream);
-                writer.Write(helpText);
-                writer.Flush();
-
-                // Load the entire text into the Flow Document
-                TextRange textRange = new TextRange(this.flowDocument.ContentStart, this.flowDocument.ContentEnd);
-                textRange.Load(stream, DataFormats.Rtf);
-
-                if (reader != null)
-                {
-                    reader.Dispose();
-                }
-                if (writer != null)
-                {
-                    writer.Dispose();
-                }
-            }
-            catch
-            {
-                // We couldn't get the help file. Display a generic message instead
-                this.flowDocument.FontFamily = new FontFamily("Segui UI");
-                this.flowDocument.FontSize = 14;
-                Paragraph p1 = new Paragraph();
-                p1.Inlines.Add("Brief instructions are currently unavailable.");
-                p1.Inlines.Add(Environment.NewLine + Environment.NewLine);
-                p1.Inlines.Add("If you need help, please download and read the ");
-                Hyperlink h1 = new Hyperlink();
-                h1.Inlines.Add("Timelapse Tutorial Manual");
-                h1.NavigateUri = Constant.ExternalLinks.UserManualLink;
-                h1.RequestNavigate += this.Link_RequestNavigate;
-                p1.Inlines.Add(h1);
-                this.flowDocument.Blocks.Add(p1);
-            }
-            // Add the document to the FlowDocumentScollViewer, converting hyperlinks to active links
-            this.SubscribeToAllHyperlinks(this.flowDocument);
-            this.ScrollViewer.Document = this.flowDocument;
-        }
-
+        #region Public Insert Culture Warning
         // Insert a warning into the beginning of the document about possible region issues. 
         public void InsertCultureWarning()
         {
@@ -156,8 +111,62 @@ namespace Timelapse.Controls
 
             this.flowDocument.Blocks.InsertBefore(this.flowDocument.Blocks.FirstBlock, p1);
         }
+        #endregion
 
-        #region Activate all hyperlinks in the flow document
+        #region Private: Create Flow Document
+        // Create a flow document containing the contents of the resource specified in HelpFile
+        private void CreateFlowDocument()
+        {
+            this.flowDocument = new FlowDocument();
+            try
+            {
+                // create a string containing the help text from the rtf help file
+                StreamResourceInfo sri = Application.GetResourceStream(new Uri(this.HelpFile));
+                StreamReader reader = new StreamReader(sri.Stream);
+                string helpText = reader.ReadToEnd();
+
+                // Write the help text to a stream
+                MemoryStream stream = new MemoryStream();
+                StreamWriter writer = new StreamWriter(stream);
+                writer.Write(helpText);
+                writer.Flush();
+
+                // Load the entire text into the Flow Document
+                TextRange textRange = new TextRange(this.flowDocument.ContentStart, this.flowDocument.ContentEnd);
+                textRange.Load(stream, DataFormats.Rtf);
+
+                if (reader != null)
+                {
+                    reader.Dispose();
+                }
+                if (writer != null)
+                {
+                    writer.Dispose();
+                }
+            }
+            catch
+            {
+                // We couldn't get the help file. Display a generic message instead
+                this.flowDocument.FontFamily = new FontFamily("Segui UI");
+                this.flowDocument.FontSize = 14;
+                Paragraph p1 = new Paragraph();
+                p1.Inlines.Add("Brief instructions are currently unavailable.");
+                p1.Inlines.Add(Environment.NewLine + Environment.NewLine);
+                p1.Inlines.Add("If you need help, please download and read the ");
+                Hyperlink h1 = new Hyperlink();
+                h1.Inlines.Add("Timelapse Tutorial Manual");
+                h1.NavigateUri = Constant.ExternalLinks.UserManualLink;
+                h1.RequestNavigate += this.Link_RequestNavigate;
+                p1.Inlines.Add(h1);
+                this.flowDocument.Blocks.Add(p1);
+            }
+            // Add the document to the FlowDocumentScollViewer, converting hyperlinks to active links
+            this.SubscribeToAllHyperlinks(this.flowDocument);
+            this.ScrollViewer.Document = this.flowDocument;
+        }
+        #endregion
+
+        #region Private: Activate all hyperlinks in the flow document
         private void SubscribeToAllHyperlinks(FlowDocument flowDocument)
         {
             var hyperlinks = GetVisuals(flowDocument).OfType<Hyperlink>();

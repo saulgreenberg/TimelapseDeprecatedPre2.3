@@ -8,6 +8,7 @@ namespace Timelapse.Util
     /// </summary>
     public class ImageMetadata
     {
+        #region Public Properties
         /// <summary>
         /// Directory in the record Directory.Name Value
         /// </summary>
@@ -33,9 +34,11 @@ namespace Timelapse.Util
         /// The Metadata Value in the record Directory.Name Value
         /// </summary>
         public string Value { get; set; }
+        #endregion
 
+        #region Constructor
         /// <summary>
-        /// Constructor: An empty metadata record in the form Directory.Name Value
+        /// Constructor: Either and empty or full metadata record in the form Directory.Name Value
         /// </summary>
         public ImageMetadata()
         {
@@ -49,7 +52,9 @@ namespace Timelapse.Util
         {
             this.Initialize(directory, name, value);
         }
+        #endregion
 
+        #region Private methods
         /// <summary>
         /// Set a metadata record to its values in the form Directory.Name Value
         /// </summary>
@@ -59,5 +64,6 @@ namespace Timelapse.Util
             this.Name = name;
             this.Value = value;
         }
+        #endregion 
     }
 }

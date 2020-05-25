@@ -10,7 +10,7 @@ namespace Timelapse.Controls
     /// </summary>
     public class AutoToolTipSlider : Slider
     {
-        #region Public Properties
+        #region Public Properties and private variables
         // Gets/sets the string displayed in the auto tooltip's content.
         private string autoToolTipContent = string.Empty;
         public string AutoToolTipContent
@@ -27,6 +27,9 @@ namespace Timelapse.Controls
         }
 
         private ToolTip autoToolTip;
+        #endregion
+
+        #region Constructor
         private ToolTip AutoToolTip
         {
             get

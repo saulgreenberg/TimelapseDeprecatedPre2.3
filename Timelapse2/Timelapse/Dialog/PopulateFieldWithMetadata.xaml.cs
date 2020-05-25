@@ -18,7 +18,7 @@ namespace Timelapse.Dialog
     /// a list of metadata found in the current image. It asks the user to select one from each.
     /// The user can then populate the selected data field with the corresponding metadata value from that image for all images.
     /// </summary>
-    public partial class PopulateFieldWithMetadata : DialogWindow, IDisposable
+    public partial class PopulateFieldWithMetadata : BusyableDialogWindow, IDisposable
     {
         private readonly FileDatabase fileDatabase;
         private readonly string filePath;
@@ -205,7 +205,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -407,7 +407,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
             this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
@@ -415,7 +415,7 @@ namespace Timelapse.Dialog
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.PanelHeader.Visibility = Visibility.Collapsed;
             this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             // This call does all the actual populating...
             ObservableCollection<KeyValuePair<string, string>> keyValueList = await this.PopulateAsync(metadataExtractorRBIsChecked).ConfigureAwait(true);
@@ -424,7 +424,7 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.ItemsSource = keyValueList;
             this.StartDoneButton.IsEnabled = true;
             this.BusyCancelIndicator.IsBusy = false;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
 
             this.FeedbackGrid.ItemsSource = keyValueList;
 

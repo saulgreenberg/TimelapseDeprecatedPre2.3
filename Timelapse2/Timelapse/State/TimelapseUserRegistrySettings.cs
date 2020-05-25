@@ -11,7 +11,6 @@ namespace Timelapse.Util
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
         #region Settings that will be saved into the registry
-        public bool AudioFeedback { get; set; }
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
         public Double BoundingBoxDisplayThreshold { get; set; }
@@ -72,7 +71,6 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                this.AudioFeedback = registryKey.GetBoolean(Constant.WindowRegistryKeys.AudioFeedback, false);
                 this.BookmarkScale = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationY, 1.0));
                 this.BoundingBoxDisplayThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.BoundingBoxDisplayThreshold, Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault);
@@ -171,7 +169,6 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                registryKey.Write(Constant.WindowRegistryKeys.AudioFeedback, this.AudioFeedback);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkScaleX, this.BookmarkScale.X);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkScaleY, this.BookmarkScale.Y);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkTranslationX, this.BookmarkTranslation.X);

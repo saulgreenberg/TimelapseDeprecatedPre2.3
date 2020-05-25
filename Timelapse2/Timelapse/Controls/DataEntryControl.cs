@@ -14,8 +14,16 @@ using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Controls
 {
+    /// Two abstact classes are defined in this file:
+    /// - DataEntryControl defines the base aspects of the control portion of a data entry control
+    /// - DataEntryControl<TContent, TLabel> defines the label and actual control presented on the display</TContent>
+
+    /// <summary>
+    /// Abstract class that defines the base aspects of a data entry control
+    /// </summary>
     public abstract class DataEntryControl
     {
+        #region DataEntryControl Properties
         /// <summary>Gets the position of the content control</summary>
         public abstract Point TopLeft { get; }
 
@@ -44,7 +52,9 @@ namespace Timelapse.Controls
         // used to remember and restore state when
         // displayTemporaryContents and RestoreTemporaryContents are used
         protected Popup PopupPreview { get; set; }
+        #endregion
 
+        #region Base constructor for all data entry controls
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider)
         {
             // Check the arguments for null 
@@ -65,7 +75,9 @@ namespace Timelapse.Controls
             // this is needed by callbacks such as DataEntryHandler.Container_PreviewMouseRightButtonDown() and TimelapseWindow.CounterControl_MouseLeave()
             this.Container.Tag = this;
         }
+        #endregion
 
+        #region Abstract methods
         public abstract void SetContentAndTooltip(string value);
 
         // Flash the background of the content control area
@@ -79,16 +91,19 @@ namespace Timelapse.Controls
         public abstract void ShowPreviewControlValue(string value);
         public abstract void HidePreviewControlValue();
         public abstract void FlashPreviewControlValue();
+        #endregion
     }
 
-    // A generic control comprises a stack panel containing 
-    // - a control containing at least a descriptive label 
-    // - another control for displaying / entering data at a given width
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "StyleCop limitation.")]
+    /// <summary> A generic control comprises a stack panel containing 
+    /// - a control containing at least a descriptive label 
+    /// - another control for displaying / entering data at a given width
+    /// </summary>
     public abstract class DataEntryControl<TContent, TLabel> : DataEntryControl
         where TContent : Control, new()
         where TLabel : ContentControl, new()
     {
+        #region DataEntryControl<TContent, TLabel> Properties
         public TContent ContentControl { get; private set; }
 
         /// <summary>Gets the control label's value</summary>
@@ -121,7 +136,9 @@ namespace Timelapse.Controls
                 this.ContentControl.Foreground = value ? Brushes.Black : Brushes.DimGray;
             }
         }
+        #endregion
 
+        #region Base constructor for a DataEntryControl<,>
         protected DataEntryControl(ControlRow control, DataEntryControls styleProvider, Nullable<ControlContentStyleEnum> contentStyleName, ControlLabelStyleEnum labelStyleName) :
             base(control, styleProvider)
         {
@@ -158,7 +175,9 @@ namespace Timelapse.Controls
             this.Container.Children.Add(this.ContentControl);
             this.Container.PreviewKeyDown += this.Container_PreviewKeyDown;
         }
+        #endregion
 
+        #region PreviewKeyDown and Focus
         // We want to capture the Shift/Arrow key presses so we can navigate images. However, both the UTCOffset and the DateTime picker consume 
         // those PreviewKeyDown event. As a workaround, we attach a preview keydown to the container and take action on that.
         private void Container_PreviewKeyDown(object sender, KeyEventArgs keyEvent)
@@ -194,9 +213,9 @@ namespace Timelapse.Controls
             FocusManager.SetFocusedElement(focusScope, this.ContentControl);
             return this.ContentControl;
         }
+        #endregion
 
         #region Visual Effects and Popup Previews
-
         protected virtual Popup CreatePopupPreview(Control control, Thickness padding, double width, double horizontalOffset)
         {
 

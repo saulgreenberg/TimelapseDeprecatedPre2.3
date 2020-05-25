@@ -17,7 +17,7 @@ namespace Timelapse
     /// This dialog lets the user specify a corrected date and time of a file. All other dates and times are then corrected by the same amount.
     /// This is useful if (say) the camera was not initialized to the correct date and time.
     /// </summary>
-    public partial class DateTimeLinearCorrection : DialogWindow
+    public partial class DateTimeLinearCorrection : BusyableDialogWindow
     {
         private readonly FileDatabase fileDatabase;
 
@@ -106,7 +106,7 @@ namespace Timelapse
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -210,7 +210,7 @@ namespace Timelapse
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
             TimeSpan intervalFromOldestToNewestImage = this.latestImageDateTime - this.earliestImageDateTime;
@@ -237,7 +237,7 @@ namespace Timelapse
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
         }
 
         private void DoneButton_Click(object sender, RoutedEventArgs e)

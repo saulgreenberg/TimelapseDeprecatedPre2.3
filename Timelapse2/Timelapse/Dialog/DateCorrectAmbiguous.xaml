@@ -1,4 +1,4 @@
-﻿<controls:DialogWindow x:Class="Timelapse.Dialog.DateCorrectAmbiguous"
+﻿<controls:BusyableDialogWindow x:Class="Timelapse.Dialog.DateCorrectAmbiguous"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -57,4 +57,4 @@ Solution="Ambiguous dates and the # of files with that date are listed below. If
 
         <controls:BusyCancelIndicator x:Name="BusyCancelIndicator" IsBusy="False" Grid.Row="0"/>
     </Grid>
-</controls:DialogWindow>
+</controls:BusyableDialogWindow>

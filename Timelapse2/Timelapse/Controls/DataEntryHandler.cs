@@ -19,13 +19,7 @@ namespace Timelapse.Controls
     /// </summary>
     public class DataEntryHandler : IDisposable
     {
-        // Index location of these menu items in the context menu
-        private const int PropagateFromLastValueIndex = 0;
-        private const int CopyForwardIndex = 1;
-        private const int CopyToAllIndex = 2;
-
-        private bool disposed;
-
+        #region Public Properties and Private variables
         public FileDatabase FileDatabase { get; private set; }
         public ImageCache ImageCache { get; private set; }
         public bool IsProgrammaticControlUpdate { get; set; }
@@ -33,6 +27,14 @@ namespace Timelapse.Controls
         // We need to get selected files from the ThumbnailGrid, so we need this reference
         public ThumbnailGrid ThumbnailGrid { get; set; }
         public MarkableCanvas MarkableCanvas { get; set; }
+
+        // Index location of these menu items in the context menu
+        private const int PropagateFromLastValueIndex = 0;
+        private const int CopyForwardIndex = 1;
+        private const int CopyToAllIndex = 2;
+        private bool disposed;
+        #endregion
+
         #region Loading, Disposing
         public DataEntryHandler(FileDatabase fileDatabase)
         {
@@ -175,10 +177,6 @@ namespace Timelapse.Controls
                 calendar.IsTodayHighlighted = false; // Don't highlight today's date, as it could be confusing given what this control is used for.
                 calendar.SelectedDatesChanged += this.Calendar_SelectedDatesChanged;
             }
-            // else
-            // {
-            //    System.Diagnostics.Debug.Print("DateTimePicker_Loaded: Couldnt add calendar event ");
-            // }
         }
 
         private void SetContextMenuCallbacks(DataEntryControl control)
