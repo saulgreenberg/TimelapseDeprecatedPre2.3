@@ -6,8 +6,12 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class UpdateRootFolder : Window
     {
+        #region Private Variables
         private readonly string dbfoldername;
         private readonly string actualFolderName;
+        #endregion
+
+        #region Constructor, Loaded
         public UpdateRootFolder(Window owner, string dbfoldername, string actualFolderName)
         {
             this.InitializeComponent();
@@ -21,7 +25,9 @@ namespace Timelapse.Dialog
             this.Message.What = "A root folder location saved in your database (.ddb)  file is '" + this.dbfoldername + "'. However, your template is currently located in a different root folder '" + this.actualFolderName + "'.";
             this.Message.Solution = "Clicking Update will update the root folder location that is saved in your database from '" + this.dbfoldername + "' to '" + this.actualFolderName + "'.";
         }
+        #endregion
 
+        #region Callbacks -Dialog Butotns
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -31,5 +37,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
+        #endregion
     }
 }

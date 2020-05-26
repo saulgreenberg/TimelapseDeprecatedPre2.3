@@ -10,7 +10,7 @@ namespace Timelapse.Detection
     public static class DetectionDatabases
     {
         // IMMEDIATE Check that image and classifications use foreign keys
-        // Create all Detection Database Tables
+        #region Public: Create all Detection Database Tables
         public static void CreateOrRecreateTablesAndColumns(SQLiteWrapper database)
         {
             // Check the arguments for null 
@@ -84,7 +84,9 @@ namespace Timelapse.Detection
             };
             database.CreateTable(Constant.DBTables.Classifications, columnDefinitions);
         }
+        #endregion
 
+        #region Public: Clear Detection Tables
         public static void ClearDetectionTables(SQLiteWrapper database)
         {
             // Check the arguments for null 
@@ -99,7 +101,9 @@ namespace Timelapse.Detection
             };
             database.DeleteAllRowsInTables(detectionTables);
         }
+        #endregion
 
+        #region Public: Populate Detection Tables
         // Populate the various Detection Database Tables from the detection data structure.
         public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string pathPrefixForTruncation)
         {
@@ -317,5 +321,6 @@ namespace Timelapse.Detection
                 }
             }
         }
+        #endregion
     }
 }

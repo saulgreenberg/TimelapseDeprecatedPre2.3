@@ -25,6 +25,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class MissingFoldersLocateFolders : Window
     {
+        #region Public Properties
         public Dictionary<string, string> FinalFolderLocations
         {
             get
@@ -40,6 +41,8 @@ namespace Timelapse.Dialog
                 return finalFolderLocations;
             }
         }
+        #endregion
+
         private readonly string RootPath;
         private ObservableCollection<Tuple<string, string, string, bool>> observableCollection; // A tuple defining the contents of the datagrid
         private IList<DataGridCellInfo> selectedRowTuple; // Will contain the tuple of the row corresponding to the selected cell

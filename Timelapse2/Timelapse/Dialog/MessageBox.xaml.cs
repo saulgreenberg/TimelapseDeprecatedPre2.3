@@ -5,6 +5,7 @@ namespace Timelapse.Dialog
 {
     public partial class MessageBox : Window
     {
+        #region Constructor, Loaded
         public MessageBox(string title, Window owner)
             : this(title, owner, MessageBoxButton.OK)
         {
@@ -48,7 +49,9 @@ namespace Timelapse.Dialog
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
         }
+        #endregion
 
+        #region Callbacks - Dialog buttons
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
@@ -58,5 +61,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

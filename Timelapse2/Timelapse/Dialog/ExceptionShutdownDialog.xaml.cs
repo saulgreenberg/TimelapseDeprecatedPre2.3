@@ -9,12 +9,15 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class ExceptionShutdownDialog : Window
     {
+        #region Private Variables
         private readonly string ProgramName;
         private readonly UnhandledExceptionEventArgs UnhandledExceptionArgs;
         private const string to = "saul@ucalgary.ca";
         private const string subject = "Timelapse bug report";
         private string body;
+        #endregion
 
+        #region Constructor, Loaded
         public ExceptionShutdownDialog(Window owner, string programName, UnhandledExceptionEventArgs unhandledExceptionArgs)
         {
             // Check the arguments for null 
@@ -59,7 +62,9 @@ namespace Timelapse.Dialog
             }
             CopyButton_Click(null, null);
         }
+        #endregion
 
+        #region Callbacks
         // Start an email
         private void MailButton_Click(object sender, RoutedEventArgs e)
         {
@@ -71,16 +76,19 @@ namespace Timelapse.Dialog
             }
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = false;
-        }
-
         // Copy the bug report into the clipboard
         private void CopyButton_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.Clear();
             Clipboard.SetText(String.Format("Email this to {0} {1}{2}", to, Environment.NewLine, this.body));
         }
+        #endregion
+
+        #region Callbacks - Dialog Buttons
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+        }
+        #endregion
     }
 }

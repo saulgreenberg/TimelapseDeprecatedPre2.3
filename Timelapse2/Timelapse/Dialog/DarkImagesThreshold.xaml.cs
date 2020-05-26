@@ -21,6 +21,7 @@ namespace Timelapse.Dialog
 {
     public partial class DarkImagesThreshold : BusyableDialogWindow, IDisposable
     {
+        #region Private Variables
         private readonly FileDatabase fileDatabase;
         private readonly TimelapseUserRegistrySettings state;
 
@@ -43,6 +44,7 @@ namespace Timelapse.Dialog
 
         // Tracks whether any changes to the data or database are made
         private bool IsAnyDataUpdated = false;
+        #endregion
 
         #region Initialization
         public DarkImagesThreshold(TimelapseWindow owner, FileDatabase fileDatabase, TimelapseUserRegistrySettings state, int currentImageIndex) : base(owner)

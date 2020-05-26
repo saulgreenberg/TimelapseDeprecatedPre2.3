@@ -7,8 +7,11 @@ namespace Timelapse.Dialog
 {
     public partial class AboutTimelapse : Window
     {
+        #region Public Properties
         public Nullable<DateTime> MostRecentCheckForUpdate { get; private set; }
+        #endregion
 
+        #region Constructor and Loaded
         public AboutTimelapse(Window owner)
         {
             this.InitializeComponent();
@@ -28,7 +31,9 @@ namespace Timelapse.Dialog
 
             this.MostRecentCheckForUpdate = null;
         }
+        #endregion
 
+        #region Callbakcs
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
@@ -51,5 +56,6 @@ namespace Timelapse.Dialog
             ProcessExecution.TryProcessStart(e.Uri);
             e.Handled = true;
         }
+        #endregion
     }
 }

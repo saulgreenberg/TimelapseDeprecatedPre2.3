@@ -80,8 +80,6 @@
                     </Grid>
                     <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
 
-
-
                 </Grid>
 
                 <!-- Feedback area. Either this or the Content area is visible-->

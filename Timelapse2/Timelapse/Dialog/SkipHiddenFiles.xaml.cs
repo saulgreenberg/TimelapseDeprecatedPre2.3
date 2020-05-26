@@ -7,6 +7,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class SkipHiddenFiles : Window
     {
+        #region Constructor, Loaded
         public SkipHiddenFiles(Window owner)
         {
             this.InitializeComponent();
@@ -17,7 +18,9 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
+        #endregion
 
+        #region Callbacks - Dialog Buttons
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
@@ -27,5 +30,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

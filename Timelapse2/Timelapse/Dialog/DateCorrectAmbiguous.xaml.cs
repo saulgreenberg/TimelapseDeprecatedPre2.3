@@ -15,6 +15,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DateCorrectAmbiguous : BusyableDialogWindow
     {
+        #region Private Varaibles
         // Remember passed in arguments
         private readonly FileDatabase fileDatabase;
 
@@ -22,8 +23,9 @@ namespace Timelapse.Dialog
 
         // Tracks whether any changes to the data or database are made
         private bool IsAnyDataUpdated = false;
+        #endregion
 
-        #region Initialization
+        #region Constructor and Loaded
         public DateCorrectAmbiguous(Window owner, FileDatabase fileDatabase) : base(owner)
         {
             // Check the arguments for null 
@@ -56,8 +58,9 @@ namespace Timelapse.Dialog
             }
             Mouse.OverrideCursor = null;
         }
+        #endregion
 
-        // Update the display
+        #region Populate the Feedback Panel to show date changes 
         private void PopulateDateChangeFeedback()
         {
             this.DateChangeFeedback.ShowDifferenceColumn = false;
@@ -192,6 +195,13 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Mouse button Callbacks
+        private void DateChangeFeedback_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
+        }
+        #endregion       
+        
         #region Button Callbackes
         // Select all / none of the checkboxes in the datechangedfeedback panel.
         private void SelectAll_Click(object sender, RoutedEventArgs e)
@@ -251,9 +261,5 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        private void DateChangeFeedback_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
-        }
     }
 }

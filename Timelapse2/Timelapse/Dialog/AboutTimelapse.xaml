@@ -73,12 +73,15 @@
                 <Run FontWeight="Bold" Text="Software dependencies" FontSize="14"/>
                
             </TextBlock>
-            <TextBlock HorizontalAlignment="Left" Margin="70,0,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap"  FontSize="14" >        
-                <Run FontStyle="Italic" Text="Timelapse incorporates 3rd party software under their license terms. We thank their developers."/>
-                <LineBreak/>
-                <Run Text="Extended WPF Toolkit (xceed.org)  &#x2022;  ExifTool (Phil Harvey)  &#x2022;  ImageProcessor (James South)"/>
+            <TextBlock LineHeight="20" HorizontalAlignment="Left" Margin="70,0,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap" >        
+                <Run Text="Timelapse incorporates 3rd party software under their license terms. We thank their developers."/>
+            </TextBlock>
+            <TextBlock FontSize="11" FontStyle="Italic" HorizontalAlignment="Left" Margin="70,0,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap" >      
+                <Run Text="Extended WPF Toolkit (xceed.org)  &#x2022;  ExifToolWrapper (brain2cpu.com) &#x2022; ExifTool (Phil Harvey)"/>
                  <LineBreak/>
-                <Run Text="MetadataExtractor+XMPCore (Drew Noakes)  &#x2022;  Newtonsoft (Json.net)  &#x2022;  System.Data.Sqlite (system.data.sqlite.org)"/>
+                <Run Text="ImageProcessor (James South) &#x2022; MetadataExtractor+XMPCore (Drew Noakes)  &#x2022;  Newtonsoft (Json.net)"/>
+                <LineBreak/> 
+                <Run Text="System.Data.Sqlite (system.data.sqlite.org) &#x2022; NReco Video Converter (nrecosite.com) &#x2022; FFMpeg (ffmpeg.org)"/>
             </TextBlock>
         </StackPanel>
         

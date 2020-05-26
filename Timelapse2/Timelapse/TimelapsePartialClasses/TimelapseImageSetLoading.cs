@@ -394,7 +394,10 @@ namespace Timelapse
             else if (fileDatabasePaths.Length > 1)
             {
                 ChooseFileDatabaseFile chooseDatabaseFile = new ChooseFileDatabaseFile(fileDatabasePaths, templateDatabasePath, this);
+                Cursor cursor = Mouse.OverrideCursor;
+                Mouse.OverrideCursor = null;
                 bool? result = chooseDatabaseFile.ShowDialog();
+                Mouse.OverrideCursor = cursor;
                 if (result == true)
                 {
                     databaseFileName = chooseDatabaseFile.SelectedFile;

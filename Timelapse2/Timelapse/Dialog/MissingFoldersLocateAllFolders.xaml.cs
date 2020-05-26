@@ -145,8 +145,10 @@ namespace Timelapse.Dialog
                     if (comboBox == null) return;
 
                     // Rebuild the list with the new position at the beginning and selected.
-                    List<string> newList = new List<string>();
-                    newList.Add(newLocation);
+                    List<string> newList = new List<string>
+                    {
+                        newLocation
+                    };
                     foreach (string item in row.PossibleNewLocation)
                     {
                         if (String.Equals(item, this.useLocateButtonText))
@@ -272,25 +274,25 @@ namespace Timelapse.Dialog
             }
         }
 
-        private void SetCheckboxValue(CheckBox checkBox)
-        {
-            int rowIndex = 0;
-            ComboBox comboBox;
-            foreach (MissingFolderRow mfr in this.observableCollection)
-            {
-                DataGridRow dataGridRow = (DataGridRow)this.DataGrid.ItemContainerGenerator
-                   .ContainerFromIndex(rowIndex);
-                if (Util.VisualChildren.GetVisualChild<CheckBox>(dataGridRow, "Part_Checkbox") == checkBox)
-                {
-                    comboBox = Util.VisualChildren.GetVisualChild<ComboBox>(dataGridRow, "Part_Combo");
-                    if (String.IsNullOrEmpty((string)comboBox.SelectedItem))
-                    {
-                        checkBox.IsChecked = false;
-                    }
-                }
-                rowIndex++;
-            }
-        }
+        //private void SetCheckboxValue(CheckBox checkBox)
+        //{
+        //    int rowIndex = 0;
+        //    ComboBox comboBox;
+        //    foreach (MissingFolderRow mfr in this.observableCollection)
+        //    {
+        //        DataGridRow dataGridRow = (DataGridRow)this.DataGrid.ItemContainerGenerator
+        //           .ContainerFromIndex(rowIndex);
+        //        if (Util.VisualChildren.GetVisualChild<CheckBox>(dataGridRow, "Part_Checkbox") == checkBox)
+        //        {
+        //            comboBox = Util.VisualChildren.GetVisualChild<ComboBox>(dataGridRow, "Part_Combo");
+        //            if (String.IsNullOrEmpty((string)comboBox.SelectedItem))
+        //            {
+        //                checkBox.IsChecked = false;
+        //            }
+        //        }
+        //        rowIndex++;
+        //    }
+        //}
         #endregion
 
         #region Helper methods
@@ -351,24 +353,24 @@ namespace Timelapse.Dialog
             return headerStyle;
         }
         #endregion
-    }
 
-    #region Class MissingFolderRow
-    // An internal class used to store the contents of a datagrid row
-    public class MissingFolderRow
-    {
-        public string FolderName { get; set; }
-        public string ExpectedOldLocation { get; set; }
-        public List<string> PossibleNewLocation { get; set; }
-        public bool Use { get; set; }
-
-        public MissingFolderRow(string folderName, string expectedOldLocation, List<string> possibleNewLocation, bool use)
+        #region Private Class MissingFolderRow - used only by the above class
+        // An internal class used to store the contents of a datagrid row
+        private class MissingFolderRow
         {
-            this.FolderName = folderName;
-            this.ExpectedOldLocation = expectedOldLocation;
-            this.PossibleNewLocation = possibleNewLocation;
-            this.Use = use;
+            public string FolderName { get; set; }
+            public string ExpectedOldLocation { get; set; }
+            public List<string> PossibleNewLocation { get; set; }
+            public bool Use { get; set; }
+
+            public MissingFolderRow(string folderName, string expectedOldLocation, List<string> possibleNewLocation, bool use)
+            {
+                this.FolderName = folderName;
+                this.ExpectedOldLocation = expectedOldLocation;
+                this.PossibleNewLocation = possibleNewLocation;
+                this.Use = use;
+            }
         }
+        #endregion
     }
-    #endregion
 }

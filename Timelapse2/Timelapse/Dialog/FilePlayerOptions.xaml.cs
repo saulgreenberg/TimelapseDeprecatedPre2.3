@@ -8,10 +8,13 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class FilePlayerOptions : Window
     {
+        #region Private Variables
         private readonly double playSlowMinimum = Constant.FilePlayerValues.PlaySlowMinimum.TotalSeconds;
         private readonly double playFastMaximum = Constant.FilePlayerValues.PlayFastMaximum.TotalSeconds;
         private readonly TimelapseState state;
+        #endregion
 
+        #region Constructor, Loaded
         public FilePlayerOptions(TimelapseState state, Window owner)
         {
             this.InitializeComponent();
@@ -34,13 +37,9 @@ namespace Timelapse.Dialog
 
             this.DisplayFeedback();
         }
+        #endregion
 
-        private void SlowSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
-            this.DisplayFeedback();
-        }
-
+        #region Private Methods: Display Feedback
         private void DisplayFeedback()
         {
             if (this.state.FilePlayerSlowValue <= 1)
@@ -65,6 +64,14 @@ namespace Timelapse.Dialog
                 this.FastSpeedText.Text = string.Format("1 image every {0:N2} seconds", this.state.FilePlayerFastValue);
             }
         }
+        #endregion
+
+        #region Callbacks
+        private void SlowSpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
+            this.DisplayFeedback();
+        }
 
         private void ResetSlowSpeedSlider_Click(object sender, RoutedEventArgs e)
         {
@@ -86,5 +93,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
+        #endregion
     }
 }

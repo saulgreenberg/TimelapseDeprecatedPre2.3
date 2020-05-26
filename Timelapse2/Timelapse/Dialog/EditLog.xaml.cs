@@ -9,6 +9,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class EditLog : Window
     {
+        #region Constructor, Loaded
         /// <summary>
         /// Raise a dialog that lets the user edit text given to it as a parameter  
         /// If the dialog returns true, the property LogContents will contain the modified text. 
@@ -25,20 +26,25 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
+        #endregion
 
-        private void OkButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
-        }
-
+        #region Callback - TextChanged
         private void LogTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.OkButton.IsEnabled = true;
         }
+        #endregion
 
+        #region Callback -Dialog Buttons
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
+        }
+        
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

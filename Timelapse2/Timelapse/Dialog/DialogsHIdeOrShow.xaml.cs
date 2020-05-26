@@ -9,7 +9,11 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DialogsHideOrShow : Window
     {
+        #region Private Variabes
         private readonly TimelapseState state;
+        #endregion
+
+        #region Constructor, Loaded
         public DialogsHideOrShow(TimelapseState state, Window owner)
         {
             this.InitializeComponent();
@@ -37,7 +41,9 @@ namespace Timelapse.Dialog
             this.SuppressSelectedRereadDatesFromFilesPrompt.IsChecked = this.state.SuppressSelectedRereadDatesFromFilesPrompt;
             this.SuppressSelectedSetTimeZonePrompt.IsChecked = this.state.SuppressSelectedSetTimeZonePrompt;
         }
+        #endregion
 
+        #region Callbacks - Suppress Checkboxes
         private void SuppressAmbiguousDatesDialog_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
@@ -115,10 +121,13 @@ namespace Timelapse.Dialog
             CheckBox cb = (CheckBox)sender;
             this.state.SuppressSelectedSetTimeZonePrompt = (cb.IsChecked == true) ? true : false;
         }
+        #endregion
 
+        #region Callback - Dialog Buttons
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
         }
+        #endregion
     }
 }

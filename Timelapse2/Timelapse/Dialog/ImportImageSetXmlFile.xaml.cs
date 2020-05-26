@@ -8,6 +8,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class ImportImageSetXmlFile : Window
     {
+        #region Constructor, Loaded
         /// <summary>
         /// Ask the user to indicate the path to a code template file (called if there is no code template file in the image folder). 
         /// If a code template file is found, it is copied to the image folder. 
@@ -22,6 +23,9 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
+        #endregion
+
+        #region Callbacks
         // Browse for a code template file
         private void UseOldDataButton_Click(object sender, RoutedEventArgs e)
         {
@@ -32,5 +36,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

@@ -189,16 +189,12 @@
     <Compile Include="Controls\ProgressBarArguments.cs" />
     <Compile Include="Controls\EpisodePopup.cs" />
     <Compile Include="Database\MergeDatabases.cs" />
-    <Compile Include="DEPRACATED\AdvancedImageSetOptionsDialogPlusXaml.cs" />
-    <Compile Include="DEPRACATED\DepracatedFileDatabase.cs" />
-    <Compile Include="DEPRACATED\DepracatedMenuItems.cs" />
-    <Compile Include="DEPRACATED\DepracatedXaml.cs" />
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
-    <Compile Include="Dialog\AmbiguousDateRange.cs" />
-    <Compile Include="Dialog\ChooseDetectorFilePath.xaml.cs">
-      <DependentUpon>ChooseDetectorFilePath.xaml</DependentUpon>
+    <Compile Include="DataStructures\AmbiguousDateRange.cs" />
+    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
+      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\EpisodeOptions.xaml.cs">
       <DependentUpon>EpisodeOptions.xaml</DependentUpon>
@@ -209,8 +205,8 @@
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\MissingFolderersLocateAllFolders.xaml.cs">
-      <DependentUpon>MissingFolderersLocateAllFolders.xaml</DependentUpon>
+    <Compile Include="Dialog\MissingFoldersLocateAllFolders.xaml.cs">
+      <DependentUpon>MissingFoldersLocateAllFolders.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\MissingFoldersLocateFolders.xaml.cs">
       <DependentUpon>MissingFoldersLocateFolders.xaml</DependentUpon>
@@ -268,7 +264,6 @@
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />
     <Compile Include="Images\MarkableCanvasImageAdjustment.cs" />
-    <Compile Include="DEPRACATED\DepracatedVideoThumbnailer.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
@@ -282,17 +277,11 @@
     <Compile Include="Controls\DateChangesFeedbackControl.xaml.cs">
       <DependentUpon>DateChangesFeedbackControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
-      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\DateTimeLinearCorrection.xaml.cs">
       <DependentUpon>DateTimeLinearCorrection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\DeleteDeleteFolder.xaml.cs">
       <DependentUpon>DeleteDeleteFolder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\DeleteDuplicates.xaml.cs">
-      <DependentUpon>DeleteDuplicates.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\Dialogs.cs" />
     <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
@@ -377,7 +366,7 @@
     <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
     <Compile Include="Database\FileTableEnumerator.cs" />
-    <Compile Include="Dialog\DateTimeFeedbackTuple.cs" />
+    <Compile Include="DataStructures\DateTimeFeedbackTuple.cs" />
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
     <Compile Include="Enums\ImageDisplayIntentEnum.cs" />
@@ -434,7 +423,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\ChooseDetectorFilePath.xaml">
+    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -450,7 +439,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\MissingFolderersLocateAllFolders.xaml">
+    <Page Include="Dialog\MissingFoldersLocateAllFolders.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -502,10 +491,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Dialog\DateTimeLinearCorrection.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -519,10 +504,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\DeleteDeleteFolder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\DeleteDuplicates.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -567,10 +548,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\RenameFileDatabaseFile.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\FileCountsByQuality.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -660,9 +637,6 @@
     </Compile>
     <Compile Include="Dialog\EditLog.xaml.cs">
       <DependentUpon>EditLog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\FileCountsByQuality.xaml.cs">
-      <DependentUpon>FileCountsByQuality.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\DateDaylightSavingsTimeCorrection.xaml.cs">
       <DependentUpon>DateDaylightSavingsTimeCorrection.xaml</DependentUpon>
@@ -861,7 +835,9 @@
       <Name>Xceed.Wpf.Toolkit</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="DEPRACATED\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

@@ -20,6 +20,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DeleteImages : BusyableDialogWindow
     {
+        #region Private Variables
         // these variables will hold the values of the passed in parameters
         private readonly FileDatabase fileDatabase;
         private readonly ImageCache imageCache;
@@ -29,8 +30,9 @@ namespace Timelapse.Dialog
 
         private bool IsAnyDataUpdated;
         private int maxPathLength = 60;
+        #endregion
 
-        #region Initialization
+        #region Constructor, Loaded
         /// <summary>
         /// Ask the user if he/she wants to delete one or more images and (depending on whether deleteData is set) the data associated with those images.
         /// Other parameters indicate various specifics of how the deletion was specified, which also determines what is displayed in the interface:

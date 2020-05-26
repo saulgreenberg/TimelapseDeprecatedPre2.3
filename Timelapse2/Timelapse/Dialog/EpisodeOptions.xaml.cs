@@ -8,8 +8,11 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class EpisodeOptions : Window
     {
+        #region Public Properties
         public TimeSpan EpisodeTimeThreshold { get; set; }
+        #endregion
 
+        #region COnstructore, Loaded
         public EpisodeOptions(TimeSpan timeDifferenceThreshold, Window owner)
         {
             this.InitializeComponent();
@@ -27,19 +30,23 @@ namespace Timelapse.Dialog
             this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalMinutes;
             this.DisplayFeedback();
         }
+        #endregion
 
-        private void TimeThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            // this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
-            this.DisplayFeedback();
-            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
-        }
-
+        #region Private Methods - Display Feedback
         private void DisplayFeedback()
         {
             TimeSpan duration = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
             string label = (duration >= TimeSpan.FromMinutes(1)) ? "minutes" : "seconds";
             this.TimeThresholdText.Text = String.Format("{0:m\\:ss} {1}", duration, label);
+        }
+        #endregion
+
+        #region Callbacks
+        private void TimeThresholdSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            // this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
+            this.DisplayFeedback();
+            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
         }
 
         private void ResetTimeThresholdSlider_Click(object sender, RoutedEventArgs e)
@@ -51,5 +58,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
+        #endregion
     }
 }
