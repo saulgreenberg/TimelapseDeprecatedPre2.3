@@ -5,8 +5,12 @@ using DragEventArgs = System.Windows.DragEventArgs;
 
 namespace Timelapse.Util
 {
+    /// <summary>
+    /// Helpers to implement drage and rop of template files
+    /// </summary>
     public static class DragDropFile
     {
+        #region Public Static
         public static bool IsTemplateFileDragging(DragEventArgs dragEvent, out string templateDatabasePath)
         {
             // Check the arguments for null 
@@ -40,5 +44,6 @@ namespace Timelapse.Util
             }
             dragEvent.Handled = true;
         }
+        #endregion
     }
 }

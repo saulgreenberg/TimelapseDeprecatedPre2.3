@@ -5,6 +5,7 @@ namespace Timelapse.Util
 {
     public static class VisualChildren
     {
+        #region Public Static Methods - GetVisualChild - Various Forms
         // Get the visual child of the specified type
         // Invoke by, e.g., TextBlock tb = VisualChildren.GetVisualChild<TextBlock>(somePartentUIElement);
         // Code from: http://techiethings.blogspot.com/2010/05/get-wpf-datagrid-row-and-cell.html
@@ -72,5 +73,6 @@ namespace Timelapse.Util
             return foundChild;
         }
 
+    #endregion
     }
 }

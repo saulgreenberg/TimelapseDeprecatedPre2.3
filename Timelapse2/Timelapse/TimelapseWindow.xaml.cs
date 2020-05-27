@@ -28,27 +28,8 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
-        #region Variables and Properties
+        #region Public Properties
         public DataEntryHandler DataHandler { get; set; }
-        private bool disposed;
-        private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
-        private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
-
-        private TemplateDatabase templateDatabase;                      // The database that holds the template
-        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
-
-        private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
-        private QuickPasteWindow quickPasteWindow = null;
-
-        private ImageAdjuster ImageAdjuster;    // The image adjuster controls
-
-        // Timer for periodically updating images as the ImageNavigator slider is being used
-        private readonly DispatcherTimer timerFileNavigator;
-
-        // Timer used to AutoPlay images via MediaControl buttons
-        readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
-        readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
-
         public TimelapseState State { get; set; }                       // Status information concerning the state of the UI
 
         public string FolderPath
@@ -65,8 +46,28 @@ namespace Timelapse
                     return this.DataHandler.FileDatabase.FolderPath;
                 }
             }
-
         }
+        #endregion
+
+        #region Private Variables
+        private bool disposed;
+        private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
+        private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
+
+        private TemplateDatabase templateDatabase;                      // The database that holds the template
+        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
+
+        private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
+        private QuickPasteWindow quickPasteWindow = null;
+
+        private ImageAdjuster ImageAdjuster;    // The image adjuster controls
+
+        // Timer for periodically updating images as the ImageNavigator slider is being used
+        private readonly DispatcherTimer timerFileNavigator;
+
+        // Timer used to AutoPlay images via MediaControl buttons
+        private readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
+        private readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
         #endregion
 
         #region Main
@@ -136,8 +137,7 @@ namespace Timelapse
         }
         #endregion
 
-        #region Window Loading, Closing, and Disposing
-
+        #region Window Loading, Closing
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Abort if some of the required dependencies are missing
@@ -211,7 +211,9 @@ namespace Timelapse
                 Directory.Delete(deletedFolderPath, true);
             }
         }
+        #endregion
 
+        #region Disposing
         public void Dispose()
         {
             this.Dispose(true);
@@ -234,7 +236,6 @@ namespace Timelapse
             }
             this.disposed = true;
         }
-
         #endregion
 
         #region Exception Management

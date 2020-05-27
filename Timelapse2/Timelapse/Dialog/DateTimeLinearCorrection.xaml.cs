@@ -75,7 +75,7 @@ namespace Timelapse
 
             // Configure the earliest date (in datetime picker) and its image
             this.earliestImageName.Content = earliestImageRow.File;
-            this.earliestImageDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.earliestImageDateTime);
+            this.earliestImageDate.Content = DateTimeHandler.ToStringDisplayDateTime(this.earliestImageDateTime);
             this.imageEarliest.Source = earliestImageRow.LoadBitmap(this.fileDatabase.FolderPath, out bool isCorruptOrMissing);
 
             // Configure the latest date (in datetime picker) and its image
@@ -160,8 +160,8 @@ namespace Timelapse
                        if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
                        {
                            // We only add to the feedback row if the change duration is > 1 second, as otherwise we don't change it.
-                           string oldDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime);
-                           string newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
+                           string oldDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime);
+                           string newDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime + adjustment);
                            feedbackRows.Add(new DateTimeFeedbackTuple(fileName, oldDT + " \x2192 " + newDT + " \x2192 " + PrettyPrintTimeAdjustment(adjustment)));
                        }
 

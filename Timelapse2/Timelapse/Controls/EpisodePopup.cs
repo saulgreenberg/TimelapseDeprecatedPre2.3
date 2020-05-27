@@ -88,8 +88,8 @@ namespace Timelapse.Controls
             // While this could produce more hits than we need, it should give us a relatively short table of possible candidates
             DateTime lowerDateTime = currentImageRow.DateTime - TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
             DateTime upperDateTime = currentImageRow.DateTime + TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
-            string slowerDateTime = DateTimeHandler.ToDatabaseDateTimeString(lowerDateTime);
-            string supperDateTime = DateTimeHandler.ToDatabaseDateTimeString(upperDateTime);
+            string slowerDateTime = DateTimeHandler.ToStringDatabaseDateTime(lowerDateTime);
+            string supperDateTime = DateTimeHandler.ToStringDatabaseDateTime(upperDateTime);
 
             // Get a table of files (sorted by datetime) with that relative path which falls between the lower and upper date range
             DataTable dt = this.FileDatabase.GetIDandDateWithRelativePathAndBetweenDates(relativePath, slowerDateTime, supperDateTime);

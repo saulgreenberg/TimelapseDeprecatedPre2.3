@@ -80,7 +80,7 @@ namespace Timelapse
 
             // We know that at least one or more folders are missing.
             // For each missing folder path, try to find all folders with the same name under the root folder.
-            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
+            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryGetMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
             Dictionary<string, string> finalFileLocations;
 
             // We want to show the normal cursor when we display dialog boxes, so save the current cursor so we can store it.

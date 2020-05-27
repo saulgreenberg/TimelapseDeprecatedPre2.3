@@ -300,7 +300,7 @@ namespace Timelapse.Database
         {
             if (control.DataLabel == Constant.DatabaseColumn.DateTime)
             {
-                return new ColumnDefinition(control.DataLabel, "DATETIME", DateTimeHandler.ToDatabaseDateTimeString(Constant.ControlDefault.DateTimeValue));
+                return new ColumnDefinition(control.DataLabel, "DATETIME", DateTimeHandler.ToStringDatabaseDateTime(Constant.ControlDefault.DateTimeValue));
             }
             if (control.DataLabel == Constant.DatabaseColumn.UtcOffset)
             {
@@ -316,7 +316,7 @@ namespace Timelapse.Database
                 // implementation choice but testing shows no roundoff errors at single tick precision (100 nanoseconds) when using hours.  Even with TimeSpans 
                 // near the upper bound of 256M hours, well beyond the plausible range of time zone calculations.  So there does not appear to be any reason to 
                 // avoid using hours for readability when working with the database directly.
-                return new ColumnDefinition(control.DataLabel, "REAL", DateTimeHandler.ToDatabaseUtcOffsetString(Constant.ControlDefault.DateTimeValue.Offset));
+                return new ColumnDefinition(control.DataLabel, "REAL", DateTimeHandler.ToStringDatabaseUtcOffset(Constant.ControlDefault.DateTimeValue.Offset));
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
             {
@@ -740,11 +740,11 @@ namespace Timelapse.Database
                                 break;
 
                             case Constant.DatabaseColumn.DateTime:
-                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToDatabaseDateTimeString(imageProperties.DateTime))}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToStringDatabaseDateTime(imageProperties.DateTime))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.UtcOffset:
-                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToDatabaseUtcOffsetString(imageProperties.UtcOffset))}{Sql.Comma}");
+                                queryValues.Append($"{Sql.Quote(DateTimeHandler.ToStringDatabaseUtcOffset(imageProperties.UtcOffset))}{Sql.Comma}");
                                 break;
 
                             case Constant.DatabaseColumn.Time:

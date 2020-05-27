@@ -164,7 +164,7 @@ namespace Timelapse.Dialog
                             // Date has been updated - add it to the queue of files to be processed, and generate a feedback message.
                             filesToAdjust.Add(file);
                             feedbackMessage = "\x2713"; // Checkmark 
-                            feedbackMessage += DateTimeHandler.ToDisplayDateTimeString(originalDateTime) + " \x2192 " + DateTimeHandler.ToDisplayDateTimeString(rescannedDateTime);
+                            feedbackMessage += DateTimeHandler.ToStringDisplayDateTime(originalDateTime) + " \x2192 " + DateTimeHandler.ToStringDisplayDateTime(rescannedDateTime);
                             feedbackMessage += usingMetadataTimestamp ? " (read from metadata)" : " (read from file)";
                             feedbackRows.Add(new DateTimeFeedbackTuple(file.File, feedbackMessage));
                         }

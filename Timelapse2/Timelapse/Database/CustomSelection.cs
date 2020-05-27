@@ -74,7 +74,7 @@ namespace Timelapse.Database
                 {
                     // the first time the CustomSelection dialog is popped Timelapse calls SetDateTime() to changes the default date time to the date time 
                     // of the current image
-                    searchTerm.DatabaseValue = DateTimeHandler.ToDatabaseDateTimeString(Constant.ControlDefault.DateTimeValue);
+                    searchTerm.DatabaseValue = DateTimeHandler.ToStringDatabaseDateTime(Constant.ControlDefault.DateTimeValue);
                     searchTerm.Operator = Constant.SearchTermOperator.GreaterThanOrEqual;
 
                     // support querying on a range of datetimes by giving the user two search terms, one configured for the start of the interval and one

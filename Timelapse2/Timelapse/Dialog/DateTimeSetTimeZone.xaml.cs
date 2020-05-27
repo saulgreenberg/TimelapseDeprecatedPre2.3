@@ -25,7 +25,7 @@ namespace Timelapse.Dialog
 
             // get the image's current time
             DateTimeOffset currentDateTime = imageToCorrect.DateTimeIncorporatingOffset;
-            this.originalDate.Content = DateTimeHandler.ToDisplayDateTimeUtcOffsetString(currentDateTime);
+            this.originalDate.Content = DateTimeHandler.ToStringDisplayDateTimeUtcOffset(currentDateTime);
 
             // get the image filename and display it
             this.FileName.Content = imageToCorrect.File;

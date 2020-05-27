@@ -4,8 +4,12 @@ using System.Threading.Tasks;
 
 namespace Timelapse.Util
 {
+    /// <summary>
+    /// Various static methods to get information about the running environments
+    /// </summary>
     public static class SystemStatus
     {
+        #region Public Static Methods - Language and Culture
         /// <summary>
         /// Get the current language and culture 
         /// </summary>
@@ -21,7 +25,9 @@ namespace Timelapse.Util
             displayname = cultureInfo.DisplayName;
             return language == "en" && (culturename == "en-US" || culturename == "en-CA");
         }
+        #endregion
 
+        #region Public Static Methods - Dot Net Version
         /// <summary>
         /// Get the latest version of Dot Net running on this system
         /// </summary>
@@ -71,7 +77,9 @@ namespace Timelapse.Util
                 }
             }
         }
+        #endregion
 
+        #region Public Static Methods - Available Processors
         /// <summary>
         /// Get the minimum between the number of processors available / desired for parallel operations
         /// </summary>
@@ -85,5 +93,6 @@ namespace Timelapse.Util
             };
             return parallelOptions;
         }
+        #endregion
     }
 }

@@ -73,7 +73,7 @@ namespace Timelapse.Database
             {
                 throw new NotSupportedException(String.Format("Attempt to retrieve date/time from a SearchTerm with data label {0}.", this.DataLabel));
             }
-            this.DatabaseValue = DateTimeHandler.ToDatabaseDateTimeString(dateTime);
+            this.DatabaseValue = DateTimeHandler.ToStringDatabaseDateTime(dateTime);
         }
 
         public void SetDatabaseValue(Nullable<DateTime> dateTime, TimeZoneInfo imageSetTimeZone)
@@ -85,7 +85,7 @@ namespace Timelapse.Database
             {
                 TimeSpan utcOffset = imageSetTimeZone.GetUtcOffset(dateTime.Value);
                 DateTimeOffset imageSetDateTime = DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime.Value, utcOffset);
-                this.DatabaseValue = DateTimeHandler.ToDatabaseDateTimeString(imageSetDateTime);
+                this.DatabaseValue = DateTimeHandler.ToStringDatabaseDateTime(imageSetDateTime);
             }
             else
             {
@@ -97,7 +97,7 @@ namespace Timelapse.Database
         {
             if (utcOffset.HasValue)
             {
-                this.DatabaseValue = DateTimeHandler.ToDatabaseUtcOffsetString(utcOffset.Value);
+                this.DatabaseValue = DateTimeHandler.ToStringDatabaseUtcOffset(utcOffset.Value);
             }
             else
             {

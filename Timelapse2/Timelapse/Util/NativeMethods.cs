@@ -7,6 +7,7 @@ namespace Timelapse.Util
 {
     internal class NativeMethods
     {
+        #region Public Methods - Cursor Position
         /// <summary>
         /// Get the cursor position. This purportedly corrects a WPF problem... not sure if its really needed.
         /// </summary>
@@ -25,6 +26,7 @@ namespace Timelapse.Util
             }
             return relativeTo.PointFromScreen(new Point(w32Mouse.X, w32Mouse.Y));
         }
+        #endregion
 
         #region Private aspects
         // Conversions between Pixels and device-independent pixels
@@ -42,6 +44,7 @@ namespace Timelapse.Util
         private const int LOGPIXELSY = 90;
         #endregion
 
+        #region Public Methos - Transform Pixels
         /// <summary>
         /// Given size units in normal pixels, translate them into device independent pixels (the out parameters)
         /// </summary>
@@ -75,6 +78,7 @@ namespace Timelapse.Util
                 TracePrint.PrintMessage("In TransformPixelsToDeviceIndependentPixels: Failed to get DC.");
             }
         }
+        #endregion
 
         #region Private aspects
         [StructLayout(LayoutKind.Sequential)]
@@ -87,52 +91,6 @@ namespace Timelapse.Util
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetCursorPos(ref Win32Point pt);
-        #endregion
-
-        #region Unused: GetRelativePath
-        //[DllImport("shlwapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        //private static extern int PathRelativePathTo(StringBuilder pszPath, string pszFrom, int dwAttrFrom, string pszTo, int dwAttrTo);
-
-        //public static string GetRelativePath(string fromPath, string toPath)
-        //{
-        //    int fromAttr = NativeMethods.GetPathAttribute(fromPath);
-        //    int toAttr = NativeMethods.GetPathAttribute(toPath);
-        //    StringBuilder relativePathBuilder = new StringBuilder(260); // MAX_PATH
-        //    if (NativeMethods.PathRelativePathTo(relativePathBuilder,
-        //                                         fromPath,
-        //                                         fromAttr,
-        //                                         toPath,
-        //                                         toAttr) == 0)
-        //    {
-        //        throw new ArgumentException("Paths must have a common prefix");
-        //    }
-
-        //    string relativePath = relativePathBuilder.ToString();
-        //    if (relativePath.StartsWith(".\\"))
-        //    {
-        //        relativePath = relativePath.Substring(2);
-        //    }
-        //    return relativePath;
-        //}
-
-        //private const int FILE_ATTRIBUTE_DIRECTORY = 0x10;
-        //private const int FILE_ATTRIBUTE_NORMAL = 0x80;
-        //private static int GetPathAttribute(string path)
-        //{
-        //    DirectoryInfo di = new DirectoryInfo(path);
-        //    if (di.Exists)
-        //    {
-        //        return NativeMethods.FILE_ATTRIBUTE_DIRECTORY;
-        //    }
-
-        //    FileInfo fi = new FileInfo(path);
-        //    if (fi.Exists)
-        //    {
-        //        return NativeMethods.FILE_ATTRIBUTE_NORMAL;
-        //    }
-
-        //    throw new FileNotFoundException(path);
-        //}
         #endregion
 
         #region Unused: TransformDeviceIndependentPixelsToPixels

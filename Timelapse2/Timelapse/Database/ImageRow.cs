@@ -46,7 +46,7 @@ namespace Timelapse.Database
         // Get a version of the date/time suitable to display to the user 
         public string DateTimeAsDisplayable
         {
-            get { return DateTimeHandler.ToDisplayDateTimeString(this.DateTimeIncorporatingOffset); }
+            get { return DateTimeHandler.ToStringDisplayDateTime(this.DateTimeIncorporatingOffset); }
         }
 
         // Get the date/time with the UTC offset added into it
@@ -156,7 +156,7 @@ namespace Timelapse.Database
         public string GetValueDatabaseString(string dataLabel)
         {
             return (dataLabel == Constant.DatabaseColumn.DateTime)
-               ? DateTimeHandler.ToDatabaseDateTimeString(this.DateTime)
+               ? DateTimeHandler.ToStringDatabaseDateTime(this.DateTime)
                : this.GetValueDisplayString(dataLabel);
         }
 
@@ -167,7 +167,7 @@ namespace Timelapse.Database
                 case Constant.DatabaseColumn.DateTime:
                     return this.DateTimeAsDisplayable;
                 case Constant.DatabaseColumn.UtcOffset:
-                    return DateTimeHandler.ToDatabaseUtcOffsetString(this.UtcOffset);
+                    return DateTimeHandler.ToStringDatabaseUtcOffset(this.UtcOffset);
                 case Constant.DatabaseColumn.ImageQuality:
                     return this.ImageQuality.ToString();
                 default:
@@ -235,10 +235,10 @@ namespace Timelapse.Database
         #region DateTime Methods
         public void SetDateTimeOffset(DateTimeOffset dateTime)
         {
-            this.Date = DateTimeHandler.ToDisplayDateString(dateTime);
+            this.Date = DateTimeHandler.ToStringDisplayDate(dateTime);
             this.DateTime = dateTime.UtcDateTime;
             this.UtcOffset = dateTime.Offset;
-            this.Time = DateTimeHandler.ToDisplayTimeString(dateTime);
+            this.Time = DateTimeHandler.ToStringDisplayTime(dateTime);
         }
 
         public void SetDateTimeOffsetFromFileInfo(string folderPath)

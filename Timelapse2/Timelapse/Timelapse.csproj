@@ -359,7 +359,6 @@
     <Compile Include="Util\ImageMetadataDictionary.cs" />
     <Compile Include="Util\FilesFolders.cs" />
     <Compile Include="Extensions\RegistryKeyExtensions.cs" />
-    <Compile Include="UnusedClasses\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Extensions\BitmapSourceExtensions.cs" />
@@ -834,9 +833,7 @@
       <Name>Xceed.Wpf.Toolkit</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DEPRACATED\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

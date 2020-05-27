@@ -60,7 +60,6 @@ namespace Timelapse.Dialog
             Util.GlobalReferences.MainWindow.MarkableCanvas.ImageStateChanged += this.ConfigureWindowState;
         }
 
-
         // Reuse the window by changing closing to hiding
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -111,7 +110,7 @@ namespace Timelapse.Dialog
         // Then generate an event to inform the Markable Canvase to update the image according to those paraemeters
         private void UpdateImageParametersAndGenerateEvent()
         {
-            UpdateImageParametersAndGenerateEvent(false);
+            this.UpdateImageParametersAndGenerateEvent(false);
         }
         private void UpdateImageParametersAndGenerateEvent(bool forceUpdate)
         {

@@ -116,8 +116,8 @@ namespace Timelapse.Dialog
                    if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
                    {
                        // We only add to the feedback row if the change duration is > 1 second, as otherwise we don't change it.
-                       string oldDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime);
-                       string newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
+                       string oldDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime);
+                       string newDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime + adjustment);
                        feedbackRows.Add(new DateTimeFeedbackTuple(fileName, oldDT + " \x2192 " + newDT + " \x2192 " + PrettyPrintTimeAdjustment(adjustment)));
                    }
 
@@ -215,7 +215,7 @@ namespace Timelapse.Dialog
                 int hours = ((bool)this.rbAddHour.IsChecked) ? 1 : -1;
                 TimeSpan daylightSavingsAdjustment = new TimeSpan(hours, 0, 0);
                 dateTime = dateTime.Add(daylightSavingsAdjustment);
-                this.NewDate.Content = DateTimeHandler.ToDisplayDateTimeString(dateTime);
+                this.NewDate.Content = DateTimeHandler.ToStringDisplayDateTime(dateTime);
             }
             if (((bool)this.rbAddHour.IsChecked || (bool)this.rbSubtractHour.IsChecked) && ((bool)this.rbBackwards.IsChecked || (bool)this.rbForward.IsChecked))
             {

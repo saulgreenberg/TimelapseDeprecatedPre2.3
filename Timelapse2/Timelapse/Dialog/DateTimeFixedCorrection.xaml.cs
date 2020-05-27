@@ -51,7 +51,7 @@ namespace Timelapse.Dialog
 
             // Configure datetime picker to the initial date on the images plus callbacks
             this.initialDate = this.ImageToCorrect.DateTimeIncorporatingOffset;
-            this.OriginalDate.Content = DateTimeHandler.ToDisplayDateTimeString(this.initialDate);
+            this.OriginalDate.Content = DateTimeHandler.ToStringDisplayDateTime(this.initialDate);
             DataEntryHandler.Configure(this.DateTimePicker, this.initialDate.DateTime);
             this.DateTimePicker.ValueChanged += this.DateTimePicker_ValueChanged;
         }
@@ -119,8 +119,8 @@ namespace Timelapse.Dialog
                    if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
                    {
                        // We only add to the feedback row if the change duration is > 1 second, as otherwise we don't change it.
-                       string oldDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime);
-                       string newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
+                       string oldDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime);
+                       string newDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime + adjustment);
                        feedbackRows.Add(new DateTimeFeedbackTuple(fileName, oldDT + " \x2192 " + newDT + " \x2192 " + PrettyPrintTimeAdjustment(adjustment)));
                    }
 

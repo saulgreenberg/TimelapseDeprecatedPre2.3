@@ -534,7 +534,7 @@ namespace Timelapse.Controls
         {
             // update file data table and write the new DateTime, Date, and Time to the database
             this.ImageCache.Current.SetDateTimeOffset(dateTime);
-            dateTimePicker.ToolTip = DateTimeHandler.ToDisplayDateTimeString(dateTime);
+            dateTimePicker.ToolTip = DateTimeHandler.ToStringDisplayDateTime(dateTime);
 
             List<ColumnTuplesWithWhere> imageToUpdate = new List<ColumnTuplesWithWhere>() { this.ImageCache.Current.GetDateTimeColumnTuples() };
             this.FileDatabase.UpdateFiles(imageToUpdate);

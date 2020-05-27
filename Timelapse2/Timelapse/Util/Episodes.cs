@@ -13,6 +13,7 @@ namespace Timelapse
 
     public static class Episodes
     {
+        #region Public Static Properties
         // A dictionary defining episodes across files in the file table.
         // An example dictionary beginning with an episode of 2 files then of 1 file would return, e.g., 
         // - 0,(1,2) (0th file, 1 out of 2 images in the episode) 
@@ -29,7 +30,9 @@ namespace Timelapse
         /// The Time threshold between successive images that determine whether they belong together in an episode
         /// </summary>
         public static TimeSpan TimeThreshold { get; set; } = TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault);
+        #endregion
 
+        #region Public Methods - Reset
         /// <summary>
         /// Reset the EpisodesDictionary defining all episodes across all files in the file table. Note that it assumes :
         /// - files are sorted to give meaningful results, e.g., by date or by RelativePath/date if images are in different folders
@@ -40,7 +43,9 @@ namespace Timelapse
             Episodes.EpisodesDictionary = new Dictionary<int, Tuple<int, int>>();
             return;
         }
+        #endregion
 
+        #region Public Static - EpisodeGet
         /// <summary>
         /// Return the episodes for a given range within the file table
         /// </summary>
@@ -231,72 +236,6 @@ namespace Timelapse
             count = last - first + 1;
             return !(minSearch == 0 || maxSearch == 0);
         }
-
-        #region UNUSED - Depracated functions used to return all episodes across all files vs. the current version which is on demand. Could delete 
-        //// Set the EpisodesDictionary defining all episodes across all files in the file table. Note that it assumes :
-        //// - files are sorted to give meaningful results, e.g., by date or by RelativePath/date
-        //// - if the file table is the result of a selection (i.e. as subset of all files), the episode definition is still meaningful
-        //// static public void EpisodesGetAllEpisodes()
-        //// {
-        //// Episodes.EpisodesDictionary = new Dictionary<int, Tuple<int, int>>();
-        //// int index = 0;
-        //// int numberOfFiles = 0;
-
-        ////// Ensure the argument is valid
-        //// if (fileTable == null)
-        //// {
-        ////    return;
-        //// }
-
-        //// while (index < fileTable.Count())
-        //// {
-        ////    int row = index;
-        ////    int numberInSequence = 1;
-        ////    numberOfFiles = EpisodeGetNumberOfFilesInEpisodeFrom(fileTable, index);
-        ////    for (int i = 0; i < numberOfFiles; i++)
-        ////    {
-        ////        EpisodesDictionary.Add(index + i, new Tuple<int, int>(i + 1, numberOfFiles)); 
-        ////        row++;
-        ////        numberInSequence++;
-        ////    }
-        ////    index += numberOfFiles;
-        //// }
-        //// }
-
-        //// Determine the number of files (including the start index file)
-        //// that comprise an episode starting with the start index file
-        //// static private int EpisodeGetNumberOfFilesInEpisodeFrom(FileTable fileTable, int index)
-        //// {
-        ////    DateTime date1;
-        ////    DateTime date2;
-        ////    ImageRow file;
-        ////    int numberOfFiles = 0;
-
-        ////    // Get the first file
-        ////    // Note that numberOfFiles should never return zero if the provided index is valid
-        ////    if (fileTable == null)
-        ////    {
-        ////        return numberOfFiles;
-        ////    }
-        ////    file = fileTable[index];
-        ////    date1 = file.DateTime;
-
-        ////    while (index < fileTable.Count())
-        ////    {
-        ////        file = fileTable[index];
-        ////        date2 = file.DateTime;
-        ////        TimeSpan difference = date2 - date1;
-        ////        bool aboveThreshold = (difference.Duration() > Episodes.TimeDifferenceThreshold);
-        ////        if (aboveThreshold)
-        ////        {
-        ////            break;
-        ////        }
-        ////        numberOfFiles++;
-        ////        date1 = date2;
-        ////        index++;
-        ////    }
-        ////    return numberOfFiles;
-        //// }
         #endregion
     }
 }

@@ -4,9 +4,18 @@ using System.IO;
 namespace Timelapse.Util
 {
     /// <summary>
-    /// Wraps another stream and provides reporting for when bytes are read or written to the stream.
+    /// Classes to wrap a stream and reporting for when bytes are read or written to the stream.
     /// Used to intermittently report progress in the UI when reading a very large stream
     /// </summary>
+    #region Public Delegate
+    /// <summary>
+    /// The delegate for handling a ProgressStream Report event.
+    /// </summary>
+    /// <param name="sender">The object that raised the event, should be a ProgressStream.</param>
+    /// <param name="args">The arguments raised with the event.</param>
+    public delegate void ProgressStreamReportDelegate(object sender, ProgressStreamReportEventArgs args);
+    #endregion
+
     public class ProgressStream : Stream
     {
         #region Private Data Members
@@ -155,6 +164,7 @@ namespace Timelapse.Util
     /// </summary>
     public class ProgressStreamReportEventArgs : EventArgs
     {
+        #region Public Properties
         /// <summary>
         /// The number of bytes that were read/written to/from the stream.
         /// </summary>
@@ -174,10 +184,9 @@ namespace Timelapse.Util
         /// True if the bytes were read from the stream, false if they were written.
         /// </summary>
         public bool WasRead { get; private set; }
+        #endregion
 
-        /// <summary>
-        /// Default constructor for ProgressStreamReportEventArgs.
-        /// </summary>
+        #region Constructor - Various Forms
         public ProgressStreamReportEventArgs()
             : base() { }
 
@@ -196,12 +205,7 @@ namespace Timelapse.Util
             this.StreamPosition = streamPosition;
             this.WasRead = wasRead;
         }
+        #endregion
     }
 
-    /// <summary>
-    /// The delegate for handling a ProgressStream Report event.
-    /// </summary>
-    /// <param name="sender">The object that raised the event, should be a ProgressStream.</param>
-    /// <param name="args">The arguments raised with the event.</param>
-    public delegate void ProgressStreamReportDelegate(object sender, ProgressStreamReportEventArgs args);
 }

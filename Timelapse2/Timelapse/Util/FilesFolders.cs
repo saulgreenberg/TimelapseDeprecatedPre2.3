@@ -8,11 +8,11 @@ using Timelapse.Enums;
 namespace Timelapse.Util
 {
     /// <summary>
-    /// Convenience methods to Get information about files, folders and paths
+    /// Static convenience methods to Get information about files, folders and paths
     /// </summary>
     public static class FilesFolders
     {
-
+        #region Public Static Methods - GetAllFiles
         /// <summary>
         /// Populate fileInfoList  with the .jpg, .avi, and .mp4 files found in the rootFolderPath and its sub-folders
         /// </summary>
@@ -67,12 +67,14 @@ namespace Timelapse.Util
             }
             return foundFiles;
         }
+        #endregion
 
+        #region Public Static Methods - Get Missing Folders
         // For each missingFolderPath, gets its folder name and search for its first counterpart in the subdirectory under rootPath.
         // Returns a dictionary where 
         // - key is each missing relativePath, 
         // - value is the possible found relativePath, or String.Empty if there is no match
-        public static Dictionary<string, List<string>> TryFindMissingFolders(string rootPath, List<string> missingFolderPaths)
+        public static Dictionary<string, List<string>> TryGetMissingFolders(string rootPath, List<string> missingFolderPaths)
         {
             if (missingFolderPaths == null)
             {
@@ -98,7 +100,9 @@ namespace Timelapse.Util
             }
             return matchingFolders;
         }
+        #endregion
 
+        #region Public Static Methods - Search Folders
         /// <summary>
         /// Search for and return the relative path to all folders under the root folder that have a file with the same name as the fileName.
         /// </summary>
@@ -123,7 +127,9 @@ namespace Timelapse.Util
             }
             return relativePathFileNameList;
         }
+        #endregion
 
+        #region Public Static Methods - Split Full Path
         // Given a root path (e.g., C:/user/timelapseStuff) and a full path e.g., C:/user/timelapseStuff/Sites/Camera1/img1.jpg)
         // return a tuple as the root path, the relativePath, and the filename. e.g.,  C:/user/timelapseStuff, Sites/Camera1, img1.jpg)
         public static Tuple<string, string, string> SplitFullPath(string rootPath, string fullPath)
@@ -140,9 +146,9 @@ namespace Timelapse.Util
             //string relativePath = directoryName.Substring(rootPath.Length + 1);
             return new Tuple<string, string, string>(rootPath, relativePath, fileName);
         }
+        #endregion
 
-
-        #region  Various forms to get the full path of a file
+        #region Public Static Methods - Various forms to get the full path of a file
         public static string GetFullPath(FileDatabase fileDatabase, ImageRow imageRow)
         {
             if (fileDatabase == null || imageRow == null)
@@ -164,6 +170,49 @@ namespace Timelapse.Util
         public static string GetFullPath(string rootPath, string relativePath, string fileName)
         {
             return Path.Combine(rootPath, relativePath, fileName);
+        }
+        #endregion
+
+        #region  Public Static Methods - File/Folder tests
+        /// <summary>
+        /// // return true iff the file path ends with .jpg
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static FileExtensionEnum GetFileTypeByItsExtension(string path)
+        {
+            if (String.IsNullOrEmpty(path))
+            {
+                return FileExtensionEnum.IsNotImageOrVideo;
+            }
+            if (path.EndsWith(Constant.File.JpgFileExtension, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return FileExtensionEnum.IsImage;
+            }
+            if (path.EndsWith(Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase) ||
+                path.EndsWith(Constant.File.ASFFileExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                return FileExtensionEnum.IsVideo;
+            }
+            return FileExtensionEnum.IsNotImageOrVideo;
+        }
+
+        // Return true if any of the files in the fileinfo list includes at least  image or video
+        private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
+        {
+            DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
+            {
+                List<FileInfo> fileInfoList = new List<FileInfo>();
+                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                FilesRemoveAllButImagesAndVideos(fileInfoList);
+                if (fileInfoList.Any(x => x.Name.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase) == true))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         #endregion
 
@@ -283,107 +332,6 @@ namespace Timelapse.Util
                 }
             }
         }
-        #endregion
-
-        #region File/Folder tests
-        /// <summary>
-        /// // return true iff the file path ends with .jpg
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static FileExtensionEnum GetFileTypeByItsExtension(string path)
-        {
-            if (String.IsNullOrEmpty(path))
-            {
-                return FileExtensionEnum.IsNotImageOrVideo;
-            }
-            if (path.EndsWith(Constant.File.JpgFileExtension, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return FileExtensionEnum.IsImage;
-            }
-            if (path.EndsWith(Constant.File.AviFileExtension, StringComparison.OrdinalIgnoreCase) ||
-                path.EndsWith(Constant.File.Mp4FileExtension, StringComparison.OrdinalIgnoreCase) ||
-                path.EndsWith(Constant.File.ASFFileExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                return FileExtensionEnum.IsVideo;
-            }
-            return FileExtensionEnum.IsNotImageOrVideo;
-        }
-
-        // Return true if any of the files in the fileinfo list includes at least  image or video
-        private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
-            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
-            {
-                List<FileInfo> fileInfoList = new List<FileInfo>();
-                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
-                FilesRemoveAllButImagesAndVideos(fileInfoList);
-                if (fileInfoList.Any(x => x.Name.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase) == true))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        #endregion
-
-        #region Unused public methods
-        /// <summary>
-        /// Given a list of folder paths, return a FileInfo list containing the .jpg, .avi, and .mp4 files found in those folders
-        /// </summary>
-        /// <param name="folderPaths"></param>
-        /// <returns>List<FileInfo></returns>
-        //public static List<FileInfo> GetAllImageAndVideoFilesInFolders(IEnumerable<string> folderPaths)
-        //{
-        //    List<FileInfo> fileInfoList = new List<FileInfo>();
-        //    if (folderPaths == null)
-        //    {
-        //        // this should not happen
-        //        TraceDebug.PrintStackTrace(1);
-        //        // throw new ArgumentNullException(nameof(folderPaths));
-        //        // Not sure if this will work, but worth a shot
-        //        return fileInfoList;
-        //    }
-        //    foreach (string folderPath in folderPaths)
-        //    {
-        //        DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
-        //        foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension })
-        //        {
-        //            // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
-        //            // That is, if we are looking for *.jpg, it will not only return *.jpg files, but files such as *.jpgXXX
-        //            fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
-        //        }
-        //    }
-
-        //    // Because of that bug, we need to check for, and remove, any files that don't exactly match the desired extension
-        //    // At the same time, we also remove MacOSX hidden files, if any
-        //    FilesRemoveAllButImagesAndVideos(fileInfoList);
-
-        //    // Reorder the files
-        //    return fileInfoList.OrderBy(file => file.FullName).ToList();
-        //}
-
-
-        #endregion
-
-        #region Unused private methods
-        //        // Return true if any of the files in the fileInfo list could be a MacOSX Hidden file, 
-        //        // i.e., prefixed by '._'
-        //#pragma warning disable IDE0051 // Remove unused private members
-        //        private static bool CheckForMacOSXHiddenFiles(List<FileInfo> fileInfoList)
-
-        //        {
-        //            return fileInfoList.Any(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
-        //        }
-
-        //        // Remove any of the files in the fileInfo list likely to be a MacOSX Hidden file, 
-        //        // i.e., prefixed by '._'
-        //        private static void RemoveMacOSXHiddenFiles(List<FileInfo> fileInfoList)
-        //        {
-        //            fileInfoList.RemoveAll(x => x.Name.IndexOf(Constant.File.MacOSXHiddenFilePrefix) == 0);
-        //        }
-        //#pragma warning restore IDE0051 // Remove unused private members
         #endregion
     }
 }
