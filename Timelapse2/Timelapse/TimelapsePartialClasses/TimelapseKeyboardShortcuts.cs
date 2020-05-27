@@ -9,6 +9,7 @@ namespace Timelapse
     // Keyboard shortcuts
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Callbacks - PreviewKeyDown and PreviewKeyUp
         // If its an arrow key and the textbox doesn't have the focus,
         // navigate left/right image or up/down to look at differenced image
         private void Window_PreviewKeyDown(object sender, KeyEventArgs currentKey)
@@ -50,7 +51,9 @@ namespace Timelapse
             // Force the end of a key repeat cycle
             this.State.ResetKeyRepeat();
         }
+        #endregion
 
+        #region Handle PreviewKeyDown - This actually does all the work
         public void Handle_PreviewKeyDown(KeyEventArgs currentKey, bool forceSendToMainWindow)
         {
             // Check the arguments for null 
@@ -217,5 +220,6 @@ namespace Timelapse
                 currentKey.Handled = true;
             }
         }
+        #endregion
     }
 }

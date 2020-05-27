@@ -12,7 +12,7 @@ namespace Timelapse
     // File Selection which includes showing the current file
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // FilesSelectAndShow: various forms
+        #region Partial Methods - FilesSelectAndShow, various invokingforms
         private async Task FilesSelectAndShowAsync()
         {
             if (this.DataHandler == null || this.DataHandler.FileDatabase == null)
@@ -32,7 +32,9 @@ namespace Timelapse
             await this.FilesSelectAndShowAsync(fileID, selection).ConfigureAwait(true);
         }
 
-        // FilesSelectAndShow: Full version
+        #endregion
+
+        #region FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         private async Task FilesSelectAndShowAsync(long imageID, FileSelectionEnum selection)
         {
@@ -165,5 +167,6 @@ namespace Timelapse
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.DataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
         }
+        #endregion
     }
 }

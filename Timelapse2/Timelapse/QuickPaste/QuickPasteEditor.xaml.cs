@@ -17,8 +17,11 @@ namespace Timelapse.QuickPaste
     // Currently, the only thing that is editable is its name and whether a particular item's data should be included when pasted
     public partial class QuickPasteEditor : Window
     {
+        #region Public Properties
         public QuickPasteEntry QuickPasteEntry { get; set; }
+        #endregion
 
+        #region Privaate Variables
         // Columns where fields will be placed in the grid
         private const int GridColumnUse = 1;
         private const int GridColumnLabel = 2;
@@ -36,7 +39,9 @@ namespace Timelapse.QuickPaste
         private const double ValuesHeight = 22;
         private readonly FileDatabase fileDatabase;
         private readonly DataEntryControls dataEntryControls;
+        #endregion
 
+        #region Constructor, Loaded
         public QuickPasteEditor(QuickPasteEntry quickPasteEntry, FileDatabase fileDatabase, DataEntryControls dataEntryControls)
         {
             this.InitializeComponent();
@@ -58,7 +63,98 @@ namespace Timelapse.QuickPaste
             // Build the grid rows, each displaying successive items in the QuickPasteItems list
             this.BuildRows();
         }
+        #endregion
 
+        #region Callbacks - UI 
+        // Update the QuickPasteEntry's title
+        private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
+        }
+
+        // Invoke when the user clicks the checkbox to enable or disable the data row
+        private void UseCurrentRow_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            CheckBox cbox = sender as CheckBox;
+
+            // Enable or disable the controls on that row to reflect whether the checkbox is checked or unchecked
+            int row = Grid.GetRow(cbox);
+
+            TextBlock label = this.GetGridElement<TextBlock>(GridColumnLabel, row);
+            UIElement value = this.GetGridElement<UIElement>(GridColumnValue, row);
+            label.Foreground = cbox.IsChecked == true ? Brushes.Black : Brushes.Gray;
+            value.IsEnabled = cbox.IsChecked.Value;
+
+            // Update the QuickPaste row data structure to reflect the current checkbox state
+            QuickPasteItem quickPasteRow = (QuickPasteItem)cbox.Tag;
+            quickPasteRow.Use = cbox.IsChecked == true;
+            this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        // Value (Counters and Notes): The user has selected a new value
+        // - set its corresponding value in the quickPasteItem data structure
+        // - update the UI to show the new value
+        private void NoteOrCounter_TextChanged(object sender, TextChangedEventArgs args)
+        {
+            TextBox textBox = sender as TextBox;
+            QuickPasteItem quickPasteItem = (QuickPasteItem)textBox.Tag;
+            quickPasteItem.Value = textBox.Text;
+        }
+
+        // Value (Counter) Ensure the textbox accept only typed numbers 
+        private void Counter_PreviewTextInput(object sender, TextCompositionEventArgs args)
+        {
+            args.Handled = IsNumbersOnly(args.Text);
+        }
+
+        // Value (FixedChoice): The user has selected a new value 
+        // - set its corresponding value in the quickPasteItem data structure
+        // - update the UI to show the new value
+        private void FixedChoice_SelectionChanged(object sender, SelectionChangedEventArgs args)
+        {
+            ComboBox comboBox = sender as ComboBox;
+            QuickPasteItem quickPasteItem = (QuickPasteItem)comboBox.Tag;
+            quickPasteItem.Value = comboBox.SelectedValue.ToString();
+        }
+
+        // Value (Flags): The user has checked or unchecked a new value 
+        // - set its corresponding value in the quickPasteItem data structure
+        // - update the UI to show the new value
+        private void Flag_CheckedOrUnchecked(object sender, RoutedEventArgs e)
+        {
+            CheckBox checkBox = sender as CheckBox;
+            QuickPasteItem quickPasteItem = (QuickPasteItem)checkBox.Tag;
+            quickPasteItem.Value = checkBox.IsChecked.ToString();
+        }
+
+        // Set or unset all the checkboxes to use
+        private void SetUses_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button)
+            {
+                bool useState = button.Name == "UseAll";
+                foreach (CheckBox cb in this.UseCheckboxes)
+                {
+                    cb.IsChecked = useState;
+                }
+            }
+        }
+        #endregion
+
+        #region Callbacks - Dialog Buttons
+        // Apply the selection if the Ok button is clicked
+        private void OkButton_Click(object sender, RoutedEventArgs args)
+        {
+            this.DialogResult = true;
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs args)
+        {
+            this.DialogResult = false;
+        }
+        #endregion
+
+        #region Private Methods - BuildRows
         // Build a row displaying each QuickPaste item
         private void BuildRows()
         {
@@ -188,71 +284,9 @@ namespace Timelapse.QuickPaste
             }
             this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
         }
-
-        #region UI Callbacks
-        // Update the QuickPasteEntry's title
-        private void QuickPasteTitle_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            this.QuickPasteEntry.Title = this.QuickPasteTitle.Text;
-        }
-
-        // Invoke when the user clicks the checkbox to enable or disable the data row
-        private void UseCurrentRow_CheckChanged(object sender, RoutedEventArgs e)
-        {
-            CheckBox cbox = sender as CheckBox;
-
-            // Enable or disable the controls on that row to reflect whether the checkbox is checked or unchecked
-            int row = Grid.GetRow(cbox);
-
-            TextBlock label = this.GetGridElement<TextBlock>(GridColumnLabel, row);
-            UIElement value = this.GetGridElement<UIElement>(GridColumnValue, row);
-            label.Foreground = cbox.IsChecked == true ? Brushes.Black : Brushes.Gray;
-            value.IsEnabled = cbox.IsChecked.Value;
-
-            // Update the QuickPaste row data structure to reflect the current checkbox state
-            QuickPasteItem quickPasteRow = (QuickPasteItem)cbox.Tag;
-            quickPasteRow.Use = cbox.IsChecked == true;
-            this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
-        }
-
-        // Value (Counters and Notes): The user has selected a new value
-        // - set its corresponding value in the quickPasteItem data structure
-        // - update the UI to show the new value
-        private void NoteOrCounter_TextChanged(object sender, TextChangedEventArgs args)
-        {
-            TextBox textBox = sender as TextBox;
-            QuickPasteItem quickPasteItem = (QuickPasteItem)textBox.Tag;
-            quickPasteItem.Value = textBox.Text;
-        }
-
-        // Value (Counter) Ensure the textbox accept only typed numbers 
-        private void Counter_PreviewTextInput(object sender, TextCompositionEventArgs args)
-        {
-            args.Handled = IsNumbersOnly(args.Text);
-        }
-
-        // Value (FixedChoice): The user has selected a new value 
-        // - set its corresponding value in the quickPasteItem data structure
-        // - update the UI to show the new value
-        private void FixedChoice_SelectionChanged(object sender, SelectionChangedEventArgs args)
-        {
-            ComboBox comboBox = sender as ComboBox;
-            QuickPasteItem quickPasteItem = (QuickPasteItem)comboBox.Tag;
-            quickPasteItem.Value = comboBox.SelectedValue.ToString();
-        }
-
-        // Value (Flags): The user has checked or unchecked a new value 
-        // - set its corresponding value in the quickPasteItem data structure
-        // - update the UI to show the new value
-        private void Flag_CheckedOrUnchecked(object sender, RoutedEventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-            QuickPasteItem quickPasteItem = (QuickPasteItem)checkBox.Tag;
-            quickPasteItem.Value = checkBox.IsChecked.ToString();
-        }
-        #endregion
-
-        #region Helper functions
+        #endregion 
+        
+        #region Private  Helper functions
         // CANDIDATE FOR UTILITIES MAYBE SAME AS UTIL.ISDIGIT? SIMILAR FUCNTION IN CUSTOMSELECTION.CS
         // Value(Counter) Helper function: checks if the text contains only numbers
         private static bool IsNumbersOnly(string text)
@@ -282,31 +316,7 @@ namespace Timelapse.QuickPaste
         {
             return (TElement)this.QuickPasteGridRows.Children.Cast<UIElement>().First(control => Grid.GetRow(control) == row && Grid.GetColumn(control) == column);
         }
+
         #endregion
-
-        #region Ok buttons
-        // Apply the selection if the Ok button is clicked
-        private void OkButton_Click(object sender, RoutedEventArgs args)
-        {
-            this.DialogResult = true;
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs args)
-        {
-            this.DialogResult = false;
-        }
-        #endregion
-
-        private void SetUses(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button)
-            {
-                bool useState = button.Name == "UseAll";
-                foreach (CheckBox cb in this.UseCheckboxes)
-                {
-                    cb.IsChecked = useState;
-                }
-            }
-        }
     }
 }

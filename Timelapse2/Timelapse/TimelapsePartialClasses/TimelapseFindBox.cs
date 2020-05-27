@@ -10,6 +10,7 @@ namespace Timelapse
     // Find Box event handlers and helpers
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Callbacks
         // KeyDown: find forward on enter
         private void FindBoxTextBox_KeyDown(object sender, KeyEventArgs e)
         {
@@ -32,8 +33,23 @@ namespace Timelapse
         {
             this.FindBoxSetVisibility(false);
         }
+        #endregion
 
-        // Helper methods
+        #region Methods
+        // Adjust Find Box visibility
+        // Note: Invoked from above and from other files
+        private void FindBoxSetVisibility(bool isVisible)
+        {
+            // Only make the find box visible if there are files to view
+            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
+            {
+                this.FindBox.IsOpen = isVisible;
+                this.FindBoxTextBox.Focus();
+            }
+        }
+        #endregion
+
+        #region Helper methods used only here
         // Search either forwards or backwards for the image file name specified in the text box
         // Only invoked by the above
         private void FindBox_FindImage(bool isForward)
@@ -57,17 +73,6 @@ namespace Timelapse
                 }
             }
         }
-
-        // Adjust Find Box visibility
-        // Note: Invoked from above and from other files
-        private void FindBoxSetVisibility(bool isVisible)
-        {
-            // Only make the find box visible if there are files to view
-            if (this.FindBox != null && this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
-            {
-                this.FindBox.IsOpen = isVisible;
-                this.FindBoxTextBox.Focus();
-            }
-        }
+        #endregion
     }
 }

@@ -11,6 +11,7 @@ namespace Timelapse.Images
     /// </summary>
     public class BoundingBox
     {
+        #region Public Properties
         // Gets or sets the bounding box's outline color
         public Brush Brush { get; set; }
 
@@ -25,7 +26,9 @@ namespace Timelapse.Images
 
         // Gets or sets the bounding box's normalized location in the canvas, as a relative rectangle .
         public float Confidence { get; set; }
+        #endregion
 
+        #region Constructors
         public BoundingBox(float x1, float y1, float width, float height, float confidence, string detectionCategory, string detectionLabel, List<KeyValuePair<string, string>> classifications)
         {
             this.SetValues(x1, y1, width, height, confidence, detectionCategory, detectionLabel, classifications);
@@ -38,13 +41,17 @@ namespace Timelapse.Images
             float[] coords = Array.ConvertAll(coordinates.Split(','), float.Parse);
             this.SetValues(coords[0], coords[1], coords[2], coords[3], confidence, detectionCategory, detectionLabel, classifications);
         }
+        #endregion
 
+        #region Public Methods
         public static Point ConvertRatioToPoint(double x, double y, double width, double height)
         {
             Point point = new Point(x * width, y * height);
             return point;
         }
+        #endregion
 
+        #region Private Utilities
         private void SetValues(float x1, float y1, float width, float height, float confidence, string detectionCategory, string detectionlabel, List<KeyValuePair<string, string>> classifications)
         {
             this.Brush = (SolidColorBrush)new BrushConverter().ConvertFromString(Constant.Defaults.StandardColour);
@@ -54,6 +61,7 @@ namespace Timelapse.Images
             this.DetectionLabel = detectionlabel;
             this.Classifications = classifications;
         }
+        #endregion
     }
 }
 

@@ -3,6 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace Timelapse.Images
 {
+    // FolderLoadProgess is used to pass data to a background progress report during Image Set Loading  
     internal class FolderLoadProgress
     {
         public BitmapSource BitmapSource { get; set; }
@@ -20,11 +21,6 @@ namespace Timelapse.Images
             this.TotalFiles = totalFiles;
             this.CurrentPass = 0;
             this.TotalPasses = 0;
-        }
-        public string GetMessage()
-        {
-            string message = (this.TotalPasses > 1) ? String.Format("Pass {0}/{1}: ", this.CurrentPass, this.TotalPasses) : String.Empty;
-            return String.Format("{0} Loading file {1} of {2} ({3})", message, this.CurrentFile, this.TotalFiles, this.CurrentFileName);
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Timelapse.Util
     /// 
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
-        #region Settings that will be saved into the registry
+        #region Public Properties - Settings that will be saved into the registry
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
         public Double BoundingBoxDisplayThreshold { get; set; }

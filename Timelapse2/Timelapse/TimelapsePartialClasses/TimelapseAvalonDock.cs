@@ -9,7 +9,7 @@ namespace Timelapse
     // AvalonDock callbacks and methods
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Property changing callback
+        #region Callback - Property changing 
         public void LayoutAnchorable_PropertyChanging(object sender, System.ComponentModel.PropertyChangingEventArgs e)
         {
             // Check the arguments for null 
@@ -31,8 +31,9 @@ namespace Timelapse
             // IF IT BEHAVES OK< DELETE THIS COMMENTED OUT LINE
             // this.FindBoxSetVisibility(false);
         }
+        #endregion
 
-        // Layout Updated 
+        #region Callback - Layout Updated 
         private void DockingManager_LayoutUpdated(object sender, EventArgs e)
         {
             if (this.DockingManager.FloatingWindows.Any())
@@ -40,7 +41,9 @@ namespace Timelapse
                 this.DockingManager_FloatingDataEntryWindowTopmost(false);
             }
         }
+        #endregion
 
+        #region Private Methods
         // Enable or disable floating windows normally always being on top. 
         // Also shows floating windows in the task bar if it can be hidden
         private void DockingManager_FloatingDataEntryWindowTopmost(bool topMost)
@@ -105,5 +108,6 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
     }
 }

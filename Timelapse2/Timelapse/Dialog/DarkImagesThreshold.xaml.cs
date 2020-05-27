@@ -551,5 +551,33 @@ namespace Timelapse.Dialog
             this.TokenSource.Cancel();
         }
         #endregion
+
+        #region Class ImageQuality
+        /// <summary>
+        /// ImageQuality defines aspects of the image as set and used only by DarkImagesThreshold
+        /// </summary>
+        protected class ImageQuality
+        {
+            public WriteableBitmap Bitmap { get; set; }
+            public double DarkPixelRatioFound { get; set; }
+            public string FileName { get; set; }
+            public bool IsColor { get; set; }
+            public Nullable<FileSelectionEnum> NewImageQuality { get; set; }
+            public FileSelectionEnum OldImageQuality { get; set; }
+
+            public ImageQuality(ImageRow image)
+            {
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(image, nameof(image));
+
+                this.Bitmap = null;
+                this.DarkPixelRatioFound = 0;
+                this.FileName = image.File;
+                this.IsColor = false;
+                this.OldImageQuality = image.ImageQuality;
+                this.NewImageQuality = null;
+            }
+        }
+        #endregion
     }
 }

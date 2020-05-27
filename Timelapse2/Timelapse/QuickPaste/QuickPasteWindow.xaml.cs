@@ -19,18 +19,15 @@ namespace Timelapse.QuickPaste
         }
         #endregion
 
-        public List<QuickPasteEntry> QuickPasteEntries
-        {
-            get { return this.quickPasteEntries; }
-            set { this.quickPasteEntries = value; }
-        }
+        #region Public Properties
+        public List<QuickPasteEntry> QuickPasteEntries { get; set; }
 
         // Position of the window, so we can save/restore it between sessions
         // (note that while I save the width and height, I only use the top left to position the window)
         public Rect Position { get; set; }
+        #endregion
 
-        private List<QuickPasteEntry> quickPasteEntries;
-
+        #region Constructor, Loaded, Closing, Closed
         public QuickPasteWindow()
         {
             this.InitializeComponent();
@@ -54,13 +51,29 @@ namespace Timelapse.QuickPaste
             this.LocationChanged += this.QuickPasteWindow_LocationChanged;
 
             // Build the window contents
-            this.Refresh(this.quickPasteEntries);
+            this.Refresh(this.QuickPasteEntries);
         }
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.SetPosition();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            // To overcome a wpf bug where Visibility stayed at Visibility.Visible.
+            this.Visibility = Visibility.Collapsed;
+        }
+        #endregion
+
+        #region Public Refresh
         public void Refresh(List<QuickPasteEntry> quickPasteEntries)
         {
+            // This shouldn't happen
+            if (quickPasteEntries == null) return;
+
             // Update the quickPasteEntries
-            this.quickPasteEntries = quickPasteEntries;
+            this.QuickPasteEntries = quickPasteEntries;
 
             // Clear the QuickPasteGrid, so we can start afresh
             this.QuickPasteGrid.RowDefinitions.Clear();
@@ -177,7 +190,9 @@ namespace Timelapse.QuickPaste
                 }
             }
         }
+        #endregion
 
+        #region Public Methods - TryQuickPasteShortcut
         public void TryQuickPasteShortcut(int shortcutIndex)
         {
             if (shortcutIndex <= this.QuickPasteEntries.Count)
@@ -186,7 +201,9 @@ namespace Timelapse.QuickPaste
                 this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.ShortcutPaste));
             }
         }
+        #endregion
 
+        #region Generate Events
         // Generate Event: New quickpaste entry
         private void NewQuickPasteEntryButton_Click(object sender, RoutedEventArgs e)
         {
@@ -232,27 +249,12 @@ namespace Timelapse.QuickPaste
             QuickPasteEntry quickPasteEntry = (QuickPasteEntry)button.Tag;
             this.SendQuickPasteEvent(new QuickPasteEventArgs(quickPasteEntry, QuickPasteEventIdentifierEnum.Paste));
         }
+        #endregion
 
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            // To overcome a wpf bug where Visibility stayed at Visibility.Visible.
-            this.Visibility = Visibility.Collapsed;
-        }
-
+        #region Callbacks
         private void QuickPasteWindow_LocationChanged(object sender, EventArgs e)
         {
             this.SetPosition();
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            this.SetPosition();
-        }
-
-        private void SetPosition()
-        {
-            this.Position = new Rect(this.Left, this.Top, this.Width, this.Height);
-            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.PositionChanged));
         }
 
         // Use the arrow and page up/down keys to navigate images
@@ -264,5 +266,14 @@ namespace Timelapse.QuickPaste
                 Util.GlobalReferences.MainWindow.Handle_PreviewKeyDown(keyEvent, true);
             }
         }
+        #endregion
+
+        #region Private Methods
+        private void SetPosition()
+        {
+            this.Position = new Rect(this.Left, this.Top, this.Width, this.Height);
+            this.SendQuickPasteEvent(new QuickPasteEventArgs(null, QuickPasteEventIdentifierEnum.PositionChanged));
+        }
+        #endregion
     }
 }

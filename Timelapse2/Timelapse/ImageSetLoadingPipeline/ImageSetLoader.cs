@@ -17,13 +17,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     /// </summary>
     public class ImageSetLoader : IDisposable
     {
-        private int imagesLoaded = 0;
-        private int imagesToInsert = 0;
-
-        private readonly Task pass1 = null;
-
-        private readonly Task pass2 = null;
-
+        #region Public Properties
         public ImageLoader LastLoadComplete
         {
             get;
@@ -57,6 +51,18 @@ namespace Timelapse.ImageSetLoadingPipeline
         }
 
         public List<string> ImagesSkippedAsFilePathTooLong { get; set; }
+        #endregion
+
+        #region Private Variables
+        private int imagesLoaded = 0;
+        private int imagesToInsert = 0;
+
+        private readonly Task pass1 = null;
+
+        private readonly Task pass2 = null;
+        #endregion
+
+        #region Construtor
         public ImageSetLoader(string imageSetFolderPath, IEnumerable<FileInfo> fileInfos, DataEntryHandler dataHandler)
         {
             // Check the arguments for null 
@@ -161,7 +167,9 @@ namespace Timelapse.ImageSetLoadingPipeline
             });
             // End Pass 2
         }
+        #endregion
 
+        #region Internal Task LoadAsync
         internal async Task LoadAsync(Action<int, FolderLoadProgress> reportProgress, FolderLoadProgress folderLoadProgress, int progressIntervalMilliseconds)
         {
             this.pass1.Start();
@@ -213,7 +221,9 @@ namespace Timelapse.ImageSetLoadingPipeline
             t.Change(-1, -1);
             t.Dispose();
         }
+        #endregion
 
+        #region Dispose
         // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
         protected virtual void Dispose(bool disposing)
         {
@@ -234,5 +244,6 @@ namespace Timelapse.ImageSetLoadingPipeline
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }

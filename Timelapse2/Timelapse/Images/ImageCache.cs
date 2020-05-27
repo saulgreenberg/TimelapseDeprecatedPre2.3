@@ -9,15 +9,22 @@ using Timelapse.Util;
 
 namespace Timelapse.Images
 {
+    // ImageCache holds the current image & differenced images in a cache, as well as the state as to which image is being displayed
+    // It also retrieves the images, and moves to other files
     public class ImageCache : FileTableEnumerator
     {
+        #region Public Properties
+        public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
+        #endregion
+
+        #region Private Variables
         private readonly Dictionary<ImageDifferenceEnum, BitmapSource> differenceBitmapCache;
         private readonly RecencyOrderedList<long> mostRecentlyUsedIDs;
         private readonly ConcurrentDictionary<long, Task> prefetechesByID;
         private readonly ConcurrentDictionary<long, BitmapSource> unalteredBitmapsByID;
+        #endregion
 
-        public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
-
+        #region Constructor
         public ImageCache(FileDatabase fileDatabase) :
             base(fileDatabase)
         {
@@ -28,12 +35,16 @@ namespace Timelapse.Images
             this.prefetechesByID = new ConcurrentDictionary<long, Task>();
             this.unalteredBitmapsByID = new ConcurrentDictionary<long, BitmapSource>();
         }
+        #endregion
 
+        #region Public Methods - Get Current Image, Reset
         public BitmapSource GetCurrentImage()
         {
             return this.differenceBitmapCache[this.CurrentDifferenceState];
         }
+        #endregion
 
+        #region Public Methods - Navigate between image / differenced images 
         public void MoveToNextStateInCombinedDifferenceCycle()
         {
             // if this method and MoveToNextStateInPreviousNextDifferenceCycle() returned bool they'd be consistent MoveNext() and MovePrevious()
@@ -101,14 +112,9 @@ namespace Timelapse.Images
                 this.MoveToNextStateInPreviousNextDifferenceCycle();
             }
         }
+        #endregion
 
-        // reset enumerator state but don't clear caches
-        public override void Reset()
-        {
-            base.Reset();
-            this.ResetDifferenceState(null);
-        }
-
+        #region Public Methods - Calculate difference and get difference availability
         public ImageDifferenceResultEnum TryCalculateDifference()
         {
             if (this.Current == null || this.Current.IsVideo || this.Current.IsDisplayable(this.Database.FolderPath) == false)
@@ -178,26 +184,9 @@ namespace Timelapse.Images
             this.differenceBitmapCache[ImageDifferenceEnum.Combined] = differenceBitmap;
             return differenceBitmap != null ? ImageDifferenceResultEnum.Success : ImageDifferenceResultEnum.NotCalculable;
         }
+        #endregion
 
-        public bool TryInvalidate(long id)
-        {
-            if (this.unalteredBitmapsByID.ContainsKey(id) == false)
-            {
-                return false;
-            }
-
-            if (this.Current == null || this.Current.ID == id)
-            {
-                this.Reset();
-            }
-
-            this.unalteredBitmapsByID.TryRemove(id, out _);
-            lock (this.mostRecentlyUsedIDs)
-            {
-                return this.mostRecentlyUsedIDs.TryRemove(id);
-            }
-        }
-
+        #region Public Methods - Move to File
         public override bool TryMoveToFile(int fileIndex)
         {
             return this.TryMoveToFile(fileIndex, false, out _);
@@ -235,7 +224,37 @@ namespace Timelapse.Images
             }
             return true;
         }
+        #endregion
 
+        #region  Public Methods - Invalidate Image in cache / Reset
+        public bool TryInvalidate(long id)
+        {
+            if (this.unalteredBitmapsByID.ContainsKey(id) == false)
+            {
+                return false;
+            }
+
+            if (this.Current == null || this.Current.ID == id)
+            {
+                this.Reset();
+            }
+
+            this.unalteredBitmapsByID.TryRemove(id, out _);
+            lock (this.mostRecentlyUsedIDs)
+            {
+                return this.mostRecentlyUsedIDs.TryRemove(id);
+            }
+        }
+
+        // reset enumerator state but don't clear caches
+        public override void Reset()
+        {
+            base.Reset();
+            this.ResetDifferenceState(null);
+        }
+        #endregion
+
+        #region Private - Cache
         private void CacheBitmap(long id, BitmapSource bitmap)
         {
             lock (this.mostRecentlyUsedIDs)
@@ -264,7 +283,9 @@ namespace Timelapse.Images
                 this.mostRecentlyUsedIDs.SetMostRecent(id);
             }
         }
+        #endregion
 
+        #region Private Methods - ResetDifferences
         private void ResetDifferenceState(BitmapSource unalteredImage)
         {
             this.CurrentDifferenceState = ImageDifferenceEnum.Unaltered;
@@ -273,7 +294,9 @@ namespace Timelapse.Images
             this.differenceBitmapCache[ImageDifferenceEnum.Next] = null;
             this.differenceBitmapCache[ImageDifferenceEnum.Combined] = null;
         }
+        #endregion
 
+        #region Private Methods - Try Get or Cache Bitmap / Image / Differences / Next / Previous etc
         private bool TryGetBitmap(ImageRow fileRow, out BitmapSource bitmap)
         {
             return this.TryGetBitmap(fileRow, false, out bitmap);
@@ -416,5 +439,6 @@ namespace Timelapse.Images
             this.prefetechesByID.AddOrUpdate(nextFile.ID, prefetch, (long id, Task newPrefetch) => { return newPrefetch; });
             return true;
         }
+        #endregion
     }
 }

@@ -8,6 +8,7 @@ namespace Timelapse
     // FilePlayer and FilePlayerTimer
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Callbacks
         // FilePlayerChange: The user has clicked on the file player. Take action on what was requested
         private void FilePlayer_FilePlayerChange(object sender, FilePlayerEventArgs args)
         {
@@ -44,6 +45,21 @@ namespace Timelapse
             }
         }
 
+        // TimerTick: On every tick, try to show the next/previous file as indicated by the direction
+        private void FilePlayerTimer_Tick(object sender, EventArgs e)
+        {
+            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction);
+
+            // Stop the timer if the image reaches the beginning or end of the image set
+            if ((this.DataHandler.ImageCache.CurrentRow >= this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1) || (this.DataHandler.ImageCache.CurrentRow <= 0))
+            {
+                this.FilePlayer_Stop();
+            }
+        }
+        #endregion
+
+        #region Private methods to actually do FilePlayer actions
+
         // Play. Stop the timer, reset the timer interval, and then restart the timer 
         private void FilePlayer_Play(TimeSpan timespan)
         {
@@ -70,17 +86,6 @@ namespace Timelapse
         {
             this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction, this.MarkableCanvas.ThumbnailGrid.AvailableColumns * this.MarkableCanvas.ThumbnailGrid.AvailableRows);
         }
-
-        // TimerTick: On every tick, try to show the next/previous file as indicated by the direction
-        private void FilePlayerTimer_Tick(object sender, EventArgs e)
-        {
-            this.TryFileShowWithoutSliderCallback(this.FilePlayer.Direction);
-
-            // Stop the timer if the image reaches the beginning or end of the image set
-            if ((this.DataHandler.ImageCache.CurrentRow >= this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles - 1) || (this.DataHandler.ImageCache.CurrentRow <= 0))
-            {
-                this.FilePlayer_Stop();
-            }
-        }
+        #endregion
     }
 }

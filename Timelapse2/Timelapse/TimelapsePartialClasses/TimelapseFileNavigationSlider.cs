@@ -8,6 +8,7 @@ namespace Timelapse
     // File Navigation Slider (including Timer) callbacks and related
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Callbacks
         // Drag Started callback
         private void FileNavigatorSlider_DragStarted(object sender, DragStartedEventArgs args)
         {
@@ -72,7 +73,9 @@ namespace Timelapse
             this.FileShow(this.FileNavigatorSlider);
             this.FileNavigatorSlider.AutoToolTipContent = this.DataHandler.ImageCache.Current.File;
         }
+        #endregion
 
+        #region Private Methods - Enable, Disable, Reset
         private void FileNavigatorSlider_EnableOrDisableValueChangedCallback(bool enableCallback)
         {
             if (enableCallback)
@@ -95,5 +98,6 @@ namespace Timelapse
             this.FileNavigatorSlider.IsEnabled = filesSelected;
             this.FileNavigatorSlider.Maximum = filesSelected ? this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles : 0;
         }
+        #endregion
     }
 }

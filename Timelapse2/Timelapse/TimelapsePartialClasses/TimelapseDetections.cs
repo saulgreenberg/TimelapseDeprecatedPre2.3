@@ -10,7 +10,6 @@ namespace Timelapse
     public partial class TimelapseWindow : Window, IDisposable
     {
         // for each image, get a list of detections and fill in the bounding box information for it. 
-        // ADD TEST FOR MULTIPLE THUMBNAILGRID AND FOR VIDEO
         public BoundingBoxes GetBoundingBoxesForCurrentFile(long fileID)
         {
             BoundingBoxes bboxes = new BoundingBoxes();
@@ -19,9 +18,7 @@ namespace Timelapse
 
             if (this.DataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
             {
-                // DataTable dataTable = this.dataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
                 DataRow[] dataRows = this.DataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
-                // foreach (DataRow detectionRow in dataTable.Rows)
                 foreach (DataRow detectionRow in dataRows)
                 {
                     string coords = (string)detectionRow[3];
@@ -59,6 +56,5 @@ namespace Timelapse
             }
             return bboxes;
         }
-        // END BOundingBoxes
     }
 }

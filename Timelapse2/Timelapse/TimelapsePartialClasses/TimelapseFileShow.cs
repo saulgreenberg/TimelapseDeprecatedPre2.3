@@ -12,6 +12,7 @@ namespace Timelapse
     // Showing Files
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region File Show - invoking versions
         // FileShow is invoked here from a 1-based slider, so we need to correct it to the 0-base index
         // By default, don't force the update
         private void FileShow(Slider fileNavigatorSlider)
@@ -32,7 +33,9 @@ namespace Timelapse
         {
             this.FileShow(fileIndex, false, forceUpdate);
         }
+        #endregion
 
+        #region FileShow - Full version
         // Show the image / video file for the specified row, but only if its different from what is currently being displayed.
         private void FileShow(int fileIndex, bool isInSliderNavigation, bool forceUpdate)
         {
@@ -186,6 +189,7 @@ namespace Timelapse
             // Display the episode text as needed
             this.DisplayEpisodeTextInImageIfWarranted(fileIndex);
         }
+        #endregion
 
         // Get and display the episode text if various conditions are met
         private void DisplayEpisodeTextInImageIfWarranted(int fileIndex)
@@ -214,12 +218,7 @@ namespace Timelapse
             }
         }
 
-        // Refresh the image
-        //private bool TryFileShowWithoutSliderCallback()
-        //{
-        //    return this.TryFileShowWithoutSliderCallback(DirectionEnum.None, 0);
-        //}
-
+        #region TryFileShow Without Slider Callback - various forms
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction)
         {
             // Check to see if there are any images to show, 
@@ -274,5 +273,6 @@ namespace Timelapse
             }
             return true;
         }
+        #endregion
     }
 }

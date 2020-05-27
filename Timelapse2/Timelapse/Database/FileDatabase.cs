@@ -1834,7 +1834,7 @@ namespace Timelapse.Database
                     TracePrint.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
                     pointList = String.Empty;
                 }
-                markersForCounter.Parse(pointList);
+                markersForCounter.ParsePontList(pointList);
                 markersForAllCounters.Add(markersForCounter);
             }
             return markersForAllCounters;

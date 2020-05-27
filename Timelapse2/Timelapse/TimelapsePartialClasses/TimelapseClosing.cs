@@ -9,6 +9,7 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Private Methods - CloseImageSet
         /// <summary>
         /// Close the current image set. Resets the UI, states, datahandler,  filedatabase etc. and saves the state
         /// </summary>
@@ -66,7 +67,9 @@ namespace Timelapse
                 this.ImageAdjuster.Hide();
             }
         }
-   
+        #endregion
+
+        #region Private Methods - Close Timelapse and Save State
         /// <summary>
         /// When Timelapse closes, save its state. 
         /// Note that this may be invoked when an image set is closed but Timelapse is not shut down (as indicated by the isCompleteShutdonw flag). 
@@ -153,5 +156,6 @@ namespace Timelapse
             // Save the state by writing it to the registry
             this.State.WriteSettingsToRegistry();
         }
+        #endregion
     }
 }

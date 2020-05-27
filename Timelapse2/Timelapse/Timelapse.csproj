@@ -311,7 +311,7 @@
     <Compile Include="Enums\DirectionEnum.cs" />
     <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
-    <Compile Include="Images\FolderLoadProgress.cs" />
+    <Compile Include="DataStructures\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
@@ -362,7 +362,7 @@
     <Compile Include="UnusedClasses\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Images\BitmapSourceExtensions.cs" />
+    <Compile Include="Extensions\BitmapSourceExtensions.cs" />
     <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
     <Compile Include="Database\FileTableEnumerator.cs" />
@@ -370,7 +370,6 @@
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
     <Compile Include="Enums\ImageDisplayIntentEnum.cs" />
-    <Compile Include="Images\ImageQuality.cs" />
     <Compile Include="Images\MagnifyingGlass.cs" />
     <Compile Include="EventArguments\MarkerEventArgs.cs" />
     <Compile Include="Controls\StockMessageControl.xaml.cs">

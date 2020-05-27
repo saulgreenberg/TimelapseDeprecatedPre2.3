@@ -16,11 +16,15 @@ using Timelapse.ImageSetLoadingPipeline;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 
-// Image Set Loading
+
 namespace Timelapse
 {
+    /// <summary>
+    /// Image Set Loaing - Primary Methods to do it
+    /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region TryGetTemplatePath
         // Prompt user to select a template.
         private bool TryGetTemplatePath(out string templateDatabasePath)
         {
@@ -43,7 +47,9 @@ namespace Timelapse
             }
             return true;
         }
+        #endregion
 
+        #region TryOpenTemplateAndBeginLoadFoldersAsync
         // Load the specified database template and then the associated images. 
         // templateDatabasePath is the Fully qualified path to the template database file.
         // Returns true only if both the template and image database file are loaded (regardless of whether any images were loaded) , false otherwise
@@ -216,7 +222,9 @@ namespace Timelapse
             }
             return true;
         }
+        #endregion
 
+        #region TryBeginImageFolderLoad
         [HandleProcessCorruptedStateExceptions]
         // out parameters can't be used in anonymous methods, so a separate pointer to backgroundWorker is required for return to the caller
         private bool TryBeginImageFolderLoad(string imageSetFolderPath, string selectedFolderPath)
@@ -351,7 +359,9 @@ namespace Timelapse
             backgroundWorker.RunWorkerAsync();
             return true;
         }
+        #endregion
 
+        #region UpdateFolderLoadProgress
         private void UpdateFolderLoadProgress(BusyCancelIndicator BusyCancelIndicator, BitmapSource bitmap, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
             if (bitmap != null)
@@ -375,59 +385,9 @@ namespace Timelapse
             BusyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
             BusyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
+        #endregion
 
-        // Given the location path of the template,  return:
-        // - true if a database file was specified
-        // - databaseFilePath: the path to the data database file (or null if none was specified).
-        // - importImages: true when the database file has just been created, which means images still have to be imported.
-        private bool TrySelectDatabaseFile(string templateDatabasePath, out string databaseFilePath, out bool importImages)
-        {
-            importImages = false;
-
-            string databaseFileName;
-            string directoryPath = Path.GetDirectoryName(templateDatabasePath);
-            string[] fileDatabasePaths = Directory.GetFiles(directoryPath, "*.ddb");
-            if (fileDatabasePaths.Length == 1)
-            {
-                databaseFileName = Path.GetFileName(fileDatabasePaths[0]); // Get the file name, excluding the path
-            }
-            else if (fileDatabasePaths.Length > 1)
-            {
-                ChooseFileDatabaseFile chooseDatabaseFile = new ChooseFileDatabaseFile(fileDatabasePaths, templateDatabasePath, this);
-                Cursor cursor = Mouse.OverrideCursor;
-                Mouse.OverrideCursor = null;
-                bool? result = chooseDatabaseFile.ShowDialog();
-                Mouse.OverrideCursor = cursor;
-                if (result == true)
-                {
-                    databaseFileName = chooseDatabaseFile.SelectedFile;
-                }
-                else
-                {
-                    // User cancelled .ddb selection
-                    databaseFilePath = null;
-                    return false;
-                }
-            }
-            else
-            {
-                // There are no existing .ddb files
-                string templateDatabaseFileName = Path.GetFileName(templateDatabasePath);
-                if (String.Equals(templateDatabaseFileName, Constant.File.DefaultTemplateDatabaseFileName, StringComparison.OrdinalIgnoreCase))
-                {
-                    databaseFileName = Constant.File.DefaultFileDatabaseFileName;
-                }
-                else
-                {
-                    databaseFileName = Path.GetFileNameWithoutExtension(templateDatabasePath) + Constant.File.FileDatabaseFileExtension;
-                }
-                importImages = true;
-            }
-
-            databaseFilePath = Path.Combine(directoryPath, databaseFileName);
-            return true;
-        }
-
+        #region OnFolderLoadingCompleteAsync
         /// <summary>
         /// When folder loading has completed add callbacks, prepare the UI, set up the image set, and show the image.
         /// </summary>
@@ -494,5 +454,60 @@ namespace Timelapse
                 this.DataGridPane_IsActiveChanged(null, null);
             }
         }
+        #endregion
+
+        #region Helpers
+        // Given the location path of the template,  return:
+        // - true if a database file was specified
+        // - databaseFilePath: the path to the data database file (or null if none was specified).
+        // - importImages: true when the database file has just been created, which means images still have to be imported.
+        private bool TrySelectDatabaseFile(string templateDatabasePath, out string databaseFilePath, out bool importImages)
+        {
+            importImages = false;
+
+            string databaseFileName;
+            string directoryPath = Path.GetDirectoryName(templateDatabasePath);
+            string[] fileDatabasePaths = Directory.GetFiles(directoryPath, "*.ddb");
+            if (fileDatabasePaths.Length == 1)
+            {
+                databaseFileName = Path.GetFileName(fileDatabasePaths[0]); // Get the file name, excluding the path
+            }
+            else if (fileDatabasePaths.Length > 1)
+            {
+                ChooseFileDatabaseFile chooseDatabaseFile = new ChooseFileDatabaseFile(fileDatabasePaths, templateDatabasePath, this);
+                Cursor cursor = Mouse.OverrideCursor;
+                Mouse.OverrideCursor = null;
+                bool? result = chooseDatabaseFile.ShowDialog();
+                Mouse.OverrideCursor = cursor;
+                if (result == true)
+                {
+                    databaseFileName = chooseDatabaseFile.SelectedFile;
+                }
+                else
+                {
+                    // User cancelled .ddb selection
+                    databaseFilePath = null;
+                    return false;
+                }
+            }
+            else
+            {
+                // There are no existing .ddb files
+                string templateDatabaseFileName = Path.GetFileName(templateDatabasePath);
+                if (String.Equals(templateDatabaseFileName, Constant.File.DefaultTemplateDatabaseFileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    databaseFileName = Constant.File.DefaultFileDatabaseFileName;
+                }
+                else
+                {
+                    databaseFileName = Path.GetFileNameWithoutExtension(templateDatabasePath) + Constant.File.FileDatabaseFileExtension;
+                }
+                importImages = true;
+            }
+
+            databaseFilePath = Path.Combine(directoryPath, databaseFileName);
+            return true;
+        }
+        #endregion
     }
 }

@@ -12,18 +12,23 @@ namespace Timelapse.Images
     // Each marker represents the coordinates of an entity on the screen being counted
     public class MarkersForCounter
     {
+        #region Public Properties
         // The counter's data label
         public string DataLabel { get; private set; }
 
         // the list of markers associated with the counter
         public List<Marker> Markers { get; private set; }
+        #endregion
 
+        #region Constructor
         public MarkersForCounter(string dataLabel)
         {
             this.DataLabel = dataLabel;
             this.Markers = new List<Marker>();
         }
+        #endregion
 
+        #region Public Methods - Add / Remove markers
         // Add a Marker to the Marker's list
         public void AddMarker(Marker marker)
         {
@@ -36,6 +41,21 @@ namespace Timelapse.Images
             this.AddMarker(new Marker(this.DataLabel, point));
         }
 
+
+
+        public void RemoveMarker(Marker marker)
+        {
+            int index = this.Markers.IndexOf(marker);
+            if (index == -1)
+            {
+                TracePrint.PrintMessage("RemoveMarker: Expected marker to be present in list, but its not there.");
+                return;
+            }
+            this.Markers.RemoveAt(index);
+        }
+        #endregion
+
+        #region Public Methods - Get / Parse PointList
         public string GetPointList()
         {
             StringBuilder pointList = new StringBuilder();
@@ -55,7 +75,7 @@ namespace Timelapse.Images
             return pointList.ToString();
         }
 
-        public void Parse(string pointList)
+        public void ParsePontList(string pointList)
         {
             if (String.IsNullOrEmpty(pointList))
             {
@@ -101,16 +121,6 @@ namespace Timelapse.Images
                 return;
             }
         }
-
-        public void RemoveMarker(Marker marker)
-        {
-            int index = this.Markers.IndexOf(marker);
-            if (index == -1)
-            {
-                TracePrint.PrintMessage("RemoveMarker: Expected marker to be present in list, but its not there.");
-                return;
-            }
-            this.Markers.RemoveAt(index);
-        }
+        #endregion
     }
 }

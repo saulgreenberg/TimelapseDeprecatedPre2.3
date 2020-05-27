@@ -9,6 +9,7 @@ namespace Timelapse.Images
     /// </summary>
     public class Marker
     {
+        #region PublicProperties
         /// <summary>
         /// Gets or sets the marker's outline color
         /// </summary>
@@ -43,7 +44,9 @@ namespace Timelapse.Images
         /// Gets or sets the marker's tooltip text 
         /// </summary>
         public string Tooltip { get; set; } // the label (not data label) associated with this marker.
+        #endregion
 
+        #region Constructor
         /// <summary>
         /// Initialize an instance of the marker
         /// </summary>
@@ -57,7 +60,9 @@ namespace Timelapse.Images
             this.ShowLabel = false;
             this.Tooltip = String.Empty;
         }
+        #endregion
 
+        #region Public Methods - Point Conversion
         // Calculate the point as a ratio of its position on the image, so we can locate it regardless of the actual image size
         public static Point ConvertPointToRatio(Point p, double width, double height)
         {
@@ -80,5 +85,6 @@ namespace Timelapse.Images
         {
             return (p.X >= 0 && p.Y >= 0 && p.X <= 1 && p.Y <= 1);
         }
+        #endregion
     }
 }

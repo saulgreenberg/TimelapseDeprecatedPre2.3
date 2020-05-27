@@ -7,9 +7,9 @@ using Timelapse.Util;
 
 namespace Timelapse.Images
 {
-    internal class ImageDataXml
+    internal static class ImageDataXml
     {
-        // Read all the data into the imageData structure from the XML file in the filepath.
+        // Reads all the data from the old ImageData.xml files into the imageData structure from the XML file in the filepath.
         // Note that we need to know the code controls,as we have to associate any points read in with a particular counter control
         public static Tuple<int, int> Read(string filePath, FileDatabase imageDatabase)
         {
@@ -62,7 +62,6 @@ namespace Timelapse.Images
 
             int successCounter = 0;
             int skippedCounter = 0;
-
 
             foreach (XmlNode node in nodeList)
             {

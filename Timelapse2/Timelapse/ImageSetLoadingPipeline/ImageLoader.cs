@@ -13,12 +13,7 @@ namespace Timelapse.ImageSetLoadingPipeline
     /// </summary>
     public class ImageLoader
     {
-        private readonly FileInfo fileInfo;
-        private readonly DataEntryHandler dataHandler;
-        // private readonly TimelapseState state;
-        private readonly string relativePath;
-        private readonly string imageSetFolderPath;
-
+        #region Public Properties
         public string FolderPath
         {
             get { return this.dataHandler.FileDatabase.FolderPath; }
@@ -63,16 +58,26 @@ namespace Timelapse.ImageSetLoadingPipeline
                 this.bitmapSource = value;
             }
         }
+        #endregion       
+        
+        #region Private Variables
+        private readonly FileInfo fileInfo;
+        private readonly DataEntryHandler dataHandler;
+        private readonly string relativePath;
+        private readonly string imageSetFolderPath;
+        #endregion
 
+        #region Constructor
         public ImageLoader(string imageSetFolderPath, string relativePath, FileInfo fileInfo, DataEntryHandler dataHandler)
         {
             this.fileInfo = fileInfo;
             this.dataHandler = dataHandler;
-            //this.state = state;
             this.imageSetFolderPath = imageSetFolderPath;
             this.relativePath = relativePath;
         }
+        #endregion
 
+        #region LoadImageAsync
         public Task LoadImageAsync(Action OnImageLoadComplete)
         {
             // Set the loader's file member. 
@@ -100,5 +105,6 @@ namespace Timelapse.ImageSetLoadingPipeline
                 OnImageLoadComplete?.Invoke();
             });
         }
+        #endregion
     }
 }
