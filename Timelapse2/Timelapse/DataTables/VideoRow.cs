@@ -11,11 +11,14 @@ namespace Timelapse.Database
     // See ImageRow for details
     public class VideoRow : ImageRow
     {
+        #region Constructors
         public VideoRow(DataRow row)
             : base(row)
         {
         }
+        #endregion
 
+        #region Public Methods - Boolean tests
         // We can't easily tell if a video is displayable. Instead, just see if the file exists.
         public override bool IsDisplayable(string pathToRootFolder)
         {
@@ -27,12 +30,15 @@ namespace Timelapse.Database
         {
             get { return true; }
         }
+        #endregion
 
+        #region Public Methods - LoadBitmap from Video File
         // Get the bitmap representing a video file
         public override BitmapSource LoadBitmap(string imageFolderPath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
             // Invoke the static version. The only change is that we get the full file path and pass that as a parameter
             return BitmapUtilities.GetBitmapFromVideoFile(this.GetFilePath(imageFolderPath), desiredWidthOrHeight, displayIntent, imageDimension, out isCorruptOrMissing);
         }
+        #endregion
     }
 }

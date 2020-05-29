@@ -9,6 +9,7 @@ namespace Timelapse.Database
     /// </summary>
     public class SearchTerm
     {
+        #region Public Properties
         public string ControlType { get; set; }
         public string DatabaseValue { get; set; }
         public string DataLabel { get; set; }
@@ -16,7 +17,9 @@ namespace Timelapse.Database
         public List<string> List { get; set; }
         public string Operator { get; set; }
         public bool UseForSearching { get; set; }
+        #endregion
 
+        #region Constructors
         public SearchTerm()
         {
             this.ControlType = String.Empty;
@@ -48,7 +51,9 @@ namespace Timelapse.Database
             this.Operator = other.Operator;
             this.UseForSearching = other.UseForSearching;
         }
+        #endregion
 
+        #region Public Methods - Get values to Convert DateTime / UTCOffset
         public DateTime GetDateTime()
         {
             if (this.DataLabel != Constant.DatabaseColumn.DateTime)
@@ -66,7 +71,9 @@ namespace Timelapse.Database
             }
             return DateTimeHandler.ParseDatabaseUtcOffsetString(this.DatabaseValue);
         }
+        #endregion
 
+        #region Public Methods - Set Values - to Convert DateTime / UTCOffset
         public void SetDatabaseValue(DateTimeOffset dateTime)
         {
             if (this.DataLabel != Constant.DatabaseColumn.DateTime)
@@ -104,5 +111,6 @@ namespace Timelapse.Database
                 this.DatabaseValue = null;
             }
         }
+        #endregion
     }
 }

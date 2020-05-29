@@ -11,6 +11,7 @@ namespace Timelapse.Database
         /// While a bit of a hack and less efficient, its easier than re-implementing what we can already get from customSelect.
         /// Note that each sort term is a triplet indicating the Data Label, Label, and a string flag on whether the sort should be ascending (default) or descending.
         /// </summary>
+        #region Public Static Methods - Get Sort Terms
         public static List<SortTerm> GetSortTerms(List<SearchTerm> searchTerms)
         {
             // Check the arguments for null 
@@ -63,5 +64,6 @@ namespace Timelapse.Database
             }
             return sortTerms;
         }
+        #endregion
     }
 }

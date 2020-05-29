@@ -234,26 +234,26 @@
     <Compile Include="Controls\VideoPlayer.xaml.cs">
       <DependentUpon>VideoPlayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\ColumnDefinition.cs" />
-    <Compile Include="Database\ControlRow.cs" />
+    <Compile Include="Database\SchemaColumnDefinition.cs" />
+    <Compile Include="DataTables\ControlRow.cs" />
     <Compile Include="Enums\ControlsEnableStateEnum.cs" />
     <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
-    <Compile Include="Database\SortTerm.cs" />
-    <Compile Include="Database\SortTerms.cs" />
-    <Compile Include="Database\DataTableBackedList.cs" />
-    <Compile Include="Database\FileTableChoiceColumn.cs" />
-    <Compile Include="Database\FileTableColumn.cs" />
-    <Compile Include="Database\DataRowExtensions.cs" />
-    <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="SearchingAndSorting\SortTerm.cs" />
+    <Compile Include="SearchingAndSorting\SortTerms.cs" />
+    <Compile Include="DataTables\DataTableBackedList.cs" />
+    <Compile Include="DataTables\FileTableChoiceColumn.cs" />
+    <Compile Include="DataTables\FileTableColumn.cs" />
+    <Compile Include="Extensions\DataRowExtensions.cs" />
+    <Compile Include="DataTables\FileTableCounterColumn.cs" />
     <Compile Include="Database\TemplateSyncResults.cs" />
-    <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
-    <Compile Include="Database\FileTableDateTimeColumn.cs" />
-    <Compile Include="Database\FileTableFlagColumn.cs" />
-    <Compile Include="Database\FileTableNoteColumn.cs" />
-    <Compile Include="Database\FileTable.cs" />
-    <Compile Include="Database\ImageSetRow.cs" />
-    <Compile Include="Database\MarkerRow.cs" />
-    <Compile Include="Database\VideoRow.cs" />
+    <Compile Include="DataTables\FileTableUtcOffsetColumn.cs" />
+    <Compile Include="DataTables\FileTableDateTimeColumn.cs" />
+    <Compile Include="DataTables\FileTableFlagColumn.cs" />
+    <Compile Include="DataTables\FileTableNoteColumn.cs" />
+    <Compile Include="DataTables\FileTable.cs" />
+    <Compile Include="DataTables\ImageSetRow.cs" />
+    <Compile Include="DataTables\MarkerRow.cs" />
+    <Compile Include="DataTables\VideoRow.cs" />
     <Compile Include="EventArguments\ImageAdjusterEventArgs.cs" />
     <Compile Include="EventArguments\ImageStateEventArgs.cs" />
     <Compile Include="ExifTool\ExifToolException.cs" />
@@ -364,7 +364,7 @@
     <Compile Include="Extensions\BitmapSourceExtensions.cs" />
     <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
-    <Compile Include="Database\FileTableEnumerator.cs" />
+    <Compile Include="DataTables\FileTableEnumerator.cs" />
     <Compile Include="DataStructures\DateTimeFeedbackTuple.cs" />
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
@@ -374,17 +374,17 @@
     <Compile Include="Controls\StockMessageControl.xaml.cs">
       <DependentUpon>StockMessageControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\DataRowBackedObject.cs" />
+    <Compile Include="DataTables\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
     <Compile Include="Extensions\TimelapseAvalonExtensions.cs" />
     <Compile Include="DebuggingSupport\TracePrint.cs" />
     <Compile Include="Util\VersionChecks.cs" />
     <Compile Include="Constant.cs" />
-    <Compile Include="Database\CustomSelection.cs" />
-    <Compile Include="Database\ColumnTuple.cs" />
-    <Compile Include="Database\ColumnTuplesWithWhere.cs" />
+    <Compile Include="SearchingAndSorting\CustomSelection.cs" />
+    <Compile Include="DataStructures\ColumnTuple.cs" />
+    <Compile Include="DataStructures\ColumnTuplesWithWhere.cs" />
     <Compile Include="Database\FileDatabase.cs" />
-    <Compile Include="Database\SearchTerm.cs" />
+    <Compile Include="SearchingAndSorting\SearchTerm.cs" />
     <Compile Include="Dialog\AboutTimelapse.xaml.cs">
       <DependentUpon>AboutTimelapse.xaml</DependentUpon>
     </Compile>
@@ -615,9 +615,9 @@
     <Compile Include="Dialog\TemplateSynchronization.xaml.cs">
       <DependentUpon>TemplateSynchronization.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\FileBackup.cs" />
+    <Compile Include="Util\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />
-    <Compile Include="Database\ImageRow.cs" />
+    <Compile Include="DataTables\ImageRow.cs" />
     <Compile Include="Enums\FileSelectionEnum.cs" />
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Enums\ControlLabelStyleEnum.cs" />

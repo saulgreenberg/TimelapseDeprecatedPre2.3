@@ -11,6 +11,7 @@ namespace Timelapse.Database
     /// </summary>
     public static class FileBackup
     {
+        #region Public Static Methods - Get Backup-related things
         private static IEnumerable<FileInfo> GetBackupFiles(DirectoryInfo backupFolder, string sourceFilePath)
         {
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
@@ -41,6 +42,30 @@ namespace Timelapse.Database
             return backupFolder;
         }
 
+        // UNUSED - but keep just in case 
+        //public static string GetLastBackupFilePath(string sourceFilePath)
+        //{
+        //    string sourceFolderPath = Path.GetDirectoryName(sourceFilePath);
+        //    DirectoryInfo backupFolder = new DirectoryInfo(Path.Combine(sourceFolderPath, Constant.File.BackupFolder));   // The Backup Folder 
+        //    if (backupFolder.Exists == false)
+        //    {
+        //        // If there is no backp folder, then there is no backup file
+        //        return String.Empty;
+        //    }
+
+        //    // Get the backup files
+        //    IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
+        //    if (backupFiles.Any() == false)
+        //    {
+        //        // No backup files 
+        //        return String.Empty;
+        //    }
+        //    return backupFiles.Last().FullName;
+        //}
+        #endregion
+
+        #region Public Static Methods -TryCreateBackup, various versions
+
         // Copy to backup version with with full path to source file
         public static bool TryCreateBackup(string sourceFilePath)
         {
@@ -57,26 +82,6 @@ namespace Timelapse.Database
         public static bool TryCreateBackup(string folderPath, string sourceFileName)
         {
             return FileBackup.TryCreateBackup(folderPath, sourceFileName, false);
-        }
-
-        public static string GetLastBackupFilePath(string sourceFilePath)
-        {
-            string sourceFolderPath = Path.GetDirectoryName(sourceFilePath);
-            DirectoryInfo backupFolder = new DirectoryInfo(Path.Combine(sourceFolderPath, Constant.File.BackupFolder));   // The Backup Folder 
-            if (backupFolder.Exists == false)
-            {
-                // If there is no backp folder, then there is no backup file
-                return String.Empty;
-            }
-
-            // Get the backup files
-            IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
-            if (backupFiles.Any() == false)
-            {
-                // No backup files 
-                return String.Empty;
-            }
-            return backupFiles.Last().FullName;
         }
 
         // Full version: Copy or move file to backup version with separated path/source file name
@@ -126,5 +131,7 @@ namespace Timelapse.Database
             }
             return true;
         }
+        
+        #endregion
     }
 }

@@ -12,12 +12,14 @@ namespace Timelapse.Database
     /// </summary>
     public class CustomSelection
     {
+        #region Public Properties
         public List<SearchTerm> SearchTerms { get; set; }
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
         public bool ShowMissingDetections { get; set; }
-
         public Detection.DetectionSelections DetectionSelections { get; set; }
+        #endregion
 
+        #region Constructor
         /// <summary>
         /// Create a CustomSelection, where we build a list of potential search terms based on the controls found in the sorted template table
         /// The search term will be used only if its 'UseForSearching' field is true
@@ -97,108 +99,9 @@ namespace Timelapse.Database
                 // else use default values above
             }
         }
+        #endregion
 
-        public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(imageSetTimeZone, nameof(imageSetTimeZone));
-
-            DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
-            return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
-        }
-
-        public string GetRelativePathFolder()
-        {
-            foreach (SearchTerm searchTerm in this.SearchTerms)
-            {
-                if (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
-                {
-                    return searchTerm.DatabaseValue;
-                }
-            }
-            return String.Empty;
-        }
-
-        // Set the RelativePath search term to search for the provided relativePath
-        public void SetRelativePathSearchTerm(string relativePath)
-        {
-            this.ClearCustomSearchUses();
-
-            SearchTerm searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.RelativePath);
-            searchTerm.DatabaseValue = relativePath;
-            searchTerm.Operator = Constant.SearchTermOperator.Equal;
-            searchTerm.UseForSearching = true;
-        }
-
-        // Whenever a shortcut selection is done (other than a custom selection),
-        // set the custom selection search terms to mirror that.
-        public void SetCustomSearchFromSelection(FileSelectionEnum selection, string relativePath)
-        {
-            // Don't do anything if the selection was a custom selection
-            // Note that FileSelectonENum.Folders is set elsewhere (in MenuItemSelectFOlder_Click) so we don't have to do it here.
-            if (this.SearchTerms == null || selection == FileSelectionEnum.Custom)
-            {
-                return;
-            }
-            // Find the relevant search term, set its use flag to true, and set its database value to whatever we are going to select on.
-            SearchTerm searchTerm;
-            switch (selection)
-            {
-                case FileSelectionEnum.All:
-                    // Clearing all use fields is the same as selecting All Files
-                    this.ClearCustomSearchUses();
-                    return;
-                case FileSelectionEnum.Corrupted:
-                case FileSelectionEnum.Missing:
-                case FileSelectionEnum.Ok:
-                case FileSelectionEnum.Dark:
-                    this.ClearCustomSearchUses();
-                    // Set the use field for Image Quality, and its value to one of the three possibilities
-                    searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.ImageQuality);
-                    if (selection == FileSelectionEnum.Ok)
-                    {
-                        searchTerm.DatabaseValue = Constant.ImageQuality.Ok;
-                    }
-                    else if (selection == FileSelectionEnum.Dark)
-                    {
-                        searchTerm.DatabaseValue = Constant.ImageQuality.Dark;
-                    }
-                    else
-                    {
-                        // Shouldn't really get here but just in case
-                        return;
-                    }
-                    searchTerm.UseForSearching = true;
-                    break;
-                case FileSelectionEnum.MarkedForDeletion:
-                    this.ClearCustomSearchUses();
-                    // Set the use field for DeleteFlag, and its value to true
-                    searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
-                    searchTerm.DatabaseValue = Constant.BooleanValue.True;
-                    searchTerm.UseForSearching = true;
-                    break;
-                case FileSelectionEnum.Folders:
-                    this.SetRelativePathSearchTerm(relativePath);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        // Clear all the 'use' flags in the custom search term and in the detections (if any)
-        public void ClearCustomSearchUses()
-        {
-            foreach (SearchTerm searchTerm in this.SearchTerms)
-            {
-                searchTerm.UseForSearching = false;
-            }
-            if (GlobalReferences.DetectionsExists && this.DetectionSelections != null)
-            {
-                this.DetectionSelections.ClearAllDetectionsUses();
-            }
-            this.ShowMissingDetections = false;
-        }
-
+        #region Public Methods- GetFilesWhere() creates and returns a well-formed query
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
         {
@@ -335,6 +238,42 @@ namespace Timelapse.Database
                      confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
             return where;
         }
+        #endregion
+
+        #region Public Methods - Various Gets
+        public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(imageSetTimeZone, nameof(imageSetTimeZone));
+
+            DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
+            return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
+        }
+
+        public string GetRelativePathFolder()
+        {
+            foreach (SearchTerm searchTerm in this.SearchTerms)
+            {
+                if (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
+                {
+                    return searchTerm.DatabaseValue;
+                }
+            }
+            return String.Empty;
+        }
+        #endregion
+
+        #region Public Methods - Various Sets
+        // Set the RelativePath search term to search for the provided relativePath
+        public void SetRelativePathSearchTerm(string relativePath)
+        {
+            this.ClearCustomSearchUses();
+
+            SearchTerm searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.RelativePath);
+            searchTerm.DatabaseValue = relativePath;
+            searchTerm.Operator = Constant.SearchTermOperator.Equal;
+            searchTerm.UseForSearching = true;
+        }
 
         public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime, TimeZoneInfo imageSetTimeZone)
         {
@@ -355,7 +294,82 @@ namespace Timelapse.Database
                 utcOffsetTerm.SetDatabaseValue(dateTime.Offset);
             }
         }
+        #endregion
 
+        #region Public Methods - Set Custom Search From Selection
+        // Whenever a shortcut selection is done (other than a custom selection),
+        // set the custom selection search terms to mirror that.
+        public void SetCustomSearchFromSelection(FileSelectionEnum selection, string relativePath)
+        {
+            // Don't do anything if the selection was a custom selection
+            // Note that FileSelectonENum.Folders is set elsewhere (in MenuItemSelectFOlder_Click) so we don't have to do it here.
+            if (this.SearchTerms == null || selection == FileSelectionEnum.Custom)
+            {
+                return;
+            }
+            // Find the relevant search term, set its use flag to true, and set its database value to whatever we are going to select on.
+            SearchTerm searchTerm;
+            switch (selection)
+            {
+                case FileSelectionEnum.All:
+                    // Clearing all use fields is the same as selecting All Files
+                    this.ClearCustomSearchUses();
+                    return;
+                case FileSelectionEnum.Corrupted:
+                case FileSelectionEnum.Missing:
+                case FileSelectionEnum.Ok:
+                case FileSelectionEnum.Dark:
+                    this.ClearCustomSearchUses();
+                    // Set the use field for Image Quality, and its value to one of the three possibilities
+                    searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.ImageQuality);
+                    if (selection == FileSelectionEnum.Ok)
+                    {
+                        searchTerm.DatabaseValue = Constant.ImageQuality.Ok;
+                    }
+                    else if (selection == FileSelectionEnum.Dark)
+                    {
+                        searchTerm.DatabaseValue = Constant.ImageQuality.Dark;
+                    }
+                    else
+                    {
+                        // Shouldn't really get here but just in case
+                        return;
+                    }
+                    searchTerm.UseForSearching = true;
+                    break;
+                case FileSelectionEnum.MarkedForDeletion:
+                    this.ClearCustomSearchUses();
+                    // Set the use field for DeleteFlag, and its value to true
+                    searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
+                    searchTerm.DatabaseValue = Constant.BooleanValue.True;
+                    searchTerm.UseForSearching = true;
+                    break;
+                case FileSelectionEnum.Folders:
+                    this.SetRelativePathSearchTerm(relativePath);
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion
+
+        #region Public Methods - Clear Custom Search Uses
+        // Clear all the 'use' flags in the custom search term and in the detections (if any)
+        public void ClearCustomSearchUses()
+        {
+            foreach (SearchTerm searchTerm in this.SearchTerms)
+            {
+                searchTerm.UseForSearching = false;
+            }
+            if (GlobalReferences.DetectionsExists && this.DetectionSelections != null)
+            {
+                this.DetectionSelections.ClearAllDetectionsUses();
+            }
+            this.ShowMissingDetections = false;
+        }
+        #endregion
+
+        #region Private Methods - Used by above
         // return SQL expressions to database equivalents
         // this is needed as the searchterm operators are unicodes representing symbols rather than real opeators 
         // e.g., \u003d is the symbol for '='
@@ -381,5 +395,6 @@ namespace Timelapse.Database
                     return String.Empty;
             }
         }
+        #endregion
     }
 }

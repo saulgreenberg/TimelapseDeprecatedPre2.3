@@ -6,13 +6,12 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
+    /// <summary>
+    ///  An ImageSet Row defines the contents of the (single) row in the ImageSet DataTable
+    /// </summary>
     public class ImageSetRow : DataRowBackedObject
     {
-        public ImageSetRow(DataRow row)
-            : base(row)
-        {
-        }
-
+        #region Public Properties to set / get the various row values
         public FileSelectionEnum FileSelection
         {
             get { return (FileSelectionEnum)this.Row.GetIntegerField(Constant.DatabaseColumn.Selection); }
@@ -82,8 +81,26 @@ namespace Timelapse.Database
             get { return this.Row.GetStringField(Constant.DatabaseColumn.QuickPasteXML); }
             set { this.Row.SetField(Constant.DatabaseColumn.QuickPasteXML, value); }
         }
+        #endregion
+        
+        #region Constructors
+        public ImageSetRow(DataRow row)
+            : base(row)
+        {
+        }
+        #endregion
 
-        public override ColumnTuplesWithWhere GetColumnTuples()
+        #region Public Methods - Gets
+        public TimeZoneInfo GetSystemTimeZone()
+        {
+            return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
+        }
+        #endregion
+
+        #region Public Methods - Create ColumnTuplesWithWher 
+        // Construct a ColumnTuplesWithWhere containing the entire row contents 
+        // Where is the current (and only?) imageset ID
+        public override ColumnTuplesWithWhere CreateColumnTuplesWithWhereByID()
         {
             List<ColumnTuple> columnTuples = new List<ColumnTuple>
             {
@@ -101,16 +118,13 @@ namespace Timelapse.Database
             };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
+        #endregion
 
-        public TimeZoneInfo GetSystemTimeZone()
-        {
-            return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
-        }
 
         #region SortTerms helper functions: setting and getting individual terms in the sort term list
         // The sort term is stored in the database as a string (as a comma-separated list) 
-        //  thathas 8 slots. The primary and secondary sort terms
-        // are defined in positions 0-3 and 4-7 respectively as:
+        //  that has 8 slots. The primary and secondary sort terms
+        //  are defined in positions 0-3 and 4-7 respectively as:
         //     DataLabel, Label, ControlType, IsAscending, DataLabel, Label, ControlType, IsAscending,
 
         // Return the first or second sort term structure defining the 1st or 2nd sort term

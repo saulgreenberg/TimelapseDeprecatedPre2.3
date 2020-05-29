@@ -5,8 +5,12 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
+    /// <summary>
+    /// Various methods to get / set data row fields by type
+    /// </summary>
     public static class DataRowExtensions
     {
+        #region Public Methods - Various Gets by type
         public static bool GetBooleanField(this DataRow row, string column)
         {
             string fieldAsString = row.GetStringField(column);
@@ -119,7 +123,9 @@ namespace Timelapse.Database
                 return TimeSpan.FromHours(0);
             }
         }
+        #endregion
 
+        #region Public Methods - Various Sets by type
         public static void SetField(this DataRow row, string column, bool value)
         {
             // Check the arguments for null 
@@ -175,5 +181,6 @@ namespace Timelapse.Database
             Debug.Assert(value.Ticks % Constant.Time.UtcOffsetGranularity.Ticks == 0, "Unexpected rounding error: UTC offset is not an exact multiple of 15 minutes.");
             row[column] = value.TotalHours;
         }
+        #endregion
     }
 }

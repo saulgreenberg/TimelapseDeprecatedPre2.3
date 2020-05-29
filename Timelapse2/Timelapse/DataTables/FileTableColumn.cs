@@ -3,8 +3,29 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
+    /// <summary>
+    /// FileTableColumn: An abstract class that 
+    /// - Stores the column type as well as its associated DataLable
+    /// - Types are Choice, Counter, Note, Flag, DateTime, UtcOffset. Note that other columns
+    /// - creates columns of various types, each comprising a single column in the FileTable (aka the DataTable in DataBase)
+    /// </summary>
     public abstract class FileTableColumn
     {
+        #region Public Properties
+        public string ControlType { get; private set; }
+
+        public string DataLabel { get; private set; }
+
+        public abstract bool IsContentValid(string content);
+        #endregion
+        
+        #region Constructors
+        /// <summary>
+        /// Given a ControlRow (i.e., a template row definitions) construct a column for its data based on the 
+        /// - the control type (Note, Date, File etc)
+        /// - its DataLabel
+        /// </summary>
+        /// <param name="control"></param>
         protected FileTableColumn(ControlRow control)
         {
             // Check the arguments for null 
@@ -13,14 +34,11 @@ namespace Timelapse.Database
             this.ControlType = control.Type;
             this.DataLabel = control.DataLabel;
         }
+        #endregion
 
-        public string ControlType { get; private set; }
-
-        public string DataLabel { get; private set; }
-
-        public abstract bool IsContentValid(string content);
-
-        public static FileTableColumn Create(ControlRow control)
+        #region Public Static Methods - CreateColumnMatchingControlRowsType
+        // Given a ControlRow (i.e., a template row definitions), create a column depending upon its type
+        public static FileTableColumn CreateColumnMatchingControlRowsType(ControlRow control)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
@@ -51,5 +69,6 @@ namespace Timelapse.Database
                     throw new NotSupportedException(String.Format("Unhandled control type {0}.", control.Type));
             }
         }
+        #endregion
     }
 }

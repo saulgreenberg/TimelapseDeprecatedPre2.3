@@ -14,6 +14,8 @@ namespace Timelapse.Database
     // This static class will try to merge various .ddb database files into a single database.
     public static class MergeDatabases
     {
+        #region Public Static Method - TryMergeDatabasesAsync
+
         // Given 
         // - a path to a .tdb file  (specifying the root folder)
         // - a list of ddbFiles (which must be located in sub-folders relative to the root folder)
@@ -108,6 +110,7 @@ namespace Timelapse.Database
             }
             return errorMessages;
         }
+        #endregion
 
         #region Private internal methods
         // Merge a .ddb file specified in the sourceDDBPath path into the destinationDDB database.
@@ -150,7 +153,7 @@ namespace Timelapse.Database
             //       UPDATE tempDataTable SET Id = (offsetID + tempDataTable.Id);
             //       UPDATE TempDataTable SET RelativePath =  CASE WHEN RelativePath = '' THEN ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
             //       INSERT INTO DataTable SELECT * FROM tempDataTable;
-            string query = QueryBeginTransaction();
+            string query = Sql.BeginTransactionSemiColon;
             query += QueryAttachDatabaseAs(SourceDDBPath, attachedDB);
             query += QueryCreateTemporaryTableFromExistingTable(tempDataTable, attachedDB, Constant.DBTables.FileData);
             query += QueryAddOffsetToIDInTable(tempDataTable, Constant.DatabaseColumn.ID, offsetId);
@@ -222,30 +225,19 @@ namespace Timelapse.Database
                 query += QueryAddOffsetToIDInTable(tempClassificationsTable, Constant.ClassificationColumns.DetectionID, offsetDetectionId);
                 query += QueryInsertTable2DataIntoTable1(Constant.DBTables.Classifications, tempClassificationsTable);
             }
-            query += QueryEndTransaction();
+            query += Sql.EndTransactionSemiColon;
             destinationDDB.ExecuteNonQuery(query);
             return true;
         }
         #endregion
 
-        #region Queries: return partial queries 
-        // Form: BEGIN TRANSACTION;
-        private static string QueryBeginTransaction()
-        {
-            return Sql.BeginTransaction + Sql.Semicolon;
-        }
-
-        // Form: END TRANSACTION;
-        private static string QueryEndTransaction()
-        {
-            return Sql.EndTransaction + Sql.Semicolon; ;
-        }
-
+        #region Private Methods - Query formation helpers
         // Form: "Select Max(columnName) from tableName"
         private static string QueryGetMax(string columnName, string tableName)
         {
             return Sql.Select + Sql.Max + Sql.OpenParenthesis + columnName + Sql.CloseParenthesis + Sql.From + tableName;
         }
+
         // Form: ATTACH DATABASE 'databasePath' AS alias;
         private static string QueryAttachDatabaseAs(string databasePath, string alias)
         {
@@ -282,7 +274,7 @@ namespace Timelapse.Database
             return query;
         }
 
-        //  Form: INSERT INTO tabl1 SELECT * FROM table2;
+        //  Form: INSERT INTO table1 SELECT * FROM table2;
         private static string QueryInsertTable2DataIntoTable1(string table1, string table2)
         {
             return Sql.InsertInto + table1 + Sql.SelectStarFrom + table2 + Sql.Semicolon;

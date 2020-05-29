@@ -7,11 +7,13 @@ using Timelapse.Util;
 namespace Timelapse.Database
 {
     public class FileTable : DataTableBackedList<ImageRow>
-    {
+    {   
+        #region Constructors
         public FileTable(DataTable imageDataTable)
             : base(imageDataTable, FileTable.CreateRow)
         {
         }
+        #endregion
 
         // Return a new image or video row
         private static ImageRow CreateRow(DataRow row)

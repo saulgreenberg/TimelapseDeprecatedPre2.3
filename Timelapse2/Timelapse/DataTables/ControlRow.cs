@@ -6,15 +6,16 @@ using Timelapse.Util;
 
 namespace Timelapse.Database
 {
+    /// <summary>
+    /// ControlRow defines a single control as described in the Template.  
+    /// Its property names are the same as those in the template:
+    /// - ControlOrder, SpreadsheetOrder, Type, DefaultValue, Label, DataLabel, Width, Tooltip, Copyable, Visible, List   
+    /// </summary>
     public class ControlRow : DataRowBackedObject
     {
         private static readonly char[] BarDelimiter = { '|' };
 
-        public ControlRow(DataRow row)
-            : base(row)
-        {
-        }
-
+        #region Public Properties
         public long ControlOrder
         {
             get { return this.Row.GetLongField(Constant.Control.ControlOrder); }
@@ -57,11 +58,6 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.Control.SpreadsheetOrder, value); }
         }
 
-        public int Width
-        {
-            get { return this.Row.GetIntegerField(Constant.Control.TextBoxWidth); }
-            set { this.Row.SetField(Constant.Control.TextBoxWidth, value); }
-        }
 
         public string Tooltip
         {
@@ -80,16 +76,30 @@ namespace Timelapse.Database
             get { return this.Row.GetBooleanField(Constant.Control.Visible); }
             set { this.Row.SetField(Constant.Control.Visible, value); }
         }
+        public int Width
+        {
+            get { return this.Row.GetIntegerField(Constant.Control.TextBoxWidth); }
+            set { this.Row.SetField(Constant.Control.TextBoxWidth, value); }
+        }
+        #endregion
 
+        #region Constructors
+        public ControlRow(DataRow row)
+            : base(row)
+        {
+        }
+        #endregion
+
+        #region Public Methods - GetChoices (also GetChoicesForQuickpateMenu), various forms parse the choice string as a list
         // Parce and return the choice string into a list of items. 
         // Overload: the caller is uninterested in knowing if there are any empty items in the list, and wants the empty item removed
         public List<string> GetChoices(bool removeEmptyChoiceItem)
         {
             return this.GetChoices(out _, removeEmptyChoiceItem);
         }
+
         // Overload: the caller is interested in knowing if there are any empty items in the list, 
         // and wants the empty item removed (usually because they will add it themselves to a menu
-
         public List<string> GetChoices(out bool includesEmptyChoice)
         {
             bool removeEmptyChoiceItem = true;
@@ -130,8 +140,82 @@ namespace Timelapse.Database
             }
             return list;
         }
+        #endregion
 
-        public override ColumnTuplesWithWhere GetColumnTuples()
+        #region Public Methods - SetChoices: Given a List of choices, convert it into '|' separated string
+        public void SetChoices(List<string> choices)
+        {
+            this.List = String.Join("|", choices);
+        }
+        #endregion
+
+        #region Public Methods - Try Update This ControlRow To Match
+
+        /// <summary>
+        /// Check if a synchronization between the given control row and this instance's control row is needed,
+        /// which wojld occur if any field differs.
+        /// Note: As a side effect it also re-orders this instance's ControlOrder and SpreadsheetOrder to the other's order if needed
+        /// </summary>
+        /// <param name="controlRowToMatch"></param>
+        /// <returns></returns>
+        public bool TryUpdateThisControlRowToMatch(ControlRow controlRowToMatch)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(controlRowToMatch, nameof(controlRowToMatch));
+
+            bool synchronizationMadeChanges = false;
+            if (this.Copyable != controlRowToMatch.Copyable)
+            {
+                this.Copyable = controlRowToMatch.Copyable;
+                synchronizationMadeChanges = true;
+            }
+            if (this.ControlOrder != controlRowToMatch.ControlOrder)
+            {
+                this.ControlOrder = controlRowToMatch.ControlOrder;
+                synchronizationMadeChanges = true;
+            }
+            if (this.DefaultValue != controlRowToMatch.DefaultValue)
+            {
+                this.DefaultValue = controlRowToMatch.DefaultValue;
+                synchronizationMadeChanges = true;
+            }
+            if (this.Label != controlRowToMatch.Label)
+            {
+                this.Label = controlRowToMatch.Label;
+                synchronizationMadeChanges = true;
+            }
+            if (this.List != controlRowToMatch.List)
+            {
+                this.List = controlRowToMatch.List;
+                synchronizationMadeChanges = true;
+            }
+            if (this.SpreadsheetOrder != controlRowToMatch.SpreadsheetOrder)
+            {
+                this.SpreadsheetOrder = controlRowToMatch.SpreadsheetOrder;
+                synchronizationMadeChanges = true;
+            }
+            if (this.Tooltip != controlRowToMatch.Tooltip)
+            {
+                this.Tooltip = controlRowToMatch.Tooltip;
+                synchronizationMadeChanges = true;
+            }
+            if (this.Visible != controlRowToMatch.Visible)
+            {
+                this.Visible = controlRowToMatch.Visible;
+                synchronizationMadeChanges = true;
+            }
+            if (this.Width != controlRowToMatch.Width)
+            {
+                this.Width = controlRowToMatch.Width;
+                synchronizationMadeChanges = true;
+            }
+            return synchronizationMadeChanges;
+        }
+
+        #endregion
+
+        #region Public Methods (can be overriden) - CreateColumnTuplesWithWhereForControlRowByID
+        public override ColumnTuplesWithWhere CreateColumnTuplesWithWhereByID()
         {
             List<ColumnTuple> columnTuples = new List<ColumnTuple>
             {
@@ -149,64 +233,6 @@ namespace Timelapse.Database
             };
             return new ColumnTuplesWithWhere(columnTuples, this.ID);
         }
-
-        public void SetChoices(List<string> choices)
-        {
-            this.List = String.Join("|", choices);
-        }
-        public bool Synchronize(ControlRow other)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(other, nameof(other));
-
-            bool synchronizationMadeChanges = false;
-            if (this.Copyable != other.Copyable)
-            {
-                this.Copyable = other.Copyable;
-                synchronizationMadeChanges = true;
-            }
-            if (this.ControlOrder != other.ControlOrder)
-            {
-                this.ControlOrder = other.ControlOrder;
-                synchronizationMadeChanges = true;
-            }
-            if (this.DefaultValue != other.DefaultValue)
-            {
-                this.DefaultValue = other.DefaultValue;
-                synchronizationMadeChanges = true;
-            }
-            if (this.Label != other.Label)
-            {
-                this.Label = other.Label;
-                synchronizationMadeChanges = true;
-            }
-            if (this.List != other.List)
-            {
-                this.List = other.List;
-                synchronizationMadeChanges = true;
-            }
-            if (this.SpreadsheetOrder != other.SpreadsheetOrder)
-            {
-                this.SpreadsheetOrder = other.SpreadsheetOrder;
-                synchronizationMadeChanges = true;
-            }
-            if (this.Tooltip != other.Tooltip)
-            {
-                this.Tooltip = other.Tooltip;
-                synchronizationMadeChanges = true;
-            }
-            if (this.Visible != other.Visible)
-            {
-                this.Visible = other.Visible;
-                synchronizationMadeChanges = true;
-            }
-            if (this.Width != other.Width)
-            {
-                this.Width = other.Width;
-                synchronizationMadeChanges = true;
-            }
-
-            return synchronizationMadeChanges;
-        }
+        #endregion
     }
 }

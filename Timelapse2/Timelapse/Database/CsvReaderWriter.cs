@@ -16,6 +16,7 @@ namespace Timelapse.Database
     /// </summary>
     internal class CsvReaderWriter
     {
+        #region Public Static Method - Export to CSV
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
@@ -59,7 +60,9 @@ namespace Timelapse.Database
                 }
             }
         }
+        #endregion
 
+        #region Public Static Method - Import from CSV (async)
         // Try importing a CSV file, checking its headers and values against the template's DataLabels and data types.
         // Return a list of errors if needed.
         public static async Task<Tuple<bool, List<string>>> TryImportFromCsv(string filePath, FileDatabase fileDatabase)
@@ -251,7 +254,9 @@ namespace Timelapse.Database
                     return new Tuple<bool, List<string>>(true, importErrors);
                 }).ConfigureAwait(true);
         }
+        #endregion
 
+        #region Private Method - Update Progress Bar
         static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -274,6 +279,9 @@ namespace Timelapse.Database
                 busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing CSV file...";
             });
         }
+        #endregion
+
+        #region Private Methods - Used by above
         // Given a string representing a comma-separated row of values, add a value to it.
         // If special characters are in the string,  escape the string as needed
         private static string AddColumnValue(string value)
@@ -319,5 +327,6 @@ namespace Timelapse.Database
                 return null;
             }
         }
+        #endregion
     }
 }

@@ -126,32 +126,32 @@ namespace Timelapse.Database
 
             // Create the DataTable from the template
             // First, define the creation string based on the contents of the template. 
-            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
+            List<SchemaColumnDefinition> schemaColumnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+                new SchemaColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
             };
             foreach (ControlRow control in this.Controls)
             {
-                columnDefinitions.Add(CreateFileDataColumnDefinition(control));
+                schemaColumnDefinitions.Add(CreateFileDataColumnDefinition(control));
             }
-            this.Database.CreateTable(Constant.DBTables.FileData, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.FileData, schemaColumnDefinitions);
 
             // Create the ImageSetTable and initialize a single row in it
-            columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Log, Sql.Text, Constant.DatabaseValues.ImageSetDefaultLog));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Sql.Text, Constant.BooleanValue.True));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Sql.Text));
+            schemaColumnDefinitions.Clear();
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.Log, Sql.Text, Constant.DatabaseValues.ImageSetDefaultLog));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.MagnifyingGlass, Sql.Text, Constant.BooleanValue.True));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.MostRecentFileID, Sql.Text));
             int allImages = (int)FileSelectionEnum.All;
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.Selection, Sql.Text, allImages));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text));  // Records the highest Timelapse version number ever used to open this database
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text));        // A comma-separated list of 4 sort terms
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text));
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text));        // A comma-separated list of 4 sort terms
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.Selection, Sql.Text, allImages));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text));  // Records the highest Timelapse version number ever used to open this database
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text));        // A comma-separated list of 4 sort terms
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text));
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text));        // A comma-separated list of 4 sort terms
 
-            this.Database.CreateTable(Constant.DBTables.ImageSet, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.ImageSet, schemaColumnDefinitions);
 
             // Populate the data for the image set with defaults
             // VersionCompatabily
@@ -184,16 +184,16 @@ namespace Timelapse.Database
             this.BindToDataGrid();
 
             // Create the MarkersTable and initialize it from the template table
-            columnDefinitions.Clear();
-            columnDefinitions.Add(new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
+            schemaColumnDefinitions.Clear();
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey));  // It begins with the ID integer primary key
             foreach (ControlRow control in this.Controls)
             {
                 if (control.Type.Equals(Constant.Control.Counter))
                 {
-                    columnDefinitions.Add(new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty));
+                    schemaColumnDefinitions.Add(new SchemaColumnDefinition(control.DataLabel, Sql.Text, String.Empty));
                 }
             }
-            this.Database.CreateTable(Constant.DBTables.Markers, columnDefinitions);
+            this.Database.CreateTable(Constant.DBTables.Markers, schemaColumnDefinitions);
         }
 
         [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
@@ -229,12 +229,12 @@ namespace Timelapse.Database
                 {
                     long id = this.GetControlIDFromTemplateTable(dataLabel);
                     ControlRow control = this.Controls.Find(id);
-                    ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
+                    SchemaColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
                     this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
 
                     if (control.Type == Constant.Control.Counter)
                     {
-                        ColumnDefinition markerColumnDefinition = new ColumnDefinition(dataLabel, Sql.Text);
+                        SchemaColumnDefinition markerColumnDefinition = new SchemaColumnDefinition(dataLabel, Sql.Text);
                         this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Markers, markerColumnDefinition);
                     }
                 }
@@ -287,8 +287,9 @@ namespace Timelapse.Database
                         ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
                         ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
 
-                        if (imageDatabaseControl.Synchronize(templateControl))
+                        if (imageDatabaseControl.TryUpdateThisControlRowToMatch(templateControl))
                         {
+                            // The control row was updated, so synchronize it to the database
                             this.SyncControlToDatabase(imageDatabaseControl);
                         }
                     }
@@ -296,11 +297,11 @@ namespace Timelapse.Database
             }
         }
 
-        private static ColumnDefinition CreateFileDataColumnDefinition(ControlRow control)
+        private static SchemaColumnDefinition CreateFileDataColumnDefinition(ControlRow control)
         {
             if (control.DataLabel == Constant.DatabaseColumn.DateTime)
             {
-                return new ColumnDefinition(control.DataLabel, "DATETIME", DateTimeHandler.ToStringDatabaseDateTime(Constant.ControlDefault.DateTimeValue));
+                return new SchemaColumnDefinition(control.DataLabel, "DATETIME", DateTimeHandler.ToStringDatabaseDateTime(Constant.ControlDefault.DateTimeValue));
             }
             if (control.DataLabel == Constant.DatabaseColumn.UtcOffset)
             {
@@ -316,13 +317,13 @@ namespace Timelapse.Database
                 // implementation choice but testing shows no roundoff errors at single tick precision (100 nanoseconds) when using hours.  Even with TimeSpans 
                 // near the upper bound of 256M hours, well beyond the plausible range of time zone calculations.  So there does not appear to be any reason to 
                 // avoid using hours for readability when working with the database directly.
-                return new ColumnDefinition(control.DataLabel, "REAL", DateTimeHandler.ToStringDatabaseUtcOffset(Constant.ControlDefault.DateTimeValue.Offset));
+                return new SchemaColumnDefinition(control.DataLabel, "REAL", DateTimeHandler.ToStringDatabaseUtcOffset(Constant.ControlDefault.DateTimeValue.Offset));
             }
             if (String.IsNullOrWhiteSpace(control.DefaultValue))
             {
-                return new ColumnDefinition(control.DataLabel, Sql.Text, String.Empty);
+                return new SchemaColumnDefinition(control.DataLabel, Sql.Text, String.Empty);
             }
-            return new ColumnDefinition(control.DataLabel, Sql.Text, control.DefaultValue);
+            return new SchemaColumnDefinition(control.DataLabel, Sql.Text, control.DefaultValue);
         }
 
         /// <summary>
@@ -332,7 +333,7 @@ namespace Timelapse.Database
         {
             foreach (ControlRow control in this.Controls)
             {
-                FileTableColumn column = FileTableColumn.Create(control);
+                FileTableColumn column = FileTableColumn.CreateColumnMatchingControlRowsType(control);
                 this.FileTableColumnsByDataLabel.Add(column.DataLabel, column);
 
                 // don't type map user defined controls as if there are multiple ones the key would not be unique
@@ -462,9 +463,9 @@ namespace Timelapse.Database
         public void UpgradeFileDBSchemaDefaultsFromTemplate()
         {
             // Initialize a schema 
-            List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>
+            List<SchemaColumnDefinition> columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
+                new SchemaColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey)  // It begins with the ID integer primary key
             };
 
             // Add the schema for the columns from the FileDB table
@@ -502,7 +503,7 @@ namespace Timelapse.Database
             {
                 long relativePathID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.RelativePath);
                 ControlRow relativePathControl = this.Controls.Find(relativePathID);
-                ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
+                SchemaColumnDefinition columnDefinition = CreateFileDataColumnDefinition(relativePathControl);
                 this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.RelativePathPosition, columnDefinition);
             }
 
@@ -511,7 +512,7 @@ namespace Timelapse.Database
             {
                 long dateTimeID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DateTime);
                 ControlRow dateTimeControl = this.Controls.Find(dateTimeID);
-                ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
+                SchemaColumnDefinition columnDefinition = CreateFileDataColumnDefinition(dateTimeControl);
                 this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.DateTimePosition, columnDefinition);
             }
 
@@ -520,7 +521,7 @@ namespace Timelapse.Database
             {
                 long utcOffsetID = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.UtcOffset);
                 ControlRow utcOffsetControl = this.Controls.Find(utcOffsetID);
-                ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
+                SchemaColumnDefinition columnDefinition = CreateFileDataColumnDefinition(utcOffsetControl);
                 this.Database.SchemaAddColumnToTable(Constant.DBTables.FileData, Constant.DatabaseValues.UtcOffsetPosition, columnDefinition);
             }
 
@@ -544,7 +545,7 @@ namespace Timelapse.Database
                 // if there's neither a MarkForDeletion or DeleteFlag column add DeleteFlag
                 long id = this.GetControlIDFromTemplateTable(Constant.DatabaseColumn.DeleteFlag);
                 ControlRow control = this.Controls.Find(id);
-                ColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
+                SchemaColumnDefinition columnDefinition = CreateFileDataColumnDefinition(control);
                 this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.FileData, columnDefinition);
             }
 
@@ -558,7 +559,7 @@ namespace Timelapse.Database
             if (!whiteSpaceColumnExists)
             {
                 // create the whitespace column
-                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.WhiteSpaceTrimmed, Sql.Text, Constant.BooleanValue.False));
 
                 // trim whitespace from the data table
                 this.Database.TrimWhitespace(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
@@ -587,7 +588,7 @@ namespace Timelapse.Database
             if (versionCompatabilityColumnExists == false)
             {
                 // Create the versioncompatability column and update the image set. Syncronization happens later
-                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.VersionCompatabily, Sql.Text, timelapseVersionNumberAsString));
             }
 
             // Sort Criteria Column: Make sure that the column containing the SortCriteria exists in the image set table. 
@@ -596,7 +597,7 @@ namespace Timelapse.Database
             if (!sortCriteriaColumnExists)
             {
                 // create the sortCriteria column and update the image set. Syncronization happens later
-                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text, Constant.DatabaseValues.DefaultSortTerms));
             }
 
             // SelectedFolder Column: Make sure that the column containing the SelectedFolder exists in the image set table. 
@@ -609,7 +610,7 @@ namespace Timelapse.Database
                 if (!selectedFolderColumnExists)
                 {
                     // create the sortCriteria column and update the image set. Syncronization happens later
-                    this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
+                    this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text, String.Empty));
                     this.ImageSetLoadFromDatabase();
                 }
             }
@@ -619,7 +620,7 @@ namespace Timelapse.Database
             if (!quickPasteXMLColumnExists)
             {
                 // create the QuickPaste column and update the image set. Syncronization happens later
-                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text, Constant.DatabaseValues.DefaultQuickPasteXML));
             }
 
             // Timezone column (if missing) needs to be added to the Imageset Table
@@ -628,7 +629,7 @@ namespace Timelapse.Database
             if (!timeZoneColumnExists)
             {
                 // create default time zone entry and refresh the image set.
-                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new ColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
                 this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
                 this.ImageSetLoadFromDatabase();
             }
@@ -1240,7 +1241,7 @@ namespace Timelapse.Database
         {
             // don't trigger backups on image set updates as none of the properties in the image set table is particularly important
             // For example, this avoids creating a backup when a custom selection is reverted to all when Timelapse exits.
-            this.Database.Update(Constant.DBTables.ImageSet, this.ImageSet.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.ImageSet, this.ImageSet.CreateColumnTuplesWithWhereByID());
         }
 
         public void UpdateSyncMarkerToDatabase(MarkerRow marker)
@@ -1249,7 +1250,7 @@ namespace Timelapse.Database
             ThrowIf.IsNullArgument(marker, nameof(marker));
 
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DBTables.Markers, marker.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.Markers, marker.CreateColumnTuplesWithWhereByID());
         }
         #endregion
 

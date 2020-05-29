@@ -22,14 +22,7 @@ namespace Timelapse.Database
     /// </summary>
     public class ImageRow : DataRowBackedObject
     {
-        private const string ParamName = "value";
-
-        public ImageRow(DataRow row)
-            : base(row)
-        {
-        }
-
-        #region Properties - retrieve fields from the image row
+        #region Public Properties - get /set  standard fields from the image row
         public string Date
         {
             get { return this.Row.GetStringField(Constant.DatabaseColumn.Date); }
@@ -114,8 +107,19 @@ namespace Timelapse.Database
             private set { this.Row.SetUtcOffsetField(Constant.DatabaseColumn.UtcOffset, value); }
         }
         #endregion
+        
+        #region Private Constants
+        private const string ParamName = "value";
+        #endregion
 
-        #region Boolean test methods
+        #region Constructors
+        public ImageRow(DataRow row)
+            : base(row)
+        {
+        }
+        #endregion
+
+        #region Public Methods - Various boolean tests
         public bool FileExists(string pathToRootFolder)
         {
             return System.IO.File.Exists(Path.Combine(pathToRootFolder, this.RelativePath, this.File));
@@ -132,19 +136,24 @@ namespace Timelapse.Database
         {
             get { return false; }
         }
-        #endregion
 
         // Check if a datalabel is present in the ImageRow
         public bool Contains(string dataLabel)
         {
             return this.Row.Table.Columns.Contains(dataLabel);
         }
+        #endregion
 
+        #region Public Methods - Various Gets
+
+        // Return a FileInfo to the full path of the file
         public FileInfo GetFileInfo(string rootFolderPath)
         {
             return new FileInfo(this.GetFilePath(rootFolderPath));
         }
 
+        // Given the root folder path, 
+        // return a full path to the file by combining the root folder path, the relative path, and the file name
         public string GetFilePath(string rootFolderPath)
         {
             // see RelativePath remarks in constructor
@@ -153,6 +162,7 @@ namespace Timelapse.Database
                 : Path.Combine(rootFolderPath, this.RelativePath, this.File);
         }
 
+        // Given a data label, get its value as a string as it exists in the database
         public string GetValueDatabaseString(string dataLabel)
         {
             return (dataLabel == Constant.DatabaseColumn.DateTime)
@@ -160,6 +170,8 @@ namespace Timelapse.Database
                : this.GetValueDisplayString(dataLabel);
         }
 
+        // Given a data label, get its value as a string to display to the user in the UI
+        // This requires a few values to be transformed (e.g., DateTime, UTCOffsets, ImageQuality)
         public string GetValueDisplayString(string dataLabel)
         {
             switch (dataLabel)
@@ -174,7 +186,9 @@ namespace Timelapse.Database
                     return this.Row.GetStringField(dataLabel);
             }
         }
+        #endregion
 
+        #region Public Methods -Set Value from database string
         // Set the value for the column identified by its datalabel. 
         // We don't do this directly, as some values have to be converted
         public void SetValueFromDatabaseString(string dataLabel, string value)
@@ -205,10 +219,12 @@ namespace Timelapse.Database
                     break;
             }
         }
+        #endregion
 
-        #region ColumnTuples - Build it based on Image Row values
-        // Build a column tuple containing the stock column values from the current image row 
-        public override ColumnTuplesWithWhere GetColumnTuples()
+        #region ColumnTuplesWithWhere - Create it based on the stock Image Row values of the current row
+        // Build a ColumnTuplesWithWhere containing the stock column values from the current image row  
+        // Where identifies the ID of the current image row - note that this is done in the GetDateTimeColumnTuples()
+        public override ColumnTuplesWithWhere CreateColumnTuplesWithWhereByID()
         {
             ColumnTuplesWithWhere columnTuples = this.GetDateTimeColumnTuples();
             columnTuples.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.File, this.File));
@@ -218,10 +234,11 @@ namespace Timelapse.Database
             return columnTuples;
         }
 
-        // Build a column tuple based on the stock Date / Time / Offset column values from the current image row
+        // Build a ColumnTuplesWithWhere which will update the various Date / Time / Offset column values 
+        // Where identifies the ID of the current image row
         public ColumnTuplesWithWhere GetDateTimeColumnTuples()
         {
-            List<ColumnTuple> columnTuples = new List<ColumnTuple>(3)
+            List<ColumnTuple> columnTuples = new List<ColumnTuple>(4)
             {
                 new ColumnTuple(Constant.DatabaseColumn.Date, this.Date),
                 new ColumnTuple(Constant.DatabaseColumn.DateTime, this.DateTime),
@@ -232,7 +249,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region DateTime Methods
+        #region DateTime Methods - sets various date-related values, possibly using various transformation 
         public void SetDateTimeOffset(DateTimeOffset dateTime)
         {
             this.Date = DateTimeHandler.ToStringDisplayDate(dateTime);
@@ -253,7 +270,9 @@ namespace Timelapse.Database
             DateTime earliestTimeLocal = fileInfo.CreationTime < fileInfo.LastWriteTime ? fileInfo.CreationTime : fileInfo.LastWriteTime;
             this.SetDateTimeOffset(new DateTimeOffset(earliestTimeLocal));
         }
+        #endregion
 
+        #region Public Methods - Try to Read the Date from the file's Metadata
         public DateTimeAdjustmentEnum TryReadDateTimeOriginalFromMetadata(string folderPath, TimeZoneInfo imageSetTimeZone)
         {
             // Use only on images, as video files don't contain the desired metadata. 
