@@ -256,13 +256,6 @@ namespace Timelapse.Database
             return Sql.Update + tableName + Sql.Set + IDColumn + Sql.Equal + Sql.OpenParenthesis + offset.ToString() + Sql.Plus + tableName + Sql.Dot + IDColumn + Sql.CloseParenthesis + Sql.Semicolon;
         }
 
-        // Form: UPDATE dataTable SET IDColumn = (offset + dataTable.Id);
-        // UNUSED
-        private static string QuerySetFolderInTable(string tableName, string folder)
-        {
-            return Sql.Update + tableName + Sql.Set + Constant.DatabaseColumn.Folder + Sql.Equal + Sql.Quote(folder) + Sql.Semicolon;
-        }
-
         //Form:  UPDATE tableName SET RelativePath = CASE WHEN RelativePath = '' THEN ("PrefixPath" || RelativePath) ELSE ("PrefixPath\\" || RelativePath) EMD
         private static string QueryAddPrefixToRelativePathInTable(string tableName, string pathPrefixToAdd)
         {

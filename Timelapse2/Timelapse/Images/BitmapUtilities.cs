@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
+using Timelapse.Extensions;
 using Timelapse.Util;
 
 namespace Timelapse.Images

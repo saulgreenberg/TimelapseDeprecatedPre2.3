@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Extensions;
 using Timelapse.Images;
 using Timelapse.Util;
 

@@ -238,6 +238,7 @@
     <Compile Include="DataTables\ControlRow.cs" />
     <Compile Include="Enums\ControlsEnableStateEnum.cs" />
     <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
+    <Compile Include="Extensions\WriteableBitmapExtensions.cs" />
     <Compile Include="SearchingAndSorting\SortTerm.cs" />
     <Compile Include="SearchingAndSorting\SortTerms.cs" />
     <Compile Include="DataTables\DataTableBackedList.cs" />

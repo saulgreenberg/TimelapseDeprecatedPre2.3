@@ -9,8 +9,8 @@ namespace Timelapse.Database
     public class FileTable : DataTableBackedList<ImageRow>
     {   
         #region Constructors
-        public FileTable(DataTable imageDataTable)
-            : base(imageDataTable, FileTable.CreateRow)
+        public FileTable(DataTable filesDataTable)
+            : base(filesDataTable, FileTable.CreateRow)
         {
         }
         #endregion

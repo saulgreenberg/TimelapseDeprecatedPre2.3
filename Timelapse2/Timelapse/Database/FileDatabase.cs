@@ -977,7 +977,7 @@ namespace Timelapse.Database
                 }
             }
 
-            DataTable images = await Task.Run(() =>
+            DataTable filesTable = await Task.Run(() =>
             {
                 // System.Diagnostics.Debug.Print("Doit: " + query);
                 // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
@@ -985,15 +985,15 @@ namespace Timelapse.Database
                 // as I am not that savvy in database optimizations.
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
-            this.FileTable = new FileTable(images);
+            this.FileTable = new FileTable(filesTable);
         }
 
         // Select all files in the file table
         public FileTable SelectAllFiles()
         {
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData;
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            return new FileTable(images);
+            DataTable filesTable = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(filesTable);
         }
 
         // Check for the existence of missing files in the current selection, and return a list of IDs of those that are missing
@@ -1048,8 +1048,8 @@ namespace Timelapse.Database
         {
             string where = this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True); // = value
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + where;
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            return new FileTable(images);
+            DataTable filesTable = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(filesTable);
         }
 
         // Select files with matching IDs where IDs are a comma-separated string i.e.,
@@ -1057,15 +1057,15 @@ namespace Timelapse.Database
         public FileTable SelectFilesInDataTableByCommaSeparatedIds(string listOfIds)
         {
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDIn + Sql.OpenParenthesis + listOfIds + Sql.CloseParenthesis;
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            return new FileTable(images);
+            DataTable filesTable = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(filesTable);
         }
 
         public FileTable SelectFileInDataTableById(string id)
         {
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.WhereIDEquals + Sql.Quote(id) + Sql.LimitOne;
-            DataTable images = this.Database.GetDataTableFromSelect(query);
-            return new FileTable(images);
+            DataTable filesTable = this.Database.GetDataTableFromSelect(query);
+            return new FileTable(filesTable);
         }
 
         // This is only used for converting old XML data files to the new ones

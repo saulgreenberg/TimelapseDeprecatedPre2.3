@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Extensions;
 using Timelapse.Util;
 
 namespace Timelapse.Images
