@@ -16,6 +16,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TemplateChangedAndUpdate : Window
     {
+        #region Private Variables
         private readonly string actionAdd = "Add";
         private readonly string actionDelete = "Delete";
         private bool dontClose = false;
@@ -26,7 +27,9 @@ namespace Timelapse.Dialog
         private readonly List<int> actionRows = new List<int>();
 
         private TemplateSyncResults TemplateSyncResults { get; set; }
+        #endregion
 
+        #region Constructor, Loaded, Closing
         public TemplateChangedAndUpdate(TemplateSyncResults templateSyncResults, Window owner)
         {
             // Check the arguments for null 
@@ -118,6 +121,18 @@ namespace Timelapse.Dialog
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
 
+        // Because the buttons automatically close the dialog, we need to cancel it if there is a warning instead.
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (this.dontClose == true)
+            {
+                e.Cancel = true;
+            }
+            this.dontClose = false;
+        }
+        #endregion
+
+        #region Private Methods
         // Get a subset of the dictionary filtered by the type of control
         private static Dictionary<string, string> DictionaryFilterByType(Dictionary<string, string> dictionary, string controlType)
         {
@@ -229,43 +244,6 @@ namespace Timelapse.Dialog
             // Enable and disable the combobox depending upon which radiobutton is selected
             radiobuttonRenameAction.Checked += this.RbRenameAction_CheckChanged;
             radiobuttonRenameAction.Unchecked += this.RbRenameAction_CheckChanged;
-        }
-
-        // Enable or Disable the Rename comboboxdepending on the state of the Rename radio button
-        private void RbRenameAction_CheckChanged(Object o, RoutedEventArgs a)
-        {
-            RadioButton rb = o as RadioButton;
-            ComboBox cb = rb.Tag as ComboBox;
-            cb.IsEnabled = (rb.IsChecked == true) ? true : false;
-            this.ShowHideItemsAsNeeded();
-        }
-
-        // Check other combo box selected values to see if it matches the just-selected combobox data label item, 
-        // and if so set it to empty
-        private void CbRenameMenu_SelectionChanged(Object o, SelectionChangedEventArgs a)
-        {
-            ComboBox activeComboBox = o as ComboBox;
-            if ((ComboBoxItem)activeComboBox.SelectedItem == null)
-            {
-                return;
-            }
-            ComboBoxItem selecteditem = (ComboBoxItem)activeComboBox.SelectedItem;
-            string datalabelSelected = selecteditem.Content.ToString();
-            foreach (ComboBox combobox in this.comboBoxes)
-            {
-                if (activeComboBox != combobox)
-                {
-                    if (combobox.SelectedItem != null)
-                    {
-                        ComboBoxItem cbi = combobox.SelectedItem as ComboBoxItem;
-                        if (cbi.Content.ToString() == datalabelSelected)
-                        {
-                            combobox.SelectedIndex = -1;
-                        }
-                    }
-                }
-            }
-            this.ShowHideItemsAsNeeded();
         }
 
         // For each row, if it contains an enabled rename combobox, then collect its currently selected datalabel (if any)
@@ -425,6 +403,45 @@ namespace Timelapse.Dialog
             Grid.SetColumnSpan(rect, 5);
             this.ActionGrid.Children.Add(rect);
         }
+        #endregion
+
+        #region UI Callbacks
+        // Enable or Disable the Rename comboboxdepending on the state of the Rename radio button
+        private void RbRenameAction_CheckChanged(Object o, RoutedEventArgs a)
+        {
+            RadioButton rb = o as RadioButton;
+            ComboBox cb = rb.Tag as ComboBox;
+            cb.IsEnabled = (rb.IsChecked == true) ? true : false;
+            this.ShowHideItemsAsNeeded();
+        }
+
+        // Check other combo box selected values to see if it matches the just-selected combobox data label item, 
+        // and if so set it to empty
+        private void CbRenameMenu_SelectionChanged(Object o, SelectionChangedEventArgs a)
+        {
+            ComboBox activeComboBox = o as ComboBox;
+            if ((ComboBoxItem)activeComboBox.SelectedItem == null)
+            {
+                return;
+            }
+            ComboBoxItem selecteditem = (ComboBoxItem)activeComboBox.SelectedItem;
+            string datalabelSelected = selecteditem.Content.ToString();
+            foreach (ComboBox combobox in this.comboBoxes)
+            {
+                if (activeComboBox != combobox)
+                {
+                    if (combobox.SelectedItem != null)
+                    {
+                        ComboBoxItem cbi = combobox.SelectedItem as ComboBoxItem;
+                        if (cbi.Content.ToString() == datalabelSelected)
+                        {
+                            combobox.SelectedIndex = -1;
+                        }
+                    }
+                }
+            }
+            this.ShowHideItemsAsNeeded();
+        }
 
         private void UseOldTemplate_Click(object sender, RoutedEventArgs e)
         {
@@ -442,15 +459,6 @@ namespace Timelapse.Dialog
             this.CollectItems();
             this.DialogResult = true;
         }
-
-        // Because the buttons automatically close the dialog, we need to cancel it if there is a warning instead.
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            if (this.dontClose == true)
-            {
-                e.Cancel = true;
-            }
-            this.dontClose = false;
-        }
+        #endregion
     }
 }

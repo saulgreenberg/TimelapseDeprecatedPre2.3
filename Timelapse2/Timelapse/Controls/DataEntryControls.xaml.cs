@@ -8,22 +8,31 @@ using Timelapse.Util;
 namespace Timelapse.Controls
 {
     /// <summary>
-    /// This class generates controls based upon the information passed into it from the data grid templateTable
+    /// This user control generates and displays controls based upon the information passed into it from the templateTable
+    /// It is used by and displayed within the Data Entry pane.
     /// </summary>
     public partial class DataEntryControls : UserControl
     {
+        #region Public properties and Private Variables
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
         private DataEntryHandler dataEntryHandler = null;
+        #endregion
 
+        #region Constructor
         public DataEntryControls()
         {
             this.InitializeComponent();
             this.Controls = new List<DataEntryControl>();
             this.ControlsByDataLabel = new Dictionary<string, DataEntryControl>();
         }
+        #endregion
 
+        #region Create Controls method
+        /// <summary>
+        /// Generate the controls based upon the control descriptions found in the template
+        /// </summary>>
         public void CreateControls(FileDatabase database, DataEntryHandler dataEntryPropagator)
         {
             // Check the arguments for null 
@@ -113,7 +122,9 @@ namespace Timelapse.Controls
             dataEntryPropagator.SetDataEntryCallbacks(this.ControlsByDataLabel);
             this.dataEntryHandler = dataEntryPropagator;
         }
+        #endregion
 
+        #region Autocompletion methods
         public void AutocompletionPopulateAllNotesWithFileTableValues(FileDatabase database)
         {
             // Check the arguments for null 
@@ -178,7 +189,9 @@ namespace Timelapse.Controls
             }
             return null;
         }
+        #endregion
 
+        #region Enable / Disable stock controls depending on single vs thumbnail grid view
         // Enable or disable the following stock controls: 
         //     File, Folder, RelativePath,  DateTime, UtcOffset, ImageQuality
         // These controls refer to the specifics of a single image. Thus they should be disabled (and are thus not  editable) 
@@ -326,5 +339,6 @@ namespace Timelapse.Controls
             }
             this.dataEntryHandler.IsProgrammaticControlUpdate = false;
         }
+        #endregion
     }
 }

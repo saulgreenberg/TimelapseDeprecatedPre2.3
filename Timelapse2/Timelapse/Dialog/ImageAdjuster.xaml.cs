@@ -60,7 +60,6 @@ namespace Timelapse.Dialog
             Util.GlobalReferences.MainWindow.MarkableCanvas.ImageStateChanged += this.ConfigureWindowState;
         }
 
-
         // Reuse the window by changing closing to hiding
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -111,7 +110,7 @@ namespace Timelapse.Dialog
         // Then generate an event to inform the Markable Canvase to update the image according to those paraemeters
         private void UpdateImageParametersAndGenerateEvent()
         {
-            UpdateImageParametersAndGenerateEvent(false);
+            this.UpdateImageParametersAndGenerateEvent(false);
         }
         private void UpdateImageParametersAndGenerateEvent(bool forceUpdate)
         {
@@ -152,6 +151,13 @@ namespace Timelapse.Dialog
         #endregion
 
         #region UI Callbacks - image processing parameters altered in the UI
+        private void ButtonImageViewer_Click(object sender, RoutedEventArgs e)
+        {
+            // Generate an event to inform the Markable Canvas, in this case to invoke the file viewer 
+            // The only thing of importance in this call is that the final argument (openExternalViewer) is true. The other values will be ignored. 
+            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, true, false));
+        }
+        
         // Update allimage processing parameters whenever the user changes any of them
         private void RadioButtons_CheckChanged(object sender, RoutedEventArgs e)
         {
@@ -207,16 +213,6 @@ namespace Timelapse.Dialog
 
         #endregion
 
-        private void ButtonImageViewer_Click(object sender, RoutedEventArgs e)
-        {
-            // Generate an event to inform the Markable Canvas, in this case to invoke the file viewer 
-            // The only thing of importance in this call is that the final argument (openExternalViewer) is true. The other values will be ignored. 
-            this.OnImageProcessingParametersChanged(new ImageAdjusterEventArgs(this.Brightness, this.Contrast, this.Sharpen, this.DetectEdges, this.UseGamma, this.GammaValue, true, false));
-        }
-
-        private void ButtonSpinner_Spin(object sender, Xceed.Wpf.Toolkit.SpinEventArgs e)
-        {
-
-        }
+ 
     }
 }

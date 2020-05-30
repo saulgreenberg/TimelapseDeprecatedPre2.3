@@ -15,6 +15,7 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class DateChangesFeedbackControl : UserControl
     {
+        #region Public Properties and Private variables
         public bool ShowDifferenceColumn { get; set; }
         public string Column0Name { get; set; }
         public string Column1Name { get; set; }
@@ -25,8 +26,9 @@ namespace Timelapse.Controls
 
         // This collection will hold tuples, where each tuple contains the contents for a row that will be shown in the datagrid  
         private readonly ObservableCollection<FeedbackRowTuple> feedbackRows;
+        #endregion
 
-        #region Initialization
+        #region Constructor and AutoGenerateColumns
         // Bind the collection to the datagrid, where any change in the collection will be displayed in the datagrid
         public DateChangesFeedbackControl()
         {
@@ -97,8 +99,7 @@ namespace Timelapse.Controls
                 // If the selection is in the Select column, toggle its state
                 if (cell.Column.Header.ToString() == this.Column0Name)
                 {
-                    FeedbackRowTuple tuple = cell.Item as FeedbackRowTuple;
-                    if (tuple != null)
+                    if (cell.Item is FeedbackRowTuple tuple)
                     {
                         tuple.Select = !tuple.Select;
                         this.feedbackGrid.Items.Refresh();

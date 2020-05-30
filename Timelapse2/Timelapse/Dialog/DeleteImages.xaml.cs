@@ -18,8 +18,9 @@ namespace Timelapse.Dialog
     /// What actually happens is that the image is replaced by a 'dummy' placeholder image,
     /// and the original image is copied into a subfolder called Deleted.
     /// </summary>
-    public partial class DeleteImages : DialogWindow
+    public partial class DeleteImages : BusyableDialogWindow
     {
+        #region Private Variables
         // these variables will hold the values of the passed in parameters
         private readonly FileDatabase fileDatabase;
         private readonly ImageCache imageCache;
@@ -29,8 +30,9 @@ namespace Timelapse.Dialog
 
         private bool IsAnyDataUpdated;
         private int maxPathLength = 60;
+        #endregion
 
-        #region Initialization
+        #region Constructor, Loaded
         /// <summary>
         /// Ask the user if he/she wants to delete one or more images and (depending on whether deleteData is set) the data associated with those images.
         /// Other parameters indicate various specifics of how the deletion was specified, which also determines what is displayed in the interface:
@@ -360,14 +362,14 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show how many files were deleted
             this.BusyIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
             this.DoneMessagePanel.Content = "Deleted ";
             this.DoneMessagePanel.Content += this.filesToDelete.Count == 1 ? this.filesToDelete[0].File : this.filesToDelete.Count.ToString() + " files";
             this.ShowDoneMessageView();

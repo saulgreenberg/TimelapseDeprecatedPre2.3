@@ -11,7 +11,11 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TemplateSynchronization : Window
     {
+        #region Public Properties
         public bool UseNewTemplate { get; private set; }
+        #endregion
+
+        #region Constructor, Loaded
         public TemplateSynchronization(List<string> errors, List<string> warnings, Window owner)
         {
             // Check the arguments for null 
@@ -84,7 +88,9 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
+        #endregion
 
+        #region UI Callbacks
         private void ExitTimelapse_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
@@ -101,5 +107,6 @@ namespace Timelapse.Dialog
             this.UseNewTemplate = true;
             this.DialogResult = true;
         }
+        #endregion
     }
 }

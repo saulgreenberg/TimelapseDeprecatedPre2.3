@@ -10,9 +10,12 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class ChooseFileDatabaseFile : Window
     {
+        #region Public Properties
         // This will contain the file selected by the user
         public string SelectedFile { get; set; }
+        #endregion
 
+        #region Constructor and Loaded
         public ChooseFileDatabaseFile(string[] fileDatabasePaths, string templateDatabasePath, Window owner)
         {
             // Check the arguments for null 
@@ -46,7 +49,9 @@ namespace Timelapse.Dialog
             // It's more helpful to put focus on the database list as this saves having to tab to the list as a first step.
             this.FileDatabases.Focus();
         }
+        #endregion
 
+        #region Callbacks
         private void FileDatabases_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (this.FileDatabases.SelectedIndex != -1)
@@ -70,5 +75,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

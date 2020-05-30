@@ -54,34 +54,37 @@ namespace Timelapse.Util
             return !firstNotSecond.Any() && !secondNotFirst.Any();
         }
 
-        public static string LongestCommonSuffix(string s1, string s2)
-        {
-            string suffix = String.Empty;
-            if (s1 == null || s2 == null)
-            {
-                return suffix;
-            }
-            List<string> result = new List<string>();
-            int s1length = s1.Length;
-            int s2length = s2.Length;
-            int length = Math.Min(s1length, s2length);
+        /// <summary>
+        /// Unused - Return a string that is the longest common suffix between two strings
+        /// </summary>
+        /// <returns></returns>
+        //{
+        //    string suffix = String.Empty;
+        //    if (s1 == null || s2 == null)
+        //    {
+        //        return suffix;
+        //    }
+        //    List<string> result = new List<string>();
+        //    int s1length = s1.Length;
+        //    int s2length = s2.Length;
+        //    int length = Math.Min(s1length, s2length);
 
-            // Starting from the last character of each string
-            for (int i = 0; i < length; i++)
-            {
+        //    // Starting from the last character of each string
+        //    for (int i = 0; i < length; i++)
+        //    {
 
-                if (s1[s1length - i - 1] == s2[s2length - i - 1])
-                {
-                    // If the character is the same, add it to the suffix. 
-                    suffix = s1[s1length - i - 1] + suffix;
-                }
-                else
-                {
-                    // Otherwise we are done as we have the longest common suffix
-                    break;
-                }
-            }
-            return suffix;
-        }
+        //        if (s1[s1length - i - 1] == s2[s2length - i - 1])
+        //        {
+        //            // If the character is the same, add it to the suffix. 
+        //            suffix = s1[s1length - i - 1] + suffix;
+        //        }
+        //        else
+        //        {
+        //            // Otherwise we are done as we have the longest common suffix
+        //            break;
+        //        }
+        //    }
+        //    return suffix;
+        //}
     }
 }

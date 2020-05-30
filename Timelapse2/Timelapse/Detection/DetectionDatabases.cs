@@ -10,13 +10,13 @@ namespace Timelapse.Detection
     public static class DetectionDatabases
     {
         // IMMEDIATE Check that image and classifications use foreign keys
-        // Create all Detection Database Tables
+        #region Public: Create all Detection Database Tables
         public static void CreateOrRecreateTablesAndColumns(SQLiteWrapper database)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(database, nameof(database));
 
-            List<ColumnDefinition> columnDefinitions;
+            List<SchemaColumnDefinition> columnDefinitions;
             // Create the various tables used to hold detection data
 
             // Info: Create or clear table 
@@ -35,56 +35,58 @@ namespace Timelapse.Detection
                 database.DeleteAllRowsInTables(tableList);
                 return;
             }
-            columnDefinitions = new List<ColumnDefinition>
+            columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.InfoColumns.Detector,  Sql.StringType),
-                new ColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.StringType),
-                new ColumnDefinition(Constant.InfoColumns.Classifier,  Sql.StringType),
-                new ColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.StringType)
+                new SchemaColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new SchemaColumnDefinition(Constant.InfoColumns.Detector,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.InfoColumns.Classifier,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.StringType)
             };
             database.CreateTable(Constant.DBTables.Info, columnDefinitions);
 
             // DetectionCategories: create or clear table 
-            columnDefinitions = new List<ColumnDefinition>
+            columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.DetectionCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new SchemaColumnDefinition(Constant.DetectionCategoriesColumns.Label,  Sql.StringType),
             };
             database.CreateTable(Constant.DBTables.DetectionCategories, columnDefinitions);
 
             // ClassificationCategories: create or clear table 
-            columnDefinitions = new List<ColumnDefinition>
+            columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
-                new ColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.ClassificationCategoriesColumns.Category,  Sql.StringType + Timelapse.Sql.PrimaryKey), // Primary Key
+                new SchemaColumnDefinition(Constant.ClassificationCategoriesColumns.Label,  Sql.StringType),
             };
             database.CreateTable(Constant.DBTables.ClassificationCategories, columnDefinitions);
 
             // Detections: create or clear table 
-            columnDefinitions = new List<ColumnDefinition>
+            columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
-                new ColumnDefinition(Constant.DetectionColumns.Category,  Sql.StringType),
-                new ColumnDefinition(Constant.DetectionColumns.Conf,  Sql.Real),
-                new ColumnDefinition(Constant.DetectionColumns.BBox,  Sql.StringType), // Will need to parse it into new new double[4]
-                new ColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DBTables.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
+                new SchemaColumnDefinition(Constant.DetectionColumns.DetectionID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
+                new SchemaColumnDefinition(Constant.DetectionColumns.Category,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.DetectionColumns.Conf,  Sql.Real),
+                new SchemaColumnDefinition(Constant.DetectionColumns.BBox,  Sql.StringType), // Will need to parse it into new new double[4]
+                new SchemaColumnDefinition(Constant.DetectionColumns.ImageID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
+                new SchemaColumnDefinition("FOREIGN KEY ( " + Constant.DetectionColumns.ImageID + " )", "REFERENCES " + Constant.DBTables.FileData + " ( " + Constant.DetectionColumns.ImageID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTables.Detections, columnDefinitions);
 
             // Classifications: create or clear table 
-            columnDefinitions = new List<ColumnDefinition>
+            columnDefinitions = new List<SchemaColumnDefinition>
             {
-                new ColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
-                new ColumnDefinition(Constant.ClassificationColumns.Category, Sql.StringType),
-                new ColumnDefinition(Constant.ClassificationColumns.Conf,  Sql.Real),
-                new ColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
-                new ColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTables.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
+                new SchemaColumnDefinition(Constant.ClassificationColumns.ClassificationID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey),
+                new SchemaColumnDefinition(Constant.ClassificationColumns.Category, Sql.StringType),
+                new SchemaColumnDefinition(Constant.ClassificationColumns.Conf,  Sql.Real),
+                new SchemaColumnDefinition(Constant.ClassificationColumns.DetectionID, Timelapse.Sql.IntegerType), // Foreign key: ImageID
+                new SchemaColumnDefinition("FOREIGN KEY ( " + Constant.ClassificationColumns.DetectionID + " )", "REFERENCES " + Constant.DBTables.Detections + " ( " + Constant.ClassificationColumns.DetectionID + " ) " + " ON DELETE CASCADE "),
             };
             database.CreateTable(Constant.DBTables.Classifications, columnDefinitions);
         }
+        #endregion
 
+        #region Public: Clear Detection Tables
         public static void ClearDetectionTables(SQLiteWrapper database)
         {
             // Check the arguments for null 
@@ -99,7 +101,9 @@ namespace Timelapse.Detection
             };
             database.DeleteAllRowsInTables(detectionTables);
         }
+        #endregion
 
+        #region Public: Populate Detection Tables
         // Populate the various Detection Database Tables from the detection data structure.
         public static void PopulateTables(Detector detector, FileDatabase fileDatabase, SQLiteWrapper detectionDB, string pathPrefixForTruncation)
         {
@@ -317,5 +321,6 @@ namespace Timelapse.Detection
                 }
             }
         }
+        #endregion
     }
 }

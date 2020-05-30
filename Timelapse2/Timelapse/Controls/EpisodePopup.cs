@@ -22,13 +22,18 @@ namespace Timelapse.Controls
     // - whether images to the left/right were deleted, as the subsequent images may have a time difference greater than the threshold.
     public class EpisodePopup : Popup
     {
+        #region Public properties and private variables
         // We need to access the FileDatabase to get file tables, do selects, etc.
+        // This is normally set in the constructor. However, if the image set is closed and another one loaded,
+        // it is reset by an external method
         public FileDatabase FileDatabase { get; set; }
-        private double ImageHeight { get; set; }
 
+        private double ImageHeight { get; set; }
         private readonly TimelapseWindow timelapseWindow = GlobalReferences.MainWindow;
         private readonly MarkableCanvas markableCanvas;
+        #endregion
 
+        #region Constructor
         public EpisodePopup(MarkableCanvas markableCanvas, FileDatabase fileDatabase, double imageHeight)
         {
             this.markableCanvas = markableCanvas;
@@ -39,8 +44,9 @@ namespace Timelapse.Controls
             this.PlacementTarget = markableCanvas;
             this.IsOpen = false;
         }
+        #endregion
 
-        // Show or hide the popup, where we display up to the maxNumberImagesToDisplay
+        #region Public Show or hide the popup, where we display up to the maxNumberImagesToDisplay
         public void Show(bool isVisible, int maxNumberImagesToDisplay)
         {
             ImageRow currentImageRow = timelapseWindow?.DataHandler?.ImageCache?.Current;
@@ -62,7 +68,7 @@ namespace Timelapse.Controls
             this.Child = sp;
 
             double width = 0;  // Used to calculate the placement offset of the popup relative to the placement target
-            double height = 0;
+            double height;
 
             // Add a visual marker to show the position of the label in the image list
             Label label = EpisodePopup.CreateLabel("^", this.ImageHeight);
@@ -82,8 +88,8 @@ namespace Timelapse.Controls
             // While this could produce more hits than we need, it should give us a relatively short table of possible candidates
             DateTime lowerDateTime = currentImageRow.DateTime - TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
             DateTime upperDateTime = currentImageRow.DateTime + TimeSpan.FromTicks(timeThreshold.Ticks * maxNumberImagesToDisplay);
-            string slowerDateTime = DateTimeHandler.ToDatabaseDateTimeString(lowerDateTime);
-            string supperDateTime = DateTimeHandler.ToDatabaseDateTimeString(upperDateTime);
+            string slowerDateTime = DateTimeHandler.ToStringDatabaseDateTime(lowerDateTime);
+            string supperDateTime = DateTimeHandler.ToStringDatabaseDateTime(upperDateTime);
 
             // Get a table of files (sorted by datetime) with that relative path which falls between the lower and upper date range
             DataTable dt = this.FileDatabase.GetIDandDateWithRelativePathAndBetweenDates(relativePath, slowerDateTime, supperDateTime);
@@ -183,15 +189,18 @@ namespace Timelapse.Controls
             // Cleanup
             dt.Dispose();
         }
+        #endregion 
 
+        #region Internal methods
         // Create a canvas containging the image as well as the  bounding boxes defined by the filetable id 
         private static Canvas CreateCanvasWithBoundingBoxesAndImage(Image image, double height, int margin, long fileTableID)
         {
-            Canvas canvas = new Canvas();
-            canvas.Width = image.Source.Width; ;
-            canvas.Height = height;
-            canvas.Background = Brushes.Gray;
-
+            Canvas canvas = new Canvas
+            {
+                Width = image.Source.Width,
+                Height = height,
+                Background = Brushes.Gray
+            };
             Canvas.SetLeft(image, 0);
             Canvas.SetTop(image, 0);
             canvas.Children.Add(image);
@@ -202,6 +211,7 @@ namespace Timelapse.Controls
             return (canvas);
         }
 
+        // Create the image
         private static Image CreateImage(ImageRow imageRow, int margin, double imageHeight)
         {
             Image image = new Image
@@ -220,11 +230,8 @@ namespace Timelapse.Controls
                 {
                     double scale = imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
                     image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
-                    // System.Diagnostics.Debug.Print("Placehoder: " + scale.ToString() + " " + image.Source.Width + "," + image.Source.Height);
                 }
             }
-            // else System.Diagnostics.Debug.Print("Image: " + image.Source.Width + "," + image.Source.Height);
-
             image.Margin = new Thickness(margin);
             return image;
         }
@@ -244,5 +251,6 @@ namespace Timelapse.Controls
                 Background = Brushes.LightGray
             };
         }
+        #endregion
     }
 }

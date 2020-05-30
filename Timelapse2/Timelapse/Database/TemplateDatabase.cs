@@ -15,18 +15,23 @@ namespace Timelapse.Database
     /// </summary>
     public class TemplateDatabase : IDisposable
     {
-        private bool disposed;
-        private DataGrid editorDataGrid;
-        private DateTime mostRecentBackup;
-        private DataRowChangeEventHandler onTemplateTableRowChanged;
-
+        #region Public / Protected Properties
         public DataTableBackedList<ControlRow> Controls { get; private set; }
-
-        protected SQLiteWrapper Database { get; set; }
 
         /// <summary>Gets the file name of the image database on disk.</summary>
         public string FilePath { get; private set; }
 
+        protected SQLiteWrapper Database { get; set; }
+        #endregion
+
+        #region Private Variables
+        private bool disposed;
+        private DataGrid editorDataGrid;
+        private DateTime mostRecentBackup;
+        private DataRowChangeEventHandler onTemplateTableRowChanged;
+        #endregion
+
+        #region Constructors
         protected TemplateDatabase(string filePath)
         {
             this.disposed = false;
@@ -36,26 +41,9 @@ namespace Timelapse.Database
             this.Database = new SQLiteWrapper(filePath);
             this.FilePath = filePath;
         }
+        #endregion
 
-        public void BindToEditorDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
-        {
-            this.editorDataGrid = dataGrid;
-            this.onTemplateTableRowChanged = onRowChanged;
-            this.GetControlsSortedByControlOrder();
-        }
-
-        protected void CreateBackupIfNeeded()
-        {
-            if (DateTime.UtcNow - this.mostRecentBackup < Constant.File.BackupInterval)
-            {
-                // not due for a new backup yet
-                return;
-            }
-
-            FileBackup.TryCreateBackup(this.FilePath);
-            this.mostRecentBackup = DateTime.UtcNow;
-        }
-
+        #region Public / Protected Async Tasks - TryCreateOrOpen, OnDatabaseCreated, UpgradeDatabasesAndCompareTemplates, OnExistingDatabaseOpened
         public async static Task<TemplateDatabase> CreateOrOpenAsync(string filePath)
         {
             // check for an existing database before instantiating the databse as SQL wrapper instantiation creates the database file
@@ -85,6 +73,207 @@ namespace Timelapse.Database
             return templateDatabase;
         }
 
+        public async static Task<Tuple<bool, TemplateDatabase>> TryCreateOrOpenAsync(string filePath)
+        {
+            // Follow the MSDN design pattern for returning an IDisposable: https://www.codeproject.com/Questions/385273/Returning-a-Disposable-Object-from-a-Method
+            TemplateDatabase disposableTemplateDB = null;
+            try
+            {
+                disposableTemplateDB = await CreateOrOpenAsync(filePath).ConfigureAwait(true);
+                TemplateDatabase returnableTemplateDB = disposableTemplateDB;
+                // the returnableTemplateDB will be null if its not a valid template, e.g., if no TemplateTable exists in it
+                bool successOrFail = returnableTemplateDB != null;
+                return new Tuple<bool, TemplateDatabase>(successOrFail, returnableTemplateDB);
+            }
+            catch (Exception exception)
+            {
+                TracePrint.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
+                return new Tuple<bool, TemplateDatabase>(false, null);
+            }
+            finally
+            {
+                if (disposableTemplateDB != null)
+                {
+                    disposableTemplateDB.Dispose();
+                }
+            }
+        }
+
+        protected async virtual Task OnDatabaseCreatedAsync(TemplateDatabase other)
+        {
+            // create the template table
+            await Task.Run(() =>
+            {
+                List<SchemaColumnDefinition> templateTableColumns = new List<SchemaColumnDefinition>
+                {
+                    new SchemaColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
+                    new SchemaColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
+                    new SchemaColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.IntegerType),
+                    new SchemaColumnDefinition(Constant.Control.Type, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.Label, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.DataLabel, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.Tooltip, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.TextBoxWidth, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.Copyable, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.Visible, Sql.Text),
+                    new SchemaColumnDefinition(Constant.Control.List, Sql.Text)
+                };
+                this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
+
+                // if an existing table was passed, clone its contents into this database
+                if (other != null)
+                {
+                    this.SyncTemplateTableToDatabase(other.Controls);
+                    return;
+                }
+
+                // no existing table to clone, so add standard controls to template table
+                List<List<ColumnTuple>> standardControls = new List<List<ColumnTuple>>();
+                long controlOrder = 0; // The control order, a one based count incremented for every new entry
+                long spreadsheetOrder = 0; // The spreadsheet order, a one based count incremented for every new entry
+
+                // file
+                List<ColumnTuple> file = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.File),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FileTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FileWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
+                standardControls.Add(file);
+
+                // relative path
+                standardControls.Add(GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
+
+                // folder
+                List<ColumnTuple> folder = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Folder),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FolderTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FolderWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
+                standardControls.Add(folder);
+
+                // datetime
+                standardControls.Add(GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
+
+                // utcOffset
+                standardControls.Add(GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
+
+                // date
+                List<ColumnTuple> date = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToStringDisplayDate(Constant.ControlDefault.DateTimeValue)),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Date),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, false),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
+                standardControls.Add(date);
+
+                // time
+                List<ColumnTuple> time = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToStringDisplayTime(Constant.ControlDefault.DateTimeValue)),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Time),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.TimeTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.TimeWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, false),
+                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
+            };
+                standardControls.Add(time);
+
+                // image quality
+                List<ColumnTuple> imageQuality = new List<ColumnTuple>
+            {
+                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
+                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
+                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.DefaultValue, Constant.ImageQuality.Ok),
+                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.ImageQuality),
+                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.ImageQualityTooltip),
+                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.ImageQualityWidth),
+                new ColumnTuple(Constant.Control.Copyable, false),
+                new ColumnTuple(Constant.Control.Visible, true),
+                new ColumnTuple(Constant.Control.List, Constant.ImageQuality.ListOfValues)
+            };
+                standardControls.Add(imageQuality);
+
+                // delete flag
+                standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
+
+                // insert standard controls into the template table
+                this.Database.Insert(Constant.DBTables.Controls, standardControls);
+
+                // populate the in memory version of the template table
+                this.GetControlsSortedByControlOrder();
+            }).ConfigureAwait(true);
+        }
+
+        protected async virtual Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
+        {
+            await Task.Run(() =>
+            {
+                this.GetControlsSortedByControlOrder();
+                this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureCurrentSchema();
+            }).ConfigureAwait(true);
+        }
+
+        protected async virtual Task OnExistingDatabaseOpenedAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
+        {
+            await Task.Run(() =>
+            {
+                this.GetControlsSortedByControlOrder();
+                this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureCurrentSchema();
+            }).ConfigureAwait(true);
+        }
+        #endregion
+
+        #region Public Methods - Boolean tests - Exists tables, Is database valid
+        public bool TableExists(string dataTable)
+        {
+            return this.Database.TableExists(dataTable);
+        }
+
+        // Check if the database table specified in the path has a detections table
+        public static bool TableExists(string dataTable, string dbPath)
+        {
+            // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
+            // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
+            SQLiteWrapper db = new SQLiteWrapper(dbPath);
+            return db.TableExists(dataTable);
+        }
+
         // Check if the database is valid. 
         public bool IsDatabaseFileValid(string filePath, string tableNameToCheck)
         {
@@ -111,22 +300,15 @@ namespace Timelapse.Database
             }
         }
 
-        #region Exists tables
-        public bool TableExists(string dataTable)
+        public bool IsControlCopyable(string dataLabel)
         {
-            return this.Database.TableExists(dataTable);
-        }
-
-        // Check if the database table specified in the path has a detections table
-        public static bool TableExists(string dataTable, string dbPath)
-        {
-            // Note that no error checking is done - I assume, perhaps unwisely, that the file is a valid database
-            // On tedting, it does return 'false' on an invalid ddb file, so I suppose that's ok.
-            SQLiteWrapper db = new SQLiteWrapper(dbPath);
-            return db.TableExists(dataTable);
+            long id = this.GetControlIDFromTemplateTable(dataLabel);
+            ControlRow control = this.Controls.Find(id);
+            return control.Copyable;
         }
         #endregion
 
+        #region Public methods - Add user defined control
         public ControlRow AddUserDefinedControl(string controlType)
         {
             this.CreateBackupIfNeeded();
@@ -188,7 +370,7 @@ namespace Timelapse.Database
             newControl.SpreadsheetOrder = newControl.ControlOrder;
 
             // add the new control to the database
-            List<List<ColumnTuple>> controlInsertWrapper = new List<List<ColumnTuple>>() { newControl.GetColumnTuples().Columns };
+            List<List<ColumnTuple>> controlInsertWrapper = new List<List<ColumnTuple>>() { newControl.CreateColumnTuplesWithWhereByID().Columns };
             this.Database.Insert(Constant.DBTables.Controls, controlInsertWrapper);
 
             // update the in memory table to reflect current database content
@@ -196,21 +378,9 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
             return this.Controls[this.Controls.RowCount - 1];
         }
+        #endregion
 
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void GetControlsSortedByControlOrder()
-        {
-            // Utilities.PrintMethodName();
-            DataTable templateTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Controls + Sql.OrderBy + Constant.Control.ControlOrder);
-            this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
-            this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
-        }
-
+        #region Public Methods - Get Controls, DtaaLables, TypedDataLable
         public List<string> GetDataLabelsExceptIDInSpreadsheetOrder()
         {
             // Utilities.PrintMethodName();
@@ -256,14 +426,9 @@ namespace Timelapse.Database
             }
             return typedDataLabels;
         }
+        #endregion
 
-        public bool IsControlCopyable(string dataLabel)
-        {
-            long id = this.GetControlIDFromTemplateTable(dataLabel);
-            ControlRow control = this.Controls.Find(id);
-            return control.Copyable;
-        }
-
+        #region Public Methods - RemoveuserDefinedCongtrol
         public void RemoveUserDefinedControl(ControlRow controlToRemove)
         {
             // Check the arguments for null 
@@ -329,14 +494,16 @@ namespace Timelapse.Database
             // should not be necessary but this is done to mitigate divergence in case a bug results in the delete lacking perfect fidelity
             this.GetControlsSortedByControlOrder();
         }
+        #endregion
 
+        #region Public /Private Methods Sync - ControlToDatabase, TemplateTableCOntrolAndSpreadsheetOrderToDatabase
         public void SyncControlToDatabase(ControlRow control)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
 
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DBTables.Controls, control.GetColumnTuples());
+            this.Database.Update(Constant.DBTables.Controls, control.CreateColumnTuplesWithWhereByID());
 
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
@@ -375,7 +542,7 @@ namespace Timelapse.Database
             List<List<ColumnTuple>> newTableTuples = new List<List<ColumnTuple>>();
             foreach (ControlRow control in newTable)
             {
-                newTableTuples.Add(control.GetColumnTuples().Columns);
+                newTableTuples.Add(control.CreateColumnTuplesWithWhereByID().Columns);
             }
             this.Database.Insert(Constant.DBTables.Controls, newTableTuples);
 
@@ -383,31 +550,27 @@ namespace Timelapse.Database
             // could just use the new table but this is done in case a bug results in the insert lacking perfect fidelity
             this.GetControlsSortedByControlOrder();
         }
+        #endregion
 
-        public async static Task<Tuple<bool, TemplateDatabase>> TryCreateOrOpenAsync(string filePath)
+        #region Public Methods - Misc: BindToEditorDataGrid, CreateBackupIfNeeded, Update DisplayOrder
+
+        public void BindToEditorDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
         {
-            // Follow the MSDN design pattern for returning an IDisposable: https://www.codeproject.com/Questions/385273/Returning-a-Disposable-Object-from-a-Method
-            TemplateDatabase disposableTemplateDB = null;
-            try
+            this.editorDataGrid = dataGrid;
+            this.onTemplateTableRowChanged = onRowChanged;
+            this.GetControlsSortedByControlOrder();
+        }
+
+        protected void CreateBackupIfNeeded()
+        {
+            if (DateTime.UtcNow - this.mostRecentBackup < Constant.File.BackupInterval)
             {
-                disposableTemplateDB = await CreateOrOpenAsync(filePath).ConfigureAwait(true);
-                TemplateDatabase returnableTemplateDB = disposableTemplateDB;
-                // the returnableTemplateDB will be null if its not a valid template, e.g., if no TemplateTable exists in it
-                bool successOrFail = returnableTemplateDB != null;
-                return new Tuple<bool, TemplateDatabase>(successOrFail, returnableTemplateDB);
+                // not due for a new backup yet
+                return;
             }
-            catch (Exception exception)
-            {
-                TracePrint.PrintMessage(String.Format("Failure in TryCreateOpen. {0}", exception.ToString()));
-                return new Tuple<bool, TemplateDatabase>(false, null);
-            }
-            finally
-            {
-                if (disposableTemplateDB != null)
-                {
-                    disposableTemplateDB.Dispose();
-                }
-            }
+
+            FileBackup.TryCreateBackup(this.FilePath);
+            this.mostRecentBackup = DateTime.UtcNow;
         }
 
         public void UpdateDisplayOrder(string orderColumnName, Dictionary<string, long> newOrderByDataLabel)
@@ -472,25 +635,9 @@ namespace Timelapse.Database
             // sync new order to database
             this.SyncTemplateTableControlAndSpreadsheetOrderToDatabase();
         }
+        #endregion
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (this.disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                if (this.Controls != null)
-                {
-                    this.Controls.Dispose();
-                }
-            }
-
-            this.disposed = true;
-        }
-
+        #region Public Methods - Get ControlFromTemplate, NextUniqueDataLabel
         /// <summary>Given a data label, get the corresponding data entry control</summary>
         public ControlRow GetControlFromTemplateTable(string dataLabel)
         {
@@ -504,176 +651,31 @@ namespace Timelapse.Database
             return null;
         }
 
-        /// <summary>Given a data label, get the id of the corresponding data entry control</summary>
-        protected long GetControlIDFromTemplateTable(string dataLabel)
+
+        public string GetNextUniqueDataLabel(string dataLabelPrefix)
         {
-            ControlRow control = this.GetControlFromTemplateTable(dataLabel);
-            if (control == null)
+            // get all existing data labels, as we have to ensure that a new data label doesn't have the same name as an existing one
+            List<string> dataLabels = new List<string>();
+            foreach (ControlRow control in this.Controls)
             {
-                return -1;
+                dataLabels.Add(control.DataLabel);
             }
-            return control.ID;
+
+            // If the data label name exists, keep incrementing the count that is appended to the end
+            // of the field type until it forms a unique data label name
+            int dataLabelUniqueIdentifier = 0;
+            string nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
+            while (dataLabels.Contains(nextDataLabel))
+            {
+                ++dataLabelUniqueIdentifier;
+                nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
+            }
+
+            return nextDataLabel;
         }
+#endregion
 
-        protected async virtual Task OnDatabaseCreatedAsync(TemplateDatabase other)
-        {
-            // create the template table
-            await Task.Run(() =>
-            {
-                List<ColumnDefinition> templateTableColumns = new List<ColumnDefinition>
-                {
-                    new ColumnDefinition(Constant.DatabaseColumn.ID, Sql.CreationStringPrimaryKey),
-                    new ColumnDefinition(Constant.Control.ControlOrder, Sql.IntegerType),
-                    new ColumnDefinition(Constant.Control.SpreadsheetOrder, Sql.IntegerType),
-                    new ColumnDefinition(Constant.Control.Type, Sql.Text),
-                    new ColumnDefinition(Constant.Control.DefaultValue, Sql.Text),
-                    new ColumnDefinition(Constant.Control.Label, Sql.Text),
-                    new ColumnDefinition(Constant.Control.DataLabel, Sql.Text),
-                    new ColumnDefinition(Constant.Control.Tooltip, Sql.Text),
-                    new ColumnDefinition(Constant.Control.TextBoxWidth, Sql.Text),
-                    new ColumnDefinition(Constant.Control.Copyable, Sql.Text),
-                    new ColumnDefinition(Constant.Control.Visible, Sql.Text),
-                    new ColumnDefinition(Constant.Control.List, Sql.Text)
-                };
-                this.Database.CreateTable(Constant.DBTables.Controls, templateTableColumns);
-
-                // if an existing table was passed, clone its contents into this database
-                if (other != null)
-                {
-                    this.SyncTemplateTableToDatabase(other.Controls);
-                    return;
-                }
-
-                // no existing table to clone, so add standard controls to template table
-                List<List<ColumnTuple>> standardControls = new List<List<ColumnTuple>>();
-                long controlOrder = 0; // The control order, a one based count incremented for every new entry
-                long spreadsheetOrder = 0; // The spreadsheet order, a one based count incremented for every new entry
-
-                // file
-                List<ColumnTuple> file = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
-                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
-                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.File),
-                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
-                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.File),
-                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.File),
-                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FileTooltip),
-                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FileWidth),
-                new ColumnTuple(Constant.Control.Copyable, false),
-                new ColumnTuple(Constant.Control.Visible, true),
-                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
-            };
-                standardControls.Add(file);
-
-                // relative path
-                standardControls.Add(GetRelativePathTuples(++controlOrder, ++spreadsheetOrder, true));
-
-                // folder
-                List<ColumnTuple> folder = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
-                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
-                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Folder),
-                new ColumnTuple(Constant.Control.DefaultValue, Constant.ControlDefault.Value),
-                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Folder),
-                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Folder),
-                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.FolderTooltip),
-                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.FolderWidth),
-                new ColumnTuple(Constant.Control.Copyable, false),
-                new ColumnTuple(Constant.Control.Visible, true),
-                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
-            };
-                standardControls.Add(folder);
-
-                // datetime
-                standardControls.Add(GetDateTimeTuples(++controlOrder, ++spreadsheetOrder, true));
-
-                // utcOffset
-                standardControls.Add(GetUtcOffsetTuples(++controlOrder, ++spreadsheetOrder, false));
-
-                // date
-                List<ColumnTuple> date = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
-                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
-                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Date),
-                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayDateString(Constant.ControlDefault.DateTimeValue)),
-                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Date),
-                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Date),
-                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.DateTooltip),
-                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.DateWidth),
-                new ColumnTuple(Constant.Control.Copyable, false),
-                new ColumnTuple(Constant.Control.Visible, false),
-                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
-            };
-                standardControls.Add(date);
-
-                // time
-                List<ColumnTuple> time = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
-                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
-                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.Time),
-                new ColumnTuple(Constant.Control.DefaultValue, DateTimeHandler.ToDisplayTimeString(Constant.ControlDefault.DateTimeValue)),
-                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.Time),
-                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.Time),
-                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.TimeTooltip),
-                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.TimeWidth),
-                new ColumnTuple(Constant.Control.Copyable, false),
-                new ColumnTuple(Constant.Control.Visible, false),
-                new ColumnTuple(Constant.Control.List, Constant.ControlDefault.Value)
-            };
-                standardControls.Add(time);
-
-                // image quality
-                List<ColumnTuple> imageQuality = new List<ColumnTuple>
-            {
-                new ColumnTuple(Constant.Control.ControlOrder, ++controlOrder),
-                new ColumnTuple(Constant.Control.SpreadsheetOrder, ++spreadsheetOrder),
-                new ColumnTuple(Constant.Control.Type, Constant.DatabaseColumn.ImageQuality),
-                new ColumnTuple(Constant.Control.DefaultValue, Constant.ImageQuality.Ok),
-                new ColumnTuple(Constant.Control.Label, Constant.DatabaseColumn.ImageQuality),
-                new ColumnTuple(Constant.Control.DataLabel, Constant.DatabaseColumn.ImageQuality),
-                new ColumnTuple(Constant.Control.Tooltip, Constant.ControlDefault.ImageQualityTooltip),
-                new ColumnTuple(Constant.Control.TextBoxWidth, Constant.ControlDefault.ImageQualityWidth),
-                new ColumnTuple(Constant.Control.Copyable, false),
-                new ColumnTuple(Constant.Control.Visible, true),
-                new ColumnTuple(Constant.Control.List, Constant.ImageQuality.ListOfValues)
-            };
-                standardControls.Add(imageQuality);
-
-                // delete flag
-                standardControls.Add(GetDeleteFlagTuples(++controlOrder, ++spreadsheetOrder, true));
-
-                // insert standard controls into the template table
-                this.Database.Insert(Constant.DBTables.Controls, standardControls);
-
-                // populate the in memory version of the template table
-                this.GetControlsSortedByControlOrder();
-            }).ConfigureAwait(true);
-        }
-
-        protected async virtual Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
-        {
-            await Task.Run(() =>
-            {
-                this.GetControlsSortedByControlOrder();
-                this.EnsureDataLabelsAndLabelsNotEmpty();
-                this.EnsureCurrentSchema();
-            }).ConfigureAwait(true);
-        }
-
-        protected async virtual Task OnExistingDatabaseOpenedAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
-        {
-            await Task.Run(() =>
-            {
-                this.GetControlsSortedByControlOrder();
-                this.EnsureDataLabelsAndLabelsNotEmpty();
-                this.EnsureCurrentSchema();
-            }).ConfigureAwait(true);
-        }
-
+        #region Private Methods - Ensure: Current Schema,  DataLabelsAndLabelsNotEmpty
         // Do various checks and corrections to the Template DB to maintain backwards compatability. 
         private void EnsureCurrentSchema()
         {
@@ -764,6 +766,60 @@ namespace Timelapse.Database
             }
         }
 
+        /// <summary>
+        /// Supply default values for any empty labels or data labels are non-empty, updating both TemplateTable and the database as needed
+        /// </summary>
+        private void EnsureDataLabelsAndLabelsNotEmpty()
+        {
+            // All the code below goes through the template table to see if there are any non-empty labels / data labels,
+            // and if so, updates them to a reasonable value. If both are empty, it keeps track of its type and creates
+            // a label called (say) Counter3 for the third counter that has no label. If there is no DataLabel value, it
+            // makes it the same as the label. Ultimately, it guarantees that there will always be a (hopefully unique)
+            // data label and label name. 
+            // As well, the contents of the template table are loaded into memory.
+            try
+            {
+                foreach (ControlRow control in this.Controls)
+                {
+                    // Check if various values are empty, and if so update the row and fill the dataline with appropriate defaults
+                    ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
+                    bool noDataLabel = String.IsNullOrWhiteSpace(control.DataLabel);
+                    if (noDataLabel && String.IsNullOrWhiteSpace(control.Label))
+                    {
+                        string dataLabel = this.GetNextUniqueDataLabel(control.Type);
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, dataLabel));
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, dataLabel));
+                        control.Label = dataLabel;
+                        control.DataLabel = dataLabel;
+                    }
+                    else if (noDataLabel)
+                    {
+                        // No data label but a label, so use the label's value as the data label
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, control.Label));
+                        control.DataLabel = control.Label;
+                    }
+
+                    // Now add the new values to the database
+                    if (columnsToUpdate.Columns.Count > 0)
+                    {
+                        columnsToUpdate.SetWhere(control.ID);
+                        this.Database.Update(Constant.DBTables.Controls, columnsToUpdate);
+                    }
+                }
+            }
+            catch
+            {
+                // Throw a custom exception so we can give a more informative fatal error message.
+                // While this method does not normally fail, one user did report it crashing here due to his Citrix system
+                // limiting how the template file is manipulated. The actual failure happens before this, but this
+                // is where it is caught.
+                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
+                throw custom_e;
+            }
+        }
+        #endregion
+
+        #region Private Methods - Set ControlOrder, ControlID
         /// <summary>
         /// Set the order of the specified control to the specified value, shifting other controls' orders as needed.
         /// </summary>
@@ -860,84 +916,23 @@ namespace Timelapse.Database
 
             this.GetControlsSortedByControlOrder();
         }
+        #endregion
 
-        public string GetNextUniqueDataLabel(string dataLabelPrefix)
-        {
-            // get all existing data labels, as we have to ensure that a new data label doesn't have the same name as an existing one
-            List<string> dataLabels = new List<string>();
-            foreach (ControlRow control in this.Controls)
-            {
-                dataLabels.Add(control.DataLabel);
-            }
-
-            // If the data label name exists, keep incrementing the count that is appended to the end
-            // of the field type until it forms a unique data label name
-            int dataLabelUniqueIdentifier = 0;
-            string nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
-            while (dataLabels.Contains(nextDataLabel))
-            {
-                ++dataLabelUniqueIdentifier;
-                nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
-            }
-
-            return nextDataLabel;
-        }
-
+        #region Private Methods - Get OrderForNewControl, ControlID, DatTime RelativePath, DeleteFlag, UTCOffset, Controls in sorted order
         private long GetOrderForNewControl()
         {
             return this.Controls.RowCount + 1;
         }
-
-        /// <summary>
-        /// Supply default values for any empty labels or data labels are non-empty, updating both TemplateTable and the database as needed
-        /// </summary>
-        private void EnsureDataLabelsAndLabelsNotEmpty()
+        
+        /// <summary>Given a data label, get the id of the corresponding data entry control</summary>
+        protected long GetControlIDFromTemplateTable(string dataLabel)
         {
-            // All the code below goes through the template table to see if there are any non-empty labels / data labels,
-            // and if so, updates them to a reasonable value. If both are empty, it keeps track of its type and creates
-            // a label called (say) Counter3 for the third counter that has no label. If there is no DataLabel value, it
-            // makes it the same as the label. Ultimately, it guarantees that there will always be a (hopefully unique)
-            // data label and label name. 
-            // As well, the contents of the template table are loaded into memory.
-            try
+            ControlRow control = this.GetControlFromTemplateTable(dataLabel);
+            if (control == null)
             {
-                foreach (ControlRow control in this.Controls)
-                {
-                    // Check if various values are empty, and if so update the row and fill the dataline with appropriate defaults
-                    ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
-                    bool noDataLabel = String.IsNullOrWhiteSpace(control.DataLabel);
-                    if (noDataLabel && String.IsNullOrWhiteSpace(control.Label))
-                    {
-                        string dataLabel = this.GetNextUniqueDataLabel(control.Type);
-                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, dataLabel));
-                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, dataLabel));
-                        control.Label = dataLabel;
-                        control.DataLabel = dataLabel;
-                    }
-                    else if (noDataLabel)
-                    {
-                        // No data label but a label, so use the label's value as the data label
-                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, control.Label));
-                        control.DataLabel = control.Label;
-                    }
-
-                    // Now add the new values to the database
-                    if (columnsToUpdate.Columns.Count > 0)
-                    {
-                        columnsToUpdate.SetWhere(control.ID);
-                        this.Database.Update(Constant.DBTables.Controls, columnsToUpdate);
-                    }
-                }
+                return -1;
             }
-            catch
-            {
-                // Throw a custom exception so we can give a more informative fatal error message.
-                // While this method does not normally fail, one user did report it crashing here due to his Citrix system
-                // limiting how the template file is manipulated. The actual failure happens before this, but this
-                // is where it is caught.
-                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
-                throw custom_e;
-            }
+            return control.ID;
         }
 
         private static List<ColumnTuple> GetDateTimeTuples(long controlOrder, long spreadsheetOrder, bool visible)
@@ -1017,5 +1012,40 @@ namespace Timelapse.Database
             };
             return utcOffset;
         }
+
+        private void GetControlsSortedByControlOrder()
+        {
+            // Utilities.PrintMethodName();
+            DataTable templateTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Controls + Sql.OrderBy + Constant.Control.ControlOrder);
+            this.Controls = new DataTableBackedList<ControlRow>(templateTable, (DataRow row) => { return new ControlRow(row); });
+            this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
+        }
+        #endregion
+ 
+        #region Disposing
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                if (this.Controls != null)
+                {
+                    this.Controls.Dispose();
+                }
+            }
+
+            this.disposed = true;
+        }
+        #endregion
     }
 }

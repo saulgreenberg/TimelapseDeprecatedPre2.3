@@ -22,6 +22,7 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class CustomSelection : Window
     {
+        #region Private Variables
         private const int DefaultControlWidth = 200;
         private const double DefaultSearchCriteriaWidth = Double.NaN; // Same as xaml Width = "Auto"
 
@@ -47,6 +48,7 @@ namespace Timelapse.Dialog
         private readonly DispatcherTimer countTimer = new DispatcherTimer();
 
         private DetectionSelections DetectionSelections { get; set; }
+        #endregion
 
         #region Constructors and Loading
         public CustomSelection(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections)

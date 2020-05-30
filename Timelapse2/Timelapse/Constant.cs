@@ -86,7 +86,7 @@ namespace Timelapse.Constant
         public static readonly SolidColorBrush QuickPasteFieldHighlightBrush = new SolidColorBrush(Color.FromArgb(255, 200, 251, 200));
 
         public static readonly ReadOnlyCollection<Type> KeyboardInputTypes = new List<Type>()
-            {
+        {
                 typeof(AutocompleteTextBox), // note controls
                 typeof(Calendar),          // date time control
                 typeof(CalendarDayButton), // date time control
@@ -95,10 +95,10 @@ namespace Timelapse.Constant
                 typeof(ComboBoxItem),      // choice controls
                 typeof(TextBox),           // note controls
                 typeof(WatermarkTextBox)   // date time or counter control
-            }.AsReadOnly();
+        }.AsReadOnly();
 
         public static readonly ReadOnlyCollection<string> StandardTypes = new List<string>()
-            {
+        {
                 Constant.DatabaseColumn.Date,
                 Constant.DatabaseColumn.DateTime,
                 Constant.DatabaseColumn.DeleteFlag,
@@ -108,7 +108,7 @@ namespace Timelapse.Constant
                 Constant.DatabaseColumn.RelativePath,
                 Constant.DatabaseColumn.Time,
                 Constant.DatabaseColumn.UtcOffset
-            }.AsReadOnly();
+        }.AsReadOnly();
     }
 
     // see also ControlLabelStyle and ControlContentStyle
@@ -477,7 +477,7 @@ namespace Timelapse.Constant
 
         // whether audio feedback is enabled
         public const string AudioFeedback = "AudioFeedback";
-
+        
         // key containing the top left location of the Timelapse Window, as a point
         public const string TimelapseWindowLocation = "TimelapseWindowLocation";
         // key containing the size of the Timelapse Window, as a Height

@@ -54,13 +54,13 @@ namespace Timelapse.Database
         //     ...                                 ...
         //     columnNname datatype);              SALARY REAL);
         /// </summary>
-        public void CreateTable(string tableName, List<ColumnDefinition> columnDefinitions)
+        public void CreateTable(string tableName, List<SchemaColumnDefinition> columnDefinitions)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnDefinitions, nameof(columnDefinitions));
 
             string query = Sql.CreateTable + tableName + Sql.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (
-            foreach (ColumnDefinition column in columnDefinitions)
+            foreach (SchemaColumnDefinition column in columnDefinitions)
             {
                 query += column.ToString() + Sql.Comma + Environment.NewLine;             // "columnname TEXT DEFAULT 'value',\n" or similar
             }
@@ -708,7 +708,7 @@ namespace Timelapse.Database
         #endregion
 
         #region Schema and Column Changes: Replace Schema, IsColumnInTable / Add / Delete / Rename / 
-        public void SchemaAlterTableWithNewColumnDefinitions(string sourceTable, List<ColumnDefinition> columnDefinitions)
+        public void SchemaAlterTableWithNewColumnDefinitions(string sourceTable, List<SchemaColumnDefinition> columnDefinitions)
         {
             string destTable = "TempTable";
             try
@@ -805,7 +805,7 @@ namespace Timelapse.Database
 
         // This method will create a column in a table of type TEXT, where it is added to its end
         // It assumes that the value, if not empty, should be treated as the default value for that column
-        public void SchemaAddColumnToEndOfTable(string tableName, ColumnDefinition columnDefinition)
+        public void SchemaAddColumnToEndOfTable(string tableName, SchemaColumnDefinition columnDefinition)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
@@ -817,7 +817,7 @@ namespace Timelapse.Database
         /// Add a column to the table named sourceTable at position columnNumber using the provided columnDefinition
         /// The value in columnDefinition is assumed to be the desired default value
         /// </summary>
-        public void SchemaAddColumnToTable(string tableName, int columnNumber, ColumnDefinition columnDefinition)
+        public void SchemaAddColumnToTable(string tableName, int columnNumber, SchemaColumnDefinition columnDefinition)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(columnDefinition, nameof(columnDefinition));
@@ -993,7 +993,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Add a column definition into the provided schema at the given column location
         /// </summary>
-        private static string SchemaInsertColumn(SQLiteConnection connection, string tableName, int newColumnNumber, ColumnDefinition newColumn)
+        private static string SchemaInsertColumn(SQLiteConnection connection, string tableName, int newColumnNumber, SchemaColumnDefinition newColumn)
         {
             List<string> columnDefinitions = GetSchemaColumnDefinitions(connection, tableName);
             columnDefinitions.Insert(newColumnNumber, newColumn.ToString());

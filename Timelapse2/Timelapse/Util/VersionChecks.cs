@@ -17,19 +17,19 @@ namespace Timelapse.Util
         private readonly Window window;
         #endregion
 
+        #region Constructors
         /// <summary>
         /// Constructor. For convenience in later calls, it stores various parameters for reuse in its methods
         /// </summary>
-        /// <param name="window"></param>
-        /// <param name="applicationName"></param>
-        /// <param name="latestVersionAddress"></param>
         public VersionChecks(Window window, string applicationName, Uri latestVersionAddress)
         {
             this.applicationName = applicationName;
             this.latestVersionAddress = latestVersionAddress;
             this.window = window;
         }
+        #endregion
 
+        #region Public Methods - Check for New Version and Display Results if Needed
         /// <summary>
         /// Checks for updates by comparing the current version number of Timelapse or the Editor with a version stored on the Timelapse website in an xml file in either
         /// timelapse_version.xml or timelapse_template_version.xml (as specified in the latestVersionAddress). 
@@ -120,7 +120,9 @@ namespace Timelapse.Util
             }
             return true;
         }
+        #endregion
 
+        #region Public Methods - Get / Compare Version Numbers
         /// <summary>
         /// Return the current timelapse version number
         /// </summary>
@@ -155,5 +157,6 @@ namespace Timelapse.Util
             Version version2 = new Version(versionNumber2);
             return version1 >= version2;
         }
+        #endregion
     }
 }

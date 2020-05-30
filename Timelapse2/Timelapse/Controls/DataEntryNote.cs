@@ -13,6 +13,7 @@ namespace Timelapse.Controls
     // - an editable textbox (containing the content) at the given width
     public class DataEntryNote : DataEntryControl<AutocompleteTextBox, Label>
     {
+        #region Public Properties
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
@@ -41,7 +42,9 @@ namespace Timelapse.Controls
             get { return this.ContentControl.IsReadOnly; }
             set { this.ContentControl.IsReadOnly = value; }
         }
+        #endregion
 
+        #region Constructor
         public DataEntryNote(ControlRow control, Dictionary<string, string> autocompletions, DataEntryControls styleProvider) :
             base(control, styleProvider, ControlContentStyleEnum.NoteTextBox, ControlLabelStyleEnum.DefaultLabel)
         {
@@ -49,9 +52,11 @@ namespace Timelapse.Controls
             this.ContentControl.Autocompletions = autocompletions;
             this.ContentChanged = false;
         }
+        #endregion
 
         #region Event Handlers
         #endregion
+
         #region Setting Content and Tooltip
         public override void SetContentAndTooltip(string value)
         {

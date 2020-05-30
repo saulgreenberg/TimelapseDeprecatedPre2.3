@@ -177,13 +177,14 @@
     <Compile Include="Controls\BusyCancelIndicator.xaml.cs">
       <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\BusyCancelIndicatorExtensions.cs" />
     <Compile Include="Controls\ThumbnailInCell.xaml.cs">
       <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ThumbnailGrid.xaml.cs">
       <DependentUpon>ThumbnailGrid.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\DialogWindow.cs" />
+    <Compile Include="Controls\BusyableDialogWindow.cs" />
     <Compile Include="Controls\OffsetLens.cs" />
     <Compile Include="Controls\ProgressBarArguments.cs" />
     <Compile Include="Controls\EpisodePopup.cs" />
@@ -191,9 +192,9 @@
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
-    <Compile Include="Dialog\AmbiguousDateRange.cs" />
-    <Compile Include="Dialog\ChooseDetectorFilePath.xaml.cs">
-      <DependentUpon>ChooseDetectorFilePath.xaml</DependentUpon>
+    <Compile Include="DataStructures\AmbiguousDateRange.cs" />
+    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
+      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\EpisodeOptions.xaml.cs">
       <DependentUpon>EpisodeOptions.xaml</DependentUpon>
@@ -204,8 +205,8 @@
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\MissingFolderersLocateAllFolders.xaml.cs">
-      <DependentUpon>MissingFolderersLocateAllFolders.xaml</DependentUpon>
+    <Compile Include="Dialog\MissingFoldersLocateAllFolders.xaml.cs">
+      <DependentUpon>MissingFoldersLocateAllFolders.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\MissingFoldersLocateFolders.xaml.cs">
       <DependentUpon>MissingFoldersLocateFolders.xaml</DependentUpon>
@@ -233,29 +234,27 @@
     <Compile Include="Controls\VideoPlayer.xaml.cs">
       <DependentUpon>VideoPlayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\ColumnDefinition.cs" />
-    <Compile Include="Database\ControlRow.cs" />
+    <Compile Include="Database\SchemaColumnDefinition.cs" />
+    <Compile Include="DataTables\ControlRow.cs" />
     <Compile Include="Enums\ControlsEnableStateEnum.cs" />
     <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
-    <Compile Include="Database\SortTerm.cs" />
-    <Compile Include="Database\SortTerms.cs" />
-    <Compile Include="Database\DataTableBackedList.cs" />
-    <Compile Include="Database\FileTableChoiceColumn.cs" />
-    <Compile Include="Database\FileTableColumn.cs" />
-    <Compile Include="Database\DataRowExtensions.cs" />
-    <Compile Include="Database\FileTableCounterColumn.cs" />
+    <Compile Include="Extensions\WriteableBitmapExtensions.cs" />
+    <Compile Include="SearchingAndSorting\SortTerm.cs" />
+    <Compile Include="SearchingAndSorting\SortTerms.cs" />
+    <Compile Include="DataTables\DataTableBackedList.cs" />
+    <Compile Include="DataTables\FileTableChoiceColumn.cs" />
+    <Compile Include="DataTables\FileTableColumn.cs" />
+    <Compile Include="Extensions\DataRowExtensions.cs" />
+    <Compile Include="DataTables\FileTableCounterColumn.cs" />
     <Compile Include="Database\TemplateSyncResults.cs" />
-    <Compile Include="Database\FileTableUtcOffsetColumn.cs" />
-    <Compile Include="Database\FileTableDateTimeColumn.cs" />
-    <Compile Include="Database\FileTableFlagColumn.cs" />
-    <Compile Include="Database\FileTableNoteColumn.cs" />
-    <Compile Include="Database\FileTable.cs" />
-    <Compile Include="Database\ImageSetRow.cs" />
-    <Compile Include="Database\MarkerRow.cs" />
-    <Compile Include="Database\VideoRow.cs" />
-    <Compile Include="Dialog\AdvancedImageSetOptions.xaml.cs">
-      <DependentUpon>AdvancedImageSetOptions.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="DataTables\FileTableUtcOffsetColumn.cs" />
+    <Compile Include="DataTables\FileTableDateTimeColumn.cs" />
+    <Compile Include="DataTables\FileTableFlagColumn.cs" />
+    <Compile Include="DataTables\FileTableNoteColumn.cs" />
+    <Compile Include="DataTables\FileTable.cs" />
+    <Compile Include="DataTables\ImageSetRow.cs" />
+    <Compile Include="DataTables\MarkerRow.cs" />
+    <Compile Include="DataTables\VideoRow.cs" />
     <Compile Include="EventArguments\ImageAdjusterEventArgs.cs" />
     <Compile Include="EventArguments\ImageStateEventArgs.cs" />
     <Compile Include="ExifTool\ExifToolException.cs" />
@@ -266,7 +265,6 @@
     <Compile Include="Images\BoundingBox.cs" />
     <Compile Include="Images\BoundingBoxes.cs" />
     <Compile Include="Images\MarkableCanvasImageAdjustment.cs" />
-    <Compile Include="Images\VideoThumbnailer.cs" />
     <Compile Include="QuickPaste\QuickPaste.cs" />
     <Compile Include="QuickPaste\QuickPasteEditor.xaml.cs">
       <DependentUpon>QuickPasteEditor.xaml</DependentUpon>
@@ -280,17 +278,11 @@
     <Compile Include="Controls\DateChangesFeedbackControl.xaml.cs">
       <DependentUpon>DateChangesFeedbackControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
-      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\DateTimeLinearCorrection.xaml.cs">
       <DependentUpon>DateTimeLinearCorrection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\DeleteDeleteFolder.xaml.cs">
       <DependentUpon>DeleteDeleteFolder.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\DeleteDuplicates.xaml.cs">
-      <DependentUpon>DeleteDuplicates.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\Dialogs.cs" />
     <Compile Include="Dialog\DialogsHideOrShow.xaml.cs">
@@ -320,11 +312,14 @@
     <Compile Include="Enums\DirectionEnum.cs" />
     <Compile Include="Enums\FilePlayerSelectionEnum.cs" />
     <Compile Include="QuickPaste\QuickPasteEventIdentifierEnum.cs" />
-    <Compile Include="Images\FolderLoadProgress.cs" />
+    <Compile Include="DataStructures\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseClosing.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseEpsiodes.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseProgress.cs" />
     <Compile Include="Util\ColorsAndBrushes.cs" />
     <Compile Include="Util\Compare.cs" />
     <Compile Include="Util\DragDropFile.cs" />
@@ -334,7 +329,7 @@
     <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFocus.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseKeyboardShortcuts.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenusControlsEnableDisable.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenusControlsEnableDisable.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileNavigationSlider.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFilePlayer.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileSelection.cs" />
@@ -342,14 +337,14 @@
     <Compile Include="TimelapsePartialClasses\TimelapseImageDifferencing.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseImageSetLoading.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMarkingAndCounting.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuEdit.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuFile.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuHelp.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuOptions.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuSelection.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuSort.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuView.cs" />
-    <Compile Include="TimelapsePartialClasses\TimelapseMenuWindow.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuEdit.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuFile.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuHelp.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuOptions.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuSelection.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuSort.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuView.cs" />
+    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuWindow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Extensions\DataGridExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
@@ -366,34 +361,32 @@
     <Compile Include="Util\ImageMetadataDictionary.cs" />
     <Compile Include="Util\FilesFolders.cs" />
     <Compile Include="Extensions\RegistryKeyExtensions.cs" />
-    <Compile Include="UnusedClasses\SequentialPartitioner.cs" />
     <Compile Include="Util\Throttles.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Images\BitmapSourceExtensions.cs" />
+    <Compile Include="Extensions\BitmapSourceExtensions.cs" />
     <Compile Include="Enums\ImageDifferenceResultEnum.cs" />
     <Compile Include="Images\ImageCache.cs" />
-    <Compile Include="Database\FileTableEnumerator.cs" />
-    <Compile Include="Dialog\DateTimeFeedbackTuple.cs" />
+    <Compile Include="DataTables\FileTableEnumerator.cs" />
+    <Compile Include="DataStructures\DateTimeFeedbackTuple.cs" />
     <Compile Include="Enums\DateTimeAdjustmentEnum.cs" />
     <Compile Include="Enums\ImageDifferenceEnum.cs" />
     <Compile Include="Enums\ImageDisplayIntentEnum.cs" />
-    <Compile Include="Images\ImageQuality.cs" />
     <Compile Include="Images\MagnifyingGlass.cs" />
     <Compile Include="EventArguments\MarkerEventArgs.cs" />
     <Compile Include="Controls\StockMessageControl.xaml.cs">
       <DependentUpon>StockMessageControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\DataRowBackedObject.cs" />
+    <Compile Include="DataTables\DataRowBackedObject.cs" />
     <Compile Include="Util\Dependencies.cs" />
     <Compile Include="Extensions\TimelapseAvalonExtensions.cs" />
     <Compile Include="DebuggingSupport\TracePrint.cs" />
     <Compile Include="Util\VersionChecks.cs" />
     <Compile Include="Constant.cs" />
-    <Compile Include="Database\CustomSelection.cs" />
-    <Compile Include="Database\ColumnTuple.cs" />
-    <Compile Include="Database\ColumnTuplesWithWhere.cs" />
+    <Compile Include="SearchingAndSorting\CustomSelection.cs" />
+    <Compile Include="DataStructures\ColumnTuple.cs" />
+    <Compile Include="DataStructures\ColumnTuplesWithWhere.cs" />
     <Compile Include="Database\FileDatabase.cs" />
-    <Compile Include="Database\SearchTerm.cs" />
+    <Compile Include="SearchingAndSorting\SearchTerm.cs" />
     <Compile Include="Dialog\AboutTimelapse.xaml.cs">
       <DependentUpon>AboutTimelapse.xaml</DependentUpon>
     </Compile>
@@ -430,7 +423,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\ChooseDetectorFilePath.xaml">
+    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -446,7 +439,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\MissingFolderersLocateAllFolders.xaml">
+    <Page Include="Dialog\MissingFoldersLocateAllFolders.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -474,10 +467,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\AdvancedImageSetOptions.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Dialog\CustomSort.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -502,10 +491,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Dialog\DateTimeLinearCorrection.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -519,10 +504,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\DeleteDeleteFolder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\DeleteDuplicates.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -567,10 +548,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\RenameFileDatabaseFile.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\FileCountsByQuality.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -640,9 +617,9 @@
     <Compile Include="Dialog\TemplateSynchronization.xaml.cs">
       <DependentUpon>TemplateSynchronization.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Database\FileBackup.cs" />
+    <Compile Include="Util\FileBackup.cs" />
     <Compile Include="Images\ImageDataXml.cs" />
-    <Compile Include="Database\ImageRow.cs" />
+    <Compile Include="DataTables\ImageRow.cs" />
     <Compile Include="Enums\FileSelectionEnum.cs" />
     <Compile Include="Images\MarkersForCounter.cs" />
     <Compile Include="Enums\ControlLabelStyleEnum.cs" />
@@ -660,9 +637,6 @@
     </Compile>
     <Compile Include="Dialog\EditLog.xaml.cs">
       <DependentUpon>EditLog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\FileCountsByQuality.xaml.cs">
-      <DependentUpon>FileCountsByQuality.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\DateDaylightSavingsTimeCorrection.xaml.cs">
       <DependentUpon>DateDaylightSavingsTimeCorrection.xaml</DependentUpon>

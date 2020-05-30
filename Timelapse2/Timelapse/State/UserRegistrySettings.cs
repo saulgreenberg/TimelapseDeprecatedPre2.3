@@ -7,12 +7,18 @@ namespace Timelapse.Util
     /// </summary>
     public class UserRegistrySettings
     {
+        #region Private Properties
         private readonly string keyPath;
+        #endregion
+
+        #region Constructor
         public UserRegistrySettings(string keyPath)
         {
             this.keyPath = keyPath;
         }
+        #endregion
 
+        #region Public Methods
         protected RegistryKey OpenRegistryKey()
         {
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(this.keyPath, true);
@@ -22,5 +28,6 @@ namespace Timelapse.Util
             }
             return registryKey;
         }
+        #endregion
     }
 }

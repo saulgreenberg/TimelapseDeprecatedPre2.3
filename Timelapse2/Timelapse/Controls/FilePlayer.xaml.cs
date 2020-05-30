@@ -15,24 +15,30 @@ namespace Timelapse.Controls
     /// </summary>
     public partial class FilePlayer : UserControl
     {
+        #region Public Properties
         public DirectionEnum Direction { get; set; }
         public FilePlayerSelectionEnum Selection { get; set; }
+        #endregion
 
+        #region Event-related
         public delegate void FilePlayerChangedHandler(object sender, FilePlayerEventArgs e);
         public event FilePlayerChangedHandler FilePlayerChange;
-
         public void OnFilePlayerChange(object sender, FilePlayerEventArgs e)
         {
             // If there exist any subscribers call the event
             this.FilePlayerChange?.Invoke(this, e);
         }
+        #endregion
 
+        #region Constructor
         public FilePlayer()
         {
             this.InitializeComponent();
             this.SwitchFileMode(true);
         }
+        #endregion
 
+        #region Public methods
         public void Stop()
         {
             this.StopButton.IsChecked = true;
@@ -72,6 +78,9 @@ namespace Timelapse.Controls
             this.PlayBackwardsSlow.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
             this.PlayBackwardsFast.Visibility = isSingleMode ? Visibility.Visible : Visibility.Collapsed;
         }
+        #endregion
+
+        #region Button and Keypress Callbacks
         private void FilePlayer_Click(object sender, RoutedEventArgs e)
         {
             RadioButton button = sender as RadioButton;
@@ -145,5 +154,6 @@ namespace Timelapse.Controls
                 e.Handled = true;
             }
         }
+        #endregion
     }
 }

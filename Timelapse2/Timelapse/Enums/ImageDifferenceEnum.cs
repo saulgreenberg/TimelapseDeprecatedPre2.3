@@ -5,9 +5,9 @@
     // in a 'cache' so they can be redisplayed more quickly (vs. re-reading it from a file or regenerating it)
     public enum ImageDifferenceEnum
     {
-        Previous = 0,  // image illustrates the difference between the current image with the previous image 
-        Unaltered = 1, // the original unaltered image
-        Next = 2,      // image illustrates the difference between the current image with the next image 
-        Combined = 3   // image illustrates the difference between the current, previous and next image combined
+        Previous,  // image illustrates the difference between the current image with the previous image 
+        Unaltered, // the original unaltered image
+        Next,      // image illustrates the difference between the current image with the next image 
+        Combined   // image illustrates the difference between the current, previous and next image combined
     }
 }

@@ -8,9 +8,12 @@ namespace Timelapse.Dialog
 {
     public partial class AdvancedTimelapseOptions : Window
     {
+        #region Private Variables
         private readonly MarkableCanvas markableCanvas;
         private readonly TimelapseState timelapseState;
+        #endregion
 
+        #region Constructor and Loaded
         public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner)
         {
             this.InitializeComponent();
@@ -54,6 +57,7 @@ namespace Timelapse.Dialog
             this.CheckBoxUseDetections.IsChecked = this.timelapseState.UseDetections;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
         }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
@@ -61,26 +65,11 @@ namespace Timelapse.Dialog
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
         }
+        #endregion
 
-        #region Delete Folder Management
+        #region Callbacks + Helper: Delete Folder Management
         // Check the appropriate radio button to match the state
-        private void RadioButtonDeletionManagement_Set(DeleteFolderManagementEnum deleteFolderManagement)
-        {
-            switch (deleteFolderManagement)
-            {
-                case DeleteFolderManagementEnum.ManualDelete:
-                    this.RadioButtonManualDelete.IsChecked = true;
-                    break;
-                case DeleteFolderManagementEnum.AskToDeleteOnExit:
-                    this.RadioButtonAskToDelete.IsChecked = true;
-                    break;
-                case DeleteFolderManagementEnum.AutoDeleteOnExit:
-                    this.RadioButtonAutoDeleteOnExit.IsChecked = true;
-                    break;
-                default:
-                    break;
-            }
-        }
+
 
         // Set the state to match the radio button selection
         private void DeletedFileManagement_Click(object sender, RoutedEventArgs e)
@@ -108,9 +97,27 @@ namespace Timelapse.Dialog
             this.RadioButtonManualDelete.IsChecked = true;
             this.timelapseState.DeleteFolderManagement = DeleteFolderManagementEnum.ManualDelete;
         }
+
+        private void RadioButtonDeletionManagement_Set(DeleteFolderManagementEnum deleteFolderManagement)
+        {
+            switch (deleteFolderManagement)
+            {
+                case DeleteFolderManagementEnum.ManualDelete:
+                    this.RadioButtonManualDelete.IsChecked = true;
+                    break;
+                case DeleteFolderManagementEnum.AskToDeleteOnExit:
+                    this.RadioButtonAskToDelete.IsChecked = true;
+                    break;
+                case DeleteFolderManagementEnum.AutoDeleteOnExit:
+                    this.RadioButtonAutoDeleteOnExit.IsChecked = true;
+                    break;
+                default:
+                    break;
+            }
+        }
         #endregion
 
-        #region Tab Controls to Include / Exclude
+        #region Callbacks - Tab Controls to Include / Exclude
         private void CheckBoxTabOrder_Click(object sender, RoutedEventArgs e)
         {
             this.SetTabOrder();
@@ -132,36 +139,23 @@ namespace Timelapse.Dialog
         }
 
         #endregion
+
+        #region Callbacks - Throttles
         private void ImageRendersPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             this.timelapseState.Throttles.SetDesiredImageRendersPerSecond(this.ImageRendersPerSecond.Value);
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
         }
 
-        #region Reset to defaults
         private void ResetThrottle_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.Throttles.ResetToDefaults();
             this.ImageRendersPerSecond.Value = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
         }
-
-        // Reset the maximum zoom to the amount specified in Max Zoom;
-        private void ResetMaxZoom_Click(object sender, RoutedEventArgs e)
-        {
-            this.markableCanvas.ResetMaximumZoom();
-            this.MaxZoom.Value = this.markableCanvas.ZoomMaximum;
-            this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
-        }
         #endregion
 
-        // Callback: The user has changed the maximum zoom value
-        private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            this.markableCanvas.ZoomMaximum = (int)this.MaxZoom.Value;
-            this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
-        }
-
+        #region Callbacks - Differencing
         private void ResetImageDifferencingButton_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.DifferenceThreshold = Constant.ImageValues.DifferenceThresholdDefault;
@@ -174,8 +168,9 @@ namespace Timelapse.Dialog
             this.timelapseState.DifferenceThreshold = (byte)this.DifferenceThreshold.Value;
             this.DifferenceThreshold.ToolTip = this.timelapseState.DifferenceThreshold;
         }
+        #endregion
 
-        // Detection settings
+        #region Callbacks - Detection and Bounding Boxsettings
         private void CheckBoxUseDetections_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;
@@ -189,11 +184,6 @@ namespace Timelapse.Dialog
             this.timelapseState.UseDetections = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
             this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;
-        }
-
-        private void OkButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
         }
 
         private void BoundingBoxDisplayThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -218,9 +208,35 @@ namespace Timelapse.Dialog
             this.timelapseState.BoundingBoxDisplayThreshold = slider.Value;
         }
 
-        private void CheckBoxBounidngBoxColorBLindRinedlyColors_Click(object sender, RoutedEventArgs e)
+        private void CheckBoxBounidngBoxColorBlindRinedlyColors_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.BoundingBoxColorBlindFriendlyColors = this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked == true;
         }
+        #endregion
+
+        #region Callbacks - Maxium zoom
+        // Callback: The user has changed the maximum zoom value
+        private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.markableCanvas.ZoomMaximum = (int)this.MaxZoom.Value;
+            this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
+        }
+
+        // Reset the maximum zoom to the amount specified in Max Zoom;
+        private void ResetMaxZoom_Click(object sender, RoutedEventArgs e)
+        {
+            this.markableCanvas.ResetMaximumZoom();
+            this.MaxZoom.Value = this.markableCanvas.ZoomMaximum;
+            this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
+        }
+        #endregion
+
+        #region Callback - Dialog Buttons
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = true;
+        }
+        #endregion 
     }
 }

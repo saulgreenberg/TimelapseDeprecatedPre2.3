@@ -15,15 +15,21 @@ namespace Timelapse.Images
     /// </summary>
     public class BoundingBoxes
     {
+        #region Public Properties
         // List of Bounding Boxes associated with the image
         public List<BoundingBox> Boxes { get; private set; }
         public float MaxConfidence { get; set; }
+        #endregion
+        
+        #region Constructor
         public BoundingBoxes()
         {
             this.Boxes = new List<BoundingBox>();
             this.MaxConfidence = 0;
         }
+        #endregion
 
+        #region Public Methods - Draw BoundingBoxes In Canvas
         /// <summary>
         /// If detections are turned on, draw all bounding boxes relative to 0,0 and contrained by width and height within the provided
         /// The width/height should be the actual width/height of the image (also located at 0,0) as it appears in the canvas , which is required if the bounding boxes are to be drawn in the correct places
@@ -144,5 +150,6 @@ namespace Timelapse.Images
             Canvas.SetZIndex(canvas, 1);
             return true;
         }
+        #endregion
     }
 }

@@ -12,7 +12,7 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // Show the QuickPaste window
+        #region Method - Show / Hide / Terminate the QuickPaste window
         private void QuickPasteWindowShow()
         {
             if (this.quickPasteEntries == null)
@@ -74,7 +74,9 @@ namespace Timelapse
                 this.quickPasteWindow = null;
             }
         }
+        #endregion
 
+        #region Callbacks on Quickpast Event Type
         // The QuickPaste controls generate various events, depending on what the user selected.
         // Depending on the event received, perform the action indicated by the event by calling the appropriate method below
         private void QuickPasteWindow_QuickPasteEvent(object sender, QuickPasteEventArgs e)
@@ -109,7 +111,9 @@ namespace Timelapse
                     break;
             }
         }
+        #endregion
 
+        #region Method - QuickPaste Entry: New / Delete / Edit
         // Create a quickpaste entry from the current data controls,
         // add it to the quickpaste entries, and update the display and the ImageSetTable database as needed
         private void QuickPasteEntryNew()
@@ -186,7 +190,9 @@ namespace Timelapse
                 this.quickPasteWindow.Topmost = true;
             }
         }
+        #endregion
 
+        #region Method Highlight / Unhighlight Control
         // Highlight the data controls affected by the Quickpaste entry
         private void QuickPasteDataControlsHighlight(QuickPasteEntry quickPasteEntry)
         {
@@ -247,7 +253,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
+        #region Method Paste entry
         // Quickpast the given entry into the data control
         private void QuickPasteEntryPasteIntoDataControls(QuickPasteEntry quickPasteEntry, FlashEnum flash)
         {
@@ -294,7 +302,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
+        #region Refresh Quickpaste Refresh Window and XML
         // Update the Quickpaste XML in the ImageSetTable and refresh the Quickpaste window to reflect the current contents
         private void QuickPasteRefreshWindowAndXML()
         {
@@ -305,5 +315,6 @@ namespace Timelapse
                 this.quickPasteWindow.Refresh(this.quickPasteEntries);
             }
         }
+        #endregion
     }
 }

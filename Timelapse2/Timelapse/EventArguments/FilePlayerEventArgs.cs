@@ -3,6 +3,9 @@ using Timelapse.Enums;
 
 namespace Timelapse.EventArguments
 {
+    /// <summary>
+    /// Event indicates what action was requested on the fileplayer and which direction to navigate 
+    /// </summary>
     public class FilePlayerEventArgs : EventArgs
     {
         public DirectionEnum Direction { get; internal set; }

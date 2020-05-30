@@ -6,9 +6,12 @@ namespace Timelapse.Dialog
 {
     public partial class RenameFileDatabaseFile : Window
     {
-        private readonly string currentFileName;
+        #region Public Properties and Private Variables
         public string NewFilename { get; private set; }
+        private readonly string currentFileName;
+        #endregion
 
+        #region Constructor, Loaded
         public RenameFileDatabaseFile(string fileName, Window owner)
         {
             this.InitializeComponent();
@@ -27,7 +30,9 @@ namespace Timelapse.Dialog
             this.OkButton.IsEnabled = false;
             this.txtboxNewFileName.TextChanged += this.TxtboxNewFileName_TextChanged;
         }
+        #endregion
 
+        #region Callbacks
         private void TxtboxNewFileName_TextChanged(object sender, TextChangedEventArgs e)
         {
             this.NewFilename = this.txtboxNewFileName.Text + ".ddb";
@@ -43,5 +48,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

@@ -10,7 +10,7 @@ namespace Timelapse.Util
     /// </summary>
     public class TimelapseState : TimelapseUserRegistrySettings
     {
-
+        #region Public Properties
         // The threshold used for calculating combined differences between images
         public byte DifferenceThreshold { get; set; } // The threshold used for calculating combined differences
 
@@ -25,6 +25,7 @@ namespace Timelapse.Util
         public bool FirstTimeFileLoading { get; set; }
 
         public double BoundingBoxThresholdOveride { get; set; }
+        #endregion
 
         #region Private (internal) variables 
         // These three variables are used for keeping track of repeated keys.
@@ -36,12 +37,15 @@ namespace Timelapse.Util
         private bool IsKeyRepeat { get; set; }
         #endregion
 
+        #region Constructor
         public TimelapseState()
         {
             this.FirstTimeFileLoading = true;
             this.Reset();
         }
+        #endregion
 
+        #region Public Methods - Reset
         /// <summary>
         /// Reset various state variables
         /// </summary>
@@ -54,6 +58,7 @@ namespace Timelapse.Util
             this.BoundingBoxThresholdOveride = 1;
             this.ResetKeyRepeat();
         }
+        #endregion
 
         #region Key Repeat methods
         /// <summary>

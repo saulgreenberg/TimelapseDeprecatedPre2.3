@@ -11,15 +11,18 @@ using Timelapse.Util;
 namespace Timelapse.Dialog
 {
     /// <summary>
-    /// Interaction logic for NewVersionNotification.xaml
+    /// NewVersionNotification.xaml
     /// Displays a dialog box with pretty-printed version change information retrieved from the web.
     /// </summary>
     public partial class NewVersionNotification : Window
     {
+        #region Private Variables
         private readonly string applicationName;
         private readonly Version currentVersionNumber;
         private readonly Version lastestVersionNumber;
+        #endregion
 
+        #region Constructor, Loaded
         public NewVersionNotification(Window owner, string applicationName, Version currentVersionNumber, Version latestVersionMumber)
         {
             this.InitializeComponent();
@@ -101,6 +104,7 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
+        #endregion
 
         #region Activate Hyperlinks in the flow document
         private void SubscribeToAllHyperlinks(FlowDocument flowDocument)

@@ -15,9 +15,10 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Private Methods - CheckAndCorrectRootFolder
         // Get the root folder name from the database, and check to see if its the same as the actual root folder.
         // If not, ask the user if he/she wants to update the database.
-        public void CheckAndCorrectRootFolder(FileDatabase fileDatabase)
+        private void CheckAndCorrectRootFolder(FileDatabase fileDatabase)
         {
             // Check the arguments for null 
             if (fileDatabase == null)
@@ -61,39 +62,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
-        /// <summary>
-        /// A convenience wrapper function for checking for missing folders, and correcting them if they are missing
-        /// </summary>
-        /// returns 
-        /// - true if folders were corrected, 
-        /// - false if no folders are missing, 
-        ///  - null if the operation was aborted for some reason, or the folders were missing but not updated..
-        public static bool? GetAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
-        {
-            if (fileDatabase == null) return null;
-            List<string> missingRelativePaths = GetMissingFolders(fileDatabase);
-            return (missingRelativePaths.Count == 0) ? false : CorrectForMissingFolders(owner, fileDatabase, missingRelativePaths);
-        }
-
-        /// <summary>
-        /// Returns a (possible empty) list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.
-        /// </summary>
-        private static List<string> GetMissingFolders(FileDatabase fileDatabase)
-        {
-            List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-            List<string> missingRelativePaths = new List<string>();
-            foreach (string relativePath in allRelativePaths)
-            {
-                string path = Path.Combine(fileDatabase.FolderPath, relativePath);
-                if (!Directory.Exists(path))
-                {
-                    missingRelativePaths.Add(relativePath);
-                }
-            }
-            return missingRelativePaths;
-        }
-
+        #region Private Static Check or Correct for Missing Folders including dialog
         /// <summary>
         /// If there are missing folders, search for possible matches and raise a dialog box asking the user to locate them
         /// </summary>
@@ -101,7 +72,7 @@ namespace Timelapse
         /// <param name="fileDatabase"></param>
         /// <param name="missingFolders"></param>
         /// <returns>whether any folder are actually missing </returns>
-        public static bool? CorrectForMissingFolders(Window owner, FileDatabase fileDatabase, List<string> missingRelativePaths)
+        private static bool? CorrectForMissingFolders(Window owner, FileDatabase fileDatabase, List<string> missingRelativePaths)
         {
             // Abort if the arguments for null 
             if (null == fileDatabase) return null;
@@ -109,7 +80,7 @@ namespace Timelapse
 
             // We know that at least one or more folders are missing.
             // For each missing folder path, try to find all folders with the same name under the root folder.
-            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryFindMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
+            Dictionary<string, List<string>> matchingFolderNames = Util.FilesFolders.TryGetMissingFolders(fileDatabase.FolderPath, missingRelativePaths);
             Dictionary<string, string> finalFileLocations;
 
             // We want to show the normal cursor when we display dialog boxes, so save the current cursor so we can store it.
@@ -141,5 +112,39 @@ namespace Timelapse
             Mouse.OverrideCursor = cursor;
             return null; // Operaton aborted
         }
+
+        /// <summary>
+        /// A convenience wrapper function for checking for missing folders, and correcting them if they are missing
+        /// </summary>
+        /// returns 
+        /// - true if folders were corrected, 
+        /// - false if no folders are missing, 
+        ///  - null if the operation was aborted for some reason, or the folders were missing but not updated..
+        private static bool? GetAndCorrectForMissingFolders(Window owner, FileDatabase fileDatabase)
+        {
+            if (fileDatabase == null) return null;
+            List<string> missingRelativePaths = GetMissingFolders(fileDatabase);
+            return (missingRelativePaths.Count == 0) ? false : CorrectForMissingFolders(owner, fileDatabase, missingRelativePaths);
+        }
+      
+
+        /// <summary>
+        /// Returns a (possible empty) list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.
+        /// </summary>
+        private static List<string> GetMissingFolders(FileDatabase fileDatabase)
+        {
+            List<object> allRelativePaths = fileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            List<string> missingRelativePaths = new List<string>();
+            foreach (string relativePath in allRelativePaths)
+            {
+                string path = Path.Combine(fileDatabase.FolderPath, relativePath);
+                if (!Directory.Exists(path))
+                {
+                    missingRelativePaths.Add(relativePath);
+                }
+            }
+            return missingRelativePaths;
+        }
+        #endregion
     }
 }

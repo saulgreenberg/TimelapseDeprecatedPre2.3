@@ -14,16 +14,18 @@ namespace Timelapse.Dialog
     /// This dialog lets a user enter a time change correction of +/-1 hour, which is propagated backwards/forwards.
     /// The current image as set by the user in the radio buttons.
     /// </summary>
-    public partial class DateDaylightSavingsTimeCorrection : DialogWindow
+    public partial class DateDaylightSavingsTimeCorrection : BusyableDialogWindow
     {
+        #region Private Variables
         private readonly int currentImageRow;
         private readonly FileDatabase fileDatabase;
         private readonly FileTableEnumerator fileEnumerator;
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false;
+        private bool IsAnyDataUpdated = false; 
+        #endregion
 
-        #region Initialization
+        #region Constructor, Loaded, AutoGeneration, and Closing
         public DateDaylightSavingsTimeCorrection(Window owner, FileDatabase database, FileTableEnumerator fileEnumerator) : base(owner)
         {
             // Check the arguments for null 
@@ -73,7 +75,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -114,8 +116,8 @@ namespace Timelapse.Dialog
                    if (adjustment.Duration() >= TimeSpan.FromSeconds(1))
                    {
                        // We only add to the feedback row if the change duration is > 1 second, as otherwise we don't change it.
-                       string oldDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime);
-                       string newDT = DateTimeHandler.ToDisplayDateTimeString(imageDateTime + adjustment);
+                       string oldDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime);
+                       string newDT = DateTimeHandler.ToStringDisplayDateTime(imageDateTime + adjustment);
                        feedbackRows.Add(new DateTimeFeedbackTuple(fileName, oldDT + " \x2192 " + newDT + " \x2192 " + PrettyPrintTimeAdjustment(adjustment)));
                    }
 
@@ -143,6 +145,7 @@ namespace Timelapse.Dialog
 
         #endregion
 
+        #region Callback - Start Button
         // When the user clicks ok, add/subtract an hour propagated forwards/backwards as specified
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
@@ -155,7 +158,7 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             // Calculate the required adjustment
             bool forward = (bool)this.rbForward.IsChecked;
@@ -193,9 +196,11 @@ namespace Timelapse.Dialog
             this.FeedbackGrid.ItemsSource = feedbackRows;
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
         }
+        #endregion
 
+        #region Callback - Checkboxes
         // Examine the checkboxes to see what state our selection is in, and provide feedback as appropriate
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
         {
@@ -210,7 +215,7 @@ namespace Timelapse.Dialog
                 int hours = ((bool)this.rbAddHour.IsChecked) ? 1 : -1;
                 TimeSpan daylightSavingsAdjustment = new TimeSpan(hours, 0, 0);
                 dateTime = dateTime.Add(daylightSavingsAdjustment);
-                this.NewDate.Content = DateTimeHandler.ToDisplayDateTimeString(dateTime);
+                this.NewDate.Content = DateTimeHandler.ToStringDisplayDateTime(dateTime);
             }
             if (((bool)this.rbAddHour.IsChecked || (bool)this.rbSubtractHour.IsChecked) && ((bool)this.rbBackwards.IsChecked || (bool)this.rbForward.IsChecked))
             {
@@ -221,8 +226,9 @@ namespace Timelapse.Dialog
                 this.StartDoneButton.IsEnabled = false;
             }
         }
+        #endregion
 
-        #region Button callbacks
+        #region  Callbacks - Dialog Button
         private void DoneButton_Click(object sender, RoutedEventArgs e)
         {
             // We return true if the database was altered but also if there was a cancellation, as a cancelled operation
@@ -245,7 +251,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Utility methods
-        // Given the time adjustment to the date, generate a pretty-printed string taht we can use in our feedback
+        // Given the time adjustment to the date, generate a pretty-printed string that we can use in our feedback
         private static string PrettyPrintTimeAdjustment(TimeSpan adjustment)
         {
             string sign = (adjustment < TimeSpan.Zero) ? "-" : "+";

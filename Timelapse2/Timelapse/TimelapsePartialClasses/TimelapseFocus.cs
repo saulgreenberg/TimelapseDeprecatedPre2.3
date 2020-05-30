@@ -13,6 +13,7 @@ namespace Timelapse
         // Because of shortcut keys, we want to reset the focus when appropriate to the 
         // image control. This is done from various places.
 
+        #region Callbacks
         // Whenever the user clicks on the image, reset the image focus to the image control 
         private void MarkableCanvas_PreviewMouseDown(object sender, MouseButtonEventArgs eventArgs)
         {
@@ -62,7 +63,9 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
+        #region Methods - Set or Move Keyboard Focus
         // Actually set the top level keyboard focus to the image control
         private void TrySetKeyboardFocusToMarkableCanvas(bool checkForControlFocus, InputEventArgs eventArgs)
         {
@@ -84,44 +87,6 @@ namespace Timelapse
             // Don't raise the window just because we set the keyboard focus to it
             Keyboard.DefaultRestoreFocusMode = RestoreFocusMode.None;
             Keyboard.Focus(this.MarkableCanvas);
-        }
-
-        // Return true if the current focus is in a textbox or combobox data control
-        private bool SendKeyToDataEntryControlOrMenu(KeyEventArgs eventData)
-        {
-            // check if each menu type is open
-            // it is sufficient to check one always visible item from each top level menu (file, edit, etc.)
-            // NOTE: this must be kept in sync with the menu definitions in XAML
-            if (this.MenuItemExit.IsVisible ||
-                this.MenuItemCopyPreviousValues.IsVisible ||
-                this.MenuItemAudioFeedback.IsVisible ||
-                this.MenuItemViewNextImage.IsVisible ||
-                this.MenuItemSelectAllFiles.IsVisible ||
-                this.MenuItemAbout.IsVisible)
-            {
-                return true;
-            }
-
-            // by default focus will be on the MarkableCanvas
-            // opening a menu doesn't change the focus
-            IInputElement focusedElement = FocusManager.GetFocusedElement(this);
-            if (focusedElement == null)
-            {
-                return false;
-            }
-
-            // check if focus is on a control
-            // NOTE: this list must be kept in sync with the System.Windows classes used by the classes in Timelapse\Util\DataEntry*.cs
-            Type type = focusedElement.GetType();
-            if (Constant.Control.KeyboardInputTypes.Contains(type))
-            {
-                // send all keys to controls by default except
-                // - escape as that's a natural way to back out of a control (the user can also hit enter)
-                // - tab as that's the Windows keyboard navigation standard for moving between controls
-                this.FilePlayer_Stop(); // In case the FilePlayer is going
-                return eventData.Key != Key.Escape && eventData.Key != Key.Tab;
-            }
-            return false;
         }
 
         // Move the focus (usually because of tabbing or shift-tab)
@@ -238,7 +203,48 @@ namespace Timelapse
                 }
             }
         }
+        #endregion
 
+        #region Methods -Send Key to Control or Menu
+        // Return true if the current focus is in a textbox or combobox data control
+        private bool SendKeyToDataEntryControlOrMenu(KeyEventArgs eventData)
+        {
+            // check if each menu type is open
+            // it is sufficient to check one always visible item from each top level menu (file, edit, etc.)
+            // NOTE: this must be kept in sync with the menu definitions in XAML
+            if (this.MenuItemExit.IsVisible ||
+                this.MenuItemCopyPreviousValues.IsVisible ||
+                this.MenuItemViewNextImage.IsVisible ||
+                this.MenuItemSelectAllFiles.IsVisible ||
+                this.MenuItemAbout.IsVisible)
+            {
+                return true;
+            }
+
+            // by default focus will be on the MarkableCanvas
+            // opening a menu doesn't change the focus
+            IInputElement focusedElement = FocusManager.GetFocusedElement(this);
+            if (focusedElement == null)
+            {
+                return false;
+            }
+
+            // check if focus is on a control
+            // NOTE: this list must be kept in sync with the System.Windows classes used by the classes in Timelapse\Util\DataEntry*.cs
+            Type type = focusedElement.GetType();
+            if (Constant.Control.KeyboardInputTypes.Contains(type))
+            {
+                // send all keys to controls by default except
+                // - escape as that's a natural way to back out of a control (the user can also hit enter)
+                // - tab as that's the Windows keyboard navigation standard for moving between controls
+                this.FilePlayer_Stop(); // In case the FilePlayer is going
+                return eventData.Key != Key.Escape && eventData.Key != Key.Tab;
+            }
+            return false;
+        }
+        #endregion
+
+        #region Helper used only here
         // Determine whether system-supplied fields should be skipped over or not.
         private bool IsControlIncludedInTabOrder(DataEntryControl control)
         {
@@ -256,5 +262,6 @@ namespace Timelapse
             }
             return true;
         }
+        #endregion
     }
 }

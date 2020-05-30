@@ -14,13 +14,15 @@ using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Extensions;
 using Timelapse.Images;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
-    public partial class DarkImagesThreshold : DialogWindow, IDisposable
+    public partial class DarkImagesThreshold : BusyableDialogWindow, IDisposable
     {
+        #region Private Variables
         private readonly FileDatabase fileDatabase;
         private readonly TimelapseUserRegistrySettings state;
 
@@ -43,6 +45,7 @@ namespace Timelapse.Dialog
 
         // Tracks whether any changes to the data or database are made
         private bool IsAnyDataUpdated = false;
+        #endregion
 
         #region Initialization
         public DarkImagesThreshold(TimelapseWindow owner, FileDatabase fileDatabase, TimelapseUserRegistrySettings state, int currentImageIndex) : base(owner)
@@ -227,7 +230,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -547,6 +550,34 @@ namespace Timelapse.Dialog
         {
             // Set this so that it will be caught in the above await task
             this.TokenSource.Cancel();
+        }
+        #endregion
+
+        #region Class ImageQuality
+        /// <summary>
+        /// ImageQuality defines aspects of the image as set and used only by DarkImagesThreshold
+        /// </summary>
+        protected class ImageQuality
+        {
+            public WriteableBitmap Bitmap { get; set; }
+            public double DarkPixelRatioFound { get; set; }
+            public string FileName { get; set; }
+            public bool IsColor { get; set; }
+            public Nullable<FileSelectionEnum> NewImageQuality { get; set; }
+            public FileSelectionEnum OldImageQuality { get; set; }
+
+            public ImageQuality(ImageRow image)
+            {
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(image, nameof(image));
+
+                this.Bitmap = null;
+                this.DarkPixelRatioFound = 0;
+                this.FileName = image.File;
+                this.IsColor = false;
+                this.OldImageQuality = image.ImageQuality;
+                this.NewImageQuality = null;
+            }
         }
         #endregion
     }

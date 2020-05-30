@@ -65,9 +65,8 @@ namespace Timelapse
         #endregion
 
         #region Methods invoked  that actually do the work
-
         // This should be the only method (aside from the above events) invoked from outside this file
-        public void CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded()
+        private void CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded()
         {
             int previousRow = (this.DataHandler == null || this.DataHandler.ImageCache == null) ? -1 : this.DataHandler.ImageCache.CurrentRow - 1;
             // Simulate enabled / disabled by changing the foreground color. 

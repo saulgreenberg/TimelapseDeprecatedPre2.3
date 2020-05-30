@@ -13,8 +13,9 @@ namespace Timelapse.Dialog
     /// <summary>
     /// Detects and displays ambiguous dates, and allows the user to select which ones (if any) should be swapped.
     /// </summary>
-    public partial class DateCorrectAmbiguous : DialogWindow
+    public partial class DateCorrectAmbiguous : BusyableDialogWindow
     {
+        #region Private Varaibles
         // Remember passed in arguments
         private readonly FileDatabase fileDatabase;
 
@@ -22,8 +23,9 @@ namespace Timelapse.Dialog
 
         // Tracks whether any changes to the data or database are made
         private bool IsAnyDataUpdated = false;
+        #endregion
 
-        #region Initialization
+        #region Constructor and Loaded
         public DateCorrectAmbiguous(Window owner, FileDatabase fileDatabase) : base(owner)
         {
             // Check the arguments for null 
@@ -56,8 +58,9 @@ namespace Timelapse.Dialog
             }
             Mouse.OverrideCursor = null;
         }
+        #endregion
 
-        // Update the display
+        #region Populate the Feedback Panel to show date changes 
         private void PopulateDateChangeFeedback()
         {
             this.DateChangeFeedback.ShowDifferenceColumn = false;
@@ -68,9 +71,9 @@ namespace Timelapse.Dialog
                 image = this.fileDatabase.FileTable[ambiguousDateRange.StartIndex];
                 string newDate;
                 DateTimeHandler.TrySwapDayMonth(image.DateTime, out DateTimeOffset swappedDate);
-                newDate = DateTimeHandler.ToDisplayDateString(swappedDate.Date);
+                newDate = DateTimeHandler.ToStringDisplayDate(swappedDate.Date);
                 string numFilesWithThatDate = ambiguousDateRange.Count.ToString();
-                this.DateChangeFeedback.AddFeedbackRow(image.File, DateTimeHandler.ToDisplayDateString(image.DateTimeIncorporatingOffset.Date), newDate, numFilesWithThatDate, image, ambiguousDateRange);
+                this.DateChangeFeedback.AddFeedbackRow(image.File, DateTimeHandler.ToStringDisplayDate(image.DateTimeIncorporatingOffset.Date), newDate, numFilesWithThatDate, image, ambiguousDateRange);
             }
         }
         #endregion
@@ -152,7 +155,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                DialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
 
@@ -192,6 +195,13 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Mouse button Callbacks
+        private void DateChangeFeedback_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
+        }
+        #endregion       
+        
         #region Button Callbackes
         // Select all / none of the checkboxes in the datechangedfeedback panel.
         private void SelectAll_Click(object sender, RoutedEventArgs e)
@@ -215,14 +225,14 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click += this.Done_Click;
             this.StartDoneButton.IsEnabled = false;
             this.BusyCancelIndicator.IsBusy = true;
-            this.CloseButtonIsEnabled(false);
+            this.WindowCloseButtonIsEnabled(false);
 
             int totalFileCount = await this.ApplyDateTimeChangesAsync().ConfigureAwait(true);
 
             // Update the UI final state
             this.BusyCancelIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
-            this.CloseButtonIsEnabled(true);
+            this.WindowCloseButtonIsEnabled(true);
             // Show the final message
             if (totalFileCount > 0)
             {
@@ -251,9 +261,5 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        private void DateChangeFeedback_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
-        }
     }
 }

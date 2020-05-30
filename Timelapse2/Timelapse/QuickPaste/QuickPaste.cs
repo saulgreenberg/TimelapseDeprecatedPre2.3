@@ -11,9 +11,9 @@ namespace Timelapse.QuickPaste
     // The QuickPasteOperations  class provides static utility functions for creating and altering quick paste entries.
     public static class QuickPasteOperations
     {
+        #region Public Methods - QuickPaste Import from DB
         public static List<QuickPasteEntry> QuickPasteImportFromDB(FileDatabase fileDatabase, string ddbFile)
         {
-            List<QuickPasteEntry> quickPasteEntries = new List<QuickPasteEntry>();
             string xml = FileDatabase.TryGetQuickPasteXMLFromDatabase(ddbFile);
             if (string.IsNullOrEmpty(xml.Trim()))
             {
@@ -24,7 +24,9 @@ namespace Timelapse.QuickPaste
                 return QuickPasteOperations.QuickPasteEntriesFromXML(fileDatabase, xml);
             }
         }
+        #endregion
 
+        #region Public Methods - Try Get QuickPaste Item From Field
         // Return a QuickPaste Entry, where its title and each of its items represents a potential pastable control 
         // If there is no valid row to make the entry from, return null
         public static QuickPasteEntry TryGetQuickPasteItemFromDataFields(FileDatabase fileDatabase, int rowIndex, string title)
@@ -71,7 +73,9 @@ namespace Timelapse.QuickPaste
             }
             return quickPasteEntry;
         }
+        #endregion
 
+        #region Public Method DeleteQuickPasteEntry
         // Delete the quickPasteEntry from the quickPasteEntries list
         public static List<QuickPasteEntry> DeleteQuickPasteEntry(List<QuickPasteEntry> quickPasteEntries, QuickPasteEntry quickPasteEntry)
         {
@@ -81,8 +85,9 @@ namespace Timelapse.QuickPaste
             quickPasteEntries.RemoveAll(x => x.Equals(quickPasteEntry));
             return quickPasteEntries;
         }
+        #endregion
 
-        #region Encode/Decode quicpaste entries into XML
+        #region Public Methods - Encode/Decode quickpaste entries into XML
         // Transform the QuickPasteEntries data structure into an XML document that can will eventually be saved as a string in the ImageSetTable database
         public static string QuickPasteEntriesToXML(List<QuickPasteEntry> quickPasteEntries)
         {
@@ -139,7 +144,9 @@ namespace Timelapse.QuickPaste
             quickPasteEntries = CheckAndSyncQuickPasteItemIfNeeded(fileDatabase, quickPasteEntries);
             return quickPasteEntries;
         }
+        #endregion
 
+        #region Private Methods- Check And Sync QuickPaste Item If Needed
         // Its possible (albeit rare) that the template has been changed since the quickpaste xml was last saved and the stored 
         // Thus we check for differences between each quickpaste entry's items and the datalabel of the  available controls.
         // If the quickpaste items list has an item that doesn't match a data label, we remove it.

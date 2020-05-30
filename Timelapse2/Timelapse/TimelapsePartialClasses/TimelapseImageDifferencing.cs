@@ -5,9 +5,10 @@ using Timelapse.Enums;
 
 namespace Timelapse
 {
-    // Image Differencing
+    // Image Differencing 
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Try View Previous or Next Difference
         // Cycle through the image differences in the order: current, then previous and next differenced images.
         // Create and cache the differenced images.
         private void TryViewPreviousOrNextDifference()
@@ -77,7 +78,9 @@ namespace Timelapse
             this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
             this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.DataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Previous ? "previous" : "next"));
         }
+        #endregion
 
+        #region Try View Combined Difference
         // View the differences between the current, previous, and next image
         private void TryViewCombinedDifference()
         {
@@ -131,5 +134,6 @@ namespace Timelapse
             this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
             this.StatusBar.SetMessage("Viewing differences from both the next and previous files");
         }
+        #endregion
     }
 }

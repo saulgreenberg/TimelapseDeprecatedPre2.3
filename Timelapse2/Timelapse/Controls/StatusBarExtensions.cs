@@ -9,6 +9,14 @@ namespace Timelapse.Controls
     /// </summary>
     internal static class StatusBarExtensions
     {
+        #region Public methods
+        // Display a message in the message portion of the status bar
+        public static void SetMessage(this StatusBar statusBar, string message)
+        {
+            StatusBarItem item = (StatusBarItem)statusBar.Items[11];
+            item.Content = message;
+        }
+
         // Clear the message portion of the status bar
         public static void ClearMessage(this StatusBar statusBar)
         {
@@ -65,7 +73,9 @@ namespace Timelapse.Controls
             }
             item.Content = message;
         }
+        #endregion
 
+        #region Private methods
         private static string SetSortAlterTextAsNeeded(string sortTerm, bool isAscending)
         {
             // Add an up or down arrow to indicate sorting direction
@@ -84,12 +94,6 @@ namespace Timelapse.Controls
                     return String.Format("{0}{1}", sortTerm, specialCharacter);
             }
         }
-
-        // Display a message in the message portion of the status bar
-        public static void SetMessage(this StatusBar statusBar, string message)
-        {
-            StatusBarItem item = (StatusBarItem)statusBar.Items[11];
-            item.Content = message;
-        }
+        #endregion
     }
 }

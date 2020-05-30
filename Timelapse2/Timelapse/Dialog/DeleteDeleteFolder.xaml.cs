@@ -8,8 +8,11 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class DeleteDeleteFolder : Window
     {
+        #region Private Variables
         private readonly int howManyDeleteFiles = 0;
+        #endregion
 
+        #region Constructor, Loaded
         public DeleteDeleteFolder(int howManyDeleteFiles)
         {
             this.InitializeComponent();
@@ -24,7 +27,9 @@ namespace Timelapse.Dialog
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
             this.Message.What = String.Format("Your 'DeletedFiles' sub-folder contains backups of {0} 'deleted' image or video files.", this.howManyDeleteFiles);
         }
+        #endregion
 
+        #region Callbacks - Dialog Buttons
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = true;
@@ -34,5 +39,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = false;
         }
+        #endregion
     }
 }

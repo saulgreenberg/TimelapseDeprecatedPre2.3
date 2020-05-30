@@ -17,6 +17,7 @@
         public const string Dot = ".";
         public const string DotStar = Sql.Dot + Sql.Star;
         public const string BeginTransaction = " BEGIN TRANSACTION ";
+        public const string BeginTransactionSemiColon = Sql.BeginTransaction + Sql.Semicolon; 
         public const string Between = " BETWEEN ";
         public const string CaseWhen = " CASE WHEN ";
         public const string Cast = " CAST ";
@@ -38,6 +39,7 @@
         public const string Else = " ELSE ";
         public const string End = " END ";
         public const string EndTransaction = " END TRANSACTION ";
+        public const string EndTransactionSemiColon = Sql.EndTransaction + Sql.Semicolon;
         public const string Equal = " = ";
         public const string EqualsCaseID = " = CASE Id";
         public const string From = " FROM ";

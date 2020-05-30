@@ -11,14 +11,19 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class CustomSort : Window
     {
+        #region Public Properties
+        public SortTerm SortTerm1 { get; set; }
+        public SortTerm SortTerm2 { get; set; }
+        #endregion
+
+        #region Private Variables
         private List<SortTerm> sortTermList;
         private string fileDisplayLabel = String.Empty;
         private string dateDisplayLabel = String.Empty;
         private readonly FileDatabase database;
+        #endregion
 
-        public SortTerm SortTerm1 { get; set; }
-        public SortTerm SortTerm2 { get; set; }
-
+        #region Constructor and Loaded
         public CustomSort(FileDatabase database)
         {
             this.InitializeComponent();
@@ -53,6 +58,7 @@ namespace Timelapse.Dialog
             // As a side effect, PopulatePrimaryComboBox() invokes PrimaryComboBox_SelectionChanged, which then populates the secondary combo bo
             this.PopulatePrimaryUIElements();
         }
+        #endregion
 
         #region Populate ComboBoxes
         // Populate the two combo boxes  with potential sort terms
@@ -114,11 +120,13 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Callbacks - ComboBoxes
         // Whenever the primary combobox changes, repopulated the secondary combo box to make sure it excludes the currently selected item
         private void PrimaryComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             this.PopulateSecondaryUIElements();
         }
+        #endregion
 
         #region Ok/Cancel buttons
         // Apply the selection if the Ok button is clicked

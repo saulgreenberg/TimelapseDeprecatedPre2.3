@@ -2,8 +2,12 @@
 
 namespace Timelapse.Detection
 {
+    /// <summary>
+    /// A class used by Custom Selection (and the Custom Selection Dialog) to set the selection criteria on detections
+    /// </summary>
     public class DetectionSelections
     {
+        #region Public Properties
         public bool Enabled
         {
             get
@@ -22,7 +26,6 @@ namespace Timelapse.Detection
         public double DetectionConfidenceThreshold2ForUI { get; set; }
 
         // Transform the confidence threshold as needed
-
         public Tuple<double, double> DetectionConfidenceThresholdForSelect
         {
             get
@@ -61,10 +64,11 @@ namespace Timelapse.Detection
         }
 
         public string CategoryCategory { get; set; }
-
         public double CategoryConfidenceThreshold1 { get; set; }
         public double CategoryConfidenceThreshold2 { get; set; }
+        #endregion
 
+        #region Constructor - Initializes various defaults
         public DetectionSelections()
         {
             this.ClearAllDetectionsUses();
@@ -79,11 +83,14 @@ namespace Timelapse.Detection
 
             this.EmptyDetections = false;
         }
+        #endregion
 
+        #region Public Clear All Detection Uses
         // Bulk disabling of detection selection criteria
         public void ClearAllDetectionsUses()
         {
             this.UseDetections = false;
         }
+        #endregion
     }
 }

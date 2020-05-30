@@ -10,13 +10,9 @@ namespace Timelapse.Util
     public static class DataGridExtensions
     {
         #region Public methods
-        // Sort the given data grid by the given column number in ascending order
-        // </summary>
         /// <summary>
         /// Sort the given data grid by the given column number in ascending order
         /// </summary>
-        /// <param name="dataGrid"></param>
-        /// <param name="columnNumber"></param>
         public static void SortByColumnAscending(this DataGrid dataGrid, int columnNumber)
         {
             // Check the arguments for null 
@@ -47,8 +43,6 @@ namespace Timelapse.Util
         /// - a File ID, 
         /// - a possible row index into the data table containing that File ID
         /// </summary>
-        /// <param name="dataGrid"></param>
-        /// <param name="idRowIndexes"></param>
         public static void SelectAndScrollIntoView(this DataGrid dataGrid, List<Tuple<long, int>> idRowIndexes)
         {
             // We want to select (highlight) each row in the data table matching those IDs. 

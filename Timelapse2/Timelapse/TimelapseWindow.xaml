@@ -1,4 +1,5 @@
-﻿<Window x:Class="Timelapse.TimelapseWindow"
+﻿
+    <Window x:Class="Timelapse.TimelapseWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:controls="clr-namespace:Timelapse.Controls"
     xmlns:images="clr-namespace:Timelapse.Images"
@@ -42,16 +43,16 @@
                 <!-- File Menu -->
                 <MenuItem Header="_File" IsTabStop="false" SubmenuOpened="File_SubmenuOpening">
                     <!-- Load template, images, and video files... -->
-                    <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing database, or creates a new database after asking for the image/video locations">
+                    <MenuItem Name="MenuItemLoadFiles" Header="_Load template, images, and video files..." Click="MenuItemLoadImages_Click" ToolTip="Asks for the template location, and then opens an existing image set database, or creates a new image set database">
                         <MenuItem.Icon>
                             <Image Source="Icons/OpenFile_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
 
                     <!-- Load a recently used image set -->
-                    <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set into Timelapse"/>
+                    <MenuItem Name="MenuItemRecentImageSets" Header="Load a _recently used image set" IsEnabled="false" ToolTip="Load a recently used image set from the chosen location"/>
 
-                    <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
+                    <MenuItem Name="MenuItemAddFilesToImageSet" Header="_Add image and video files to this image set..." Click="MenuItemAddImagesToImageSet_Click" IsEnabled="false" ToolTip="Add more images or videos to the currently opened image set">
                         <MenuItem.Icon>
                             <Image Source="Icons/NewFile_40x.png" />
                         </MenuItem.Icon>
@@ -60,7 +61,7 @@
                     <Separator />
                     
                     <!-- Merge -->
-                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge databases" IsEnabled="true" ToolTip="Merges databases in sub-folders into a single new database"  Click="MenuItemMergeDatabases_Click" />
+                    <MenuItem Name="MenuItemMergeDatabases" Header="Merge data (.ddb) files into a single file..." IsEnabled="true" ToolTip="Asks for a location, searches its sub-folders for databases (.ddb files) and merges their contents into a new database file."  Click="MenuItemMergeDatabases_Click" />
 
                     <Separator />
 
@@ -77,15 +78,8 @@
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <!-- Export the current image or video _file...-->
-                    <MenuItem Name="MenuItemExportThisImage" Header="Export the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
-                        <MenuItem.Icon>
-                            <Image Source="Icons/ImageExport_32x.png" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-
                     <!-- Import data from a .csv file...-->
-                    <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data for the selected files in the image set from a CSV (comma separated value) file">
+                    <MenuItem Name="MenuItemImportFromCsv" Header="I_mport data from a .csv file ..." IsEnabled="false" Click="MenuItemImportFromCsv_Click" ToolTip="Import data in this image set from a CSV (comma separated value) file">
                         <MenuItem.Icon>
                             <Image Source="Icons/CSVImport_32x.png" />
                         </MenuItem.Icon>
@@ -102,21 +96,28 @@
 
                     <Separator />
 
+
+                    <!-- Export the current image or video _file...-->
+                    <MenuItem Name="MenuItemExportThisImage" Header="Export a copy of the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/ImageExport_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    
                     <!-- Rename the _data file...-->
-                    <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data file..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the image data file to a name of your choosing"/>
+                    <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data (.ddb) file for this image set..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the database (.ddb) file  for this image set to a name of your choosing"/>
                     <Separator />
 
+                    <Separator />
                     <!-- Close Image Set-->
-                    <MenuItem Name="MenuFileCloseImageSet" Header="C_lose image set" Click="MenuFileCloseImageSet_Click" IsEnabled="False">
+                    <MenuItem Name="MenuFileCloseImageSet" Header="C_lose image set" Click="MenuFileCloseImageSet_Click" IsEnabled="False" ToolTip="Close the currently opened image set. You can then open another image set if you wish" >
                         <MenuItem.Icon>
                             <Image Source="Icons/CloseFile_40x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
 
-                    <Separator />
-
                     <!-- Exit -->
-                    <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Quits the program">
+                    <MenuItem Name="MenuItemExit" Header="E_xit" Click="MenuItemExit_Click" ToolTip="Exit Timelapse">
                         <MenuItem.Icon>
                             <Image Source="Icons/Exit_22x.png" />
                         </MenuItem.Icon>
@@ -160,7 +161,7 @@
                         <MenuItem Name="MenuItemDateTimeFixedCorrection" Header="Correct for cameras not set to the right date and time..." Click="MenuItemDateTimeFixedCorrection_Click"  ToolTip="Correct for cameras  not initially set to the right date and/or time." IsEnabled="True" />
                         <MenuItem Name="MenuItemDateTimeLinearCorrection" Header="Correct for cameras whose cloc_k runs fast or slow..." Click="MenuItemDateTimeLinearCorrection_Click"  ToolTip="Correct for a camera's clock running fast or slow" IsEnabled="True" />
                         <MenuItem Name="MenuItemModifyAmbiguousDates" Header="Check and correct _ambiguous dates..." Click="MenuItemCorrectAmbiguousDates_Click"  ToolTip="Check and optionally correct ambiguous dates, where day-month could have been read as month-day" IsEnabled="True" />
-                        <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" />
+                        <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" Visibility="Collapsed"/>
                     </MenuItem>
 
                     <Separator/>
@@ -178,16 +179,16 @@
 
                 <!-- Options Menu -->
                 <MenuItem Name="MenuItemOptions" Header="_Options" IsEnabled="True" IsTabStop="false" SubmenuOpened="Options_SubmenuOpening" >
-                    <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
-
-                    <Separator/>
 
                     <MenuItem Name="MenuItemMagnifyingGlass" Header="_Magnifying Glass" IsEnabled="False">
                         <MenuItem Name="MenuItemDisplayMagnifyingGlass" IsCheckable="True" IsChecked="False" InputGestureText="M" Header="Display _magnifier" Click="MenuItemDisplayMagnifyingGlass_Click" ToolTip="Toggles the presence of the magnifying glass"/>
                         <MenuItem Name="MenuItemMagnifyingGlassIncrease" InputGestureText="U" Header="_Increase magnification" Click="MenuItemMagnifyingGlassIncrease_Click" ToolTip="Increase the magnification of the magnifying glass"/>
                         <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                     </MenuItem>
+                    
+                    <MenuItem Name="MenuItemImageAdjuster" Header="_Temporarily adjust image appearance..." Click="MenuItemImageAdjuster_Click" ToolTip="Temporarily adjust the brightness, contrast, sharpness or edging of the displayed image"/>
 
+                    <Separator/>
                     <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>
 
                     <Separator/>
@@ -195,28 +196,20 @@
                     <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="False" ToolTip="Adjust the time threshold for determining how files are grouped into episodes"/>
 
                     <Separator/>
-
-
-                    <MenuItem Name="MenuItemImageAdjuster" Header="_Temporarily adjust image appearance..." Click="MenuItemImageAdjuster_Click" ToolTip="Temporarily adjust the brightness, contrast, sharpness or edging of the displayed image"/>
-                    
-                    <Separator/>
                     
                     <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Show or hide various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
 
                     <Separator/>
 
-                    <!--<MenuItem Name="MenuItemGenerateVideoThumbnails" Header="Generate video thumbnails..." Click="MenuItemGenerateVideoThumbnails_Click" IsEnabled="True" ToolTip="Generate image thumbnails for all the videos"/>
-                <MenuItem Name="MenuItemDeleteVideoThumbnails" Header="Delete video thumbnails..." Click="MenuItemDeleteVideoThumbnails_Click" IsEnabled="True" ToolTip="Delete image thumbnails for all the videos"/>-->
+                    <MenuItem Name="MenuItemAudioFeedback" IsCheckable="True" IsChecked="False" IsEnabled="False" Header="_Audio feedback" Click="MenuItemAudioFeedback_Click" ToolTip="Toggles the audio that speaks the count whenever you add a counting mark to the image"/>
 
-                    <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="Preferences..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
+                    <Separator/>
 
 
-                    <!-- DEPRACATED
-                <MenuItem Header="Ad_vanced">
-                    <MenuItem Name="MenuItemAdvancedImageSetOptions" Header="_Image set options..." Click="MenuItemAdvancedImageSetOptions_Click" IsEnabled="False" ToolTip="Image set configuration options that should only be used by advanced users"/>
-                    <MenuItem Name="MenuItemAdvancedTimelapseOptions" Header="_Timelapse options..." Click="MenuItemAdvancedTimelapseOptions_Click" IsEnabled="True" ToolTip="Timelapse configuration options that should only be used by advanced users"/>
-                    <MenuItem Name="MenuItemAdvancedDeleteDuplicates" Header="_Delete duplicates..." Click="MenuItemDeleteDuplicates_Click" IsEnabled="False" ToolTip="Delete duplicate file records"/>
-                </MenuItem>-->
+                    <MenuItem Name="MenuItemPreferences" Header="Preferences..." Click="MenuItemPreferences_Click" IsEnabled="True" ToolTip="Other Timelapse configuration options you can set"/>
+
+
+
                 </MenuItem>
 
                 <!-- View Menu -->
@@ -329,31 +322,44 @@
                 <!-- Help Menu -->
                 <MenuItem Name="MenuItemHelp" Header="_Help" IsEnabled="true" IsTabStop="false" SubmenuOpened="Help_SubmenuOpening" >
 
-                    <MenuItem Name="MenuItemTimelapseHomePage" Header="The Timelapse _web page (via your web browser)" Click="MenuTimelapseWebPage_Click" ToolTip="Displays the Timelapse Image Analyzer web page in your browser">
+                    <MenuItem Name="MenuItemTimelapseHomePage" Header="The Timelapse _web page (via your web browser)..." Click="MenuTimelapseWebPage_Click" ToolTip="Displays the Timelapse Image Analyzer web page in your browser">
                         <MenuItem.Icon>
                             <Image Source="Icons/Home_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemTutorialManual" Header="Tutorial _manual (via your web browser)" Click="MenuTutorialManual_Click" ToolTip="Displays the Tutorial Manual - a large PDF file - in your browser">
+                    <MenuItem Name="MenuItemTutorialManual" Header="Tutorial _manual (via your web browser)..." Click="MenuTutorialManual_Click" ToolTip="Displays the Tutorial Manual - a large PDF file - in your browser">
                         <MenuItem.Icon>
                             <Image Source="Icons/UserManual_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download tutorial sample images (via your web browser)" Click="MenuDownloadSampleImages_Click" ToolTip="Using your browser, it downloads the sample image files used in the  Tutorial Manual for you to practise with">
+                    <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download tutorial sample images (via your web browser)..." Click="MenuDownloadSampleImages_Click" ToolTip="Using your browser, it downloads the sample image files used in the  Tutorial Manual for you to practise with">
                         <MenuItem.Icon>
                             <Image Source="Icons/Download_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)" Click="MenuJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
+                    
+                    <Separator/>
+                    
+                    <MenuItem Name="MenuItemJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)..." Click="MenuJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
                         <MenuItem.Icon>
                             <Image Source="Icons/JoinMailingList_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemMailToMailingList" Header="Timelapse mailing list - Send _email " Click="MenuMailToTimelapseMailingList_Click" ToolTip="Post an email to the Timelapse mailing list. You should join the mailing list before doing this.">
+                    <MenuItem Name="MenuItemMailToMailingList" Header="Timelapse mailing list - Send _email..." Click="MenuMailToTimelapseMailingList_Click" ToolTip="Post an email to the Timelapse mailing list. You should join the mailing list before doing this.">
                         <MenuItem.Icon>
                             <Image Source="Icons/EmailSend_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
+
+                    <Separator/>
+                    
+                    <MenuItem Name="MenuItemMailToTimelapseDevelopers" Header="Email the Timelapse developer..." Click="MenuMailToTimelapseDevelopers_Click" ToolTip="Post an email to the Timelapse developers. Feedback, bug reports, feature requests, etc are all appreciated.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/EmailSend_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <Separator/>
+                    
                     <MenuItem Name="MenuItemAbout" Header="_About..." Click="MenuItemAbout_Click" ToolTip="Displays version information about this program and how to contact its creator">
                         <MenuItem.Icon>
                             <Image Source="Icons/About_32x.png" />

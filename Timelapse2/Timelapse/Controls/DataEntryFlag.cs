@@ -16,6 +16,7 @@ namespace Timelapse.Controls
     // - checkbox (the content) at the given width
     public class DataEntryFlag : DataEntryControl<CheckBox, Label>
     {
+        #region Public Properties
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
@@ -47,13 +48,16 @@ namespace Timelapse.Controls
             // get { return !this.ContentControl.IsEnabled; }
             // set { this.ContentControl.IsEnabled = !value; }
         }
+        #endregion
 
+        #region Constructor
         public DataEntryFlag(ControlRow control, DataEntryControls styleProvider)
             : base(control, styleProvider, ControlContentStyleEnum.FlagCheckBox, ControlLabelStyleEnum.DefaultLabel)
         {
             // Callback used to allow Enter to select the highlit item
             this.ContentControl.PreviewKeyDown += this.ContentControl_PreviewKeyDown;
         }
+        #endregion
 
         #region Event Handlers
         // Ignore these navigation key events, as otherwise they act as tabs which does not conform to how we navigate

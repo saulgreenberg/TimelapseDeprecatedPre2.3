@@ -12,7 +12,7 @@ namespace Timelapse
     // File Selection which includes showing the current file
     public partial class TimelapseWindow : Window, IDisposable
     {
-        // FilesSelectAndShow: various forms
+        #region Partial Methods - FilesSelectAndShow, various invokingforms
         private async Task FilesSelectAndShowAsync()
         {
             if (this.DataHandler == null || this.DataHandler.FileDatabase == null)
@@ -32,7 +32,9 @@ namespace Timelapse
             await this.FilesSelectAndShowAsync(fileID, selection).ConfigureAwait(true);
         }
 
-        // FilesSelectAndShow: Full version
+        #endregion
+
+        #region FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
         private async Task FilesSelectAndShowAsync(long imageID, FileSelectionEnum selection)
         {
@@ -72,10 +74,10 @@ namespace Timelapse
                     ? this.DataHandler.FileDatabase.GetSelectedFolder()
                     : String.Empty;
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
-                this.EnableBusyCancelIndicatorForSelection(true);
+                this.BusyCancelIndicator.EnableForSelection(true);
 
                 await this.DataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
-                this.EnableBusyCancelIndicatorForSelection(false);
+                this.BusyCancelIndicator.EnableForSelection(false);
                 this.DataHandler.FileDatabase.BindToDataGrid();
             }
             Mouse.OverrideCursor = null;
@@ -89,9 +91,9 @@ namespace Timelapse
                 selection = FileSelectionEnum.All;
 
                 // PEFORMANCE: The standard select files operation in FilesSelectAndShow
-                this.EnableBusyCancelIndicatorForSelection(true);
+                this.BusyCancelIndicator.EnableForSelection(true);
                 await this.DataHandler.FileDatabase.SelectFilesAsync(selection).ConfigureAwait(true);
-                this.EnableBusyCancelIndicatorForSelection(false);
+                this.BusyCancelIndicator.EnableForSelection(false);
 
                 this.DataHandler.FileDatabase.BindToDataGrid();
             }
@@ -165,5 +167,6 @@ namespace Timelapse
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.DataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
         }
+        #endregion
     }
 }

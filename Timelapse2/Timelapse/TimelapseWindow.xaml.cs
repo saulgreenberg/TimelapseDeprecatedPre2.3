@@ -28,27 +28,8 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
-        #region Variables and Properties
+        #region Public Properties
         public DataEntryHandler DataHandler { get; set; }
-        private bool disposed;
-        private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
-        private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
-        // private string mostRecentFileAddFolderPath;
-        private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
-
-        private TemplateDatabase templateDatabase;                      // The database that holds the template
-        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
-
-        private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
-        private QuickPasteWindow quickPasteWindow = null;
-
-        // Timer for periodically updating images as the ImageNavigator slider is being used
-        private readonly DispatcherTimer timerFileNavigator;
-
-        // Timer used to AutoPlay images via MediaControl buttons
-        readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
-        readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
-
         public TimelapseState State { get; set; }                       // Status information concerning the state of the UI
 
         public string FolderPath
@@ -65,8 +46,30 @@ namespace Timelapse
                     return this.DataHandler.FileDatabase.FolderPath;
                 }
             }
-
         }
+        #endregion
+
+        #region Private Variables
+        private bool disposed;
+        private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
+        private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
+
+        private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
+        
+        private TemplateDatabase templateDatabase;                      // The database that holds the template
+        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
+
+        private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
+        private QuickPasteWindow quickPasteWindow = null;
+
+        private ImageAdjuster ImageAdjuster;    // The image adjuster controls
+
+        // Timer for periodically updating images as the ImageNavigator slider is being used
+        private readonly DispatcherTimer timerFileNavigator;
+
+        // Timer used to AutoPlay images via MediaControl buttons
+        private readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
+        private readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
         #endregion
 
         #region Main
@@ -99,7 +102,6 @@ namespace Timelapse
             this.State.ReadSettingsFromRegistry();
             Episodes.TimeThreshold = this.State.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
             this.MarkableCanvas.SetBookmark(this.State.BookmarkScale, this.State.BookmarkTranslation);
-
             this.MenuItemAudioFeedback.IsChecked = this.State.AudioFeedback;
 
             // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
@@ -141,8 +143,7 @@ namespace Timelapse
         }
         #endregion
 
-        #region Window Loading, Closing, and Disposing
-
+        #region Window Loading, Closing
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Abort if some of the required dependencies are missing
@@ -184,98 +185,7 @@ namespace Timelapse
         // On exiting, save various attributes so we can use recover them later
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            this.FilePlayer_Stop();
-
-            if ((this.DataHandler != null) &&
-                (this.DataHandler.FileDatabase != null) &&
-                (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0))
-            {
-                // save image set properties to the database
-                this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                // Depracated - we no longer save the selection, but just revert to All when re-opening an image set.
-                // if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Custom || this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Missing )
-                //{
-                //    // don't save custom selections, revert to All 
-                //    this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                //}
-                //else if (this.DataHandler.FileDatabase.ImageSet.FileSelection == FileSelectionEnum.Folders)
-                //{
-                //    // If the last selection was a non-empty folder, save it as the folder selection
-                //    if (String.IsNullOrEmpty(this.DataHandler.FileDatabase.ImageSet.SelectedFolder))
-                //    {
-                //        this.DataHandler.FileDatabase.ImageSet.FileSelection = FileSelectionEnum.All;
-                //    }
-                //}
-
-                // sync image set properties
-                if (this.MarkableCanvas != null)
-                {
-                    this.State.MagnifyingGlassOffsetLensEnabled = this.MarkableCanvas.MagnifiersEnabled;
-                }
-
-                // Persist the current ID in the database image set, so we can go back to that image when restarting timelapse
-                if (this.DataHandler.ImageCache != null && this.DataHandler.ImageCache.Current != null)
-                {
-                    this.DataHandler.FileDatabase.ImageSet.MostRecentFileID = this.DataHandler.ImageCache.Current.ID;
-                }
-                this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
-
-                // ensure custom filter operator is synchronized in state for writing to user's registry
-                this.State.CustomSelectionTermCombiningOperator = this.DataHandler.FileDatabase.CustomSelection.TermCombiningOperator;
-
-                // Check if we should delete the DeletedFiles folder, and if so do it.
-                // Note that we can only do this if we know where the DeletedFolder is,
-                // i.e. because the datahandler and datahandler.FileDatabae is not null
-                // That is why its in this if statement.
-                if (this.State.DeleteFolderManagement != DeleteFolderManagementEnum.ManualDelete)
-                {
-                    this.DeleteTheDeletedFilesFolderIfNeeded();
-                }
-                // Save selection state
-            }
-
-            // persist user specific state to the registry
-            if (this.Top > -10 && this.Left > -10)
-            {
-                this.State.TimelapseWindowPosition = new Rect(new Point(this.Left, this.Top), new Size(this.Width, this.Height));
-            }
-            this.State.TimelapseWindowSize = new Size(this.Width, this.Height);
-
-            // Save the layout only if we are really closing Timelapse and the DataEntryControlPanel is visible, as otherwise it would be hidden
-            // the next time Timelapse is started
-            if (sender != null && this.DataEntryControlPanel.IsVisible == true)
-            {
-                this.AvalonLayout_TrySave(Constant.AvalonLayoutTags.LastUsed);
-            }
-            else if (sender != null)
-            {
-                // If the data entry control panel is not visible, we should do a reduced layut save i.e.,
-                // where we save ony the position and size of the main window and whether its maximized
-                // This is useful for the situation where:
-                // - the user has opened timelapse but not loaded an image set
-                // - they moved/resized/ maximized the window
-                // - they exited without loading an image set.
-                // On reload, it will show the timelapse window at the former place/size/maximize state
-                // The catch is that if there is a flaoting data entry window, that window will appear at its original place, i.e., where it was when
-                // last used to analyze an image set. That is, it may be in an awkward position as it is not moved relative to the timelapse window. 
-                // There is no real easy solution for that, except to make the (floating) data entry window always visible on loading (which I don't really want to do). But I don't expect it to be a big problem.
-                this.AvalonLayout_TrySaveWindowPositionAndSizeAndMaximizeState(Constant.AvalonLayoutTags.LastUsed);
-            }
-
-            // persist user specific state to the registry
-            // note that we have to set the bookmark scale and transform in the state, as it is not done elsewhere
-            this.State.BookmarkScale = this.MarkableCanvas.GetBookmarkScale();
-            this.State.BookmarkTranslation = this.MarkableCanvas.GetBookmarkTranslation();
-
-            // Clear the QuickPasteEntries from the ImageSet table and save its state, including the QuickPaste window position
-            this.quickPasteEntries = null;
-            if (this.quickPasteWindow != null)
-            {
-                this.State.QuickPasteWindowPosition = this.quickPasteWindow.Position;
-            }
-
-            // Save the state by writing it to the registry
-            this.State.WriteSettingsToRegistry();
+            this.CloseTimelapseAndSaveState(true);
         }
 
         private void DeleteTheDeletedFilesFolderIfNeeded()
@@ -307,7 +217,9 @@ namespace Timelapse
                 Directory.Delete(deletedFolderPath, true);
             }
         }
+        #endregion
 
+        #region Disposing
         public void Dispose()
         {
             this.Dispose(true);
@@ -334,7 +246,6 @@ namespace Timelapse
             }
             this.disposed = true;
         }
-
         #endregion
 
         #region Exception Management

@@ -14,11 +14,13 @@ namespace Timelapse.Controls
     // - an editable textbox (containing the content) at the given width
     public class DataEntryCounter : DataEntryControl<IntegerUpDown, RadioButton>
     {
+        #region Public Properties and Private variables
         // Return the TopLeft corner of the content control as a point
         public override Point TopLeft
         {
             get { return this.ContentControl.PointToScreen(new Point(0, 0)); }
         }
+
         public override UIElement GetContentControl
         {
             get { return this.ContentControl; }
@@ -28,9 +30,6 @@ namespace Timelapse.Controls
         {
             get { return this.ContentControl.IsEnabled; }
         }
-
-        // Holds the DataLabel of the previously clicked counter control across all counters
-        private static string previousControlDataLabel = String.Empty;
 
         /// <summary>Gets or sets the content of the counter.</summary>
         public override string Content
@@ -49,6 +48,11 @@ namespace Timelapse.Controls
             get { return this.LabelControl.IsChecked.HasValue ? (bool)this.LabelControl.IsChecked : false; }
         }
 
+        // Holds the DataLabel of the previously clicked counter control across all counters
+        private static string previousControlDataLabel = String.Empty;
+        #endregion
+
+        #region Constructor
         public DataEntryCounter(ControlRow control, DataEntryControls styleProvider) :
             base(control, styleProvider, ControlContentStyleEnum.CounterTextBox, ControlLabelStyleEnum.CounterButton)
         {
@@ -62,6 +66,7 @@ namespace Timelapse.Controls
             this.ContentControl.GotKeyboardFocus += this.ContentControl_GotKeyboardFocus;
             this.ContentControl.LostKeyboardFocus += this.ContentControl_LostKeyboardFocus;
         }
+        #endregion
 
         #region Event Handlers
         // Behaviour: enable the counter textbox for editing
@@ -79,7 +84,7 @@ namespace Timelapse.Controls
         // Behaviour: Ignore any non-numeric input (but backspace delete etc work just fine)
         private void ContentControl_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
-            if (int.TryParse(e.Text, out int number) == false)
+            if (int.TryParse(e.Text, out _) == false)
             {
                 e.Handled = true;
             }

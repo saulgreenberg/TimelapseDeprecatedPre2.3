@@ -1,4 +1,4 @@
-﻿<controls:DialogWindow x:Class="Timelapse.DateTimeLinearCorrection"
+﻿<controls:BusyableDialogWindow x:Class="Timelapse.DateTimeLinearCorrection"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:local="clr-namespace:Timelapse"
         xmlns:controls="clr-namespace:Timelapse.Controls"
@@ -80,8 +80,6 @@
                     </Grid>
                     <Image Name="imageLatest" Stretch="Uniform" MinHeight="100" MinWidth="100" StretchDirection="Both"  VerticalAlignment="Top" HorizontalAlignment="Stretch" Grid.Row="1" Grid.Column="1"/>
 
-
-
                 </Grid>
 
                 <!-- Feedback area. Either this or the Content area is visible-->
@@ -108,5 +106,5 @@
         <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
         <controls:BusyCancelIndicator x:Name="BusyCancelIndicator" IsBusy="False" CancelClick="CancelAsyncOperationButton_Click" Grid.Row="0"/>
     </Grid>
-</controls:DialogWindow>
+</controls:BusyableDialogWindow>
 

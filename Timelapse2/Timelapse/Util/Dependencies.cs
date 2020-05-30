@@ -4,9 +4,13 @@ using System.Reflection;
 
 namespace Timelapse.Util
 {
+    /// <summary>
+    /// Timelapse and / or the Timelapse Editor is dependent on these files being present
+    /// These methods check to see if they exist.
+    /// </summary>
     public static class Dependencies
     {
-        #region Lists of required files
+        #region Private Lists of required files
         private static readonly List<string> CommonRequiredBinaries = new List<string>()
         {
             // Exiftool
@@ -48,6 +52,7 @@ namespace Timelapse.Util
         };
         #endregion
 
+        #region Public Methods
         /// <summary>
         /// If any dependency files are missing, return false else true
         /// </summary>
@@ -87,5 +92,6 @@ namespace Timelapse.Util
             }
             return true;
         }
+        #endregion
     }
 }

@@ -10,6 +10,7 @@ namespace Timelapse.Util
     /// </summary>
     public static class ProcessExecution
     {
+        #region Public Methods - Try Process Start - Various forms
         /// <param name="processStartInfo">should contain the necessary information to configure the process</param>
         /// <returns>true/false if the process started or not</returns>
         public static bool TryProcessStart(ProcessStartInfo processStartInfo)
@@ -65,7 +66,9 @@ namespace Timelapse.Util
             };
             return ProcessExecution.TryProcessStart(processStartInfo);
         }
+        #endregion
 
+        #region Public Methods - Try Process Start using File Explorer
         /// Try to start the Windows file explorer on the provided folder path.
         /// <param name="folderpath">should contain a valid file path, as its otherwise aborted</param>
         /// <returns>true/false if the process started or not</returns>
@@ -83,5 +86,6 @@ namespace Timelapse.Util
             };
             return ProcessExecution.TryProcessStart(processStartInfo);
         }
+        #endregion
     }
 }

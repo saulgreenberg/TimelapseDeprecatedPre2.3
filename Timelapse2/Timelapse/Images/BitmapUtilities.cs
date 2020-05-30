@@ -6,15 +6,14 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
+using Timelapse.Extensions;
 using Timelapse.Util;
 
 namespace Timelapse.Images
 {
-
-
     public static class BitmapUtilities
     {
-        #region Get Bitmap from Image File
+        #region Public - Get Bitmap from Image File
         // All bitmap laoding eventually invokes this static function
         public static BitmapSource GetBitmapFromImageFile(string filePath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
         {
@@ -75,7 +74,7 @@ namespace Timelapse.Images
         }
         #endregion
 
-        #region Get Bitmap from Video File
+        #region Public - Get Bitmap from Video File
         // Get the bitmap representing a video file
         // Note that displayIntent is ignored as it's specific to interaction with WCF's bitmap cache, which doesn't occur in rendering video preview frames
         public static BitmapSource GetBitmapFromVideoFile(string filePath, Nullable<int> desiredWidthOrHeight, ImageDisplayIntentEnum displayIntent, ImageDimensionEnum imageDimension, out bool isCorruptOrMissing)
@@ -240,7 +239,7 @@ namespace Timelapse.Images
         }
         #endregion
 
-        #region Get Bitmap from Image File with play button drawn centered on it
+        #region Public - Get Bitmap from Image File with play button drawn centered on it
         // This just overlays a Play button atop a bitmap image (note that the path must be to a valid image, not video)
         // For now, it is only used with "pack://application:,,,/Resources/BlankVideo.jpg as the path argument.
         // SAULXXX: Modify, as not needed.
@@ -311,7 +310,7 @@ namespace Timelapse.Images
         }
         #endregion
 
-        #region Bitmap tests
+        #region Public -  Bitmap tests: IsBitmapFileDisplayable,  GetBitmapAspectRatioFromImageFile
         // Return true only if the file exists and we can actually create a bitmap image from it
         public static bool IsBitmapFileDisplayable(string path)
         {

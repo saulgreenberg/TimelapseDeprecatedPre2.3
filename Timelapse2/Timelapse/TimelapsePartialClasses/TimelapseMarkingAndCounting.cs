@@ -11,6 +11,7 @@ namespace Timelapse
     // Marking and Counting
     public partial class TimelapseWindow : Window, IDisposable
     {
+        #region Event Handler
         // Event handler: A marker, as defined in e.Marker, has been either added (if e.IsNew is true) or deleted (if it is false)
         // Depending on which it is, add or delete the tag from the current counter control's list of tags 
         // If its deleted, remove the tag from the current counter control's list of tags
@@ -86,7 +87,9 @@ namespace Timelapse
             }
             this.MarkableCanvas_UpdateMarkers(); // Refresh the Markable Canvas, where it will also delete the markers at the same time
         }
+        #endregion
 
+        #region AddMarker
         /// <summary>
         /// A new marker associated with a counter control has been created;
         /// Increment the counter controls value, and add the marker to all data structures (including the database)
@@ -157,7 +160,9 @@ namespace Timelapse
             this.MarkableCanvas.Markers = this.GetDisplayMarkers();
             this.Speak(counter.Content + " " + counter.Label); // Speak the current count
         }
+        #endregion
 
+        #region Update Markers, GetDisplayMarkers
         // Create a list of markers from those stored in each image's counters, 
         // and then set the markableCanvas's list of markers to that list. We also reset the emphasis for those tags as needed.
         private void MarkableCanvas_UpdateMarkers()
@@ -222,5 +227,6 @@ namespace Timelapse
             }
             return markers;
         }
+        #endregion
     }
 }

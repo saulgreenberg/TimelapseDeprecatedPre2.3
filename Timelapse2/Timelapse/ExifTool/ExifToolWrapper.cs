@@ -11,6 +11,9 @@ using Timelapse.Util;
 
 namespace Timelapse.ExifTool
 {
+    /// <summary>
+    /// This code was imported and slightly modified from a Github project see  http://brain2cpu.com/devtools.html
+    /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
     public struct ExifToolResponse
 #pragma warning restore CA1815 // Override equals and operator equals on value types

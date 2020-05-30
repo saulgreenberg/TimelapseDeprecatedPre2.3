@@ -9,7 +9,7 @@ namespace Timelapse.Util
 
     public static class IsCondition
     {
-        #region Digits and Letters
+        #region Public Methods - Digits and Letters
         /// <summary>
         /// Returns true only if every character in the string is a digit
         /// </summary>
@@ -58,7 +58,7 @@ namespace Timelapse.Util
         }
         #endregion 
 
-        #region Path lengths
+        #region  Public Methods - Path lengths
         /// <summary>
         /// Returns true when the path length exceeds the maximum allowed by Windows
         /// </summary>

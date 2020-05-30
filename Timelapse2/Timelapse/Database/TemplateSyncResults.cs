@@ -3,10 +3,14 @@ using System.Collections.Generic;
 
 namespace Timelapse.Database
 {
-    // This class will eventually hold the data labels that should be added/deleted/renamed in case of a mismatch
-    // between the .ddb and the .tdb template tables
+    /// <summary>
+    /// This class will eventually hold the data labels that should be added/deleted/renamed in case of a mismatch
+    /// between the .ddb and the .tdb template tables
+    /// Basically a data structure for storing information about efforts to sync the templates
+    /// </summary>
     public class TemplateSyncResults
     {
+        #region Public Properties
         // These  lists collect information about possible mismatches between the .tdb and the .ddb template, and what should eventually be added, deleted or renamed
         public Dictionary<string, string> DataLabelsInTemplateButNotImageDatabase { get; set; }
         public Dictionary<string, string> DataLabelsInImageButNotTemplateDatabase { get; set; }
@@ -35,7 +39,9 @@ namespace Timelapse.Database
         }
 
         public bool SyncRequiredAsChoiceMenusDiffer { get; set; }
+        #endregion
 
+        #region Constructors
         public TemplateSyncResults()
         {
             this.DataLabelsInTemplateButNotImageDatabase = new Dictionary<string, string>();
@@ -52,5 +58,6 @@ namespace Timelapse.Database
             this.SyncRequiredAsNonCriticalFieldsDiffer = false;
             this.SyncRequiredAsChoiceMenusDiffer = false;
         }
+        #endregion
     }
 }
