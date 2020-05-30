@@ -54,6 +54,8 @@ namespace Timelapse
         private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
         private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
 
+        private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
+        
         private TemplateDatabase templateDatabase;                      // The database that holds the template
         private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
@@ -92,11 +94,15 @@ namespace Timelapse
             // Set the window's title
             this.Title = Constant.Defaults.MainWindowBaseTitle;
 
+            // Create the speech synthesiser
+            this.speechSynthesizer = new SpeechSynthesizer();
+
             // Recall user's state from prior sessions
             this.State = new TimelapseState();
             this.State.ReadSettingsFromRegistry();
             Episodes.TimeThreshold = this.State.EpisodeTimeThreshold; // so we don't have to pass it as a parameter
             this.MarkableCanvas.SetBookmark(this.State.BookmarkScale, this.State.BookmarkTranslation);
+            this.MenuItemAudioFeedback.IsChecked = this.State.AudioFeedback;
 
             // Populate the global references so we can access these from other objects without going thorugh the hassle of passing arguments around
             // Yup, poor practice but...
@@ -232,6 +238,10 @@ namespace Timelapse
                 if (this.DataHandler != null)
                 {
                     this.DataHandler.Dispose();
+                }
+                if (this.speechSynthesizer != null)
+                {
+                    this.speechSynthesizer.Dispose();
                 }
             }
             this.disposed = true;
@@ -788,6 +798,16 @@ namespace Timelapse
                 }
             }
             return null;
+        }
+
+        // Say the given text
+        public void Speak(string text)
+        {
+            if (this.State.AudioFeedback)
+            {
+                this.speechSynthesizer.SpeakAsyncCancelAll();
+                this.speechSynthesizer.SpeakAsync(text);
+            }
         }
         #endregion
     }

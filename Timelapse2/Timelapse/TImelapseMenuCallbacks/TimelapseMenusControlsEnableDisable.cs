@@ -37,6 +37,7 @@ namespace Timelapse
             // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;
+            this.MenuItemAudioFeedback.IsEnabled = filesSelected;
             this.MenuItemEpisodeOptions.IsEnabled = filesSelected;
             this.MenuItemEpisodeShowHide.IsEnabled = filesSelected;
             this.MenuItemMagnifyingGlass.IsEnabled = imageSetAvailable;

@@ -17,6 +17,15 @@ namespace Timelapse
         }
         #endregion
 
+        #region Audio feedback: toggle on / off
+        private void MenuItemAudioFeedback_Click(object sender, RoutedEventArgs e)
+        {
+            // We don't have to do anything here...
+            this.State.AudioFeedback = !this.State.AudioFeedback;
+            this.MenuItemAudioFeedback.IsChecked = this.State.AudioFeedback;
+        }
+        #endregion
+
         #region Magnifier
         // Display Magnifier: toggle on / off
         private void MenuItemDisplayMagnifyingGlass_Click(object sender, RoutedEventArgs e)

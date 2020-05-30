@@ -318,6 +318,7 @@
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseClosing.cs" />
+    <Compile Include="TimelapsePartialClasses\TimelapseEpsiodes.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseProgress.cs" />
     <Compile Include="Util\ColorsAndBrushes.cs" />
     <Compile Include="Util\Compare.cs" />

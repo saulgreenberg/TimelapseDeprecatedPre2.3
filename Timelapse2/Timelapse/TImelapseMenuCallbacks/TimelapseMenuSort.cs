@@ -16,8 +16,9 @@ namespace Timelapse
             this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
         #endregion
-        
-        // Sort callback: handles all standard menu sorting items
+
+        #region Sort callbacks
+        // Handle the standard menu sorting items
         private async void MenuItemSort_Click(object sender, RoutedEventArgs e)
         {
 
@@ -90,6 +91,7 @@ namespace Timelapse
         {
             await this.DoSortAndShowSortFeedbackAsync(false).ConfigureAwait(true);
         }
+        #endregion
 
         #region Helper functions
         // Do the sort and show feedback to the user. 
