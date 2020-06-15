@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Timelapse.Controls
+﻿namespace Timelapse.Controls
 {
     internal static class BusyCancelIndicatorExtensions
     {
@@ -14,7 +8,7 @@ namespace Timelapse.Controls
         // Note: I'm not really sure if setting the messages are even necessary, as that is usually overwritten in the progress handler
 
         // File selection - initial busy indicator state
-        public static void EnableForSelection (this BusyCancelIndicator busyCancelIndicator, bool isBusy)
+        public static void EnableForSelection(this BusyCancelIndicator busyCancelIndicator, bool isBusy)
         {
             busyCancelIndicator.IsBusy = isBusy;
             busyCancelIndicator.Message = isBusy ? "Selecting Files from the database. Please wait..." : "Please wait...";

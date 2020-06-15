@@ -15,7 +15,7 @@
         {
             this.FileName = fileName;
             this.Message = message;
-        } 
+        }
         #endregion
     }
 }

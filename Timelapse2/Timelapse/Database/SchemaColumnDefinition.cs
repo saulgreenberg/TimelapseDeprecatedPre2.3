@@ -17,7 +17,7 @@ namespace Timelapse.Database
 
         #region Constructors
         // Empty default 
-        public SchemaColumnDefinition(string name, string type): this(name, type, null)
+        public SchemaColumnDefinition(string name, string type) : this(name, type, null)
         {
         }
 

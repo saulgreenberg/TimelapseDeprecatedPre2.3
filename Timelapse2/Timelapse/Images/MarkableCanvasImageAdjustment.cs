@@ -70,7 +70,7 @@ namespace Timelapse.Images
             {
                 // The file cannot be opened or is not displayable. 
                 // Signal change in image state, which essentially says there is no displayable image to adjust (consumed by ImageAdjuster)
-                this.OnImageStateChanged(new ImageStateEventArgs(false, false)); //  Signal change in image state (consumed by ImageAdjuster)
+                this.OnImageStateChanged(new ImageStateEventArgs(false)); //  Signal change in image state (consumed by ImageAdjuster)
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace Timelapse.Images
                 {
                     // If we cannot get a valid file, there is no image to manipulate. 
                     // So abort and signal a change in image state that says there is no displayable image to adjust (consumed by ImageAdjuster)
-                    this.OnImageStateChanged(new ImageStateEventArgs(false, false));
+                    this.OnImageStateChanged(new ImageStateEventArgs(false));
                 }
 
                 // Set the state to Processing is used to indicate that other attempts to process the image should be aborted util this is done.
@@ -158,22 +158,21 @@ namespace Timelapse.Images
             {
                 // We failed on this image. To avoid this happening again,
                 // Signal change in image state, which essentially says there is no adjustable image (consumed by ImageAdjuster)
-                this.OnImageStateChanged(new ImageStateEventArgs(false, false));
+                this.OnImageStateChanged(new ImageStateEventArgs(false));
             }
             this.Processing = false;
         }
         #endregion
 
         #region Generate ImageStateChange event
-
-        // An explicit check the current status of the image state and generate an event to reflect that.
+        // Explicit check the current status of the image state and generate an event to reflect that.
         // Typically used when the image adjustment window is opened for the first time, as the markable canvas needs to signal its state to it.
         public void GenerateImageStateChangeEventToReflectCurrentStatus()
         {
             if (this.ThumbnailGrid.IsGridActive)
             {
                 // In the overview
-                this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuser)
+                this.GenerateImageStateChangeEvent(false); //  Signal change in image state (consumed by ImageAdjuser)
                 return;
             }
             ImageCache imageCache = Util.GlobalReferences.MainWindow?.DataHandler?.ImageCache;
@@ -182,19 +181,19 @@ namespace Timelapse.Images
                 if (imageCache.Current?.IsVideo == true)
                 {
                     // Its a video
-                    this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuser)
+                    this.GenerateImageStateChangeEvent(false); //  Signal change in image state (consumed by ImageAdjuser)
                     return;
                 }
-                // Its a primary image, but also check the differencing state
-                bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
-                this.GenerateImageStateChangeEvent(true, isPrimaryImage); //  Signal change in image state (consumed by ImageAdjuser)
+                // Its a primary image, but we need to consider whether we are in either the differencing state or displaying a placeholder image
+                bool isImageView = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered && this.ImageToDisplay.Source != Constant.ImageValues.Corrupt.Value && this.ImageToDisplay.Source != Constant.ImageValues.FileNoLongerAvailable.Value;
+                this.GenerateImageStateChangeEvent(isImageView); //  Signal change in image state (consumed by ImageAdjuser)
             }
         }
 
         // Generate an event indicating the image state. To be consumed by the Image Adjuster to adjust its own state (e.g., disabled, reset, etc).
-        private void GenerateImageStateChangeEvent(bool isNewImage, bool isPrimaryImage)
+        private void GenerateImageStateChangeEvent(bool isImageView)
         {
-            this.OnImageStateChanged(new ImageStateEventArgs(isNewImage, isPrimaryImage)); //  Signal change in image state (consumed by ImageAdjuster)
+            this.OnImageStateChanged(new ImageStateEventArgs(isImageView)); //  Signal change in image state (consumed by ImageAdjuster, but only if its visible)
         }
 
         protected virtual void OnImageStateChanged(ImageStateEventArgs e)

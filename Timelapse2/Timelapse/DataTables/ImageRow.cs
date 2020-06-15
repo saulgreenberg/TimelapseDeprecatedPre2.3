@@ -107,7 +107,7 @@ namespace Timelapse.Database
             private set { this.Row.SetUtcOffsetField(Constant.DatabaseColumn.UtcOffset, value); }
         }
         #endregion
-        
+
         #region Private Constants
         private const string ParamName = "value";
         #endregion

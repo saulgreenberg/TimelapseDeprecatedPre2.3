@@ -82,7 +82,7 @@ namespace Timelapse.Database
             set { this.Row.SetField(Constant.DatabaseColumn.QuickPasteXML, value); }
         }
         #endregion
-        
+
         #region Constructors
         public ImageSetRow(DataRow row)
             : base(row)

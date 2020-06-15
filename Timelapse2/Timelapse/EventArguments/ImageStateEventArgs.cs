@@ -7,13 +7,11 @@ namespace Timelapse.EventArguments
     /// </summary>
     public class ImageStateEventArgs : EventArgs
     {
-        public bool IsNewImage { get; set; }
-        public bool IsPrimaryImage { get; set; }
+        public bool IsImageView { get; set; }
 
-        public ImageStateEventArgs(bool isNewImage, bool isPrimaryImage)
+        public ImageStateEventArgs(bool isImageView)
         {
-            this.IsNewImage = isNewImage;
-            this.IsPrimaryImage = isPrimaryImage;
+            this.IsImageView = isImageView;
         }
     }
 }

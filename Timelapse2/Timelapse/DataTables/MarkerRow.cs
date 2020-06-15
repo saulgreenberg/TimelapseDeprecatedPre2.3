@@ -35,7 +35,7 @@ namespace Timelapse.Database
             }
         }
         #endregion
-        
+
         #region Constructor
         public MarkerRow(DataRow row)
             : base(row)

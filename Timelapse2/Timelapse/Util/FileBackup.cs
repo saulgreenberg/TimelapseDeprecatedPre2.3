@@ -131,7 +131,7 @@ namespace Timelapse.Database
             }
             return true;
         }
-        
+
         #endregion
     }
 }

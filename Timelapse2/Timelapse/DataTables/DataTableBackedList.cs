@@ -77,7 +77,7 @@ namespace Timelapse.Database
         {
             get { return this.createRow(this.DataTable.Rows[index]); }
         }
-        
+
         public TRow Find(long id)
         {
             //This check should no longer be needed, as we now check to see if the database file is corrupt or not. 

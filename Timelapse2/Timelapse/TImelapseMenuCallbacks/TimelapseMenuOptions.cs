@@ -2,7 +2,6 @@
 using System.Windows;
 using Timelapse.Dialog;
 using Timelapse.Enums;
-using Timelapse.Images;
 using Timelapse.Util;
 
 namespace Timelapse
@@ -64,7 +63,7 @@ namespace Timelapse
         {
             if (ImageAdjuster == null)
             {
-                ImageAdjuster = new ImageAdjuster(this);
+                this.ImageAdjuster = new ImageAdjuster(this);
                 this.ImageAdjuster.ImageProcessingParametersChanged += this.MarkableCanvas.AdjustImage_EventHandler;
             }
             if (ImageAdjuster.IsVisible == false)
@@ -148,7 +147,7 @@ namespace Timelapse
             if (this.DataHandler != null && this.DataHandler.FileDatabase != null)
             {
                 // If we aren't using detections, then hide their existence even if detection data may be present
-                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections && this.DataHandler.FileDatabase.DetectionsExists();
             }
             else
             {

@@ -343,8 +343,8 @@ namespace Timelapse.Images
             ImageCache imageCache = Util.GlobalReferences.MainWindow?.DataHandler?.ImageCache;
             if (imageCache != null)
             {
-                bool isPrimaryImage = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
-                this.GenerateImageStateChangeEvent(true, isPrimaryImage); //  Signal change in image state (consumed by ImageAdjuster)
+                bool isImageView = imageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered;
+                this.GenerateImageStateChangeEvent(isImageView); //  Signal change in image state (consumed by ImageAdjuster)
             }
             this.ImageToDisplay.Source = bitmapSource;
             this.SetMagnifiersAccordingToCurrentState(true, true);
@@ -374,8 +374,6 @@ namespace Timelapse.Images
             // this.markers rather than this.Markers.
             this.ImageToMagnify.Source = bitmapSource;
             this.displayingImage = true;
-
-            this.GenerateImageStateChangeEvent(true, true); //  Signal change in image state (consumed by ImageAdjuster)
 
             // ensure display image is visible
             if (this.ThumbnailGrid.IsGridActive == false)
@@ -569,9 +567,9 @@ namespace Timelapse.Images
             this.VideoPlayer.Visibility = Visibility.Collapsed;
             this.VideoPlayer.Pause();
             this.SetMagnifiersAccordingToCurrentState(false, true);
-            // this.OffsetLens.Show = false;
 
-            this.GenerateImageStateChangeEvent(false, true); //  Signal change in image state (consumed by ImageAdjuster)
+            // Signal change in image state (consumed by ImageAdjuster. We check to make sure that its an actual image vs. a placeholder)
+            this.GenerateImageStateChangeEvent(this.ImageToDisplay.Source != Constant.ImageValues.Corrupt.Value && this.ImageToDisplay.Source != Constant.ImageValues.FileNoLongerAvailable.Value);
 
             if (this.IsThumbnailGridVisible == false)
             {
@@ -590,7 +588,7 @@ namespace Timelapse.Images
             this.VideoPlayer.Visibility = Visibility.Visible;
             this.RedrawMarkers(); // Clears the markers as none should be associated with the video
 
-            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(false); //  Signal change in image state (consumed by ImageAdjuster)
 
             if (this.IsThumbnailGridVisible == false)
             {
@@ -609,7 +607,7 @@ namespace Timelapse.Images
             {
                 return;
             }
-            this.GenerateImageStateChangeEvent(false, false); //  Signal change in image state (consumed by ImageAdjuster)
+            this.GenerateImageStateChangeEvent(false); //  Signal change in image state (consumed by ImageAdjuster, if it is visible)
 
             this.ThumbnailGrid.Visibility = Visibility.Visible;
             this.SwitchedToThumbnailGridViewEventAction();
@@ -724,7 +722,7 @@ namespace Timelapse.Images
 
         private void SetMagnifiersAccordingToCurrentState(bool showMagnifier, bool showOffset)
         {
-            this.magnifyingGlass.Show = showMagnifier ? this.MagnifiersEnabled && this.displayingImage : false;
+            this.magnifyingGlass.Show = showMagnifier && this.MagnifiersEnabled && this.displayingImage;
 
             if (showOffset & this.MagnifiersEnabled && this.displayingImage == false && this.VideoPlayer.IsUnScaled & this.IsThumbnailGridVisible == false)
             {
@@ -775,8 +773,7 @@ namespace Timelapse.Images
                     //}
 
                     // Option 2. Request zoom out on either the ThumbnailGrid an unscaled image. 
-                    bool isInitialSwitchToThumbnailGrid = (this.ThumbnailGrid.IsGridActive) ? true : false;
-                    // this.ThumbnailGridState++;
+                    bool isInitialSwitchToThumbnailGrid = this.ThumbnailGrid.IsGridActive;
                     this.SwitchToThumbnailGridView();
 
                     // Option 2a. We tried to refresh, but there isn't enough space available on the thumbnail grid.

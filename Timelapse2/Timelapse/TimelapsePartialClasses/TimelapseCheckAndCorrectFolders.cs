@@ -126,7 +126,7 @@ namespace Timelapse
             List<string> missingRelativePaths = GetMissingFolders(fileDatabase);
             return (missingRelativePaths.Count == 0) ? false : CorrectForMissingFolders(owner, fileDatabase, missingRelativePaths);
         }
-      
+
 
         /// <summary>
         /// Returns a (possible empty) list of missing folders. This is done by by getting all relative paths and seeing if each folder actually exists.

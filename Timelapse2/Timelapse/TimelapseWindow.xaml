@@ -185,8 +185,8 @@
                         <MenuItem Name="MenuItemMagnifyingGlassIncrease" InputGestureText="U" Header="_Increase magnification" Click="MenuItemMagnifyingGlassIncrease_Click" ToolTip="Increase the magnification of the magnifying glass"/>
                         <MenuItem Name="MenuItemMagnifyingGlassDecrease" InputGestureText="D" Header="_Decrease magnification" Click="MenuItemMagnifyingGlassDecrease_Click" ToolTip="Decrease the magnification of the magnifying glass"/>
                     </MenuItem>
-                    
-                    <MenuItem Name="MenuItemImageAdjuster" Header="_Temporarily adjust image appearance..." Click="MenuItemImageAdjuster_Click" ToolTip="Temporarily adjust the brightness, contrast, sharpness or edging of the displayed image"/>
+
+                    <MenuItem Name="MenuItemImageAdjuster" Header="_Temporarily adjust image appearance..." Click="MenuItemImageAdjuster_Click" IsEnabled="False" ToolTip="Temporarily adjust the brightness, contrast, gamma, sharpness or edging of the displayed image"/>
 
                     <Separator/>
                     <MenuItem Name="MenuItemFilePlayerOptions" Header="_Adjust FilePlayer playback speeds..." Click="MenuItemFilePlayerOptions_Click" IsEnabled="True" ToolTip="File Player options to adjust the image display speed"/>

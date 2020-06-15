@@ -64,7 +64,7 @@ namespace Timelapse
             this.MenuItemSelectDarkFiles.IsEnabled = existsDark;
         }
         #endregion
-        
+
         #region Select callback: All file, ImageQuality, Missing, Marked for Deletion
         private async void MenuItemSelectFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -114,7 +114,7 @@ namespace Timelapse
             }
         }
         #endregion
-        
+
         #region Select by Folder Submenu(including submenu opening)
         private void MenuItemSelectByFolder_SubmenuOpening(object sender, RoutedEventArgs e)
         {

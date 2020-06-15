@@ -201,7 +201,7 @@ namespace Timelapse.Dialog
                 // Update the progress bar
                 this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
             // cache the current ID as the current image may be invalidated
             long currentFileID = this.imageCache.Current.ID;
 

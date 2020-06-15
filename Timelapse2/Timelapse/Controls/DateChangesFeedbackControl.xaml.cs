@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -120,7 +119,7 @@ namespace Timelapse.Controls
         // Synchronize the AmbiguousDateRange (from the caller) to the current tuple selection.
         private void Synchronize()
         {
-            foreach (FeedbackRowTuple tuple in this.feedbackGrid.ItemsSource as IEnumerable)
+            foreach (FeedbackRowTuple tuple in this.feedbackGrid.ItemsSource)
             {
                 tuple.AmbiguousDateRange.SwapDates = tuple.Select;
             }

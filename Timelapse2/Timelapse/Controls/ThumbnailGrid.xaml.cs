@@ -345,6 +345,10 @@ namespace Timelapse.Controls
         // Select the first (and only the first) image in the current grid
         public void SelectInitialCellOnly()
         {
+            if (this.thumbnailInCells == null)
+            {
+                return;
+            }
             this.SelectNone(); // Clear the selections
             if (this.thumbnailInCells.Any())
             {
@@ -358,6 +362,10 @@ namespace Timelapse.Controls
         private void SelectNone()
         {
             // Unselect all ThumbnailInCells
+            if (this.thumbnailInCells == null)
+            {
+                return;
+            }
             foreach (ThumbnailInCell ci in this.thumbnailInCells)
             {
                 ci.IsSelected = false;
