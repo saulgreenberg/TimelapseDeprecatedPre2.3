@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Timelapse.EventArguments;
+using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {
@@ -111,6 +113,8 @@ namespace Timelapse.Dialog
             this.OtherControlsArea.Background = enabledState && (CBGamma.IsChecked == false) ? Brushes.White : Brushes.WhiteSmoke;
             this.GammaArea.Background = enabledState && (CBGamma.IsChecked == true) ? Brushes.White : Brushes.WhiteSmoke;
             this.CBGamma.Foreground = enabledState ? enabledGammaBrush : isEnabledBrush;
+
+            this.ButtonArea.Background = enabledState ? Brushes.White : Brushes.WhiteSmoke;
             this.ButtonReset.IsEnabled = !IsNeutral();
         }
         #endregion
@@ -166,6 +170,13 @@ namespace Timelapse.Dialog
         #endregion
 
         #region UI Callbacks - image processing parameters altered in the UI
+        // Send keboard events to the markable canvas, mostly so that the navigation keys will work.
+        private void Control_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            Keyboard.Focus(GlobalReferences.MainWindow.MarkableCanvas);
+            GlobalReferences.MainWindow.MarkableCanvas.RaiseEvent(e);
+        }
+
         private void ButtonImageViewer_Click(object sender, RoutedEventArgs e)
         {
             // Generate an event to inform the Markable Canvas, in this case to invoke the file viewer 
@@ -223,5 +234,7 @@ namespace Timelapse.Dialog
                      || (this.CBGamma.IsChecked == true && this.GammaSlider.Value == 1));
         }
         #endregion
+
+
     }
 }
