@@ -18,7 +18,7 @@ namespace Timelapse.Database
 
         public abstract bool IsContentValid(string content);
         #endregion
-        
+
         #region Constructors
         /// <summary>
         /// Given a ControlRow (i.e., a template row definitions) construct a column for its data based on the 

@@ -284,8 +284,8 @@ namespace Timelapse.QuickPaste
             }
             this.Note.Visibility = this.QuickPasteEntry.IsAtLeastOneItemPastable() ? Visibility.Collapsed : Visibility.Visible;
         }
-        #endregion 
-        
+        #endregion
+
         #region Private  Helper functions
         // CANDIDATE FOR UTILITIES MAYBE SAME AS UTIL.ISDIGIT? SIMILAR FUCNTION IN CUSTOMSELECTION.CS
         // Value(Counter) Helper function: checks if the text contains only numbers

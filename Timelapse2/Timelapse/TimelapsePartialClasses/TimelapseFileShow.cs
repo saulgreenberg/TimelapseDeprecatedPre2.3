@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using Timelapse.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;

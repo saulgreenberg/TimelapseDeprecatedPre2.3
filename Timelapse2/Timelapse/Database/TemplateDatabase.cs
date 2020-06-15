@@ -673,7 +673,7 @@ namespace Timelapse.Database
 
             return nextDataLabel;
         }
-#endregion
+        #endregion
 
         #region Private Methods - Ensure: Current Schema,  DataLabelsAndLabelsNotEmpty
         // Do various checks and corrections to the Template DB to maintain backwards compatability. 
@@ -923,7 +923,7 @@ namespace Timelapse.Database
         {
             return this.Controls.RowCount + 1;
         }
-        
+
         /// <summary>Given a data label, get the id of the corresponding data entry control</summary>
         protected long GetControlIDFromTemplateTable(string dataLabel)
         {
@@ -1021,7 +1021,7 @@ namespace Timelapse.Database
             this.Controls.BindDataGrid(this.editorDataGrid, this.onTemplateTableRowChanged);
         }
         #endregion
- 
+
         #region Disposing
         public void Dispose()
         {

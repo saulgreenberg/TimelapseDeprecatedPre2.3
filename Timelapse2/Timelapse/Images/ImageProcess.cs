@@ -1,12 +1,7 @@
-﻿ using ImageProcessor;
-using System;
+﻿using ImageProcessor;
 using System.IO;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Timelapse.Enums;
-using Timelapse.Util;
 
 namespace Timelapse.Images
 {

@@ -157,7 +157,7 @@ namespace Timelapse.Dialog
                 // Update the progress bar
                 BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
 
             return await Task.Run(() =>
             {
@@ -200,8 +200,8 @@ namespace Timelapse.Dialog
         {
             this.StartDoneButton.IsEnabled = this.DateChangeFeedback.AreAnySelected();
         }
-        #endregion       
-        
+        #endregion
+
         #region Button Callbackes
         // Select all / none of the checkboxes in the datechangedfeedback panel.
         private void SelectAll_Click(object sender, RoutedEventArgs e)

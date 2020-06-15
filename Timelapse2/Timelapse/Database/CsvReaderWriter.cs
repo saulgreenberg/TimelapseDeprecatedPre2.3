@@ -73,7 +73,7 @@ namespace Timelapse.Database
                 // Update the progress bar
                 CsvReaderWriter.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
 
             bool abort = false;
             List<string> importErrors = new List<string>();

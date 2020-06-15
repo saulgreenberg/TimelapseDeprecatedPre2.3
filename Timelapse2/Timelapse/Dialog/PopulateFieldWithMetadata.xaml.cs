@@ -211,7 +211,7 @@ namespace Timelapse.Dialog
                 // Update the progress bar
                 BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
 
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
@@ -393,7 +393,7 @@ namespace Timelapse.Dialog
         // Checkbox callback sets the state as to whether the data field should be cleared or left alone if there is no metadata
         private void ClearIfNoMetadata_Checked(object sender, RoutedEventArgs e)
         {
-            this.clearIfNoMetadata = (this.ClearIfNoMetadata.IsChecked == true) ? true : false;
+            this.clearIfNoMetadata = (this.ClearIfNoMetadata.IsChecked == true);
         }
         #endregion
 

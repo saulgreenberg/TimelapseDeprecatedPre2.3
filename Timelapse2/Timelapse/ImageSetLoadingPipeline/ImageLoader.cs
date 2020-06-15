@@ -58,8 +58,8 @@ namespace Timelapse.ImageSetLoadingPipeline
                 this.bitmapSource = value;
             }
         }
-        #endregion       
-        
+        #endregion
+
         #region Private Variables
         private readonly FileInfo fileInfo;
         private readonly DataEntryHandler dataHandler;

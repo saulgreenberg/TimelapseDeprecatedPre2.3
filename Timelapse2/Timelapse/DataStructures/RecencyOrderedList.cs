@@ -111,7 +111,7 @@ namespace Timelapse.Util
             return this.list.Remove(value);
         }
         #endregion
-        
+
         #region Enumerator-related
         public IEnumerator<TElement> GetEnumerator()
         {

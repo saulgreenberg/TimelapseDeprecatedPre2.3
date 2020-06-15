@@ -22,7 +22,7 @@ namespace Timelapse.Dialog
         private readonly FileTableEnumerator fileEnumerator;
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false; 
+        private bool IsAnyDataUpdated = false;
         #endregion
 
         #region Constructor, Loaded, AutoGeneration, and Closing
@@ -77,7 +77,7 @@ namespace Timelapse.Dialog
                 // Update the progress bar
                 BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
 
             // A side effect of running this task is that the FileTable will be updated, which means that,
             // at the very least, the calling function will need to run FilesSelectAndShow to either

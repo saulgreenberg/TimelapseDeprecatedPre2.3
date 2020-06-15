@@ -40,7 +40,7 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
-        
+
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;

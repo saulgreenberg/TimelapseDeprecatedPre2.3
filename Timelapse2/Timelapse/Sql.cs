@@ -17,7 +17,7 @@
         public const string Dot = ".";
         public const string DotStar = Sql.Dot + Sql.Star;
         public const string BeginTransaction = " BEGIN TRANSACTION ";
-        public const string BeginTransactionSemiColon = Sql.BeginTransaction + Sql.Semicolon; 
+        public const string BeginTransactionSemiColon = Sql.BeginTransaction + Sql.Semicolon;
         public const string Between = " BETWEEN ";
         public const string CaseWhen = " CASE WHEN ";
         public const string Cast = " CAST ";

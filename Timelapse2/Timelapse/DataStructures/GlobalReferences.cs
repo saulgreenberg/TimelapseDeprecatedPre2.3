@@ -9,8 +9,8 @@ namespace Timelapse.Util
         /// - Occassionaly, a class will have to access various instances or variables set elsewhere
         ///   Rather than do extensive refactoring, or to contort method calls to try to pass it as a parameter, we just make those available here.
         /// </summary>
-        
-            // The main Timelapse window instance
+
+        // The main Timelapse window instance
         public static TimelapseWindow MainWindow { get; set; }
 
         // The top level Busy CancelIndicator

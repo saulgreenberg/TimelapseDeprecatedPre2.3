@@ -2,9 +2,9 @@
 {
     public class FileTableUtcOffsetColumn : FileTableColumn
     {
-    /// <summary>
-    /// FileTableUtcOffsetColumn - A FileTable Column holding a UTCOffset (a double)
-    /// </summary>
+        /// <summary>
+        /// FileTableUtcOffsetColumn - A FileTable Column holding a UTCOffset (a double)
+        /// </summary>
         #region Constructors
         public FileTableUtcOffsetColumn(ControlRow control)
             : base(control)

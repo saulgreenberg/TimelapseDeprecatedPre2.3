@@ -20,7 +20,7 @@ namespace Timelapse.Images
         public List<BoundingBox> Boxes { get; private set; }
         public float MaxConfidence { get; set; }
         #endregion
-        
+
         #region Constructor
         public BoundingBoxes()
         {

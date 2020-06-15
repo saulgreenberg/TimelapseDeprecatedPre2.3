@@ -95,7 +95,7 @@ namespace Timelapse
             // Set up progress indicators
             Mouse.OverrideCursor = Cursors.Wait;
             this.StatusBar.SetMessage("Creating a merged database, please wait...");
-            IProgress<ProgressBarArguments> progress = progressHandler as IProgress<ProgressBarArguments>;
+            IProgress<ProgressBarArguments> progress = progressHandler;
             this.BusyCancelIndicator.EnableForMerging(true);
 
             // Find all the .DDB files located in subfolders under the root folder (excluding backup folders)
@@ -278,7 +278,7 @@ namespace Timelapse
             if (result)
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
-                GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
+                GlobalReferences.DetectionsExists = this.State.UseDetections && this.DataHandler.FileDatabase.DetectionsExists();
                 await this.FilesSelectAndShowAsync().ConfigureAwait(true);
             }
 
