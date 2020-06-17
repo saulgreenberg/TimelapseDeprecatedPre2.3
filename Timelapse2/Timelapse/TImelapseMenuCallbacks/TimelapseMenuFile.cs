@@ -26,6 +26,7 @@ namespace Timelapse
 
             // Enable / disable various menu items depending on whether we are looking at the single image view or overview
             this.MenuItemExportThisImage.IsEnabled = this.IsDisplayingSingleImage();
+            this.MenuItemExportSelectedImages.IsEnabled = this.IsFileDatabaseAvailable();
         }
         #endregion
 
@@ -389,6 +390,14 @@ namespace Timelapse
                         this.StatusBar.SetMessage(String.Format("Could not copy '{0}' for some reason.", sourceFile));
                     }
                 }
+            }
+        }
+
+        private void MenuItemExportAllSelectedImages_Click(object sender, RoutedEventArgs e)
+        {
+            ExportAllSelectedFiles exportAllSelectedFiles = new ExportAllSelectedFiles(this, this.DataHandler.FileDatabase);
+            {
+                exportAllSelectedFiles.ShowDialog();
             }
         }
         #endregion

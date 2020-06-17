@@ -159,6 +159,33 @@ namespace Timelapse.Dialog
         }
 
         /// <summary>
+        /// Prompt the user for a folder location via an an open file dialog. 
+        /// </summary>
+        /// <returns>The selected path, otherwise null </returns>
+        public static bool TryGetFolderFromUserUsingOpenFileDialog(string title, string initialFolder, out string selectedFolderPath)
+        {
+            selectedFolderPath = String.Empty;
+            using (CommonOpenFileDialog folderSelectionDialog = new CommonOpenFileDialog()
+            {
+                Title = title,
+                DefaultDirectory = initialFolder,
+                IsFolderPicker = true,
+                EnsurePathExists = false,
+                Multiselect = false
+
+            })
+            {
+                folderSelectionDialog.InitialDirectory = folderSelectionDialog.DefaultDirectory;
+                if (folderSelectionDialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    selectedFolderPath = folderSelectionDialog.FileName;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Folder dialog where the user can only select a sub-folder of the root folder path
         /// It returns the relative path to the selected folder
         /// If folderNameToLocate is not empty, it displays that a desired folder to select in the dialog title.
