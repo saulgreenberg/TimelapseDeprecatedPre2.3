@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Export all files in the current selection" MinHeight="415" MinWidth="550" Height="415"  Width="550" Loaded="Window_Loaded">
+        Title="Export all files in the current selection" MinHeight="415" MinWidth="550" Height="415"  Width="550" Loaded="Window_Loaded" Closing="Window_Closing">
 
     <Grid>
         <Grid.ColumnDefinitions>

@@ -19,7 +19,7 @@ namespace Timelapse.Dialog
         private readonly FileDatabase FileDatabase;
         #endregion
 
-        #region Constructors / Loaded
+        #region Constructors / Loaded / Closing
         public ExportAllSelectedFiles(Window owner, FileDatabase fileDatabase) : base(owner)
         {
             InitializeComponent();
@@ -28,6 +28,9 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+
             this.FolderLocation.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             int count = this.FileDatabase.CountAllCurrentlySelectedFiles;
             if (count >= 100)
@@ -37,9 +40,15 @@ namespace Timelapse.Dialog
             }
             this.Message.Title = String.Format("Export (by copying) {0} currently selected files", count);
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Closing the window also indicates we should cancel any ongoing operations
+            this.TokenSource.Cancel();
+        }
         #endregion
 
-        #region Button Callbacks
+        #region Private Methods - Button Callbacks
         private void ChooseFolderButton_Click(object sender, RoutedEventArgs e)
         {
             // Set up a Folder Browser with some instructions
@@ -80,17 +89,9 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Private Methods - Copy Files (async with progress)
+        #region Private Methods - Copy Files (async with progress) and Folder operations
         private async Task<string> CopyFiles(string path)
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             string fileNamePrefix;
             string sourceFile;
             string destFile;
@@ -125,7 +126,7 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = Convert.ToInt32((copiedFiles + skippedFiles) / Convert.ToDouble(totalFiles) * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Copying {0} / {1} files", copiedFiles, totalFiles), true, true));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("Copying {0} / {1} files", copiedFiles, totalFiles), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
                     }
                 }
@@ -145,9 +146,7 @@ namespace Timelapse.Dialog
                     : String.Format("Skipped {0} files (perhaps they are missing?)", skippedFiles);
             return feedbackMessage;
         }
-        #endregion
 
-        #region Private Methods - Folder Operations
         private bool GetPathAndCreateItIfNeeded(out string path)
         {
             path = (this.CBPutInSubFolder.IsChecked == true)

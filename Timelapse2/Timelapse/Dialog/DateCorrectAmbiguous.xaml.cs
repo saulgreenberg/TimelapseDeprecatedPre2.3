@@ -260,6 +260,5 @@ namespace Timelapse.Dialog
             this.DialogResult = false;
         }
         #endregion
-
     }
 }
