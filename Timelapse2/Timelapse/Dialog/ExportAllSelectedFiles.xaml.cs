@@ -57,9 +57,9 @@ namespace Timelapse.Dialog
                 System.Windows.MessageBox.Show(String.Format("Could not create the folder: {1}  {0}{1}Export aborted.", path, Environment.NewLine), "Export aborted.", MessageBoxButton.OK, MessageBoxImage.Error);
                 this.DialogResult = false;
             }
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
             string feedbackMessage = await CopyFiles(path).ConfigureAwait(true);
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
 
             this.Grid1.Visibility = Visibility.Collapsed;
             this.ButtonPanel1.Visibility = Visibility.Collapsed;
@@ -87,7 +87,7 @@ namespace Timelapse.Dialog
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
                 // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler;
 
@@ -147,49 +147,7 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
-        {
-            ProgressBar bar = VisualChildren.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = VisualChildren.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = VisualChildren.GetVisualChild<Button>(this.BusyIndicator);
-
-            if (bar != null & !randomEnabled)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else if (randomEnabled)
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
-
-            // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelEnabled ? "Cancel" : "Copying files...";
-            }
-        }
-
-        // We don't allow cancelling in the middle of a delete operation, so this is a no-op
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            this.TokenSource.Cancel();
-        }
-        #endregion
-
-        #region Private Methods - File/Folder Operations
+        #region Private Methods - Folder Operations
         private bool GetPathAndCreateItIfNeeded(out string path)
         {
             path = (this.CBPutInSubFolder.IsChecked == true)

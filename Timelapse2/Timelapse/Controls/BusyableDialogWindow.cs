@@ -58,6 +58,15 @@ namespace Timelapse.Controls
         }
         #endregion
 
+        #region Cancellation callbacks
+        // The user has indicates that he/she wishes to cancel the operation
+        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Set this so that it will be caught in the above await task
+            this.TokenSource.Cancel();
+        }
+        #endregion
+
         #region Protected methods
         // Show progress information in the passed in progress bar as indicated
         protected static void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)

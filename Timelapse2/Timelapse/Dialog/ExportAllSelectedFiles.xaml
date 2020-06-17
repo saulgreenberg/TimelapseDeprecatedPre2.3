@@ -4,9 +4,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Timelapse.Dialog" xmlns:xceed="http://schemas.xceed.com/wpf/xaml/toolkit"
-                               mc:Ignorable="d"
-        Title="Export all files in the current selection" MinHeight="400" MinWidth="550" Height="400"  Width="550" Loaded="Window_Loaded">
+        mc:Ignorable="d"
+        Title="Export all files in the current selection" MinHeight="415" MinWidth="550" Height="415"  Width="550" Loaded="Window_Loaded">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -18,8 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"
-                            
+        <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"                 
                             Title="Export copies of all files in the current selection..."
                             What ="Copy all the images or video files in your current selection to a chosen folder.
                                    &#10;Exported files will be renamed to indicate their original folder location. "
@@ -28,9 +26,10 @@
                                     &#10;&#x2022; the original files will not be altered.
                                     &#10;&#x2022; exported file names will indicate their original folder location. For example:
                                     &#10;  'image01.jpg' in 'Site1/Camera1' will be copied as 'Site1.Camera1.image01.jpg'"
-                            Hint="You can narrow your selections to particular files via the 'Select' menu."
-                                   />
+                            Hint="You can narrow your selections to particular files via the 'Select' menu." />
 
+        <Separator Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Margin="5,5,10,5" Background="LightGray"/>
+        
         <Grid Name="Grid1" HorizontalAlignment="Stretch" Grid.Row="2" Grid.Column="0" Margin="5,0,10,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -49,7 +48,7 @@
                 <TextBox Name="TextBoxPutInSubFolder" Text="TimelapseExport" VerticalContentAlignment="Center" Height="25" Width="240" Margin="5,0,0,0" HorizontalContentAlignment="Stretch"/>
             </StackPanel>
         </Grid>
-
+       
         <TextBlock Name="TextBlockFeedback" FontSize="16" FontWeight="Bold" Text="374 files copied"  Grid.Row="2" Grid.Column="0" Margin="80,0,10,0" Visibility="Collapsed"/>
 
         <StackPanel Name="ButtonPanel1" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="3">
@@ -62,25 +61,6 @@
         </StackPanel>
 
         <!-- Busy Indicator: when true, it shows the progress bar, text message, plus a cancel button -->
-        <xceed:BusyIndicator Name="BusyIndicator" IsBusy="False" Grid.Row="0" Grid.Column="0">
-
-            <!-- Construct the new content: A text message, a progress bar and a cancel button -->
-            <xceed:BusyIndicator.BusyContentTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="4,0,4,0" Orientation="Vertical" MinWidth="350">
-                        <Label Content="Please wait..." />
-                        <ProgressBar Value="0" Height="15" />
-                        <Button Margin="10" Content="Cancel" Click="CancelAsyncOperationButton_Click" />
-                    </StackPanel>
-                </DataTemplate>
-            </xceed:BusyIndicator.BusyContentTemplate>
-
-            <!-- Collapse its default ProgressBar as we don't use it  -->
-            <xceed:BusyIndicator.ProgressBarStyle >
-                <Style TargetType="ProgressBar">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </Style>
-            </xceed:BusyIndicator.ProgressBarStyle>
-        </xceed:BusyIndicator >
+        <controls:BusyCancelIndicator x:Name="BusyCancelIndicator" IsBusy="False" Grid.Row="0" CancelClick="CancelAsyncOperationButton_Click"/>
     </Grid>
 </controls:BusyableDialogWindow>
