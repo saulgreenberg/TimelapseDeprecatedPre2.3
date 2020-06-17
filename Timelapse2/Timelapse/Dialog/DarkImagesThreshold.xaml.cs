@@ -76,6 +76,9 @@ namespace Timelapse.Dialog
         // Display the image and associated details in the UI
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+
             this.DarkThreshold.Value = this.state.DarkPixelThreshold;
             this.DarkThreshold.ValueChanged += this.DarkThresholdSlider_ValueChanged;
 
@@ -226,14 +229,6 @@ namespace Timelapse.Dialog
 
         private async Task<string> BeginUpdateImageQualityForAllSelectedImagesAsync()
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             return await Task.Run(() =>
             {
                 // The selected files to check
@@ -288,14 +283,14 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = (int)(100.0 * fileIndex / selectedFilesCount);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFilesCount, file.File), true, false));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", fileIndex, selectedFilesCount, file.File), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
                 }
 
                 // Update the database to reflect the changed values
                 // Tracks whether any changes to the data or database are made
-                progress.Report(new ProgressBarArguments(100, String.Format("Writing changes for {0} files. Please wait...", filesToUpdate.Count), false, true));
+                this.Progress.Report(new ProgressBarArguments(100, String.Format("Writing changes for {0} files. Please wait...", filesToUpdate.Count), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.IsAnyDataUpdated = true;
                 this.fileDatabase.UpdateFiles(filesToUpdate);
@@ -447,8 +442,8 @@ namespace Timelapse.Dialog
         // Helper for the above, where previous/next buttons are enabled/disabled as needed
         private void SetPreviousNextPlayButtonStates()
         {
-            this.PreviousFile.IsEnabled = (this.imageEnumerator.CurrentRow == 0) ? false : true;
-            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CountAllCurrentlySelectedFiles - 1) ? true : false;
+            this.PreviousFile.IsEnabled = this.imageEnumerator.CurrentRow != 0;
+            this.NextFile.IsEnabled = (this.imageEnumerator.CurrentRow < this.fileDatabase.CountAllCurrentlySelectedFiles - 1);
             if (NextFile.IsEnabled == false)
             {
                 // We are at the end, so stop playback and disable the play button
@@ -543,13 +538,7 @@ namespace Timelapse.Dialog
         // Cancel or Stop - exit the dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated; //((string)this.btnCancel.Content == "Cancel") ? false : true;
-        }
-
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            this.TokenSource.Cancel();
+            this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
         }
         #endregion
 

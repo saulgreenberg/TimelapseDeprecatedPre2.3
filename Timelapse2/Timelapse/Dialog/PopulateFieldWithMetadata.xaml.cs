@@ -66,6 +66,9 @@ namespace Timelapse.Dialog
         // - Load the names of the note controls into the listbox
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+
             // Set up the initial UI and values
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
@@ -205,14 +208,6 @@ namespace Timelapse.Dialog
         // Populate the database with the metadata for the selected note field
         private async Task<ObservableCollection<KeyValuePair<string, string>>> PopulateAsync(bool? metadataExtractorRBIsChecked)
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<KeyValuePair<string, string>> keyValueList = new ObservableCollection<KeyValuePair<string, string>>();
@@ -260,7 +255,7 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         percentDone = Convert.ToInt32(imageIndex / totalImages * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", imageIndex, totalImages, image.File), true, false));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", imageIndex, totalImages, image.File), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
 
@@ -314,7 +309,7 @@ namespace Timelapse.Dialog
                     imagesToUpdate.Add(imageUpdate);
                 }
                 this.IsAnyDataUpdated = true;
-                progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
+                this.Progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.fileDatabase.UpdateFiles(imagesToUpdate);
                 return keyValueList;
@@ -457,12 +452,6 @@ namespace Timelapse.Dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
-        }
-
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            this.TokenSource.Cancel();
         }
         #endregion
     }

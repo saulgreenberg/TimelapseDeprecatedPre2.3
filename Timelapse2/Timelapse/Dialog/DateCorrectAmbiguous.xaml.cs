@@ -39,7 +39,11 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+            
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+
 
             // Find and display the ambiguous dates in the current selected set
             // This is a fast operation, so we don't bother to show a progress bar here
@@ -151,14 +155,6 @@ namespace Timelapse.Dialog
         // Actually update the dates as needed
         private async Task<int> ApplyDateTimeChangesAsync()
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             return await Task.Run(() =>
             {
                 int totalFileCount = 0;
@@ -179,10 +175,10 @@ namespace Timelapse.Dialog
                     {
                         dateIndex++;
                         int percentDone = Convert.ToInt32(dateIndex / Convert.ToDouble(count) * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Swapping day with month for {0} / {1} ambiguous dates", dateIndex, count), false, false));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("Swapping day with month for {0} / {1} ambiguous dates", dateIndex, count), false, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
-                    // The cancellation pattern is shown commented out. We don't do anything with the cancellation token, as we are actually updating the database at this point
+                    // The cancellation pattern is shown but is commented out. We don't do anything with the cancellation token, as we are actually updating the database at this point
                     // and don't want a partially done update.
                     //if (Token.IsCancellationRequested == true)
                     //{

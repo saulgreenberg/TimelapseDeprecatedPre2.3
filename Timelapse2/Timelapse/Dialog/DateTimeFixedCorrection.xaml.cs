@@ -42,8 +42,10 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+            
             // Set up the initial UI and values
-
             // Get the image filename and image and display them
             this.FileName.Content = this.ImageToCorrect.File;
             this.FileName.ToolTip = this.ImageToCorrect.File;
@@ -75,14 +77,6 @@ namespace Timelapse.Dialog
         // Set up all the Linear Corrections as an asynchronous task which updates the progress bar as needed
         private async Task<ObservableCollection<DateTimeFeedbackTuple>> TaskFixedCorrectionAsync(TimeSpan adjustment)
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             // A side effect of running this task is that the FileTable will be updated, which means that,
             // at the very least, the calling function will need to run FilesSelectAndShow to either
             // reload the FileTable with the updated data, or to reset the FileTable back to its original form
@@ -96,7 +90,7 @@ namespace Timelapse.Dialog
                 ObservableCollection<DateTimeFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeFeedbackTuple>();
 
                 int count = this.fileDatabase.FileTable.RowCount;
-                this.DatabaseUpdateFileDates(progress, adjustment, feedbackRows);
+                this.DatabaseUpdateFileDates(this.Progress, adjustment, feedbackRows);
 
                 // Provide feedback if the operation was cancelled during the database update
                 if (Token.IsCancellationRequested == true)
@@ -209,12 +203,6 @@ namespace Timelapse.Dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
-        }
-
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            this.TokenSource.Cancel();
         }
         #endregion
 

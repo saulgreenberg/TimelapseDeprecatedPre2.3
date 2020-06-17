@@ -38,6 +38,12 @@ namespace Timelapse.Dialog
             this.IsAnyDataUpdated = false;
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+        }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             this.DialogResult = this.Token.IsCancellationRequested || this.IsAnyDataUpdated;
@@ -56,14 +62,6 @@ namespace Timelapse.Dialog
         #region Calculate times and Update files
         private async Task<ObservableCollection<DateTimeFeedbackTuple>> TaskRereadDatesAsync()
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                BusyableDialogWindow.UpdateProgressBar(this.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
-
             // A side effect of running this task is that the FileTable will be updated, which means that,
             // at the very least, the calling function will need to run FilesSelectAndShow to either
             // reload the FileTable with the updated data, or to reset the FileTable back to its original form
@@ -76,12 +74,12 @@ namespace Timelapse.Dialog
                 ObservableCollection<DateTimeFeedbackTuple> feedbackRows = new ObservableCollection<DateTimeFeedbackTuple>();
 
                 // Pass 1. For each file, check to see what dates/times need updating.
-                progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates...", true, false));
+                this.Progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates...", true, false));
                 int count = this.fileDatabase.CountAllCurrentlySelectedFiles;
                 TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
 
                 // Get the list of image rows (files) whose dates have changed
-                List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);
+                List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(this.Progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);
 
                 // We are done if the operation has been cancelled, or there are no files with changed dates.
                 if (CheckIfAllDone(filesToAdjust, feedbackRows, missingFiles))
@@ -92,7 +90,7 @@ namespace Timelapse.Dialog
                 // Pass 2. Update files in the database
                 // Provide feedback that we are in the second pass, disabling the Cancel button in the progress bar as we shouldn't cancel half-way through a database update.
                 string message = String.Format("Pass 2: Updating {0} files. Please wait...", filesToAdjust.Count);
-                progress.Report(new ProgressBarArguments(100, message, false, true));
+                this.Progress.Report(new ProgressBarArguments(100, message, false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allow the UI to update.
 
                 //// Update the database
@@ -155,9 +153,9 @@ namespace Timelapse.Dialog
                             usingMetadataTimestamp = false;
                         }
                         DateTimeOffset rescannedDateTime = file.DateTimeIncorporatingOffset;
-                        bool sameDate = (rescannedDateTime.Date == originalDateTime.Date) ? true : false;
-                        bool sameTime = (rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay) ? true : false;
-                        bool sameUTCOffset = (rescannedDateTime.Offset == originalDateTime.Offset) ? true : false;
+                        bool sameDate = rescannedDateTime.Date == originalDateTime.Date;
+                        bool sameTime = rescannedDateTime.TimeOfDay == originalDateTime.TimeOfDay;
+                        bool sameUTCOffset = rescannedDateTime.Offset == originalDateTime.Offset;
 
                         if (!(sameDate && sameTime && sameUTCOffset))
                         {
@@ -275,12 +273,7 @@ namespace Timelapse.Dialog
             // We return false if the database was not altered, i.e., if this was all a no-op
             this.DialogResult = this.IsAnyDataUpdated;
         }
-
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            this.TokenSource.Cancel();
-        }
         #endregion
+
     }
 }

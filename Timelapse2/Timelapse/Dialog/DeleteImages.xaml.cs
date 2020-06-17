@@ -60,6 +60,9 @@ namespace Timelapse.Dialog
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Set up a progress handler that will update the progress bar
+            this.InitalizeProgressHandler(this.BusyCancelIndicator);
+
             Mouse.OverrideCursor = Cursors.Wait;
 
             // Construct the interface for either a single deletion, or for multiple deletions
@@ -195,13 +198,6 @@ namespace Timelapse.Dialog
         #region Do the actual file deletion
         private async Task DoDeleteFilesAsync(List<ImageRow> imagesToDelete, bool deleteFilesAndData)
         {
-            // Set up a progress handler that will update the progress bar
-            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-            {
-                // Update the progress bar
-                this.UpdateProgressBar(value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-            });
-            IProgress<ProgressBarArguments> progress = progressHandler;
             // cache the current ID as the current image may be invalidated
             long currentFileID = this.imageCache.Current.ID;
 
@@ -215,13 +211,7 @@ namespace Timelapse.Dialog
                 foreach (ImageRow image in imagesToDelete)
                 {
                     // We need to release the file handle to various images as otherwise we won't be able to move them
-                    //// First, if the current image being displayed is one of those be moved, then clear its bitmap so it can be moved
-                    //if (currentFileID == image.ID)
-                    //{
-                    //    // SAULXXX THIS DOESNT DO ANYTHING!!!
-                    //    ImageRow.ClearBitmap();
-                    //}
-                    // Release the image cache for this ID, if its actually in the cache  
+                          // Release the image cache for this ID, if its actually in the cache  
                     this.imageCache.TryInvalidate(image.ID);
                     GC.Collect(); // See if this actually gets rid of the pointer to the image, as otherwise we get occassional exceptions
                     // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
@@ -248,11 +238,11 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
-                        progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), false, true));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), false, true));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
                     }
                 }
-                progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", count), false, true));
+                this.Progress.Report(new ProgressBarArguments(100, String.Format("Pass 2: Updating {0} files. Please wait...", count), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
 
                 if (deleteFilesAndData)
@@ -303,41 +293,6 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region ProgressBar helper
-        // Show progress information in the progress bar, and to enable or disable its cancel button
-        private void UpdateProgressBar(int percent, string message, bool cancelEnabled, bool randomEnabled)
-        {
-            ProgressBar bar = VisualChildren.GetVisualChild<ProgressBar>(this.BusyIndicator);
-            Label textMessage = VisualChildren.GetVisualChild<Label>(this.BusyIndicator);
-            Button cancelButton = VisualChildren.GetVisualChild<Button>(this.BusyIndicator);
-
-            if (bar != null & !randomEnabled)
-            {
-                // Treat it as a progressive progress bar
-                bar.Value = percent;
-                bar.IsIndeterminate = false;
-            }
-            else if (randomEnabled)
-            {
-                // If its at 100%, treat it as a random bar
-                bar.IsIndeterminate = true;
-            }
-
-            // Update the text message
-            if (textMessage != null)
-            {
-                textMessage.Content = message;
-            }
-
-            // Update the cancel button to reflect the cancelEnabled argument
-            if (cancelButton != null)
-            {
-                cancelButton.IsEnabled = cancelEnabled;
-                cancelButton.Content = cancelEnabled ? "Cancel" : "Writing data...";
-            }
-        }
-        #endregion
-
         #region Button callbacks
         // Set the confirm checkbox, which enables the ok button if the data deletions are confirmed. 
         private void ConfirmBox_Checked(object sender, RoutedEventArgs e)
@@ -361,13 +316,13 @@ namespace Timelapse.Dialog
             this.StartDoneButton.Click -= this.StartButton_Click;
             this.StartDoneButton.Click += this.DoneButton_Click;
             this.StartDoneButton.IsEnabled = false;
-            this.BusyIndicator.IsBusy = true;
+            this.BusyCancelIndicator.IsBusy = true;
             this.WindowCloseButtonIsEnabled(false);
 
             await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show how many files were deleted
-            this.BusyIndicator.IsBusy = false;
+            this.BusyCancelIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
             this.WindowCloseButtonIsEnabled(true);
             this.DoneMessagePanel.Content = "Deleted ";
@@ -379,13 +334,6 @@ namespace Timelapse.Dialog
         {
             // We return false if the database was not altered, i.e., if this was all a no-op
             this.DialogResult = this.IsAnyDataUpdated;
-        }
-
-        // We don't allow cancelling in the middle of a delete operation, so this is a no-op
-        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Set this so that it will be caught in the above await task
-            // this.TokenSource.Cancel();
         }
         #endregion
 
