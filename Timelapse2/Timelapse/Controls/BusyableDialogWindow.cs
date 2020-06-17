@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -20,14 +21,14 @@ namespace Timelapse.Controls
     public class BusyableDialogWindow : Window
 #pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
     {
+        #region Cancellation Token
         // Token to let us cancel the task
         private readonly CancellationTokenSource tokenSource;
         protected CancellationToken Token { get; set; }
         protected CancellationTokenSource TokenSource => this.tokenSource;
+        #endregion
 
-        // To help determine periodic updates to the progress bar 
-        private DateTime lastRefreshDateTime = DateTime.Now;
-
+        #region Variables for Close Button
         // Allows us to access the close button on the window
         [DllImport("user32.dll")]
         static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
@@ -39,8 +40,9 @@ namespace Timelapse.Controls
         private const uint MF_GRAYED = 0x00000001;
         private const uint MF_ENABLED = 0x00000000;
         private const uint SC_CLOSE = 0xF060;
+        #endregion
 
-        #region Initialization 
+        #region Constructor / Loaded 
         public BusyableDialogWindow(Window owner)
         {
             this.Owner = owner;
@@ -55,6 +57,37 @@ namespace Timelapse.Controls
         private void BusyableDialogWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
+        }
+        #endregion
+
+        #region Protected - Progress handler Initialization plus refresh
+        protected Progress<ProgressBarArguments> ProgressHandler { get; set; }
+        protected IProgress<ProgressBarArguments> Progress { get; set; }
+
+        /// <summary>
+        /// Hook up the busy indicator to the progress handler.
+        /// This must be invoked by parent e.g., in Loaded as this.InitalizeProgressHandler(this.BusyCancelIndicator);
+        /// </summary>
+        /// <param name="busyCancelIndicator"></param>
+        protected void InitalizeProgressHandler(BusyCancelIndicator busyCancelIndicator)
+        {
+            this.ProgressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                // Update the progress bar
+                BusyableDialogWindow.UpdateProgressBar(busyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            });
+            this.Progress = ProgressHandler;
+        }
+
+
+        #endregion
+
+        #region Cancellation callbacks
+        // The user has indicates that he/she wishes to cancel the operation
+        private void CancelAsyncOperationButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Set this so that it will be caught in the above await task
+            this.TokenSource.Cancel();
         }
         #endregion
 
@@ -79,6 +112,8 @@ namespace Timelapse.Controls
             busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Writing data...";
         }
 
+        // To help determine periodic updates to the progress bar 
+        private DateTime lastRefreshDateTime = DateTime.Now;
         protected bool ReadyToRefresh()
         {
             TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;

@@ -234,7 +234,5 @@ namespace Timelapse.Dialog
                      || (this.CBGamma.IsChecked == true && this.GammaSlider.Value == 1));
         }
         #endregion
-
-
     }
 }

@@ -202,6 +202,9 @@
     <Compile Include="Dialog\ExceptionShutdownDialog.xaml.cs">
       <DependentUpon>ExceptionShutdownDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\ExportAllSelectedFiles.xaml.cs">
+      <DependentUpon>ExportAllSelectedFiles.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\ImageAdjuster.xaml.cs">
       <DependentUpon>ImageAdjuster.xaml</DependentUpon>
     </Compile>
@@ -432,6 +435,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\ExceptionShutdownDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\ExportAllSelectedFiles.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
