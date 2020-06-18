@@ -49,7 +49,7 @@
                 </ListBox>
             </Grid>
 
-            <Label Name="DoneMessagePanel" Grid.Row="2" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="24" FontWeight="Bold" Content="File Deleted." DockPanel.Dock="Top"/>
+            <Label Name="DoneMessagePanel" Grid.Row="2" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed" FontSize="18" FontWeight="Bold" Content="File Deleted." DockPanel.Dock="Top"/>
 
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
                 <CheckBox Name="chkboxConfirm" IsChecked="False" Margin="0,5,5,0" Height="40" 

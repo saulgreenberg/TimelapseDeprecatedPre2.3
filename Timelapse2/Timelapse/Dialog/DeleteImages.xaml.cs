@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -155,7 +156,7 @@ namespace Timelapse.Dialog
 
                 ListBoxItem lbi = new ListBoxItem
                 {
-                    VerticalAlignment = VerticalAlignment.Top,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Top,
                     Height = 28,
                     Content = filePath,
                     Tag = imageProperties
@@ -196,28 +197,41 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Do the actual file deletion
-        private async Task DoDeleteFilesAsync(List<ImageRow> imagesToDelete, bool deleteFilesAndData)
+        // The (bool, int return value: true if the operation has been cancelled, and if so how many images were deleted before the cancel event
+        private async Task<Tuple<bool,int>> DoDeleteFilesAsync(List<ImageRow> imagesToDelete, bool deleteFilesAndData)
         {
             // cache the current ID as the current image may be invalidated
             long currentFileID = this.imageCache.Current.ID;
 
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             List<long> imageIDsToDropFromDatabase = new List<long>();
+            int fileIndex = 0;
+            int filesDeleted = 0;
+            bool isCancelled = false;
 
             await Task.Run(() =>
             {
-                int fileIndex = 0;
                 int count = imagesToDelete.Count;
                 foreach (ImageRow image in imagesToDelete)
                 {
+                    if (Token.IsCancellationRequested)
+                    {
+                        isCancelled = true;
+                        return;
+                        //return new Tuple<bool,int>(true, filesDeleted);
+                    }
                     // We need to release the file handle to various images as otherwise we won't be able to move them
-                          // Release the image cache for this ID, if its actually in the cache  
+                    // Release the image cache for this ID, if its actually in the cache  
                     this.imageCache.TryInvalidate(image.ID);
                     GC.Collect(); // See if this actually gets rid of the pointer to the image, as otherwise we get occassional exceptions
                     // SAULXXX Note that we should likely pop up a dialog box that displays non-missing files that we can't (for whatever reason) delete
                     // SAULXXX If we can't delete it, we may want to abort changing the various DeleteFlag and ImageQuality values. 
                     // SAULXXX A good way is to put an 'image.ImageFileExists' field in, and then do various tests on that.
-                    image.TryMoveFileToDeletedFilesFolder(this.fileDatabase.FolderPath);
+                    if (image.TryMoveFileToDeletedFilesFolder(this.fileDatabase.FolderPath))
+                    {
+                        // keep track of the number of files actually delted
+                        filesDeleted++;
+                    }
 
                     if (deleteFilesAndData)
                     {
@@ -238,7 +252,7 @@ namespace Timelapse.Dialog
                     if (this.ReadyToRefresh())
                     {
                         int percentDone = Convert.ToInt32(fileIndex / Convert.ToDouble(count) * 100.0);
-                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), false, true));
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("Pass 1: Deleting {0} / {1} files", fileIndex, count), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);
                     }
                 }
@@ -261,6 +275,8 @@ namespace Timelapse.Dialog
                 // if the operation was cancelled.
                 this.IsAnyDataUpdated = true;
             }).ConfigureAwait(true);
+
+            return new Tuple<bool, int>(isCancelled, filesDeleted);
         }
         #endregion
 
@@ -319,14 +335,25 @@ namespace Timelapse.Dialog
             this.BusyCancelIndicator.IsBusy = true;
             this.WindowCloseButtonIsEnabled(false);
 
-            await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
+            Tuple<bool,int> isCancelledAndDeletedImagesCount = await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show how many files were deleted
             this.BusyCancelIndicator.IsBusy = false;
             this.StartDoneButton.IsEnabled = true;
             this.WindowCloseButtonIsEnabled(true);
-            this.DoneMessagePanel.Content = "Deleted ";
-            this.DoneMessagePanel.Content += this.filesToDelete.Count == 1 ? this.filesToDelete[0].File : this.filesToDelete.Count.ToString() + " files";
+
+            if (isCancelledAndDeletedImagesCount.Item1 == false)
+            {
+                this.DoneMessagePanel.Content = "Deleted ";
+                this.DoneMessagePanel.Content += this.filesToDelete.Count == 1 ? this.filesToDelete[0].File : isCancelledAndDeletedImagesCount.Item2.ToString() + " files";
+            }
+            else
+            {
+                this.DoneMessagePanel.Content = "Cancelled, but ";
+                this.DoneMessagePanel.Content += this.filesToDelete.Count == 1 ? this.filesToDelete[0].File : isCancelledAndDeletedImagesCount.Item2.ToString() + " files were already deleted." + Environment.NewLine;
+                this.DoneMessagePanel.Content += "Deleted files are available in your Deleted folder." + Environment.NewLine;
+                this.DoneMessagePanel.Content += "Data for these deleted images has not been changed." + Environment.NewLine;
+            }
             this.ShowDoneMessageView();
         }
 

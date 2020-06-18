@@ -274,6 +274,5 @@ namespace Timelapse.Dialog
             this.DialogResult = this.IsAnyDataUpdated;
         }
         #endregion
-
     }
 }
