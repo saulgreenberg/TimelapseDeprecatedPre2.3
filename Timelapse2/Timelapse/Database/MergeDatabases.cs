@@ -8,6 +8,7 @@ using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Util;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace Timelapse.Database
 {
@@ -29,16 +30,28 @@ namespace Timelapse.Database
         public async static Task<ErrorsAndWarnings> TryMergeDatabasesAsync(string tdbFile, List<string> sourceDDBFilePaths, IProgress<ProgressBarArguments> progress)
         {
             ErrorsAndWarnings errorMessages = new ErrorsAndWarnings();
-            if (sourceDDBFilePaths?.Count == 0)
-            {
-                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
-                return errorMessages;
-            }
 
             string rootFolderPath = Path.GetDirectoryName(tdbFile);
             string destinationDDBFileName = Constant.File.MergedFileName;
             string destinationDDBFilePath = Path.Combine(rootFolderPath, destinationDDBFileName);
             string rootFolderName = rootFolderPath.Split(Path.DirectorySeparatorChar).Last();
+
+
+            if (sourceDDBFilePaths == null)
+            {
+                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
+                return errorMessages;
+            }
+
+            // if the mergedatabase file was previously created, it may be included in the source list.
+            // So just skip over it, as it no longer exists and we don't actually want it
+            sourceDDBFilePaths.RemoveAll(Item => Item == destinationDDBFilePath); 
+
+            if (sourceDDBFilePaths.Count == 0)
+            {
+                errorMessages.Errors.Add("No databases (.ddb files) were found in the sub-folders, so there was nothing to merge.");
+                return errorMessages;
+            }
 
             // Check to see if we can actually open the template. 
             // As we can't have out parameters in an async method, we return the state and the desired templateDatabase as a tuple
@@ -75,6 +88,12 @@ namespace Timelapse.Database
             int sourceDDBFilePathsCount = sourceDDBFilePaths.Count;
             for (int i = 0; i < sourceDDBFilePathsCount; i++)
             {
+                if (sourceDDBFilePaths[i].Equals(destinationDDBFilePath))
+                {
+                    // if the mergedatabase file was previously created, it may be included in the source list.
+                    // So just skip over it, as it no longer exists and we don't actually want it
+                    continue;
+                }
                 // Try to merge each database into the merged database
                 await Task.Run(() =>
                 {

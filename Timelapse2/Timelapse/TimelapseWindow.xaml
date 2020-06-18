@@ -97,13 +97,13 @@
                     <Separator />
 
                     <!-- Export the current image or video file...-->
-                    <MenuItem Name="MenuItemExportThisImage" Header="Export a copy of the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
+                    <MenuItem Name="MenuItemExportThisImage" Header="Export (copy) the current image or video _file..." Click="MenuItemExportThisImage_Click" IsEnabled="false" ToolTip="Exports (copies) the displayed image or video file into a location of your choosing">
                         <MenuItem.Icon>
                             <Image Source="Icons/ImageExport_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <!-- Export all images or videos files in the current selection...-->
-                    <MenuItem Name="MenuItemExportSelectedImages" Header="Export all images and video files in the current selection..." Click="MenuItemExportAllSelectedImages_Click" IsEnabled="false" ToolTip="Exports (copies) all images and video files in the current selection into a folder of your choosing">
+                    <MenuItem Name="MenuItemExportSelectedImages" Header="Export (copy) all images and video files in the current selection..." Click="MenuItemExportAllSelectedImages_Click" IsEnabled="false" ToolTip="Exports (copies) all images and video files in the current selection into a folder of your choosing">
                         <MenuItem.Icon>
                             <Image Source="Icons/ImageExport_32x.png" />
                         </MenuItem.Icon>
