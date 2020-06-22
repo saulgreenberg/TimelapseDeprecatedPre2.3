@@ -259,9 +259,14 @@
 
                 <!-- Sort Menu -->
                 <MenuItem Name="MenuItemSort" Header="_Sort" IsEnabled="False" IsTabStop="false" SubmenuOpened="Sort_SubmenuOpening">
-                    <MenuItem Name="MenuItemSortByDateTime" IsCheckable="True" IsChecked="False" Header="By Date/Time &#8593;" Click="MenuItemSort_Click" ToolTip="Sort files by their date/time." />
-                    <MenuItem Name="MenuItemSortByFileName" IsCheckable="True" IsChecked="False" Header="By File Path &#8593; (relative path + file name) " Click="MenuItemSort_Click" ToolTip="Sort files by their relative path and file name."  />
-                    <MenuItem Name="MenuItemSortById" IsCheckable="True" IsChecked="False" Header="By Id &#8593; (the order files were added to Timelapse)" Click="MenuItemSort_Click" ToolTip="Sort files by the order they were added into Timelapse."/>
+                    <MenuItem Name="MenuItemSortByRelativPathDateTime" IsCheckable="True" IsChecked="False" Header="By Relative Path &#8593; + DateTime &#8593; (default)" Click="MenuItemSort_Click" 
+                              ToolTip="Sort files by their RelativePath (i.e., by folder location), and then by their date/time. The recommended default" />
+                    <MenuItem Name="MenuItemSortById" IsCheckable="True" IsChecked="False" Header="By Id &#8593; (the order files were added to Timelapse)" Click="MenuItemSort_Click" 
+                              ToolTip="Sort files by the order they were added into Timelapse."/>
+                    <MenuItem Name="MenuItemSortByDateTime" IsCheckable="True" IsChecked="False" Header="By Date/Time only &#8593;" Click="MenuItemSort_Click" 
+                              ToolTip="Sort all files by their date/time, regardless of what folder they are in." />
+                    <MenuItem Name="MenuItemSortByFileName" IsCheckable="True" IsChecked="False" Header="By File Path only &#8593; (relative path + file name)" Click="MenuItemSort_Click" 
+                              ToolTip="Sort files by their relative path and file name, regardless of their date/time."  />
 
                     <Separator/>
 

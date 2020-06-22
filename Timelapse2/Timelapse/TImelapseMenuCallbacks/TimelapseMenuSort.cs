@@ -33,6 +33,18 @@ namespace Timelapse
             SortTerm sortTerm2 = new SortTerm();
             switch (mi.Name)
             {
+                case "MenuItemSortByRelativPathDateTime":
+                    // The default
+                    sortTerm1.DataLabel = Constant.DatabaseColumn.RelativePath;
+                    sortTerm1.DisplayLabel = Constant.DatabaseColumn.RelativePath;
+                    sortTerm1.ControlType = Constant.DatabaseColumn.RelativePath;
+                    sortTerm1.IsAscending = Constant.BooleanValue.True;
+                    sortTerm2.DataLabel = Constant.DatabaseColumn.DateTime;
+
+                    sortTerm2.DisplayLabel = Constant.DatabaseColumn.DateTime;
+                    sortTerm2.ControlType = Constant.DatabaseColumn.DateTime;
+                    sortTerm2.IsAscending = Constant.BooleanValue.True;
+                    break;
                 case "MenuItemSortByDateTime":
                     sortTerm1.DataLabel = Constant.DatabaseColumn.DateTime;
                     sortTerm1.DisplayLabel = Constant.DatabaseColumn.DateTime;
@@ -73,7 +85,6 @@ namespace Timelapse
             {
                 if (this.DataHandler != null && this.DataHandler.FileDatabase != null)
                 {
-                    // this.dataHandler.FileDatabase.ImageSet.SortTerms = customSort.SortTerms;
                     this.DataHandler.FileDatabase.ImageSet.SetSortTerm(customSort.SortTerm1, customSort.SortTerm2);
                 }
                 await this.DoSortAndShowSortFeedbackAsync(true).ConfigureAwait(true);
@@ -131,6 +142,7 @@ namespace Timelapse
                 return;
             }
 
+            this.MenuItemSortByRelativPathDateTime.IsChecked = false;
             this.MenuItemSortByDateTime.IsChecked = false;
             this.MenuItemSortByFileName.IsChecked = false;
             this.MenuItemSortById.IsChecked = false;
@@ -140,6 +152,10 @@ namespace Timelapse
             if (sortTerm[0].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[0].IsAscending == Constant.BooleanValue.True && string.IsNullOrEmpty(sortTerm[1].DataLabel))
             {
                 this.MenuItemSortByDateTime.IsChecked = true;
+            }
+            else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.RelativePath && sortTerm[0].IsAscending == Constant.BooleanValue.True && sortTerm[1].DataLabel == Constant.DatabaseColumn.DateTime && sortTerm[1].IsAscending == Constant.BooleanValue.True)
+            {
+                this.MenuItemSortByRelativPathDateTime.IsChecked = true;
             }
             else if (sortTerm[0].DataLabel == Constant.DatabaseColumn.ID && sortTerm[0].IsAscending == Constant.BooleanValue.True && string.IsNullOrEmpty(sortTerm[1].DataLabel))
             {

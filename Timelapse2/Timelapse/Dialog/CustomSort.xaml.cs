@@ -20,6 +20,7 @@ namespace Timelapse.Dialog
         private List<SortTerm> sortTermList;
         private string fileDisplayLabel = String.Empty;
         private string dateDisplayLabel = String.Empty;
+        private string relativePathDisplayLabel = String.Empty;
         private readonly FileDatabase database;
         #endregion
 
@@ -41,7 +42,7 @@ namespace Timelapse.Dialog
             // Get the sort terms. 
             this.sortTermList = Database.SortTerms.GetSortTerms(this.database.CustomSelection.SearchTerms);
 
-            // We need the labels of the File and Date datalabels, as we will check to see if they are seleccted in the combo box
+            // We need the labels of the File and Date datalabels, as we will check to see if they are selected in the combo box
             foreach (SortTerm sortTerm in this.sortTermList)
             {
                 if (sortTerm.DataLabel == Constant.DatabaseColumn.File)
@@ -51,6 +52,10 @@ namespace Timelapse.Dialog
                 else if (sortTerm.DataLabel == Constant.DatabaseColumn.DateTime)
                 {
                     this.dateDisplayLabel = sortTerm.DisplayLabel;
+                }
+                else if (sortTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
+                {
+                    this.relativePathDisplayLabel = sortTerm.DisplayLabel;
                 }
             }
 
@@ -149,6 +154,12 @@ namespace Timelapse.Dialog
                     this.SortTerm1.DisplayLabel = this.dateDisplayLabel;
                     this.SortTerm1.ControlType = String.Empty;
                 }
+                else if (selectedPrimaryItem == this.relativePathDisplayLabel)
+                {
+                    this.SortTerm1.DataLabel = Constant.DatabaseColumn.RelativePath;
+                    this.SortTerm1.DisplayLabel = this.relativePathDisplayLabel;
+                    this.SortTerm1.ControlType = String.Empty;
+                }
                 else if (selectedPrimaryItem == sortTerm.DisplayLabel)
                 {
                     this.SortTerm1.DataLabel = sortTerm.DataLabel;
@@ -166,6 +177,13 @@ namespace Timelapse.Dialog
                     {
                         this.SortTerm2.DataLabel = Constant.DatabaseColumn.File;
                         this.SortTerm2.DisplayLabel = this.fileDisplayLabel;
+                        this.SortTerm2.ControlType = String.Empty;
+                        this.SortTerm2.IsAscending = (this.SecondaryAscending.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
+                    }
+                    else if (selectedSecondaryItem == this.dateDisplayLabel)
+                    {
+                        this.SortTerm2.DataLabel = Constant.DatabaseColumn.DateTime;
+                        this.SortTerm2.DisplayLabel = this.dateDisplayLabel;
                         this.SortTerm2.ControlType = String.Empty;
                         this.SortTerm2.IsAscending = (this.SecondaryAscending.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False;
                     }

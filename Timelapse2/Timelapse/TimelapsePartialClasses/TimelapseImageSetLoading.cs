@@ -127,7 +127,7 @@ namespace Timelapse
                         else
                         {
                             templateSyncResults.UseTemplateDBTemplate = templatesNotCompatibleDialog.UseNewTemplate;
-                            templateSyncResults.SyncRequiredAsChoiceMenusDiffer = templateSyncResults.ControlSynchronizationWarnings.Count > 0 ? true : false;
+                            templateSyncResults.SyncRequiredAsChoiceMenusDiffer = templateSyncResults.ControlSynchronizationWarnings.Count > 0;
                         }
                     }
                     else if (templateSyncResults.SyncRequiredAsDataLabelsDiffer)
@@ -139,7 +139,7 @@ namespace Timelapse
                         Mouse.OverrideCursor = null;
                         TemplateChangedAndUpdate templateChangedAndUpdate = new TemplateChangedAndUpdate(templateSyncResults, this);
                         bool? result1 = templateChangedAndUpdate.ShowDialog();
-                        templateSyncResults.UseTemplateDBTemplate = (result1 == true) ? true : false;
+                        templateSyncResults.UseTemplateDBTemplate = result1 == true;
                     }
                     else if (templateSyncResults.SyncRequiredAsNonCriticalFieldsDiffer)
                     {
@@ -408,7 +408,7 @@ namespace Timelapse
             this.FilePlayer.Visibility = Visibility.Visible;
 
             // Set whether detections actually exist at this point.
-            GlobalReferences.DetectionsExists = this.State.UseDetections ? this.DataHandler.FileDatabase.DetectionsExists() : false;
+            GlobalReferences.DetectionsExists = this.State.UseDetections && this.DataHandler.FileDatabase.DetectionsExists();
 
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.DataHandler.FileDatabase.ImageSet.QuickPasteXML;

@@ -201,7 +201,7 @@ namespace Timelapse
 
             // We either have auto deletion, or ask the user. Check both cases.
             // If its auto deletion, then set the flag to delete
-            bool deleteTheDeletedFolder = (this.State.DeleteFolderManagement == DeleteFolderManagementEnum.AutoDeleteOnExit) ? true : false;
+            bool deleteTheDeletedFolder = this.State.DeleteFolderManagement == DeleteFolderManagementEnum.AutoDeleteOnExit;
 
             // if its ask the user, then set the flag according to the response
             if (this.State.DeleteFolderManagement == DeleteFolderManagementEnum.AskToDeleteOnExit)
@@ -210,7 +210,7 @@ namespace Timelapse
                 {
                     Owner = this
                 };
-                deleteTheDeletedFolder = deleteDeletedFolders.ShowDialog() == true ? true : false;
+                deleteTheDeletedFolder = deleteDeletedFolders.ShowDialog() == true;
             }
             if (deleteTheDeletedFolder == true)
             {
@@ -388,7 +388,7 @@ namespace Timelapse
         /// <param name="e">event information</param>
         private void CounterCtl_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = (IsCondition.IsDigits(e.Text) || String.IsNullOrWhiteSpace(e.Text)) ? false : true;
+            e.Handled = !IsCondition.IsDigits(e.Text) && !String.IsNullOrWhiteSpace(e.Text);
             this.OnPreviewTextInput(e);
             this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
@@ -615,7 +615,7 @@ namespace Timelapse
 
         private bool IsDisplayingMultipleImagesInOverview()
         {
-            return this.MarkableCanvas.IsThumbnailGridVisible && this.ImageSetPane.IsActive ? true : false;
+            return this.MarkableCanvas.IsThumbnailGridVisible && this.ImageSetPane.IsActive;
         }
 
         private void SwitchedToThumbnailGrid()

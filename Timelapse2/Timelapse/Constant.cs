@@ -186,7 +186,9 @@ namespace Timelapse.Constant
         public const int RelativePathPosition = 2;
         public const int RowsPerInsert = 5000;
         public const int UtcOffsetPosition = 5;
-        public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.IntegerType + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
+        //public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.IntegerType + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
+        public const string DefaultSortTerms = Constant.DatabaseColumn.RelativePath + "," + Constant.SortTermValues.RelativePathDisplayLabel + "," + Sql.StringType + "," + Constant.BooleanValue.True + ","
+            + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Sql.StringType + "," + Constant.BooleanValue.True;
         public const string DefaultQuickPasteXML = "<Entries></Entries>";
         public const string IndexRelativePath = "IndexRelativePath";
         public const string IndexFile = "IndexFile";
@@ -557,6 +559,7 @@ namespace Timelapse.Constant
         public const string NoneDisplayLabel = "-- None --";
         public const string DateDisplayLabel = "Date/Time";
         public const string FileDisplayLabel = "File Path (relative path + file name)";
+        public const string RelativePathDisplayLabel = "Relative Path (folder)";
 
         public const string DateStatusBarLabel = "Date/Time{0}";
         public const string FileStatusBarLabel = "File Path{0}";

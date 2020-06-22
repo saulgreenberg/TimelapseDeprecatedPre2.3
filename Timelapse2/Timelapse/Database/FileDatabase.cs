@@ -1310,7 +1310,7 @@ namespace Timelapse.Database
             // We now have an unselected temporary data table
             // Get the original value of each, and update each date by the corrected amount if possible
             List<ImageRow> filesToAdjust = new List<ImageRow>();
-            TimeSpan mostRecentAdjustment = TimeSpan.Zero;
+            TimeSpan mostRecentAdjustment;
             int count = endRow - startRow + 1;
             int fileIndex = 0;
             for (int row = startRow; row <= endRow; ++row)
@@ -1388,7 +1388,7 @@ namespace Timelapse.Database
             // Get the original date value of each. If we can swap the date order, do so. 
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
             ImageRow firstImage = this.FileTable[startRow];
-            ImageRow lastImage = null;
+            ImageRow lastImage;
             DateTimeOffset mostRecentOriginalDateTime = DateTime.MinValue;
             DateTimeOffset mostRecentReversedDateTime = DateTime.MinValue;
             for (int row = startRow; row <= endRow; row++)
@@ -1631,7 +1631,7 @@ namespace Timelapse.Database
         // Check if index is within the file row range
         public bool IsFileRowInRange(int imageRowIndex)
         {
-            return (imageRowIndex >= 0) && (imageRowIndex < this.CountAllCurrentlySelectedFiles) ? true : false;
+            return (imageRowIndex >= 0) && (imageRowIndex < this.CountAllCurrentlySelectedFiles);
         }
 
         // Find the image whose ID is closest to the provided ID  in the current image set

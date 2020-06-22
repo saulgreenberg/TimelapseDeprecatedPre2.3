@@ -121,7 +121,7 @@ namespace Timelapse.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                return String.IsNullOrEmpty(registryKey.GetString(key, String.Empty)) ? false : true;
+                return !String.IsNullOrEmpty(registryKey.GetString(key, String.Empty));
             }
         }
 
