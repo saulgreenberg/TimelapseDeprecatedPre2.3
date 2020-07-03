@@ -1471,6 +1471,7 @@ namespace Timelapse.Database
             bool skipWhere = false;
             if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
+                // Create a query that returns a count of missing detections
                 // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                 query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
                     Sql.From + Constant.DBTables.FileData +
@@ -1482,6 +1483,7 @@ namespace Timelapse.Database
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
+                // Create a query that returns a count of detections matching some conditions
                 // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                 query = Sql.SelectCountStarFrom +
                     Sql.OpenParenthesis + Sql.SelectStarFrom +
@@ -1492,9 +1494,11 @@ namespace Timelapse.Database
             }
             else
             {
+                // Create a query that returns a count that does not consider detections
                 query = Sql.SelectCountStarFrom + Constant.DBTables.FileData;
             }
 
+            // Now add the Where conditions to the query
             if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
             {
                 string where = this.GetFilesConditionalExpression(fileSelection);
@@ -1504,11 +1508,15 @@ namespace Timelapse.Database
                 }
                 if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
                 {
+                    // Add a close parenthesis if we are querying for detections
                     query += Sql.CloseParenthesis;
                 }
             }
             // Uncommment this to see the actual complete query
-            // System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
+            if (Util.GlobalReferences.UseClassifications)
+            { 
+                System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
+            }
             return this.Database.ScalarGetCountFromSelect(query);
         }
         #endregion
@@ -1907,7 +1915,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region DETECTION INTEGRATION
+        #region DETECTION - Populate the Database (with progress bar)
         // To help determine periodic updates to the progress bar 
         private DateTime lastRefreshDateTime = DateTime.Now;
         protected bool ReadyToRefresh()
@@ -2039,7 +2047,9 @@ namespace Timelapse.Database
             }
             return result;
         }
+        #endregion
 
+        #region Detections
         // Return true if there is at least one match between a detector folder and a DB folder
         // Return a list of folder paths missing in the DB but present in the detector file
         private bool CompareDetectorAndDBFolders(Detector detector, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
@@ -2115,8 +2125,6 @@ namespace Timelapse.Database
             // if there is at least one folder in both, it means that we have some recognition data that we can import.
             return foldersInBoth.Count > 0;
         }
-
-
 
         // Get the detections associated with the current file, if any
         // As part of the, create a DetectionTable in memory that mirrors the database table
@@ -2251,6 +2259,18 @@ namespace Timelapse.Database
             }
         }
 
+        public List<string> GetClassificationLabels()     
+        {
+            List<string> labels = new List<string>();
+            this.CreateClassificationCategoriesDictionaryIfNeeded();
+            foreach (KeyValuePair<string, string> entry in this.classificationCategoriesDictionary)
+            {
+                labels.Add(entry.Value);
+            }
+            labels = labels.OrderBy(q => q).ToList();
+            return labels;
+        }
+
         // return the label that matches the detection category 
         public string GetClassificationLabelFromCategory(string category)
         {
@@ -2325,7 +2345,5 @@ namespace Timelapse.Database
             this.disposed = true;
         }
         #endregion
-
-
     }
 }

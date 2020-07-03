@@ -103,6 +103,26 @@ namespace Timelapse.Dialog
                 {
                     this.DetectionCategoryComboBox.Items.Add(label);
                 }
+
+                if (Util.GlobalReferences.UseClassifications)
+                {
+                    // Now add classifications
+                    labels = this.database.GetClassificationLabels();
+                    if (labels.Count > 0)
+                    {
+                        // Add a separator
+                        ComboBoxItem separator = new ComboBoxItem();
+                        separator.BorderBrush = Brushes.Black;
+                        separator.BorderThickness = new Thickness(0, 0, 0, 2);
+                        separator.Focusable = false;
+                        separator.IsEnabled = false;
+                        this.DetectionCategoryComboBox.Items.Add(separator);
+                        foreach (string label in labels)
+                        {
+                            this.DetectionCategoryComboBox.Items.Add(label);
+                        }
+                    }
+                }
                 this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
                 if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
                 {
@@ -374,7 +394,7 @@ namespace Timelapse.Dialog
                         Margin = thickness,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Left,
-                        IsChecked = String.Equals(searchTerm.DatabaseValue, Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase) ? false : true,
+                        IsChecked = !String.Equals(searchTerm.DatabaseValue, Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase),
                         IsEnabled = searchTerm.UseForSearching
                     };
                     flagCheckBox.Checked += this.Flag_CheckedOrUnchecked;

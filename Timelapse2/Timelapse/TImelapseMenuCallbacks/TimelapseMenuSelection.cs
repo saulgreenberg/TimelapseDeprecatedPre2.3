@@ -236,7 +236,7 @@ namespace Timelapse
                     this.MenuItemSelectMissingFiles.IsChecked ||
                     this.MenuItemSelectByFolder.IsChecked ||
                     this.MenuItemSelectFilesMarkedForDeletion.IsChecked;
-                this.MenuItemSelectCustomSelection.IsChecked = otherMenuItemIsChecked ? false : true;
+                this.MenuItemSelectCustomSelection.IsChecked = !otherMenuItemIsChecked;
             }
         }
         #endregion
