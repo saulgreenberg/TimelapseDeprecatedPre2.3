@@ -193,7 +193,7 @@ namespace Timelapse.Detection
                 // Get a data table containing the ID, RelativePath, and File
                 // and create primary keys for the fields we will search for (for performance speedup)
                 // We will use that to search for the file index.
-                string query = Sql.Select + Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File + Sql.From + Constant.DBTables.FileData;
+                string query = Sql.Select + Constant.DatabaseColumn.ID + Sql.Comma + Constant.DatabaseColumn.RelativePath + Sql.Comma + Constant.DatabaseColumn.File + Sql.From + Constant.DBTables.FileData;
                 DataTable dataTable = detectionDB.GetDataTableFromSelect(query);
                 dataTable.PrimaryKey = new DataColumn[]
                 {
@@ -228,12 +228,13 @@ namespace Timelapse.Detection
                             // System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
                         }
                     }
-                    string queryFileRelativePath = String.Format("{0} = '{1}' AND {2} = '{3}'",
-                         Constant.DatabaseColumn.File,
-                         Path.GetFileName(imageFile),
-                         Constant.DatabaseColumn.RelativePath,
-                         Path.GetDirectoryName(imageFile));
-
+                    
+                    // Form: FILE = Filename AND RELATIVEPATH = RelativePath
+                    string queryFileRelativePath =
+                         Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(Path.GetFileName(imageFile)) +
+                         Sql.And +
+                         Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(Path.GetDirectoryName(imageFile));
+                         
                     DataRow[] rows = dataTable.Select(queryFileRelativePath);
                     if (rows.Length == 0)
                     {
