@@ -112,11 +112,14 @@ namespace Timelapse.Images
                 // Set the stroke thickness, which depends upon the size of the available height
                 int stroke_thickness = Math.Min(width, height) > 400 ? 4 : 2;
                 rect.StrokeThickness = stroke_thickness;
-                //rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
-                //foreach (KeyValuePair<string, string> classification in bbox.Classifications)
-                //{
-                //    rect.ToolTip += Environment.NewLine + classification.Key + " " + classification.Value;
-                //}
+                if (GlobalReferences.UseClassifications == false)
+                {
+                    rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
+                    foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                    {
+                        rect.ToolTip += Environment.NewLine + classification.Key + " " + classification.Value;
+                    }
+                }
 
                 Point screenPositionTopLeft;
                 Point screenPositionBottomRight;
@@ -150,59 +153,61 @@ namespace Timelapse.Images
                 canvas.Children.Add(rect);
                 canvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
 
-                string bboxLabel = bbox.Classifications.Count > 0
+                if (GlobalReferences.UseClassifications)
+                {
+                    string bboxLabel = bbox.Classifications.Count > 0
                     ? " " + bbox.Classifications[0].Key + " "
                     : " " + bbox.DetectionLabel + " ";
 
-                if (bbox.Classifications.Count <= 1 )
-                {
-                    Label classificationUIObject = new Label
+                    if (bbox.Classifications.Count <= 1)
                     {
-                        Opacity = 0.6,
-                        Content = bboxLabel,
-                        FontSize = 12,
-                        Visibility = Visibility.Visible,
-                        Background = Brushes.White,
-                        Width = Double.NaN,
-                        Height = 20, //Double.NaN,
-                        Foreground = Brushes.Black,
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        Padding = new Thickness(0,-2, 0, -2),
-                        VerticalAlignment = VerticalAlignment.Center
-                    };
-                    Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
-                    Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
-                    canvas.Children.Add(classificationUIObject);
-                }
-                else
-                {
-                    List<string> itemsSource = new List<string>();
-                    foreach (KeyValuePair<string, string> classification in bbox.Classifications)
-                    {
-                        itemsSource.Add(classification.Key);
+                        Label classificationUIObject = new Label
+                        {
+                            Opacity = 0.6,
+                            Content = bboxLabel,
+                            FontSize = 12,
+                            Visibility = Visibility.Visible,
+                            Background = Brushes.White,
+                            Width = Double.NaN,
+                            Height = 20, //Double.NaN,
+                            Foreground = Brushes.Black,
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            Padding = new Thickness(0, -2, 0, -2),
+                            VerticalAlignment = VerticalAlignment.Center
+                        };
+                        Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
+                        Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
+                        canvas.Children.Add(classificationUIObject);
                     }
-
-                    ComboBox classificationUIObject = new ComboBox
+                    else
                     {
-                        Opacity = 0.6,
-                        ItemsSource = itemsSource,
-                        SelectedIndex = 0,
-                        FontSize = 12,
-                        Visibility = Visibility.Visible,
-                        Background = Brushes.White,
-                        Width = Double.NaN,
-                        Height = 20, //Double.NaN,
-                        Foreground = Brushes.Black,
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                    };
+                        List<string> itemsSource = new List<string>();
+                        foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                        {
+                            itemsSource.Add(classification.Key);
+                        }
 
-                    classificationUIObject.SelectionChanged += this.ClassificationUIObject_SelectionChanged;
-                    Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
-                    Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
-                    canvas.Children.Add(classificationUIObject);
-                    Canvas.SetZIndex(classificationUIObject, 1);
+                        ComboBox classificationUIObject = new ComboBox
+                        {
+                            Opacity = 0.6,
+                            ItemsSource = itemsSource,
+                            SelectedIndex = 0,
+                            FontSize = 12,
+                            Visibility = Visibility.Visible,
+                            Background = Brushes.White,
+                            Width = Double.NaN,
+                            Height = 20, //Double.NaN,
+                            Foreground = Brushes.Black,
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                        };
+
+                        classificationUIObject.SelectionChanged += this.ClassificationUIObject_SelectionChanged;
+                        Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
+                        Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
+                        canvas.Children.Add(classificationUIObject);
+                        Canvas.SetZIndex(classificationUIObject, 1);
+                    }
                 }
-               
             }
             Canvas.SetZIndex(canvas, 1);
             return true;
