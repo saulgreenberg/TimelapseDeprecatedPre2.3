@@ -202,7 +202,7 @@ namespace Timelapse.Database
             {
                 addAndOr = true;
             }
-
+            System.Diagnostics.Debug.Print(String.Format("RecognitionType:{0} DetectCategory:{1} ClassCategory:{2}", this.DetectionSelections.RecognitionType, this.DetectionSelections.DetectionCategory, this.DetectionSelections.ClassificationCategory));
             // FORM: Detections.category = <DetectionCategory> 
             // Only added if we are using a category (i.e., any category but All Detections)
             if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
@@ -233,7 +233,7 @@ namespace Timelapse.Database
             where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
                      Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
 
-            Tuple<double, double> confidenceBounds = this.DetectionSelections.DetectionConfidenceThresholdForSelect;
+            Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
             where += Sql.Between +
                      confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
             return where;

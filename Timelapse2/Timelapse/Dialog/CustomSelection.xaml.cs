@@ -88,12 +88,12 @@ namespace Timelapse.Dialog
             {
                 this.DetectionGroupBox.Visibility = Visibility.Visible;
                 this.Detections2Panel.Visibility = Visibility.Visible;
-                this.UseDetectionsCheckbox.IsChecked = this.DetectionSelections.UseDetections;
+                this.UseDetectionsCheckbox.IsChecked = this.DetectionSelections.UseRecognition;
 
-                this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
-                this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.DetectionConfidenceThreshold2ForUI;
-                this.DetectionRangeSlider.LowerValue = this.DetectionSelections.DetectionConfidenceThreshold1ForUI;
-                this.DetectionRangeSlider.HigherValue = this.DetectionSelections.DetectionConfidenceThreshold2ForUI;
+                this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.ConfidenceThreshold1ForUI;
+                this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.ConfidenceThreshold2ForUI;
+                this.DetectionRangeSlider.LowerValue = this.DetectionSelections.ConfidenceThreshold1ForUI;
+                this.DetectionRangeSlider.HigherValue = this.DetectionSelections.ConfidenceThreshold2ForUI;
 
                 // Put Detection categories in as human-readable labels, adding All detections to that list.
                 // Then set it to the last used one.
@@ -722,25 +722,36 @@ namespace Timelapse.Dialog
             {
                 return;
             }
-
-            this.DetectionSelections.UseDetections = this.UseDetectionsCheckbox.IsChecked == true;
-            if (this.DetectionSelections.UseDetections)
+            this.DetectionSelections.UseRecognition = this.UseDetectionsCheckbox.IsChecked == true;
+            if (this.DetectionSelections.UseRecognition)
             {
-                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
-                {
-                    // Because All is a bogus detection category, we have to set it explicitly
-                    this.DetectionSelections.DetectionCategory = Constant.DetectionValues.AllDetectionLabel;
-                }
+                this.SetDetectionCriteriaForComboBox(false);
+                System.Diagnostics.Debug.Print(String.Format("{0} {1}", this.DetectionSelections.UseRecognition, this.DetectionSelections.RecognitionType));
 
-                this.DetectionSelections.DetectionConfidenceThreshold1ForUI = (double)this.DetectionConfidenceSpinner1.Value;
-                this.DetectionSelections.DetectionConfidenceThreshold2ForUI = (double)this.DetectionConfidenceSpinner2.Value;
+                //if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel)
+                //{
+                //    // Because All is a bogus detection category, we have to set it explicitly
+                //    this.DetectionSelections.DetectionCategory = Constant.DetectionValues.AllDetectionLabel;
+                //}
+                //else
+                //{
+                //    // First, see if its a detection category (which takes precedence of classification categories)
+                //    this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                //    if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
+                //    {
+                //        // No match to anything (this shouldn't happen), but just in case revert to the All detection selection
+                //        this.DetectionSelections.DetectionCategory = Constant.DetectionValues.AllDetectionLabel;
+                //    }
+                //}
+
+                this.DetectionSelections.ConfidenceThreshold1ForUI = (double)this.DetectionConfidenceSpinner1.Value;
+                this.DetectionSelections.ConfidenceThreshold2ForUI = (double)this.DetectionConfidenceSpinner2.Value;
 
                 // The BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
                 // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
                 // show bounding boxes when the confidence is .4 or more. 
-                Tuple<double, double> confidenceBounds = this.DetectionSelections.DetectionConfidenceThresholdForSelect;
-                Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseDetections
+                Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
+                Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseRecognition
                     ? confidenceBounds.Item1
                     : 1;
             }
@@ -764,30 +775,114 @@ namespace Timelapse.Dialog
             }
 
             // Reset defaults to reasonable settings whenever the selected item changes
+
+            //if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
+            //{
+            //    // If its empty, we want to default to 1.0, i.e.,to only show images where the recognizer has not found any detections.
+            //    // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
+            //    this.DetectionSelections.EmptyDetections = true;
+            //    this.DetectionSelections.AllDetections = false;
+            //    this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+            //    this.DetectionRangeSlider.HigherValue = 1.0;
+            //    this.DetectionRangeSlider.LowerValue = 1.0;
+            //}
+            //else
+            //{
+            //    // Not empty: reset it to these defaults. We use .8 - 1.0, as this range is one where the recognizer is reasonably accurate
+            //    this.DetectionSelections.EmptyDetections = false;
+            //    this.DetectionRangeSlider.HigherValue = 1.0;
+            //    this.DetectionRangeSlider.LowerValue = 0.8;
+
+            //    if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel)
+            //    {
+            //        // Set a flag if all detections was selected
+            //        this.DetectionSelections.AllDetections = true;
+            //        this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+            //    }
+            //    else
+            //    {
+            //        this.DetectionSelections.EmptyDetections = false;
+            //        this.DetectionSelections.AllDetections = false;
+
+            //        // Find out if its a detection or a classification
+            //        this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+
+            //        if (!string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
+            //        {
+            //            // The selected item is a detection
+            //            this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+
+            //        }
+            //        else
+            //        {
+            //            // The selected item is a classification
+            //            this.DetectionSelections.RecognitionType = RecognitionType.Classification;
+            //        }
+            //    }
+            //}
+            this.SetDetectionCriteriaForComboBox(true);
+            // this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private void SetDetectionCriteriaForComboBox(bool resetSlidersIfNeeded)
+        {
+            // Reset defaults to reasonable settings whenever the selected item changes
             if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
             {
                 // If its empty, we want to default to 1.0, i.e.,to only show images where the recognizer has not found any detections.
                 // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
                 this.DetectionSelections.EmptyDetections = true;
                 this.DetectionSelections.AllDetections = false;
-                this.DetectionRangeSlider.HigherValue = 1.0;
-                this.DetectionRangeSlider.LowerValue = 1.0;
+                this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+
+                if (resetSlidersIfNeeded)
+                { 
+                    this.DetectionRangeSlider.HigherValue = 1.0;
+                    this.DetectionRangeSlider.LowerValue = 1.0;
+                }
             }
             else
             {
                 // Not empty: reset it to these defaults. We use .8 - 1.0, as this range is one where the recognizer is reasonably accurate
                 this.DetectionSelections.EmptyDetections = false;
+                if (resetSlidersIfNeeded)
+                {
+                    this.DetectionRangeSlider.HigherValue = 1.0;
+                    this.DetectionRangeSlider.LowerValue = 0.8;
+                }
 
-                // Set a flag if all detections was selected  
-                this.DetectionSelections.AllDetections = ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel);
-                this.DetectionRangeSlider.HigherValue = 1.0;
-                this.DetectionRangeSlider.LowerValue = 0.8;
+                if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel)
+                {
+                    // Set a flag if all detections was selected
+                    this.DetectionSelections.AllDetections = true;
+                    this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                }
+                else
+                {
+                    this.DetectionSelections.EmptyDetections = false;
+                    this.DetectionSelections.AllDetections = false;
+
+                    // Find out if its a detection or a classification
+                    this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+
+                    if (!string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
+                    {
+                        // The selected item is a detection
+                        this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+
+                    }
+                    else
+                    {
+                        // The selected item is a classification
+                        this.DetectionSelections.RecognitionType = RecognitionType.Classification;
+                    }
+                }
             }
-
-            this.SetDetectionCriteria();
-            this.InitiateShowCountsOfMatchingFiles();
         }
 
+        // Note that for either of these, we avoid a race condition where each tries to update the other by
+        // setting this.ignoreSpinnerUpdates to true, which will cancel the operation
         private bool ignoreSpinnerUpdates = false;
         private void DetectionConfidenceSpinner1_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
@@ -848,6 +943,7 @@ namespace Timelapse.Dialog
         }
 
         // Detection range slider callback - Upper range
+        // Note that this does not invoke this.SetDetectionCriteria(), as that is done as a side effect of invoking the spinner
         private void DetectionRangeSlider_HigherValueChanged(object sender, RoutedEventArgs e)
         {
             // Round up the value to the nearest 2 decimal places,
@@ -856,11 +952,14 @@ namespace Timelapse.Dialog
             double value = Math.Round(this.DetectionRangeSlider.HigherValue, 2);
             if (value != this.DetectionConfidenceSpinner2.Value)
             {
+                this.dontUpdateRangeSlider = true;
                 this.DetectionConfidenceSpinner2.Value = value;
+                this.dontUpdateRangeSlider = false;
             }
         }
 
         // Detection range slider callback - Lower range
+        // Note that this does not invoke this.SetDetectionCriteria(), as that is done as a side effect of invoking the spinner
         private void DetectionRangeSlider_LowerValueChanged(object sender, RoutedEventArgs e)
         {
             // Round up the value to the nearest 2 decimal places,
@@ -869,7 +968,9 @@ namespace Timelapse.Dialog
             double value = Math.Round(this.DetectionRangeSlider.LowerValue, 2);
             if (value != this.DetectionConfidenceSpinner1.Value)
             {
+                this.dontUpdateRangeSlider = true;
                 this.DetectionConfidenceSpinner1.Value = value;
+                this.dontUpdateRangeSlider = false;
             }
         }
 

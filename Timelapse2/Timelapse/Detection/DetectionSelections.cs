@@ -1,4 +1,5 @@
 ﻿using System;
+using Timelapse.Enums;
 
 namespace Timelapse.Detection
 {
@@ -12,21 +13,34 @@ namespace Timelapse.Detection
         {
             get
             {
-                return this.UseDetections;
+                return this.UseRecognition;
             }
         }
 
-        // Whether or not detections should be used
-        public bool UseDetections { get; set; }
+        // Whether or not image recognition should be used
+        public bool UseRecognition { get; set; }
+
+        // Detection type: Empty (Recognized images with no Detections / Classifications 
         public bool EmptyDetections { get; set; }
+
+        // Detection type: All (Recognized images with at least one Detection / Classification
         public bool AllDetections { get; set; }
+       
+        // Whether its a detection, classification, or none
+        public RecognitionType RecognitionType { get; set; }
+
+        // Detection type: indicated by its category number
         public string DetectionCategory { get; set; }
 
-        public double DetectionConfidenceThreshold1ForUI { get; set; }
-        public double DetectionConfidenceThreshold2ForUI { get; set; }
+        // Classification type: indicated by its category number
+        public string ClassificationCategory { get; set; }
 
-        // Transform the confidence threshold as needed
-        public Tuple<double, double> DetectionConfidenceThresholdForSelect
+        // The Confidence thresholds, used by the select user interface
+        public double ConfidenceThreshold1ForUI { get; set; }
+        public double ConfidenceThreshold2ForUI { get; set; }
+
+        // Transforms the confidence threshold as needed, depending on the select operation
+        public Tuple<double, double> ConfidenceThresholdForSelect
         {
             get
             {
@@ -43,43 +57,41 @@ namespace Timelapse.Detection
                     // If Threshold2 is .99 in the UI for empty items, we invert that, but to just above 0
                     // so we capture all the non-zero items (i.e., all images with detections in that range) as otherwise it could
                     //  omit the rare image with a max detection between 0 and .01
-                    lowerBound = (this.DetectionConfidenceThreshold2ForUI == 0.99) ? justAboveZero : 1.0 - this.DetectionConfidenceThreshold2ForUI;
-                    upperBound = 1.0 - this.DetectionConfidenceThreshold1ForUI;
+                    lowerBound = (this.ConfidenceThreshold2ForUI == 0.99) ? justAboveZero : 1.0 - this.ConfidenceThreshold2ForUI;
+                    upperBound = 1.0 - this.ConfidenceThreshold1ForUI;
 
                 }
                 else if (this.AllDetections)
                 {
                     // We don't want All detections to include images with no detections (i.e., Confidence range includes 0), so if we see a zero, we 
                     // alter that to just above zero.
-                    lowerBound = this.DetectionConfidenceThreshold1ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold1ForUI;
-                    upperBound = this.DetectionConfidenceThreshold2ForUI == 0 ? justAboveZero : this.DetectionConfidenceThreshold2ForUI;
+                    lowerBound = this.ConfidenceThreshold1ForUI == 0 ? justAboveZero : this.ConfidenceThreshold1ForUI;
+                    upperBound = this.ConfidenceThreshold2ForUI == 0 ? justAboveZero : this.ConfidenceThreshold2ForUI;
                 }
                 else
                 {
-                    lowerBound = this.DetectionConfidenceThreshold1ForUI;
-                    upperBound = this.DetectionConfidenceThreshold2ForUI;
+                    lowerBound = this.ConfidenceThreshold1ForUI;
+                    upperBound = this.ConfidenceThreshold2ForUI;
                 }
                 return new Tuple<double, double>(lowerBound, upperBound);
             }
         }
-
-        public string CategoryCategory { get; set; }
-        public double CategoryConfidenceThreshold1 { get; set; }
-        public double CategoryConfidenceThreshold2 { get; set; }
         #endregion
 
         #region Constructor - Initializes various defaults
         public DetectionSelections()
         {
             this.ClearAllDetectionsUses();
+
+            // We don't know the recognition type yet
+            this.RecognitionType = RecognitionType.None;
+
             // Set default: 0.8 - 1 seems like a reasonable starting confidence
             this.DetectionCategory = "1";
-            this.DetectionConfidenceThreshold1ForUI = 0.8;
-            this.DetectionConfidenceThreshold2ForUI = 1;
+            this.ConfidenceThreshold1ForUI = 0.8;
+            this.ConfidenceThreshold2ForUI = 1;
 
-            this.CategoryConfidenceThreshold1 = 0.8;
-            this.CategoryConfidenceThreshold2 = 1;
-            this.CategoryCategory = "1";
+            this.ClassificationCategory = "1";
 
             this.EmptyDetections = false;
         }
@@ -89,7 +101,7 @@ namespace Timelapse.Detection
         // Bulk disabling of detection selection criteria
         public void ClearAllDetectionsUses()
         {
-            this.UseDetections = false;
+            this.UseRecognition = false;
         }
         #endregion
     }

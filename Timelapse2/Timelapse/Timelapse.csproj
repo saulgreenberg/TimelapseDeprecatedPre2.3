@@ -222,6 +222,7 @@
     <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
+    <Compile Include="Enums\RecognitionType.cs" />
     <Compile Include="Enums\ThumbnailGridRefreshStatus.cs" />
     <Compile Include="Enums\ZoomDirection.cs" />
     <Compile Include="EventArguments\ClickableImagesGridEventArgs.cs" />

@@ -105,6 +105,7 @@ namespace Timelapse.Database
         #region Select
         public DataTable GetDataTableFromSelect(string query)
         {
+            System.Diagnostics.Debug.Print("GetDataTableFromSelect: " + query);
             DataTable dataTable = new DataTable();
             try
             {
