@@ -864,17 +864,20 @@ namespace Timelapse.Dialog
                     this.DetectionSelections.AllDetections = false;
 
                     // Find out if its a detection or a classification
-                    this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                    string detectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                    // this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
 
-                    if (!string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory))
+                    if (!string.IsNullOrEmpty(detectionCategory))
                     {
                         // The selected item is a detection
+                        this.DetectionSelections.DetectionCategory = detectionCategory;
                         this.DetectionSelections.RecognitionType = RecognitionType.Detection;
 
                     }
                     else
                     {
                         // The selected item is a classification
+                        this.DetectionSelections.ClassificationCategory = this.database.GetClassificationCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
                         this.DetectionSelections.RecognitionType = RecognitionType.Classification;
                     }
                 }

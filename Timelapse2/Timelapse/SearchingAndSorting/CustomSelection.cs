@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Forms;
 using Timelapse.Enums;
 using Timelapse.Util;
 
@@ -180,14 +181,15 @@ namespace Timelapse.Database
 
             // Add the Detection selection terms
             // Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
+            // (and if a classification it adds: // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
 
 
-            // There are three basic forms to come up as follows, which determines whether we should include add 'WHERE'
-            // The first uses the detection category (i.e., any category but All Detections)
+            // There are four basic forms to come up as follows, which determines whether we should include add 'WHERE'
+            // The first is a detection and uses the detection category (i.e., any category but All Detections)
             // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
-            // The second does not use a detection category (i.e., All Detections chosen)
+            // The second is a dection but does not use a detection category(i.e., All Detections chosen)
             // - GROUP BY ...
-            // The third uses both
+            // XXXX The third uses applies to both
             // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
             // - GROUP BY...
 
@@ -203,8 +205,11 @@ namespace Timelapse.Database
                 addAndOr = true;
             }
             System.Diagnostics.Debug.Print(String.Format("RecognitionType:{0} DetectCategory:{1} ClassCategory:{2}", this.DetectionSelections.RecognitionType, this.DetectionSelections.DetectionCategory, this.DetectionSelections.ClassificationCategory));
-            // FORM: Detections.category = <DetectionCategory> 
-            // Only added if we are using a category (i.e., any category but All Detections)
+            // DETECTION, NOT ALL
+            // FORM: 
+            //   If its a detection:  Detections.category = <DetectionCategory>  
+            //   If its a classification:  Classifications.category = <DetectionCategory>  
+            // Only added if we are using a detection category (i.e., any category but All Detections)
             if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
             {
                 if (addAndOr)
@@ -222,7 +227,16 @@ namespace Timelapse.Database
                             throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
                     }
                 }
-                where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
+                if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
+                {
+                    // a DETECTION, SO FORM IS Detections.Category = <DetectionCategory> 
+                    where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
+                }
+                else
+                {
+                    // a CLASSIFICATION, SO FORM IS Classifications.Category = <DetectionCategory> 
+                    where += Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.ClassificationCategory;
+                }
             }
 
             // Form:  ...Group By Detections.Id Having Max (Detections.conf )  BETWEEN <LOWER BOUND> AND <UPPER BOUND>
@@ -230,8 +244,18 @@ namespace Timelapse.Database
             // Note that a confidence of 0 captures empty items with 0 confidence i.e., images with no detections in them
             // For the All category, we really don't wan't to include those, so we just bump up the confidence to slightly above 0
             // For the Empty category, we invert the confidence
-            where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
+            if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
+            {
+                // Detection. Form: GROUP BY Detections.Id HAVING  MAX  ( Detections.conf ) BETWEEN 0.8 AND 1
+                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
                      Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+            }
+            else
+            {
+                // Classification. Form:GROUP BY Classifications.classificationID HAVING MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1
+                where += Sql.GroupBy + Constant.DBTables.Classifications + "." + Constant.ClassificationColumns.ClassificationID + Sql.Having +
+                     Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+            }
 
             Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
             where += Sql.Between +

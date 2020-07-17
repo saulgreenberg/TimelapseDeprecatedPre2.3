@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.TextFormatting;
 using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
@@ -855,7 +856,9 @@ namespace Timelapse.Database
         #region Select Files in the file table
         /// <summary> 
         /// Rebuild the file table with all files in the database table which match the specified selection.
-        /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way.
+        /// CODECLEANUP:  should probably merge all 'special cases' of selection (e.g., detections, etc.) into a single class so they are treated the same way, 
+        /// eg., to simplify CountAllFilesMatchingSelectionCondition vs SelectFilesAsync
+        /// PERFORMANCE can be a slow query on very large databases. Could check for better SQL expressions or database design, but need an SQL expert for that
         /// </summary>
         public async Task SelectFilesAsync(FileSelectionEnum selection)
         {
@@ -870,7 +873,8 @@ namespace Timelapse.Database
                 this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
+                    // MISSING DETECTIONS
+                    // Create a query that returns all missing detections
                     // Select covers queries including detections and mising detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                     query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
@@ -880,9 +884,10 @@ namespace Timelapse.Database
                         Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
                         Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 }
-                else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
+                else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
+                    // DETECTIONS
+                    // Create a query that returns detections matching some conditions
                     // Select covers queries including detections 
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                     query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
@@ -890,6 +895,23 @@ namespace Timelapse.Database
                          Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
                          Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
                          Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
+                }
+                else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
+                {
+                    // CLASSIFICATIONS
+                    // Create a query that returns classifications matching some conditions
+                    // Form: 
+                    // Select Count  ( * )  FROM  (  SELECT * FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                    // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar + 
+                        Sql.From + Constant.DBTables.Classifications +
+                        Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
+                        Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
+                        Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+                    // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                    query += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
+                        Constant.DBTables.Detections + "." + Constant.DetectionColumns.DetectionID + Sql.Equal +
+                        Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
                 }
                 else
                 {
@@ -1465,12 +1487,17 @@ namespace Timelapse.Database
         // Form examples
         // - Select Count(*) FROM DataTable WHERE ImageQuality='Light'
         // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
+        // - Select Count(*) FROM (Select * From Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id  INER JOIN Detections ON Detections.detectionID = Classifications.detectionID WHERE DataTable.Person<>'true' 
+        // AND Classifications.category = 6 GROUP BY Classifications.classificationID HAVING  MAX  (Classifications.conf ) BETWEEN 0.8 AND 1 
         public int CountAllFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)
         {
             string query;
             bool skipWhere = false;
-            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+
+            // PART 1 of Query
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections )
             {
+                // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
                 // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
                 query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
@@ -1481,8 +1508,9 @@ namespace Timelapse.Database
                     Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
                 skipWhere = true;
             }
-            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
             {
+                // DETECTIONS
                 // Create a query that returns a count of detections matching some conditions
                 // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
                 query = Sql.SelectCountStarFrom +
@@ -1492,12 +1520,32 @@ namespace Timelapse.Database
                     Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
                     Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
             }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
+            {
+                // CLASSIFICATIONS
+                // Create a query that returns a count of classifications matching some conditions
+                // Form: 
+                // Select Count  ( * )  FROM  (  SELECT * FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                query = Sql.SelectCountStarFrom +
+                    Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar + Sql.From + // Sql.SelectStarFrom +
+                    Constant.DBTables.Classifications +
+                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
+                    Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
+                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+                // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                query += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
+                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.DetectionID + Sql.Equal +
+                    Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+            }
             else
             {
+                // STANDARD (NO DETECTIONS/CLASSIFICATIONS)
                 // Create a query that returns a count that does not consider detections
                 query = Sql.SelectCountStarFrom + Constant.DBTables.FileData;
             }
 
+            // PART 2 of Query
             // Now add the Where conditions to the query
             if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
             {
@@ -2208,7 +2256,7 @@ namespace Timelapse.Database
             try
             {
                 this.CreateDetectionCategoriesDictionaryIfNeeded();
-                // At this point, a lookup dictionary already exists, so just return the category value.
+                // At this point, a lookup dictionary already exists, so just return the category number.
                 string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
                 return myKey ?? String.Empty;
             }
@@ -2287,6 +2335,23 @@ namespace Timelapse.Database
                 return String.Empty;
             }
         }
+
+        public string GetClassificationCategoryFromLabel(string label)
+        {
+            try
+            {
+                this.CreateClassificationCategoriesDictionaryIfNeeded();
+                // At this point, a lookup dictionary already exists, so just return the category number.
+                string myKey = this.classificationCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                return myKey ?? String.Empty;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
+        }
+
         public bool DetectionsExists()
         {
             return this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
