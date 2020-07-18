@@ -90,13 +90,14 @@ namespace Timelapse.Dialog
                 this.Detections2Panel.Visibility = Visibility.Visible;
                 this.UseDetectionsCheckbox.IsChecked = this.DetectionSelections.UseRecognition;
 
+                // Set the spinner and sliders to the last used values
                 this.DetectionConfidenceSpinner1.Value = this.DetectionSelections.ConfidenceThreshold1ForUI;
                 this.DetectionConfidenceSpinner2.Value = this.DetectionSelections.ConfidenceThreshold2ForUI;
                 this.DetectionRangeSlider.LowerValue = this.DetectionSelections.ConfidenceThreshold1ForUI;
                 this.DetectionRangeSlider.HigherValue = this.DetectionSelections.ConfidenceThreshold2ForUI;
 
-                // Put Detection categories in as human-readable labels, adding All detections to that list.
-                // Then set it to the last used one.
+                // Put Detection and Classification categories in the combo box as human-readable labels
+                // Note that we add "All" to the Detections list as that is a 'bogus' Timelapse-internal category.
                 List<string> labels = this.database.GetDetectionLabels();
                 this.DetectionCategoryComboBox.Items.Add(Constant.DetectionValues.AllDetectionLabel);
                 foreach (string label in labels)
@@ -123,12 +124,34 @@ namespace Timelapse.Dialog
                         }
                     }
                 }
-                this.DetectionCategoryComboBox.SelectedValue = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-                if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || this.DetectionSelections.DetectionCategory == Constant.DetectionValues.AllDetectionLabel)
+
+                // Set the combobox selection to the last used one.
+                string categoryLabel = String.Empty;
+                if (this.DetectionSelections.RecognitionType == RecognitionType.None)
                 {
-                    // We need an 'All' detection category, which is the union of all categories (except empty).
-                    // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
+                    // If we don't know the recognition type, default to All
                     this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
+                }
+                else if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
+                {
+                    categoryLabel = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
+                    if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || this.DetectionSelections.AllDetections)
+                    {
+                        // We need an 'All' detection category, which is the union of all categories (except empty).
+                        // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
+                        this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
+                    }
+                    else
+                    {
+                        this.DetectionCategoryComboBox.SelectedValue = categoryLabel;
+                    }
+                }
+                else
+                {
+                    categoryLabel = this.database.GetClassificationLabelFromCategory(this.DetectionSelections.ClassificationCategory);
+                    this.DetectionCategoryComboBox.SelectedValue = (categoryLabel.Length != 0) 
+                        ? categoryLabel
+                        : this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
                 }
                 this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
             }
@@ -835,6 +858,7 @@ namespace Timelapse.Dialog
                 this.DetectionSelections.EmptyDetections = true;
                 this.DetectionSelections.AllDetections = false;
                 this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)Constant.DetectionValues.NoDetectionLabel);
 
                 if (resetSlidersIfNeeded)
                 { 

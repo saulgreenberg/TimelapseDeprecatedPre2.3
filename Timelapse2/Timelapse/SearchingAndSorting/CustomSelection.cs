@@ -129,19 +129,18 @@ namespace Timelapse.Database
                 // check to see if the search should match an empty string
                 // If so, nulls need also to be matched as NULL and empty are considered interchangeable.
                 string whereForTerm;
-                string label = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
+                string dataLabel = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
                 // Check to see if the search and operator should match an empty value, in which case we also need to deal with NULLs 
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
                 {
-                    // The where expression constructed should look something like: (DataLabel IS NULL OR DataLabel = '')
-                    // Form: " (" + label + " IS NULL OR " + label + " = '') ";
-                    whereForTerm = Sql.OpenParenthesis + label + Sql.IsNull + Sql.Or + label + Sql.Equal + "''" + Sql.CloseParenthesis;
+                    // Form: ( dataLabel IS NULL OR  dataLabel = '' );
+                    whereForTerm = SqlPhraseLabelIsNullOrDataLabelEqualsEmpty(dataLabel);
                 }
                 else
                 {
-                    // The where expression constructed should look something like DataLabel > "5"
+                    // Form: dataLabel operator "value", e.g., DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    whereForTerm = label + TermToSqlOperator(searchTerm.Operator) + Sql.Quote(searchTerm.DatabaseValue.Trim());
+                    whereForTerm = SqlPhraseDataLabelOperatorValue(dataLabel, searchTerm.Operator, searchTerm.DatabaseValue);
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
@@ -261,6 +260,28 @@ namespace Timelapse.Database
             where += Sql.Between +
                      confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
             return where;
+        }
+
+        /// <summary>
+        /// Sql phrase
+        /// </summary>
+        /// <param name="datalabel"></param>
+        /// <returns> ( label IS NULL OR  label = '' ) ;</returns>
+        private string SqlPhraseLabelIsNullOrDataLabelEqualsEmpty(string datalabel)
+        {
+            return Sql.OpenParenthesis + datalabel + Sql.IsNull + Sql.Or + datalabel + Sql.Equal + Sql.QuotedEmptyString + Sql.CloseParenthesis;
+        }
+
+        /// <summary>
+        /// Sql phrase
+        /// </summary>
+        /// <param name="dataLabel"></param>
+        /// <param name="mathOperator"></param>
+        /// <param name="value"></param>
+        /// <returns>DataLabel operator "value", e.g., DataLabel > "5"</returns>
+        private string SqlPhraseDataLabelOperatorValue(string dataLabel, string mathOperator, string value)
+        {
+            return dataLabel + TermToSqlOperator(mathOperator) + Sql.Quote(value.Trim()); ;
         }
         #endregion
 

@@ -184,7 +184,7 @@ namespace Timelapse.Images
                         List<string> itemsSource = new List<string>();
                         foreach (KeyValuePair<string, string> classification in bbox.Classifications)
                         {
-                            itemsSource.Add(classification.Key);
+                            itemsSource.Add(classification.Key + " " + classification.Value);
                         }
 
                         ComboBox classificationUIObject = new ComboBox

@@ -80,6 +80,7 @@
         public const string PragmaQuickCheck = "PRAGMA QUICK_CHECK ";
         public const string PrimaryKey = " PRIMARY KEY ";
         public const string RenameTo = " RENAME TO ";
+        public const string QuotedEmptyString = " '' ";
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";
         public const string SelectOne = " SELECT 1 ";
