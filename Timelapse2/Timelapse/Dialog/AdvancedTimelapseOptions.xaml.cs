@@ -55,6 +55,7 @@ namespace Timelapse.Dialog
 
             // Detections
             this.CheckBoxUseDetections.IsChecked = this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxAnnotate.IsChecked = this.timelapseState.BoundingBoxAnnotate;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
         }
 
@@ -63,6 +64,7 @@ namespace Timelapse.Dialog
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
+            this.CheckBoxBoundingBoxAnnotate.IsEnabled = this.timelapseState.UseDetections;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
         }
         #endregion
@@ -133,11 +135,10 @@ namespace Timelapse.Dialog
 
         private void SetTabOrder()
         {
-            this.timelapseState.TabOrderIncludeDateTime = this.CheckBoxTabOrderDateTime.IsChecked == true ? true : false;
-            this.timelapseState.TabOrderIncludeDeleteFlag = this.CheckBoxTabOrderDeleteFlag.IsChecked == true ? true : false;
-            this.timelapseState.TabOrderIncludeImageQuality = this.CheckBoxTabOrderImageQuality.IsChecked == true ? true : false;
+            this.timelapseState.TabOrderIncludeDateTime = this.CheckBoxTabOrderDateTime.IsChecked == true;
+            this.timelapseState.TabOrderIncludeDeleteFlag = this.CheckBoxTabOrderDeleteFlag.IsChecked == true;
+            this.timelapseState.TabOrderIncludeImageQuality = this.CheckBoxTabOrderImageQuality.IsChecked == true;
         }
-
         #endregion
 
         #region Callbacks - Throttles
@@ -175,6 +176,7 @@ namespace Timelapse.Dialog
         {
             this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxAnnotate.IsEnabled = this.timelapseState.UseDetections;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
         }
 
@@ -182,6 +184,8 @@ namespace Timelapse.Dialog
         {
             this.CheckBoxUseDetections.IsChecked = false;
             this.timelapseState.UseDetections = false;
+            this.CheckBoxBoundingBoxAnnotate.IsChecked = false;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
             this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;
         }
@@ -207,10 +211,15 @@ namespace Timelapse.Dialog
             }
             this.timelapseState.BoundingBoxDisplayThreshold = slider.Value;
         }
-
+        
         private void CheckBoxBounidngBoxColorBlindRinedlyColors_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.BoundingBoxColorBlindFriendlyColors = this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked == true;
+        }
+
+        private void CheckBoxBounidngBoxAnnotate_Click(object sender, RoutedEventArgs e)
+        {
+            this.timelapseState.BoundingBoxAnnotate = this.CheckBoxBoundingBoxAnnotate.IsChecked == true;
         }
         #endregion
 
@@ -237,6 +246,6 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
-        #endregion 
+        #endregion
     }
 }
