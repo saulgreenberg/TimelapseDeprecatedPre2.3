@@ -15,6 +15,7 @@ namespace Timelapse.Util
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
         public Double BoundingBoxDisplayThreshold { get; set; }
+        public bool BoundingBoxAnnotate { get; set; }
         public bool BoundingBoxColorBlindFriendlyColors { get; set; }
         public CustomSelectionOperatorEnum CustomSelectionTermCombiningOperator { get; set; }
         public int DarkPixelThreshold { get; set; }
@@ -76,6 +77,7 @@ namespace Timelapse.Util
                 this.BookmarkScale = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationY, 1.0));
                 this.BoundingBoxDisplayThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.BoundingBoxDisplayThreshold, Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault);
+                this.BoundingBoxAnnotate = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxAnnotate, false);
                 this.BoundingBoxColorBlindFriendlyColors = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.GetEnum<CustomSelectionOperatorEnum>(Constant.WindowRegistryKeys.CustomSelectionTermCombiningOperator, CustomSelectionOperatorEnum.And);
                 this.DarkPixelRatioThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
@@ -177,6 +179,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkTranslationX, this.BookmarkTranslation.X);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkTranslationY, this.BookmarkTranslation.Y);
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxDisplayThreshold, this.BoundingBoxDisplayThreshold);
+                registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxAnnotate, this.BoundingBoxAnnotate);
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, this.BoundingBoxColorBlindFriendlyColors);
                 registryKey.Write(Constant.WindowRegistryKeys.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.WindowRegistryKeys.DarkPixelRatio, this.DarkPixelRatioThreshold);

@@ -16,7 +16,7 @@ namespace Timelapse
             string detectionCategoryLabel;
             string classificationCategoryLabel;
 
-            if (this.DataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
+            if (this.DataHandler.FileDatabase.DetectionsExists())
             {
                 DataRow[] dataRows = this.DataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
                 foreach (DataRow detectionRow in dataRows)
@@ -44,7 +44,7 @@ namespace Timelapse
                     foreach (DataRow classificationRow in classificationDataTableRows)
                     {
                         conf = (double)classificationRow[Constant.DetectionColumns.Conf];
-                        if (conf > 0.1)
+                        if (conf > 0.00)
                         {
                             classificationCategoryLabel = this.DataHandler.FileDatabase.GetClassificationLabelFromCategory((string)classificationRow[Constant.ClassificationColumns.Category]);
                             classifications.Add(new KeyValuePair<string, string>(classificationCategoryLabel, conf.ToString()));

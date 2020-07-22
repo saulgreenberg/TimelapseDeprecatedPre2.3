@@ -5,9 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using System.Xml;
 using Timelapse.Util;
-using Xceed.Wpf.AvalonDock.Controls;
+using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Images
 {
@@ -80,8 +79,6 @@ namespace Timelapse.Images
 
                 // Create a bounding box 
                 Rectangle rect = new Rectangle();
-
-
                 SolidColorBrush brush;
                 bool colorblind = Util.GlobalReferences.TimelapseState.BoundingBoxColorBlindFriendlyColors;
                 byte opacity = colorblind ? (byte)255 : (byte)Math.Round(255 * bbox.Confidence);
@@ -112,14 +109,7 @@ namespace Timelapse.Images
                 // Set the stroke thickness, which depends upon the size of the available height
                 int stroke_thickness = Math.Min(width, height) > 400 ? 4 : 2;
                 rect.StrokeThickness = stroke_thickness;
-                if (GlobalReferences.UseClassifications == false)
-                {
-                    rect.ToolTip = bbox.DetectionLabel + " detected, confidence=" + bbox.Confidence.ToString();
-                    foreach (KeyValuePair<string, string> classification in bbox.Classifications)
-                    {
-                        rect.ToolTip += Environment.NewLine + classification.Key + " " + classification.Value;
-                    }
-                }
+
 
                 Point screenPositionTopLeft;
                 Point screenPositionBottomRight;
@@ -153,12 +143,35 @@ namespace Timelapse.Images
                 canvas.Children.Add(rect);
                 canvas.Tag = Constant.MarkableCanvas.BoundingBoxCanvasTag;
 
-                if (GlobalReferences.UseClassifications)
-                {
-                    string bboxLabel = bbox.Classifications.Count > 0
-                    ? " " + bbox.Classifications[0].Key + " "
-                    : " " + bbox.DetectionLabel + " ";
 
+                // Bounding box labelling: Category plus confidence (to two decimal places or epsilon)
+                // Use the primary detection category if there are no classifications, 
+                // The bboxLabel contains just the top-ranked classification category + its confidence
+                // the bboxTextBlock contains all predicted items + their confidence as a list
+                string bboxLabel = (bbox.Classifications.Count == 0)
+                    ? bbox.DetectionLabel + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Confidence)
+                    : bbox.Classifications[0].Key + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Classifications[0].Value) 
+                                                  + "(" + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Confidence) + ")";
+
+                string bboxTextBlock = String.Empty;
+                if (bbox.Classifications.Count > 0)
+                {
+                    foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                    {
+                        bboxTextBlock += classification.Key + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(classification.Value) + Environment.NewLine;
+                    }
+                    bboxTextBlock = bboxTextBlock.Trim('\r', '\n');
+                }
+
+                // Add information to each bounding box using a tooltip or a splitbutton
+                if (Util.GlobalReferences.TimelapseState.BoundingBoxAnnotate == false)
+                {
+                    // Use a tooltip
+                    rect.ToolTip = (bbox.Classifications.Count == 0) ? bboxLabel : bboxTextBlock;
+                }
+                else
+                {
+                    // Use a split button. The button contains the category label, while its dropdown contains a text list of all predicted categories
                     if (bbox.Classifications.Count <= 1)
                     {
                         Label classificationUIObject = new Label
@@ -175,35 +188,50 @@ namespace Timelapse.Images
                             Padding = new Thickness(0, -2, 0, -2),
                             VerticalAlignment = VerticalAlignment.Center
                         };
-                        Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
-                        Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
+                        double leftPosition = (screenPositionTopLeft.X - stroke_thickness) < 0 
+                            ? 0
+                            : screenPositionTopLeft.X - stroke_thickness;
+                        double topPosition = (screenPositionTopLeft.Y - stroke_thickness - 20) < 0
+                           ? 0
+                           : screenPositionTopLeft.Y - stroke_thickness - 20;
+
+                        //Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
+                        Canvas.SetLeft(classificationUIObject, leftPosition);
+                        Canvas.SetTop(classificationUIObject, topPosition);
                         canvas.Children.Add(classificationUIObject);
                     }
                     else
                     {
-                        List<string> itemsSource = new List<string>();
-                        foreach (KeyValuePair<string, string> classification in bbox.Classifications)
+                        SplitButton classificationUIObject = new SplitButton
                         {
-                            itemsSource.Add(classification.Key);
-                        }
-
-                        ComboBox classificationUIObject = new ComboBox
-                        {
-                            Opacity = 0.6,
-                            ItemsSource = itemsSource,
-                            SelectedIndex = 0,
-                            FontSize = 12,
-                            Visibility = Visibility.Visible,
-                            Background = Brushes.White,
                             Width = Double.NaN,
-                            Height = 20, //Double.NaN,
+                            Content = bboxLabel,
+                            Opacity = 0.6,
+                            FontSize = 12,
+                            Background = Brushes.White,
                             Foreground = Brushes.Black,
                             HorizontalAlignment = HorizontalAlignment.Left,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            DropDownContent = new TextBlock
+                            {
+                                Opacity = 0.6,
+                                Background = Brushes.White,
+                                Foreground = Brushes.Black,
+                                FontSize = 12,
+                                Text = bboxTextBlock,
+                            },
                         };
 
-                        classificationUIObject.SelectionChanged += this.ClassificationUIObject_SelectionChanged;
-                        Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
-                        Canvas.SetTop(classificationUIObject, screenPositionTopLeft.Y - stroke_thickness - 20);
+                        // classificationUIObject.SelectionChanged += this.ClassificationUIObject_SelectionChanged;
+                        double leftPosition = (screenPositionTopLeft.X - stroke_thickness) < 0
+                           ? 0
+                           : screenPositionTopLeft.X - stroke_thickness; 
+                        // Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
+                        double topPosition = (screenPositionTopLeft.Y - stroke_thickness - 20) < 0
+                            ? 0
+                            : screenPositionTopLeft.Y - stroke_thickness - 20;
+                        Canvas.SetLeft(classificationUIObject, leftPosition); 
+                        Canvas.SetTop(classificationUIObject, topPosition);
                         canvas.Children.Add(classificationUIObject);
                         Canvas.SetZIndex(classificationUIObject, 1);
                     }
@@ -213,6 +241,7 @@ namespace Timelapse.Images
             return true;
         }
 
+        // NOT USED AT THIS POINT AS WE ARE NO LONGER USING A MENU - BUT IF WE DECIDE TO...
         private void ClassificationUIObject_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (sender is ComboBox cb)
@@ -223,6 +252,19 @@ namespace Timelapse.Images
                     System.Diagnostics.Debug.Print(e.AddedItems[0].ToString());
                 }
             }
+        }
+        #endregion
+
+        #region static internal methods
+        private static string ReformatFloatToTwoDecimalPlacesAndEpsilon(string value)
+        {
+            return float.TryParse(value, out float result)
+                ? ReformatFloatToTwoDecimalPlacesAndEpsilon(result)
+                : String.Empty;
+        }
+        private static string ReformatFloatToTwoDecimalPlacesAndEpsilon(float value)
+        {
+            return (value >= .1) ? String.Format("{0:#.##}", value) : "\u03B5";
         }
         #endregion
     }

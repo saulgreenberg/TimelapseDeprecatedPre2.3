@@ -22,6 +22,6 @@ namespace Timelapse.Util
         // Whether or not detections exist
         public static bool DetectionsExists { get; set; }
 
-        public static bool UseClassifications { get; set; } = false;
+        public static bool UseClassifications { get; set; } = true;
     }
 }
