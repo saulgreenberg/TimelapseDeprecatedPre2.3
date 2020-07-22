@@ -1,4 +1,6 @@
-﻿namespace Timelapse
+﻿using System;
+
+namespace Timelapse
 {
     // Create SQL commands using constants rather than typing the SQL keywords. 
     // This really helps avoid typos, bugs due to spacing such as not having spaces inbetween keywords, etc.
@@ -84,8 +86,10 @@
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";
         public const string SelectOne = " SELECT 1 ";
-        public const string SelectStarFrom = Sql.Select + Sql.Star + Sql.From; // SELECT * FROM "
-        public const string SelectCount = " Select Count ";
+        public const string SelectStar = Sql.Select + Sql.Star; // SELECT * "
+        public const string SelectStarFrom = Sql.SelectStar + Sql.From; // SELECT * FROM "
+
+        public const string SelectCount = " SELECT COUNT ";
         public const string SelectCountStarFrom = Sql.SelectCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
         public const string SelectExists = " SELECT EXISTS ";
         public const string SelectNameFromSqliteMasterWhereTypeEqualTableAndNameEquals = " SELECT name FROM sqlite_master WHERE TYPE = 'table' AND name = ";
@@ -119,6 +123,144 @@
             return (value == null)
                 ? "''"
                 : "'" + value.Replace("'", "''") + "'";
+        }
+    }
+
+    /// <summary>
+    /// Instead of having lots of long SQL phrase fragments constructed in various files, we construct and collect them here
+    /// </summary>
+    public static class SqlPhrase
+    {
+        /// <summary>
+        /// Sql Phrase - Create partial query to return all missing detections
+        /// </summary>
+        ///  <param name="useCountForm">If true, return a SELECT COUNT vs a SELECT from</param>
+        /// <returns> 
+        /// Count Form:  SELECT COUNT  ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
+        /// Select Form: SELECT DataTable.*             FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL</returns>
+        public static string SelectMissingDetections(bool useCountForm)
+        {
+            string phrase = useCountForm
+                ? Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis
+                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+            return phrase + Sql.From + Constant.DBTables.FileData +
+                Sql.LeftJoin + Constant.DBTables.Detections +
+                Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+                Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+                Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+        }
+
+        /// <summary>
+        /// Sql Phrase - Create partial query to return detections
+        /// </summary>
+        /// <param name="useCountForm">If true, form is SELECT COUNT vs SELECT</param>
+        /// <returns>
+        /// Count Form:  SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+        /// Select Form: SELECT DataTable.*                     FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+        /// </returns>
+        public static string SelectDetections(bool useCountForm)
+        {
+            string phrase = useCountForm
+                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
+                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar ;
+            return phrase + Sql.From + Constant.DBTables.Detections + Sql.InnerJoin + Constant.DBTables.FileData +
+                    Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="useCountForm"></param>
+        /// <returns>
+        /// Count Form:  Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        /// Select Form: SELECT                                      DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        /// 
+        /// </returns>
+        public static string SelectClassifications(bool useCountForm)
+        {
+            string phrase = useCountForm
+                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct
+                : Sql.Select;
+            phrase += Constant.DBTables.FileData + Sql.DotStar + Sql.From + Constant.DBTables.Classifications +
+                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + 
+                    Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+            // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+            phrase += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
+                Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.Equal +
+                Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+            return phrase;
+        }
+
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="datalabel"></param>
+        /// <returns> ( label IS NULL OR  label = '' ) ;</returns>
+        public static string LabelIsNullOrDataLabelEqualsEmpty(string datalabel)
+        {
+            return Sql.OpenParenthesis + datalabel + Sql.IsNull + Sql.Or + datalabel + Sql.Equal + Sql.QuotedEmptyString + Sql.CloseParenthesis;
+        }
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="dataLabel"></param>
+        /// <param name="mathOperator"></param>
+        /// <param name="value"></param>
+        /// <returns>DataLabel operator "value", e.g., DataLabel > "5"</returns>
+        public static string DataLabelOperatorValue(string dataLabel, string mathOperator, string value)
+        {
+            value = value == null ? String.Empty : value.Trim();
+            return dataLabel + mathOperator + Sql.Quote(value);
+        }
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="detectionCategory"></param>
+        /// <returns>Detections.Category = <DetectionCategory></returns>
+        public static string DetectionCategoryEqualsDetectionCategory(string detectionCategory)
+        {
+            return Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + detectionCategory;
+        }
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="classificationCategory"></param>
+        /// <returns>Classifications.Category = <ClassificationCategory></returns>
+        public static string ClassificationsCategoryEqualsClassificationCategory(string classificationCategory)
+        {
+            return Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Category + Sql.Equal + classificationCategory;
+        }
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="lowerBound"></param>
+        /// <param name="upperBound"></param>
+        /// <returns>Group By Detections.Id Having Max ( Detections.conf ) BETWEEN <lowerBound> AND <upperBound></returns>
+        public static string GroupByDetectionsIdHavingMaxDetectionsConf(double lowerBound, double upperBound)
+        {
+            return Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID +
+                Sql.Having + Sql.Max +
+                Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis +
+                Sql.Between + lowerBound.ToString() + Sql.And + upperBound.ToString();
+        }
+
+        /// <summary>
+        /// Sql phrase used in Where
+        /// </summary>
+        /// <param name="lowerBound"></param>
+        /// <param name="upperBound"></param>
+        /// <returns>GROUP BY Classifications.classificationID HAVING MAX  ( Classifications.conf ) BETWEEN <lowerBound> AND <upperBound></returns>
+        public static string GroupByClassificationsIdHavingMaxClassificationsConf(double lowerBound, double upperBound)
+        {
+            return Sql.GroupBy + Constant.DBTables.Classifications + "." + Constant.ClassificationColumns.ClassificationID +
+                Sql.Having + Sql.Max +
+                Sql.OpenParenthesis + Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis +
+                Sql.Between + lowerBound.ToString() + Sql.And + upperBound.ToString();
         }
     }
 }

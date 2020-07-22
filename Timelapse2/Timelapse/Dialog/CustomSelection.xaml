@@ -63,9 +63,9 @@
 
                     <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="2" Margin="37,0,0,0" >
                         <Label Name="FromLabel" FontWeight="Normal" FontStyle="Italic" Content="from " Margin="0,0,0,0" HorizontalAlignment="Left"/>
-                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner1" Height="20" FontWeight="Normal" Value="0"  FormatString="F2" Increment="0.05"  Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,5,0" ValueChanged="DetectionConfidenceSpinner1_ValueChanged"/>
+                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinnerLower" Height="20" FontWeight="Normal" Value="0"  FormatString="F2" Increment="0.05"  Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,5,0" ValueChanged="DetectionConfidenceSpinnerLower_ValueChanged"/>
                         <Label Name="ToLabel"  FontWeight="Normal" FontStyle="Italic" Content="to" HorizontalAlignment="Center" Margin="0,0,5,0"/>
-                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinner2"  Height="20" FontWeight="Normal" Value="1" FormatString="F2" Increment="0.05" Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,10,0" ValueChanged="DetectionConfidenceSpinner2_ValueChanged"/>
+                        <xceed:DoubleUpDown Name="DetectionConfidenceSpinnerHigher"  Height="20" FontWeight="Normal" Value="1" FormatString="F2" Increment="0.05" Maximum="1" Minimum="0" IsEnabled="true" Margin="0,0,10,0" ValueChanged="DetectionConfidenceSpinnerHigher_ValueChanged"/>
                     </StackPanel>
 
                     <!--Row 3-->

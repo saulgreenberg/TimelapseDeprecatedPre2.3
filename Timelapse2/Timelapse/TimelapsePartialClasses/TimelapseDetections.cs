@@ -16,7 +16,7 @@ namespace Timelapse
             string detectionCategoryLabel;
             string classificationCategoryLabel;
 
-            if (this.DataHandler.FileDatabase.TableExists(Constant.DBTables.Detections))
+            if (this.DataHandler.FileDatabase.DetectionsExists())
             {
                 DataRow[] dataRows = this.DataHandler.FileDatabase.GetDetectionsFromFileID(fileID);
                 foreach (DataRow detectionRow in dataRows)

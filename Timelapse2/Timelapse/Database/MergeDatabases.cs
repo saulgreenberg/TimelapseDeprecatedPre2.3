@@ -246,6 +246,7 @@ namespace Timelapse.Database
             }
             query += Sql.EndTransactionSemiColon;
             destinationDDB.ExecuteNonQuery(query);
+
             return true;
         }
         #endregion

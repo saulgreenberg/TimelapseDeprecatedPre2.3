@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.TextFormatting;
 using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
@@ -43,7 +42,7 @@ namespace Timelapse.Database
         /// <summary>Gets the file name of the database on disk.</summary>
         public string FileName { get; private set; }
 
-        /// <summary>Gets the complete path to the folder containing the database.</summary>
+        /// <summary>Get the complete path to the folder containing the database.</summary>
         public string FolderPath { get; private set; }
 
         public Dictionary<string, string> DataLabelFromStandardControlType { get; private set; }
@@ -57,6 +56,7 @@ namespace Timelapse.Database
 
         // contains the markers
         public DataTableBackedList<MarkerRow> Markers { get; private set; }
+
         #endregion
 
         #region Create or Open the Database
@@ -875,43 +875,22 @@ namespace Timelapse.Database
                 {
                     // MISSING DETECTIONS
                     // Create a query that returns all missing detections
-                    // Select covers queries including detections and mising detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
-                        Sql.From + Constant.DBTables.FileData +
-                        Sql.LeftJoin + Constant.DBTables.Detections +
-                        Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
-                        Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+                    query = SqlPhrase.SelectMissingDetections(false);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
                     // DETECTIONS
-                    // Create a query that returns detections matching some conditions
-                    // Select covers queries including detections 
+                    // Create a partial query that returns detections matching some conditions
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar +
-                         Sql.From + Constant.DBTables.Detections +
-                         Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
-                         Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal +
-                         Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.ImageID;
+                    query = SqlPhrase.SelectDetections(false);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
                     // CLASSIFICATIONS
-                    // Create a query that returns classifications matching some conditions
-                    // Form: 
-                    // Select Count  ( * )  FROM  (  SELECT * FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                    query = Sql.Select + Constant.DBTables.FileData + Sql.DotStar + 
-                        Sql.From + Constant.DBTables.Classifications +
-                        Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
-                        Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                        Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
-                    // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                    query += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
-                        Constant.DBTables.Detections + "." + Constant.DetectionColumns.DetectionID + Sql.Equal +
-                        Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+                    // Create a partial query that returns classifications matching some conditions
+                    // Form: SELECT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                    query = SqlPhrase.SelectClassifications(false);
                 }
                 else
                 {
@@ -1409,10 +1388,6 @@ namespace Timelapse.Database
 
             // Get the original date value of each. If we can swap the date order, do so. 
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-            ImageRow firstImage = this.FileTable[startRow];
-            ImageRow lastImage;
-            DateTimeOffset mostRecentOriginalDateTime = DateTime.MinValue;
-            DateTimeOffset mostRecentReversedDateTime = DateTime.MinValue;
             for (int row = startRow; row <= endRow; row++)
             {
                 ImageRow image = this.FileTable[row];
@@ -1426,9 +1401,6 @@ namespace Timelapse.Database
                 // Now update the actual database with the new date/time values stored in the temporary table
                 image.SetDateTimeOffset(reversedDateTime);
                 imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                lastImage = image;
-                mostRecentOriginalDateTime = originalDateTime;
-                mostRecentReversedDateTime = reversedDateTime;
             }
 
             if (imagesToUpdate.Count > 0)
@@ -1495,48 +1467,27 @@ namespace Timelapse.Database
             bool skipWhere = false;
 
             // PART 1 of Query
-            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections )
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
-                // Form: Select Count (DataTable.id) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                query = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis +
-                    Sql.From + Constant.DBTables.FileData +
-                    Sql.LeftJoin + Constant.DBTables.Detections + Sql.On +
-                    Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
-                    Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
-                    Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+                // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
+                query = SqlPhrase.SelectMissingDetections(true);
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
             {
                 // DETECTIONS
                 // Create a query that returns a count of detections matching some conditions
-                // Form: Select Count  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                query = Sql.SelectCountStarFrom +
-                    Sql.OpenParenthesis + Sql.SelectStarFrom +
-                    Constant.DBTables.Detections +
-                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
-                    Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+                // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                query = SqlPhrase.SelectDetections(true);
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
             {
                 // CLASSIFICATIONS
-                // Create a query that returns a count of classifications matching some conditions
-                // Form: 
-                // Select Count  ( * )  FROM  (  SELECT * FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                query = Sql.SelectCountStarFrom +
-                    Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar + Sql.From + // Sql.SelectStarFrom +
-                    Constant.DBTables.Classifications +
-                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On +
-                    Constant.DBTables.FileData + "." + Constant.DatabaseColumn.ID + Sql.Equal +
-                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
-                // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                query += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
-                    Constant.DBTables.Detections + "." + Constant.DetectionColumns.DetectionID + Sql.Equal +
-                    Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+                // Create a partial query that returns a count of classifications matching some conditions
+                // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                query = SqlPhrase.SelectClassifications(true);
             }
             else
             {
@@ -1561,10 +1512,10 @@ namespace Timelapse.Database
                 }
             }
             // Uncommment this to see the actual complete query
-            if (Util.GlobalReferences.UseClassifications)
-            { 
-                System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
-            }
+            //if (Util.GlobalReferences.UseClassifications)
+            //{
+            //    System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
+            //}
             return this.Database.ScalarGetCountFromSelect(query);
         }
         #endregion
@@ -2078,10 +2029,13 @@ namespace Timelapse.Database
                                 // Both steps are very slow with a very large JSON of detections that matches folders of images.
                                 // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
 
-                                // Update the progress bar
+                                // Update the progress bar and populate the detection tables
                                 progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
                                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
+
+                                // DetectionExists needs to be primed if it is to save its DetectionExists state
+                                this.DetectionsExists(true); 
                             }
                             return true;
                         }
@@ -2207,26 +2161,9 @@ namespace Timelapse.Database
         // Return the label that matches the detection category 
         public string GetDetectionLabelFromCategory(string category)
         {
-            this.detectionCategoriesDictionary = new Dictionary<string, string>();
-            try
-            {
-                using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
-                {
-                    int dataTableRowCount = dataTable.Rows.Count;
-                    for (int i = 0; i < dataTableRowCount; i++)
-                    {
-                        DataRow row = dataTable.Rows[i];
-                        this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
-                    }
-                    // At this point, a lookup dictionary already exists, so just return the category value.
-                    return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
-                }
-            }
-            catch
-            {
-                // Should never really get here, but just in case.
-                return String.Empty;
-            }
+            this.CreateDetectionCategoriesDictionaryIfNeeded();
+            return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+
         }
 
         public void CreateDetectionCategoriesDictionaryIfNeeded()
@@ -2235,17 +2172,21 @@ namespace Timelapse.Database
             if (this.detectionCategoriesDictionary == null)
             {
                 this.detectionCategoriesDictionary = new Dictionary<string, string>();
-
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories);
-                int dataTableRowCount = dataTable.Rows.Count;
-                for (int i = 0; i < dataTableRowCount; i++)
+                try
                 {
-                    DataRow row = dataTable.Rows[i];
-                    this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                    using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
+                    {
+                        int dataTableRowCount = dataTable.Rows.Count;
+                        for (int i = 0; i < dataTableRowCount; i++)
+                        {
+                            DataRow row = dataTable.Rows[i];
+                            this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                        }
+                    }
                 }
-                if (dataTable != null)
+                catch
                 {
-                    dataTable.Dispose();
+                    // Should never really get here, but just in case.
                 }
             }
         }
@@ -2256,7 +2197,7 @@ namespace Timelapse.Database
             try
             {
                 this.CreateDetectionCategoriesDictionaryIfNeeded();
-                // At this point, a lookup dictionary already exists, so just return the category number.
+                // A lookup dictionary should now exists, so just return the category value.
                 string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
                 return myKey ?? String.Empty;
             }
@@ -2284,30 +2225,27 @@ namespace Timelapse.Database
             // Null means we have never tried to create the dictionary. Try to do so.
             if (this.classificationCategoriesDictionary == null)
             {
-                // PERFORMANCE 0 or more categories can be associated with every detection. THus we should expect the number of categories could easily be much higher than the 
-                // number of detections, which in turn is higher than the number of images. With very large databases, retrieving the datatable of categories can be very slow (and can consume significant memory). 
-                // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
-                // its important to show detection and category data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
-                // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
-                if (this.classificationCategoriesDictionary == null)
+                this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                try
                 {
-                    this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                    using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories))
+                    {
+                        int dataTableRowCount = dataTable.Rows.Count;
+                        for (int i = 0; i < dataTableRowCount; i++)
+                        {
+                            DataRow row = dataTable.Rows[i];
+                            this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
+                        }
+                    }
                 }
-                DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories);
-                int dataTableRowCount = dataTable.Rows.Count;
-                for (int i = 0; i < dataTableRowCount; i++)
+                catch
                 {
-                    DataRow row = dataTable.Rows[i];
-                    this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
-                }
-                if (dataTable != null)
-                {
-                    dataTable.Dispose();
+                    // Should never really get here, but just in case.
                 }
             }
         }
 
-        public List<string> GetClassificationLabels()     
+        public List<string> GetClassificationLabels()
         {
             List<string> labels = new List<string>();
             this.CreateClassificationCategoriesDictionaryIfNeeded();
@@ -2325,8 +2263,7 @@ namespace Timelapse.Database
             try
             {
                 this.CreateClassificationCategoriesDictionaryIfNeeded();
-
-                // At this point, a lookup dictionary already exists, so just return the category value.
+                // A lookup dictionary should now exists, so just return the category value.
                 return this.classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
             }
             catch
@@ -2351,10 +2288,23 @@ namespace Timelapse.Database
                 return String.Empty;
             }
         }
-
+        // See if detections exist in this instance. We test once, and then save the state (unless forceQuery is true)
+        private bool? detectionExists = null;
+        /// <summary>
+        /// Return if a non-empty detections table exists. If forceQuery is true, then we always do this via an SQL query vs. refering to previous checks
+        /// </summary>
+        /// <returns></returns>
         public bool DetectionsExists()
         {
-            return this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
+            return this.DetectionsExists(false);
+        }
+        public bool DetectionsExists(bool forceQuery)
+        {
+            if (forceQuery == true || this.detectionExists == null)
+            {
+                this.detectionExists = this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
+            }
+            return this.detectionExists == true;
         }
         #endregion
 

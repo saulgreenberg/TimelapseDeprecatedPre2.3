@@ -134,13 +134,13 @@ namespace Timelapse.Database
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
                 {
                     // Form: ( dataLabel IS NULL OR  dataLabel = '' );
-                    whereForTerm = SqlPhraseLabelIsNullOrDataLabelEqualsEmpty(dataLabel);
+                    whereForTerm = SqlPhrase.LabelIsNullOrDataLabelEqualsEmpty(dataLabel);
                 }
                 else
                 {
                     // Form: dataLabel operator "value", e.g., DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    whereForTerm = SqlPhraseDataLabelOperatorValue(dataLabel, searchTerm.Operator, searchTerm.DatabaseValue);
+                    whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
@@ -182,7 +182,6 @@ namespace Timelapse.Database
             // Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
             // (and if a classification it adds: // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
 
-
             // There are four basic forms to come up as follows, which determines whether we should include add 'WHERE'
             // The first is a detection and uses the detection category (i.e., any category but All Detections)
             // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
@@ -203,7 +202,7 @@ namespace Timelapse.Database
             {
                 addAndOr = true;
             }
-            System.Diagnostics.Debug.Print(String.Format("RecognitionType:{0} DetectCategory:{1} ClassCategory:{2}", this.DetectionSelections.RecognitionType, this.DetectionSelections.DetectionCategory, this.DetectionSelections.ClassificationCategory));
+
             // DETECTION, NOT ALL
             // FORM: 
             //   If its a detection:  Detections.category = <DetectionCategory>  
@@ -228,60 +227,34 @@ namespace Timelapse.Database
                 }
                 if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
-                    // a DETECTION, SO FORM IS Detections.Category = <DetectionCategory> 
-                    where += Constant.DBTables.Detections + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.DetectionCategory;
+                    // a DETECTION
+                    // FORM Detections.Category = <DetectionCategory> 
+                    where += SqlPhrase.DetectionCategoryEqualsDetectionCategory(this.DetectionSelections.DetectionCategory);
                 }
                 else
                 {
-                    // a CLASSIFICATION, SO FORM IS Classifications.Category = <DetectionCategory> 
-                    where += Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Category + Sql.Equal + this.DetectionSelections.ClassificationCategory;
+                    // a CLASSIFICATION, 
+                    // FORM Classifications.Category = <ClassificationCategory> 
+                    where += SqlPhrase.ClassificationsCategoryEqualsClassificationCategory(this.DetectionSelections.ClassificationCategory);
                 }
             }
 
-            // Form:  ...Group By Detections.Id Having Max (Detections.conf )  BETWEEN <LOWER BOUND> AND <UPPER BOUND>
-            // We always use confidence. 
+            // Form:  see below to use the confidence range
             // Note that a confidence of 0 captures empty items with 0 confidence i.e., images with no detections in them
-            // For the All category, we really don't wan't to include those, so we just bump up the confidence to slightly above 0
+            // For the All category, we really don't wan't to include those, so the confidence has been bumped up slightly(in Item1) above 0
             // For the Empty category, we invert the confidence
+            Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
             if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
             {
-                // Detection. Form: GROUP BY Detections.Id HAVING  MAX  ( Detections.conf ) BETWEEN 0.8 AND 1
-                where += Sql.GroupBy + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID + Sql.Having +
-                     Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+                // Detection. Form: Group By Detections.Id Having Max ( Detections.conf ) BETWEEN <Item1> AND <Item2>  e.g.. Between .8 and 1
+                where += SqlPhrase.GroupByDetectionsIdHavingMaxDetectionsConf(confidenceBounds.Item1, confidenceBounds.Item2);
             }
             else
             {
-                // Classification. Form:GROUP BY Classifications.classificationID HAVING MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1
-                where += Sql.GroupBy + Constant.DBTables.Classifications + "." + Constant.ClassificationColumns.ClassificationID + Sql.Having +
-                     Sql.Max + Sql.OpenParenthesis + Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis;
+                // Classification. Form: GROUP BY Classifications.classificationID HAVING MAX  ( Classifications.conf ) e.g.,  BETWEEN 0.8 AND 1
+                where += SqlPhrase.GroupByClassificationsIdHavingMaxClassificationsConf(confidenceBounds.Item1, confidenceBounds.Item2);
             }
-
-            Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
-            where += Sql.Between +
-                     confidenceBounds.Item1.ToString() + Sql.And + confidenceBounds.Item2.ToString();
             return where;
-        }
-
-        /// <summary>
-        /// Sql phrase
-        /// </summary>
-        /// <param name="datalabel"></param>
-        /// <returns> ( label IS NULL OR  label = '' ) ;</returns>
-        private string SqlPhraseLabelIsNullOrDataLabelEqualsEmpty(string datalabel)
-        {
-            return Sql.OpenParenthesis + datalabel + Sql.IsNull + Sql.Or + datalabel + Sql.Equal + Sql.QuotedEmptyString + Sql.CloseParenthesis;
-        }
-
-        /// <summary>
-        /// Sql phrase
-        /// </summary>
-        /// <param name="dataLabel"></param>
-        /// <param name="mathOperator"></param>
-        /// <param name="value"></param>
-        /// <returns>DataLabel operator "value", e.g., DataLabel > "5"</returns>
-        private string SqlPhraseDataLabelOperatorValue(string dataLabel, string mathOperator, string value)
-        {
-            return dataLabel + TermToSqlOperator(mathOperator) + Sql.Quote(value.Trim()); ;
         }
         #endregion
 
