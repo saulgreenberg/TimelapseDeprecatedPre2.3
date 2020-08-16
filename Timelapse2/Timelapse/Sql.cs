@@ -90,7 +90,9 @@ namespace Timelapse
         public const string SelectStarFrom = Sql.SelectStar + Sql.From; // SELECT * FROM "
 
         public const string SelectCount = " SELECT COUNT ";
+        public const string SelectDistinctCount = " SELECT DISTINCT COUNT ";
         public const string SelectCountStarFrom = Sql.SelectCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
+        public const string SelectDistinctCountStarFrom = Sql.SelectDistinctCount + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis + Sql.From;
         public const string SelectExists = " SELECT EXISTS ";
         public const string SelectNameFromSqliteMasterWhereTypeEqualTableAndNameEquals = " SELECT name FROM sqlite_master WHERE TYPE = 'table' AND name = ";
         public const string Semicolon = " ; ";
@@ -180,7 +182,8 @@ namespace Timelapse
         {
             string phrase = useCountForm
                 ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct
-                : Sql.Select;
+                : Sql.SelectDistinct;
+           //     : Sql.SelectDistinct + Constant.DBTables.Classifications + Sql.Dot + Constant.ClassificationColumns.Conf + Sql.Comma;
             phrase += Constant.DBTables.FileData + Sql.DotStar + Sql.From + Constant.DBTables.Classifications +
                     Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + 
                     Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
