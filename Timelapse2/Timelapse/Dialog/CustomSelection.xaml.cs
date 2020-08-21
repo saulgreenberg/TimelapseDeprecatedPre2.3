@@ -97,6 +97,9 @@ namespace Timelapse.Dialog
                 this.DetectionRangeSlider.LowerValue = this.DetectionSelections.ConfidenceThreshold1ForUI;
                 this.DetectionRangeSlider.HigherValue = this.DetectionSelections.ConfidenceThreshold2ForUI;
 
+                // Set the Rank by Confidence
+                this.RankByConfidenceCheckbox.IsChecked = this.DetectionSelections.RankByConfidence;
+
                 // Put Detection and Classification categories in the combo box as human-readable labels
                 // Note that we add "All" to the Detections list as that is a 'bogus' Timelapse-internal category.
                 List<string> labels = this.database.GetDetectionLabels();
@@ -940,16 +943,21 @@ namespace Timelapse.Dialog
         // Enable or disable the controls depending on the parameter
         private void EnableDetectionControls(bool isEnabled)
         {
-            this.DetectionConfidenceSpinnerLower.IsEnabled = isEnabled;
-            this.DetectionConfidenceSpinnerHigher.IsEnabled = isEnabled;
-            this.DetectionCategoryComboBox.IsEnabled = isEnabled;
-            this.DetectionRangeSlider.IsEnabled = isEnabled;
+            // Various confidence controls are enabled only if useDetections is set and the rank by confidence is unchecked
+            bool confidenceControlsEnabled = isEnabled && !this.DetectionSelections.RankByConfidence;
+            this.DetectionConfidenceSpinnerLower.IsEnabled = confidenceControlsEnabled;
+            this.DetectionConfidenceSpinnerHigher.IsEnabled = confidenceControlsEnabled;
+            this.DetectionRangeSlider.IsEnabled = confidenceControlsEnabled;
+            this.ConfidenceLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.FromLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ToLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.DetectionRangeSlider.RangeBackground = confidenceControlsEnabled ? Brushes.Gold : Brushes.LightGray;
 
+            // There remainder depends upon the use detections isEnable state only
+            this.DetectionCategoryComboBox.IsEnabled = isEnabled;
             this.CategoryLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ConfidenceLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.FromLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ToLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.DetectionRangeSlider.RangeBackground = isEnabled ? Brushes.Gold : Brushes.LightGoldenrodYellow;
+            this.RankByConfidenceCheckbox.IsEnabled = isEnabled;
+            this.RankByConfidenceCheckbox.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
 
             // CHECK THE ONES BELOW TO SEE IF THIS IS THE BEST WAY TO DO THESE
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
@@ -1009,5 +1017,14 @@ namespace Timelapse.Dialog
             return value == null ? 0 : Math.Round((double)value, 2);
         }
         #endregion
+
+        private void RankByConfidence_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            // Need to disable confidence sliders/spinners depending on the state of this checkbox and use detections
+            // ALso need to restore state of this checkbox between repeated uses in Window_Loaded.
+            this.DetectionSelections.RankByConfidence = this.RankByConfidenceCheckbox.IsChecked == true;
+            this.InitiateShowCountsOfMatchingFiles();
+            this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
+        }
     }
 }

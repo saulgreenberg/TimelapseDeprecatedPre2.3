@@ -244,14 +244,15 @@ namespace Timelapse.Database
             // For the All category, we really don't wan't to include those, so the confidence has been bumped up slightly(in Item1) above 0
             // For the Empty category, we invert the confidence
             Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
-            if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
+            if (this.DetectionSelections.RecognitionType == RecognitionType.Detection && this.DetectionSelections.RankByConfidence == false)
             {
                 // Detection. Form: Group By Detections.Id Having Max ( Detections.conf ) BETWEEN <Item1> AND <Item2>  e.g.. Between .8 and 1
                 where += SqlPhrase.GroupByDetectionsIdHavingMaxDetectionsConf(confidenceBounds.Item1, confidenceBounds.Item2);
             }
-            else
+            else if (this.DetectionSelections.RecognitionType == RecognitionType.Classification && this.DetectionSelections.RankByConfidence == false)
             {
                 // Classification. Form: GROUP BY Classifications.classificationID HAVING MAX  ( Classifications.conf ) e.g.,  BETWEEN 0.8 AND 1
+                // Note: we omit this phrase if we are ranking by confidence, as we want to return all classifications
                 where += SqlPhrase.GroupByClassificationsIdHavingMaxClassificationsConf(confidenceBounds.Item1, confidenceBounds.Item2);
             }
             return where;

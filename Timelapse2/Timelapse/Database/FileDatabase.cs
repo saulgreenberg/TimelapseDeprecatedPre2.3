@@ -927,44 +927,60 @@ namespace Timelapse.Database
                 // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
                 // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
                 // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
-                // Given the format of the corrected DateTime
-                for (int i = 0; i <= 1; i++)
+                if (this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification && this.CustomSelection.DetectionSelections.RankByConfidence)
                 {
-                    sortTerm[i] = this.ImageSet.GetSortTerm(i);
+                    // Classifications: Override any sorting as we have asked to rank the results by confidence values
+                    term[0] = Constant.DatabaseColumn.RelativePath;
+                    term[1] = Constant.DBTables.Classifications + "." + Constant.ClassificationColumns.Conf;
+                    term[1] += Sql.Descending;
+                }
+                else if (this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection && this.CustomSelection.DetectionSelections.RankByConfidence)
+                {
+                    // Detections: Override any sorting as we have asked to rank the results by confidence values
+                    term[0] = Constant.DatabaseColumn.RelativePath;
+                    term[1] = Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf;
+                    term[1] += Sql.Descending;
+                }
+                else
+                {
+                    // Given the format of the corrected DateTime
+                    for (int i = 0; i <= 1; i++)
+                    {
+                        sortTerm[i] = this.ImageSet.GetSortTerm(i);
 
-                    // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
-                    if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
-                    {
-                        break;
-                    }
-                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
-                    {
-                        // First Check for special cases, where we want to modify how sorting is done
-                        // DateTime:the modified query adds the UTC Offset to it
-                        term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
-                    }
-                    else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
-                    {
-                        // File: the modified term creates a file path by concatonating relative path and file
-                        term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
-                    }
-                    else if (sortTerm[i].ControlType == Constant.Control.Counter)
-                    {
-                        // Its a counter type: modify sorting of blanks by transforming it into a '-1' and then by casting it as an integer
-                        term[i] = String.Format("Cast(COALESCE(NULLIF({0}, ''), '-1') as Integer)", sortTerm[i].DataLabel);
-                    }
-                    else
-                    {
-                        // Default: just sort by the data label
-                        term[i] = sortTerm[i].DataLabel;
-                    }
-                    // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
-                    if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
-                    {
-                        term[i] += Sql.Descending;
+                        // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
+                        if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
+                        {
+                            break;
+                        }
+                        else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
+                        {
+                            // First Check for special cases, where we want to modify how sorting is done
+                            // DateTime:the modified query adds the UTC Offset to it
+                            term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                        }
+                        else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
+                        {
+                            // File: the modified term creates a file path by concatonating relative path and file
+                            term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
+                        }
+                        else if (sortTerm[i].ControlType == Constant.Control.Counter)
+                        {
+                            // Its a counter type: modify sorting of blanks by transforming it into a '-1' and then by casting it as an integer
+                            term[i] = String.Format("Cast(COALESCE(NULLIF({0}, ''), '-1') as Integer)", sortTerm[i].DataLabel);
+                        }
+                        else
+                        {
+                            // Default: just sort by the data label
+                            term[i] = sortTerm[i].DataLabel;
+                        }
+                        // Add Descending sort, if needed. Default is Ascending, so we don't have to add that
+                        if (sortTerm[i].IsAscending == Constant.BooleanValue.False)
+                        {
+                            term[i] += Sql.Descending;
+                        }
                     }
                 }
-
                 if (!String.IsNullOrEmpty(term[0]))
                 {
                     query += Sql.OrderBy + term[0];
@@ -2035,7 +2051,7 @@ namespace Timelapse.Database
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
 
                                 // DetectionExists needs to be primed if it is to save its DetectionExists state
-                                this.DetectionsExists(true); 
+                                this.DetectionsExists(true);
                             }
                             return true;
                         }

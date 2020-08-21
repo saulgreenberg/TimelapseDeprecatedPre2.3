@@ -25,6 +25,8 @@ namespace Timelapse.Detection
 
         // Detection type: All (Recognized images with at least one Detection / Classification
         public bool AllDetections { get; set; }
+
+        public bool RankByConfidence { get; set; }
        
         // Whether its a detection, classification, or none
         public RecognitionType RecognitionType { get; set; }
@@ -94,6 +96,7 @@ namespace Timelapse.Detection
             this.ClassificationCategory = "1";
 
             this.EmptyDetections = false;
+            this.RankByConfidence = false;
         }
         #endregion
 
