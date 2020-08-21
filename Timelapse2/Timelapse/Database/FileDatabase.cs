@@ -927,11 +927,18 @@ namespace Timelapse.Database
                 // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
                 // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
                 // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
-                if (this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RankByConfidence)
+                if (this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification && this.CustomSelection.DetectionSelections.RankByConfidence)
                 {
-                    // Override any sorting as we have asked to rank the results by confidence values
+                    // Classifications: Override any sorting as we have asked to rank the results by confidence values
                     term[0] = Constant.DatabaseColumn.RelativePath;
                     term[1] = Constant.DBTables.Classifications + "." + Constant.ClassificationColumns.Conf;
+                    term[1] += Sql.Descending;
+                }
+                else if (this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection && this.CustomSelection.DetectionSelections.RankByConfidence)
+                {
+                    // Detections: Override any sorting as we have asked to rank the results by confidence values
+                    term[0] = Constant.DatabaseColumn.RelativePath;
+                    term[1] = Constant.DBTables.Detections + "." + Constant.DetectionColumns.Conf;
                     term[1] += Sql.Descending;
                 }
                 else

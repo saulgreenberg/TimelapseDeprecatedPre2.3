@@ -85,6 +85,7 @@ namespace Timelapse
         public const string QuotedEmptyString = " '' ";
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";
+        public const string SelectDistinctStar = " SELECT DISTINCT * ";
         public const string SelectOne = " SELECT 1 ";
         public const string SelectStar = Sql.Select + Sql.Star; // SELECT * "
         public const string SelectStarFrom = Sql.SelectStar + Sql.From; // SELECT * FROM "
@@ -163,8 +164,11 @@ namespace Timelapse
         public static string SelectDetections(bool useCountForm)
         {
             string phrase = useCountForm
-                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
+                //? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
+                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar 
                 : Sql.Select + Constant.DBTables.FileData + Sql.DotStar ;
+
+
             return phrase + Sql.From + Constant.DBTables.Detections + Sql.InnerJoin + Constant.DBTables.FileData +
                     Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
         }
