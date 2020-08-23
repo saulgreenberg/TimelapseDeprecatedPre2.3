@@ -32,6 +32,8 @@ namespace Timelapse.Controls
         private const int PropagateFromLastValueIndex = 0;
         private const int CopyForwardIndex = 1;
         private const int CopyToAllIndex = 2;
+        private const int CopyToClipboardIndex = 4;
+        private const int PasteFromClipboardIndex = 5;
         private bool disposed;
         #endregion
 
@@ -95,8 +97,6 @@ namespace Timelapse.Controls
             // the callback updates the matching field for that file in the database.
             foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
             {
-
-
                 if (pair.Value.ContentReadOnly)
                 {
                     continue;
@@ -107,10 +107,10 @@ namespace Timelapse.Controls
                 {
                     case Constant.Control.Note:
                     case Constant.DatabaseColumn.Date:
+                    case Constant.DatabaseColumn.Time:
                     case Constant.DatabaseColumn.File:
                     case Constant.DatabaseColumn.Folder:
                     case Constant.DatabaseColumn.RelativePath:
-                    case Constant.DatabaseColumn.Time:
                         DataEntryNote note = (DataEntryNote)pair.Value;
                         note.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
                         if (controlType == Constant.Control.Note)
@@ -131,9 +131,6 @@ namespace Timelapse.Controls
                         // We need to access the calendar part of the DateTImePicker, but 
                         // we can't do that until the control is loaded.
                         dateTime.ContentControl.Loaded += this.DateTimePicker_Loaded;
-
-                        // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
-                        // dateTime.ContentControl.MouseLeave += this.DateTime_MouseLeave; 
                         break;
                     case Constant.DatabaseColumn.UtcOffset:
                         DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
@@ -179,6 +176,7 @@ namespace Timelapse.Controls
             }
         }
 
+        // Create the Context menu, incluidng settings its callbakcs
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
             MenuItem menuItemPropagateFromLastValue = new MenuItem()
@@ -209,16 +207,53 @@ namespace Timelapse.Controls
             };
             menuItemCopyCurrentValue.Click += this.MenuItemCopyCurrentValueToAll_Click;
 
+            MenuItem menuItemCopy = new MenuItem()
+            {
+                IsCheckable = false,
+                Header = "Copy",
+                ToolTip = "Copy will copy this field's entire content to the clipboard",
+                Tag = control
+            };
+            menuItemCopy.Click += this.MenuItemCopyToClipboard_Click;
+
+            MenuItem menuItemPaste = new MenuItem()
+            {
+                IsCheckable = false,
+                Header = "Paste",
+                ToolTip = "Paste will replace this field's content with the clipboard's content",
+                Tag = control
+            };
+            menuItemPaste.Click += this.MenuItemPasteFromClipboard_Click;
+
             // DataEntrHandler.PropagateFromLastValueIndex and CopyForwardIndex must be kept in sync with the add order here
             ContextMenu menu = new ContextMenu();
             menu.Items.Add(menuItemPropagateFromLastValue);
             menu.Items.Add(menuItemCopyForward);
             menu.Items.Add(menuItemCopyCurrentValue);
+            Separator menuSeparator = new Separator();
+            menu.Items.Add(menuSeparator);
+            menu.Items.Add(menuItemCopy);
+            menu.Items.Add(menuItemPaste);
 
             control.Container.ContextMenu = menu;
             control.Container.PreviewMouseRightButtonDown += this.Container_PreviewMouseRightButtonDown;
 
-            if (control is DataEntryCounter counter)
+            if (control.DataLabel ==  Constant.DatabaseColumn.File || control.DataLabel == Constant.DatabaseColumn.Folder || control.DataLabel == Constant.DatabaseColumn.RelativePath)
+            {
+                if (control is DataEntryNote note)
+                { 
+                    note.ContentControl.ContextMenu = menu;
+                    menuItemPropagateFromLastValue.Visibility = Visibility.Collapsed;
+                    menuItemCopyForward.Visibility = Visibility.Collapsed;
+                    menuItemCopyCurrentValue.Visibility = Visibility.Collapsed;
+                    menuSeparator.Visibility = Visibility.Collapsed;
+                    //if (control.ContentReadOnly)
+                    //{
+                    //    menuItemPaste.Visibility = Visibility.Collapsed;
+                    //}
+                }
+            }
+            else if (control is DataEntryCounter counter)
             {
                 counter.ContentControl.ContextMenu = menu;
             }
@@ -379,6 +414,48 @@ namespace Timelapse.Controls
             Mouse.OverrideCursor = null;
         }
 
+        // Copy the  value of the current control to the clipboard
+        protected virtual void MenuItemCopyToClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(sender, nameof(sender));
+
+            // Get the chosen data entry control
+            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
+            if (control == null)
+            {
+                return;
+            }
+            Clipboard.SetText(control.Content);
+        }
+
+        // Paste the contents of the clipboard into the current or selected controls
+        // Note that we don't do any checks against the control's type, as that would be handled by the menu enablement
+        protected virtual void MenuItemPasteFromClipboard_Click(object sender, RoutedEventArgs e)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(sender, nameof(sender));
+
+            // Get the chosen data entry control
+            DataEntryControl control = (DataEntryControl)((MenuItem)sender).Tag;
+            if (control == null)
+            {
+                return;
+            }
+            string newContent = Clipboard.GetText().Trim();
+            if (control is DataEntryCounter _)
+            {
+                // removing any leading 0's, but if this ends up with an empty string, then revert to 0
+                newContent = newContent.TrimStart(new Char[] {'0'});
+                if (string.IsNullOrEmpty(newContent))
+                {
+                    newContent = "0";
+                }
+            }
+            control.SetContentAndTooltip(newContent);
+            this.UpdateRowsDependingOnThumbnailGridState(control.DataLabel, newContent);
+        }
+
         // Enable or disable particular context menu items
         protected virtual void Container_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -391,14 +468,94 @@ namespace Timelapse.Controls
             MenuItem menuItemCopyToAll = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyToAllIndex];
             MenuItem menuItemCopyForward = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyForwardIndex];
             MenuItem menuItemPropagateFromLastValue = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PropagateFromLastValueIndex];
+            MenuItem menuItemCopyToClipboard = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.CopyToClipboardIndex];
+            MenuItem menuItemPasteFromClipboard = (MenuItem)stackPanel.ContextMenu.Items[DataEntryHandler.PasteFromClipboardIndex];
 
             // Behaviour: 
             // - if the ThumbnailInCell is visible, disable Copy to all / Copy forward / Propagate if a single item isn't selected
-            // - otherwise enable the menut item only if the resulting action is coherent
+            // - otherwise enable the menu item only if the resulting action is coherent
             bool enabledIsPossible = this.ThumbnailGrid.IsVisible == false || this.ThumbnailGrid.SelectedCount() == 1;
             menuItemCopyToAll.IsEnabled = enabledIsPossible;
-            menuItemCopyForward.IsEnabled = enabledIsPossible ? menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible() : false;
-            menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible ? this.IsCopyFromLastNonEmptyValuePossible(control) : false;
+            menuItemCopyForward.IsEnabled = enabledIsPossible && (menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible());
+            menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible && this.IsCopyFromLastNonEmptyValuePossible(control);
+
+            // Enable Copy menu 
+            // - only if its not empty / white space and not in the overview with different contents (i.e., ellipsis is showing)
+            // - only if we are not in the overview
+            menuItemCopyToClipboard.IsEnabled = !(String.IsNullOrWhiteSpace(control.Content) || control.Content == Constant.Unicode.Ellipsis);
+
+            // Enable Paste menu 
+            // - only if the clipboard is not empty or white space, 
+            // - only if the string matches the contents expected by the control's type
+            // - only if we are not in the overview
+            // Note that, to make programming life easier on checking contents, we trim leading or trailing white space from the clipboard contents
+            string clipboardText = Clipboard.GetText().Trim();
+            if (String.IsNullOrEmpty(clipboardText))
+            {
+                menuItemPasteFromClipboard.IsEnabled = false;
+            }
+            else
+            {
+                if (control is DataEntryNote _)
+                {
+                    // Any string is valid
+                    menuItemPasteFromClipboard.IsEnabled = true;
+                }
+                else if (control is DataEntryFlag _)
+                {
+                    // Only true / false is valid
+                    menuItemPasteFromClipboard.IsEnabled = (clipboardText == "true" || clipboardText == "false");
+                }
+                else if (control is DataEntryCounter _)
+                {
+                    // Only a positive integer is valid
+                    menuItemPasteFromClipboard.IsEnabled = Int32.TryParse(clipboardText, out int x) && x >= 0;
+                }
+                else if (control is DataEntryChoice choiceControl)
+                {
+                    // Only a value present as a menu choice is valid 
+                    menuItemPasteFromClipboard.IsEnabled = false;
+                    ComboBox comboBox = choiceControl.ContentControl;
+                    foreach (ComboBoxItem cbi in comboBox.Items)
+                    {
+                        if (clipboardText == ((string)cbi.Content).Trim())
+                        {
+                            // We found a matching value, so pasting is possible
+                            menuItemPasteFromClipboard.IsEnabled = true;
+                            break;
+                        }
+                    }
+                }
+
+                
+                if (menuItemPasteFromClipboard.IsEnabled)
+                {
+                    if (control is DataEntryCounter _)
+                    {
+                        // removing any leading 0's
+                        clipboardText = clipboardText.TrimStart(new Char[] { '0' });
+                        if (string.IsNullOrEmpty(clipboardText))
+                        {
+                            clipboardText = "0";
+                        }
+                    }
+                    menuItemPasteFromClipboard.Header = "Paste '" + (clipboardText.Length > 20 ? clipboardText.Substring(0, 20) + Constant.Unicode.Ellipsis : clipboardText) + "'";
+                }
+                else
+                {
+                    menuItemPasteFromClipboard.Header = "Paste";
+                }
+                if (menuItemCopyToClipboard.IsEnabled)
+                {
+
+                    string content = control.Content.Trim();
+                    menuItemCopyToClipboard.Header = "Copy '" + (content.Length > 20 ? content.Substring(0, 20) + Constant.Unicode.Ellipsis : content) + "'";
+                }
+                else
+                {
+                    menuItemCopyToClipboard.Header = "Copy";
+                }
+            }
         }
         #endregion
 
@@ -411,7 +568,7 @@ namespace Timelapse.Controls
             }
 
             int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - this.ImageCache.CurrentRow - 1;
-            return (filesAffected > 0) ? true : false;
+            return (filesAffected > 0);
         }
 
         // Return true if there is a non-empty value available
@@ -435,39 +592,11 @@ namespace Timelapse.Controls
                     }
                 }
             }
-            return (nearestRowWithCopyableValue >= 0) ? true : false;
+            return (nearestRowWithCopyableValue >= 0);
         }
         #endregion
 
         #region Event handlers - Content Selections and Changes
-
-        // SAULXXX This was an old workaround to a DateTimePicker control issue, which I think is no longer needed due to updating WPFToolkit
-        // SAULXXX The original issue was reported in  https://github.com/xceedsoftware/wpftoolkit/issues/1206 
-        // SAULXXX Delete this in future Timelapse versions
-        // The DateTimePicker has a 'bug' where it does not trigger the value update event unless a return has been pressed (or similar)
-        // As this does not always happen, this means some text changes don't actually get remembered. 
-        // This workaround checks to see if the mouse has left the DateTimePicker. If so, it checks for changes to the date/time and updates
-        // the values correctly. 
-        private void DateTime_MouseLeave(object sender, MouseEventArgs e)
-        {
-            // System.Diagnostics.Debug.Print("DateTimeControl_MouseLeave triggered");
-            DateTimePicker dateTimePicker = sender as DateTimePicker;
-            if (dateTimePicker.Value == null)
-            {
-                return;
-            }
-            DateTime oldDateTime = dateTimePicker.Value.Value;
-
-            // SAULXXX: Try to parse the new datetime. If we cannot, then don't do anything.
-            // This is not the best solution, as it means some changes are ignored. But we don't really have much choice here.
-            // Otherwise, if the dates differe, update using the new date.
-            if (Util.DateTimeHandler.TryParseDisplayDateTimeString(dateTimePicker.Text, out DateTime newDateTime) &&
-                (oldDateTime != newDateTime))
-            {
-                this.DateTimeUpdate(dateTimePicker, newDateTime);
-            }
-        }
-
         private void DateTimeControl_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             // System.Diagnostics.Debug.Print("DateTimeControl_ValueChanged triggered");
@@ -675,9 +804,9 @@ namespace Timelapse.Controls
                 {
                     parent = (FrameworkElement)focusedFrameworkElement.Parent;
                 }
-                else if (focusedFrameworkElement.TemplatedParent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement)
+                else if (focusedFrameworkElement.TemplatedParent != null && focusedFrameworkElement.TemplatedParent is FrameworkElement element)
                 {
-                    parent = (FrameworkElement)focusedFrameworkElement.TemplatedParent;
+                    parent = element;
                 }
 
                 if (parent != null)

@@ -265,11 +265,11 @@ namespace Timelapse.Controls
                              control.DataLabel == Constant.DatabaseColumn.Folder ||
                              control.DataLabel == Constant.DatabaseColumn.RelativePath))
                         {
-                            note.IsEnabled = (imagesSelected == 1) ? true : false;
+                            note.IsEnabled = imagesSelected == 1;
                         }
                         else
                         {
-                            note.IsEnabled = (imagesSelected >= 1) ? true : false;
+                            note.IsEnabled = imagesSelected >= 1;
                         }
                         note.SetContentAndTooltip(contentAndTooltip);
                     }
@@ -289,7 +289,7 @@ namespace Timelapse.Controls
                         // When one or more images are selected, display it as enabled and editable.
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(choice.DataLabel);
-                        choice.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        choice.IsEnabled = (imagesSelected >= 1);
                         choice.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
@@ -308,7 +308,7 @@ namespace Timelapse.Controls
                         // When one or more images are selected, display it as enabled and editable.
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(counter.DataLabel);
-                        counter.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        counter.IsEnabled = (imagesSelected >= 1);
                         // Changing a counter value does not trigger a ValueChanged event if the values are the same.
                         // which means multiple images may not be updated even if other images have the same value.
                         // To get around this, we set a bogus value and then the real value, which means that the
@@ -332,7 +332,7 @@ namespace Timelapse.Controls
                         // When one or more images are selected, display it as enabled and editable.
                         // Note that if the contentAndTooltip is null (due to no value or to conflicting values), SetContentAndTooltip will display an ellipsis
                         string contentAndTooltip = this.dataEntryHandler.GetValueDisplayStringCommonToFileIds(flag.DataLabel);
-                        flag.IsEnabled = (imagesSelected >= 1) ? true : false;
+                        flag.IsEnabled = (imagesSelected >= 1);
                         flag.SetContentAndTooltip(contentAndTooltip);
                     }
                 }
