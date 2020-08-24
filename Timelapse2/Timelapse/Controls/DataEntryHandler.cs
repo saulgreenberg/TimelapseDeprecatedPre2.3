@@ -97,25 +97,32 @@ namespace Timelapse.Controls
             // the callback updates the matching field for that file in the database.
             foreach (KeyValuePair<string, DataEntryControl> pair in controlsByDataLabel)
             {
-                if (pair.Value.ContentReadOnly)
-                {
-                    continue;
-                }
+                //if (pair.Value.ContentReadOnly)
+                //{
+                //    continue;
+                //}
 
                 string controlType = this.FileDatabase.FileTableColumnsByDataLabel[pair.Key].ControlType;
                 switch (controlType)
                 {
                     case Constant.Control.Note:
-                    case Constant.DatabaseColumn.Date:
-                    case Constant.DatabaseColumn.Time:
                     case Constant.DatabaseColumn.File:
                     case Constant.DatabaseColumn.Folder:
                     case Constant.DatabaseColumn.RelativePath:
                         DataEntryNote note = (DataEntryNote)pair.Value;
                         note.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
+                        //if (controlType == Constant.Control.Note)
+                        //{
+                            this.SetContextMenuCallbacks(note);
+                        //}
+                        break;
+                    case Constant.DatabaseColumn.Date:
+                    case Constant.DatabaseColumn.Time:
+                        DataEntryNote datetimeNote = (DataEntryNote)pair.Value;
+                        datetimeNote.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
                         if (controlType == Constant.Control.Note)
                         {
-                            this.SetContextMenuCallbacks(note);
+                            this.SetContextMenuCallbacks(datetimeNote);
                         }
                         break;
                     case Constant.DatabaseColumn.DateTime:
@@ -179,6 +186,9 @@ namespace Timelapse.Controls
         // Create the Context menu, incluidng settings its callbakcs
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
+            // Start with an empty clipboard
+            Clipboard.SetText(String.Empty);
+
             MenuItem menuItemPropagateFromLastValue = new MenuItem()
             {
                 IsCheckable = false,
@@ -238,6 +248,8 @@ namespace Timelapse.Controls
             control.Container.ContextMenu = menu;
             control.Container.PreviewMouseRightButtonDown += this.Container_PreviewMouseRightButtonDown;
 
+            // For the File/Folder/RelativePath controls, all which are read only, hide the irrelevant menu items.
+            // This could be made more efficient by simply not creating those items, but given the low case we just left it as is.
             if (control.DataLabel ==  Constant.DatabaseColumn.File || control.DataLabel == Constant.DatabaseColumn.Folder || control.DataLabel == Constant.DatabaseColumn.RelativePath)
             {
                 if (control is DataEntryNote note)
@@ -247,10 +259,10 @@ namespace Timelapse.Controls
                     menuItemCopyForward.Visibility = Visibility.Collapsed;
                     menuItemCopyCurrentValue.Visibility = Visibility.Collapsed;
                     menuSeparator.Visibility = Visibility.Collapsed;
-                    //if (control.ContentReadOnly)
-                    //{
-                    //    menuItemPaste.Visibility = Visibility.Collapsed;
-                    //}
+                    if (control.ContentReadOnly)
+                    {
+                        menuItemPaste.Visibility = Visibility.Collapsed;
+                    }
                 }
             }
             else if (control is DataEntryCounter counter)
@@ -445,7 +457,7 @@ namespace Timelapse.Controls
             string newContent = Clipboard.GetText().Trim();
             if (control is DataEntryCounter _)
             {
-                // removing any leading 0's, but if this ends up with an empty string, then revert to 0
+                // For counters, removing any leading 0's, but if this ends up with an empty string, then revert to 0
                 newContent = newContent.TrimStart(new Char[] {'0'});
                 if (string.IsNullOrEmpty(newContent))
                 {
@@ -479,16 +491,14 @@ namespace Timelapse.Controls
             menuItemCopyForward.IsEnabled = enabledIsPossible && (menuItemCopyForward.IsEnabled = this.IsCopyForwardPossible());
             menuItemPropagateFromLastValue.IsEnabled = enabledIsPossible && this.IsCopyFromLastNonEmptyValuePossible(control);
 
-            // Enable Copy menu 
-            // - only if its not empty / white space and not in the overview with different contents (i.e., ellipsis is showing)
-            // - only if we are not in the overview
+            // Enable Copy menu if
+            // - its not empty / white space and not in the overview with different contents (i.e., ellipsis is showing)
             menuItemCopyToClipboard.IsEnabled = !(String.IsNullOrWhiteSpace(control.Content) || control.Content == Constant.Unicode.Ellipsis);
 
-            // Enable Paste menu 
-            // - only if the clipboard is not empty or white space, 
-            // - only if the string matches the contents expected by the control's type
-            // - only if we are not in the overview
-            // Note that, to make programming life easier on checking contents, we trim leading or trailing white space from the clipboard contents
+            // Enable Paste menu only if
+            // - the clipboard is not empty or white space, 
+            // - the string matches the contents expected by the control's type
+            // - we are not in the overview with different contents selected (i.e., ellipsis is showing)
             string clipboardText = Clipboard.GetText().Trim();
             if (String.IsNullOrEmpty(clipboardText))
             {
@@ -527,12 +537,12 @@ namespace Timelapse.Controls
                     }
                 }
 
-                
+                // Alter the paste header to show the text that will be pasted e.g Paste 'Lion'
                 if (menuItemPasteFromClipboard.IsEnabled)
                 {
                     if (control is DataEntryCounter _)
                     {
-                        // removing any leading 0's
+                        // removing any leading 0's, but if its empty make it a 0
                         clipboardText = clipboardText.TrimStart(new Char[] { '0' });
                         if (string.IsNullOrEmpty(clipboardText))
                         {
@@ -543,16 +553,19 @@ namespace Timelapse.Controls
                 }
                 else
                 {
+                    // Since there is nothing in the clipboard, just show 'Paste'
                     menuItemPasteFromClipboard.Header = "Paste";
                 }
+
+                // Alter the copy header to show the text that will be copied, i.e. Copy 'Lion'
                 if (menuItemCopyToClipboard.IsEnabled)
                 {
-
                     string content = control.Content.Trim();
                     menuItemCopyToClipboard.Header = "Copy '" + (content.Length > 20 ? content.Substring(0, 20) + Constant.Unicode.Ellipsis : content) + "'";
                 }
                 else
                 {
+                    // Since there an empty string to Copy, just show 'Copy'
                     menuItemCopyToClipboard.Header = "Copy";
                 }
             }
