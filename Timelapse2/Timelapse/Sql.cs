@@ -165,8 +165,8 @@ namespace Timelapse
         {
             string phrase = useCountForm
                 //? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
-                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar 
-                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar ;
+                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar
+                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
 
 
             return phrase + Sql.From + Constant.DBTables.Detections + Sql.InnerJoin + Constant.DBTables.FileData +
@@ -187,9 +187,9 @@ namespace Timelapse
             string phrase = useCountForm
                 ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct
                 : Sql.SelectDistinct;
-           //     : Sql.SelectDistinct + Constant.DBTables.Classifications + Sql.Dot + Constant.ClassificationColumns.Conf + Sql.Comma;
+            //     : Sql.SelectDistinct + Constant.DBTables.Classifications + Sql.Dot + Constant.ClassificationColumns.Conf + Sql.Comma;
             phrase += Constant.DBTables.FileData + Sql.DotStar + Sql.From + Constant.DBTables.Classifications +
-                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + 
+                    Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
                     Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
             // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
             phrase += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +

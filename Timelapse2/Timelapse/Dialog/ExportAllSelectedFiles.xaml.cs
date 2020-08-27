@@ -3,10 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using Timelapse.Controls;
 using Timelapse.Database;
-using Timelapse.Util;
 
 namespace Timelapse.Dialog
 {

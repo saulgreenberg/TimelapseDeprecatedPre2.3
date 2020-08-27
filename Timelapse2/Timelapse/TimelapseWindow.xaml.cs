@@ -173,9 +173,27 @@ namespace Timelapse
             {
                 this.HelpDocument.WarningRegionLanguage = displayname;
             }
-            this.DataEntryControlPanel.IsVisible = false; // this.DataEntryControlPanel.IsFloating;
+
+            // Add a context menu to the data controls that allows a user to restore default values to the current or selected file
+            // I originally had this in the XAML, but for some reason it complains if put there.
+            ContextMenu menuRestoreDefaults = new ContextMenu();
+            //{
+            //    Name = "MenuRestoreDefaults"
+            //};
+            MenuItem menuItemRestoreDefaults = new MenuItem();
+            //{
+            //    Header = "Restore default values for this file",
+            //    ToolTip = "Restores the default values for all fields for this file excepting file paths and date/times"
+            //};
+            menuItemRestoreDefaults.Click += MenuItemRestoreDefaultValues_Click;
+            menuRestoreDefaults.Opened += this.MenuRestoreDefaults_Opened;
+            menuRestoreDefaults.Items.Add(menuItemRestoreDefaults);
+            this.DataEntryControls.ContextMenu = menuRestoreDefaults;
+
+            this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
         }
+
 
         private void Window_LocationChanged(object sender, EventArgs e)
         {

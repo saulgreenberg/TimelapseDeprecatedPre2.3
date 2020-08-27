@@ -150,7 +150,7 @@ namespace Timelapse.Images
                 // the bboxTextBlock contains all predicted items + their confidence as a list
                 string bboxLabel = (bbox.Classifications.Count == 0)
                     ? bbox.DetectionLabel + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Confidence)
-                    : bbox.Classifications[0].Key + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Classifications[0].Value) 
+                    : bbox.Classifications[0].Key + " " + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Classifications[0].Value)
                                                   + "(" + ReformatFloatToTwoDecimalPlacesAndEpsilon(bbox.Confidence) + ")";
 
                 string bboxTextBlock = String.Empty;
@@ -188,7 +188,7 @@ namespace Timelapse.Images
                             Padding = new Thickness(0, -2, 0, -2),
                             VerticalAlignment = VerticalAlignment.Center
                         };
-                        double leftPosition = (screenPositionTopLeft.X - stroke_thickness) < 0 
+                        double leftPosition = (screenPositionTopLeft.X - stroke_thickness) < 0
                             ? 0
                             : screenPositionTopLeft.X - stroke_thickness;
                         double topPosition = (screenPositionTopLeft.Y - stroke_thickness - 20) < 0
@@ -225,12 +225,12 @@ namespace Timelapse.Images
                         // classificationUIObject.SelectionChanged += this.ClassificationUIObject_SelectionChanged;
                         double leftPosition = (screenPositionTopLeft.X - stroke_thickness) < 0
                            ? 0
-                           : screenPositionTopLeft.X - stroke_thickness; 
+                           : screenPositionTopLeft.X - stroke_thickness;
                         // Canvas.SetLeft(classificationUIObject, screenPositionTopLeft.X - stroke_thickness);
                         double topPosition = (screenPositionTopLeft.Y - stroke_thickness - 20) < 0
                             ? 0
                             : screenPositionTopLeft.Y - stroke_thickness - 20;
-                        Canvas.SetLeft(classificationUIObject, leftPosition); 
+                        Canvas.SetLeft(classificationUIObject, leftPosition);
                         Canvas.SetTop(classificationUIObject, topPosition);
                         canvas.Children.Add(classificationUIObject);
                         Canvas.SetZIndex(classificationUIObject, 1);

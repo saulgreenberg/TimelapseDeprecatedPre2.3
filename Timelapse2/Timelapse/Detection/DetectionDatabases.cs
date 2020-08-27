@@ -228,13 +228,13 @@ namespace Timelapse.Detection
                             // System.Diagnostics.Debug.Print("Using: " + image.file + " as " + imageFile);
                         }
                     }
-                    
+
                     // Form: FILE = Filename AND RELATIVEPATH = RelativePath
                     string queryFileRelativePath =
                          Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(Path.GetFileName(imageFile)) +
                          Sql.And +
                          Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(Path.GetDirectoryName(imageFile));
-                         
+
                     DataRow[] rows = dataTable.Select(queryFileRelativePath);
                     if (rows.Length == 0)
                     {

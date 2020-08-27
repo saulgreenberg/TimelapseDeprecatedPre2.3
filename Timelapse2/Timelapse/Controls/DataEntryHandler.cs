@@ -113,7 +113,7 @@ namespace Timelapse.Controls
                         note.ContentControl.TextAutocompleted += this.NoteControl_TextAutocompleted;
                         //if (controlType == Constant.Control.Note)
                         //{
-                            this.SetContextMenuCallbacks(note);
+                        this.SetContextMenuCallbacks(note);
                         //}
                         break;
                     case Constant.DatabaseColumn.Date:
@@ -250,10 +250,10 @@ namespace Timelapse.Controls
 
             // For the File/Folder/RelativePath controls, all which are read only, hide the irrelevant menu items.
             // This could be made more efficient by simply not creating those items, but given the low case we just left it as is.
-            if (control.DataLabel ==  Constant.DatabaseColumn.File || control.DataLabel == Constant.DatabaseColumn.Folder || control.DataLabel == Constant.DatabaseColumn.RelativePath)
+            if (control.DataLabel == Constant.DatabaseColumn.File || control.DataLabel == Constant.DatabaseColumn.Folder || control.DataLabel == Constant.DatabaseColumn.RelativePath)
             {
                 if (control is DataEntryNote note)
-                { 
+                {
                     note.ContentControl.ContextMenu = menu;
                     menuItemPropagateFromLastValue.Visibility = Visibility.Collapsed;
                     menuItemCopyForward.Visibility = Visibility.Collapsed;
@@ -458,7 +458,7 @@ namespace Timelapse.Controls
             if (control is DataEntryCounter _)
             {
                 // For counters, removing any leading 0's, but if this ends up with an empty string, then revert to 0
-                newContent = newContent.TrimStart(new Char[] {'0'});
+                newContent = newContent.TrimStart(new Char[] { '0' });
                 if (string.IsNullOrEmpty(newContent))
                 {
                     newContent = "0";

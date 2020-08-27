@@ -27,7 +27,7 @@ namespace Timelapse.Detection
         public bool AllDetections { get; set; }
 
         public bool RankByConfidence { get; set; }
-       
+
         // Whether its a detection, classification, or none
         public RecognitionType RecognitionType { get; set; }
 

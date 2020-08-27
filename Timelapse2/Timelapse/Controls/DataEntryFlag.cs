@@ -32,10 +32,10 @@ namespace Timelapse.Controls
             get { return this.ContentControl.IsEnabled; }
         }
 
-        /// <summary>Gets or sets the Content of the Note</summary>
+        /// <summary>Gets or sets the Content of the Flag</summary>
         public override string Content
         {
-            get { return ((bool)this.ContentControl.IsChecked) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
+            get { return ((bool)this.ContentControl.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
         }
 
         public override bool ContentReadOnly
@@ -97,7 +97,7 @@ namespace Timelapse.Controls
             // Otherwise, the checkbox will be checked depending on whether the value is true or false,
             // and the tooltip will be set to true or false. 
             value = value.ToLower();
-            this.ContentControl.IsChecked = (value == Constant.BooleanValue.True) ? true : false;
+            this.ContentControl.IsChecked = (value == Constant.BooleanValue.True);
             this.ContentControl.ToolTip = this.LabelControl.ToolTip;
         }
         #endregion

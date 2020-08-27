@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using Timelapse.Controls;
 using Timelapse.Database;
@@ -198,7 +197,7 @@ namespace Timelapse.Dialog
 
         #region Do the actual file deletion
         // The (bool, int return value: true if the operation has been cancelled, and if so how many images were deleted before the cancel event
-        private async Task<Tuple<bool,int>> DoDeleteFilesAsync(List<ImageRow> imagesToDelete, bool deleteFilesAndData)
+        private async Task<Tuple<bool, int>> DoDeleteFilesAsync(List<ImageRow> imagesToDelete, bool deleteFilesAndData)
         {
             // cache the current ID as the current image may be invalidated
             long currentFileID = this.imageCache.Current.ID;
@@ -335,7 +334,7 @@ namespace Timelapse.Dialog
             this.BusyCancelIndicator.IsBusy = true;
             this.WindowCloseButtonIsEnabled(false);
 
-            Tuple<bool,int> isCancelledAndDeletedImagesCount = await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
+            Tuple<bool, int> isCancelledAndDeletedImagesCount = await DoDeleteFilesAsync(this.filesToDelete, this.deleteImageAndData).ConfigureAwait(true);
 
             // Hide the busy indicator and update the UI, e.g., to show how many files were deleted
             this.BusyCancelIndicator.IsBusy = false;

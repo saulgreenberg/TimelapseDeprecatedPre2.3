@@ -211,7 +211,7 @@ namespace Timelapse.Dialog
             }
             this.timelapseState.BoundingBoxDisplayThreshold = slider.Value;
         }
-        
+
         private void CheckBoxBounidngBoxColorBlindRinedlyColors_Click(object sender, RoutedEventArgs e)
         {
             this.timelapseState.BoundingBoxColorBlindFriendlyColors = this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked == true;

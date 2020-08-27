@@ -11,7 +11,7 @@ namespace Timelapse
         private void EnableOrDisableMenusAndControls()
         {
             bool imageSetAvailable = this.IsFileDatabaseAvailable(); // A possible empty image set is loaded
-            bool filesSelected = (imageSetAvailable && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false; // A non-empty image set is loaded
+            bool filesSelected = imageSetAvailable && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0; // A non-empty image set is loaded
 
             // Depending upon whether images exist in the data set,
             // enable / disable menus and menu items as needed
@@ -34,7 +34,7 @@ namespace Timelapse
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
-
+            MenuItemRestoreDefaults.IsEnabled = filesSelected;
             // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;

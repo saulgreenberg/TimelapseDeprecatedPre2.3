@@ -8,7 +8,6 @@ using Timelapse.Controls;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Util;
-using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace Timelapse.Database
 {
@@ -45,7 +44,7 @@ namespace Timelapse.Database
 
             // if the mergedatabase file was previously created, it may be included in the source list.
             // So just skip over it, as it no longer exists and we don't actually want it
-            sourceDDBFilePaths.RemoveAll(Item => Item == destinationDDBFilePath); 
+            sourceDDBFilePaths.RemoveAll(Item => Item == destinationDDBFilePath);
 
             if (sourceDDBFilePaths.Count == 0)
             {

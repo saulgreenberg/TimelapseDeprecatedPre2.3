@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
@@ -30,6 +31,17 @@ namespace Timelapse
             this.MenuItemFindMissingImage.IsEnabled =
                    this.DataHandler?.ImageCache?.Current != null
                 && false == File.Exists(FilesFolders.GetFullPath(this.DataHandler.FileDatabase, currentImage));
+
+            if (this.MarkableCanvas.ThumbnailGrid.IsVisible == false && this.MarkableCanvas.ThumbnailGrid.IsGridActive == false)
+            {
+                this.MenuItemRestoreDefaults.Header = "Restore default values for this file";
+                this.MenuItemRestoreDefaults.ToolTip = "For the currently displayed file, revert all fields to its default values (excepting file paths and dates/times)";
+            }
+            else
+            {
+                this.MenuItemRestoreDefaults.Header = "Restore default values for the checkmarked files";
+                this.MenuItemRestoreDefaults.ToolTip = "For all checkmarked files, revert their fields to their default values (excepting file paths and dates/times)";
+            }
         }
         #endregion
 
@@ -514,6 +526,58 @@ namespace Timelapse
             {
                 this.DataHandler.FileDatabase.ImageSet.Log = editImageSetLog.Log.Text;
                 this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
+            }
+        }
+        #endregion
+
+        #region Restore default values for this file
+        private void MenuRestoreDefaults_Opened(object sender, RoutedEventArgs e)
+        {
+            // Customize the text to whether full view or overview is being displayed
+            if (sender is ContextMenu menu && menu.Items[0] is MenuItem menuItem)
+            {
+                if (this.MarkableCanvas.ThumbnailGrid.IsVisible == false && this.MarkableCanvas.ThumbnailGrid.IsGridActive == false)
+                {
+                    menuItem.Header = "Restore default values for this file";
+                    menuItem.ToolTip = "For the currently displayed file, revert all fields to its default values (excepting file paths and dates/times)";
+                }
+                else
+                {
+                    menuItem.Header = "Restore default values for the checkmarked files";
+                    menuItem.ToolTip = "For all checkmarked files, revert their fields to their default values (excepting file paths and dates/times)";
+                }
+            };
+        }
+
+        // Need to 
+        //-disable the menu when nothing is in it 
+        //-handle overview
+        //-put in edit menu
+        private void MenuItemRestoreDefaultValues_Click(object sender, RoutedEventArgs e)
+        {
+            // Retrieve the controls
+            foreach (KeyValuePair<string, DataEntryControl> pair in this.DataEntryControls.ControlsByDataLabel)
+            {
+                DataEntryControl control = pair.Value;
+                if (control.DataLabel == Constant.DatabaseColumn.File || control.DataLabel == Constant.DatabaseColumn.Folder || control.DataLabel == Constant.DatabaseColumn.RelativePath ||
+                    control.DataLabel == Constant.DatabaseColumn.Date || control.DataLabel == Constant.DatabaseColumn.Time || control.DataLabel == Constant.DatabaseColumn.DateTime || control.DataLabel == Constant.DatabaseColumn.UtcOffset)
+                {
+                    // Ignore stock controls
+                    continue;
+                }
+                ControlRow imageDatabaseControl = this.templateDatabase.GetControlFromTemplateTable(control.DataLabel);
+                if (this.MarkableCanvas.ThumbnailGrid.IsVisible == false && this.MarkableCanvas.ThumbnailGrid.IsGridActive == false)
+                {
+                    // Only a single image is displayed: update the database for the current row with the control's value
+                    this.DataHandler.FileDatabase.UpdateFile(this.DataHandler.ImageCache.Current.ID, control.DataLabel, imageDatabaseControl.DefaultValue);
+                    System.Diagnostics.Debug.Print(control.DataLabel + ":" + control.Content + ":" + imageDatabaseControl.DefaultValue);
+                }
+                else
+                {
+                    // Multiple images are displayed: update the database for all selected rows with the control's value
+                    this.DataHandler.FileDatabase.UpdateFiles(this.MarkableCanvas.ThumbnailGrid.GetSelected(), control.DataLabel, imageDatabaseControl.DefaultValue);
+                }
+                control.SetContentAndTooltip(imageDatabaseControl.DefaultValue);
             }
         }
         #endregion

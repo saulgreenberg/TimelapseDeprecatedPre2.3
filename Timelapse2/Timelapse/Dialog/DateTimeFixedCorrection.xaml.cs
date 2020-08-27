@@ -44,7 +44,7 @@ namespace Timelapse.Dialog
         {
             // Set up a progress handler that will update the progress bar
             this.InitalizeProgressHandler(this.BusyCancelIndicator);
-            
+
             // Set up the initial UI and values
             // Get the image filename and image and display them
             this.FileName.Content = this.ImageToCorrect.File;

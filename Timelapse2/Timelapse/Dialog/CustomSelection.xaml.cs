@@ -1,5 +1,4 @@
-﻿using ImageProcessor.Common.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -155,7 +154,7 @@ namespace Timelapse.Dialog
                 else
                 {
                     categoryLabel = this.database.GetClassificationLabelFromCategory(this.DetectionSelections.ClassificationCategory);
-                    this.DetectionCategoryComboBox.SelectedValue = (categoryLabel.Length != 0) 
+                    this.DetectionCategoryComboBox.SelectedValue = (categoryLabel.Length != 0)
                         ? categoryLabel
                         : this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
                 }
@@ -796,10 +795,10 @@ namespace Timelapse.Dialog
                 this.DetectionSelections.EmptyDetections = true;
                 this.DetectionSelections.AllDetections = false;
                 this.DetectionSelections.RecognitionType = RecognitionType.Detection;
-                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)Constant.DetectionValues.NoDetectionLabel);
+                this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel(Constant.DetectionValues.NoDetectionLabel);
 
                 if (resetSlidersIfNeeded)
-                { 
+                {
                     this.DetectionRangeSlider.HigherValue = 1.0;
                     this.DetectionRangeSlider.LowerValue = 1.0;
                 }

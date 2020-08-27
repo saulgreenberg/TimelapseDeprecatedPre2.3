@@ -143,8 +143,9 @@
                     <MenuItem Name="MenuItemImportQuickPasteFromDB" IsEnabled="True" Header="Import QuickPaste Items from .ddb file..." Click="MenuItemQuickPasteImportFromDB_Click" ToolTip="Import Quickpaste items that were created in another timelapse database (.ddb) file"/>
                     <Separator />
 
-                    <!-- Copy previous values -->
+                    <!-- Copy previous values / Restore Defaults-->
                     <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="MenuItemCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
+                    <MenuItem Name="MenuItemRestoreDefaults" Header="_Restore default values for this file" Click=" MenuItemRestoreDefaultValues_Click" ToolTip="For the currently displayed file, revert all fields to its default values (excepting file paths and dates/times)."/>
 
                     <Separator/>
 
