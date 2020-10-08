@@ -1158,6 +1158,18 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
 
+        public static void DateTimeTimeZoneNotFoundDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("You need to set the Time Zone on your computer", owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Problem = "Timelapse cannot continue as it cannot find your local time zone.";
+            messageBox.Message.Problem += Environment.NewLine + "Timelapse needs the timezone  to correctly load and set each image's date and time.";
+            messageBox.Message.Reason = "The likely cause is that your time zone is not correctly set on your computer.";
+            messageBox.Message.Solution = "Go to your computer's Date/Time setting. You should see a control for setting the time zone.";
+            messageBox.Message.Solution += Environment.NewLine + "You should also delete your .ddb file if it was just created.";
+            messageBox.Message.Hint = "You may see several names listed for an identical time zone. Try each one to see if it works.";
+            messageBox.ShowDialog();
+        }
         #endregion
     }
 }

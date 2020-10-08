@@ -274,6 +274,12 @@ namespace Timelapse
             {
                 Dialogs.FilePathTooLongDialog(this, e);
             }
+            else if (e.ExceptionObject.ToString().Contains("System.TimeZoneNotFoundException"))
+            {
+                Dialogs.DateTimeTimeZoneNotFoundDialog(this);
+                this.Close();
+                Application.Current.Shutdown();
+            }
             else
             {
                 ExceptionShutdownDialog dialog = new ExceptionShutdownDialog(this, "Timelapse", e);
