@@ -341,7 +341,7 @@ namespace Timelapse.Controls
                 // Note that this should never be displayed, as the menu shouldn't be highlit if there is nothing to propagate
                 // But just in case...
                 Dialogs.DataEntryNothingToPropagateDialog(Application.Current.MainWindow);
-                newContent = this.FileDatabase.FileTable[this.ImageCache.CurrentRow].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                return;
             }
 
             // Display the appropriate dialog box that explains what will happen. Arguments indicate what is to be propagated and how many files will be affected
@@ -590,7 +590,8 @@ namespace Timelapse.Controls
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
 
-            bool checkForZero = control is DataEntryCounter;
+            bool checkCounter = control is DataEntryCounter;
+            bool checkFlag = control is DataEntryFlag;
             int nearestRowWithCopyableValue = -1;
             for (int fileIndex = this.ImageCache.CurrentRow - 1; fileIndex >= 0; fileIndex--)
             {
@@ -598,7 +599,12 @@ namespace Timelapse.Controls
                 string valueToCopy = this.FileDatabase.FileTable[fileIndex].GetValueDatabaseString(control.DataLabel);
                 if (String.IsNullOrWhiteSpace(valueToCopy) == false)
                 {
-                    if ((checkForZero && !valueToCopy.Equals("0")) || !checkForZero)
+                    // for flags, we skip over falses
+                    // for counters, we skip over 0
+                    // for all others, any value will work as long as its not null or white space
+                    if ( (checkFlag && !valueToCopy.Equals("false")) ||
+                         (checkCounter && !valueToCopy.Equals("0")) || 
+                         (!checkCounter && !checkFlag))
                     {
                         nearestRowWithCopyableValue = fileIndex;    // We found a non-empty value
                         break;

@@ -45,7 +45,7 @@ namespace Timelapse.Controls
 
         public bool IsSelected
         {
-            get { return this.LabelControl.IsChecked.HasValue ? (bool)this.LabelControl.IsChecked : false; }
+            get { return this.LabelControl.IsChecked.HasValue && (bool)this.LabelControl.IsChecked; }
         }
 
         // Holds the DataLabel of the previously clicked counter control across all counters
