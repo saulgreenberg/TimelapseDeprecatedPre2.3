@@ -30,8 +30,8 @@ using System.Windows;
                                               // app, or any theme specific resource dictionaries)
 )]
 
-[assembly: AssemblyVersion("2.2.3.6")]
-[assembly: AssemblyFileVersion("2.2.3.6")]
+[assembly: AssemblyVersion("2.2.3.7")]
+[assembly: AssemblyFileVersion("2.2.3.7")]
 
 [assembly: InternalsVisibleTo("Timelapse2.UnitTests")]
 [assembly: NeutralResourcesLanguage("en-US")]
