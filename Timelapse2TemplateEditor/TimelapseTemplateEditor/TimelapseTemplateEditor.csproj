@@ -235,11 +235,11 @@
     <Resource Include="Icons\TemplateEditor.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\wpftoolkit-master3.7.0-Modified\wpftoolkit-master\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.AvalonDock\Xceed.Wpf.AvalonDock.csproj">
+    <ProjectReference Include="..\..\..\wpftoolkit-4.0.1-Modified\wpftoolkit-4.0.1\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.AvalonDock\Xceed.Wpf.AvalonDock.csproj">
       <Project>{db81988f-e0f2-45a0-a1fd-8c37f3d35244}</Project>
       <Name>Xceed.Wpf.AvalonDock</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\wpftoolkit-master3.7.0-Modified\wpftoolkit-master\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.Toolkit\Xceed.Wpf.Toolkit.csproj">
+    <ProjectReference Include="..\..\..\wpftoolkit-4.0.1-Modified\wpftoolkit-4.0.1\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.Toolkit\Xceed.Wpf.Toolkit.csproj">
       <Project>{72e591d6-8f83-4d8c-8f67-9c325e623234}</Project>
       <Name>Xceed.Wpf.Toolkit</Name>
     </ProjectReference>
