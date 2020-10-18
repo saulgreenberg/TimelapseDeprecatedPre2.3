@@ -11,7 +11,7 @@ Timelapse also includes various 3rd party software. Each specifies their license
 
 <B>Disclaimer</B>Timelapse is provided for free, for use by the community as described above. This software is provided 'as is'. Any express or implied warrantie and fitness for a particular purpose are disclaimed. In no event shall the owner and/or contributors to Timelapse's development  be liable for any direct or indirect damages or expenses in any way. 
 
-### 3rd party software included in Timelapse, their web site, and license terms
+### 3rd party software included in Timelapse, their web site and their particular license terms
 For each, I indicate generally what the license allows. However, visit the license terms (as indicated in the links below) to read details.
 Generally, all packages allow non-commerical use. While some allow commercial use, others require a commercial license. It is up to you to ensure that you satisfy the license terms, especially if you plan to use Timelapse for commercial purposes or for resale. Contact Saul Greenberg if you have any questions saul@ucalgary.ca.
 * Extended WPF Toolkit (xceed.org: Community License (Non-commerical use, but commercial license availablea). See https://github.com/xceedsoftware/wpftoolkit/blob/master/license.md)  
