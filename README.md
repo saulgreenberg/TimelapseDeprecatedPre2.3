@@ -49,6 +49,6 @@ Also helpful are
 ### Dependencies
 * Timelapse and the template editor require .NET 4.5 or newer.
 * Timelapse and the template editor are tested on Windows 10 and - as far as we know - should run without issue on earlier versions of Windows. End users will need to [install .NET 4.5 or newer](https://msdn.microsoft.com/en-us/library/bb822049.aspx) if it's not already present. However, expect some performance degradation on really old machiines or Windows versions, as they are less able to handle rapid display of large images.
-* Timelapse uses various packages (normally dlls available via NuGet) as well as [EXIFTool vy Phil Harvey] (https://exiftool.org/)
+* Timelapse uses various packages (including dlls available via NuGet). See License terms for a list of packages and their particular license terms.s
 * Screen size of 1600 x 900 or larger is preferred, although it is usable on smaller displays.
 
