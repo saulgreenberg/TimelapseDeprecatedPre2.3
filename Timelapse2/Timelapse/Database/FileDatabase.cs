@@ -30,8 +30,8 @@ namespace Timelapse.Database
 
         // These two dictionaries mirror the contents of the detectionCategory and classificationCategory database table
         // for faster access
-        private Dictionary<string, string> detectionCategoriesDictionary = null;
-        private Dictionary<string, string> classificationCategoriesDictionary = null;
+        private Dictionary<string, string> detectionCategoriesDictionary;
+        private Dictionary<string, string> classificationCategoriesDictionary;
         private DataTable detectionDataTable; // Mirrors the database detection table
         private DataTable classificationsDataTable; // Mirrors the database classification table
         #endregion
@@ -672,6 +672,11 @@ namespace Timelapse.Database
         // ...
         public void AddFiles(List<ImageRow> files, Action<ImageRow, int> onFileAdded)
         {
+            if (files == null)
+            {
+                // Nothing to do
+                return;
+            }
             int rowNumber = 0;
             StringBuilder queryColumns = new StringBuilder(Sql.InsertInto + Constant.DBTables.FileData + Sql.OpenParenthesis); // INSERT INTO DataTable (
 
@@ -1306,6 +1311,8 @@ namespace Timelapse.Database
         // Note that it does NOT update the dataTable - this has to be done outside of this routine by regenerating the datatables with whatever selection is being used..
         public void UpdateAdjustedFileTimes(Func<string, int, int, DateTimeOffset, DateTimeOffset> adjustment, int startRow, int endRow, CancellationToken token)
         {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(adjustment, nameof(adjustment));
 
             if (this.IsFileRowInRange(startRow) == false)
             {
@@ -2305,7 +2312,7 @@ namespace Timelapse.Database
             }
         }
         // See if detections exist in this instance. We test once, and then save the state (unless forceQuery is true)
-        private bool? detectionExists = null;
+        private bool? detectionExists;
         /// <summary>
         /// Return if a non-empty detections table exists. If forceQuery is true, then we always do this via an SQL query vs. refering to previous checks
         /// </summary>

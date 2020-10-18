@@ -9,7 +9,7 @@ namespace Timelapse.Dialog
     public partial class DeleteDeleteFolder : Window
     {
         #region Private Variables
-        private readonly int howManyDeleteFiles = 0;
+        private readonly int howManyDeleteFiles;
         #endregion
 
         #region Constructor, Loaded

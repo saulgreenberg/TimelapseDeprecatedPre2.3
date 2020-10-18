@@ -22,7 +22,7 @@ namespace Timelapse.Dialog
         private readonly List<AmbiguousDateRange> ambiguousDatesList; // Will contain a list of all initial images containing ambiguous dates and their state
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false;
+        private bool IsAnyDataUpdated;
         #endregion
 
         #region Constructor and Loaded
@@ -94,7 +94,7 @@ namespace Timelapse.Dialog
                 this.ambiguousDatesList.Add(new AmbiguousDateRange(start, end, count, false));
                 start = this.SearchForNextAmbiguousDateInSelectedImageSet(end + 1);
             }
-            return (this.ambiguousDatesList.Count > 0) ? true : false;
+            return (this.ambiguousDatesList.Count > 0);
         }
 
         // Starting from the index, navigate successive image rows until an ambiguous date is found

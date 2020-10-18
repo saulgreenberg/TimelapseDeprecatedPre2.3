@@ -367,7 +367,7 @@ namespace Timelapse.Editor
             {
                 if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
-                    this.MenuViewShowUTCDateTimeSettingsMenuItem.IsEnabled = control.Visible ? false : true;
+                    this.MenuViewShowUTCDateTimeSettingsMenuItem.IsEnabled = !control.Visible;
                     break;
                 }
             }
@@ -405,7 +405,7 @@ namespace Timelapse.Editor
                 // Confirm Showing UTC Date/Time Settings
                 mi.IsChecked = EditorDialogs.EditorConfirmShowingUTCDateTimeDialog(this) == true;
             }
-            this.userSettings.ShowUtcOffset = mi.IsChecked ? true : false;
+            this.userSettings.ShowUtcOffset = mi.IsChecked;
             this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
         }
@@ -798,7 +798,7 @@ namespace Timelapse.Editor
             }
         }
 
-        private bool manualCommitEdit = false;
+        private bool manualCommitEdit;
         // After editing is complete, validate the data labels, default values, and widths as needed.
         // Also commit the edit, which will raise the RowChanged event
         private void TemplateDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
@@ -830,7 +830,7 @@ namespace Timelapse.Editor
                     this.ValidateDefaults(e, editedRow);
                     break;
                 case EditorConstant.ColumnHeader.Width:
-                    this.ValidateWidths(e, editedRow);
+                    ValidateWidths(e, editedRow);
                     break;
                 default:
                     // no restrictions on any of the other editable columns
@@ -1117,7 +1117,7 @@ namespace Timelapse.Editor
         }
 
         // Validation of Widths: if a control's width is empty, reset it to its corresponding default width
-        private void ValidateWidths(DataGridCellEditEndingEventArgs e, DataGridRow currentRow)
+        private static void ValidateWidths(DataGridCellEditEndingEventArgs e, DataGridRow currentRow)
         {
             TextBox textBox = e.EditingElement as TextBox;
             if (!String.IsNullOrWhiteSpace(textBox.Text))

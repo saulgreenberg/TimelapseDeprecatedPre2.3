@@ -641,6 +641,10 @@ namespace Timelapse.Database
         /// <summary>Given a data label, get the corresponding data entry control</summary>
         public ControlRow GetControlFromTemplateTable(string dataLabel)
         {
+            if (dataLabel == null)
+            {
+                return null;
+            }
             foreach (ControlRow control in this.Controls)
             {
                 if (dataLabel.Equals(control.DataLabel))

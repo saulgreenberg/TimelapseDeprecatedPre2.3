@@ -49,7 +49,7 @@ namespace Timelapse.Controls
                         break;
                     default:
                         this.lblIconType.Content = "?";
-                        this.Icon = MessageBoxImage.Question; // Show a reasonable default in the unlikely case this happens
+                        this.iconType = MessageBoxImage.Question; // Show a reasonable default in the unlikely case this happens
                         TracePrint.PrintMessage(String.Format("Unhandled icon type {0}.", this.Icon));
                         break;
                 }

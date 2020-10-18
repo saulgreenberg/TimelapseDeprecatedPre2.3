@@ -54,12 +54,12 @@ namespace Timelapse.ImageSetLoadingPipeline
         #endregion
 
         #region Private Variables
-        private int imagesLoaded = 0;
-        private int imagesToInsert = 0;
+        private int imagesLoaded;
+        private int imagesToInsert;
 
-        private readonly Task pass1 = null;
+        private readonly Task pass1;
 
-        private readonly Task pass2 = null;
+        private readonly Task pass2;
         #endregion
 
         #region Construtor

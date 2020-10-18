@@ -19,7 +19,7 @@ namespace Timelapse.Dialog
         #region Private Variables
         private readonly string actionAdd = "Add";
         private readonly string actionDelete = "Delete";
-        private bool dontClose = false;
+        private bool dontClose;
 
         private readonly Dictionary<string, Dictionary<string, string>> inImageOnly = new Dictionary<string, Dictionary<string, string>>();
         private readonly Dictionary<string, Dictionary<string, string>> inTemplateOnly = new Dictionary<string, Dictionary<string, string>>();
@@ -411,7 +411,7 @@ namespace Timelapse.Dialog
         {
             RadioButton rb = o as RadioButton;
             ComboBox cb = rb.Tag as ComboBox;
-            cb.IsEnabled = (rb.IsChecked == true) ? true : false;
+            cb.IsEnabled = (rb.IsChecked == true);
             this.ShowHideItemsAsNeeded();
         }
 

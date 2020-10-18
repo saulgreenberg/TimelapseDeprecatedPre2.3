@@ -602,8 +602,8 @@ namespace Timelapse.Controls
                     // for flags, we skip over falses
                     // for counters, we skip over 0
                     // for all others, any value will work as long as its not null or white space
-                    if ( (checkFlag && !valueToCopy.Equals("false")) ||
-                         (checkCounter && !valueToCopy.Equals("0")) || 
+                    if ((checkFlag && !valueToCopy.Equals("false")) ||
+                         (checkCounter && !valueToCopy.Equals("0")) ||
                          (!checkCounter && !checkFlag))
                     {
                         nearestRowWithCopyableValue = fileIndex;    // We found a non-empty value

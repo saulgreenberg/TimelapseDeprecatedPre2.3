@@ -570,7 +570,7 @@ namespace Timelapse
                 {
                     // Only a single image is displayed: update the database for the current row with the control's value
                     this.DataHandler.FileDatabase.UpdateFile(this.DataHandler.ImageCache.Current.ID, control.DataLabel, imageDatabaseControl.DefaultValue);
-                    System.Diagnostics.Debug.Print(control.DataLabel + ":" + control.Content + ":" + imageDatabaseControl.DefaultValue);
+                    // System.Diagnostics.Debug.Print(control.DataLabel + ":" + control.Content + ":" + imageDatabaseControl.DefaultValue);
                 }
                 else
                 {

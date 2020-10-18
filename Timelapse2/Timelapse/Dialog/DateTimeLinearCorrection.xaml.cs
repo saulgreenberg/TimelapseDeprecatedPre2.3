@@ -23,7 +23,7 @@ namespace Timelapse
         private readonly FileDatabase fileDatabase;
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false;
+        private bool IsAnyDataUpdated;
 
         private DateTimeOffset latestImageDateTime;
         private DateTimeOffset earliestImageDateTime;
@@ -270,7 +270,7 @@ namespace Timelapse
 
             // Enable the Ok button only if the latest time has actually changed from its original version
             TimeSpan newestImageAdjustment = newDateTime - this.latestImageDateTime;
-            this.StartDoneButton.IsEnabled = (newestImageAdjustment == TimeSpan.Zero) ? false : true;
+            this.StartDoneButton.IsEnabled = newestImageAdjustment != TimeSpan.Zero;
         }
 
         // Mitigates a bug where ValueChanged is not triggered when the date/time is changed

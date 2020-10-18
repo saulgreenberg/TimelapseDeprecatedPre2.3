@@ -24,7 +24,7 @@ namespace Timelapse.Images
 
         #region Private variables
         // State information - whether the current image is being processed
-        private bool Processing = false;
+        private bool Processing;
 
         // When started, the timer tries to updates image processing to ensure that the last image processing values are applied
         private readonly DispatcherTimer timerImageProcessingUpdate = new DispatcherTimer();
@@ -38,11 +38,11 @@ namespace Timelapse.Images
         private float gammaValue;
 
         // We track the last parameters used, as if they haven't changed we won't update the image
-        private int lastContrast = 0;
-        private int lastBrightness = 0;
-        private bool lastDetectEdges = false;
-        private bool lastSharpen = false;
-        private bool lastUseGamma = false;
+        private int lastContrast;
+        private int lastBrightness;
+        private bool lastDetectEdges;
+        private bool lastSharpen;
+        private bool lastUseGamma;
         private float lastGammaValue = 1;
         #endregion
 

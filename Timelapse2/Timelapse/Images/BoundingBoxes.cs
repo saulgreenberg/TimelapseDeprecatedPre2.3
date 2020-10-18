@@ -249,7 +249,7 @@ namespace Timelapse.Images
                 if (e.AddedItems.Count == 1)
                 {
                     cb.SelectedItem = e.AddedItems[0];
-                    System.Diagnostics.Debug.Print(e.AddedItems[0].ToString());
+                    // System.Diagnostics.Debug.Print(e.AddedItems[0].ToString());
                 }
             }
         }

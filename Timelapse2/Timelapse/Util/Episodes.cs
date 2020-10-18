@@ -24,7 +24,7 @@ namespace Timelapse
         /// <summary>
         /// Whether or not Episodes should be displayed
         /// </summary>
-        public static bool ShowEpisodes { get; set; } = false;
+        public static bool ShowEpisodes { get; set; }
 
         /// <summary>
         /// The Time threshold between successive images that determine whether they belong together in an episode

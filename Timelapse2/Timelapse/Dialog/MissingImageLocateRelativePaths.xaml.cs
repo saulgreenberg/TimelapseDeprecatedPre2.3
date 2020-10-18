@@ -73,7 +73,7 @@ namespace Timelapse.Dialog
             int i = 0;
             foreach (KeyValuePair<string, List<string>> candidate in candidates)
             {
-                this.observableCollection.Add(new Tuple<string, string, bool>(Path.Combine(candidate.Key, fileName), candidate.Value.Count.ToString(), i++ == 0 ? true : false));
+                this.observableCollection.Add(new Tuple<string, string, bool>(Path.Combine(candidate.Key, fileName), candidate.Value.Count.ToString(), i++ == 0));
             }
             this.DataGrid.ItemsSource = observableCollection;
         }
@@ -212,7 +212,7 @@ namespace Timelapse.Dialog
 
         #region Styles
         // A ColumnHeader style that appears (more or less) empty
-        private Style CreateEmptyHeaderStyle()
+        private static Style CreateEmptyHeaderStyle()
         {
             // Its way more compact to use the xaml approach rather than to declare styles, setters, etc.
             // But we have to ensure the expression is well formed.

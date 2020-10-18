@@ -45,7 +45,7 @@ namespace Timelapse.Dialog
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
         }
 
-        private void PreviewDateTimeChanges()
+        private static void PreviewDateTimeChanges()
         {
             // SAULXXX MODIFIED this.TimeZoneUpdateFeedback.AddFeedbackRow, SO NEED TO REWRITE IF WE EVER USE THIS METHOD AGAIN
             // CURRENTLY COMMENTED OUT JUST TO AVOID MESSAGE WARNINGS ABOUT UNUSED PARAMETERS
@@ -95,7 +95,7 @@ namespace Timelapse.Dialog
             // 1st click: Show the preview before actually making any changes.
             if (this.displayingPreview == false)
             {
-                this.PreviewDateTimeChanges();
+                PreviewDateTimeChanges();
                 this.displayingPreview = true;
                 this.ChangesButton.Content = "_Apply Changes";
                 return;

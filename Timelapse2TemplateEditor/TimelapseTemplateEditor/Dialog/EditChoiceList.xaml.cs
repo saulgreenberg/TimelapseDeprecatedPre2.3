@@ -54,7 +54,7 @@ namespace Timelapse.Editor.Dialog
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            this.ChoiceList.Text = this.TrimLinesAndRemoveEmptyLines(this.ChoiceList.Text);
+            this.ChoiceList.Text = TrimLinesAndRemoveEmptyLines(this.ChoiceList.Text);
 
             if (this.IncludeEmptyChoiceCheckBox.IsChecked == true && this.ChoiceList.Text.Length != 0)
             {
@@ -74,7 +74,7 @@ namespace Timelapse.Editor.Dialog
         }
 
         // Transform the list by trimming leading and trailing white space for each line, removing empty lines, and removing duplicate items
-        private string TrimLinesAndRemoveEmptyLines(string textlist)
+        private static string TrimLinesAndRemoveEmptyLines(string textlist)
         {
             List<string> trimmedchoices = new List<string>();
             string trimmedchoice;

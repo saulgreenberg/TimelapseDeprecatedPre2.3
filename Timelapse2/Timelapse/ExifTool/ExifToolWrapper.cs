@@ -76,14 +76,14 @@ namespace Timelapse.ExifTool
 
         public bool Resurrect { get; set; } = true;
 
-        private bool _stopRequested = false;
+        private bool _stopRequested;
 
-        private int _cmdCnt = 0;
+        private int _cmdCnt;
         private readonly StringBuilder _output = new StringBuilder();
         private readonly StringBuilder _error = new StringBuilder();
 
         private readonly ProcessStartInfo _psi;
-        private Process _proc = null;
+        private Process _proc;
 
         private readonly ManualResetEvent _waitHandle = new ManualResetEvent(true);
         private readonly ManualResetEvent _waitForErrorHandle = new ManualResetEvent(true);

@@ -105,7 +105,7 @@ namespace Timelapse.Database
         #region Select
         public DataTable GetDataTableFromSelect(string query)
         {
-            System.Diagnostics.Debug.Print("GetDataTableFromSelect: " + query);
+            //System.Diagnostics.Debug.Print("GetDataTableFromSelect: " + query);
             DataTable dataTable = new DataTable();
             try
             {
@@ -170,7 +170,7 @@ namespace Timelapse.Database
                     {
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                         command.CommandText = query;
-                        System.Diagnostics.Debug.Print("Count: " + query);
+                        //System.Diagnostics.Debug.Print("Count: " + query);
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                         return command.ExecuteScalar();
                     }

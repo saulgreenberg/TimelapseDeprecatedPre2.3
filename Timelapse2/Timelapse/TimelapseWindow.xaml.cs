@@ -51,16 +51,16 @@ namespace Timelapse
 
         #region Private Variables
         private bool disposed;
-        private bool excludeDateTimeAndUTCOffsetWhenExporting = false;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
-        private List<MarkersForCounter> markersOnCurrentFile = null;   // Holds a list of all markers for each counter on the current file
+        private bool excludeDateTimeAndUTCOffsetWhenExporting;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
+        private List<MarkersForCounter> markersOnCurrentFile;   // Holds a list of all markers for each counter on the current file
 
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
 
         private TemplateDatabase templateDatabase;                      // The database that holds the template
-        private IInputElement lastControlWithFocus = null;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
+        private IInputElement lastControlWithFocus;              // The last control (data, copyprevious button, or FileNavigatorSlider) that had the focus, so we can reset it
 
         private List<QuickPasteEntry> quickPasteEntries;              // 0 or more custum paste entries that can be created or edited by the user
-        private QuickPasteWindow quickPasteWindow = null;
+        private QuickPasteWindow quickPasteWindow;
 
         private ImageAdjuster ImageAdjuster;    // The image adjuster controls
 

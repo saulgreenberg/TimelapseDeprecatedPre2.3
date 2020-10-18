@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Timelapse.Controls"
         xmlns:local="clr-namespace:Timelapse"
-        Title="About Timelapse" Height="590" Width="750"
+        Title="About Timelapse" Height="640" Width="750"
 		ResizeMode="NoResize"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
@@ -49,12 +49,15 @@
                 <Hyperlink Name="NavigateCreativeCommonLicense" RequestNavigate="Hyperlink_RequestNavigate">
                     Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International license.
                  </Hyperlink>
+                <LineBreak/>
+                <Run Text="Timelapse also depends on 3rd party software (see below), which may have different license terms. Generally, they allow non-commercial use"/>
                  <LineBreak/>
                  <LineBreak/>
-                 <Run Text="Additional details on its terms of use can be found"/>
+                 <Run Text="Specific details on its terms of use can be found"/>
                 <Hyperlink Name="NavigateAdditionalLicenseDetails" RequestNavigate="Hyperlink_RequestNavigate">
-                    here
+                    here.
                  </Hyperlink>
+                
             </TextBlock>
 
             <TextBlock HorizontalAlignment="Left" Margin="10,10,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap" FontSize="14" >
@@ -77,7 +80,7 @@
                 <Run Text="Timelapse incorporates 3rd party software under their license terms. We thank their developers."/>
             </TextBlock>
             <TextBlock FontSize="11" FontStyle="Italic" HorizontalAlignment="Left" Margin="70,0,10,0"  VerticalAlignment="Top" DataContext="{Binding}" TextWrapping="Wrap" >      
-                <Run Text="Extended WPF Toolkit (xceed.org)  &#x2022;  ExifToolWrapper (brain2cpu.com) &#x2022; ExifTool (Phil Harvey)"/>
+                <Run Text="Extended WPF Toolkit (xceed.org: Community License)  &#x2022;  ExifToolWrapper (brain2cpu.com) &#x2022; ExifTool (Phil Harvey)"/>
                  <LineBreak/>
                 <Run Text="ImageProcessor (James South) &#x2022; MetadataExtractor+XMPCore (Drew Noakes)  &#x2022;  Newtonsoft (Json.net)"/>
                 <LineBreak/> 

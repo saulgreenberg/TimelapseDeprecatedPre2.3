@@ -22,7 +22,7 @@ namespace Timelapse.Dialog
         private readonly FileTableEnumerator fileEnumerator;
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false;
+        private bool IsAnyDataUpdated;
         #endregion
 
         #region Constructor, Loaded, AutoGeneration, and Closing

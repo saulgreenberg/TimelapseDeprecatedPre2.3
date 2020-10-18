@@ -33,9 +33,9 @@ namespace Timelapse.Dialog
         private const int SearchCriteriaColumn = 4;
 
         // Detections variables
-        private bool dontInvoke = false;
+        private bool dontInvoke;
         private bool dontCount;
-        private bool dontUpdateRangeSlider = false;
+        private bool dontUpdateRangeSlider;
 
         // Variables
         private readonly FileDatabase database;
@@ -847,7 +847,7 @@ namespace Timelapse.Dialog
 
         // Note that for either of these, we avoid a race condition where each tries to update the other by
         // setting this.ignoreSpinnerUpdates to true, which will cancel the operation
-        private bool ignoreSpinnerUpdates = false;
+        private bool ignoreSpinnerUpdates;
         private void DetectionConfidenceSpinnerLower_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (this.IsLoaded == false || this.ignoreSpinnerUpdates)

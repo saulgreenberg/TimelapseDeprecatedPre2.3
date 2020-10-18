@@ -188,9 +188,9 @@ namespace Timelapse.Images
 
         // mouse click timing and state used to determine  double from single clicks
         private DateTime mouseDoubleClickTime;
-        private bool isDoubleClick = false;
-        private bool isPanning = false;
-        private bool displayingImage = false;
+        private bool isDoubleClick;
+        private bool isPanning;
+        private bool displayingImage;
 
         private readonly OffsetLens OffsetLens = new OffsetLens();
         #endregion

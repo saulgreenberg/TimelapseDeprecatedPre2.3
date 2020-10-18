@@ -286,7 +286,7 @@ namespace Timelapse
             // Hide the Busy indicator
             this.BusyCancelIndicator.IsBusy = false;
 
-            string details = this.ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
+            string details = ComposeFolderDetails(foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth);
             if (result == false)
             {
                 // No matching folders in the DB and the detector
@@ -305,7 +305,7 @@ namespace Timelapse
         }
 
         // Return a string that will be included in the message box invoked above that details the match (or mismatch) between the image set folder and recognition data folders
-        private string ComposeFolderDetails(List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
+        private static string ComposeFolderDetails(List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
         {
             string folderDetails = String.Empty;
             if (foldersInDBListButNotInJSon.Count == 0 && foldersInJsonButNotInDB.Count == 0)

@@ -15,15 +15,15 @@ namespace Timelapse.Dialog
     {
         #region Private variables
         // Store the various parameters that indicate how the image should be adjusted
-        private int Contrast = 0;
-        private int Brightness = 0;
-        private bool DetectEdges = false;
-        private bool Sharpen = false;
-        private bool UseGamma = false;
+        private int Contrast;
+        private int Brightness;
+        private bool DetectEdges;
+        private bool Sharpen;
+        private bool UseGamma;
         private float GammaValue = 1;
 
         // State information
-        private bool AbortUpdate = false;
+        private bool AbortUpdate;
         #endregion
 
         #region Consructor, Loading and Closing

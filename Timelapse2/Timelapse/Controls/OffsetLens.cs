@@ -152,7 +152,7 @@ namespace Timelapse.Controls
             this.Direction = direction;
         }
 
-        private LinearGradientBrush MakeOutlineBrush()
+        private static LinearGradientBrush MakeOutlineBrush()
         {
             LinearGradientBrush outlineBrush = new LinearGradientBrush
             {
@@ -216,7 +216,7 @@ namespace Timelapse.Controls
             drawingContext.DrawLine(crosshairPen, centerTop, centerBottom);
         }
 
-        private Point PointSubtract(Point p1, Point p2)
+        private static Point PointSubtract(Point p1, Point p2)
         {
             return new Point(p1.X - p2.X, p1.Y - p2.Y);
         }

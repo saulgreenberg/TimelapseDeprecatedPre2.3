@@ -67,7 +67,7 @@ namespace Timelapse.Controls
                 return Level > 0;
             }
         }
-        public bool IsAtMinimum { get; private set; } = false;
+        public bool IsAtMinimum { get; private set; }
         #endregion
 
         #region Private variables
@@ -75,13 +75,13 @@ namespace Timelapse.Controls
 
         // Track states between mouse down / move and up 
         private RowColumn cellChosenOnMouseDown;
-        private bool modifierKeyPressedOnMouseDown = false;
+        private bool modifierKeyPressedOnMouseDown;
         private RowColumn cellWithLastMouseOver = new RowColumn(-1, -1);
         private List<ThumbnailInCell> thumbnailsAlreadyInGrid = new List<ThumbnailInCell>();
-        private double oldGridWidth = 0;
-        private double oldGridHeight = 0;
-        private int oldCellHeight = 0;
-        private int Level = 0; // 0 Grid not active, 1 to max progressively zooms out
+        private double oldGridWidth;
+        private double oldGridHeight;
+        private int oldCellHeight;
+        private int Level; // 0 Grid not active, 1 to max progressively zooms out
         #endregion
 
         #region Constructor
@@ -1087,10 +1087,10 @@ namespace Timelapse.Controls
     // Used by ReportProgress to pass specific values to Progress Changed as a parameter 
     internal class LoadImageProgressStatus
     {
-        public ThumbnailInCell ThumbnailInCell { get; set; } = null;
-        public BitmapSource BitmapSource { get; set; } = null;
-        public int GridIndex { get; set; } = 0;
-        public double CellWidth { get; set; } = 0;
+        public ThumbnailInCell ThumbnailInCell { get; set; }
+        public BitmapSource BitmapSource { get; set; }
+        public int GridIndex { get; set; }
+        public double CellWidth { get; set; }
         public int FileTableIndex { get; set; }
         public DateTime DateTimeLipInvoked { get; set; }
         public LoadImageProgressStatus() { }

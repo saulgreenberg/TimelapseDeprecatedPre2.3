@@ -150,7 +150,7 @@ namespace Timelapse.Dialog
                         {
                             // if the likely location is empty, ensure that the Use flag is unchecked as there is no folder to replace it with. Otherwise automatically check it
                             isLikelyLocationAvailable = false == String.IsNullOrWhiteSpace(newLocation);
-                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, newLocation, isLikelyLocationAvailable ? true : false));
+                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, newLocation, isLikelyLocationAvailable));
                         }
                     }
                     this.observableCollection = obsCollection;
@@ -174,7 +174,7 @@ namespace Timelapse.Dialog
                         {
                             // if the likely location is empty, ensure that the Use flag is unchecked as there is no folder to replace it with. Otherwise keep its state
                             isLikelyLocationAvailable = false == String.IsNullOrWhiteSpace(rowValues.Item3);
-                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, rowValues.Item3, isLikelyLocationAvailable ? !rowValues.Item4 : false));
+                            obsCollection.Add(new Tuple<string, string, string, bool>(rowValues.Item1, rowValues.Item2, rowValues.Item3, isLikelyLocationAvailable && !rowValues.Item4));
                         }
                     }
                     this.observableCollection = obsCollection;
@@ -217,7 +217,7 @@ namespace Timelapse.Dialog
 
         #region Styles
         // A ColumnHeader style that appears (more or less) empty
-        private Style CreateEmptyHeaderStyle()
+        private static Style CreateEmptyHeaderStyle()
         {
             Style headerStyle = new Style
             {

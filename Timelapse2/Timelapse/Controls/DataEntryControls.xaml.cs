@@ -17,7 +17,7 @@ namespace Timelapse.Controls
         public List<DataEntryControl> Controls { get; private set; }
         public Dictionary<string, DataEntryControl> ControlsByDataLabel { get; private set; }
 
-        private DataEntryHandler dataEntryHandler = null;
+        private DataEntryHandler dataEntryHandler;
         #endregion
 
         #region Constructor

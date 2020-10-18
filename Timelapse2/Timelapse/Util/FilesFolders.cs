@@ -328,7 +328,7 @@ namespace Timelapse.Util
                 FilesRemoveAllButImagesAndVideos(fileInfoList);
                 if (fileInfoList.Count != 0)
                 {
-                    fileInfoList.OrderBy(file => file.FullName).ToList();
+                    fileInfoList = fileInfoList.OrderBy(file => file.FullName).ToList();
                 }
             }
         }

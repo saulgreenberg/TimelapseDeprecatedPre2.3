@@ -329,7 +329,7 @@ namespace Timelapse.Dialog
 
         #region Styles
         // A ColumnHeader style that appears (more or less) empty
-        private Style CreateEmptyHeaderStyle()
+        private static Style CreateEmptyHeaderStyle()
         {
             Style headerStyle = new Style
             {

@@ -41,10 +41,10 @@ namespace Timelapse.Dialog
 
         private bool isColor;
 
-        private bool displatcherTimerIsPlaying = false;
+        private bool displatcherTimerIsPlaying;
 
         // Tracks whether any changes to the data or database are made
-        private bool IsAnyDataUpdated = false;
+        private bool IsAnyDataUpdated;
         #endregion
 
         #region Initialization

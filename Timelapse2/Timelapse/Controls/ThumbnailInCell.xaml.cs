@@ -31,13 +31,13 @@ namespace Timelapse.Controls
 
         public int Row { get; set; }
         public int Column { get; set; }
-        public int GridIndex { get; set; } = 0;
+        public int GridIndex { get; set; }
         public int FileTableIndex { get; set; }
         public ImageRow ImageRow { get; set; }
         public double CellHeight { get; private set; }
         public double CellWidth { get; private set; }
         public DateTime DateTimeLastBitmapWasSet { get; set; }
-        public bool IsBitmapSet { get; private set; } = false;
+        public bool IsBitmapSet { get; private set; }
 
         // bounding boxes for detection
         private BoundingBoxes boundingBoxes;
@@ -57,7 +57,7 @@ namespace Timelapse.Controls
         }
 
         // Whether the Checkbox is checked i.e., the ThumbnailInCell is selected
-        private bool isSelected = false;
+        private bool isSelected;
         public bool IsSelected
         {
             get

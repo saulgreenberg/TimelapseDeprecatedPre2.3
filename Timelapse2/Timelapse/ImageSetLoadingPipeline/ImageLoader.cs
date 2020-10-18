@@ -36,7 +36,7 @@ namespace Timelapse.ImageSetLoadingPipeline
             private set;
         }
 
-        private BitmapSource bitmapSource = null;
+        private BitmapSource bitmapSource;
         public BitmapSource BitmapSource
         {
             get
