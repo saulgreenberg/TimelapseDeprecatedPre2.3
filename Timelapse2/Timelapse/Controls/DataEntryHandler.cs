@@ -187,7 +187,15 @@ namespace Timelapse.Controls
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
             // Start with an empty clipboard
-            Clipboard.SetText(String.Empty);
+            // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
+            try
+            { 
+                Clipboard.SetText(String.Empty);
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print("Error in setting text in clipboard (see SetContextMenuCallbacks in DataEntryHandler");
+            }
 
             MenuItem menuItemPropagateFromLastValue = new MenuItem()
             {
@@ -438,7 +446,16 @@ namespace Timelapse.Controls
             {
                 return;
             }
-            Clipboard.SetText(control.Content);
+\
+            // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
+            try
+            {
+                Clipboard.SetText(control.Content);
+            }
+            catch
+            {
+                System.Diagnostics.Debug.Print("Error in setting text in clipboard (see MenuItemCopyToClipboard_Click in DataEntryHandler");
+            }
         }
 
         // Paste the contents of the clipboard into the current or selected controls
@@ -499,7 +516,17 @@ namespace Timelapse.Controls
             // - the clipboard is not empty or white space, 
             // - the string matches the contents expected by the control's type
             // - we are not in the overview with different contents selected (i.e., ellipsis is showing)
-            string clipboardText = Clipboard.GetText().Trim();
+            // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
+            string clipboardText;
+            try
+            {
+                clipboardText = Clipboard.GetText().Trim();
+            }
+            catch
+            {
+                clipboardText = String.Empty;
+                System.Diagnostics.Debug.Print("Error in setting text in clipboard (see Container_PreviewMouseRightButtonDown in DataEntryHandler");
+            }
             if (String.IsNullOrEmpty(clipboardText))
             {
                 menuItemPasteFromClipboard.IsEnabled = false;

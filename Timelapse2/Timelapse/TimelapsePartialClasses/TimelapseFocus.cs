@@ -75,10 +75,10 @@ namespace Timelapse
             // If the text box or combobox has the focus, we usually don't want to reset the focus. 
             // However, there are a few instances (e.g., after enter has been pressed) where we no longer want it 
             // to have the focus, so we allow for that via this flag.
-            if (checkForControlFocus && eventArgs is KeyEventArgs)
+            if (checkForControlFocus && eventArgs is KeyEventArgs args)
             {
                 // If we are in a data control, don't reset the focus.
-                if (this.SendKeyToDataEntryControlOrMenu((KeyEventArgs)eventArgs))
+                if (this.SendKeyToDataEntryControlOrMenu(args))
                 {
                     return;
                 }
