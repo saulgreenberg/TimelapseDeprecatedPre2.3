@@ -356,7 +356,8 @@ namespace Timelapse.Controls
             int filesAffected = currentRowIndex - indexToCopyFrom;
             if (Dialogs.DataEntryConfirmPropagateFromLastValueDialog(Application.Current.MainWindow, valueToCopy, filesAffected) != true)
             {
-                newContent = this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
+                return; // operation cancelled
+                // newContent = this.FileDatabase.FileTable[currentRowIndex].GetValueDisplayString(control.DataLabel); // No change, so return the current value
             }
 
             // Update the affected files. Note that we start on the row after the one with a value in it to the current row.
@@ -446,7 +447,7 @@ namespace Timelapse.Controls
             {
                 return;
             }
-\
+
             // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
             try
             {

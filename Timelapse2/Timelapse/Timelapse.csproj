@@ -188,6 +188,7 @@
     <Compile Include="Controls\ProgressBarArguments.cs" />
     <Compile Include="Controls\EpisodePopup.cs" />
     <Compile Include="Database\MergeDatabases.cs" />
+    <Compile Include="DataStructures\Arguments.cs" />
     <Compile Include="Detection\DetectionDatabases.cs" />
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />

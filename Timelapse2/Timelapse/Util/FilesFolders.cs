@@ -24,6 +24,56 @@ namespace Timelapse.Util
         }
 
         /// <summary>
+        /// Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
+        /// If prefixPath is provided, it is stripped from the beginning of the matching folder paths, otherwise the full path is returned
+        /// </summary>
+        /// <param name="folderRoot"></param>
+        /// <param name="folderPaths"></param>
+        public static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths, string prefixPath)
+        {
+            // Check the arguments for null 
+            if (folderPaths == null)
+            {
+                // this should not happen
+                TracePrint.PrintStackTrace(1);
+                // throw new ArgumentNullException(nameof(folderPaths));
+                // Not sure what happens if we have a null folderPaths, but we may as well try it.
+                return;
+            }
+
+            if (!Directory.Exists(folderRoot))
+            {
+                return;
+            }
+            // Add a folder only if it contains one of the desired extensions
+            if (CheckFolderForAtLeastOneImageOrVideoFiles(folderRoot) == true)
+            {
+                if (String.IsNullOrEmpty(prefixPath) == false)
+                {
+                    folderPaths.Add(folderRoot.Substring(prefixPath.Length + 1));
+                }
+                else
+                {
+                    folderPaths.Add(folderRoot);
+                }
+            }
+
+            // Recursively descend subfolders, collecting directory info on the way
+            // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
+            DirectoryInfo dirInfo = new DirectoryInfo(folderRoot);
+            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            foreach (DirectoryInfo subDir in subDirs)
+            {
+                // Skip the following folders
+                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
+                {
+                    continue;
+                }
+                GetAllFoldersContainingAnImageOrVideo(subDir.FullName, folderPaths, prefixPath);
+            }
+        }
+
+        /// <summary>
         /// Populate foundFiles with files matching the patternfound by recursively descending the startFolder path.
         /// </summary>
         public static List<string> GetAllFilesInFoldersAndSubfoldersMatchingPattern(string startFolder, string pattern, bool ignoreBackupFolder, bool ignoreDeletedFolder, List<string> foundFiles)
@@ -217,55 +267,7 @@ namespace Timelapse.Util
         #endregion
 
         #region Private (internal) methods
-        /// <summary>
-        /// Populate folderPaths with all the folders and subfolders (from the root folder) that contains at least one video or image file
-        /// If prefixPath is provided, it is stripped from the beginning of the matching folder paths, otherwise the full path is returned
-        /// </summary>
-        /// <param name="folderRoot"></param>
-        /// <param name="folderPaths"></param>
-        private static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths, string prefixPath)
-        {
-            // Check the arguments for null 
-            if (folderPaths == null)
-            {
-                // this should not happen
-                TracePrint.PrintStackTrace(1);
-                // throw new ArgumentNullException(nameof(folderPaths));
-                // Not sure what happens if we have a null folderPaths, but we may as well try it.
-                return;
-            }
 
-            if (!Directory.Exists(folderRoot))
-            {
-                return;
-            }
-            // Add a folder only if it contains one of the desired extensions
-            if (CheckFolderForAtLeastOneImageOrVideoFiles(folderRoot) == true)
-            {
-                if (String.IsNullOrEmpty(prefixPath) == false)
-                {
-                    folderPaths.Add(folderRoot.Substring(prefixPath.Length + 1));
-                }
-                else
-                {
-                    folderPaths.Add(folderRoot);
-                }
-            }
-
-            // Recursively descend subfolders, collecting directory info on the way
-            // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
-            DirectoryInfo dirInfo = new DirectoryInfo(folderRoot);
-            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
-            foreach (DirectoryInfo subDir in subDirs)
-            {
-                // Skip the following folders
-                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
-                {
-                    continue;
-                }
-                GetAllFoldersContainingAnImageOrVideo(subDir.FullName, folderPaths, prefixPath);
-            }
-        }
 
         // Remove, any files that 
         // - don't exactly match the desired image or video extension, 

@@ -70,6 +70,8 @@ namespace Timelapse
         // Timer used to AutoPlay images via MediaControl buttons
         private readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
         private readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
+
+        private DataStructures.Arguments Arguments;
         #endregion
 
         #region Main
@@ -77,6 +79,10 @@ namespace Timelapse
         {
             AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
             this.InitializeComponent();
+
+            // Get the command line arguments, if any
+            this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
+
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
@@ -144,7 +150,7 @@ namespace Timelapse
         #endregion
 
         #region Window Loading, Closing
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Abort if some of the required dependencies are missing
             if (Dependencies.AreRequiredBinariesPresent(Constant.VersionUpdates.ApplicationName, Assembly.GetExecutingAssembly()) == false)
@@ -192,6 +198,22 @@ namespace Timelapse
 
             this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
+
+            if (false == String.IsNullOrEmpty(this.Arguments.Template))
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                this.StatusBar.SetMessage("Loading images, please wait...");
+                await this.TryOpenTemplateAndBeginLoadFoldersAsync(this.Arguments.Template).ConfigureAwait(true);
+
+                if (false == String.IsNullOrEmpty(this.Arguments.RelativePath))
+                { 
+                    this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.Arguments.RelativePath);
+                   //  System.Windows.Forms.MessageBox.Show(this.Arguments.RelativePath);
+                    await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                }
+                this.StatusBar.SetMessage("Image set is now loaded.");
+                Mouse.OverrideCursor = null;
+            }
         }
 
 
