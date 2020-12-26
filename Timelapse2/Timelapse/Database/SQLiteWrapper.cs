@@ -116,6 +116,7 @@ namespace Timelapse.Database
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
                         command.CommandText = query;
+                        // System.Diagnostics.Debug.Print(query);
                         using (SQLiteDataReader reader = command.ExecuteReader())
                         {
                             dataTable.Columns.CollectionChanged += this.DataTableColumns_Changed;
@@ -493,6 +494,7 @@ namespace Timelapse.Database
                     {
                         command.CommandText = commandString;
                         command.ExecuteNonQuery();
+                        //System.Diagnostics.Debug.Print(commandString);
                     }
                 }
             }

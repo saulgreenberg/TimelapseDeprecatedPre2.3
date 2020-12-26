@@ -581,6 +581,20 @@ namespace Timelapse.Database
                 this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
+            // Updates the UTCOffset format. The issue is that the offset could have been written in the form +3,00 instead of +3.00 (i.e. with a comma)
+            // depending on the computer's culture. 
+            
+            string firstVersionWithUTCOffsetCheck = "2.2.3.8";
+            if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithUTCOffsetCheck, imageSetVersionNumber))
+            {
+                string utcColumnName = Constant.DatabaseColumn.UtcOffset;
+                // FORM:  UPDATE DataTable SET UtcOffset =  REPLACE  ( UtcOffset, ',', '.' )  WHERE  INSTR  ( UtcOffset, ',' )  > 0
+                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + utcColumnName + Sql.Equal + 
+                    Sql.Replace + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.Comma + Sql.Quote(".") + Sql.CloseParenthesis +
+                    Sql.Where + Sql.Instr + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.CloseParenthesis + Sql.GreaterThan + "0");
+
+            }
+
             // STEP 3. Check both templates and update if needed (including values)
 
             // Version Compatabillity Column: If the imageSetVersion is set to the lowest version number, then the column containing the VersionCompatabily does not exist in the image set table. 
@@ -660,6 +674,8 @@ namespace Timelapse.Database
                 this.Database.Update(Constant.DBTables.FileData, updateQuery);
                 // Note that the FileTable is now stale as we have updated the database directly
             }
+
+
         }
         #endregion
 
@@ -892,7 +908,7 @@ namespace Timelapse.Database
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
-                    // CLASSIFICATIONS
+                    // CLASSIFICATIONSdatetime(DateTime, UtcOffset
                     // Create a partial query that returns classifications matching some conditions
                     // Form: SELECT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
                     query = SqlPhrase.SelectClassifications(false);
@@ -962,7 +978,11 @@ namespace Timelapse.Database
                         {
                             // First Check for special cases, where we want to modify how sorting is done
                             // DateTime:the modified query adds the UTC Offset to it
+                            // NOTE SAULXXX I Had A BUG WHERE IN SOME CULTURES UTC IS RECORDED AS EG +3,00 rather than +3.00 WHICH BLOWS UP THE DATE SORT
+                            // I now repaired the UTC OFFSET ROW IN  ALL THESE INSTANCES ON DATABASE OPEN, BUT IF THIS CONTINUES TO BE A PROBLEM USED
+                            // THE COMMENTED OUT VERSION WHICH IGNORES UTCOFFSET
                             term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                            //term[i] = String.Format("datetime({0})", Constant.DatabaseColumn.DateTime);
                         }
                         else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
                         {

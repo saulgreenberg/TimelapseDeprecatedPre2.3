@@ -6,6 +6,7 @@ namespace Timelapse.Dialog
     public partial class MessageBox : Window
     {
         #region Constructor, Loaded
+        public bool IsNoSelected { get; set; }
         public MessageBox(string title, Window owner)
             : this(title, owner, MessageBoxButton.OK)
         {
@@ -29,6 +30,7 @@ namespace Timelapse.Dialog
                     this.OkButton.IsCancel = true;
                     this.CancelButton.IsCancel = false;
                     this.CancelButton.IsEnabled = false;
+                    this.NoButton.IsEnabled = false;
                     break;
                 case MessageBoxButton.OKCancel:
                     this.CancelButton.Visibility = Visibility.Visible;
@@ -39,6 +41,12 @@ namespace Timelapse.Dialog
                     this.CancelButton.Visibility = Visibility.Visible;
                     break;
                 case MessageBoxButton.YesNoCancel:
+                    this.OkButton.Content = "_Yes";
+                    this.NoButton.Content = "_No";
+                    this.NoButton.Visibility = Visibility.Visible;
+                    this.NoButton.IsEnabled = true;
+                    this.CancelButton.Visibility = Visibility.Visible;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(buttonType), String.Format("Unhandled button type {0}.", buttonType));
             }
@@ -60,6 +68,15 @@ namespace Timelapse.Dialog
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
+        }
+
+        // Only if this is a Yes/No/Cancel dialog, then a 
+        // - cancel returns false, with IsNoSelected false
+        // - no returns false, with IsNoSelected true
+        private void NoButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.DialogResult = false;
+            IsNoSelected = true;
         }
         #endregion
     }

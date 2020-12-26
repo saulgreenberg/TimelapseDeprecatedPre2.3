@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Database;
@@ -80,7 +81,7 @@ namespace Timelapse.Controls
                 // redisplay the old value on selection or navigation if it hasn't actually changed
                 // So we set it twice: the first time with a different value to guarantee that it has changed, and the second time with the
                 // desired value ot actually display it
-                double hours = double.Parse(value);
+                double hours = double.Parse(value, CultureInfo.InvariantCulture);
                 this.ContentControl.Value = TimeSpan.FromHours(hours + 1);
                 this.ContentControl.Value = TimeSpan.FromHours(hours);
             }

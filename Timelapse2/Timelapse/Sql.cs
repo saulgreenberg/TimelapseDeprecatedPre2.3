@@ -55,6 +55,7 @@ namespace Timelapse
         public const string InnerJoin = " INNER JOIN ";
         public const string InsertInto = " INSERT INTO ";
         public const string InsertOrReplaceInto = " INSERT OR REPLACE INTO ";
+        public const string Instr = " INSTR ";
         public const string IntegerType = " INTEGER ";
         public const string IsNull = " IS NULL ";
         public const string LeftJoin = " LEFT JOIN ";
@@ -82,6 +83,7 @@ namespace Timelapse
         public const string PragmaQuickCheck = "PRAGMA QUICK_CHECK ";
         public const string PrimaryKey = " PRIMARY KEY ";
         public const string RenameTo = " RENAME TO ";
+        public const string Replace = " REPLACE ";
         public const string QuotedEmptyString = " '' ";
         public const string Select = " SELECT ";
         public const string SelectDistinct = " SELECT DISTINCT ";

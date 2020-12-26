@@ -84,6 +84,10 @@ namespace Timelapse.Controls
             // For date time controls, we also need to set the actual Value, as updating the text field by itself doesn't do that.
             if (DateTimeHandler.TryParseDisplayDateTime(value, out DateTime dateTime))
             {
+                // This hack is done so that the content control updates if the value hasn't changed.
+                // So we set it twice: the first time with a different value to guarantee that it has changed, and the second time with the
+                // desired value ot actually display it.
+                this.ContentControl.Value = dateTime + TimeSpan.FromHours(1);
                 this.ContentControl.Value = dateTime;
             }
             this.ContentControl.ToolTip = value ?? "Edit to change the " + this.Label + " for the selected image";

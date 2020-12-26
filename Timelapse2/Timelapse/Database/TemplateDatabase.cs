@@ -380,7 +380,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Public Methods - Get Controls, DtaaLables, TypedDataLable
+        #region Public Methods - Get Controls, DataLabels, TypedDataLabel
         public List<string> GetDataLabelsExceptIDInSpreadsheetOrder()
         {
             // Utilities.PrintMethodName();
@@ -428,7 +428,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Public Methods - RemoveuserDefinedCongtrol
+        #region Public Methods - RemoveuserDefinedControl
         public void RemoveUserDefinedControl(ControlRow controlToRemove)
         {
             // Check the arguments for null 
@@ -742,7 +742,7 @@ namespace Timelapse.Database
             }
 
             // Bug fix: 
-            // Check to ensure that the image quality choice list in the templae match the expected default value,
+            // Check to ensure that the image quality choice list in the template matches the expected default value,
             // A previously introduced bug had added spaces before several items in the list. This fixes that.
             // Note that this updates the template table in both the .tdb and .ddb file
             ControlRow imageQualityControlRow = this.GetControlFromTemplateTable(Constant.DatabaseColumn.ImageQuality);

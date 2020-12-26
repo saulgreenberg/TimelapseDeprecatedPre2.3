@@ -261,7 +261,11 @@ namespace Timelapse.Controls
                 {
                     Episodes.EpisodeGetEpisodesInRange(fileTable, fileIndex);
                 }
-                Tuple<int, int> episode = Episodes.EpisodesDictionary[fileIndex];
+
+                Tuple<int, int> episode = Episodes.EpisodesDictionary.ContainsKey(fileIndex) == true
+                ? Episodes.EpisodesDictionary[fileIndex]
+                : new Tuple<int, int>(1, 1); // This is the (rare) error case that happened once ot a user - if for some reason the fileIndex is not in range. Could probably indicate this in the UI (which currently just marks it as single) but not sure why this error happens, so what to put there is unclear
+
                 if (episode.Item1 == int.MaxValue)
                 {
                     this.EpisodeTextBlock.Text = "\u221E";

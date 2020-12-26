@@ -162,9 +162,9 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToStringDatabaseUtcOffset(TimeSpan timeSpan)
         {
-            return timeSpan.TotalHours.ToString(Constant.Time.UtcOffsetDatabaseFormat);
+            // We use Invariant culture, as otherwise in some cultures (e.g., Spanish) a ',' is used to specify a decimal number rather than a '.'
+            return timeSpan.TotalHours.ToString(Constant.Time.UtcOffsetDatabaseFormat, CultureInfo.InvariantCulture);
         }
-
         /// <summary>
         /// Return "dd-MMM-yyyy" format of a DateTimeOffset, e.g., 05-Apr-2016 
         /// </summary>
@@ -224,7 +224,7 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToStringDisplayUtcOffset(TimeSpan utcOffset)
         {
-            string displayString = utcOffset.ToString(Constant.Time.UtcOffsetDisplayFormat);
+            string displayString = utcOffset.ToString(Constant.Time.UtcOffsetDisplayFormat, CultureInfo.InvariantCulture);
             if (utcOffset < TimeSpan.Zero)
             {
                 displayString = "-" + displayString;
