@@ -127,7 +127,7 @@ namespace Timelapse.Database
                 }
                 // check to see if the search should match an empty string
                 // If so, nulls need also to be matched as NULL and empty are considered interchangeable.
-                string whereForTerm;
+                string whereForTerm = String.Empty;
                 string dataLabel = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
                 // Check to see if the search and operator should match an empty value, in which case we also need to deal with NULLs 
                 if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
@@ -139,7 +139,23 @@ namespace Timelapse.Database
                 {
                     // Form: dataLabel operator "value", e.g., DataLabel > "5"
                     Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
+                    if (dataLabel == Constant.DatabaseColumn.RelativePath)
+                    {
+                        // Special case for relative path, as we want to return images not only in the relative path folder, but its subfolder as well.
+                        string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue);
+                        string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*");
+                        if (searchTerm.Operator == Constant.SearchTermOperator.NotEqual)
+                        {
+                            // Add NOT if the operator is not equal 
+                            whereForTerm += Sql.Not;
+                        }
+                        whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
+                        // System.Diagnostics.Debug.Print(dataLabel + "|" + TermToSqlOperator(searchTerm.Operator) + "|'" + searchTerm.DatabaseValue + "'" + "|'" + whereForTerm);
+                    }
+                    else
+                    {
+                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
+                    }
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
@@ -283,6 +299,7 @@ namespace Timelapse.Database
 
         #region Public Methods - Various Sets
         // Set the RelativePath search term to search for the provided relativePath
+        // The search should include sub-folders, so we add a * and use Glob as the operator
         public void SetRelativePathSearchTerm(string relativePath)
         {
             this.ClearCustomSearchUses();
@@ -290,6 +307,9 @@ namespace Timelapse.Database
             SearchTerm searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.RelativePath);
             searchTerm.DatabaseValue = relativePath;
             searchTerm.Operator = Constant.SearchTermOperator.Equal;
+            //SAULXXXGLOBs
+            //searchTerm.DatabaseValue = relativePath + "*"; // So it includes subfolders as well
+            //searchTerm.Operator = Constant.SearchTermOperator.Glob;
             searchTerm.UseForSearching = true;
         }
 
