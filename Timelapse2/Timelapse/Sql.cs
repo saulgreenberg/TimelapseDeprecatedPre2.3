@@ -66,6 +66,7 @@ namespace Timelapse
         public const string Max = " MAX ";
         public const string Name = " NAME ";
         public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
+        public const string Not = " NOT ";
         public const string NotNull = " NOT NULL ";
         public const string Null = " NULL ";
         public const string NullAs = Null + " " + As;

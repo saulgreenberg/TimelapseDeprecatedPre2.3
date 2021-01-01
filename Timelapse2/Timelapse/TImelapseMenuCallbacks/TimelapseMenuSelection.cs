@@ -140,7 +140,7 @@ namespace Timelapse
             int i = 1;
             // PERFORMANCE. THIS introduces a delay when there are a large number of files. It is invoked when the user loads images for the first time. 
             // PROGRESSBAR - at the very least, show a progress bar if needed.
-            List<object> folderList = this.DataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            List<string> folderList = this.DataHandler.FileDatabase.GetFoldersFromRelativePaths();//this.DataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
                 if (string.IsNullOrEmpty(header))
@@ -153,7 +153,7 @@ namespace Timelapse
                 {
                     Header = header,
                     IsCheckable = true,
-                    ToolTip = "Show only files in the folder: " + header
+                    ToolTip = "Show only files in the folder (including its own sub-folders): " + header
                 };
                 menuitemFolder.Click += this.MenuItemSelectFolder_Click;
                 this.MenuItemSelectByFolder.Items.Insert(i++, menuitemFolder);

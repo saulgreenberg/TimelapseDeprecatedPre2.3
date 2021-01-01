@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -228,10 +230,22 @@ namespace Timelapse.Dialog
                 TextBlock controlLabel = new TextBlock()
                 {
                     FontWeight = searchTerm.UseForSearching ? FontWeights.DemiBold : FontWeights.Normal,
-                    Margin = new Thickness(5),
-                    Text = searchTerm.Label
+                    Margin = new Thickness(5)
                 };
-                Grid.SetRow(controlLabel, gridRowIndex);
+                
+                if (searchTerm.Label != Constant.DatabaseColumn.RelativePath)
+                { 
+                    // Not relative path, so just use the label's name
+                    controlLabel.Text = searchTerm.Label;
+                }
+                else
+                {
+                    // RelativePath label adds details
+                    controlLabel.Inlines.Add(searchTerm.Label + " folder");
+                    controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize=10});
+
+                }
+                    Grid.SetRow(controlLabel, gridRowIndex);
                 Grid.SetColumn(controlLabel, CustomSelection.LabelColumn);
                 this.SearchTerms.Children.Add(controlLabel);
 
@@ -256,9 +270,10 @@ namespace Timelapse.Dialog
                         Constant.SearchTermOperator.GreaterThanOrEqual
                     };
                 }
+                // Only equals and not equals (For relative path this will be converted later to a glob to get subfolders) 
                 else if (controlType == Constant.DatabaseColumn.DeleteFlag ||
-                         controlType == Constant.Control.Flag ||
-                         controlType == Constant.DatabaseColumn.RelativePath)
+                         controlType == Constant.DatabaseColumn.RelativePath ||
+                         controlType == Constant.Control.Flag)
                 {
                     // Only equals and not equals in Flags, as other options don't make sense for booleans
                     termOperators = new string[]
@@ -282,15 +297,20 @@ namespace Timelapse.Dialog
                 }
 
                 // term operator combo box
+                
                 ComboBox operatorsComboBox = new ComboBox()
                 {
-                    FontWeight = FontWeights.DemiBold,
+                    FontWeight = FontWeights.Normal,
                     IsEnabled = searchTerm.UseForSearching,
                     ItemsSource = termOperators,
                     Margin = thickness,
                     Width = 60,
-                    SelectedValue = searchTerm.Operator // Default: equals sign
+                    Height = searchTerm.Label == Constant.DatabaseColumn.RelativePath
+                        ? 25
+                        : Double.NaN,
+                    SelectedValue = searchTerm.Operator
                 };
+
                 operatorsComboBox.SelectionChanged += this.Operator_SelectionChanged; // Create the callback that is invoked whenever the user changes the expresison
                 Grid.SetRow(operatorsComboBox, gridRowIndex);
                 Grid.SetColumn(operatorsComboBox, CustomSelection.OperatorColumn);
@@ -326,10 +346,11 @@ namespace Timelapse.Dialog
                         FontWeight = FontWeights.Normal,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = CustomSelection.DefaultControlWidth,
+                        Height = 25,
                         Margin = thickness,
 
                         // Create the dropdown menu containing only folders with images in it
-                        ItemsSource = this.database.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
+                        ItemsSource = this.database.GetFoldersFromRelativePaths(), //this.database.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
                         SelectedItem = searchTerm.DatabaseValue
                     };
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;

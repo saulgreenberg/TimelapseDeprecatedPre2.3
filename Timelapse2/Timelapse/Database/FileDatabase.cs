@@ -1137,6 +1137,31 @@ namespace Timelapse.Database
         }
         #endregion
 
+        // Return a new sorted list containing the distinct relative paths in the database,
+        // and the (unique) parents of each relative path entry.
+        // For example, if the relative paths were a/b, a/b/c, a/b/d and d/c it would return
+        // a | a/b | a/b/c, a/b/d | d | d/c
+        public List<string> GetFoldersFromRelativePaths()
+        {
+            // Get all the relative paths
+            List<object> relativePathList = GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            List<string> allPaths = new List<string>();
+            foreach (string relativePath in relativePathList)
+            {
+                allPaths.Add(relativePath);
+                string parent = System.IO.Path.GetDirectoryName(relativePath);
+                while (!String.IsNullOrWhiteSpace(parent))
+                {
+                    if (!allPaths.Contains(parent))
+                    {
+                        allPaths.Add(parent);
+                    }
+                    parent = System.IO.Path.GetDirectoryName(parent);
+                }
+            }
+            allPaths.Sort();
+            return allPaths;
+        }
         #region Get Distinct Values
         public List<object> GetDistinctValuesInColumn(string table, string columnName)
         {
