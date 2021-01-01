@@ -83,7 +83,6 @@ namespace Timelapse
             // Get the command line arguments, if any
             this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
 
-
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);
             this.MarkableCanvas.MouseEnter += new MouseEventHandler(this.MarkableCanvas_MouseEnter);

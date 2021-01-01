@@ -14,8 +14,11 @@ namespace Timelapse.DataStructures
         public string Template { get; set; }
         public string RelativePath { get; set; } = String.Empty;
 
+        public bool ConstrainToRelativePath { get; set; } 
+
         public const string templateFlag = "-template";
-        public const string relativePathFlag = "-relativepath"; 
+        public const string relativePathFlag = "-relativepath";
+        public const string constrainToRelativePathFlag = "-constrainRelativePath";
 
         public Arguments(string[] arguments)
         {
@@ -34,6 +37,10 @@ namespace Timelapse.DataStructures
                         break;
                     case relativePathFlag:
                         this.RelativePath = arguments[index + 1];
+                        break;
+                    case constrainToRelativePathFlag:
+                        // we need to convert the string arguement to a bool. 
+                        this.ConstrainToRelativePath = bool.TryParse(arguments[index + 1], out bool result) ? result : false;
                         break;
                     default:
                         break;
