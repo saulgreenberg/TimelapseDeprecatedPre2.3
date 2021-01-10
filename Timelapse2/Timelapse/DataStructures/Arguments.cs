@@ -11,14 +11,33 @@ namespace Timelapse.DataStructures
     // -flag1 value -flag2 value etc., where flags are case-insensitive
     public class Arguments
     {
+        // argument strings
+        private const string templateFlag = "-template";
+        private const string relativePathFlag = "-relativepath";
+        private const string constrainToRelativePathFlag = "-constrainrelativepath";
+
+        private bool constrainToRelativePath;
+
+        // The full Timelape template path
         public string Template { get; set; }
+
+        // The relative path for starting timelapse
         public string RelativePath { get; set; } = String.Empty;
 
-        public bool ConstrainToRelativePath { get; set; } 
-
-        public const string templateFlag = "-template";
-        public const string relativePathFlag = "-relativepath";
-        public const string constrainToRelativePathFlag = "-constrainRelativePath";
+        // Constrain all database actions to the relative path and its subfolders
+        // if ConstrainToRelativePath is true, the user is contrained to select folders that
+        // are either the relative path or subfolders of it.
+        public bool ConstrainToRelativePath {
+            get
+            {
+                // if relativePath is empty, we shouldn't constrain to it
+                return (constrainToRelativePath && !String.IsNullOrWhiteSpace(this.RelativePath));
+            }
+            set
+            {
+                constrainToRelativePath = value; 
+            } 
+        }
 
         public Arguments(string[] arguments)
         {
@@ -40,7 +59,7 @@ namespace Timelapse.DataStructures
                         break;
                     case constrainToRelativePathFlag:
                         // we need to convert the string arguement to a bool. 
-                        this.ConstrainToRelativePath = bool.TryParse(arguments[index + 1], out bool result) ? result : false;
+                        this.constrainToRelativePath = bool.TryParse(arguments[index + 1], out bool result) && result;
                         break;
                     default:
                         break;

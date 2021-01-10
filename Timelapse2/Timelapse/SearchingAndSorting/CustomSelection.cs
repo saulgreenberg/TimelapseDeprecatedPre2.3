@@ -105,89 +105,46 @@ namespace Timelapse.Database
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
         {
-            int numberOfDateTimesSearchTerms = 0;
             string where = String.Empty;
 
-            // Construct and show the search term only if that search row is activated
-            // Form after the ForEach should be:
-            // "" if nothing in it
-            // WHERE a=b for single terme
-            // WHERE a=b AND c=d ... for multiple terms
-            foreach (SearchTerm searchTerm in this.SearchTerms.Where(term => term.UseForSearching))
-            {
-                if (string.IsNullOrEmpty(where))
-                {
-                    // Because there is at least one search term, we will need the WHERE clause
-                    where += Sql.Where;
-                }
-                // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
-                if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
-                {
-                    numberOfDateTimesSearchTerms++;
-                }
-                // check to see if the search should match an empty string
-                // If so, nulls need also to be matched as NULL and empty are considered interchangeable.
-                string whereForTerm = String.Empty;
-                string dataLabel = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
-                // Check to see if the search and operator should match an empty value, in which case we also need to deal with NULLs 
-                if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
-                {
-                    // Form: ( dataLabel IS NULL OR  dataLabel = '' );
-                    whereForTerm = SqlPhrase.LabelIsNullOrDataLabelEqualsEmpty(dataLabel);
-                }
-                else
-                {
-                    // Form: dataLabel operator "value", e.g., DataLabel > "5"
-                    Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
-                    if (dataLabel == Constant.DatabaseColumn.RelativePath)
-                    {
-                        // Special case for relative path, as we want to return images not only in the relative path folder, but its subfolder as well.
-                        string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue);
-                        string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*");
-                        if (searchTerm.Operator == Constant.SearchTermOperator.NotEqual)
-                        {
-                            // Add NOT if the operator is not equal 
-                            whereForTerm += Sql.Not;
-                        }
-                        whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
-                        // System.Diagnostics.Debug.Print(dataLabel + "|" + TermToSqlOperator(searchTerm.Operator) + "|'" + searchTerm.DatabaseValue + "'" + "|'" + whereForTerm);
-                    }
-                    else
-                    {
-                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
-                    }
-                    if (searchTerm.ControlType == Constant.Control.Flag)
-                    {
-                        whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
-                    }
-                }
+            // Collect all the standard search terms which the user currently selected as UseForSearching
+            IEnumerable<SearchTerm> standardSearchTerms = this.SearchTerms.Where(term => term.UseForSearching
+            && (term.DataLabel == Constant.DatabaseColumn.File || term.DataLabel == Constant.DatabaseColumn.Folder ||
+                term.DataLabel == Constant.DatabaseColumn.RelativePath || term.DataLabel == Constant.DatabaseColumn.DateTime ||
+                term.DataLabel == Constant.DatabaseColumn.ImageQuality || term.DataLabel == Constant.DatabaseColumn.UtcOffset));
 
-                // if there is a term in the query other than ' Where 'add either and 'And' or an 'Or' to it 
-                if (where != Sql.Where)
-                {
-                    if (numberOfDateTimesSearchTerms == 2)
-                    {
-                        where += Sql.And;
-                        numberOfDateTimesSearchTerms = 0;
-                    }
-                    else
-                    {
-                        switch (this.TermCombiningOperator)
-                        {
-                            case CustomSelectionOperatorEnum.And:
-                                where += Sql.And;
-                                break;
-                            case CustomSelectionOperatorEnum.Or:
-                                where += Sql.Or;
-                                break;
-                            default:
-                                throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
-                        }
-                    }
-                }
-                where += whereForTerm;
+            // Collect all the non-standard search terms which the user currently selected as UseForSearching
+            IEnumerable<SearchTerm> nonstandardSearchTerms = this.SearchTerms.Where(term => term.UseForSearching).Except(standardSearchTerms);
+
+            // Combine the standard terms using the AND operator
+            string standardWhere = CombineSearchTermsAndOperator(standardSearchTerms, CustomSelectionOperatorEnum.And);
+
+            // Combine the non-standard terms using the operator defined by the user (either AND or OR)
+            string nonStandarWhere = CombineSearchTermsAndOperator(nonstandardSearchTerms, this.TermCombiningOperator);
+
+            // Combine the standardWhere and nonStandardWhere clauses, depending if one or both of them exists
+            if (false == String.IsNullOrWhiteSpace(standardWhere) && false == String.IsNullOrWhiteSpace(nonStandarWhere))
+            {
+                // We have both standard and non-standard clauses, so surround them with parenthesis and combine them with an AND
+                // Form: WHERE (standardWhere clauses) AND (nonStandardWhere clauses)
+                where += Sql.Where + Sql.OpenParenthesis + standardWhere + Sql.CloseParenthesis
+                          + Sql.And
+                          + Sql.OpenParenthesis + nonStandarWhere + Sql.CloseParenthesis;
             }
-            // If no detections, return the above
+            else if (false == String.IsNullOrWhiteSpace(standardWhere) && String.IsNullOrWhiteSpace(nonStandarWhere))
+            {
+                // We only have a standard clause
+                // Form: WHERE (standardWhere clauses)
+                where += Sql.Where + Sql.OpenParenthesis + standardWhere + Sql.CloseParenthesis;
+            }
+            else if (String.IsNullOrWhiteSpace(standardWhere) && false == String.IsNullOrWhiteSpace(nonStandarWhere))
+            {
+                // We only have a non-standard clause
+                // Form: WHERE nonStandardWhere clauses
+                where += Sql.Where + nonStandarWhere;
+            }
+
+            // If no detections, we are done. Return the current where clause
             if (GlobalReferences.DetectionsExists == false || this.DetectionSelections.Enabled == false)
             {
                 return where;
@@ -197,7 +154,7 @@ namespace Timelapse.Database
             // Form prior to this point: SELECT DataTable.* INNER JOIN DataTable ON DataTable.Id = Detections.Id  
             // (and if a classification it adds: // INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
 
-            // There are four basic forms to come up as follows, which determines whether we should include add 'WHERE'
+            // There are four basic forms to come up as follows, which determines whether we should add 'WHERE'
             // The first is a detection and uses the detection category (i.e., any category but All Detections)
             // - WHERE Detections.category = <DetectionCategory> GROUP BY ...
             // The second is a dection but does not use a detection category(i.e., All Detections chosen)
@@ -227,18 +184,7 @@ namespace Timelapse.Database
             {
                 if (addAndOr)
                 {
-                    // Choose whether to use And or Or
-                    switch (this.TermCombiningOperator)
-                    {
-                        case CustomSelectionOperatorEnum.And:
-                            where += Sql.And;
-                            break;
-                        case CustomSelectionOperatorEnum.Or:
-                            where += Sql.Or;
-                            break;
-                        default:
-                            throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", this.TermCombiningOperator));
-                    }
+                    where += Sql.And;
                 }
                 if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
@@ -270,6 +216,85 @@ namespace Timelapse.Database
                 // Note: we omit this phrase if we are ranking by confidence, as we want to return all classifications
                 where += SqlPhrase.GroupByClassificationsIdHavingMaxClassificationsConf(confidenceBounds.Item1, confidenceBounds.Item2);
             }
+            return where;
+        }
+
+        // Combine the search terms in searchTemrs using the termCombiningOperator (i.e. And or OR), and special cases in as needed.
+        private string CombineSearchTermsAndOperator(IEnumerable<SearchTerm> searchTerms, CustomSelectionOperatorEnum termCombiningOperator)
+        {
+            string where = String.Empty;
+            foreach (SearchTerm searchTerm in searchTerms)
+            {
+                // Basic Form after the ForEach iteration should be:
+                // "" if nothing in it
+                // a=b for the firt term
+                // ... AND/OR c=d ... for subsequent terms (AND/OR defined in termCombiningOperator
+                // variations are special cases for relative path and datetime
+                string whereForTerm = String.Empty;
+
+                // If we are using detections, then we have to qualify the data label e.g., DataTable.X
+                string dataLabel = (this.DetectionSelections.Enabled == true) ? Constant.DBTables.FileData + "." + searchTerm.DataLabel : searchTerm.DataLabel;
+
+                // Check to see if the search term is querying for an empty string
+                if (String.IsNullOrEmpty(searchTerm.DatabaseValue) && searchTerm.Operator == Constant.SearchTermOperator.Equal)
+                {
+                    // It is, so we also need to expand the query to check for both nulls an empty string, as both are considered equivalent for query purposes
+                    // Form: ( dataLabel IS NULL OR  dataLabel = '' );
+                    whereForTerm = SqlPhrase.LabelIsNullOrDataLabelEqualsEmpty(dataLabel);
+                }
+                else
+                {
+                    // The search term is querying for a non-empty value.
+                    Debug.Assert(searchTerm.DatabaseValue.Contains("\"") == false, String.Format("Search term '{0}' contains quotation marks and could be used for SQL injection.", searchTerm.DatabaseValue));
+                    if (dataLabel == Constant.DatabaseColumn.RelativePath || dataLabel == Constant.DBTables.FileData + "." + Constant.DatabaseColumn.RelativePath)
+                    {
+                        // Special case for RelativePath and DataTable.RelativePath, 
+                        // as we want to return images not only in the relative path folder, but its subfolder as well.
+                        // Form: ( DataTable.RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
+                        string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue);
+                        string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*");
+                        if (searchTerm.Operator == Constant.SearchTermOperator.NotEqual)
+                        {
+                            // Add NOT if the operator is not equal 
+                            whereForTerm += Sql.Not;
+                        }
+                        whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
+                    }
+                    else
+                    {
+                        // Standard search term
+                        // Form: dataLabel operator "value", e.g., DataLabel > "5"
+                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
+                    }
+
+                    
+                    if (searchTerm.ControlType == Constant.Control.Flag)
+                    {
+                        // Because flags can have capitals or lower case, we need to make the search case insenstive
+                        whereForTerm += Sql.CollateNocase; // so that true and false comparisons are case-insensitive
+                    }
+                }
+
+                // We are now ready to assemble the search term
+                // First, and only if there terms have already been added to  the query, we need to add the appropriate operator
+                if (!String.IsNullOrEmpty(where))
+                {
+                    switch (termCombiningOperator)
+                    {
+                        case CustomSelectionOperatorEnum.And:
+                            where += Sql.And;
+                            break;
+                        case CustomSelectionOperatorEnum.Or:
+                            where += Sql.Or;
+                            break;
+                        default:
+                            throw new NotSupportedException(String.Format("Unhandled logical operator {0}.", termCombiningOperator));
+                    }
+                }
+                // Now we add the actual search terms
+                where += whereForTerm;
+            }
+            // Done. Return this portion of the where clause
             return where;
         }
         #endregion

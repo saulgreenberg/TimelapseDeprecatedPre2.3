@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.DataStructures;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -220,6 +221,11 @@ namespace Timelapse.Dialog
                     HorizontalAlignment = HorizontalAlignment.Center,
                     IsChecked = searchTerm.UseForSearching
                 };
+                if (searchTerm.Label == Constant.DatabaseColumn.RelativePath && Util.GlobalReferences.MainWindow.Arguments.ConstrainToRelativePath)
+                {
+                    useCurrentRow.IsChecked = true;
+                    useCurrentRow.IsEnabled = false;
+                }
                 useCurrentRow.Checked += this.Select_CheckedOrUnchecked;
                 useCurrentRow.Unchecked += this.Select_CheckedOrUnchecked;
                 Grid.SetRow(useCurrentRow, gridRowIndex);
@@ -232,9 +238,9 @@ namespace Timelapse.Dialog
                     FontWeight = searchTerm.UseForSearching ? FontWeights.DemiBold : FontWeights.Normal,
                     Margin = new Thickness(5)
                 };
-                
+
                 if (searchTerm.Label != Constant.DatabaseColumn.RelativePath)
-                { 
+                {
                     // Not relative path, so just use the label's name
                     controlLabel.Text = searchTerm.Label;
                 }
@@ -242,10 +248,10 @@ namespace Timelapse.Dialog
                 {
                     // RelativePath label adds details
                     controlLabel.Inlines.Add(searchTerm.Label + " folder");
-                    controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize=10});
+                    controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize = 10 });
 
                 }
-                    Grid.SetRow(controlLabel, gridRowIndex);
+                Grid.SetRow(controlLabel, gridRowIndex);
                 Grid.SetColumn(controlLabel, CustomSelection.LabelColumn);
                 this.SearchTerms.Children.Add(controlLabel);
 
@@ -297,7 +303,7 @@ namespace Timelapse.Dialog
                 }
 
                 // term operator combo box
-                
+
                 ComboBox operatorsComboBox = new ComboBox()
                 {
                     FontWeight = FontWeights.Normal,
@@ -348,11 +354,36 @@ namespace Timelapse.Dialog
                         Width = CustomSelection.DefaultControlWidth,
                         Height = 25,
                         Margin = thickness,
-
                         // Create the dropdown menu containing only folders with images in it
-                        ItemsSource = this.database.GetFoldersFromRelativePaths(), //this.database.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
                         SelectedItem = searchTerm.DatabaseValue
                     };
+
+                    Arguments arguments = Util.GlobalReferences.MainWindow.Arguments;
+                    if (false == arguments.ConstrainToRelativePath)
+                    {
+                        comboBoxValue.ItemsSource = this.database.GetFoldersFromRelativePaths();
+                    }
+                    else
+                    {
+                        // We need to generate a folder list that is just the relativePath and its sub-folders
+                        List<string> newFolderList = new List<string>();
+                        foreach (string folder in this.database.GetFoldersFromRelativePaths())
+                        {
+                            //if (string.IsNullOrEmpty(folder))
+                            //{
+                            //    // An empty header is actually the root folder. Since we already have an entry representng all files, we don't need it.
+                            //    continue;
+                            //}
+
+                            // Add the folder to the menu only if it isn't constrained by the relative path arguments
+                            if (arguments.ConstrainToRelativePath && !(folder == arguments.RelativePath || folder.StartsWith(arguments.RelativePath + @"\")))
+                            {
+                                continue;
+                            }
+                            newFolderList.Add(folder);
+                        }
+                        comboBoxValue.ItemsSource = newFolderList;
+                    }
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
                     Grid.SetRow(comboBoxValue, gridRowIndex);
                     Grid.SetColumn(comboBoxValue, CustomSelection.ValueColumn);

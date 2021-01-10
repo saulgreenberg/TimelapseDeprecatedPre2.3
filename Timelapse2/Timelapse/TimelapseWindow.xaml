@@ -1,5 +1,4 @@
-﻿
-    <Window x:Class="Timelapse.TimelapseWindow"
+﻿<Window x:Class="Timelapse.TimelapseWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:controls="clr-namespace:Timelapse.Controls"
     xmlns:images="clr-namespace:Timelapse.Images"
@@ -57,9 +56,9 @@
                             <Image Source="Icons/NewFile_40x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    
+
                     <Separator />
-                    
+
                     <!-- Merge -->
                     <MenuItem Name="MenuItemMergeDatabases" Header="Merge data (.ddb) files into a single file..." IsEnabled="true" ToolTip="Asks for a location, searches its sub-folders for databases (.ddb files) and merges their contents into a new database file."  Click="MenuItemMergeDatabases_Click" />
 
@@ -84,9 +83,9 @@
                             <Image Source="Icons/CSVImport_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    
+
                     <Separator />
-                    
+
                     <!-- Import Detections -->
                     <MenuItem Name="MenuItemImportDetectionData" Header="Import image recognition data for this image set" IsEnabled="False" Click="MenuItemImportDetectionData_Click" ToolTip="Import image recognition data for the image set from a Microsoft-supplied .json file">
                         <MenuItem.Icon>
@@ -108,9 +107,9 @@
                             <Image Source="Icons/ImageExport_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    
+
                     <Separator />
-                    
+
                     <!-- Rename the _data file...-->
                     <MenuItem Name="MenuItemRenameFileDatabaseFile" Header="Rename the _data (.ddb) file for this image set..." Click="MenuItemRenameFileDatabaseFile_Click" IsEnabled="false" ToolTip="Renames the database (.ddb) file  for this image set to a name of your choosing"/>
                     <Separator />
@@ -203,7 +202,7 @@
                     <MenuItem Name="MenuItemEpisodeOptions" Header="_Adjust episode time threshold..." Click="MenuItemEpisodeOptions_Click" IsEnabled="False" ToolTip="Adjust the time threshold for determining how files are grouped into episodes"/>
 
                     <Separator/>
-                    
+
                     <MenuItem Name="MenuItemDialogsOnOrOff" Header="_Show or hide various informational dialogs" IsEnabled="False" Click="MenuItemDialogsOnOrOff_Click"/>
 
                     <Separator/>
@@ -247,7 +246,7 @@
                         <MenuItem Name="MenuItemSelectDarkFiles" IsCheckable="True" IsChecked="False" Header="_Dark files" Click="MenuItemSelectFiles_Click" ToolTip="Show only Dark ImageQuality files (usually night-time shots)"/>
                     </MenuItem>
                     <MenuItem Name="MenuItemSelectByFolder" Header="By Folders..." IsEnabled="True" SubmenuOpened="MenuItemSelectByFolder_SubmenuOpening">
-                    <MenuItem Name="MenuItemSelectAllFolders" IsCheckable="True" IsChecked="False" Header="All Folders" Click="MenuItemSelectFiles_Click" ToolTip="Show all files in all folders"/>
+                        <MenuItem Name="MenuItemSelectAllFolders" IsCheckable="True" IsChecked="False" Header="All Folders" Click="MenuItemSelectFiles_Click" ToolTip="Show all files in all folders"/>
                     </MenuItem>
                     <MenuItem Name="MenuItemSelectFilesMarkedForDeletion" IsCheckable="True" IsChecked="False" Header="Files marked for d_eletion" Click="MenuItemSelectFiles_Click" ToolTip="Show only those marked for deletion"/>
                     <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
@@ -349,9 +348,9 @@
                             <Image Source="Icons/Download_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    
+
                     <Separator/>
-                    
+
                     <MenuItem Name="MenuItemJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)..." Click="MenuJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
                         <MenuItem.Icon>
                             <Image Source="Icons/JoinMailingList_32x.png" />
@@ -364,14 +363,14 @@
                     </MenuItem>
 
                     <Separator/>
-                    
+
                     <MenuItem Name="MenuItemMailToTimelapseDevelopers" Header="Email the Timelapse developer..." Click="MenuMailToTimelapseDevelopers_Click" ToolTip="Post an email to the Timelapse developers. Feedback, bug reports, feature requests, etc are all appreciated.">
                         <MenuItem.Icon>
                             <Image Source="Icons/EmailSend_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <Separator/>
-                    
+
                     <MenuItem Name="MenuItemAbout" Header="_About..." Click="MenuItemAbout_Click" ToolTip="Displays version information about this program and how to contact its creator">
                         <MenuItem.Icon>
                             <Image Source="Icons/About_32x.png" />
@@ -623,7 +622,7 @@
                 <StatusBarItem  Grid.Column="11" Content="---" HorizontalAlignment="Right" HorizontalContentAlignment="Stretch"/>
             </StatusBar>
         </Grid>
-        
+
         <controls:BusyCancelIndicator x:Name="BusyCancelIndicator" IsBusy="False" Grid.Row="0"/>
     </Grid>
 </Window>

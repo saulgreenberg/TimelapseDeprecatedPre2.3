@@ -71,7 +71,8 @@ namespace Timelapse
         private readonly DispatcherTimer FilePlayerTimer = new DispatcherTimer { };
         private readonly DispatcherTimer DataGridSelectionsTimer = new DispatcherTimer { };
 
-        private DataStructures.Arguments Arguments;
+        // Record any command line arguments
+        public DataStructures.Arguments Arguments { get; set; } = new DataStructures.Arguments(Environment.GetCommandLineArgs());
         #endregion
 
         #region Main
@@ -81,7 +82,7 @@ namespace Timelapse
             this.InitializeComponent();
 
             // Get the command line arguments, if any
-            this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
+            // this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
 
             // Register MarkableCanvas callbacks
             this.MarkableCanvas.PreviewMouseDown += new MouseButtonEventHandler(this.MarkableCanvas_PreviewMouseDown);

@@ -69,6 +69,14 @@ namespace Timelapse
             }
             else
             {
+                // Check if we are trying to view all folders while contrained to the relative path. If so, 
+                // alter the selecton and set the relative path to the root contrained relative path
+                if (selection == FileSelectionEnum.All && this.Arguments.ConstrainToRelativePath )
+                {
+                    selection = FileSelectionEnum.Folders;
+                    this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.Arguments.RelativePath);
+                }
+
                 // If its a folder selection, record it so we can save it later in the image set table 
                 this.DataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
                     ? this.DataHandler.FileDatabase.GetSelectedFolder()

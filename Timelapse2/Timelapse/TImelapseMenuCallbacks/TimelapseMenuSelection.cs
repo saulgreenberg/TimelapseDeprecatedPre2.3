@@ -131,6 +131,10 @@ namespace Timelapse
         // Populate the menu. Get the folders from the database, and create a menu item representing it
         private void MenuItemSelectByFolder_ResetFolderList()
         {
+            //this.Arguments.RelativePath = "Station1";
+            //this.Arguments.ConstrainToRelativePath = true;
+
+
             // Clear the list, excepting the first menu item all folders, which should be kept.
             MenuItem item = (MenuItem)this.MenuItemSelectByFolder.Items[0];
             this.MenuItemSelectByFolder.Items.Clear();
@@ -140,12 +144,20 @@ namespace Timelapse
             int i = 1;
             // PERFORMANCE. THIS introduces a delay when there are a large number of files. It is invoked when the user loads images for the first time. 
             // PROGRESSBAR - at the very least, show a progress bar if needed.
+
+
             List<string> folderList = this.DataHandler.FileDatabase.GetFoldersFromRelativePaths();//this.DataHandler.FileDatabase.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
             foreach (string header in folderList)
             {
                 if (string.IsNullOrEmpty(header))
                 {
                     // An empty header is actually the root folder. Since we already have an entry representng all files, we don't need it.
+                    continue;
+                }
+
+                // Add the folder to the menu only if it isn't constrained by the relative path arguments
+                if (this.Arguments.ConstrainToRelativePath && !(header == this.Arguments.RelativePath || header.StartsWith(this.Arguments.RelativePath + @"\")))
+                {
                     continue;
                 }
                 // Create a menu item for each folder
@@ -160,6 +172,7 @@ namespace Timelapse
             }
         }
 
+
         // A specific folder was selected.
         private async void MenuItemSelectFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -168,15 +181,17 @@ namespace Timelapse
                 return;
             }
 
-            // If its select all folders, then just set the selection to all
+            // If its select all folders, then 
             if (mi == this.MenuItemSelectAllFolders)
             {
+                // its all folders, so just select all folders
                 await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.All).ConfigureAwait(true);
                 return;
             }
 
             // Set the search terms to the designated relative path
             this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm((string)mi.Header);
+
             int count = this.DataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
             if (count <= 0)
             {

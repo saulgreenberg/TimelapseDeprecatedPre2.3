@@ -77,6 +77,7 @@ namespace Timelapse
         /// </summary>
         private void CloseTimelapseAndSaveState(bool isCompleteShutdown)
         {
+
             this.FilePlayer_Stop();
 
             if ((this.DataHandler != null) &&
@@ -155,6 +156,9 @@ namespace Timelapse
 
             // Save the state by writing it to the registry
             this.State.WriteSettingsToRegistry();
+
+            // Reset the arguments to its initial state.
+            this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
         }
         #endregion
     }

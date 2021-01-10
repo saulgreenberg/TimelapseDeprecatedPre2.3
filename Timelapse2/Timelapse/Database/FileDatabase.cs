@@ -1149,7 +1149,7 @@ namespace Timelapse.Database
             foreach (string relativePath in relativePathList)
             {
                 allPaths.Add(relativePath);
-                string parent = System.IO.Path.GetDirectoryName(relativePath);
+                string parent = String.IsNullOrEmpty(relativePath) ? String.Empty : System.IO.Path.GetDirectoryName(relativePath);
                 while (!String.IsNullOrWhiteSpace(parent))
                 {
                     if (!allPaths.Contains(parent))
@@ -1859,10 +1859,10 @@ namespace Timelapse.Database
             // System.Diagnostics.Debug.Print(selection.ToString());
             switch (selection)
             {
+                case FileSelectionEnum.All:
                 case FileSelectionEnum.Corrupted:
                 case FileSelectionEnum.Missing:
-                    return String.Empty;
-                case FileSelectionEnum.All:
+                    // SAULXXX: Corrupted and Missing should no longer be accessible: these cases could be deleted.
                     return String.Empty;
                 case FileSelectionEnum.Dark:
                 case FileSelectionEnum.Ok:
@@ -1871,7 +1871,10 @@ namespace Timelapse.Database
                     return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
                 case FileSelectionEnum.Custom:
                 case FileSelectionEnum.Folders:
-                    return this.CustomSelection.GetFilesWhere();
+                    string whereClause = this.CustomSelection.GetFilesWhere();
+                    System.Diagnostics.Debug.Print(whereClause);
+                    //return this.CustomSelection.GetFilesWhere();
+                    return whereClause;
                 default:
                     throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
             }

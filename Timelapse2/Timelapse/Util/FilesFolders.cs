@@ -32,7 +32,7 @@ namespace Timelapse.Util
         public static void GetAllFoldersContainingAnImageOrVideo(string folderRoot, List<string> folderPaths, string prefixPath)
         {
             // Check the arguments for null 
-            if (folderPaths == null)
+            if (folderPaths == null || folderRoot == null)
             {
                 // this should not happen
                 TracePrint.PrintStackTrace(1);
@@ -58,10 +58,19 @@ namespace Timelapse.Util
                 }
             }
 
+            DirectoryInfo[] subDirs;
             // Recursively descend subfolders, collecting directory info on the way
             // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
-            DirectoryInfo dirInfo = new DirectoryInfo(folderRoot);
-            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            try
+            { 
+                DirectoryInfo dirInfo = new DirectoryInfo(folderRoot);
+                subDirs = dirInfo.GetDirectories();
+            }
+            catch
+            {
+                // It may fail if there is a permissions issue
+                return;
+            }
             foreach (DirectoryInfo subDir in subDirs)
             {
                 // Skip the following folders
@@ -251,11 +260,30 @@ namespace Timelapse.Util
         // Return true if any of the files in the fileinfo list includes at least  image or video
         private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
+            DirectoryInfo directoryInfo;
+            try
+            {
+                directoryInfo = new DirectoryInfo(folderPath);
+            }
+            catch
+            {
+                // The call may fail if the OS denies access because of an I/O error or a specific type of security error
+                return false;
+            }
+
             foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
             {
+
                 List<FileInfo> fileInfoList = new List<FileInfo>();
-                fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                try
+                {
+                    fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                }
+                catch
+                {
+                    // The call may fail if the OS denies access because of an I/O error or a specifi type of security error
+                    continue;
+                }
                 FilesRemoveAllButImagesAndVideos(fileInfoList);
                 if (fileInfoList.Any(x => x.Name.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase) == true))
                 {
@@ -310,8 +338,17 @@ namespace Timelapse.Util
             }
 
             // Recursively descend subfolders
-            DirectoryInfo dirInfo = new DirectoryInfo(rootFolderPath);
-            DirectoryInfo[] subDirs = dirInfo.GetDirectories();
+            DirectoryInfo[] subDirs;
+            try
+            { 
+                DirectoryInfo dirInfo = new DirectoryInfo(rootFolderPath);
+                subDirs = dirInfo.GetDirectories();
+            }
+            catch
+            {
+                // It may fail if there is a permissions issue.
+                return;
+            }
             foreach (DirectoryInfo subDir in subDirs)
             {
                 // Skip the following folders
