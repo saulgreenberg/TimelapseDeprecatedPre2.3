@@ -34,7 +34,7 @@ namespace Timelapse.Database
             this.TermCombiningOperator = termCombiningOperator;
 
             // skip hidden controls as they're not normally a part of the user experience
-            // this is potentially problematic in corner cases; an option to show terms for all controls can be added if needed
+            // this is potentially problematic in corner cases; perhaps add an option to show terms for all controls can be added if needed?
             foreach (ControlRow control in templateTable)
             {
                 // If you don't want a control to appear in the CustomSelection, add it here
@@ -98,6 +98,62 @@ namespace Timelapse.Database
                 }
                 // else use default values above
             }
+
+            // The hacky mess below is simply to get the search terms in an ordered list, where:
+            // - the standard visible search terms are at the beginning, in a specific order
+            // - the remaining non-standard search terms follow, in the order specified in the template
+
+            // Get the unordered standard search tersm
+            IEnumerable<SearchTerm> unodrderedStandardSearchTerms = SearchTerms.Where(
+                term => term.DataLabel == Constant.DatabaseColumn.File || term.DataLabel == Constant.DatabaseColumn.Folder ||
+                           term.DataLabel == Constant.DatabaseColumn.RelativePath || term.DataLabel == Constant.DatabaseColumn.DateTime ||
+                           term.DataLabel == Constant.DatabaseColumn.ImageQuality || term.DataLabel == Constant.DatabaseColumn.UtcOffset || term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
+
+            // Create a dictionary that will contain items in the correct order
+            string secondDateTimeLabel = "2nd" + Constant.DatabaseColumn.DateTime;
+            Dictionary<string, SearchTerm> dictOrderedTerms = new Dictionary<string, SearchTerm>
+            {
+                { Constant.DatabaseColumn.File, null },
+                { Constant.DatabaseColumn.Folder, null },
+                { Constant.DatabaseColumn.RelativePath, null },
+                { Constant.DatabaseColumn.DateTime, null },
+                { secondDateTimeLabel, null },
+                { Constant.DatabaseColumn.UtcOffset, null },
+                { Constant.DatabaseColumn.ImageQuality, null },
+                { Constant.DatabaseColumn.DeleteFlag, null }
+            };
+
+            // Add the unordered search terms into the dictionary, which will put them in the correct order
+            List<SearchTerm> orderedSearchTerms = new List<SearchTerm>();
+            foreach (SearchTerm searchTerm in unodrderedStandardSearchTerms)
+            {
+                if (dictOrderedTerms.ContainsKey (searchTerm.DataLabel) )
+                {
+                    if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime && dictOrderedTerms[searchTerm.DataLabel] != null)
+                    {
+                        // We need to use the 2nd datetime label as there may be two DateTime entries (i.e. to allow a user to select a date range)
+                        dictOrderedTerms[secondDateTimeLabel] = searchTerm;
+                    }
+                    else
+                    {
+                        dictOrderedTerms[searchTerm.DataLabel] = searchTerm;
+                    }
+                }
+            }
+            // Create a new ordered list of standard search terms based on the non-null (and correctly ordered) search terms in the dictionary
+            List<SearchTerm> standardSearchTerms = new List<SearchTerm>();
+            foreach(KeyValuePair<string,SearchTerm> kvp in dictOrderedTerms)
+            {
+                if (kvp.Value != null)
+                {
+                    standardSearchTerms.Add(kvp.Value);
+                }
+            }
+
+            // Collect all the non-standard search terms which the user currently selected as UseForSearching
+            IEnumerable<SearchTerm> nonStandardSearchTerms =  SearchTerms.Except(unodrderedStandardSearchTerms).ToList();
+            // FInally, concat the two lists together to collect all the correctly ordered search terms into a single list
+            SearchTerms = standardSearchTerms.Concat(nonStandardSearchTerms).ToList();
         }
         #endregion
 
@@ -253,11 +309,13 @@ namespace Timelapse.Database
                         // Form: ( DataTable.RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
                         string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue);
                         string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*");
-                        if (searchTerm.Operator == Constant.SearchTermOperator.NotEqual)
-                        {
-                            // Add NOT if the operator is not equal 
-                            whereForTerm += Sql.Not;
-                        }
+                        // Exclued the not equal case - this has been removed from the custom selection dialog
+                        // as it seems to be an odd search
+                        //if (searchTerm.Operator == Constant.SearchTermOperator.NotEqual)
+                        //{
+                        //    // Add NOT if the operator is not equal 
+                        //    whereForTerm += Sql.Not;
+                        //}
                         whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
                     }
                     else

@@ -17,8 +17,11 @@
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question"
                             Title="Select and View a Subset of your Files"
                             What="You may want to view only a subset of your images and videos that fit some criteria of interest to you."
-                            Solution="Specify some search terms that describes your criteria.&#10;1. Each row below reflects your data fields.&#10;2. Select one or more data fields that you want to use as part of your search.
-                            &#10;3. Select the expresson you want to use.&#10;4. Select or enter the value you want to use to compare against the data field's contents."
+                            Solution="Specify the search terms that describe your criteria.
+                                      &#10;1. Each row below reflects your data fields or (if enabled) specific recognition data.
+                                      &#10;2. Select one or more rows and adjust its values to reflect your search criteria .
+                                      &#10;3. If you have selected multiple terms in the lower area, select how those terms should be combined."
+                                      
                             Result="Only those images and videos matching your search criteria will be displayed."
                             Hint="Glob expressions are case sensitive and allow wildcards as follows:&#10;&#x2022; * matches any number of characters and ? matches any single character&#10;&#x2022; [abc] matches one of the indicated characters; [a-z] matches one charecter in the range of indicated characters. "
                             ShowExplanationVisibility="True"/>
@@ -88,28 +91,11 @@
             </StackPanel>
 
         </StackPanel>
+        
         <!--Selection Panel-->
-        <GroupBox Name="SelectionGroupBox" Header="Selections" FontWeight="Bold" Height="Auto" DockPanel.Dock="Bottom" Margin="10,15,5,0">
+        <GroupBox Name="SelectionGroupBox" Header="Select images and videos that match these terms " FontWeight="Bold" FontStyle="Italic" Height="Auto" DockPanel.Dock="Bottom" Margin="10,15,5,0" Padding="0,10,0,00">
             <DockPanel>
-                <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-                    <StackPanel Orientation="Horizontal" Margin="45,0,0,0">
-                        <TextBlock Margin="10" FontWeight="DemiBold" VerticalAlignment="Center" Text="Combine searches using: "/>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton VerticalAlignment="Center" Name="TermCombiningAnd" Margin="3,3,0,3 " FontWeight="DemiBold" Content="_And" GroupName="LogicalOperators" IsChecked="True"/>
-                                <TextBlock VerticalAlignment="Center" Margin="3,3,0,3" FontWeight="Normal" Text="to select images and videos matching all selected search terms"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton Name="TermCombiningOr" VerticalAlignment="Center" Margin="3,1,0,3" FontWeight="DemiBold" Content="O_r" GroupName="LogicalOperators"  />
-                                <TextBlock VerticalAlignment="Center" Margin="3,0,0,3" FontWeight="Normal" Text="   to select images and videos matching any one of the selected search terms"/>
-                            </StackPanel>
-                            <TextBlock VerticalAlignment="Center" Margin="3,0,0,3" FontWeight="Normal" FontStyle="Italic" Text="     Multiple DateTime selections are always And'ed together"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <Rectangle Fill="#FF868686" Height="1" Margin="5"></Rectangle>
-                </StackPanel>
-
-                <ScrollViewer>
+                <ScrollViewer FontStyle="Normal">
                     <Grid Name="SearchTerms" Width="Auto" Height="Auto" DockPanel.Dock="Bottom">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -125,7 +111,7 @@
                         <TextBlock Padding ="5,0,5,0" FontWeight="Bold" Text="Label" Grid.Row="0" Grid.Column="1"/>
                         <TextBlock Padding ="5,0,5,0" FontWeight="Bold" Text="Expression" Grid.Row="0" Grid.Column="2"/>
                         <TextBlock Padding ="5,0,5,0" FontWeight="Bold" Text="Value" Grid.Row="0" Grid.Column="3"/>
-                        <TextBlock Padding ="5,0,5,0" FontWeight="Bold" Text="Search Query" Grid.Row="0" Grid.Column="4"/>
+                        <TextBlock Padding ="5,0,5,0" FontWeight="Bold" Text="How multiple terms are combined" Grid.Row="0" Grid.Column="4"/>
                     </Grid>
                 </ScrollViewer>
             </DockPanel>
