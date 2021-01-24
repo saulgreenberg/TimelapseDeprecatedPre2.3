@@ -432,6 +432,7 @@ namespace Timelapse
         // Exit Timelapse
         private void MenuItemExit_Click(object sender, RoutedEventArgs e)
         {
+            this.CloseImageSet();
             this.Close();
             Application.Current.Shutdown();
         }

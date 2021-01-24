@@ -104,7 +104,7 @@ namespace Timelapse.Database
         public TimeSpan UtcOffset
         {
             get { return this.Row.GetUtcOffsetField(Constant.DatabaseColumn.UtcOffset); }
-            private set { this.Row.SetUtcOffsetField(Constant.DatabaseColumn.UtcOffset, value);  }
+            private set { this.Row.SetUtcOffsetField(Constant.DatabaseColumn.UtcOffset, value); }
         }
         #endregion
 
@@ -180,7 +180,7 @@ namespace Timelapse.Database
                     return this.DateTimeAsDisplayable;
                 case Constant.DatabaseColumn.UtcOffset:
                     return DateTimeHandler.ToStringDatabaseUtcOffset(this.UtcOffset);
-                    //return DateTimeHandler.ToStringDisplayUtcOffset(this.UtcOffset);
+                //return DateTimeHandler.ToStringDisplayUtcOffset(this.UtcOffset);
                 case Constant.DatabaseColumn.ImageQuality:
                     return this.ImageQuality.ToString();
                 default:

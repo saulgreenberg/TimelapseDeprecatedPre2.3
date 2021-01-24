@@ -1514,7 +1514,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Counts of matching files
+        #region Counts or Exists 1 of matching files
         // Return a total count of the currently selected files in the file table.
         public int CountAllCurrentlySelectedFiles
         {
@@ -1584,6 +1584,75 @@ namespace Timelapse.Database
             //}
             return this.Database.ScalarGetCountFromSelect(query);
         }
+
+        // Return true if even one file matches the fileSelection condition in the entire database
+        // Form examples
+        // - Select Count(*) FROM DataTable WHERE ImageQuality='Light'
+        // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
+        // - Select Count(*) FROM (Select * From Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id  INER JOIN Detections ON Detections.detectionID = Classifications.detectionID WHERE DataTable.Person<>'true' 
+        // AND Classifications.category = 6 GROUP BY Classifications.classificationID HAVING  MAX  (Classifications.conf ) BETWEEN 0.8 AND 1 
+        public bool ExistsFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)
+        {
+            string query;
+            bool skipWhere = false;
+
+            query = " SELECT EXISTS ( ";
+
+            // PART 1 of Query
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+            {
+                // MISSING DETECTIONS
+                // Create a query that returns a count of missing detections
+                // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
+                query += SqlPhrase.SelectMissingDetections(true);
+                skipWhere = true;
+            }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
+            {
+                // DETECTIONS
+                // Create a query that returns a count of detections matching some conditions
+                // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                query += SqlPhrase.SelectDetections(true);
+            }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
+            {
+                // CLASSIFICATIONS
+                // Create a partial query that returns a count of classifications matching some conditions
+                // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                query += SqlPhrase.SelectClassifications(true);
+            }
+            else
+            {
+                // STANDARD (NO DETECTIONS/CLASSIFICATIONS)
+                // Create a query that returns a count that does not consider detections
+                query += Sql.SelectCountStarFrom + Constant.DBTables.FileData;
+            }
+
+            // PART 2 of Query
+            // Now add the Where conditions to the query
+            if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
+            {
+                string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
+                if (!String.IsNullOrEmpty(where))
+                {
+                    query += where;
+                }
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
+                {
+                    // Add a close parenthesis if we are querying for detections
+                    query += Sql.CloseParenthesis;
+                }
+            }
+
+            query += Sql.CloseParenthesis;
+
+            // Uncommment this to see the actual complete query
+            System.Diagnostics.Debug.Print("File Exists: " + query + ":" + this.Database.ScalarGetCountFromSelect(query).ToString() );
+            
+            return this.Database.ScalarGetCountFromSelect(query) != 0;
+            //return this.Database.ScalarGetCountFromSelect(query);
+        }
+
         #endregion
 
         #region Exists matching files  
@@ -1637,836 +1706,836 @@ namespace Timelapse.Database
             else
             {
                 // Form after this: SELECT EXISTS  ( SELECT 1  FROM DataTable WHERE  (RelativePath= 'Station1' OR RelativePath GLOB 'Station1\*') AND DeleteFlag = 'TRUE' COllate nocase)
-                query +=constrainToRelativePathTerm + Sql.And + selectionTerm + Sql.CloseParenthesis;
+                query += constrainToRelativePathTerm + Sql.And + selectionTerm + Sql.CloseParenthesis;
             }
 
             // System.Diagnostics.Debug.Print("ExistsRowThatMatchesExactSelection: " + query);
             return this.Database.ScalarBoolFromOneOrZero(query);
         }
-    #endregion
+        #endregion
 
-    #region Find: By Filename 
-    // Find by file name, forwards and backwards with wrapping
-    public int FindByFileName(int currentRow, bool isForward, string filename)
-    {
-        int rowIndex;
+        #region Find: By Filename 
+        // Find by file name, forwards and backwards with wrapping
+        public int FindByFileName(int currentRow, bool isForward, string filename)
+        {
+            int rowIndex;
 
-        if (isForward)
-        {
-            // Find forwards with wrapping
-            rowIndex = this.FindByFileNameForwards(currentRow + 1, this.CountAllCurrentlySelectedFiles, filename);
-            return rowIndex == -1 ? this.FindByFileNameForwards(0, currentRow - 1, filename) : rowIndex;
-        }
-        else
-        {
-            // Find backwards  with wrapping
-            rowIndex = this.FindByFileNameBackwards(currentRow - 1, 0, filename);
-            return rowIndex == -1 ? this.FindByFileNameBackwards(this.CountAllCurrentlySelectedFiles, currentRow + 1, filename) : rowIndex;
-        }
-    }
-
-    // Helper for FindByFileName
-    private int FindByFileNameForwards(int from, int to, string filename)
-    {
-        for (int rowIndex = from; rowIndex <= to; rowIndex++)
-        {
-            if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
+            if (isForward)
             {
-                return rowIndex;
-            }
-        }
-        return -1;
-    }
-
-    // Helper for FindByFileName
-    private int FindByFileNameBackwards(int from, int downto, string filename)
-    {
-        for (int rowIndex = from; rowIndex >= downto; rowIndex--)
-        {
-            if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
-            {
-                return rowIndex;
-            }
-        }
-        return -1;
-    }
-
-    // Helper for FindByFileName
-    private int FileRowContainsFileName(int rowIndex, string filename)
-    {
-        CultureInfo culture = new CultureInfo("en");
-        if (this.IsFileRowInRange(rowIndex) == false)
-        {
-            return -1;
-        }
-        return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].File, filename, CompareOptions.IgnoreCase);
-    }
-    #endregion
-
-    #region Find: Displayable
-    // Convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)
-    public bool IsFileDisplayable(int rowIndex)
-    {
-        if (this.IsFileRowInRange(rowIndex) == false)
-        {
-            return false;
-        }
-        return this.FileTable[rowIndex].IsDisplayable(this.FolderPath);
-    }
-
-    // Find the next displayable file at or after the provided row in the current image set.
-    // If there is no next displayable file, then find the closest previous file before the provided row that is displayable.
-    public int GetCurrentOrNextDisplayableFile(int startIndex)
-    {
-        int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
-        for (int index = startIndex; index < countAllCurrentlySelectedFiles; index++)
-        {
-            if (this.IsFileDisplayable(index))
-            {
-                return index;
-            }
-        }
-        for (int index = startIndex - 1; index >= 0; index--)
-        {
-            if (this.IsFileDisplayable(index))
-            {
-                return index;
-            }
-        }
-        return -1;
-    }
-    #endregion
-
-    #region Find: By Row Index
-    // Check if index is within the file row range
-    public bool IsFileRowInRange(int imageRowIndex)
-    {
-        return (imageRowIndex >= 0) && (imageRowIndex < this.CountAllCurrentlySelectedFiles);
-    }
-
-    // Find the image whose ID is closest to the provided ID  in the current image set
-    // If the ID does not exist, then return the image row whose ID is just greater than the provided one. 
-    // However, if there is no greater ID (i.e., we are at the end) return the last row. 
-    public int FindClosestImageRow(long fileID)
-    {
-        int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
-        for (int rowIndex = 0, maxCount = countAllCurrentlySelectedFiles; rowIndex < maxCount; ++rowIndex)
-        {
-            if (this.FileTable[rowIndex].ID >= fileID)
-            {
-                return rowIndex;
-            }
-        }
-        return countAllCurrentlySelectedFiles - 1;
-    }
-
-    // Find the file whose ID is closest to the provided ID in the current image set
-    // If the ID does not exist, then return the file whose ID is just greater than the provided one. 
-    // However, if there is no greater ID (i.e., we are at the end) return the last row. 
-    public int GetFileOrNextFileIndex(long fileID)
-    {
-        // try primary key lookup first as typically the requested ID will be present in the data table
-        // (ideally the caller could use the ImageRow found directly, but this doesn't compose with index based navigation)
-        ImageRow file = this.FileTable.Find(fileID);
-        if (file != null)
-        {
-            return this.FileTable.IndexOf(file);
-        }
-
-        // when sorted by ID ascending so an inexact binary search works
-        // Sorting by datetime is usually identical to ID sorting in single camera image sets 
-        // But no datetime seed is available if direct ID lookup fails.  Thw API can be reworked to provide a datetime hint
-        // if this proves too troublesome.
-        int firstIndex = 0;
-        int lastIndex = this.CountAllCurrentlySelectedFiles - 1;
-        int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
-        while (firstIndex <= lastIndex)
-        {
-            int midpointIndex = (firstIndex + lastIndex) / 2;
-            file = this.FileTable[midpointIndex];
-            long midpointID = file.ID;
-
-            if (fileID > midpointID)
-            {
-                // look at higher index partition next
-                firstIndex = midpointIndex + 1;
-            }
-            else if (fileID < midpointID)
-            {
-                // look at lower index partition next
-                lastIndex = midpointIndex - 1;
+                // Find forwards with wrapping
+                rowIndex = this.FindByFileNameForwards(currentRow + 1, this.CountAllCurrentlySelectedFiles, filename);
+                return rowIndex == -1 ? this.FindByFileNameForwards(0, currentRow - 1, filename) : rowIndex;
             }
             else
             {
-                // found the ID closest to fileID
-                return midpointIndex;
+                // Find backwards  with wrapping
+                rowIndex = this.FindByFileNameBackwards(currentRow - 1, 0, filename);
+                return rowIndex == -1 ? this.FindByFileNameBackwards(this.CountAllCurrentlySelectedFiles, currentRow + 1, filename) : rowIndex;
             }
         }
 
-        // all IDs in the selection are smaller than fileID
-        if (firstIndex >= countAllCurrentlySelectedFiles)
+        // Helper for FindByFileName
+        private int FindByFileNameForwards(int from, int to, string filename)
         {
+            for (int rowIndex = from; rowIndex <= to; rowIndex++)
+            {
+                if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
+                {
+                    return rowIndex;
+                }
+            }
+            return -1;
+        }
+
+        // Helper for FindByFileName
+        private int FindByFileNameBackwards(int from, int downto, string filename)
+        {
+            for (int rowIndex = from; rowIndex >= downto; rowIndex--)
+            {
+                if (this.FileRowContainsFileName(rowIndex, filename) >= 0)
+                {
+                    return rowIndex;
+                }
+            }
+            return -1;
+        }
+
+        // Helper for FindByFileName
+        private int FileRowContainsFileName(int rowIndex, string filename)
+        {
+            CultureInfo culture = new CultureInfo("en");
+            if (this.IsFileRowInRange(rowIndex) == false)
+            {
+                return -1;
+            }
+            return culture.CompareInfo.IndexOf(this.FileTable[rowIndex].File, filename, CompareOptions.IgnoreCase);
+        }
+        #endregion
+
+        #region Find: Displayable
+        // Convenience routine for checking to see if the image in the given row is displayable (i.e., not corrupted or missing)
+        public bool IsFileDisplayable(int rowIndex)
+        {
+            if (this.IsFileRowInRange(rowIndex) == false)
+            {
+                return false;
+            }
+            return this.FileTable[rowIndex].IsDisplayable(this.FolderPath);
+        }
+
+        // Find the next displayable file at or after the provided row in the current image set.
+        // If there is no next displayable file, then find the closest previous file before the provided row that is displayable.
+        public int GetCurrentOrNextDisplayableFile(int startIndex)
+        {
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
+            for (int index = startIndex; index < countAllCurrentlySelectedFiles; index++)
+            {
+                if (this.IsFileDisplayable(index))
+                {
+                    return index;
+                }
+            }
+            for (int index = startIndex - 1; index >= 0; index--)
+            {
+                if (this.IsFileDisplayable(index))
+                {
+                    return index;
+                }
+            }
+            return -1;
+        }
+        #endregion
+
+        #region Find: By Row Index
+        // Check if index is within the file row range
+        public bool IsFileRowInRange(int imageRowIndex)
+        {
+            return (imageRowIndex >= 0) && (imageRowIndex < this.CountAllCurrentlySelectedFiles);
+        }
+
+        // Find the image whose ID is closest to the provided ID  in the current image set
+        // If the ID does not exist, then return the image row whose ID is just greater than the provided one. 
+        // However, if there is no greater ID (i.e., we are at the end) return the last row. 
+        public int FindClosestImageRow(long fileID)
+        {
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
+            for (int rowIndex = 0, maxCount = countAllCurrentlySelectedFiles; rowIndex < maxCount; ++rowIndex)
+            {
+                if (this.FileTable[rowIndex].ID >= fileID)
+                {
+                    return rowIndex;
+                }
+            }
             return countAllCurrentlySelectedFiles - 1;
         }
 
-        // all IDs in the selection are larger than fileID
-        return firstIndex;
-    }
-    #endregion
-
-    #region Binding the data grid
-    // Bind the data grid to an event, using boundGrid and the onFileDataTableRowChanged event 
-
-    // Convenience form that knows which datagrid to use
-    public void BindToDataGrid()
-    {
-        if (this.FileTable == null)
+        // Find the file whose ID is closest to the provided ID in the current image set
+        // If the ID does not exist, then return the file whose ID is just greater than the provided one. 
+        // However, if there is no greater ID (i.e., we are at the end) return the last row. 
+        public int GetFileOrNextFileIndex(long fileID)
         {
-            return;
-        }
-        this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
-    }
-
-    // Generalized form of the above
-    public void BindToDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
-    {
-        if (this.FileTable == null)
-        {
-            return;
-        }
-        this.boundGrid = dataGrid;
-        this.onFileDataTableRowChanged = onRowChanged;
-        this.FileTable.BindDataGrid(dataGrid, onRowChanged);
-    }
-    #endregion
-
-    #region Index creation and dropping
-    public void IndexCreateForDetectionsAndClassifications()
-    {
-        this.Database.IndexCreate(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
-        this.Database.IndexCreate(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
-    }
-
-    public void IndexCreateForFileAndRelativePath()
-    {
-        this.Database.IndexCreate(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-        this.Database.IndexCreate(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
-    }
-
-    public void IndexDropForFileAndRelativePath()
-    {
-        this.Database.IndexDrop(Constant.DatabaseValues.IndexRelativePath);
-        this.Database.IndexDrop(Constant.DatabaseValues.IndexFile);
-    }
-    #endregion
-
-    #region File retrieval and manipulation
-    public void RenameFile(string newFileName)
-    {
-        if (File.Exists(Path.Combine(this.FolderPath, this.FileName)))
-        {
-            File.Move(Path.Combine(this.FolderPath, this.FileName),
-                      Path.Combine(this.FolderPath, newFileName));  // Change the file name to the new file name
-            this.FileName = newFileName; // Store the file name
-            this.Database = new SQLiteWrapper(Path.Combine(this.FolderPath, newFileName));          // Recreate the database connecction
-        }
-    }
-
-    // Insert one or more rows into a table
-    private void InsertRows(string table, List<List<ColumnTuple>> insertionStatements)
-    {
-        this.CreateBackupIfNeeded();
-        this.Database.Insert(table, insertionStatements);
-    }
-
-    // Return the selected folder (if any)
-    public string GetSelectedFolder()
-    {
-        if (this.CustomSelection == null)
-        {
-            return String.Empty;
-        }
-        return this.CustomSelection.GetRelativePathFolder();
-    }
-
-    // NO LONGER USED AS THESE HAVE ALL BEEN CENTRALIZED TO USE THE SEARCHTERM DATA STRUCTURE
-    //private string GetFilesConditionalExpression(FileSelectionEnum selection)
-    //{
-    //    // System.Diagnostics.Debug.Print(selection.ToString());
-    //    switch (selection)
-    //    {
-    //        case FileSelectionEnum.All:
-    //        case FileSelectionEnum.Corrupted:
-    //        case FileSelectionEnum.Missing:
-    //            // SAULXXX: Corrupted and Missing should no longer be accessible: these cases could be deleted.
-    //            return String.Empty;
-    //        case FileSelectionEnum.Dark:
-    //        case FileSelectionEnum.Ok:
-    //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Sql.Quote(selection.ToString());
-    //        case FileSelectionEnum.MarkedForDeletion:
-    //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
-    //        case FileSelectionEnum.Custom:
-    //        case FileSelectionEnum.Folders:
-    //            //this.CustomSelection.GetRelativePathFolder();
-    //            string whereClause = this.CustomSelection.GetFilesWhere();
-    //            System.Diagnostics.Debug.Print(whereClause);
-    //            //return this.CustomSelection.GetFilesWhere();
-    //            return whereClause;
-    //        default:
-    //            throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
-    //    }
-    //}
-    #endregion
-
-    #region Markers
-    /// <summary>
-    /// Get all markers for the specified file.
-    /// This is done by getting the marker list associated with all counters representing the current row
-    /// It will have a MarkerCounter for each control, even if there may be no metatags in it
-    /// </summary>
-    public List<MarkersForCounter> MarkersGetMarkersForCurrentFile(long fileID)
-    {
-        List<MarkersForCounter> markersForAllCounters = new List<MarkersForCounter>();
-
-        // Get the current row number of the id in the marker table
-        MarkerRow markersForImage = this.Markers.Find(fileID);
-        if (markersForImage == null)
-        {
-            return markersForAllCounters;
-        }
-
-        // Iterate through the columns, where we create a MarkersForCounter for each control and add it to the MarkersForCounter list
-        foreach (string dataLabel in markersForImage.DataLabels)
-        {
-            // create a marker for each point and add it to the counter 
-            MarkersForCounter markersForCounter = new MarkersForCounter(dataLabel);
-            string pointList;
-            try
+            // try primary key lookup first as typically the requested ID will be present in the data table
+            // (ideally the caller could use the ImageRow found directly, but this doesn't compose with index based navigation)
+            ImageRow file = this.FileTable.Find(fileID);
+            if (file != null)
             {
-                pointList = markersForImage[dataLabel];
+                return this.FileTable.IndexOf(file);
             }
-            catch (Exception exception)
+
+            // when sorted by ID ascending so an inexact binary search works
+            // Sorting by datetime is usually identical to ID sorting in single camera image sets 
+            // But no datetime seed is available if direct ID lookup fails.  Thw API can be reworked to provide a datetime hint
+            // if this proves too troublesome.
+            int firstIndex = 0;
+            int lastIndex = this.CountAllCurrentlySelectedFiles - 1;
+            int countAllCurrentlySelectedFiles = this.CountAllCurrentlySelectedFiles;
+            while (firstIndex <= lastIndex)
             {
-                TracePrint.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
-                pointList = String.Empty;
-            }
-            markersForCounter.ParsePontList(pointList);
-            markersForAllCounters.Add(markersForCounter);
-        }
-        return markersForAllCounters;
-    }
+                int midpointIndex = (firstIndex + lastIndex) / 2;
+                file = this.FileTable[midpointIndex];
+                long midpointID = file.ID;
 
-    // Get all markers from the Markers table and load it into the data table
-    private void MarkersLoadRowsFromDatabase()
-    {
-        string markersQuery = Sql.SelectStarFrom + Constant.DBTables.Markers;
-        this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
-    }
-
-    // Add an empty new row to the marker list if it isnt there. Return true if we added it, otherwise false 
-    // Columns will be automatically set to NULL
-    public bool MarkersTryInsertNewMarkerRow(long imageID)
-    {
-        if (this.Markers.Find(imageID) != null)
-        {
-            // There should already be a row for this, so don't creat one
-            return false;
-        }
-        List<ColumnTuple> columns = new List<ColumnTuple>()
-            {
-                new ColumnTuple(Constant.DatabaseColumn.ID, imageID.ToString())
-            };
-        List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
-            {
-                columns
-            };
-        this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
-        this.MarkersLoadRowsFromDatabase(); // Update the markers list to include this new row
-        return true;
-    }
-
-    /// <summary>
-    /// Set the list of marker points on the current row in the marker table. 
-    /// </summary>
-    public void MarkersUpdateMarkerRow(long imageID, MarkersForCounter markersForCounter)
-    {
-        // Check the arguments for null 
-        ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
-
-        // Find the current row number
-        MarkerRow marker = this.Markers.Find(imageID);
-        if (marker == null)
-        {
-            TracePrint.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
-            return;
-        }
-
-        // Update the database and datatable
-        // Note that I repeated the null check here, as for some reason it was still coming up as a CA1062 warning
-        ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
-        marker[markersForCounter.DataLabel] = markersForCounter.GetPointList();
-        this.UpdateSyncMarkerToDatabase(marker);
-    }
-    #endregion
-
-    #region ImageSet manipulation
-    private void ImageSetLoadFromDatabase()
-    {
-        string imageSetQuery = Sql.SelectStarFrom + Constant.DBTables.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
-        DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
-        this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
-        if (imageSetTable != null)
-        {
-            imageSetTable.Dispose();
-        }
-    }
-    #endregion
-
-    #region DETECTION - Populate the Database (with progress bar)
-    // To help determine periodic updates to the progress bar 
-    private DateTime lastRefreshDateTime = DateTime.Now;
-    protected bool ReadyToRefresh()
-    {
-        TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
-        if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
-        {
-            this.lastRefreshDateTime = DateTime.Now;
-            return true;
-        }
-        return false;
-    }
-
-    private void PStream_BytesRead(object sender, ProgressStreamReportEventArgs args)
-    {
-        Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-        {
-            FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-        });
-        IProgress<ProgressBarArguments> progress = progressHandler;
-
-        long current = args.StreamPosition;
-        long total = args.StreamLength;
-        double p = current / ((double)total);
-        if (this.ReadyToRefresh())
-        {
-            // SaulXXX This should really be cancellable, but not sure how to do it from here.
-            // Update the progress bar
-            progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", false, false));
-            Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
-        }
-    }
-
-    static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
-    {
-        Application.Current.Dispatcher.Invoke(() =>
-        {
-                // Code to run on the GUI thread.
-                // Check the arguments for null 
-                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
-
-                // Set it as a progressive or indeterminate bar
-                busyCancelIndicator.IsIndeterminate = isIndeterminate;
-
-                // Set the progress bar position (only visible if determinate)
-                busyCancelIndicator.Percent = percent;
-
-                // Update the text message
-                busyCancelIndicator.Message = message;
-
-                // Update the cancel button to reflect the cancelEnabled argument
-                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
-            busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
-        });
-    }
-
-    public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
-    {
-        // Set up a progress handler that will update the progress bar
-        Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
-        {
-                // Update the progress bar
-                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
-        });
-        IProgress<ProgressBarArguments> progress = progressHandler;
-
-        // Check the arguments for null 
-        ThrowIf.IsNullArgument(foldersInDBListButNotInJSon, nameof(foldersInDBListButNotInJSon));
-        ThrowIf.IsNullArgument(foldersInJsonButNotInDB, nameof(foldersInJsonButNotInDB));
-        ThrowIf.IsNullArgument(foldersInBoth, nameof(foldersInBoth));
-
-        if (File.Exists(path) == false)
-        {
-            return false;
-        }
-
-        bool result;
-        using (ProgressStream ps = new ProgressStream(System.IO.File.OpenRead(path)))
-        {
-            ps.BytesRead += new ProgressStreamReportDelegate(PStream_BytesRead);
-
-            using (TextReader sr = new StreamReader(ps))
-            {
-                result = await Task.Run(() =>
+                if (fileID > midpointID)
                 {
-                    try
-                    {
-                        using (JsonReader reader = new JsonTextReader(sr))
-                        {
-                            JsonSerializer serializer = new JsonSerializer();
-                            Detector detector = serializer.Deserialize<Detector>(reader);
-
-                                // If detection population was previously done in this session, resetting these tables to null 
-                                // will force reading the new values into them
-                                this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
-                                this.detectionCategoriesDictionary = null;
-                            this.classificationCategoriesDictionary = null;
-                            this.classificationsDataTable = null;
-
-                                // Prepare the detection tables. If they already exist, clear them
-                                DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
-
-                                // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
-                                if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
-                            {
-                                    // No folders in the detections match folders in the databases. Abort without doing anything.
-                                    return false;
-                            }
-                                // PERFORMANCE This method does two things:
-                                // - it walks through the detector data structure to construct sql insertion statements
-                                // - it invokes the actual insertion in the database.
-                                // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                                // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
-
-                                // Update the progress bar and populate the detection tables
-                                progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
-                            Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
-                                DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
-
-                                // DetectionExists needs to be primed if it is to save its DetectionExists state
-                                this.DetectionsExists(true);
-                        }
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        System.Diagnostics.Debug.Print(e.Message + "Could not populate detection data");
-                        return false;
-                    }
-                }).ConfigureAwait(true);
-            }
-        }
-        return result;
-    }
-    #endregion
-
-    #region Detections
-    // Return true if there is at least one match between a detector folder and a DB folder
-    // Return a list of folder paths missing in the DB but present in the detector file
-    private bool CompareDetectorAndDBFolders(Detector detector, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
-    {
-        string folderpath;
-
-        if (detector.images.Count <= 0)
-        {
-            // No point continuing if there are no detector entries
-            return false;
-        }
-
-        // Get all distinct folders in the database
-        // This operation could b somewhat slow, but ...
-        List<string> FoldersInDBList = this.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath).Select(i => i.ToString()).ToList();
-        if (FoldersInDBList.Count == 0)
-        {
-            // No point continuing if there are no folders in the database (i.e., no images)
-            return false;
-        }
-
-        // Get all distinct folders in the Detector 
-        // We add a closing slash onto the imageFilePath to terminate any matches
-        // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
-        SortedSet<string> foldersInDetectorList = new SortedSet<string>();
-        foreach (image image in detector.images)
-        {
-            folderpath = Path.GetDirectoryName(image.file);
-            if (!string.IsNullOrEmpty(folderpath))
-            {
-                folderpath += "\\";
-            }
-            if (foldersInDetectorList.Contains(folderpath) == false)
-            {
-                foldersInDetectorList.Add(folderpath);
-            }
-        }
-
-        // Compare each folder in the DB against the folders in the detector );
-        foreach (string originalFolderDB in FoldersInDBList)
-        {
-            // Add a closing slash to the folderDB for the same reasons described above
-            string modifiedFolderDB = String.Empty;
-            if (!string.IsNullOrEmpty(originalFolderDB))
-            {
-                modifiedFolderDB = originalFolderDB + "\\";
-            }
-
-            if (foldersInDetectorList.Contains(modifiedFolderDB))
-            {
-                // this folder path is in both the detector file and the image set
-                foldersInBoth.Add(modifiedFolderDB);
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(originalFolderDB))
+                    // look at higher index partition next
+                    firstIndex = midpointIndex + 1;
+                }
+                else if (fileID < midpointID)
                 {
-                    // An empty strng is the root folder, so make sure we add it
-                    foldersInDBListButNotInJSon.Add("<root folder>");
+                    // look at lower index partition next
+                    lastIndex = midpointIndex - 1;
                 }
                 else
                 {
-                    // This folder is in the image set but NOT in the detector
-                    foldersInDBListButNotInJSon.Add(originalFolderDB);
+                    // found the ID closest to fileID
+                    return midpointIndex;
                 }
             }
-        }
-        List<string> tempList = foldersInDetectorList.Except(foldersInBoth).ToList();
-        foreach (string s in tempList)
-        {
-            foldersInJsonButNotInDB.Add(s);
-        }
-        // if there is at least one folder in both, it means that we have some recognition data that we can import.
-        return foldersInBoth.Count > 0;
-    }
 
-    // Get the detections associated with the current file, if any
-    // As part of the, create a DetectionTable in memory that mirrors the database table
-    public DataRow[] GetDetectionsFromFileID(long fileID)
-    {
-        if (this.detectionDataTable == null)
-        {
-            // PERFORMANCE 0 or more detections can be associated with every image. THus we should expect the number of detections could easily be two or three times the 
-            // number of images. With very large databases, retrieving the datatable of detections can be very slow (and can consume significant memory). 
-            // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
-            // its important to show detection data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
-            // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
-            this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
-        }
-        // Retrieve the detection from the in-memory datatable.
-        // Note that because IDs are in the database as a string, we convert it
-        // PERFORMANCE: This takes a bit of time, not much... but could be improved. Not sure if there is an index automatically built on it. If not, do so.
-        return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Sql.Equal + fileID.ToString());
-    }
-
-    // Get the detections associated with the current file, if any
-    public DataRow[] GetClassificationsFromDetectionID(long detectionID)
-    {
-        if (this.classificationsDataTable == null)
-        {
-            this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
-        }
-        // Note that because IDs are in the database as a string, we convert it
-        return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Sql.Equal + detectionID.ToString());
-    }
-
-    // Return the label that matches the detection category 
-    public string GetDetectionLabelFromCategory(string category)
-    {
-        this.CreateDetectionCategoriesDictionaryIfNeeded();
-        return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
-
-    }
-
-    public void CreateDetectionCategoriesDictionaryIfNeeded()
-    {
-        // Null means we have never tried to create the dictionary. Try to do so.
-        if (this.detectionCategoriesDictionary == null)
-        {
-            this.detectionCategoriesDictionary = new Dictionary<string, string>();
-            try
+            // all IDs in the selection are smaller than fileID
+            if (firstIndex >= countAllCurrentlySelectedFiles)
             {
-                using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
+                return countAllCurrentlySelectedFiles - 1;
+            }
+
+            // all IDs in the selection are larger than fileID
+            return firstIndex;
+        }
+        #endregion
+
+        #region Binding the data grid
+        // Bind the data grid to an event, using boundGrid and the onFileDataTableRowChanged event 
+
+        // Convenience form that knows which datagrid to use
+        public void BindToDataGrid()
+        {
+            if (this.FileTable == null)
+            {
+                return;
+            }
+            this.FileTable.BindDataGrid(this.boundGrid, this.onFileDataTableRowChanged);
+        }
+
+        // Generalized form of the above
+        public void BindToDataGrid(DataGrid dataGrid, DataRowChangeEventHandler onRowChanged)
+        {
+            if (this.FileTable == null)
+            {
+                return;
+            }
+            this.boundGrid = dataGrid;
+            this.onFileDataTableRowChanged = onRowChanged;
+            this.FileTable.BindDataGrid(dataGrid, onRowChanged);
+        }
+        #endregion
+
+        #region Index creation and dropping
+        public void IndexCreateForDetectionsAndClassifications()
+        {
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
+        }
+
+        public void IndexCreateForFileAndRelativePath()
+        {
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            this.Database.IndexCreate(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
+        }
+
+        public void IndexDropForFileAndRelativePath()
+        {
+            this.Database.IndexDrop(Constant.DatabaseValues.IndexRelativePath);
+            this.Database.IndexDrop(Constant.DatabaseValues.IndexFile);
+        }
+        #endregion
+
+        #region File retrieval and manipulation
+        public void RenameFile(string newFileName)
+        {
+            if (File.Exists(Path.Combine(this.FolderPath, this.FileName)))
+            {
+                File.Move(Path.Combine(this.FolderPath, this.FileName),
+                          Path.Combine(this.FolderPath, newFileName));  // Change the file name to the new file name
+                this.FileName = newFileName; // Store the file name
+                this.Database = new SQLiteWrapper(Path.Combine(this.FolderPath, newFileName));          // Recreate the database connecction
+            }
+        }
+
+        // Insert one or more rows into a table
+        private void InsertRows(string table, List<List<ColumnTuple>> insertionStatements)
+        {
+            this.CreateBackupIfNeeded();
+            this.Database.Insert(table, insertionStatements);
+        }
+
+        // Return the selected folder (if any)
+        public string GetSelectedFolder()
+        {
+            if (this.CustomSelection == null)
+            {
+                return String.Empty;
+            }
+            return this.CustomSelection.GetRelativePathFolder();
+        }
+
+        // NO LONGER USED AS THESE HAVE ALL BEEN CENTRALIZED TO USE THE SEARCHTERM DATA STRUCTURE
+        //private string GetFilesConditionalExpression(FileSelectionEnum selection)
+        //{
+        //    // System.Diagnostics.Debug.Print(selection.ToString());
+        //    switch (selection)
+        //    {
+        //        case FileSelectionEnum.All:
+        //        case FileSelectionEnum.Corrupted:
+        //        case FileSelectionEnum.Missing:
+        //            // SAULXXX: Corrupted and Missing should no longer be accessible: these cases could be deleted.
+        //            return String.Empty;
+        //        case FileSelectionEnum.Dark:
+        //        case FileSelectionEnum.Ok:
+        //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Sql.Quote(selection.ToString());
+        //        case FileSelectionEnum.MarkedForDeletion:
+        //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
+        //        case FileSelectionEnum.Custom:
+        //        case FileSelectionEnum.Folders:
+        //            //this.CustomSelection.GetRelativePathFolder();
+        //            string whereClause = this.CustomSelection.GetFilesWhere();
+        //            System.Diagnostics.Debug.Print(whereClause);
+        //            //return this.CustomSelection.GetFilesWhere();
+        //            return whereClause;
+        //        default:
+        //            throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
+        //    }
+        //}
+        #endregion
+
+        #region Markers
+        /// <summary>
+        /// Get all markers for the specified file.
+        /// This is done by getting the marker list associated with all counters representing the current row
+        /// It will have a MarkerCounter for each control, even if there may be no metatags in it
+        /// </summary>
+        public List<MarkersForCounter> MarkersGetMarkersForCurrentFile(long fileID)
+        {
+            List<MarkersForCounter> markersForAllCounters = new List<MarkersForCounter>();
+
+            // Get the current row number of the id in the marker table
+            MarkerRow markersForImage = this.Markers.Find(fileID);
+            if (markersForImage == null)
+            {
+                return markersForAllCounters;
+            }
+
+            // Iterate through the columns, where we create a MarkersForCounter for each control and add it to the MarkersForCounter list
+            foreach (string dataLabel in markersForImage.DataLabels)
+            {
+                // create a marker for each point and add it to the counter 
+                MarkersForCounter markersForCounter = new MarkersForCounter(dataLabel);
+                string pointList;
+                try
                 {
-                    int dataTableRowCount = dataTable.Rows.Count;
-                    for (int i = 0; i < dataTableRowCount; i++)
+                    pointList = markersForImage[dataLabel];
+                }
+                catch (Exception exception)
+                {
+                    TracePrint.PrintMessage(String.Format("Read of marker failed for dataLabel '{0}'. {1}", dataLabel, exception.ToString()));
+                    pointList = String.Empty;
+                }
+                markersForCounter.ParsePontList(pointList);
+                markersForAllCounters.Add(markersForCounter);
+            }
+            return markersForAllCounters;
+        }
+
+        // Get all markers from the Markers table and load it into the data table
+        private void MarkersLoadRowsFromDatabase()
+        {
+            string markersQuery = Sql.SelectStarFrom + Constant.DBTables.Markers;
+            this.Markers = new DataTableBackedList<MarkerRow>(this.Database.GetDataTableFromSelect(markersQuery), (DataRow row) => { return new MarkerRow(row); });
+        }
+
+        // Add an empty new row to the marker list if it isnt there. Return true if we added it, otherwise false 
+        // Columns will be automatically set to NULL
+        public bool MarkersTryInsertNewMarkerRow(long imageID)
+        {
+            if (this.Markers.Find(imageID) != null)
+            {
+                // There should already be a row for this, so don't creat one
+                return false;
+            }
+            List<ColumnTuple> columns = new List<ColumnTuple>()
+            {
+                new ColumnTuple(Constant.DatabaseColumn.ID, imageID.ToString())
+            };
+            List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>()
+            {
+                columns
+            };
+            this.Database.Insert(Constant.DBTables.Markers, insertionStatements);
+            this.MarkersLoadRowsFromDatabase(); // Update the markers list to include this new row
+            return true;
+        }
+
+        /// <summary>
+        /// Set the list of marker points on the current row in the marker table. 
+        /// </summary>
+        public void MarkersUpdateMarkerRow(long imageID, MarkersForCounter markersForCounter)
+        {
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
+
+            // Find the current row number
+            MarkerRow marker = this.Markers.Find(imageID);
+            if (marker == null)
+            {
+                TracePrint.PrintMessage(String.Format("Image ID {0} missing in markers table.", imageID));
+                return;
+            }
+
+            // Update the database and datatable
+            // Note that I repeated the null check here, as for some reason it was still coming up as a CA1062 warning
+            ThrowIf.IsNullArgument(markersForCounter, nameof(markersForCounter));
+            marker[markersForCounter.DataLabel] = markersForCounter.GetPointList();
+            this.UpdateSyncMarkerToDatabase(marker);
+        }
+        #endregion
+
+        #region ImageSet manipulation
+        private void ImageSetLoadFromDatabase()
+        {
+            string imageSetQuery = Sql.SelectStarFrom + Constant.DBTables.ImageSet + Sql.Where + Constant.DatabaseColumn.ID + " = " + Constant.DatabaseValues.ImageSetRowID.ToString();
+            DataTable imageSetTable = this.Database.GetDataTableFromSelect(imageSetQuery);
+            this.ImageSet = new ImageSetRow(imageSetTable.Rows[0]);
+            if (imageSetTable != null)
+            {
+                imageSetTable.Dispose();
+            }
+        }
+        #endregion
+
+        #region DETECTION - Populate the Database (with progress bar)
+        // To help determine periodic updates to the progress bar 
+        private DateTime lastRefreshDateTime = DateTime.Now;
+        protected bool ReadyToRefresh()
+        {
+            TimeSpan intervalFromLastRefresh = DateTime.Now - this.lastRefreshDateTime;
+            if (intervalFromLastRefresh > Constant.ThrottleValues.ProgressBarRefreshInterval)
+            {
+                this.lastRefreshDateTime = DateTime.Now;
+                return true;
+            }
+            return false;
+        }
+
+        private void PStream_BytesRead(object sender, ProgressStreamReportEventArgs args)
+        {
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler;
+
+            long current = args.StreamPosition;
+            long total = args.StreamLength;
+            double p = current / ((double)total);
+            if (this.ReadyToRefresh())
+            {
+                // SaulXXX This should really be cancellable, but not sure how to do it from here.
+                // Update the progress bar
+                progress.Report(new ProgressBarArguments((int)(100 * p), "Reading detection files, please wait", false, false));
+                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+            }
+        }
+
+        static private void UpdateProgressBar(BusyCancelIndicator busyCancelIndicator, int percent, string message, bool isCancelEnabled, bool isIndeterminate)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+            // Code to run on the GUI thread.
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+
+            // Set it as a progressive or indeterminate bar
+            busyCancelIndicator.IsIndeterminate = isIndeterminate;
+
+            // Set the progress bar position (only visible if determinate)
+            busyCancelIndicator.Percent = percent;
+
+            // Update the text message
+            busyCancelIndicator.Message = message;
+
+            // Update the cancel button to reflect the cancelEnabled argument
+            busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+                busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
+            });
+        }
+
+        public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
+        {
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
+            {
+            // Update the progress bar
+            FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler;
+
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(foldersInDBListButNotInJSon, nameof(foldersInDBListButNotInJSon));
+            ThrowIf.IsNullArgument(foldersInJsonButNotInDB, nameof(foldersInJsonButNotInDB));
+            ThrowIf.IsNullArgument(foldersInBoth, nameof(foldersInBoth));
+
+            if (File.Exists(path) == false)
+            {
+                return false;
+            }
+
+            bool result;
+            using (ProgressStream ps = new ProgressStream(System.IO.File.OpenRead(path)))
+            {
+                ps.BytesRead += new ProgressStreamReportDelegate(PStream_BytesRead);
+
+                using (TextReader sr = new StreamReader(ps))
+                {
+                    result = await Task.Run(() =>
                     {
-                        DataRow row = dataTable.Rows[i];
-                        this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                        try
+                        {
+                            using (JsonReader reader = new JsonTextReader(sr))
+                            {
+                                JsonSerializer serializer = new JsonSerializer();
+                                Detector detector = serializer.Deserialize<Detector>(reader);
+
+                            // If detection population was previously done in this session, resetting these tables to null 
+                            // will force reading the new values into them
+                            this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                                this.detectionCategoriesDictionary = null;
+                                this.classificationCategoriesDictionary = null;
+                                this.classificationsDataTable = null;
+
+                            // Prepare the detection tables. If they already exist, clear them
+                            DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+
+                            // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
+                            if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
+                                {
+                                // No folders in the detections match folders in the databases. Abort without doing anything.
+                                return false;
+                                }
+                            // PERFORMANCE This method does two things:
+                            // - it walks through the detector data structure to construct sql insertion statements
+                            // - it invokes the actual insertion in the database.
+                            // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                            // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+
+                            // Update the progress bar and populate the detection tables
+                            progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
+                                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+                                DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
+
+                            // DetectionExists needs to be primed if it is to save its DetectionExists state
+                            this.DetectionsExists(true);
+                            }
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            System.Diagnostics.Debug.Print(e.Message + "Could not populate detection data");
+                            return false;
+                        }
+                    }).ConfigureAwait(true);
+                }
+            }
+            return result;
+        }
+        #endregion
+
+        #region Detections
+        // Return true if there is at least one match between a detector folder and a DB folder
+        // Return a list of folder paths missing in the DB but present in the detector file
+        private bool CompareDetectorAndDBFolders(Detector detector, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
+        {
+            string folderpath;
+
+            if (detector.images.Count <= 0)
+            {
+                // No point continuing if there are no detector entries
+                return false;
+            }
+
+            // Get all distinct folders in the database
+            // This operation could b somewhat slow, but ...
+            List<string> FoldersInDBList = this.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath).Select(i => i.ToString()).ToList();
+            if (FoldersInDBList.Count == 0)
+            {
+                // No point continuing if there are no folders in the database (i.e., no images)
+                return false;
+            }
+
+            // Get all distinct folders in the Detector 
+            // We add a closing slash onto the imageFilePath to terminate any matches
+            // e.g., A/B  would also match A/Buzz, which we don't want. But A/B/ won't match that.
+            SortedSet<string> foldersInDetectorList = new SortedSet<string>();
+            foreach (image image in detector.images)
+            {
+                folderpath = Path.GetDirectoryName(image.file);
+                if (!string.IsNullOrEmpty(folderpath))
+                {
+                    folderpath += "\\";
+                }
+                if (foldersInDetectorList.Contains(folderpath) == false)
+                {
+                    foldersInDetectorList.Add(folderpath);
+                }
+            }
+
+            // Compare each folder in the DB against the folders in the detector );
+            foreach (string originalFolderDB in FoldersInDBList)
+            {
+                // Add a closing slash to the folderDB for the same reasons described above
+                string modifiedFolderDB = String.Empty;
+                if (!string.IsNullOrEmpty(originalFolderDB))
+                {
+                    modifiedFolderDB = originalFolderDB + "\\";
+                }
+
+                if (foldersInDetectorList.Contains(modifiedFolderDB))
+                {
+                    // this folder path is in both the detector file and the image set
+                    foldersInBoth.Add(modifiedFolderDB);
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(originalFolderDB))
+                    {
+                        // An empty strng is the root folder, so make sure we add it
+                        foldersInDBListButNotInJSon.Add("<root folder>");
+                    }
+                    else
+                    {
+                        // This folder is in the image set but NOT in the detector
+                        foldersInDBListButNotInJSon.Add(originalFolderDB);
                     }
                 }
             }
-            catch
+            List<string> tempList = foldersInDetectorList.Except(foldersInBoth).ToList();
+            foreach (string s in tempList)
             {
-                // Should never really get here, but just in case.
+                foldersInJsonButNotInDB.Add(s);
             }
+            // if there is at least one folder in both, it means that we have some recognition data that we can import.
+            return foldersInBoth.Count > 0;
         }
-    }
 
-    // Create the detection category dictionary to mirror the detection table
-    public string GetDetectionCategoryFromLabel(string label)
-    {
-        try
+        // Get the detections associated with the current file, if any
+        // As part of the, create a DetectionTable in memory that mirrors the database table
+        public DataRow[] GetDetectionsFromFileID(long fileID)
+        {
+            if (this.detectionDataTable == null)
+            {
+                // PERFORMANCE 0 or more detections can be associated with every image. THus we should expect the number of detections could easily be two or three times the 
+                // number of images. With very large databases, retrieving the datatable of detections can be very slow (and can consume significant memory). 
+                // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
+                // its important to show detection data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
+                // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
+                this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
+            }
+            // Retrieve the detection from the in-memory datatable.
+            // Note that because IDs are in the database as a string, we convert it
+            // PERFORMANCE: This takes a bit of time, not much... but could be improved. Not sure if there is an index automatically built on it. If not, do so.
+            return this.detectionDataTable.Select(Constant.DatabaseColumn.ID + Sql.Equal + fileID.ToString());
+        }
+
+        // Get the detections associated with the current file, if any
+        public DataRow[] GetClassificationsFromDetectionID(long detectionID)
+        {
+            if (this.classificationsDataTable == null)
+            {
+                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
+            }
+            // Note that because IDs are in the database as a string, we convert it
+            return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Sql.Equal + detectionID.ToString());
+        }
+
+        // Return the label that matches the detection category 
+        public string GetDetectionLabelFromCategory(string category)
         {
             this.CreateDetectionCategoriesDictionaryIfNeeded();
-            // A lookup dictionary should now exists, so just return the category value.
-            string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
-            return myKey ?? String.Empty;
-        }
-        catch
-        {
-            // Should never really get here, but just in case.
-            return String.Empty;
-        }
-    }
+            return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
 
-    public List<string> GetDetectionLabels()
-    {
-        List<string> labels = new List<string>();
-        this.CreateDetectionCategoriesDictionaryIfNeeded();
-        foreach (KeyValuePair<string, string> entry in this.detectionCategoriesDictionary)
-        {
-            labels.Add(entry.Value);
         }
-        return labels;
-    }
 
-    // Create the classification category dictionary to mirror the detection table
-    public void CreateClassificationCategoriesDictionaryIfNeeded()
-    {
-        // Null means we have never tried to create the dictionary. Try to do so.
-        if (this.classificationCategoriesDictionary == null)
+        public void CreateDetectionCategoriesDictionaryIfNeeded()
         {
-            this.classificationCategoriesDictionary = new Dictionary<string, string>();
-            try
+            // Null means we have never tried to create the dictionary. Try to do so.
+            if (this.detectionCategoriesDictionary == null)
             {
-                using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories))
+                this.detectionCategoriesDictionary = new Dictionary<string, string>();
+                try
                 {
-                    int dataTableRowCount = dataTable.Rows.Count;
-                    for (int i = 0; i < dataTableRowCount; i++)
+                    using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.DetectionCategories))
                     {
-                        DataRow row = dataTable.Rows[i];
-                        this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
+                        int dataTableRowCount = dataTable.Rows.Count;
+                        for (int i = 0; i < dataTableRowCount; i++)
+                        {
+                            DataRow row = dataTable.Rows[i];
+                            this.detectionCategoriesDictionary.Add((string)row[Constant.DetectionCategoriesColumns.Category], (string)row[Constant.DetectionCategoriesColumns.Label]);
+                        }
                     }
                 }
+                catch
+                {
+                    // Should never really get here, but just in case.
+                }
+            }
+        }
+
+        // Create the detection category dictionary to mirror the detection table
+        public string GetDetectionCategoryFromLabel(string label)
+        {
+            try
+            {
+                this.CreateDetectionCategoriesDictionaryIfNeeded();
+                // A lookup dictionary should now exists, so just return the category value.
+                string myKey = this.detectionCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                return myKey ?? String.Empty;
             }
             catch
             {
                 // Should never really get here, but just in case.
+                return String.Empty;
             }
         }
-    }
 
-    public List<string> GetClassificationLabels()
-    {
-        List<string> labels = new List<string>();
-        this.CreateClassificationCategoriesDictionaryIfNeeded();
-        foreach (KeyValuePair<string, string> entry in this.classificationCategoriesDictionary)
+        public List<string> GetDetectionLabels()
         {
-            labels.Add(entry.Value);
+            List<string> labels = new List<string>();
+            this.CreateDetectionCategoriesDictionaryIfNeeded();
+            foreach (KeyValuePair<string, string> entry in this.detectionCategoriesDictionary)
+            {
+                labels.Add(entry.Value);
+            }
+            return labels;
         }
-        labels = labels.OrderBy(q => q).ToList();
-        return labels;
-    }
 
-    // return the label that matches the detection category 
-    public string GetClassificationLabelFromCategory(string category)
-    {
-        try
+        // Create the classification category dictionary to mirror the detection table
+        public void CreateClassificationCategoriesDictionaryIfNeeded()
         {
+            // Null means we have never tried to create the dictionary. Try to do so.
+            if (this.classificationCategoriesDictionary == null)
+            {
+                this.classificationCategoriesDictionary = new Dictionary<string, string>();
+                try
+                {
+                    using (DataTable dataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.ClassificationCategories))
+                    {
+                        int dataTableRowCount = dataTable.Rows.Count;
+                        for (int i = 0; i < dataTableRowCount; i++)
+                        {
+                            DataRow row = dataTable.Rows[i];
+                            this.classificationCategoriesDictionary.Add((string)row[Constant.ClassificationCategoriesColumns.Category], (string)row[Constant.ClassificationCategoriesColumns.Label]);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Should never really get here, but just in case.
+                }
+            }
+        }
+
+        public List<string> GetClassificationLabels()
+        {
+            List<string> labels = new List<string>();
             this.CreateClassificationCategoriesDictionaryIfNeeded();
-            // A lookup dictionary should now exists, so just return the category value.
-            return this.classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+            foreach (KeyValuePair<string, string> entry in this.classificationCategoriesDictionary)
+            {
+                labels.Add(entry.Value);
+            }
+            labels = labels.OrderBy(q => q).ToList();
+            return labels;
         }
-        catch
+
+        // return the label that matches the detection category 
+        public string GetClassificationLabelFromCategory(string category)
         {
-            // Should never really get here, but just in case.
+            try
+            {
+                this.CreateClassificationCategoriesDictionaryIfNeeded();
+                // A lookup dictionary should now exists, so just return the category value.
+                return this.classificationCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
+        }
+
+        public string GetClassificationCategoryFromLabel(string label)
+        {
+            try
+            {
+                this.CreateClassificationCategoriesDictionaryIfNeeded();
+                // At this point, a lookup dictionary already exists, so just return the category number.
+                string myKey = this.classificationCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
+                return myKey ?? String.Empty;
+            }
+            catch
+            {
+                // Should never really get here, but just in case.
+                return String.Empty;
+            }
+        }
+        // See if detections exist in this instance. We test once, and then save the state (unless forceQuery is true)
+        private bool? detectionExists;
+        /// <summary>
+        /// Return if a non-empty detections table exists. If forceQuery is true, then we always do this via an SQL query vs. refering to previous checks
+        /// </summary>
+        /// <returns></returns>
+        public bool DetectionsExists()
+        {
+            return this.DetectionsExists(false);
+        }
+        public bool DetectionsExists(bool forceQuery)
+        {
+            if (forceQuery == true || this.detectionExists == null)
+            {
+                this.detectionExists = this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
+            }
+            return this.detectionExists == true;
+        }
+        #endregion
+
+        #region Quickpaste retrieval
+        public static string TryGetQuickPasteXMLFromDatabase(string filePath)
+        {
+            // Open the database if it exists
+            SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
+            if (sqliteWrapper.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
+            {
+                // The column isn't in the table, so give up
+                return String.Empty;
+            }
+
+            List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
+            if (listOfObjects.Count == 1)
+            {
+                return (string)listOfObjects[0];
+            }
             return String.Empty;
         }
-    }
+        #endregion
 
-    public string GetClassificationCategoryFromLabel(string label)
-    {
-        try
+        #region Disposing
+        protected override void Dispose(bool disposing)
         {
-            this.CreateClassificationCategoriesDictionaryIfNeeded();
-            // At this point, a lookup dictionary already exists, so just return the category number.
-            string myKey = this.classificationCategoriesDictionary.FirstOrDefault(x => x.Value == label).Key;
-            return myKey ?? String.Empty;
-        }
-        catch
-        {
-            // Should never really get here, but just in case.
-            return String.Empty;
-        }
-    }
-    // See if detections exist in this instance. We test once, and then save the state (unless forceQuery is true)
-    private bool? detectionExists;
-    /// <summary>
-    /// Return if a non-empty detections table exists. If forceQuery is true, then we always do this via an SQL query vs. refering to previous checks
-    /// </summary>
-    /// <returns></returns>
-    public bool DetectionsExists()
-    {
-        return this.DetectionsExists(false);
-    }
-    public bool DetectionsExists(bool forceQuery)
-    {
-        if (forceQuery == true || this.detectionExists == null)
-        {
-            this.detectionExists = this.Database.TableExistsAndNotEmpty(Constant.DBTables.Detections);
-        }
-        return this.detectionExists == true;
-    }
-    #endregion
-
-    #region Quickpaste retrieval
-    public static string TryGetQuickPasteXMLFromDatabase(string filePath)
-    {
-        // Open the database if it exists
-        SQLiteWrapper sqliteWrapper = new SQLiteWrapper(filePath);
-        if (sqliteWrapper.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML) == false)
-        {
-            // The column isn't in the table, so give up
-            return String.Empty;
-        }
-
-        List<object> listOfObjects = sqliteWrapper.GetDistinctValuesInColumn(Constant.DBTables.ImageSet, Constant.DatabaseColumn.QuickPasteXML);
-        if (listOfObjects.Count == 1)
-        {
-            return (string)listOfObjects[0];
-        }
-        return String.Empty;
-    }
-    #endregion
-
-    #region Disposing
-    protected override void Dispose(bool disposing)
-    {
-        if (this.disposed)
-        {
-            return;
-        }
-
-        if (disposing)
-        {
-            if (this.FileTable != null)
+            if (this.disposed)
             {
-                this.FileTable.Dispose();
+                return;
             }
-            if (this.Markers != null)
-            {
-                this.Markers.Dispose();
-            }
-            if (this.detectionDataTable != null)
-            {
-                detectionDataTable.Dispose();
-            }
-            if (this.classificationsDataTable != null)
-            {
-                classificationsDataTable.Dispose();
-            }
-        }
 
-        base.Dispose(disposing);
-        this.disposed = true;
+            if (disposing)
+            {
+                if (this.FileTable != null)
+                {
+                    this.FileTable.Dispose();
+                }
+                if (this.Markers != null)
+                {
+                    this.Markers.Dispose();
+                }
+                if (this.detectionDataTable != null)
+                {
+                    detectionDataTable.Dispose();
+                }
+                if (this.classificationsDataTable != null)
+                {
+                    classificationsDataTable.Dispose();
+                }
+            }
+
+            base.Dispose(disposing);
+            this.disposed = true;
+        }
+        #endregion
     }
-    #endregion
-}
 }

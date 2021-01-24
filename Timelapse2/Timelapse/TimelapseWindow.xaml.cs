@@ -199,8 +199,8 @@ namespace Timelapse
             this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
 
+            
             if (false == String.IsNullOrEmpty(this.Arguments.Template))
-
             {
                 if (File.Exists(this.Arguments.Template))
                 {
@@ -213,15 +213,26 @@ namespace Timelapse
                         // Set and only use the relative path as a search term
                         this.DataHandler.FileDatabase.CustomSelection.ClearCustomSearchUses();
                         this.DataHandler.FileDatabase.CustomSelection.SetAndUseRelativePathSearchTerm(this.Arguments.RelativePath);
-                        await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                        if (null == this.DataHandler?.ImageCache?.Current)
+                        { 
+                             await this.FilesSelectAndShowAsync(FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                        }
+                        else
+                        {
+                            await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                        }
                     }
                     this.StatusBar.SetMessage("Image set is now loaded.");
                     Mouse.OverrideCursor = null;
-                    
+
                     if (this.Arguments.ConstrainToRelativePath)
                     {
-                        // Tell user that its a constrained relative path
+                        // Tell user that its a constrained relative path,
+                        // Also, set the File menus so that users cannot close and reopen a new image set
+                        // This is to avoid confusion as to how the user may mis-interpret the argument state given another image set
                         Dialogs.ArgumentRelativePathDialog(this, this.Arguments.RelativePath);
+                        this.MenuItemExit.Header = "Close image set and exit Timelapse";
+                        this.MenuFileCloseImageSet.Visibility = Visibility.Collapsed;
                     }
                 }
                 else

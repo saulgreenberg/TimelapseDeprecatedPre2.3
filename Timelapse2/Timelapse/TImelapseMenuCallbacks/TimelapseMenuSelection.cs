@@ -116,11 +116,11 @@ namespace Timelapse
                 await this.FilesSelectAndShowAsync(selection).ConfigureAwait(true);
             }
             else
-            { 
+            {
                 if (false == await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, selection).ConfigureAwait(true))
                 {
                     this.DataHandler.FileDatabase.ImageSet.FileSelection = oldSelection;
-                }  
+                }
             }
         }
         #endregion

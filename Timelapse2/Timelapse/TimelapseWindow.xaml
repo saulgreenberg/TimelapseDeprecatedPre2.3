@@ -64,14 +64,14 @@
 
                     <Separator />
 
-                    <!-- Export data for this image set as a .csv file... -->
-                    <MenuItem Name="MenuItemExportAsCsv" Header="Export data for this image set as a .csv file..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files into a .csv (comma separated value) file">
+                    <!-- Export data for selected images as a .csv file... -->
+                    <MenuItem Name="MenuItemExportAsCsv" Header="Export data in the current selection as a .csv file..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files into a .csv (comma separated value) file">
                         <MenuItem.Icon>
                             <Image Source="Icons/CSVExport_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
                     <!-- Export data for this image set as a .csv file and preview in _Excel.. -->
-                    <MenuItem Name="MenuItemExportAsCsvAndPreview" Header="Export data for this image set as a .csv file and preview in _Excel..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files in the image set into a .csv (comma separated value) file and previews it in Excel">
+                    <MenuItem Name="MenuItemExportAsCsvAndPreview" Header="Export data in the current selection as a .csv file and preview in _Excel..." IsEnabled="false" Click="MenuItemExportCsv_Click" ToolTip="Exports data for the selected files in the image set into a .csv (comma separated value) file and previews it in Excel">
                         <MenuItem.Icon>
                             <Image Source="Icons/CSVExport_32x.png" />
                         </MenuItem.Icon>

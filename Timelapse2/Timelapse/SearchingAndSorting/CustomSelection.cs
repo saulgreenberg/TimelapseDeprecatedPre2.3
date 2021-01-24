@@ -128,7 +128,7 @@ namespace Timelapse.Database
             List<SearchTerm> orderedSearchTerms = new List<SearchTerm>();
             foreach (SearchTerm searchTerm in unodrderedStandardSearchTerms)
             {
-                if (dictOrderedTerms.ContainsKey (searchTerm.DataLabel) )
+                if (dictOrderedTerms.ContainsKey(searchTerm.DataLabel))
                 {
                     if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime && dictOrderedTerms[searchTerm.DataLabel] != null)
                     {
@@ -143,7 +143,7 @@ namespace Timelapse.Database
             }
             // Create a new ordered list of standard search terms based on the non-null (and correctly ordered) search terms in the dictionary
             List<SearchTerm> standardSearchTerms = new List<SearchTerm>();
-            foreach(KeyValuePair<string,SearchTerm> kvp in dictOrderedTerms)
+            foreach (KeyValuePair<string, SearchTerm> kvp in dictOrderedTerms)
             {
                 if (kvp.Value != null)
                 {
@@ -152,7 +152,7 @@ namespace Timelapse.Database
             }
 
             // Collect all the non-standard search terms which the user currently selected as UseForSearching
-            IEnumerable<SearchTerm> nonStandardSearchTerms =  SearchTerms.Except(unodrderedStandardSearchTerms).ToList();
+            IEnumerable<SearchTerm> nonStandardSearchTerms = SearchTerms.Except(unodrderedStandardSearchTerms).ToList();
             // FInally, concat the two lists together to collect all the correctly ordered search terms into a single list
             SearchTerms = standardSearchTerms.Concat(nonStandardSearchTerms).ToList();
         }
@@ -170,7 +170,6 @@ namespace Timelapse.Database
                 // This shouldn't happen, but just in case treat it as a no-op
                 return;
             }
-
 
             // The various selections dictate what kinds of search terms to set and use.
             switch (selection)
@@ -216,7 +215,7 @@ namespace Timelapse.Database
             };
         }
         #endregion
-        
+
         #region Public Methods- GetFilesWhere() creates and returns a well-formed query
         // Create and return the query composed from the search term list
         public string GetFilesWhere()
@@ -378,7 +377,7 @@ namespace Timelapse.Database
                         whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
                     }
 
-                    
+
                     if (searchTerm.ControlType == Constant.Control.Flag)
                     {
                         // Because flags can have capitals or lower case, we need to make the search case insenstive
@@ -490,8 +489,8 @@ namespace Timelapse.Database
             // Set the use field for DeleteFlag, and its value to true
             SearchTerm searchTerm = this.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
             searchTerm.DatabaseValue = Constant.BooleanValue.True;
-            searchTerm.Operator = Constant.SearchTermOperator.Equal; 
-            searchTerm.UseForSearching = true; 
+            searchTerm.Operator = Constant.SearchTermOperator.Equal;
+            searchTerm.UseForSearching = true;
         }
         #endregion
 

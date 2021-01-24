@@ -62,7 +62,7 @@ namespace Timelapse.Util
             // Recursively descend subfolders, collecting directory info on the way
             // Note that while folders without images are also collected, these will eventually be skipped when it is later scanned for images to load
             try
-            { 
+            {
                 DirectoryInfo dirInfo = new DirectoryInfo(folderRoot);
                 subDirs = dirInfo.GetDirectories();
             }
@@ -340,7 +340,7 @@ namespace Timelapse.Util
             // Recursively descend subfolders
             DirectoryInfo[] subDirs;
             try
-            { 
+            {
                 DirectoryInfo dirInfo = new DirectoryInfo(rootFolderPath);
                 subDirs = dirInfo.GetDirectories();
             }

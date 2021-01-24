@@ -144,7 +144,8 @@ namespace Timelapse
                 currentSearchTerm.Operator = "=";
 
                 //bool deletedImages = this.DataHandler.FileDatabase.ExistsRowThatMatchesSelectionForAllFilesOrConstrainedRelativePathFiles(FileSelectionEnum.MarkedForDeletion);
-                bool deletedImages = this.DataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.MarkedForDeletion) > 0;
+                //bool deletedImages = this.DataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.MarkedForDeletion) > 0;
+                bool deletedImages = this.DataHandler.FileDatabase.ExistsFilesMatchingSelectionCondition(FileSelectionEnum.MarkedForDeletion);
 
                 // Reset  the DeleteFlag search term to its previous values
                 currentSearchTerm.DatabaseValue = tempSearchTerm.DatabaseValue;

@@ -216,7 +216,7 @@ namespace Timelapse.Dialog
             }
             this.RadioButtonTermCombiningAnd.Checked += this.AndOrRadioButton_Checked;
             this.RadioButtonTermCombiningOr.Checked += this.AndOrRadioButton_Checked;
-            
+
             // Create a new row for each search term. 
             // Each row specifies a particular control and how it can be searched
             // Note that the search terms are expected to be in a specific order i.e.
@@ -382,7 +382,7 @@ namespace Timelapse.Dialog
                         Width = CustomSelection.DefaultControlWidth,
                         Height = 25,
                         Margin = thickness,
-                        
+
                     };
                     // Create the dropdown menu containing only folders with images in it
                     Arguments arguments = Util.GlobalReferences.MainWindow.Arguments;
@@ -408,16 +408,16 @@ namespace Timelapse.Dialog
                             newFolderList.Add(folder);
                         }
                         comboBoxValue.ItemsSource = newFolderList;
-                       
+
                     }
                     // Set the relativepath item to the current relative path search term
                     if (newFolderList.Count > 0)
                     {
                         if (comboBoxValue.Items.Contains(searchTerm.DatabaseValue))
-                        { 
+                        {
                             comboBoxValue.SelectedItem = searchTerm.DatabaseValue;
                         }
-                        else 
+                        else
                         {
                             comboBoxValue.SelectedIndex = 0;
                         }

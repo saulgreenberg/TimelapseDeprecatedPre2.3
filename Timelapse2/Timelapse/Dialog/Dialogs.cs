@@ -1181,9 +1181,9 @@ namespace Timelapse.Dialog
 
             messageBox.Message.What = title + Environment.NewLine;
             messageBox.Message.What += "This means that:" + Environment.NewLine;
-            messageBox.Message.What += "- you will only be able to view or modify files in that folder or its subfolders" + Environment.NewLine;
-            messageBox.Message.What += "- you will not be able to view files and subfolders located elsewhere" + Environment.NewLine;
-            messageBox.Message.What += "- any reference by Timelapse to 'All files' means 'All files in the folder: " + folderName + "'";
+            messageBox.Message.What += "\u2022 you will only be able to view and analyze files in that folder and its subfolders" + Environment.NewLine;
+            messageBox.Message.What += "\u2022 any reference by Timelapse to 'All files' means 'All files in the folder: " + folderName + "'" + Environment.NewLine; ;
+            messageBox.Message.What += "\u2022 to avoid confusion, you will not be able to open a different image set in this session";
 
             messageBox.Message.Reason = "Timelapse was started with the instruction to restrict itself to the folder: '" + folderName + "'" + Environment.NewLine;
             messageBox.Message.Reason += "This is usually done to narrow analysis to a particular subset of files of interest";
@@ -1201,10 +1201,10 @@ namespace Timelapse.Dialog
             messageBox.Message.What = title + Environment.NewLine;
             messageBox.Message.What += "     '" + fileName + "'" + Environment.NewLine + Environment.NewLine;
             messageBox.Message.What += "Consequently," + Environment.NewLine;
-            messageBox.Message.What += "- the instruction to use that template is ignored.";
+            messageBox.Message.What += "\u2022 the instruction to use that template is ignored.";
             if (!String.IsNullOrWhiteSpace(relativePathArgument))
-            { 
-                messageBox.Message.What += Environment.NewLine + "- the additional instruction to limit analysis to the subfolder " + "'" + relativePathArgument + "'" + " is also ignored ";
+            {
+                messageBox.Message.What += Environment.NewLine + "\u2022 the additional instruction to limit analysis to the subfolder " + "'" + relativePathArgument + "'" + " is also ignored ";
             }
             messageBox.Message.Reason = "Timelapse was started with instructions to open the template indicated above" + Environment.NewLine;
             if (!String.IsNullOrWhiteSpace(relativePathArgument))

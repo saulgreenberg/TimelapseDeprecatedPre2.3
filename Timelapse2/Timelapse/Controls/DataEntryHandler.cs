@@ -189,7 +189,7 @@ namespace Timelapse.Controls
             // Start with an empty clipboard
             // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
             try
-            { 
+            {
                 Clipboard.SetText(String.Empty);
             }
             catch
