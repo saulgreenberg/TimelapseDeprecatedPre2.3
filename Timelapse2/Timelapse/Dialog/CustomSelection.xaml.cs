@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -27,7 +26,6 @@ namespace Timelapse.Dialog
     {
         #region Private Variables
         private const int DefaultControlWidth = 200;
-        private const double DefaultSearchCriteriaWidth = Double.NaN; // Same as xaml Width = "Auto"
 
         private const int SelectColumn = 0;
         private const int LabelColumn = 1;
@@ -384,10 +382,9 @@ namespace Timelapse.Dialog
                         Width = CustomSelection.DefaultControlWidth,
                         Height = 25,
                         Margin = thickness,
-                        // Create the dropdown menu containing only folders with images in it
-                        SelectedItem = searchTerm.DatabaseValue
+                        
                     };
-
+                    // Create the dropdown menu containing only folders with images in it
                     Arguments arguments = Util.GlobalReferences.MainWindow.Arguments;
                     List<string> newFolderList;
                     if (false == arguments.ConstrainToRelativePath)
@@ -413,10 +410,17 @@ namespace Timelapse.Dialog
                         comboBoxValue.ItemsSource = newFolderList;
                        
                     }
-                    // Set the folder list to the first entry, if there is one
+                    // Set the relativepath item to the current relative path search term
                     if (newFolderList.Count > 0)
                     {
-                        comboBoxValue.SelectedIndex = 0;
+                        if (comboBoxValue.Items.Contains(searchTerm.DatabaseValue))
+                        { 
+                            comboBoxValue.SelectedItem = searchTerm.DatabaseValue;
+                        }
+                        else 
+                        {
+                            comboBoxValue.SelectedIndex = 0;
+                        }
                         searchTerm.DatabaseValue = (string)comboBoxValue.SelectedValue;
                     }
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
@@ -818,7 +822,6 @@ namespace Timelapse.Dialog
             int multipleNonStandardSelectionsMade = 0;
             for (int index = this.database.CustomSelection.SearchTerms.Count - 1; index >= 0; index--)
             {
-                int row = index + 1; // we offset the row by 1 as row 0 is the header
                 SearchTerm searchTerm = this.database.CustomSelection.SearchTerms[index];
 
                 if (searchTerm.UseForSearching == false)
@@ -842,8 +845,8 @@ namespace Timelapse.Dialog
             this.InitiateShowCountsOfMatchingFiles();
 
             // Enable  the reset button if at least one search term (including detections) is enabled
-            this.ResetToAllImagesButton.IsEnabled = atLeastOneSearchTermIsSelected ||
-                (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+            this.ResetToAllImagesButton.IsEnabled = atLeastOneSearchTermIsSelected
+                                                    || (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
 
             // Enable the and/or radio buttons if more than one non-standard selection was made
             this.RadioButtonTermCombiningAnd.IsEnabled = multipleNonStandardSelectionsMade > 1;

@@ -161,8 +161,8 @@ namespace Timelapse
 
             // Check for updates at least once a day
             if (DateTime.Now.Year != this.State.MostRecentCheckForUpdates.Year ||
-                DateTime.Now.Month != this.State.MostRecentCheckForUpdates.Month ||
-                DateTime.Now.Day != this.State.MostRecentCheckForUpdates.Day)
+            DateTime.Now.Month != this.State.MostRecentCheckForUpdates.Month ||
+            DateTime.Now.Day != this.State.MostRecentCheckForUpdates.Day)
             {
                 VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryCheckForNewVersionAndDisplayResultsAsNeeded(false);
@@ -200,19 +200,36 @@ namespace Timelapse
             this.InstructionPane.IsActive = true;
 
             if (false == String.IsNullOrEmpty(this.Arguments.Template))
-            {
-                Mouse.OverrideCursor = Cursors.Wait;
-                this.StatusBar.SetMessage("Loading images, please wait...");
-                await this.TryOpenTemplateAndBeginLoadFoldersAsync(this.Arguments.Template).ConfigureAwait(true);
 
-                if (false == String.IsNullOrEmpty(this.Arguments.RelativePath))
-                { 
-                    this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.Arguments.RelativePath);
-                   //  System.Windows.Forms.MessageBox.Show(this.Arguments.RelativePath);
-                    await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+            {
+                if (File.Exists(this.Arguments.Template))
+                {
+                    Mouse.OverrideCursor = Cursors.Wait;
+                    this.StatusBar.SetMessage("Loading images, please wait...");
+                    await this.TryOpenTemplateAndBeginLoadFoldersAsync(this.Arguments.Template).ConfigureAwait(true);
+
+                    if (false == String.IsNullOrEmpty(this.Arguments.RelativePath))
+                    {
+                        // Set and only use the relative path as a search term
+                        this.DataHandler.FileDatabase.CustomSelection.ClearCustomSearchUses();
+                        this.DataHandler.FileDatabase.CustomSelection.SetAndUseRelativePathSearchTerm(this.Arguments.RelativePath);
+                        await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                    }
+                    this.StatusBar.SetMessage("Image set is now loaded.");
+                    Mouse.OverrideCursor = null;
+                    
+                    if (this.Arguments.ConstrainToRelativePath)
+                    {
+                        // Tell user that its a constrained relative path
+                        Dialogs.ArgumentRelativePathDialog(this, this.Arguments.RelativePath);
+                    }
                 }
-                this.StatusBar.SetMessage("Image set is now loaded.");
-                Mouse.OverrideCursor = null;
+                else
+                {
+                    // We can't open the template. Show a message and ignore the arguments (by clearing them)
+                    Dialogs.ArgumentTemplatePathDialog(this, this.Arguments.Template, this.Arguments.RelativePath);
+                    this.Arguments = new DataStructures.Arguments(null);
+                }
             }
         }
 

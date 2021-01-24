@@ -49,7 +49,7 @@ namespace Timelapse
             {
                 this.MarkableCanvas.ThumbnailGrid.Reset();
             }
-            this.MenuItemSelectByFolder_ClearAllCheckmarks();
+            this.MenuItemSelectByRelativePath_ClearAllCheckmarks();
             this.State.Reset();
             this.DataEntryControlPanel.IsVisible = false;
             this.MarkableCanvas.ZoomOutAllTheWay();
@@ -157,8 +157,8 @@ namespace Timelapse
             // Save the state by writing it to the registry
             this.State.WriteSettingsToRegistry();
 
-            // Reset the arguments to its initial state.
-            this.Arguments = new DataStructures.Arguments(Environment.GetCommandLineArgs());
+            // Clear the arguments, as we are starting a new session.
+            this.Arguments = new DataStructures.Arguments(null);
         }
         #endregion
     }

@@ -423,7 +423,9 @@ namespace Timelapse
             if (fileSelection == FileSelectionEnum.Folders)
             {
                 // Compose a custom search term for the relative path
-                this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.DataHandler.FileDatabase.ImageSet.SelectedFolder);
+                // which sets and only usse the relative path as a search term
+                this.DataHandler.FileDatabase.CustomSelection.ClearCustomSearchUses();
+                this.DataHandler.FileDatabase.CustomSelection.SetAndUseRelativePathSearchTerm(this.DataHandler.FileDatabase.ImageSet.SelectedFolder);
             }
             if (filesJustAdded && (this.DataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow && this.DataHandler.ImageCache.CurrentRow != Constant.DatabaseValues.InvalidRow))
             {

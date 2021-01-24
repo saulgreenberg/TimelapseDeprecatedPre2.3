@@ -12,38 +12,31 @@ namespace Timelapse.DataStructures
     public class Arguments
     {
         // argument strings
-        private const string templateFlag = "-template";
+        private const string templateFlag = "-templatepath";
         private const string relativePathFlag = "-relativepath";
-        private const string constrainToRelativePathFlag = "-constrainrelativepath";
-
-        private bool constrainToRelativePath;
 
         // The full Timelape template path
-        public string Template { get; set; }
+        public string Template { get; set; } = String.Empty;
 
-        // The relative path for starting timelapse
+        // Constrain all database actions to the relative path and its subfolders
         public string RelativePath { get; set; } = String.Empty;
 
         // Constrain all database actions to the relative path and its subfolders
-        // if ConstrainToRelativePath is true, the user is contrained to select folders that
-        // are either the relative path or subfolders of it.
-        public bool ConstrainToRelativePath {
+        // if ConstrainToRelativePath is true, the user is contrained to select folders that are either the relative path or subfolders of it.
+        public bool ConstrainToRelativePath
+        {
             get
             {
                 // if relativePath is empty, we shouldn't constrain to it
-                return (constrainToRelativePath && !String.IsNullOrWhiteSpace(this.RelativePath));
+                return !String.IsNullOrWhiteSpace(this.RelativePath);
             }
-            set
-            {
-                constrainToRelativePath = value; 
-            } 
         }
 
         public Arguments(string[] arguments)
         {
             if (arguments == null)
-            { 
-                return; 
+            {
+                return;
             }
             // If the argument exists, assign it
             // Note that we start at 1, as the first element of the array is the name of the executing program
@@ -52,14 +45,18 @@ namespace Timelapse.DataStructures
                 switch (arguments[index].ToLower())
                 {
                     case templateFlag:
-                        this.Template = @arguments[index + 1];
+                        // Make sure there is an argument there
+                        if ((index + 1) < arguments.Length)
+                        {
+                            this.Template = @arguments[index + 1];
+                        }
                         break;
                     case relativePathFlag:
-                        this.RelativePath = arguments[index + 1];
-                        break;
-                    case constrainToRelativePathFlag:
-                        // we need to convert the string arguement to a bool. 
-                        this.constrainToRelativePath = bool.TryParse(arguments[index + 1], out bool result) && result;
+                        // Make sure there is an argument there
+                        if ((index + 1) < arguments.Length)
+                        {
+                            this.RelativePath = arguments[index + 1];
+                        }
                         break;
                     default:
                         break;

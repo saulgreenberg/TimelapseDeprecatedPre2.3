@@ -45,6 +45,7 @@ namespace Timelapse
         public const string Equal = " = ";
         public const string EqualsCaseID = " = CASE Id";
         public const string From = " FROM ";
+        public const string Glob = " GLOB ";
         public const string GreaterThanEqual = " >= ";
         public const string GreaterThan = " > ";
         public const string GroupBy = " GROUP BY ";

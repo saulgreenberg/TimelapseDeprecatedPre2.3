@@ -111,6 +111,23 @@ namespace Timelapse.Database
                 this.DatabaseValue = null;
             }
         }
+
+        // Return a cloned copy of the provided search term
+        public SearchTerm Clone()
+        {
+            return new SearchTerm
+            {
+                ControlType = this.ControlType,
+                DatabaseValue = this.DatabaseValue,
+                DataLabel = this.DataLabel,
+                Label = this.Label,
+                List = new List<string>(this.List),
+                Operator = this.Operator,
+                UseForSearching = this.UseForSearching
+            };
+        }
         #endregion
+
+
     }
 }

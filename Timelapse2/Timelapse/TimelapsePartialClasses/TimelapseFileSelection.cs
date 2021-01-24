@@ -36,17 +36,13 @@ namespace Timelapse
 
         #region FilesSelectAndShow: Full version
         // PEFORMANCE FILES SELECT AND SHOW CALLED TOO OFTEN, GIVEN THAT IT IS A SLOW OPERATION
-        private async Task FilesSelectAndShowAsync(long imageID, FileSelectionEnum selection)
+        private async Task<bool> FilesSelectAndShowAsync(long imageID, FileSelectionEnum selection)
         {
             // change selection
             // if the data grid is bound the file database automatically updates its contents on SelectFiles()
-            if (this.DataHandler == null)
+            if (this.DataHandler == null || this.DataHandler.FileDatabase == null)
             {
                 TracePrint.PrintMessage("FilesSelectAndShow() should not be reachable with a null data handler.  Is a menu item wrongly enabled?"); ;
-            }
-            if (this.DataHandler.FileDatabase == null)
-            {
-                TracePrint.PrintMessage("FilesSelectAndShow() should not be reachable with a null database.  Is a menu item wrongly enabled?");
             }
 
             // Select the files according to the given selection
@@ -64,23 +60,18 @@ namespace Timelapse
                     // No files were missing. Inform the user, and don't change anything.
                     Mouse.OverrideCursor = null;
                     Dialogs.FileSelectionNoFilesAreMissingDialog(this);
-                    return;
+                    return false;
                 }
             }
             else
             {
-                // Check if we are trying to view all folders while contrained to the relative path. If so, 
-                // alter the selecton and set the relative path to the root contrained relative path
-                if (selection == FileSelectionEnum.All && this.Arguments.ConstrainToRelativePath )
-                {
-                    selection = FileSelectionEnum.Folders;
-                    this.DataHandler.FileDatabase.CustomSelection.SetRelativePathSearchTerm(this.Arguments.RelativePath);
-                }
-
                 // If its a folder selection, record it so we can save it later in the image set table 
-                this.DataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
-                    ? this.DataHandler.FileDatabase.GetSelectedFolder()
-                    : String.Empty;
+                //this.DataHandler.FileDatabase.ImageSet.SelectedFolder = selection == FileSelectionEnum.Folders
+                //    ? this.DataHandler.FileDatabase.GetSelectedFolder()
+                //    : String.Empty;
+
+                this.DataHandler.FileDatabase.ImageSet.SelectedFolder = this.DataHandler.FileDatabase.GetSelectedFolder();
+
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
                 this.BusyCancelIndicator.EnableForSelection(true);
 
@@ -174,6 +165,7 @@ namespace Timelapse
             this.StatusBar.SetCount(this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles);
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(true);
             this.DataHandler.FileDatabase.ImageSet.FileSelection = selection;    // Remember the current selection
+            return true;
         }
         #endregion
     }
