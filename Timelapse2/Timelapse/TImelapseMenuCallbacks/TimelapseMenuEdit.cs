@@ -136,7 +136,22 @@ namespace Timelapse
         {
             try
             {
-                bool deletedImages = this.DataHandler.FileDatabase.RowExistsWhere(FileSelectionEnum.MarkedForDeletion);
+                // Temporarily set the DeleteFlag search term so that it will be used to chec for DeleteFlag = true
+                SearchTerm currentSearchTerm = this.DataHandler.FileDatabase.CustomSelection.SearchTerms.First(term => term.DataLabel == Constant.DatabaseColumn.DeleteFlag);
+                SearchTerm tempSearchTerm = currentSearchTerm.Clone();
+                currentSearchTerm.DatabaseValue = "true";
+                currentSearchTerm.UseForSearching = true;
+                currentSearchTerm.Operator = "=";
+
+                //bool deletedImages = this.DataHandler.FileDatabase.ExistsRowThatMatchesSelectionForAllFilesOrConstrainedRelativePathFiles(FileSelectionEnum.MarkedForDeletion);
+                //bool deletedImages = this.DataHandler.FileDatabase.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom) > 0;
+                bool deletedImages = this.DataHandler.FileDatabase.ExistsFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
+
+                // Reset  the DeleteFlag search term to its previous values
+                currentSearchTerm.DatabaseValue = tempSearchTerm.DatabaseValue;
+                currentSearchTerm.UseForSearching = tempSearchTerm.UseForSearching;
+                currentSearchTerm.Operator = tempSearchTerm.Operator;
+
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages;
 

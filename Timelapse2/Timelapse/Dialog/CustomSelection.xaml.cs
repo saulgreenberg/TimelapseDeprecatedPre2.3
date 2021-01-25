@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -12,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.DataStructures;
 using Timelapse.Detection;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -26,7 +26,6 @@ namespace Timelapse.Dialog
     {
         #region Private Variables
         private const int DefaultControlWidth = 200;
-        private const double DefaultSearchCriteriaWidth = Double.NaN; // Same as xaml Width = "Auto"
 
         private const int SelectColumn = 0;
         private const int LabelColumn = 1;
@@ -45,6 +44,26 @@ namespace Timelapse.Dialog
         private readonly TimeZoneInfo imageSetTimeZone;
         private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
+
+        // And/Or RadioButtons use to combine non-standard terms
+        private readonly RadioButton RadioButtonTermCombiningAnd = new RadioButton()
+        {
+            Content = "And ",
+            GroupName = "LogicalOperators",
+            FontWeight = FontWeights.DemiBold,
+            VerticalAlignment = VerticalAlignment.Center,
+            IsChecked = true,
+            Width = Double.NaN,
+            IsEnabled = false
+        };
+        private readonly RadioButton RadioButtonTermCombiningOr = new RadioButton()
+        {
+            Content = "Or ",
+            GroupName = "LogicalOperators",
+            VerticalAlignment = VerticalAlignment.Center,
+            Width = Double.NaN,
+            IsEnabled = false
+        };
 
         // This timer is used to delay showing count information, which could be an expensive operation, as the user may be setting values quickly
         private readonly DispatcherTimer countTimer = new DispatcherTimer();
@@ -75,7 +94,7 @@ namespace Timelapse.Dialog
             }
         }
 
-        // When the window is loaded, add SearchTerm controls to it
+        // When the window is loaded, construct all the SearchTerm controls 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Adjust this dialog window position 
@@ -183,23 +202,28 @@ namespace Timelapse.Dialog
 
             // Selection-specific
             this.dontUpdate = true;
-            // And vs Or conditional
+
+            // Configure the And vs Or conditional Radio Buttons
             if (this.database.CustomSelection.TermCombiningOperator == CustomSelectionOperatorEnum.And)
             {
-                this.TermCombiningAnd.IsChecked = true;
-                this.TermCombiningOr.IsChecked = false;
+                this.RadioButtonTermCombiningAnd.IsChecked = true;
+                this.RadioButtonTermCombiningOr.IsChecked = false;
             }
             else
             {
-                this.TermCombiningAnd.IsChecked = false;
-                this.TermCombiningOr.IsChecked = true;
+                this.RadioButtonTermCombiningAnd.IsChecked = false;
+                this.RadioButtonTermCombiningOr.IsChecked = true;
             }
-            this.TermCombiningAnd.Checked += this.AndOrRadioButton_Checked;
-            this.TermCombiningOr.Checked += this.AndOrRadioButton_Checked;
+            this.RadioButtonTermCombiningAnd.Checked += this.AndOrRadioButton_Checked;
+            this.RadioButtonTermCombiningOr.Checked += this.AndOrRadioButton_Checked;
 
             // Create a new row for each search term. 
             // Each row specifies a particular control and how it can be searched
+            // Note that the search terms are expected to be in a specific order i.e.
+            // - the core standard controls defined by Timelapse
+            // - the nonStandard controls defined by whoever customized the template 
             int gridRowIndex = 0;
+            bool noSeparatorCreated = true;
             foreach (SearchTerm searchTerm in this.database.CustomSelection.SearchTerms)
             {
                 // start at 1 as there is already a header row
@@ -220,6 +244,11 @@ namespace Timelapse.Dialog
                     HorizontalAlignment = HorizontalAlignment.Center,
                     IsChecked = searchTerm.UseForSearching
                 };
+                if (searchTerm.Label == Constant.DatabaseColumn.RelativePath && Util.GlobalReferences.MainWindow.Arguments.ConstrainToRelativePath)
+                {
+                    useCurrentRow.IsChecked = true;
+                    useCurrentRow.IsEnabled = false;
+                }
                 useCurrentRow.Checked += this.Select_CheckedOrUnchecked;
                 useCurrentRow.Unchecked += this.Select_CheckedOrUnchecked;
                 Grid.SetRow(useCurrentRow, gridRowIndex);
@@ -230,11 +259,12 @@ namespace Timelapse.Dialog
                 TextBlock controlLabel = new TextBlock()
                 {
                     FontWeight = searchTerm.UseForSearching ? FontWeights.DemiBold : FontWeights.Normal,
+                    VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(5)
                 };
-                
+
                 if (searchTerm.Label != Constant.DatabaseColumn.RelativePath)
-                { 
+                {
                     // Not relative path, so just use the label's name
                     controlLabel.Text = searchTerm.Label;
                 }
@@ -242,10 +272,10 @@ namespace Timelapse.Dialog
                 {
                     // RelativePath label adds details
                     controlLabel.Inlines.Add(searchTerm.Label + " folder");
-                    controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize=10});
+                    controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize = 10 });
 
                 }
-                    Grid.SetRow(controlLabel, gridRowIndex);
+                Grid.SetRow(controlLabel, gridRowIndex);
                 Grid.SetColumn(controlLabel, CustomSelection.LabelColumn);
                 this.SearchTerms.Children.Add(controlLabel);
 
@@ -270,9 +300,17 @@ namespace Timelapse.Dialog
                         Constant.SearchTermOperator.GreaterThanOrEqual
                     };
                 }
+                // Relative path only allows = (this will be converted later to a glob to get subfolders) 
+                else if (controlType == Constant.DatabaseColumn.RelativePath)
+                {
+                    // Only equals (actually a glob including subfolders), as other options don't make sense for RelatvePath
+                    termOperators = new string[]
+                    {
+                        Constant.SearchTermOperator.Equal,
+                    };
+                }
                 // Only equals and not equals (For relative path this will be converted later to a glob to get subfolders) 
                 else if (controlType == Constant.DatabaseColumn.DeleteFlag ||
-                         controlType == Constant.DatabaseColumn.RelativePath ||
                          controlType == Constant.Control.Flag)
                 {
                     // Only equals and not equals in Flags, as other options don't make sense for booleans
@@ -297,7 +335,6 @@ namespace Timelapse.Dialog
                 }
 
                 // term operator combo box
-                
                 ComboBox operatorsComboBox = new ComboBox()
                 {
                     FontWeight = FontWeights.Normal,
@@ -305,12 +342,9 @@ namespace Timelapse.Dialog
                     ItemsSource = termOperators,
                     Margin = thickness,
                     Width = 60,
-                    Height = searchTerm.Label == Constant.DatabaseColumn.RelativePath
-                        ? 25
-                        : Double.NaN,
+                    Height = 25,
                     SelectedValue = searchTerm.Operator
                 };
-
                 operatorsComboBox.SelectionChanged += this.Operator_SelectionChanged; // Create the callback that is invoked whenever the user changes the expresison
                 Grid.SetRow(operatorsComboBox, gridRowIndex);
                 Grid.SetColumn(operatorsComboBox, CustomSelection.OperatorColumn);
@@ -349,10 +383,46 @@ namespace Timelapse.Dialog
                         Height = 25,
                         Margin = thickness,
 
-                        // Create the dropdown menu containing only folders with images in it
-                        ItemsSource = this.database.GetFoldersFromRelativePaths(), //this.database.GetDistinctValuesInColumn(Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
-                        SelectedItem = searchTerm.DatabaseValue
                     };
+                    // Create the dropdown menu containing only folders with images in it
+                    Arguments arguments = Util.GlobalReferences.MainWindow.Arguments;
+                    List<string> newFolderList;
+                    if (false == arguments.ConstrainToRelativePath)
+                    {
+                        // We are not constrained to a particular relative path
+                        newFolderList = this.database.GetFoldersFromRelativePaths();
+                        comboBoxValue.ItemsSource = newFolderList;
+                    }
+                    else
+                    {
+                        // We are constrained to a particular relative path
+                        // Generate a folder list that is just the relativePath and its sub-folders
+                        newFolderList = new List<string>();
+                        foreach (string folder in this.database.GetFoldersFromRelativePaths())
+                        {
+                            // Add the folder to the menu only if it isn't constrained by the relative path arguments
+                            if (arguments.ConstrainToRelativePath && !(folder == arguments.RelativePath || folder.StartsWith(arguments.RelativePath + @"\")))
+                            {
+                                continue;
+                            }
+                            newFolderList.Add(folder);
+                        }
+                        comboBoxValue.ItemsSource = newFolderList;
+
+                    }
+                    // Set the relativepath item to the current relative path search term
+                    if (newFolderList.Count > 0)
+                    {
+                        if (comboBoxValue.Items.Contains(searchTerm.DatabaseValue))
+                        {
+                            comboBoxValue.SelectedItem = searchTerm.DatabaseValue;
+                        }
+                        else
+                        {
+                            comboBoxValue.SelectedIndex = 0;
+                        }
+                        searchTerm.DatabaseValue = (string)comboBoxValue.SelectedValue;
+                    }
                     comboBoxValue.SelectionChanged += this.FixedChoice_SelectionChanged;
                     Grid.SetRow(comboBoxValue, gridRowIndex);
                     Grid.SetColumn(comboBoxValue, CustomSelection.ValueColumn);
@@ -395,7 +465,7 @@ namespace Timelapse.Dialog
                 }
                 else if (controlType == Constant.Control.FixedChoice)
                 {
-                    // FixedChoice presents combo boxes, so they can be constructed tGetDataTabelhe same way
+                    // FixedChoice presents combo boxes, so they can be constructed the same way
                     ComboBox comboBoxValue = new ComboBox()
                     {
                         FontWeight = FontWeights.Normal,
@@ -480,22 +550,134 @@ namespace Timelapse.Dialog
                     gridRow.Height = new GridLength(0);
                 }
 
-                // Search Criteria Column: initially as an empty textblock. Indicates the constructed query expression for this row
-                TextBlock searchCriteria = new TextBlock()
+                // Conditional ANd/Or column
+                // If we are  on the first term after the non-standard controls
+                // - create the and/or buttons in the last column, which lets a user determine how to combine the remaining terms
+                if (noSeparatorCreated && false == (searchTerm.DataLabel == Constant.DatabaseColumn.File || searchTerm.DataLabel == Constant.DatabaseColumn.Folder ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath || searchTerm.DataLabel == Constant.DatabaseColumn.DateTime ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.ImageQuality || searchTerm.DataLabel == Constant.DatabaseColumn.UtcOffset ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.DeleteFlag))
                 {
-                    FontWeight = FontWeights.Normal,
-                    Width = CustomSelection.DefaultSearchCriteriaWidth,
-                    Margin = thickness,
-                    IsEnabled = true,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Left
-                };
-                Grid.SetRow(searchCriteria, gridRowIndex);
-                Grid.SetColumn(searchCriteria, CustomSelection.SearchCriteriaColumn);
-                this.SearchTerms.Children.Add(searchCriteria);
+                    StackPanel sp = CreateAndOrButtons();
+                    Grid.SetRow(sp, gridRowIndex);
+                    Grid.SetColumn(sp, CustomSelection.SearchCriteriaColumn);
+                    Grid.SetRowSpan(sp, 2);
+                    this.SearchTerms.Children.Add(sp);
+                    noSeparatorCreated = false;
+                }
+
+                // If we are  on the first term in the standard controls
+                // - create a description that tells the user how these will be combined
+                if (gridRowIndex == 1 && noSeparatorCreated)
+                {
+                    StackPanel sp = CreateStandardControlDescription();
+                    Grid.SetRow(sp, gridRowIndex);
+                    Grid.SetColumn(sp, CustomSelection.SearchCriteriaColumn);
+                    Grid.SetRowSpan(sp, 2);
+                    this.SearchTerms.Children.Add(sp);
+                }
             }
             this.dontUpdate = false;
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
+        }
+        #endregion
+
+        #region Create Multiple Term column entries (And/Or buttons)
+        // Create the AND/OR Radio buttons to set how non-standard controls are combined i.e., with AND or OR SQL queries
+        // The actual radio buttons are defined above as instance variables
+        private StackPanel CreateAndOrButtons()
+        {
+            // Separator
+            Separator separator = new Separator()
+            {
+                Width = Double.NaN
+            };
+
+            // Haader text
+            TextBlock tbHeader = new TextBlock()
+            {
+                Text = "These terms are combined using either",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Normal,
+            };
+
+            // And control
+            StackPanel spAnd = new StackPanel()
+            {
+                Orientation = Orientation.Horizontal,
+                Width = Double.NaN
+            };
+
+            TextBlock tbAnd = new TextBlock()
+            {
+                Text = "to match all selected conditions",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Normal,
+            };
+            spAnd.Children.Add(this.RadioButtonTermCombiningAnd);
+            spAnd.Children.Add(tbAnd);
+
+            // Or control
+            StackPanel spOr = new StackPanel()
+            {
+                Name = "TermCombiningOr",
+                Orientation = Orientation.Horizontal,
+                Width = Double.NaN,
+            };
+
+            TextBlock tbOr = new TextBlock()
+            {
+                Text = "to match at least one selected conditions",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Normal,
+            };
+            spOr.Children.Add(this.RadioButtonTermCombiningOr);
+            spOr.Children.Add(tbOr);
+
+            // Container for above
+            StackPanel sp = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(10, 0, 0, 0),
+                Width = Double.NaN
+            };
+
+            sp.Children.Add(separator);
+            sp.Children.Add(tbHeader);
+            sp.Children.Add(spAnd);
+            sp.Children.Add(spOr);
+            return sp;
+        }
+
+        // Create the AND/OR Radio buttons to set how non-standard controls are combined i.e., with AND or OR SQL queries
+        // The actual radio buttons are defined above as instance variables
+        private static StackPanel CreateStandardControlDescription()
+        {
+            // Separator
+            Separator separator = new Separator()
+            {
+                Width = Double.NaN
+            };
+
+            // Haader text
+            TextBlock tbHeader = new TextBlock()
+            {
+                Text = "These terms are combined using AND:" + Environment.NewLine + "returned files match all selected conditions.",
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.Normal,
+            };
+
+            // Container for above
+            StackPanel sp = new StackPanel()
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(10, 0, 0, 0),
+                Width = Double.NaN
+            };
+
+            sp.Children.Add(separator);
+            sp.Children.Add(tbHeader);
+            return sp;
         }
         #endregion
 
@@ -504,8 +686,8 @@ namespace Timelapse.Dialog
         private void AndOrRadioButton_Checked(object sender, RoutedEventArgs args)
         {
             RadioButton radioButton = sender as RadioButton;
-            this.database.CustomSelection.TermCombiningOperator = (radioButton == this.TermCombiningAnd) ? CustomSelectionOperatorEnum.And : CustomSelectionOperatorEnum.Or;
-            this.UpdateSearchCriteriaFeedback();
+            this.database.CustomSelection.TermCombiningOperator = (radioButton == this.RadioButtonTermCombiningAnd) ? CustomSelectionOperatorEnum.And : CustomSelectionOperatorEnum.Or;
+            this.UpdateSearchDialogFeedback();
         }
 
         // Select: When the use checks or unchecks the checkbox for a row
@@ -528,7 +710,7 @@ namespace Timelapse.Dialog
             expression.IsEnabled = select.IsChecked.Value;
             value.IsEnabled = select.IsChecked.Value;
 
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
         }
 
         // Operator: The user has selected a new expression
@@ -539,7 +721,7 @@ namespace Timelapse.Dialog
             ComboBox comboBox = sender as ComboBox;
             int row = Grid.GetRow(comboBox);  // Get the row number...
             this.database.CustomSelection.SearchTerms[row - 1].Operator = comboBox.SelectedValue.ToString(); // Set the corresponding expression to the current selection
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
         }
 
         // Value (Counters and Notes): The user has selected a new value
@@ -550,7 +732,7 @@ namespace Timelapse.Dialog
             TextBox textBox = sender as TextBox;
             int row = Grid.GetRow(textBox);  // Get the row number...
             this.database.CustomSelection.SearchTerms[row - 1].DatabaseValue = textBox.Text;
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
         }
 
         // Value (Counter) Helper function: textbox accept only typed numbers 
@@ -571,7 +753,7 @@ namespace Timelapse.Dialog
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
                 {
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
-                    this.UpdateSearchCriteriaFeedback();
+                    this.UpdateSearchDialogFeedback();
                 }
             }
         }
@@ -588,7 +770,7 @@ namespace Timelapse.Dialog
                 return;
             }
             this.database.CustomSelection.SearchTerms[row - 1].DatabaseValue = comboBox.SelectedValue.ToString(); // Set the corresponding value to the current selection
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
         }
 
         // Value (Flags): The user has checked or unchecked a new value 
@@ -599,7 +781,7 @@ namespace Timelapse.Dialog
             CheckBox checkBox = sender as CheckBox;
             int row = Grid.GetRow(checkBox);  // Get the row number...
             this.database.CustomSelection.SearchTerms[row - 1].DatabaseValue = checkBox.IsChecked.ToString().ToLower(); // Set the corresponding value to the current selection
-            this.UpdateSearchCriteriaFeedback();
+            this.UpdateSearchDialogFeedback();
         }
 
         // When this button is pressed, all the search terms checkboxes are cleared, which is equivalent to showing all images
@@ -622,98 +804,53 @@ namespace Timelapse.Dialog
             {
                 int row = Grid.GetRow(utcOffsetPicker);
                 this.database.CustomSelection.SearchTerms[row - 1].SetDatabaseValue(utcOffsetPicker.Value.Value);
-                this.UpdateSearchCriteriaFeedback();
+                this.UpdateSearchDialogFeedback();
             }
         }
         #endregion
 
         #region Search Criteria feedback for each row
-        // Updates the search criteria shown across all rows to reflect the contents of the search list,
-        // which also show or hides the search term feedback for that row.
-        private void UpdateSearchCriteriaFeedback()
+        // Updates the feedback and control enablement to reflect the contents of the search list,
+        private void UpdateSearchDialogFeedback()
         {
             if (this.dontUpdate)
             {
                 return;
             }
             // We go backwards, as we don't want to print the AND or OR on the last expression
-            bool lastExpression = true;
-            int numberOfDateTimesSearchTerms = 0;
-            string utcOffset = "Utc Offset";
+            bool atLeastOneSearchTermIsSelected = false;
+            int multipleNonStandardSelectionsMade = 0;
             for (int index = this.database.CustomSelection.SearchTerms.Count - 1; index >= 0; index--)
             {
-                int row = index + 1; // we offset the row by 1 as row 0 is the header
                 SearchTerm searchTerm = this.database.CustomSelection.SearchTerms[index];
-                TextBlock searchCriteria = this.GetGridElement<TextBlock>(CustomSelection.SearchCriteriaColumn, row);
-
-                // Remember the Utc offset, as we will use it to compose the DateTime feedback if needed
-                if (searchTerm.DataLabel == Constant.DatabaseColumn.UtcOffset)
-                {
-                    utcOffset = searchTerm.DatabaseValue.Trim();
-                }
 
                 if (searchTerm.UseForSearching == false)
                 {
-                    // The search term is not used for searching, so clear the feedback field
-                    searchCriteria.Text = String.Empty;
+                    // As this search term is not used for searching, we can skip it
                     continue;
                 }
 
-                // We want to see how many DateTime search terms we have. If there are two, we will be 'and-ing them nt matter what.
-                if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime)
+                if (false == (searchTerm.DataLabel == Constant.DatabaseColumn.File || searchTerm.DataLabel == Constant.DatabaseColumn.Folder ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath || searchTerm.DataLabel == Constant.DatabaseColumn.DateTime ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.ImageQuality || searchTerm.DataLabel == Constant.DatabaseColumn.UtcOffset ||
+                              searchTerm.DataLabel == Constant.DatabaseColumn.DeleteFlag))
                 {
-                    numberOfDateTimesSearchTerms++;
+                    // Count the number of multiple non-standard selection rows
+                    multipleNonStandardSelectionsMade++;
                 }
-
-                // Construct the search term 
-                string searchCriteriaText = searchTerm.DataLabel + " " + searchTerm.Operator + " "; // So far, we have "Data Label = "
-
-                string value;
-
-                // The DateTime feedback is special case, as we want to include the offset in it.
-                if (searchTerm.DataLabel == Constant.DatabaseColumn.DateTime)
-                {
-                    // Display UTC time in Timelapse's standard DateTime display format
-                    DateTime tmpDateTime = DateTime.Parse(searchTerm.DatabaseValue.Trim());
-                    if (DateTimeHandler.TryParseDatabaseUtcOffsetString(utcOffset, out TimeSpan tmpTimeSpan))
-                    {
-                        tmpDateTime.Add(tmpTimeSpan);
-                        value = tmpDateTime.ToString(Constant.Time.DateTimeDisplayFormat);
-                    }
-                    else
-                    {
-                        value = String.Empty;
-                    }
-                }
-                else
-                {
-                    value = searchTerm.DatabaseValue.Trim();
-                }
-                if (value.Length == 0)
-                {
-                    value = "\"\"";  // an empty string, display it as ""
-                }
-                searchCriteriaText += value;
-
-                // If it's not the last expression and if there are multiple queries (i.e., search terms) then show the And or Or at its end.
-                if (!lastExpression)
-                {
-                    // If there are two DateTime search terms selected, they are always  and'ed
-                    if (searchTerm.ControlType == Constant.DatabaseColumn.DateTime && numberOfDateTimesSearchTerms == 2)
-                    {
-                        searchCriteriaText += " " + CustomSelectionOperatorEnum.And;
-                    }
-                    else
-                    {
-                        searchCriteriaText += " " + this.database.CustomSelection.TermCombiningOperator.ToString();
-                    }
-                }
-                searchCriteria.Text = searchCriteriaText;
-                lastExpression = false;
+                atLeastOneSearchTermIsSelected = true;
             }
+
+            // Show how many file will match the current search
             this.InitiateShowCountsOfMatchingFiles();
-            this.ResetToAllImagesButton.IsEnabled = lastExpression == false ||
-                (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+
+            // Enable  the reset button if at least one search term (including detections) is enabled
+            this.ResetToAllImagesButton.IsEnabled = atLeastOneSearchTermIsSelected
+                                                    || (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+
+            // Enable the and/or radio buttons if more than one non-standard selection was made
+            this.RadioButtonTermCombiningAnd.IsEnabled = multipleNonStandardSelectionsMade > 1;
+            this.RadioButtonTermCombiningOr.IsEnabled = multipleNonStandardSelectionsMade > 1;
         }
         #endregion
 
@@ -991,6 +1128,15 @@ namespace Timelapse.Dialog
                 this.ResetToAllImagesButton.IsEnabled = true;
             }
         }
+
+        private void RankByConfidence_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            // Need to disable confidence sliders/spinners depending on the state of this checkbox and use detections
+            // ALso need to restore state of this checkbox between repeated uses in Window_Loaded.
+            this.DetectionSelections.RankByConfidence = this.RankByConfidenceCheckbox.IsChecked == true;
+            this.InitiateShowCountsOfMatchingFiles();
+            this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
+        }
         #endregion
 
         #region Common to Selections and Detections
@@ -1037,14 +1183,5 @@ namespace Timelapse.Dialog
             return value == null ? 0 : Math.Round((double)value, 2);
         }
         #endregion
-
-        private void RankByConfidence_CheckedChanged(object sender, RoutedEventArgs e)
-        {
-            // Need to disable confidence sliders/spinners depending on the state of this checkbox and use detections
-            // ALso need to restore state of this checkbox between repeated uses in Window_Loaded.
-            this.DetectionSelections.RankByConfidence = this.RankByConfidenceCheckbox.IsChecked == true;
-            this.InitiateShowCountsOfMatchingFiles();
-            this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
-        }
     }
 }

@@ -47,79 +47,79 @@ namespace Timelapse.Dialog
         private void SuppressAmbiguousDatesDialog_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressAmbiguousDatesDialog = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressAmbiguousDatesDialog = (cb.IsChecked == true);
         }
 
         private void SuppressCsvExportDialog_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressCsvExportDialog = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressCsvExportDialog = cb.IsChecked == true;
         }
 
         private void SuppressCsvImportPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressCsvImportPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressCsvImportPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedAmbiguousDatesPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedAmbiguousDatesPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedAmbiguousDatesPrompt = cb.IsChecked == true;
         }
 
         private void SuppressMergeDatabasesPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressMergeDatabasesPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressMergeDatabasesPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedCsvExportPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedCsvExportPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedCsvExportPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedDarkThresholdPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedDarkThresholdPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedDarkThresholdPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedDateTimeFixedCorrectionPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedDateTimeFixedCorrectionPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedDateTimeFixedCorrectionPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedDateTimeLinearCorrectionPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedDateTimeLinearCorrectionPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedDateTimeLinearCorrectionPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedDaylightSavingsCorrectionPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedDaylightSavingsCorrectionPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedDaylightSavingsCorrectionPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedPopulateFieldFromMetadataPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedPopulateFieldFromMetadataPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedRereadDatesFromFilesPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedRereadDatesFromFilesPrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedRereadDatesFromFilesPrompt = cb.IsChecked == true;
         }
 
         private void SuppressSelectedSetTimeZonePrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
-            this.state.SuppressSelectedSetTimeZonePrompt = (cb.IsChecked == true) ? true : false;
+            this.state.SuppressSelectedSetTimeZonePrompt = cb.IsChecked == true;
         }
         #endregion
 

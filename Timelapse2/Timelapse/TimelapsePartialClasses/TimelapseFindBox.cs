@@ -24,7 +24,7 @@ namespace Timelapse
         private void FindBoxButton_Click(object sender, RoutedEventArgs e)
         {
             Button findButton = sender as Button;
-            bool isForward = (findButton == this.FindForwardButton) ? true : false;
+            bool isForward = (findButton == this.FindForwardButton);
             this.FindBox_FindImage(isForward);
         }
 

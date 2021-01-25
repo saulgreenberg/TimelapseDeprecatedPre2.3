@@ -266,7 +266,7 @@ namespace Timelapse.QuickPaste
                 {
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Left,
-                    IsChecked = String.Equals(quickPasteItem.Value, Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase) ? false : true,
+                    IsChecked = !string.Equals(quickPasteItem.Value, Constant.BooleanValue.False, StringComparison.OrdinalIgnoreCase),
                     IsEnabled = quickPasteItem.Use,
                     Tag = quickPasteItem
                 };

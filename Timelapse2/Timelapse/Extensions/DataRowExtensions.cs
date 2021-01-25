@@ -18,7 +18,7 @@ namespace Timelapse.Database
             {
                 return false;
             }
-            return String.Equals(Boolean.TrueString, fieldAsString, StringComparison.OrdinalIgnoreCase) ? true : false;
+            return string.Equals(Boolean.TrueString, fieldAsString, StringComparison.OrdinalIgnoreCase);
         }
 
         public static DateTime GetDateTimeField(this DataRow row, string column)

@@ -111,9 +111,9 @@ namespace Timelapse.Util
                 return (int)value;
             }
 
-            if (value is string)
+            if (value is string @string)
             {
-                return Int32.Parse((string)value);
+                return Int32.Parse(@string);
             }
 
             throw new NotSupportedException(String.Format("Registry key {0}\\{1} has unhandled type {2}.", registryKey.Name, subKeyPath, value.GetType().FullName));

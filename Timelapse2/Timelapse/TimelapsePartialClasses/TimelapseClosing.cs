@@ -44,12 +44,15 @@ namespace Timelapse
             // Clear the data grid
             this.DataGrid.ItemsSource = null;
 
+            // Clear the arguments, in case we want to start a new session.
+            this.Arguments = new DataStructures.Arguments(null);
+
             // Reset the rest of the user interface 
             if (this.MarkableCanvas.ThumbnailGrid != null)
             {
                 this.MarkableCanvas.ThumbnailGrid.Reset();
             }
-            this.MenuItemSelectByFolder_ClearAllCheckmarks();
+            this.MenuItemSelectByRelativePath_ClearAllCheckmarks();
             this.State.Reset();
             this.DataEntryControlPanel.IsVisible = false;
             this.MarkableCanvas.ZoomOutAllTheWay();
@@ -77,6 +80,7 @@ namespace Timelapse
         /// </summary>
         private void CloseTimelapseAndSaveState(bool isCompleteShutdown)
         {
+
             this.FilePlayer_Stop();
 
             if ((this.DataHandler != null) &&
@@ -155,6 +159,9 @@ namespace Timelapse
 
             // Save the state by writing it to the registry
             this.State.WriteSettingsToRegistry();
+
+            // Clear the arguments, as we are starting a new session.
+            this.Arguments = new DataStructures.Arguments(null);
         }
         #endregion
     }

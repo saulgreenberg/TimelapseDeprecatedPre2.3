@@ -583,13 +583,13 @@ namespace Timelapse.Database
 
             // Updates the UTCOffset format. The issue is that the offset could have been written in the form +3,00 instead of +3.00 (i.e. with a comma)
             // depending on the computer's culture. 
-            
+
             string firstVersionWithUTCOffsetCheck = "2.2.3.8";
             if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithUTCOffsetCheck, imageSetVersionNumber))
             {
                 string utcColumnName = Constant.DatabaseColumn.UtcOffset;
                 // FORM:  UPDATE DataTable SET UtcOffset =  REPLACE  ( UtcOffset, ',', '.' )  WHERE  INSTR  ( UtcOffset, ',' )  > 0
-                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + utcColumnName + Sql.Equal + 
+                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + utcColumnName + Sql.Equal +
                     Sql.Replace + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.Comma + Sql.Quote(".") + Sql.CloseParenthesis +
                     Sql.Where + Sql.Instr + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.CloseParenthesis + Sql.GreaterThan + "0");
 
@@ -884,50 +884,48 @@ namespace Timelapse.Database
         public async Task SelectFilesAsync(FileSelectionEnum selection)
         {
             string query = String.Empty;
-            bool useStandardQuery = false;
             if (this.CustomSelection == null)
             {
-                useStandardQuery = true;
+                // If no custom selections are configure, then just use a standard query
+                query = Sql.SelectStarFrom + Constant.DBTables.FileData;
             }
             else
             {
-                this.CustomSelection.SetCustomSearchFromSelection(selection, this.GetSelectedFolder());
+                // If its a pre-configured selection type, set the search terms to match that selection type
+                this.CustomSelection.SetSearchTermsFromSelection(selection, this.GetSelectedFolder());
+
+
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
                 {
-                    // MISSING DETECTIONS
-                    // Create a query that returns all missing detections
+                    // MISSING DETECTIONS 
+                    // Create a partial query that returns all missing detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = SqlPhrase.SelectMissingDetections(false);
+                    query = SqlPhrase.SelectMissingDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
                     // DETECTIONS
                     // Create a partial query that returns detections matching some conditions
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = SqlPhrase.SelectDetections(false);
+                    query = SqlPhrase.SelectDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
-                    // CLASSIFICATIONSdatetime(DateTime, UtcOffset
+                    // CLASSIFICATIONS 
                     // Create a partial query that returns classifications matching some conditions
                     // Form: SELECT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                    query = SqlPhrase.SelectClassifications(false);
+                    query = SqlPhrase.SelectClassifications(SelectTypesEnum.Star);
                 }
                 else
                 {
-                    // PERFORMANCE Creates what seems to be a slow query on large databases
-                    useStandardQuery = true;
+                    // Standard query (ie., no detections, no missing detections, no classifications 
+                    query = Sql.SelectStarFrom + Constant.DBTables.FileData;
                 }
-            }
-
-            if (useStandardQuery)
-            {
-                query = Sql.SelectStarFrom + Constant.DBTables.FileData;
             }
 
             if (this.CustomSelection != null && (GlobalReferences.DetectionsExists == false || this.CustomSelection.ShowMissingDetections == false))
             {
-                string conditionalExpression = this.GetFilesConditionalExpression(selection);
+                string conditionalExpression = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(selection);
                 if (String.IsNullOrEmpty(conditionalExpression) == false)
                 {
                     query += conditionalExpression;
@@ -1149,7 +1147,7 @@ namespace Timelapse.Database
             foreach (string relativePath in relativePathList)
             {
                 allPaths.Add(relativePath);
-                string parent = System.IO.Path.GetDirectoryName(relativePath);
+                string parent = String.IsNullOrEmpty(relativePath) ? String.Empty : System.IO.Path.GetDirectoryName(relativePath);
                 while (!String.IsNullOrWhiteSpace(parent))
                 {
                     if (!allPaths.Contains(parent))
@@ -1516,7 +1514,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Counts of matching files
+        #region Counts or Exists 1 of matching files
         // Return a total count of the currently selected files in the file table.
         public int CountAllCurrentlySelectedFiles
         {
@@ -1540,7 +1538,7 @@ namespace Timelapse.Database
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
                 // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
-                query = SqlPhrase.SelectMissingDetections(true);
+                query = SqlPhrase.SelectMissingDetections(SelectTypesEnum.Count);
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
@@ -1548,14 +1546,14 @@ namespace Timelapse.Database
                 // DETECTIONS
                 // Create a query that returns a count of detections matching some conditions
                 // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                query = SqlPhrase.SelectDetections(true);
+                query = SqlPhrase.SelectDetections(SelectTypesEnum.Count);
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
             {
                 // CLASSIFICATIONS
                 // Create a partial query that returns a count of classifications matching some conditions
                 // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                query = SqlPhrase.SelectClassifications(true);
+                query = SqlPhrase.SelectClassifications(SelectTypesEnum.Count);
             }
             else
             {
@@ -1568,7 +1566,7 @@ namespace Timelapse.Database
             // Now add the Where conditions to the query
             if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
             {
-                string where = this.GetFilesConditionalExpression(fileSelection);
+                string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
                 if (!String.IsNullOrEmpty(where))
                 {
                     query += where;
@@ -1580,32 +1578,133 @@ namespace Timelapse.Database
                 }
             }
             // Uncommment this to see the actual complete query
-            //if (Util.GlobalReferences.UseClassifications)
-            //{
-            //    System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
-            //}
+            //    System.Diagnostics.Debug.Print("File Counts: " + query);
             return this.Database.ScalarGetCountFromSelect(query);
         }
+
+        // Return true if even one file matches the fileSelection condition in the entire database
+        // NOTE: Currently only used by 1 method to check if deleteflags exists. Check how well this works if other methods start using it.
+        // NOTE: This method is somewhat similar to CountAllFilesMatchingSelectionCondition. They could be combined, but its easier for now to keep them separate
+        // Form examples
+        // -  No detections:  SELECT EXISTS (  SELECT 1  FROM DataTable WHERE  ( DeleteFlag='true' )  )  //
+        // -  detectopms:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
+        // -  recognitions:   SELECT EXISTS (  SELECT 1  FROM  (  SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        //                    WHERE  ( DataTable.DeleteFlag='true' )  AND Classifications.category = 1 GROUP BY Classifications.classificationID HAVING  MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1 )  ) :1
+        public bool ExistsFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)
+        {
+            string query;
+            bool skipWhere = false;
+            query = " SELECT EXISTS ( ";
+
+            // PART 1 of Query
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+            {
+                // MISSING DETECTIONS
+                // Create a query that returns a count of missing detections
+                // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
+                query += SqlPhrase.SelectMissingDetections(SelectTypesEnum.One);
+                skipWhere = true;
+            }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
+            {
+                // DETECTIONS
+                // Create a query that returns a count of detections matching some conditions
+                // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+                query += SqlPhrase.SelectDetections(SelectTypesEnum.One);
+            }
+            else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
+            {
+                // CLASSIFICATIONS
+                // Create a partial query that returns a count of classifications matching some conditions
+                // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+                query += SqlPhrase.SelectClassifications(SelectTypesEnum.One);
+            }
+            else
+            {
+                // STANDARD (NO DETECTIONS/CLASSIFICATIONS)
+                // Create a query that returns a count that does not consider detections
+                query += Sql.SelectOne  + Sql.From + Constant.DBTables.FileData;
+            }
+
+            // PART 2 of Query
+            // Now add the Where conditions to the query
+            if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
+            {
+                string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
+                if (!String.IsNullOrEmpty(where))
+                {
+                    query += where;
+                }
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
+                {
+                   // Add a close parenthesis if we are querying for detections. Not sure where the unbalanced parenthesis is coming from! Needs some checking.
+                    query += Sql.CloseParenthesis;
+                }
+            }
+            query += Sql.CloseParenthesis;
+
+            // Uncommment this to see the actual complete query
+            //System.Diagnostics.Debug.Print("File Exists: " + query + ":" + this.Database.ScalarGetCountFromSelect(query).ToString() );
+            return this.Database.ScalarGetCountFromSelect(query) != 0;
+        }
+
         #endregion
 
         #region Exists matching files  
         // Return true if there is at least one file matching the fileSelection condition in the entire database
         // Form examples
         // - Select EXISTS  ( SELECT 1   FROM DataTable WHERE DeleteFlag='true')
+        // -     SELECT EXISTS  ( SELECT 1  FROM DataTable WHERE  (RelativePath= 'Station1' OR RelativePath GLOB 'Station1\*') AND DeleteFlag = 'TRUE' COllate nocase)
+        // -XXXX SELECT EXISTS  ( SELECT 1  FROM DataTable WHERE  (  ( RelativePath='Station1\\Deployment2' OR RelativePath GLOB 'Station1\\Deployment2\\*' )  AND DeleteFlag='true' )) 
         // The performance of this query depends upon how many rows in the table has to be searched
         // before the first exists appears. If there are no matching rows, the performance is more or
         // less equivalent to COUNT as it has to go through every row. 
-        public bool RowExistsWhere(FileSelectionEnum fileSelection)
+        public bool ExistsRowThatMatchesSelectionForAllFilesOrConstrainedRelativePathFiles(FileSelectionEnum fileSelection)
         {
-            string query = Sql.SelectExists + Sql.OpenParenthesis + Sql.SelectOne + Sql.From + Constant.DBTables.FileData;
-            string where = this.GetFilesConditionalExpression(fileSelection);
-            if (!String.IsNullOrEmpty(where))
+            // Create a term that will be used, if needed, to account for a constrained relative path
+            // Term form is: ( RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
+            string constrainToRelativePathTerm = GlobalReferences.MainWindow.Arguments.ConstrainToRelativePath
+                    ? CustomSelection.RelativePathGlobToIncludeSubfolders(Constant.DatabaseColumn.RelativePath, GlobalReferences.MainWindow.Arguments.RelativePath)
+                    : String.Empty;
+            string selectionTerm;
+            // Common query prefix: SELECT EXISTS  ( SELECT 1  FROM DataTable WHERE 
+            string query = Sql.SelectExists + Sql.OpenParenthesis + Sql.SelectOne + Sql.From + Constant.DBTables.FileData + Sql.Where;
+
+
+            // Count the number of deleteFlags
+            if (fileSelection == FileSelectionEnum.MarkedForDeletion)
             {
-                query += where;
+                // Term form is: DeleteFlag = 'TRUE' COllate nocase
+                selectionTerm = Constant.DatabaseColumn.DeleteFlag + Sql.Equal + Sql.Quote("true") + Sql.CollateNocase;
             }
-            query += Sql.CloseParenthesis;
-            // Uncommment this to see the actual complete query
-            // System.Diagnostics.Debug.Print("Exists: " + query + Environment.NewLine);
+            else if (fileSelection == FileSelectionEnum.Ok)
+            {
+                // Term form is: ImageQuality = 'TRUE' COllate nocase
+                selectionTerm = Constant.DatabaseColumn.ImageQuality + Sql.Equal + Sql.Quote(Constant.ImageQuality.Ok);
+            }
+            else if (fileSelection == FileSelectionEnum.Dark)
+            {
+                // Term form is: ImageQuality = 'TRUE' COllate nocase
+                selectionTerm = Constant.DatabaseColumn.ImageQuality + Sql.Equal + Sql.Quote(Constant.ImageQuality.Dark);
+            }
+            else
+            {
+                // Shouldn't get here, as this should only be used with MarkedForDeletion, Ok, or Dark
+                // so essentially a noop
+                return false;
+            }
+            if (String.IsNullOrWhiteSpace(constrainToRelativePathTerm))
+            {
+                // Form after this:  SELECT EXISTS  (  SELECT 1  FROM DataTable WHERE   DeleteFlag = 'TRUE' COllate nocase )
+                query += selectionTerm + Sql.CloseParenthesis;
+            }
+            else
+            {
+                // Form after this: SELECT EXISTS  ( SELECT 1  FROM DataTable WHERE  (RelativePath= 'Station1' OR RelativePath GLOB 'Station1\*') AND DeleteFlag = 'TRUE' COllate nocase)
+                query += constrainToRelativePathTerm + Sql.And + selectionTerm + Sql.CloseParenthesis;
+            }
+
+            // System.Diagnostics.Debug.Print("ExistsRowThatMatchesExactSelection: " + query);
             return this.Database.ScalarBoolFromOneOrZero(query);
         }
         #endregion
@@ -1854,28 +1953,33 @@ namespace Timelapse.Database
             return this.CustomSelection.GetRelativePathFolder();
         }
 
-        private string GetFilesConditionalExpression(FileSelectionEnum selection)
-        {
-            // System.Diagnostics.Debug.Print(selection.ToString());
-            switch (selection)
-            {
-                case FileSelectionEnum.Corrupted:
-                case FileSelectionEnum.Missing:
-                    return String.Empty;
-                case FileSelectionEnum.All:
-                    return String.Empty;
-                case FileSelectionEnum.Dark:
-                case FileSelectionEnum.Ok:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Sql.Quote(selection.ToString());
-                case FileSelectionEnum.MarkedForDeletion:
-                    return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
-                case FileSelectionEnum.Custom:
-                case FileSelectionEnum.Folders:
-                    return this.CustomSelection.GetFilesWhere();
-                default:
-                    throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
-            }
-        }
+        // NO LONGER USED AS THESE HAVE ALL BEEN CENTRALIZED TO USE THE SEARCHTERM DATA STRUCTURE
+        //private string GetFilesConditionalExpression(FileSelectionEnum selection)
+        //{
+        //    // System.Diagnostics.Debug.Print(selection.ToString());
+        //    switch (selection)
+        //    {
+        //        case FileSelectionEnum.All:
+        //        case FileSelectionEnum.Corrupted:
+        //        case FileSelectionEnum.Missing:
+        //            // SAULXXX: Corrupted and Missing should no longer be accessible: these cases could be deleted.
+        //            return String.Empty;
+        //        case FileSelectionEnum.Dark:
+        //        case FileSelectionEnum.Ok:
+        //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.ImageQuality] + "=" + Sql.Quote(selection.ToString());
+        //        case FileSelectionEnum.MarkedForDeletion:
+        //            return Sql.Where + this.DataLabelFromStandardControlType[Constant.DatabaseColumn.DeleteFlag] + "=" + Sql.Quote(Constant.BooleanValue.True);
+        //        case FileSelectionEnum.Custom:
+        //        case FileSelectionEnum.Folders:
+        //            //this.CustomSelection.GetRelativePathFolder();
+        //            string whereClause = this.CustomSelection.GetFilesWhere();
+        //            System.Diagnostics.Debug.Print(whereClause);
+        //            //return this.CustomSelection.GetFilesWhere();
+        //            return whereClause;
+        //        default:
+        //            throw new NotSupportedException(String.Format("Unhandled quality selection {0}.  For custom selections call CustomSelection.GetImagesWhere().", selection));
+        //    }
+        //}
         #endregion
 
         #region Markers
@@ -2020,21 +2124,21 @@ namespace Timelapse.Database
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // Code to run on the GUI thread.
-                // Check the arguments for null 
-                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+            // Code to run on the GUI thread.
+            // Check the arguments for null 
+            ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
 
-                // Set it as a progressive or indeterminate bar
-                busyCancelIndicator.IsIndeterminate = isIndeterminate;
+            // Set it as a progressive or indeterminate bar
+            busyCancelIndicator.IsIndeterminate = isIndeterminate;
 
-                // Set the progress bar position (only visible if determinate)
-                busyCancelIndicator.Percent = percent;
+            // Set the progress bar position (only visible if determinate)
+            busyCancelIndicator.Percent = percent;
 
-                // Update the text message
-                busyCancelIndicator.Message = message;
+            // Update the text message
+            busyCancelIndicator.Message = message;
 
-                // Update the cancel button to reflect the cancelEnabled argument
-                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+            // Update the cancel button to reflect the cancelEnabled argument
+            busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
                 busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
             });
         }
@@ -2044,8 +2148,8 @@ namespace Timelapse.Database
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                // Update the progress bar
-                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            // Update the progress bar
+            FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler;
 
@@ -2075,35 +2179,35 @@ namespace Timelapse.Database
                                 JsonSerializer serializer = new JsonSerializer();
                                 Detector detector = serializer.Deserialize<Detector>(reader);
 
-                                // If detection population was previously done in this session, resetting these tables to null 
-                                // will force reading the new values into them
-                                this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                            // If detection population was previously done in this session, resetting these tables to null 
+                            // will force reading the new values into them
+                            this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
                                 this.detectionCategoriesDictionary = null;
                                 this.classificationCategoriesDictionary = null;
                                 this.classificationsDataTable = null;
 
-                                // Prepare the detection tables. If they already exist, clear them
-                                DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+                            // Prepare the detection tables. If they already exist, clear them
+                            DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
 
-                                // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
-                                if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
+                            // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
+                            if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
                                 {
-                                    // No folders in the detections match folders in the databases. Abort without doing anything.
-                                    return false;
+                                // No folders in the detections match folders in the databases. Abort without doing anything.
+                                return false;
                                 }
-                                // PERFORMANCE This method does two things:
-                                // - it walks through the detector data structure to construct sql insertion statements
-                                // - it invokes the actual insertion in the database.
-                                // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                                // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+                            // PERFORMANCE This method does two things:
+                            // - it walks through the detector data structure to construct sql insertion statements
+                            // - it invokes the actual insertion in the database.
+                            // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                            // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
 
-                                // Update the progress bar and populate the detection tables
-                                progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
+                            // Update the progress bar and populate the detection tables
+                            progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
                                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
 
-                                // DetectionExists needs to be primed if it is to save its DetectionExists state
-                                this.DetectionsExists(true);
+                            // DetectionExists needs to be primed if it is to save its DetectionExists state
+                            this.DetectionsExists(true);
                             }
                             return true;
                         }

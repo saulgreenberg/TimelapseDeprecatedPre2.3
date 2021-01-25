@@ -1171,5 +1171,51 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
         #endregion
+
+        #region MessageBox: related to Arguments to start a particular template or to constrain to a particular relative path
+        // Tell the user that Timelapse is currently restricted to the folder designated by a particulare relative path
+        public static void ArgumentRelativePathDialog(Window owner, string folderName)
+        {
+            string title = "Timelapse is currently restricted to the folder: '" + folderName + "'";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = title + Environment.NewLine;
+            messageBox.Message.What += "This means that:" + Environment.NewLine;
+            messageBox.Message.What += "\u2022 you will only be able to view and analyze files in that folder and its subfolders" + Environment.NewLine;
+            messageBox.Message.What += "\u2022 any reference by Timelapse to 'All files' means 'All files in the folder: " + folderName + "'" + Environment.NewLine; ;
+            messageBox.Message.What += "\u2022 to avoid confusion, you will not be able to open a different image set in this session";
+
+            messageBox.Message.Reason = "Timelapse was started with the instruction to restrict itself to the folder: '" + folderName + "'" + Environment.NewLine;
+            messageBox.Message.Reason += "This is usually done to narrow analysis to a particular subset of files of interest";
+
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
+
+        // Tell the user that Timelapse could not open the template specified in the argument
+        public static void ArgumentTemplatePathDialog(Window owner, string fileName, string relativePathArgument)
+        {
+            string title = "Timelapse could not open the template";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = title + Environment.NewLine;
+            messageBox.Message.What += "     '" + fileName + "'" + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.What += "Consequently," + Environment.NewLine;
+            messageBox.Message.What += "\u2022 the instruction to use that template is ignored.";
+            if (!String.IsNullOrWhiteSpace(relativePathArgument))
+            {
+                messageBox.Message.What += Environment.NewLine + "\u2022 the additional instruction to limit analysis to the subfolder " + "'" + relativePathArgument + "'" + " is also ignored ";
+            }
+            messageBox.Message.Reason = "Timelapse was started with instructions to open the template indicated above" + Environment.NewLine;
+            if (!String.IsNullOrWhiteSpace(relativePathArgument))
+            {
+                messageBox.Message.Reason += "and to limit analysis to a particular subfolder." + Environment.NewLine; ;
+            }
+            messageBox.Message.Reason += "However, that template either does not exist or could not be accessed.";
+
+            messageBox.Message.Icon = MessageBoxImage.Information;
+            messageBox.ShowDialog();
+        }
+        #endregion
     }
 }

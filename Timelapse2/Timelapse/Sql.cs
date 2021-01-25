@@ -1,4 +1,5 @@
 ﻿using System;
+using Timelapse.Enums;
 
 namespace Timelapse
 {
@@ -45,6 +46,7 @@ namespace Timelapse
         public const string Equal = " = ";
         public const string EqualsCaseID = " = CASE Id";
         public const string From = " FROM ";
+        public const string Glob = " GLOB ";
         public const string GreaterThanEqual = " >= ";
         public const string GreaterThan = " > ";
         public const string GroupBy = " GROUP BY ";
@@ -143,18 +145,43 @@ namespace Timelapse
         ///  <param name="useCountForm">If true, return a SELECT COUNT vs a SELECT from</param>
         /// <returns> 
         /// Count Form:  SELECT COUNT  ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
-        /// Select Form: SELECT DataTable.*             FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL</returns>
-        public static string SelectMissingDetections(bool useCountForm)
+        /// Star Form: SELECT DataTable.*               FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+        /// One Form:  SELECT 1                         FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
+        public static string SelectMissingDetections(SelectTypesEnum selectType)
         {
-            string phrase = useCountForm
-                ? Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis
-                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+            string phrase = String.Empty;
+            if(selectType == SelectTypesEnum.Count)
+            {
+                phrase = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis;
+            }
+            else if (selectType == SelectTypesEnum.Star)
+            {
+                phrase = Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+            }
+            else if (selectType == SelectTypesEnum.One)
+            {
+                phrase = Sql.SelectOne;
+            }
+            //string phrase = useCountForm
+            //    ? Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis
+            //    : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
             return phrase + Sql.From + Constant.DBTables.FileData +
                 Sql.LeftJoin + Constant.DBTables.Detections +
                 Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
                 Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
                 Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
         }
+        //public static string SelectMissingDetections(bool useCountForm)
+        //{
+        //    string phrase = useCountForm
+        //        ? Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis
+        //        : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+        //    return phrase + Sql.From + Constant.DBTables.FileData +
+        //        Sql.LeftJoin + Constant.DBTables.Detections +
+        //        Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+        //        Sql.Equal + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID +
+        //        Sql.Where + Constant.DBTables.Detections + Sql.Dot + Constant.DatabaseColumn.ID + Sql.IsNull;
+        //}
 
         /// <summary>
         /// Sql Phrase - Create partial query to return detections
@@ -162,45 +189,91 @@ namespace Timelapse
         /// <param name="useCountForm">If true, form is SELECT COUNT vs SELECT</param>
         /// <returns>
         /// Count Form:  SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-        /// Select Form: SELECT DataTable.*                     FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+        /// Star Form:   SELECT DataTable.*                     FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
+        /// One Form:   SELECT 1                                FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
         /// </returns>
-        public static string SelectDetections(bool useCountForm)
+        public static string SelectDetections(SelectTypesEnum selectType)
         {
-            string phrase = useCountForm
-                //? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
-                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar
-                : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
-
-
+            string phrase = String.Empty;
+            if (selectType == SelectTypesEnum.Count)
+            {
+                phrase = Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar;
+            }
+            else if (selectType == SelectTypesEnum.Star)
+            {
+                phrase = Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+            }
+            else if (selectType == SelectTypesEnum.One)
+            {
+                phrase = Sql.SelectOne;
+            }
             return phrase + Sql.From + Constant.DBTables.Detections + Sql.InnerJoin + Constant.DBTables.FileData +
                     Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
         }
+        //public static string SelectDetections(bool useCountForm)
+        //{
+        //    string phrase = useCountForm
+        //        //? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectStar
+        //        ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct + Constant.DBTables.FileData + Sql.DotStar
+        //        : Sql.Select + Constant.DBTables.FileData + Sql.DotStar;
+
+
+        //    return phrase + Sql.From + Constant.DBTables.Detections + Sql.InnerJoin + Constant.DBTables.FileData +
+        //            Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+        //}
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="useCountForm"></param>
         /// <returns>
-        /// Count Form:  Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-        /// Select Form: SELECT                                      DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        /// Count Form:  Select COUNT  ( * )  FROM (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        /// Star Form:   SELECT  DISTINCT                           DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        /// One Form     SELECT ONE           FROM (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
         /// 
         /// </returns>
-        public static string SelectClassifications(bool useCountForm)
+        public static string SelectClassifications(SelectTypesEnum selectType)
         {
-            string phrase = useCountForm
-                ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct
-                : Sql.SelectDistinct;
-            //     : Sql.SelectDistinct + Constant.DBTables.Classifications + Sql.Dot + Constant.ClassificationColumns.Conf + Sql.Comma;
+            string phrase = String.Empty;
+            if (selectType == SelectTypesEnum.Count)
+            {
+                phrase = Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct;
+            }
+            else if (selectType == SelectTypesEnum.Star)
+            {
+                phrase = Sql.SelectDistinct;
+            }
+            else if (selectType == SelectTypesEnum.One)
+            {
+                phrase = Sql.SelectOne + Sql.From + Sql.OpenParenthesis + Sql.SelectDistinct;
+            }
+
             phrase += Constant.DBTables.FileData + Sql.DotStar + Sql.From + Constant.DBTables.Classifications +
                     Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
                     Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+
             // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
             phrase += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
                 Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.Equal +
                 Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+
             return phrase;
         }
-
+        //public static string SelectClassifications(bool useCountForm)
+        //{
+        //    string phrase = useCountForm
+        //        ? Sql.SelectCountStarFrom + Sql.OpenParenthesis + Sql.SelectDistinct
+        //        : Sql.SelectDistinct;
+        //    //     : Sql.SelectDistinct + Constant.DBTables.Classifications + Sql.Dot + Constant.ClassificationColumns.Conf + Sql.Comma;
+        //    phrase += Constant.DBTables.FileData + Sql.DotStar + Sql.From + Constant.DBTables.Classifications +
+        //            Sql.InnerJoin + Constant.DBTables.FileData + Sql.On + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID +
+        //            Sql.Equal + Constant.DBTables.Detections + "." + Constant.DetectionColumns.ImageID;
+        //    // and now append INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        //    phrase += Sql.InnerJoin + Constant.DBTables.Detections + Sql.On +
+        //        Constant.DBTables.Detections + Sql.Dot + Constant.DetectionColumns.DetectionID + Sql.Equal +
+        //        Constant.DBTables.Classifications + "." + Constant.DetectionColumns.DetectionID;
+        //    return phrase;
+        //}
 
         /// <summary>
         /// Sql phrase used in Where

@@ -91,7 +91,7 @@ namespace Timelapse
         // Reset the slider: usually done to disable the FileNavigator when there is no image set to display.
         private void FileNavigatorSliderReset()
         {
-            bool filesSelected = (this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0) ? true : false;
+            bool filesSelected = (this.IsFileDatabaseAvailable() && this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0);
 
             this.timerFileNavigator.Stop();
             this.FileNavigatorSlider_EnableOrDisableValueChangedCallback(filesSelected);
