@@ -900,21 +900,21 @@ namespace Timelapse.Database
                     // MISSING DETECTIONS 
                     // Create a partial query that returns all missing detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = SqlPhrase.SelectMissingDetections(false);
+                    query = SqlPhrase.SelectMissingDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
                     // DETECTIONS
                     // Create a partial query that returns detections matching some conditions
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = SqlPhrase.SelectDetections(false);
+                    query = SqlPhrase.SelectDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
                     // CLASSIFICATIONS 
                     // Create a partial query that returns classifications matching some conditions
                     // Form: SELECT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                    query = SqlPhrase.SelectClassifications(false);
+                    query = SqlPhrase.SelectClassifications(SelectTypesEnum.Star);
                 }
                 else
                 {
@@ -1538,7 +1538,7 @@ namespace Timelapse.Database
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
                 // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
-                query = SqlPhrase.SelectMissingDetections(true);
+                query = SqlPhrase.SelectMissingDetections(SelectTypesEnum.Count);
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
@@ -1546,14 +1546,14 @@ namespace Timelapse.Database
                 // DETECTIONS
                 // Create a query that returns a count of detections matching some conditions
                 // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                query = SqlPhrase.SelectDetections(true);
+                query = SqlPhrase.SelectDetections(SelectTypesEnum.Count);
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
             {
                 // CLASSIFICATIONS
                 // Create a partial query that returns a count of classifications matching some conditions
                 // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                query = SqlPhrase.SelectClassifications(true);
+                query = SqlPhrase.SelectClassifications(SelectTypesEnum.Count);
             }
             else
             {
@@ -1578,24 +1578,22 @@ namespace Timelapse.Database
                 }
             }
             // Uncommment this to see the actual complete query
-            //if (Util.GlobalReferences.UseClassifications)
-            //{
-            //    System.Diagnostics.Debug.Print("File Counts: " + query + Environment.NewLine);
-            //}
+            //    System.Diagnostics.Debug.Print("File Counts: " + query);
             return this.Database.ScalarGetCountFromSelect(query);
         }
 
         // Return true if even one file matches the fileSelection condition in the entire database
+        // NOTE: Currently only used by 1 method to check if deleteflags exists. Check how well this works if other methods start using it.
+        // NOTE: This method is somewhat similar to CountAllFilesMatchingSelectionCondition. They could be combined, but its easier for now to keep them separate
         // Form examples
-        // - Select Count(*) FROM DataTable WHERE ImageQuality='Light'
-        // - Select Count(*) FROM (Select * From Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE DataTable.ImageQuality='Light' GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  <= 0.9)
-        // - Select Count(*) FROM (Select * From Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id  INER JOIN Detections ON Detections.detectionID = Classifications.detectionID WHERE DataTable.Person<>'true' 
-        // AND Classifications.category = 6 GROUP BY Classifications.classificationID HAVING  MAX  (Classifications.conf ) BETWEEN 0.8 AND 1 
+        // -  No detections:  SELECT EXISTS (  SELECT 1  FROM DataTable WHERE  ( DeleteFlag='true' )  )  //
+        // -  detectopms:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
+        // -  recognitions:   SELECT EXISTS (  SELECT 1  FROM  (  SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
+        //                    WHERE  ( DataTable.DeleteFlag='true' )  AND Classifications.category = 1 GROUP BY Classifications.classificationID HAVING  MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1 )  ) :1
         public bool ExistsFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)
         {
             string query;
             bool skipWhere = false;
-
             query = " SELECT EXISTS ( ";
 
             // PART 1 of Query
@@ -1604,7 +1602,7 @@ namespace Timelapse.Database
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
                 // Form: SELECT COUNT ( DataTable.Id ) FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL 
-                query += SqlPhrase.SelectMissingDetections(true);
+                query += SqlPhrase.SelectMissingDetections(SelectTypesEnum.One);
                 skipWhere = true;
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
@@ -1612,20 +1610,20 @@ namespace Timelapse.Database
                 // DETECTIONS
                 // Create a query that returns a count of detections matching some conditions
                 // Form: SELECT COUNT  ( * )  FROM  (  SELECT * FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                query += SqlPhrase.SelectDetections(true);
+                query += SqlPhrase.SelectDetections(SelectTypesEnum.One);
             }
             else if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
             {
                 // CLASSIFICATIONS
                 // Create a partial query that returns a count of classifications matching some conditions
                 // Form: Select COUNT  ( * )  FROM  (SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                query += SqlPhrase.SelectClassifications(true);
+                query += SqlPhrase.SelectClassifications(SelectTypesEnum.One);
             }
             else
             {
                 // STANDARD (NO DETECTIONS/CLASSIFICATIONS)
                 // Create a query that returns a count that does not consider detections
-                query += Sql.SelectCountStarFrom + Constant.DBTables.FileData;
+                query += Sql.SelectOne  + Sql.From + Constant.DBTables.FileData;
             }
 
             // PART 2 of Query
@@ -1637,20 +1635,17 @@ namespace Timelapse.Database
                 {
                     query += where;
                 }
-                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
+                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
-                    // Add a close parenthesis if we are querying for detections
+                   // Add a close parenthesis if we are querying for detections. Not sure where the unbalanced parenthesis is coming from! Needs some checking.
                     query += Sql.CloseParenthesis;
                 }
             }
-
             query += Sql.CloseParenthesis;
 
             // Uncommment this to see the actual complete query
-            System.Diagnostics.Debug.Print("File Exists: " + query + ":" + this.Database.ScalarGetCountFromSelect(query).ToString() );
-            
+            //System.Diagnostics.Debug.Print("File Exists: " + query + ":" + this.Database.ScalarGetCountFromSelect(query).ToString() );
             return this.Database.ScalarGetCountFromSelect(query) != 0;
-            //return this.Database.ScalarGetCountFromSelect(query);
         }
 
         #endregion
