@@ -1023,6 +1023,7 @@ namespace Timelapse.Database
                 // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
                 // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
                 // as I am not that savvy in database optimizations.
+                System.Diagnostics.Debug.Print(query);
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
             this.FileTable = new FileTable(filesTable);

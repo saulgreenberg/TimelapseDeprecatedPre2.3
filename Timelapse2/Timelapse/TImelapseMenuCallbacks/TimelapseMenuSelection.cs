@@ -294,5 +294,19 @@ namespace Timelapse
             await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
         #endregion
+
+
+        private async void MenuItemSelectRandomSample_Click(object sender, RoutedEventArgs e)
+        {
+            Dialog.RandomSampleSelection customSelection = new Dialog.RandomSampleSelection(this, 1000);
+            bool? useRandomSample = customSelection.ShowDialog();
+
+            if (true == useRandomSample)
+            {
+                this.DataHandler.FileDatabase.CustomSelection.RandomSample = customSelection.SampleSize;
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+                this.DataHandler.FileDatabase.CustomSelection.RandomSample = 0;
+            }
+        }
     }
 }
