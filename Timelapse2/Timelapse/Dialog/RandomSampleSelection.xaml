@@ -11,15 +11,15 @@
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question" 
             Title ="Randomly sample the current selection" 
-            What="Randomly sample the current selection with a specific number of files "
-            Reason="Sampling a subset of files is an efficient way of reviewing files against some  criteria. 
+            What="Randomly sample the current selection to produce a subset with a specified number of files "
+            Reason="Sampling a subset of your currently selected files efficient lets you review those files against some  criteria. 
                                       &#10;&#10;For example, you can sample and get a sense of:
                                       &#10;&#x2022; the proportion of files that are empty vs those with something of interest
-                                      &#10;&#x2022; the prevalence of tagging errors in previously analyzed ianges
+                                      &#10;&#x2022; the prevalence of tagging errors in previously analyzed images
                                       &#10;&#x2022; if are using image recognition, the recognition accuracy for a particular species"
-            Hint="Random sampling is temporary. All files in the current selection will be displayed 
+            Hint="Random sampling is temporary. All files in the current selection will be redisplayed 
                                       &#10;&#x2022; in your next selection, or 
-                                      &#10;&#x2022; by Select|Refresh the selection"
+                                      &#10;&#x2022; by choosing Select|Refresh the selection"
                            />
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">

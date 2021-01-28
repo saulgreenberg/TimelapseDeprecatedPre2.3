@@ -884,13 +884,31 @@ namespace Timelapse.Database
         public async Task SelectFilesAsync(FileSelectionEnum selection)
         {
             string query = String.Empty;
+
+            // Random selection - Add prefix
+            //if (this.CustomSelection.RandomSample > 0)
+            //{
+            //    query += "Select * from DataTable WHERE id IN (SELECT id FROM(";
+            //}
+
             if (this.CustomSelection == null)
             {
                 // If no custom selections are configure, then just use a standard query
-                query = Sql.SelectStarFrom + Constant.DBTables.FileData;
+                query += Sql.SelectStarFrom + Constant.DBTables.FileData;
+                
+                // Random selection - Add suffix
+                //if (this.CustomSelection.RandomSample > 0)
+                //{
+                //    query += ") ORDER BY RANDOM() LIMIT 10";
+                //}
             }
             else
             {
+                if (this.CustomSelection.RandomSample > 0)
+                {
+                    query += " Select * from DataTable WHERE id IN (SELECT id FROM ( ";
+                }
+
                 // If its a pre-configured selection type, set the search terms to match that selection type
                 this.CustomSelection.SetSearchTermsFromSelection(selection, this.GetSelectedFolder());
 
@@ -900,26 +918,26 @@ namespace Timelapse.Database
                     // MISSING DETECTIONS 
                     // Create a partial query that returns all missing detections
                     // Form: SELECT DataTable.* FROM DataTable LEFT JOIN Detections ON DataTable.ID = Detections.Id WHERE Detections.Id IS NULL
-                    query = SqlPhrase.SelectMissingDetections(SelectTypesEnum.Star);
+                    query += SqlPhrase.SelectMissingDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
                     // DETECTIONS
                     // Create a partial query that returns detections matching some conditions
                     // Form: SELECT DataTable.* FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id
-                    query = SqlPhrase.SelectDetections(SelectTypesEnum.Star);
+                    query += SqlPhrase.SelectDetections(SelectTypesEnum.Star);
                 }
                 else if (GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
                     // CLASSIFICATIONS 
                     // Create a partial query that returns classifications matching some conditions
                     // Form: SELECT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
-                    query = SqlPhrase.SelectClassifications(SelectTypesEnum.Star);
+                    query += SqlPhrase.SelectClassifications(SelectTypesEnum.Star);
                 }
                 else
                 {
                     // Standard query (ie., no detections, no missing detections, no classifications 
-                    query = Sql.SelectStarFrom + Constant.DBTables.FileData;
+                    query += Sql.SelectStarFrom + Constant.DBTables.FileData;
                 }
             }
 
@@ -1004,6 +1022,13 @@ namespace Timelapse.Database
                         }
                     }
                 }
+
+                // Random selection - Add suffix
+                if (this.CustomSelection.RandomSample > 0)
+                {
+                    query += String.Format(" ) ORDER BY RANDOM() LIMIT {0} )", this.CustomSelection.RandomSample);
+                }
+
                 if (!String.IsNullOrEmpty(term[0]))
                 {
                     query += Sql.OrderBy + term[0];
@@ -1013,9 +1038,10 @@ namespace Timelapse.Database
                     {
                         query += Sql.Comma + term[1];
                     }
-                    query += Sql.Semicolon;
+                    //query += Sql.Semicolon;
                 }
             }
+
 
             DataTable filesTable = await Task.Run(() =>
             {

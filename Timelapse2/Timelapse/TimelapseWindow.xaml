@@ -253,10 +253,10 @@
                     <MenuItem Name="MenuItemSelectFilesMarkedForDeletion" IsCheckable="True" IsChecked="False" Header="All files marked for d_eletion" Click="MenuItemSelectFiles_Click" ToolTip="Shows all files marked for deletion"/>
                     <Separator/>
                     <MenuItem Name="MenuItemSelectCustomSelection" IsCheckable="True" IsChecked="False" Header="_Custom selection..."  ToolTip="Create a custom selection to display only particular files" Click="MenuItemSelectCustomSelection_Click"/>
-                    <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
-                    <MenuItem Name="MenuItemSelectReselect" Header="Refresh the current selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
-                    <MenuItem Name="MenuItemSelectRandomSample" Header="Create a random sample from the current selection" Click="MenuItemSelectRandomSample_Click" ToolTip="Randomly sample and select a subset of files from the current selection"/>
                     <Separator/>
+                    <MenuItem Name="MenuItemSelectMissingFiles" IsCheckable="True" IsChecked="False" Header="_Missing files in the current selection" Click="MenuItemSelectFiles_Click" ToolTip="Show the subset of files in the current selection that are missing (likely because they were moved, renamed or deleted)"/>
+                    <MenuItem Name="MenuItemSelectRandomSample" Header="Create a random sample from the current selection..." Click="MenuItemSelectRandomSample_Click" ToolTip="Randomly sample and select a subset of files from the current selection"/>
+                    <MenuItem Name="MenuItemSelectReselect" Header="Refresh the current selection" Click="MenuItemSelectReselect_Click" ToolTip="Refresh the display based on the current  selection and sorting criteria."/>
                 </MenuItem>
 
                 <!-- Sort Menu -->
