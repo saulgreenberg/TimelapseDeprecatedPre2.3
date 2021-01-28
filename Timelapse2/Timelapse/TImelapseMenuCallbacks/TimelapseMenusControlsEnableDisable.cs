@@ -34,7 +34,10 @@ namespace Timelapse
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;
             this.MenuItemDeleteCurrentFile.IsEnabled = filesSelected;
-            MenuItemRestoreDefaults.IsEnabled = filesSelected;
+            this.MenuItemRestoreDefaults.IsEnabled = filesSelected;
+            this.MenuItemPopulateFieldFromMetadata.IsEnabled = filesSelected;
+            this.MenuItemEpisodePopulateField.IsEnabled = filesSelected;
+
             // Options menu
             // always enable at top level when an image set exists so that image set advanced options are accessible
             this.MenuItemOptions.IsEnabled = true; // imageSetAvailable;

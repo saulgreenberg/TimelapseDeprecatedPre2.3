@@ -1146,6 +1146,63 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region MessageBox: MenuOptions
+        public static void MenuOptionsCantPopulateDataFieldWithEpisodeAsNoFilesDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Cannot populate a field with Episode data", owner);
+            messageBox.Message.Problem = "Timelapse cannot currently populate any fields with Episode data." + Environment.NewLine;
+            messageBox.Message.Reason = "There are no files in the current selection.";
+            messageBox.Message.Hint = "Expand the current selection, or add some images or videos. Then try again.";
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+
+        public static void MenuOptionsCantPopulateDataFieldWithEpisodeAsNoNoteFields(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Cannot populate a field with Episode data", owner);
+            messageBox.Message.Problem = "Timelapse cannot currently populate any fields with Episode data." + Environment.NewLine;
+            messageBox.Message.Reason = "Episode data would be put in a Note field, but none of your fields are Notes.";
+            messageBox.Message.Hint = "Modify your template .tdb file to include a Note field using the Timelapse Template Editor." + Environment.NewLine;
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+
+        public static void MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(Window owner, bool searchTermsOk, bool sortTermsOk)
+        {
+            MessageBox messageBox = new MessageBox("Cannot populate a field with Episode data", owner);
+            messageBox.Message.Problem = "Timelapse cannot currently populate any fields with Episode data." + Environment.NewLine;
+            if (!searchTermsOk)
+            {
+                if (!sortTermsOk)
+                {
+                    messageBox.Message.Reason += "1. ";
+                }
+                messageBox.Message.Reason += "Your current file selection includes search terms that may omit files in an Episode.";
+                messageBox.Message.Hint += "Use the Select menu to select either:" + Environment.NewLine;
+                messageBox.Message.Hint += " - All files, or " + Environment.NewLine;
+                messageBox.Message.Hint += " - All files in a folder and its subfolders";
+                if (!sortTermsOk)
+                {
+                    messageBox.Message.Reason += Environment.NewLine;
+                    messageBox.Message.Hint += Environment.NewLine;
+                }
+            }
+
+            if (!sortTermsOk)
+            {
+                if (!searchTermsOk)
+                {
+                    messageBox.Message.Reason += "2. ";
+                }
+                messageBox.Message.Reason += "Your files must be sorted in ascending date order for this to make sense.";
+                messageBox.Message.Hint += "Use the Sort menu to sort either by:" + Environment.NewLine;
+                messageBox.Message.Hint += " - RelativePath then DateTime (both in ascending order), or " + Environment.NewLine;
+                messageBox.Message.Hint += " - DateTime only  (in ascending order)";
+            }
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+        #endregion
         #region MessageBox: related to DateTime
         public static void DateTimeNewTimeShouldBeLaterThanEarlierTimeDialog(Window owner)
         {

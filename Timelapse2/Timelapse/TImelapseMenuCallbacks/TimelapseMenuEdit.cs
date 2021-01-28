@@ -130,6 +130,81 @@ namespace Timelapse
         }
         #endregion
 
+        #region Poplulate Field with Episode Data
+        private async void MenuItemEditPopulateFieldWithEpisodeData_Click(object sender, RoutedEventArgs e)
+        {
+            // Check: needs at least one file in the current selection,
+            if (this.DataHandler?.FileDatabase?.CountAllCurrentlySelectedFiles == 0 || this.DataHandler.FileDatabase.ImageSet == null)
+            {
+                Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsNoFilesDialog(this);
+                return;
+            }
+
+            // Check: needs at least one Note field that could be populated
+            bool noteControlOk = false;
+            foreach (ControlRow control in this.DataHandler.FileDatabase.Controls)
+            {
+                if (control.Type == Constant.Control.Note)
+                {
+                    noteControlOk = true;
+                }
+            }
+            if (!noteControlOk)
+            {
+                Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsNoNoteFields(this);
+                return;
+            }
+
+            // Check: search term, can only be none or relativePath
+            bool searchTermsOk = true;
+            List<SearchTerm> searchTerms = this.DataHandler.FileDatabase.CustomSelection?.SearchTerms;
+            if (searchTerms == null)
+            {
+                searchTermsOk = false;
+            }
+            else
+            {
+                foreach (SearchTerm searchTerm in searchTerms)
+                {
+                    if (searchTerm.UseForSearching && searchTerm.DataLabel != Constant.DatabaseColumn.RelativePath)
+                    {
+                        searchTermsOk = false;
+                    }
+                }
+            }
+
+            // Check: if the sort terms must be RelativePath x DateTime, or DateTime all ascending
+            SortTerm sortTermDB1 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
+            SortTerm sortTermDB2 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(1); // Get the 1st sort term from the database
+            bool sortTermsOk = (sortTermDB1.DataLabel == Constant.DatabaseColumn.RelativePath && Constant.BooleanValue.True == sortTermDB1.IsAscending && sortTermDB2.DataLabel == Constant.DatabaseColumn.DateTime && Constant.BooleanValue.True == sortTermDB1.IsAscending)
+                               || (sortTermDB1.DataLabel == Constant.DatabaseColumn.DateTime && Constant.BooleanValue.True == sortTermDB1.IsAscending && String.IsNullOrWhiteSpace(sortTermDB2.DataLabel));
+
+            if (!noteControlOk || !searchTermsOk || !sortTermsOk)
+            {
+                Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(this, searchTermsOk, sortTermsOk);
+                return;
+            }
+
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
+                                                                       "'Populate a data field with episodedata...'",
+                                                           (bool optOut) =>
+                                                           {
+                                                               this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
+                                                           }))
+            {
+                PopulateFieldWithEpisodeData populateField = new PopulateFieldWithEpisodeData(this, this.DataHandler.FileDatabase);
+                {
+                    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
+                    {
+                        await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                    };
+                }
+            }
+
+        }
+        #endregion
+
         #region Delete (including sub-menu opening)
         // Delete sub-menu opening
         private void MenuItemDelete_SubmenuOpening(object sender, RoutedEventArgs e)

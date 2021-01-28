@@ -53,6 +53,11 @@ namespace Timelapse
         /// <param name="fileTableIndex"></param>
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex)
         {
+            EpisodeGetEpisodesInRange(fileTable, fileTableIndex, Constant.EpisodeDefaults.MaxRangeToSearch);
+        }
+
+        public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex, int maxRangeToSearch)
+        {
             if (Episodes.EpisodesDictionary == null)
             {
                 Episodes.Reset();
@@ -65,7 +70,7 @@ namespace Timelapse
                 return;
             }
 
-            bool inRange = Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, out int first, out int count);
+            bool inRange = Episodes.EpisodeGetAroundIndex(fileTable, fileTableIndex, maxRangeToSearch, out int first, out int count);
 
             // foreach fileindex within the episode, ranging from first to last, add its episode information to the episode dictionary
             for (int i = 1; i <= count; i++)
@@ -172,7 +177,7 @@ namespace Timelapse
         /// <summary>
         /// Given an index into the filetable, get the episode (defined by the first and last index) that the indexed file belongs to
         /// </summary>
-        private static bool EpisodeGetAroundIndex(FileTable files, int index, out int first, out int count)
+        private static bool EpisodeGetAroundIndex(FileTable files, int index, int maxRangeToSearch, out int first, out int count)
         {
             DateTime date1;
             DateTime date2;
@@ -193,8 +198,8 @@ namespace Timelapse
             date1 = file.DateTime;
 
             int current = index - 1;
-            int minSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
-            int maxSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+            int minSearch = maxRangeToSearch;
+            int maxSearch = maxRangeToSearch;
             // Go backwards in the filetable until we find the first file in the episode, or we fail
             // as we have gone back minSearch times
             while (current >= 0 && minSearch != 0)
