@@ -40,6 +40,7 @@ namespace Timelapse
             this.MenuItemSelectMissingFiles.IsChecked = selection == FileSelectionEnum.Missing;
             this.MenuItemSelectFilesMarkedForDeletion.IsChecked = selection == FileSelectionEnum.MarkedForDeletion;
             this.MenuItemSelectCustomSelection.IsChecked = selection == FileSelectionEnum.Custom;
+            this.MenuItemSelectRandomSample.IsEnabled = this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 50;
         }
         #endregion
 
@@ -294,5 +295,22 @@ namespace Timelapse
             await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
         }
         #endregion
+
+
+        private async void MenuItemSelectRandomSample_Click(object sender, RoutedEventArgs e)
+        {
+            this.MenuItemSelectAllFiles.IsChecked = false;
+            int currentSelectionCount = this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles;
+            Dialog.RandomSampleSelection customSelection = new Dialog.RandomSampleSelection(this, currentSelectionCount);
+            bool? useRandomSample = customSelection.ShowDialog();
+            this.MenuItemSelectAllFiles.IsChecked = false;
+            if (true == useRandomSample)
+            {
+                this.DataHandler.FileDatabase.CustomSelection.RandomSample = customSelection.SampleSize;
+                await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
+                this.DataHandler.FileDatabase.CustomSelection.RandomSample = 0;
+                this.MenuItemSelectAllFiles.IsChecked = true;
+            }
+        }
     }
 }

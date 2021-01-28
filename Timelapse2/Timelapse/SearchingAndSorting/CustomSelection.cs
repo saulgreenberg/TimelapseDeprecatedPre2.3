@@ -15,6 +15,9 @@ namespace Timelapse.Database
     {
         #region Public Properties
         public List<SearchTerm> SearchTerms { get; set; }
+
+        public int RandomSample {get; set;}
+
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
         public bool ShowMissingDetections { get; set; }
         public Detection.DetectionSelections DetectionSelections { get; set; }
