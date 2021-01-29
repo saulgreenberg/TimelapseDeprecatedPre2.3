@@ -1,18 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -54,11 +46,11 @@ namespace Timelapse.Dialog
             this.InitalizeProgressHandler(this.BusyCancelIndicator);
 
             // Set up the initial UI and values
-            this.CheckBoxIncludeEpisodeID.IsChecked = this.IncludeAnEpisodeIDNumber; 
+            this.CheckBoxIncludeEpisodeID.IsChecked = this.IncludeAnEpisodeIDNumber;
             this.RBSingletonEpisodeNumber.IsChecked = SingletonAsEpisodeNumber;
             this.RBSingletonSingle.IsChecked = SingletonAsSingle;
             this.RBSingletonZero.IsChecked = SingletonAsZero;
-            
+
             this.CheckBoxIncludeEpisodeID.Checked += CheckBoxIncludeEpisodeID_CheckChanged;
             this.CheckBoxIncludeEpisodeID.Unchecked += CheckBoxIncludeEpisodeID_CheckChanged;
             this.RBSingletonEpisodeNumber.Checked += RB_CheckChanged;

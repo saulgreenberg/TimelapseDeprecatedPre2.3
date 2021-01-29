@@ -150,7 +150,7 @@ namespace Timelapse
         public static string SelectMissingDetections(SelectTypesEnum selectType)
         {
             string phrase = String.Empty;
-            if(selectType == SelectTypesEnum.Count)
+            if (selectType == SelectTypesEnum.Count)
             {
                 phrase = Sql.SelectCount + Sql.OpenParenthesis + Constant.DBTables.FileData + Sql.Dot + Constant.DatabaseColumn.ID + Sql.CloseParenthesis;
             }

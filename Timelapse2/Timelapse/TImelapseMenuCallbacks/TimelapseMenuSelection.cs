@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
 
@@ -20,7 +21,7 @@ namespace Timelapse
 
             // Enable menu if there are any files marked for deletion
             bool exists = this.DataHandler.FileDatabase.ExistsRowThatMatchesSelectionForAllFilesOrConstrainedRelativePathFiles(FileSelectionEnum.MarkedForDeletion);
-            this.MenuItemSelectFilesMarkedForDeletion.Header = "All marked for d_eletion";
+            this.MenuItemSelectFilesMarkedForDeletion.Header = "All files marked for d_eletion";
             if (!exists)
             {
                 this.MenuItemSelectFilesMarkedForDeletion.Header += " (0)";
@@ -296,7 +297,7 @@ namespace Timelapse
         }
         #endregion
 
-
+        #region Select Random Sample
         private async void MenuItemSelectRandomSample_Click(object sender, RoutedEventArgs e)
         {
             this.MenuItemSelectAllFiles.IsChecked = false;
@@ -310,7 +311,10 @@ namespace Timelapse
                 await this.FilesSelectAndShowAsync(this.DataHandler.ImageCache.Current.ID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
                 this.DataHandler.FileDatabase.CustomSelection.RandomSample = 0;
                 this.MenuItemSelectAllFiles.IsChecked = true;
+                this.StatusBar.SetView("Random Sample of currently selected Files");
             }
+
         }
+        #endregion
     }
 }

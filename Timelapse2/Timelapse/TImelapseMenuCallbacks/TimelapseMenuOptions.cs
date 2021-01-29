@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows;
-using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
 using Timelapse.Util;

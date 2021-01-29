@@ -199,7 +199,7 @@ namespace Timelapse
             this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
 
-            
+
             if (false == String.IsNullOrEmpty(this.Arguments.Template))
             {
                 if (File.Exists(this.Arguments.Template))
@@ -214,8 +214,8 @@ namespace Timelapse
                         this.DataHandler.FileDatabase.CustomSelection.ClearCustomSearchUses();
                         this.DataHandler.FileDatabase.CustomSelection.SetAndUseRelativePathSearchTerm(this.Arguments.RelativePath);
                         if (null == this.DataHandler?.ImageCache?.Current)
-                        { 
-                             await this.FilesSelectAndShowAsync(FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
+                        {
+                            await this.FilesSelectAndShowAsync(FileSelectionEnum.Folders).ConfigureAwait(true);  // Go to the first result (i.e., index 0) in the given selection set
                         }
                         else
                         {

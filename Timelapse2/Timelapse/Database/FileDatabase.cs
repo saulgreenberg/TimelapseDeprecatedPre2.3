@@ -895,7 +895,7 @@ namespace Timelapse.Database
             {
                 // If no custom selections are configure, then just use a standard query
                 query += Sql.SelectStarFrom + Constant.DBTables.FileData;
-                
+
                 // Random selection - Add suffix
                 //if (this.CustomSelection.RandomSample > 0)
                 //{
@@ -1024,7 +1024,7 @@ namespace Timelapse.Database
                 }
 
                 // Random selection - Add suffix
-                if (this.CustomSelection.RandomSample > 0)
+                if (this.CustomSelection != null && this.CustomSelection.RandomSample > 0)
                 {
                     query += String.Format(" ) ORDER BY RANDOM() LIMIT {0} )", this.CustomSelection.RandomSample);
                 }
@@ -1049,7 +1049,7 @@ namespace Timelapse.Database
                 // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
                 // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
                 // as I am not that savvy in database optimizations.
-                System.Diagnostics.Debug.Print(query);
+                // System.Diagnostics.Debug.Print(query);
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
             this.FileTable = new FileTable(filesTable);
@@ -1650,7 +1650,7 @@ namespace Timelapse.Database
             {
                 // STANDARD (NO DETECTIONS/CLASSIFICATIONS)
                 // Create a query that returns a count that does not consider detections
-                query += Sql.SelectOne  + Sql.From + Constant.DBTables.FileData;
+                query += Sql.SelectOne + Sql.From + Constant.DBTables.FileData;
             }
 
             // PART 2 of Query
@@ -1664,7 +1664,7 @@ namespace Timelapse.Database
                 }
                 if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification)
                 {
-                   // Add a close parenthesis if we are querying for detections. Not sure where the unbalanced parenthesis is coming from! Needs some checking.
+                    // Add a close parenthesis if we are querying for detections. Not sure where the unbalanced parenthesis is coming from! Needs some checking.
                     query += Sql.CloseParenthesis;
                 }
             }
@@ -2151,21 +2151,21 @@ namespace Timelapse.Database
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-            // Code to run on the GUI thread.
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
+                // Code to run on the GUI thread.
+                // Check the arguments for null 
+                ThrowIf.IsNullArgument(busyCancelIndicator, nameof(busyCancelIndicator));
 
-            // Set it as a progressive or indeterminate bar
-            busyCancelIndicator.IsIndeterminate = isIndeterminate;
+                // Set it as a progressive or indeterminate bar
+                busyCancelIndicator.IsIndeterminate = isIndeterminate;
 
-            // Set the progress bar position (only visible if determinate)
-            busyCancelIndicator.Percent = percent;
+                // Set the progress bar position (only visible if determinate)
+                busyCancelIndicator.Percent = percent;
 
-            // Update the text message
-            busyCancelIndicator.Message = message;
+                // Update the text message
+                busyCancelIndicator.Message = message;
 
-            // Update the cancel button to reflect the cancelEnabled argument
-            busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
+                // Update the cancel button to reflect the cancelEnabled argument
+                busyCancelIndicator.CancelButtonIsEnabled = isCancelEnabled;
                 busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
             });
         }
@@ -2175,8 +2175,8 @@ namespace Timelapse.Database
             // Set up a progress handler that will update the progress bar
             Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-            // Update the progress bar
-            FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+                // Update the progress bar
+                FileDatabase.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
             });
             IProgress<ProgressBarArguments> progress = progressHandler;
 
@@ -2206,35 +2206,35 @@ namespace Timelapse.Database
                                 JsonSerializer serializer = new JsonSerializer();
                                 Detector detector = serializer.Deserialize<Detector>(reader);
 
-                            // If detection population was previously done in this session, resetting these tables to null 
-                            // will force reading the new values into them
-                            this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
+                                // If detection population was previously done in this session, resetting these tables to null 
+                                // will force reading the new values into them
+                                this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
                                 this.detectionCategoriesDictionary = null;
                                 this.classificationCategoriesDictionary = null;
                                 this.classificationsDataTable = null;
 
-                            // Prepare the detection tables. If they already exist, clear them
-                            DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
+                                // Prepare the detection tables. If they already exist, clear them
+                                DetectionDatabases.CreateOrRecreateTablesAndColumns(this.Database);
 
-                            // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
-                            if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
+                                // PERFORMANCE This check is likely somewhat slow. Check it on large detection files / dbs 
+                                if (this.CompareDetectorAndDBFolders(detector, foldersInDBListButNotInJSon, foldersInJsonButNotInDB, foldersInBoth) == false)
                                 {
-                                // No folders in the detections match folders in the databases. Abort without doing anything.
-                                return false;
+                                    // No folders in the detections match folders in the databases. Abort without doing anything.
+                                    return false;
                                 }
-                            // PERFORMANCE This method does two things:
-                            // - it walks through the detector data structure to construct sql insertion statements
-                            // - it invokes the actual insertion in the database.
-                            // Both steps are very slow with a very large JSON of detections that matches folders of images.
-                            // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
+                                // PERFORMANCE This method does two things:
+                                // - it walks through the detector data structure to construct sql insertion statements
+                                // - it invokes the actual insertion in the database.
+                                // Both steps are very slow with a very large JSON of detections that matches folders of images.
+                                // (e.g., 225 seconds for 2,000,000 images and their detections). Note that I batch insert 50,000 statements at a time. 
 
-                            // Update the progress bar and populate the detection tables
-                            progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
+                                // Update the progress bar and populate the detection tables
+                                progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
                                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
 
-                            // DetectionExists needs to be primed if it is to save its DetectionExists state
-                            this.DetectionsExists(true);
+                                // DetectionExists needs to be primed if it is to save its DetectionExists state
+                                this.DetectionsExists(true);
                             }
                             return true;
                         }

@@ -151,7 +151,9 @@
                     <!-- Populate a field with _metadata... Episode data-->
                     <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
                     <MenuItem Name="MenuItemEpisodePopulateField" Header="_Populate a field with episode data..." Click="MenuItemEditPopulateFieldWithEpisodeData_Click" IsEnabled="False" ToolTip="Populate a field for the currently selected files with Episode Information"/>
-
+                    
+                    <Separator />
+                    
                     <!-- Delete submenu-->
                     <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
                         <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
