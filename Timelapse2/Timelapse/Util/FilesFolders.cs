@@ -50,7 +50,8 @@ namespace Timelapse.Util
             {
                 if (String.IsNullOrEmpty(prefixPath) == false)
                 {
-                    folderPaths.Add(folderRoot.Substring(prefixPath.Length + 1));
+                    int index = folderRoot.Length > prefixPath.Length + 1 ? prefixPath.Length + 1 : prefixPath.Length;
+                    folderPaths.Add(folderRoot.Substring(index));
                 }
                 else
                 {

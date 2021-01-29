@@ -237,6 +237,37 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region MessageBox: Cannot read/write file
+        public static void FileCantOpen (Window owner, string path, bool isFile)
+        {
+            string entity = isFile ? "file" : "folder";
+            // Tell the user we could not read or write the file
+            string title = "Could not open the " + entity;
+            MessageBox messageBox = new MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = "The " + entity + " could not be opened:" + Environment.NewLine;
+            messageBox.Message.What += path;
+
+            messageBox.Message.Reason = "There are many possible reasons, including:" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 the folder may not be accessible or may not exist " + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 you may not have permission to access the " + entity + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 another application may be using the " + entity;
+
+            messageBox.Message.Solution = "Check to see if: " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 the folder exists or if you can create it" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 you can create a file in that folder"; 
+            if (isFile)
+            {
+                messageBox.Message.Solution += Environment.NewLine;
+                messageBox.Message.Solution += "\u2022 you can open and close that file with another application" + Environment.NewLine;
+                messageBox.Message.Solution += "\u2022 another application is using that file";
+            }
+            messageBox.Message.Hint = "Try logging off and then back on, which may release the " + entity + " if another application is using it.";
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+        #endregion
+
         #region MessageBox: Prompt to apply operation if partial selection.
         // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
         public static bool MaybePromptToApplyOperationOnSelectionDialog(Window owner, FileDatabase fileDatabase, bool promptState, string operationDescription, Action<bool> persistOptOut)
@@ -1203,6 +1234,7 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
         #endregion
+
         #region MessageBox: related to DateTime
         public static void DateTimeNewTimeShouldBeLaterThanEarlierTimeDialog(Window owner)
         {

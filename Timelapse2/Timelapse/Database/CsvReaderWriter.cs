@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Timelapse.Controls;
+using Timelapse.Dialog;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -22,42 +23,49 @@ namespace Timelapse.Database
         /// </summary>
         public static void ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
         {
-            using (TextWriter fileWriter = new StreamWriter(filePath, false))
+            try
             {
-                // Write the header as defined by the data labels in the template file
-                // If the data label is an empty string, we use the label instead.
-                // The append sequence results in a trailing comma which is retained when writing the line.
-                StringBuilder header = new StringBuilder();
-                List<string> dataLabels = database.GetDataLabelsExceptIDInSpreadsheetOrder();
-                foreach (string dataLabel in dataLabels)
+                using (TextWriter fileWriter = new StreamWriter(filePath, false))
                 {
-                    // Skip the DateTime and Utc offset column headers
-                    if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
-                    {
-                        continue;
-                    }
-                    header.Append(AddColumnValue(dataLabel));
-                }
-                fileWriter.WriteLine(header.ToString());
-
-                // For each row in the data table, write out the columns in the same order as the 
-                // data labels in the template file
-                int countAllCurrentlySelectedFiles = database.CountAllCurrentlySelectedFiles;
-                for (int row = 0; row < countAllCurrentlySelectedFiles; row++)
-                {
-                    StringBuilder csvRow = new StringBuilder();
-                    ImageRow image = database.FileTable[row];
+                    // Write the header as defined by the data labels in the template file
+                    // If the data label is an empty string, we use the label instead.
+                    // The append sequence results in a trailing comma which is retained when writing the line.
+                    StringBuilder header = new StringBuilder();
+                    List<string> dataLabels = database.GetDataLabelsExceptIDInSpreadsheetOrder();
                     foreach (string dataLabel in dataLabels)
                     {
-                        // Skip the DateTime and Utc offset data
+                        // Skip the DateTime and Utc offset column headers
                         if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
                         {
                             continue;
                         }
-                        csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                        header.Append(AddColumnValue(dataLabel));
                     }
-                    fileWriter.WriteLine(csvRow.ToString());
+                    fileWriter.WriteLine(header.ToString());
+
+                    // For each row in the data table, write out the columns in the same order as the 
+                    // data labels in the template file
+                    int countAllCurrentlySelectedFiles = database.CountAllCurrentlySelectedFiles;
+                    for (int row = 0; row < countAllCurrentlySelectedFiles; row++)
+                    {
+                        StringBuilder csvRow = new StringBuilder();
+                        ImageRow image = database.FileTable[row];
+                        foreach (string dataLabel in dataLabels)
+                        {
+                            // Skip the DateTime and Utc offset data
+                            if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
+                            {
+                                continue;
+                            }
+                            csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                        }
+                        fileWriter.WriteLine(csvRow.ToString());
+                    }
                 }
+            }
+            catch
+            {
+                Dialogs.FileCantOpen(GlobalReferences.MainWindow, filePath, true);
             }
         }
         #endregion
