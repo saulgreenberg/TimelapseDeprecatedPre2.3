@@ -10,6 +10,8 @@ using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
+using Xceed.Wpf.Toolkit.Core.Input;
+using Xceed.Wpf.Toolkit.Zoombox;
 
 namespace Timelapse.Controls
 {
@@ -31,6 +33,9 @@ namespace Timelapse.Controls
         private double ImageHeight { get; set; }
         private readonly TimelapseWindow timelapseWindow = GlobalReferences.MainWindow;
         private readonly MarkableCanvas markableCanvas;
+
+        // A popup allowing us to inspect a popup in detail
+        private Popup InspectionPopup = new Popup();
         #endregion
 
         #region Constructor
@@ -57,6 +62,7 @@ namespace Timelapse.Controls
                 // Hide the popup if asked or if basic data isn't available, including deleting the children
                 this.IsOpen = false;
                 this.Child = null;
+                this.InspectionPopup.IsOpen = false;
                 return;
             }
 
@@ -132,7 +138,7 @@ namespace Timelapse.Controls
                         {
                             if ((lastBackwardsDateTime - fileTable[0].DateTime).Duration() <= timeThreshold)
                             {
-                                Image image = EpisodePopup.CreateImage(fileTable[0], margin, this.ImageHeight);
+                                Image image = this.CreateImage(fileTable[0], margin, this.ImageHeight);
                                 width += image.Source.Width;
                                 height = Math.Max(height, image.Source.Height);
 
@@ -160,7 +166,7 @@ namespace Timelapse.Controls
                         {
                             if ((lastForwardsDateTime - fileTable[0].DateTime).Duration() <= timeThreshold)
                             {
-                                Image image = EpisodePopup.CreateImage(fileTable[0], margin, this.ImageHeight);
+                                Image image = this.CreateImage(fileTable[0], margin, this.ImageHeight);
                                 width += image.Source.Width;
                                 height = Math.Max(height, image.Source.Height);
 
@@ -205,20 +211,22 @@ namespace Timelapse.Controls
             Canvas.SetTop(image, 0);
             canvas.Children.Add(image);
 
-
             BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
             boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
             return (canvas);
         }
 
+
+
         // Create the image
-        private static Image CreateImage(ImageRow imageRow, int margin, double imageHeight)
+        private Image CreateImage(ImageRow imageRow, int margin, double imageHeight)
         {
             Image image = new Image
             {
                 Source = imageRow.LoadBitmap(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(imageHeight), ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseHeight, out bool isCorruptOrMissing)
             };
 
+            image.MouseLeftButtonUp += this.Image_MouseLeftButtonUp;
             // Need to scale the image to the correct height
             if (isCorruptOrMissing)
             {
@@ -231,11 +239,112 @@ namespace Timelapse.Controls
                     double scale = imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
                     image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
                 }
+                image.Tag = null;
             }
+            image.Tag = imageRow;
             image.Margin = new Thickness(margin);
             return image;
         }
 
+        private void XImage_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Image image && image.Tag != null)
+            {
+                Image clone = new Image
+                {
+                    Source = ((ImageRow)image.Tag).LoadBitmap(GlobalReferences.MainWindow.FolderPath, 640, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseHeight, out bool isCorruptOrMissing)
+                };
+                clone.RenderTransform = new ScaleTransform(1, 1);
+
+                this.InspectionPopup.Child = clone;
+                this.InspectionPopup.Placement = PlacementMode.MousePoint;
+                this.InspectionPopup.IsOpen = true;
+            }
+        }
+
+        private void Image_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is Image image && image.Tag != null)
+            {
+                Image clone = new Image
+                {
+                    Source = ((ImageRow)image.Tag).LoadBitmap(GlobalReferences.MainWindow.FolderPath, 640, ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseHeight, out bool isCorruptOrMissing)
+                };
+                Canvas canvas = new Canvas
+                {
+                    Width = clone.Source.Width,
+                    Height = clone.Source.Height,
+                    Background = Brushes.Gray
+                };
+                //Canvas.SetLeft(clone, 0);
+                //Canvas.SetTop(clone, 0);
+                //canvas.Children.Add(clone);
+
+                //BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
+                //boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
+
+                Zoombox zoombox = new Zoombox();
+                //{
+                //    Width = image.Source.Width
+                //};
+                zoombox.Content = clone;
+                zoombox.DragModifiers = new KeyModifierCollection()
+                {
+                    KeyModifier.None
+                };
+                zoombox.RelativeZoomModifiers = new KeyModifierCollection()
+                {
+                    KeyModifier.None
+                };
+                zoombox.ZoomModifiers = new KeyModifierCollection()
+                {
+                    KeyModifier.None
+                };
+                zoombox.MinScale = 1;
+
+                this.InspectionPopup.Child = zoombox;
+                this.InspectionPopup.Placement = PlacementMode.MousePoint;
+                this.InspectionPopup.IsOpen = true;
+            }
+        }
+        // EXPERIMENTAL, CURRENTLY UNUSED
+        // Create a zoombox containing the canvas with the image as well as the  bounding boxes defined by the filetable id 
+        private static Zoombox CreateZoomboxWithBoundingBoxesAndImage(Image image, double height, int margin, long fileTableID)
+        {
+            Zoombox zoombox = new Zoombox()
+            {
+                Width = image.Source.Width,
+                Height = height,
+            };
+            Canvas canvas = new Canvas
+            {
+                Width = image.Source.Width,
+                Height = height,
+                Background = Brushes.Gray
+            };
+            Canvas.SetLeft(image, 0);
+            Canvas.SetTop(image, 0);
+            canvas.Children.Add(image);
+
+            BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
+            boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
+            zoombox.Content = canvas;
+            zoombox.DragModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.RelativeZoomModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.ZoomModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.MinScale = 1;
+
+            return zoombox;
+        }
         private static Label CreateLabel(string content, double height)
         {
             return new Label
