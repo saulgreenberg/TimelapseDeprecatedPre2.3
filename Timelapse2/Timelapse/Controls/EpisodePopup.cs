@@ -10,6 +10,8 @@ using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Images;
 using Timelapse.Util;
+using Xceed.Wpf.Toolkit.Core.Input;
+using Xceed.Wpf.Toolkit.Zoombox;
 
 namespace Timelapse.Controls
 {
@@ -31,6 +33,9 @@ namespace Timelapse.Controls
         private double ImageHeight { get; set; }
         private readonly TimelapseWindow timelapseWindow = GlobalReferences.MainWindow;
         private readonly MarkableCanvas markableCanvas;
+
+        // A popup allowing us to inspect a popup in detail
+        private Popup InspectionPopup = new Popup();
         #endregion
 
         #region Constructor
@@ -57,6 +62,7 @@ namespace Timelapse.Controls
                 // Hide the popup if asked or if basic data isn't available, including deleting the children
                 this.IsOpen = false;
                 this.Child = null;
+                this.InspectionPopup.IsOpen = false;
                 return;
             }
 
@@ -66,6 +72,7 @@ namespace Timelapse.Controls
                 Orientation = Orientation.Horizontal
             };
             this.Child = sp;
+            
 
             double width = 0;  // Used to calculate the placement offset of the popup relative to the placement target
             double height;
@@ -74,7 +81,7 @@ namespace Timelapse.Controls
             Label label = EpisodePopup.CreateLabel("^", this.ImageHeight);
             label.VerticalAlignment = VerticalAlignment.Top;
             width += label.Width;
-            height = label.Height;
+            height = this.ImageHeight;
             sp.Children.Add(label);
 
             int margin = 2;
@@ -137,7 +144,12 @@ namespace Timelapse.Controls
                                 height = Math.Max(height, image.Source.Height);
 
                                 // Create a canvas containing the image and bounding boxes (if detections are on)
-                                sp.Children.Insert(0, CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID));
+                                Canvas canvas = CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID);
+                                canvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
+                                canvas.Tag = fileTable[0];
+                                sp.Width = Double.NaN;
+                                sp.Height = Double.NaN;
+                                sp.Children.Insert(0, canvas);
                                 imagesLeftToDisplay--;
                                 lastBackwardsDateTime = fileTable[0].DateTime;
                             }
@@ -165,7 +177,10 @@ namespace Timelapse.Controls
                                 height = Math.Max(height, image.Source.Height);
 
                                 // Create a canvas containing the image and bounding box
-                                sp.Children.Add(CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID));
+                                Canvas canvas = CreateCanvasWithBoundingBoxesAndImage(image, height, margin, fileTable[0].ID);
+                                canvas.MouseLeftButtonUp += Canvas_MouseLeftButtonUp;
+                                canvas.Tag = fileTable[0];
+                                sp.Children.Add(canvas);
                                 imagesLeftToDisplay--;
                                 lastBackwardsDateTime = fileTable[0].DateTime;
                             }
@@ -205,20 +220,20 @@ namespace Timelapse.Controls
             Canvas.SetTop(image, 0);
             canvas.Children.Add(image);
 
-
             BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
             boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
+
             return (canvas);
         }
 
         // Create the image
         private static Image CreateImage(ImageRow imageRow, int margin, double imageHeight)
         {
+            //imageHeight = 2 * imageHeight;
             Image image = new Image
             {
                 Source = imageRow.LoadBitmap(GlobalReferences.MainWindow.FolderPath, Convert.ToInt32(imageHeight), ImageDisplayIntentEnum.Persistent, ImageDimensionEnum.UseHeight, out bool isCorruptOrMissing)
             };
-
             // Need to scale the image to the correct height
             if (isCorruptOrMissing)
             {
@@ -231,11 +246,94 @@ namespace Timelapse.Controls
                     double scale = imageHeight / Constant.ImageValues.FileNoLongerAvailable.Value.Height;
                     image.Source = new TransformedBitmap(Constant.ImageValues.FileNoLongerAvailable.Value, new ScaleTransform(scale, scale));
                 }
+                image.Tag = null;
             }
+            else if (image.Source?.Height > 0 && image.Height != image.Source.Height )
+            {
+                // Need to adjust the image width due to differing dpi settings of the bitmap vs. device independent units used to actually display the bitmap
+                // as otherwise it may not be the correct size. It may not be the mose efficient way to do this, but it seems to work.
+                double scale = imageHeight / image.Source.Height;
+                image.Source = new TransformedBitmap((BitmapSource)image.Source, new ScaleTransform(scale, scale));
+            }
+            image.Tag = imageRow;
             image.Margin = new Thickness(margin);
             return image;
         }
 
+        // Create a new larger zoomable popup so that the user can inspect the image details
+        private void Canvas_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            int height = 480;
+            if (sender is Canvas canvas && canvas.Tag != null)
+            {
+                Image image = EpisodePopup.CreateImage((ImageRow)canvas.Tag, 0, height);
+                Canvas clone = CreateCanvasWithBoundingBoxesAndImage(image, height, 0, ((ImageRow)canvas.Tag).ID);
+                Zoombox zoombox = CreateZoombox();
+                zoombox.Content = clone;
+
+                this.InspectionPopup.Child = zoombox;
+                this.InspectionPopup.Placement = PlacementMode.MousePoint;
+                this.InspectionPopup.IsOpen = true;
+            }
+        }
+
+        static Zoombox CreateZoombox()
+        {
+            Zoombox zoombox = new Zoombox();
+
+            zoombox.DragModifiers = new KeyModifierCollection()
+            {
+                    KeyModifier.None
+            };
+            zoombox.RelativeZoomModifiers = new KeyModifierCollection()
+            {
+                    KeyModifier.None
+            };
+            zoombox.ZoomModifiers = new KeyModifierCollection()
+            {
+                    KeyModifier.None
+            };
+            zoombox.MinScale = 1;
+            return zoombox;
+        }
+        // EXPERIMENTAL, CURRENTLY UNUSED
+        // Create a zoombox containing the canvas with the image as well as the  bounding boxes defined by the filetable id 
+        private static Zoombox CreateZoomboxWithBoundingBoxesAndImage(Image image, double height, int margin, long fileTableID)
+        {
+            Zoombox zoombox = new Zoombox()
+            {
+                Width = image.Source.Width,
+                Height = height,
+            };
+            Canvas canvas = new Canvas
+            {
+                Width = image.Source.Width,
+                Height = height,
+                Background = Brushes.Gray
+            };
+            Canvas.SetLeft(image, 0);
+            Canvas.SetTop(image, 0);
+            canvas.Children.Add(image);
+
+            BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
+            boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
+            zoombox.Content = canvas;
+            zoombox.DragModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.RelativeZoomModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.ZoomModifiers = new KeyModifierCollection()
+            {
+                KeyModifier.None
+            };
+            zoombox.MinScale = 1;
+
+            return zoombox;
+        }
         private static Label CreateLabel(string content, double height)
         {
             return new Label
