@@ -184,7 +184,7 @@ namespace Timelapse.Dialog
         {
             this.CheckBoxUseDetections.IsChecked = false;
             this.timelapseState.UseDetections = false;
-            this.CheckBoxBoundingBoxAnnotate.IsChecked = false;
+            this.CheckBoxBoundingBoxAnnotate.IsChecked = true;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
             this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;

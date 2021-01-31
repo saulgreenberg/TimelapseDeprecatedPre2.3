@@ -93,7 +93,7 @@
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,0" >
                             <CheckBox Name="CheckBoxUseDetections" Margin="30,0,0,0" Content="Enable image recognition controls" Height="22" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxUseDetections_Click" />
                             <CheckBox Name="CheckBoxBoundingBoxColorBlindFriendlyColors" Content="Use color-blind friendly colors" Margin="34,0,0,0" ToolTip="Apply a bounding box color without transparency that is somewhat better for color-blind people" FontWeight="Normal" Click="CheckBoxBounidngBoxColorBlindRinedlyColors_Click"/>
-                            <CheckBox Name="CheckBoxBoundingBoxAnnotate" Content="Annotate bounding box" Margin="10,0,0,0" FontWeight="Normal"  ToolTip="Annotate each bounding box with a label or menu containing the recognizer's classification.&#x0a;This adds information at the expense of some clutter." Click="CheckBoxBounidngBoxAnnotate_Click"/>
+                            <CheckBox Name="CheckBoxBoundingBoxAnnotate" Content="Annotate bounding box" Margin="10,0,0,0" FontWeight="Normal"  IsChecked ="True" ToolTip="Annotate each bounding box with a label or menu containing the recognizer's classification.&#x0a;This adds information at the expense of some clutter." Click="CheckBoxBounidngBoxAnnotate_Click"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top"  Margin="30,0,0,0">
