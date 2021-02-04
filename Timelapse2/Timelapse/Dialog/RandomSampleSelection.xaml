@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:Timelapse.Controls"
+        xmlns:controls="clr-namespace:Timelapse.Controls" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         MinHeight="420" MinWidth="680" 
-        Height="420" Width="680" 
+        Height="460" Width="680" 
         Title="Randomly sample the current selection" Loaded="Window_Loaded">
     <DockPanel>
         <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" Icon="Question" 
@@ -24,13 +24,14 @@
         <DockPanel>
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-                <Button Name="OkButton" IsDefault="True" AutomationProperties.AutomationId="ChangesButton" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click" IsEnabled="True">_Okay</Button>
+                <Button Name="OkButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="OkButton_Click" IsEnabled="True">_Okay</Button>
             </StackPanel>
             <Rectangle Fill="#FF868686" Height="2" HorizontalAlignment="Stretch" DockPanel.Dock="Top"/>
             <StackPanel Orientation="Horizontal" Margin="10">
-                <TextBlock Text="Select a sample size (# of files to display):" FontWeight="Bold" Margin="0,0,10,0"/>
-                <Slider Name="RandomSlider" Minimum="1" Maximum="100" Width="200"  />
-                <TextBlock Name="TBFilesSelected" Text="-- files selected" Margin="10,0,0,0"/>
+                <TextBlock Text="Select a sample size &#10;(# of files to display):" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                <Slider Name="RandomSlider" Minimum="1" Maximum="100" Width="200"  VerticalAlignment="Center"/>
+                <xctk:IntegerUpDown Name="UpDownRandom" Width="90" Minimum="1" Height="30" VerticalAlignment="Center"/>
+                <TextBlock Name="TBFilesSelected" Text="-- files selected" Margin="10,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
         </DockPanel>
     </DockPanel>
