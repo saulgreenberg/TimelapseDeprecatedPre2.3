@@ -1045,7 +1045,7 @@ namespace Timelapse.Database
 
             DataTable filesTable = await Task.Run(() =>
             {
-                // System.Diagnostics.Debug.Print("Doit: " + query);
+                // System.Diagnostics.Debug.Print("Select Query: " + query);
                 // PERFORMANCE  This seems to be the main performance bottleneck. Running a query on a large database that returns
                 // a large datatable (e.g., all files) is very slow. There is likely a better way to do this, but I am not sure what
                 // as I am not that savvy in database optimizations.

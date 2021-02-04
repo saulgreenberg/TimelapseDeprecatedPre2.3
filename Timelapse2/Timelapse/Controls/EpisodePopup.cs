@@ -35,7 +35,7 @@ namespace Timelapse.Controls
         private readonly MarkableCanvas markableCanvas;
 
         // A popup allowing us to inspect a popup in detail
-        private Popup InspectionPopup = new Popup();
+        private readonly Popup InspectionPopup = new Popup();
         #endregion
 
         #region Constructor
@@ -279,61 +279,25 @@ namespace Timelapse.Controls
 
         static Zoombox CreateZoombox()
         {
-            Zoombox zoombox = new Zoombox();
-
-            zoombox.DragModifiers = new KeyModifierCollection()
+            Zoombox zoombox = new Zoombox
             {
+                DragModifiers = new KeyModifierCollection()
+                {
                     KeyModifier.None
-            };
-            zoombox.RelativeZoomModifiers = new KeyModifierCollection()
-            {
+                },
+                RelativeZoomModifiers = new KeyModifierCollection()
+                {
                     KeyModifier.None
-            };
-            zoombox.ZoomModifiers = new KeyModifierCollection()
-            {
+                },
+                ZoomModifiers = new KeyModifierCollection()
+                {
                     KeyModifier.None
+                },
+                MinScale = 1
             };
-            zoombox.MinScale = 1;
             return zoombox;
         }
-        // EXPERIMENTAL, CURRENTLY UNUSED
-        // Create a zoombox containing the canvas with the image as well as the  bounding boxes defined by the filetable id 
-        private static Zoombox CreateZoomboxWithBoundingBoxesAndImage(Image image, double height, int margin, long fileTableID)
-        {
-            Zoombox zoombox = new Zoombox()
-            {
-                Width = image.Source.Width,
-                Height = height,
-            };
-            Canvas canvas = new Canvas
-            {
-                Width = image.Source.Width,
-                Height = height,
-                Background = Brushes.Gray
-            };
-            Canvas.SetLeft(image, 0);
-            Canvas.SetTop(image, 0);
-            canvas.Children.Add(image);
-
-            BoundingBoxes boundingBoxes = Util.GlobalReferences.MainWindow.GetBoundingBoxesForCurrentFile(fileTableID);
-            boundingBoxes.DrawBoundingBoxesInCanvas(canvas, image.Source.Width, image.Source.Height, margin);
-            zoombox.Content = canvas;
-            zoombox.DragModifiers = new KeyModifierCollection()
-            {
-                KeyModifier.None
-            };
-            zoombox.RelativeZoomModifiers = new KeyModifierCollection()
-            {
-                KeyModifier.None
-            };
-            zoombox.ZoomModifiers = new KeyModifierCollection()
-            {
-                KeyModifier.None
-            };
-            zoombox.MinScale = 1;
-
-            return zoombox;
-        }
+ 
         private static Label CreateLabel(string content, double height)
         {
             return new Label
