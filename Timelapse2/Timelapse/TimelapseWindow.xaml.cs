@@ -207,7 +207,6 @@ namespace Timelapse
                     Mouse.OverrideCursor = Cursors.Wait;
                     this.StatusBar.SetMessage("Loading images, please wait...");
                     await this.TryOpenTemplateAndBeginLoadFoldersAsync(this.Arguments.Template).ConfigureAwait(true);
-
                     if (false == String.IsNullOrEmpty(this.Arguments.RelativePath))
                     {
                         // Set and only use the relative path as a search term

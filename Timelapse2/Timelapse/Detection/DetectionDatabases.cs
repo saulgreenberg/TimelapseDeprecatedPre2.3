@@ -257,29 +257,25 @@ namespace Timelapse.Detection
                     }
 
                     // Populate the detections table per image.
-                    // If there are no detections, we populate it with values that indicate that.
-                    if (image.detections.Count == 0)
-                    {
-                        string bboxAsString = String.Empty;
-                        List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
-                        {
-                                new ColumnTuple(Constant.DetectionColumns.DetectionID, detectionIndex++),
-                                new ColumnTuple(Constant.DetectionColumns.ImageID, image.imageID),
-                                new ColumnTuple(Constant.DetectionColumns.Category, Constant.DetectionValues.NoDetectionCategory),
-                                new ColumnTuple(Constant.DetectionColumns.Conf, 0),
-                                new ColumnTuple(Constant.DetectionColumns.BBox, bboxAsString),
-                        };
-                        detectionInsertionStatements.Add(detectionColumnsToUpdate);
-                    }
-                    else
+                    bool noDetectionsIncluded = true;
+                    if (image.detections.Count > 0)
                     {
                         foreach (detection detection in image.detections)
                         {
+                            if (detection.conf > 0 && detection.conf < Constant.DetectionValues.MinimumDetectionValue)
+                            {
+                                // Timelapse enforces a minimum detection confidence. That is, any value less than the MinimumDetectionValue 
+                                // is automatically thrown away
+                                continue;
+                            }
+
                             // Populate each classification category row
                             string bboxAsString = (detection.bbox == null || detection.bbox.Length != 4)
                                 ? String.Empty
                                 : String.Format("{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
                             detection.detectionID = detectionIndex;
+                            noDetectionsIncluded = false;
+
                             List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
                             {
                                 new ColumnTuple(Constant.DetectionColumns.DetectionID, detection.detectionID),
@@ -296,6 +292,12 @@ namespace Timelapse.Detection
                             {
                                 string category = (string)classification[0];
                                 double conf = Double.Parse(classification[1].ToString());
+                                // Timelapse also enforces a minimum recognition confidence. That is, any value less than the MinimumRecognitoinValue 
+                                // is automatically thrown away. Note that this means that the confidence probabilities may not sum to 1
+                                if (conf < Constant.DetectionValues.MinimumRecognitionValue)
+                                {
+                                    continue;
+                                }
                                 // System.Diagnostics.Debug.Print(String.Format("{0} {1} {2}", detection.detectionID, category, conf));
                                 List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
                                 {
@@ -309,6 +311,20 @@ namespace Timelapse.Detection
                             }
                             detectionIndex++;
                         }
+                    }
+                    // If there are no detections, we populate it with values that indicate that.
+                    if (image.detections.Count == 0 || noDetectionsIncluded )
+                    {
+                        string bboxAsString = String.Empty;
+                        List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
+                        {
+                                new ColumnTuple(Constant.DetectionColumns.DetectionID, detectionIndex++),
+                                new ColumnTuple(Constant.DetectionColumns.ImageID, image.imageID),
+                                new ColumnTuple(Constant.DetectionColumns.Category, Constant.DetectionValues.NoDetectionCategory),
+                                new ColumnTuple(Constant.DetectionColumns.Conf, 0),
+                                new ColumnTuple(Constant.DetectionColumns.BBox, bboxAsString),
+                        };
+                        detectionInsertionStatements.Add(detectionColumnsToUpdate);
                     }
                     fileCount++;
                 }

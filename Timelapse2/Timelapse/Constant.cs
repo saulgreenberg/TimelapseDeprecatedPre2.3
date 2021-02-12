@@ -698,6 +698,8 @@ namespace Timelapse.Constant
         public const string NoDetectionCategory = "0";
         public const string NoDetectionLabel = "Empty";
         public const string AllDetectionLabel = "All";
+        public const float MinimumDetectionValue = 0.1F;
+        public const float MinimumRecognitionValue = 0.2F;
     }
 
     public static class ClassificationColumns

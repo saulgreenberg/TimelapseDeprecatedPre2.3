@@ -960,6 +960,9 @@ namespace Timelapse.Dialog
                     this.DetectionRangeSlider.HigherValue = 1.0;
                     this.DetectionRangeSlider.LowerValue = 1.0;
                 }
+                this.DetectionRangeSlider.Minimum = 0;
+                this.DetectionConfidenceSpinnerLower.Minimum = 0;
+                this.DetectionConfidenceSpinnerHigher.Minimum = 0;
             }
             else
             {
@@ -969,7 +972,12 @@ namespace Timelapse.Dialog
                 {
                     this.DetectionRangeSlider.HigherValue = 1.0;
                     this.DetectionRangeSlider.LowerValue = 0.8;
+
                 }
+                // For a non-empty selection, enforce a minimum value of Constant.DetectionValues.MinimumDetectionValue (which is also feedback that it excludes images with tno bounding boxes)
+                this.DetectionRangeSlider.Minimum = Constant.DetectionValues.MinimumDetectionValue;
+                this.DetectionConfidenceSpinnerLower.Minimum = Constant.DetectionValues.MinimumDetectionValue;
+                this.DetectionConfidenceSpinnerHigher.Minimum = Constant.DetectionValues.MinimumDetectionValue;
 
                 if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel)
                 {
@@ -991,13 +999,13 @@ namespace Timelapse.Dialog
                         // The selected item is a detection
                         this.DetectionSelections.DetectionCategory = detectionCategory;
                         this.DetectionSelections.RecognitionType = RecognitionType.Detection;
-
                     }
                     else
                     {
                         // The selected item is a classification
                         this.DetectionSelections.ClassificationCategory = this.database.GetClassificationCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
                         this.DetectionSelections.RecognitionType = RecognitionType.Classification;
+                        this.DetectionRangeSlider.Minimum = Constant.DetectionValues.MinimumDetectionValue;
                     }
                 }
             }
@@ -1151,9 +1159,40 @@ namespace Timelapse.Dialog
             int count = this.database.CountAllFilesMatchingSelectionCondition(FileSelectionEnum.Custom);
             this.QueryMatches.Text = count > 0 ? count.ToString() : "0";
             this.OkButton.IsEnabled = count > 0; // Dusable OK button if there are no matches
+
+            // Uncomment this to add feedback to the File count line desribing the kinds of files selected
+            //if (this.UseDetectionsCheckbox.IsChecked == false)
+            //{
+            //    this.QueryFileMatchNote.Text = String.Empty;
+            //}
+            //else
+            //{
+            //    if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
+            //    {
+            //        if (this.DetectionRangeSlider.LowerValue == 1)
+            //        {
+            //            // Must be 1:1
+            //            this.QueryFileMatchNote.Text = "(files with no recognized entities)";
+            //        }
+            //        else if (this.DetectionRangeSlider.HigherValue == 1)
+            //        {
+            //            // Must be  n:1 wbere n < 1
+            //            this.QueryFileMatchNote.Text = "(files with no recognized entities or lower-probability recognitions)";
+            //        }
+            //        else 
+            //        {
+            //            // Must be  n:m wbere n,m < 1
+            //            this.QueryFileMatchNote.Text = "(files with lower-probability recognitions)";
+            //        }
+            //    }
+            //    else
+            //    {
+            //        this.QueryFileMatchNote.Text = "(files with a recognized entity within the confidence range)";
+            //    }
+            //}
         }
 
-        // Start the timere that will show how many files match the current selection
+        // Start the timer that will show how many files match the current selection
         private void InitiateShowCountsOfMatchingFiles()
         {
             this.countTimer.Stop();
