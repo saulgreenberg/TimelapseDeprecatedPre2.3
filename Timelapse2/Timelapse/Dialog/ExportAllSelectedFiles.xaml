@@ -5,27 +5,30 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Export all files in the current selection" MinHeight="415" MinWidth="550" Height="415"  Width="550" Loaded="Window_Loaded" Closing="Window_Closing">
+        Title="Export all files in the current selection" MinHeight="500" MinWidth="600" Height="500"  Width="600" Loaded="Window_Loaded" Closing="Window_Closing">
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:StockMessageControl x:Name="Message" Grid.Row="0" Icon="Question"                 
                             Title="Export copies of all files in the current selection..."
                             What ="Copy all the images or video files in your current selection to a chosen folder.
-                                   &#10;Exported files will be renamed to indicate their original folder location. "
+                                    &#10;&#10;You can optionally rename files to include a prefix of their original folder location.
+                                    &#10;For example: 'img01.jpg' in 'Site1/Camera1' is exported as 'Site1.Camera1.img01.jpg'
+                                    &#10;&#x2022; Renaming helps you match the copies with their originals
+                                    &#10;&#x2022; However, it only works if no duplicate file names exist across subfolders"
 
                             Result="Copies of your image and video files will be found in the folder below.
                                     &#10;&#x2022; the original files will not be altered.
-                                    &#10;&#x2022; exported file names will indicate their original folder location. For example:
-                                    &#10;  'image01.jpg' in 'Site1/Camera1' will be copied as 'Site1.Camera1.image01.jpg'"
+                                    &#10;&#x2022; 'Rename' checked:      a prefix is added to the exported file name
+                                    &#10;&#x2022; 'Rename' unchecked:  if duplicated file names exists, it aborts the operation "
                             Hint="You can narrow your selections to particular files via the 'Select' menu." />
 
         <Separator Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Margin="5,5,10,5" Background="LightGray"/>
@@ -39,6 +42,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Label Content="Folder:" FontWeight="Bold" Margin="0,0,20,0" Grid.Row="0" Grid.Column="0"/>
             <TextBox Name="FolderLocation" Text="C:\Pictures\TimelapseExport" VerticalContentAlignment="Center" HorizontalContentAlignment="Stretch" Margin="0,0,20,0" Grid.Row="0" Grid.Column="1" />
@@ -47,6 +51,7 @@
                 <CheckBox Name="CBPutInSubFolder" Content="Put in Subfolder:" IsChecked="True" VerticalContentAlignment="Center" />
                 <TextBox Name="TextBoxPutInSubFolder" Text="TimelapseExport" VerticalContentAlignment="Center" Height="25" Width="240" Margin="5,0,0,0" HorizontalContentAlignment="Stretch"/>
             </StackPanel>
+            <CheckBox Name="CBRename" Content="Rename files to include their subfolder location, if any" IsChecked="True" VerticalContentAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="0,5,0,0"/>
         </Grid>
        
         <TextBlock Name="TextBlockFeedback" FontSize="16" FontWeight="Bold" Text="374 files copied"  Grid.Row="2" Grid.Column="0" Margin="80,0,10,0" Visibility="Collapsed"/>

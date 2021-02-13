@@ -333,6 +333,28 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region MessageBox: Overwrite Files?
+        // Check if a prompt dialog is needed
+        public static bool OverwriteExistingFiles(Window owner, int existingFilesCount)
+        {
+            // Warn the user that the operation will overwrite existing files.
+            string title = "Overwrite existing files?";
+            MessageBox messageBox = new MessageBox(title, owner, MessageBoxButton.OKCancel);
+
+            messageBox.Message.What = String.Format("Overwrite {0} files with the same name?", existingFilesCount);
+
+            messageBox.Message.Reason = String.Format("The destination folder already has {0} files with the same name", existingFilesCount);
+
+            messageBox.Message.Solution = "Select " + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Ok' for Timelapse to overwrite those files" + Environment.NewLine;
+            messageBox.Message.Solution += "\u2022 'Cancel' to abort";
+
+            messageBox.Message.Icon = MessageBoxImage.Question;
+
+            return (bool)messageBox.ShowDialog();
+        }
+        #endregion
+
         #region MessageBox: Missing dependencies
         public static void DependencyFilesMissingDialog(string applicationName)
         {

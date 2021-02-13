@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,9 +97,55 @@ namespace Timelapse.Dialog
             int totalFiles = FileDatabase.FileTable.RowCount;
             int copiedFiles = 0;
             int skippedFiles = 0;
+            int existingFiles = 0;
             bool cancelled = false;
+            bool renameFileWithPrefix = this.CBRename.IsChecked == true;
+
+            // We first check all files to see if they exist in the destination.
+            // Yes, this is a bit heavyweight. There is likely a more efficient way to do this.
+            foreach (ImageRow ir in FileDatabase.FileTable)
+            {
+                fileNamePrefix = renameFileWithPrefix
+                ? ir.RelativePath.Replace('\\', '.')
+                : String.Empty;
+
+                sourceFile = Path.Combine(FileDatabase.FolderPath, ir.RelativePath, ir.File);
+                destFile = String.IsNullOrWhiteSpace(fileNamePrefix)
+                ? Path.Combine(path, fileNamePrefix + ir.File)
+                : Path.Combine(path, fileNamePrefix + '.' + ir.File);
+
+                if (File.Exists(destFile))
+                {
+                    existingFiles++;
+                }
+            }
+            if (existingFiles > 0)
+            {
+                if (Dialogs.OverwriteExistingFiles(this, existingFiles) != true)
+                {
+                    copiedFiles = -2; // indicates the duplicate file condition
+                    return String.Format("Export aborted to avoid overwriting files.");
+                }
+            }
+
             await Task.Run(() =>
             {
+                if (!renameFileWithPrefix)
+                {
+                    // Since we are not renaming files, we have to check for duplicates.
+                    // If even one duplicate exists, abort.
+                    HashSet<string> testForDuplicates = new HashSet<string>();
+                    foreach (ImageRow ir in FileDatabase.FileTable)
+                    {
+                        if (!testForDuplicates.Add(ir.File))
+                        {
+                            cancelled = true;
+                            copiedFiles = -1; // indicates the duplicate file condition
+                            return;
+                        }
+                    }
+                }
+
                 foreach (ImageRow ir in FileDatabase.FileTable)
                 {
                     if (this.TokenSource.IsCancellationRequested)
@@ -106,7 +153,11 @@ namespace Timelapse.Dialog
                         cancelled = true;
                         return;
                     }
-                    fileNamePrefix = ir.RelativePath.Replace('\\', '.');
+
+                    fileNamePrefix = renameFileWithPrefix 
+                    ? ir.RelativePath.Replace('\\', '.')
+                    : String.Empty;
+
                     sourceFile = Path.Combine(FileDatabase.FolderPath, ir.RelativePath, ir.File);
                     destFile = String.IsNullOrWhiteSpace(fileNamePrefix)
                     ? Path.Combine(path, fileNamePrefix + ir.File)
@@ -132,7 +183,15 @@ namespace Timelapse.Dialog
 
             if (cancelled)
             {
-                return String.Format("Export cancelled after copying {0} files", copiedFiles);
+                if (copiedFiles >= 0)
+                {
+                    return String.Format("Export cancelled after copying {0} files", copiedFiles);
+                }
+                else if (copiedFiles == -1)
+                {
+                    return String.Format("Export aborted, as duplicate file names exist." + Environment.NewLine + "Try using the Rename option to guarantee unique file names.");
+                }
+                
             }
             if (skippedFiles == 0)
             {
