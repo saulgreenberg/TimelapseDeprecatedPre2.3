@@ -35,7 +35,7 @@ namespace Timelapse.Controls
         /// <summary>Gets or sets the Content of the Flag</summary>
         public override string Content
         {
-            get { return ((bool)this.ContentControl.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
+            get { return (this.ContentControl.IsChecked != null && (bool) this.ContentControl.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
         }
 
         public override bool ContentReadOnly

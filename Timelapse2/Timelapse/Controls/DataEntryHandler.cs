@@ -608,7 +608,9 @@ namespace Timelapse.Controls
                 return false;
             }
 
-            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - this.ImageCache.CurrentRow - 1;
+            // The current row depends on wheter we are in the thumbnail grid or the normal view
+            int currentRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
+            int filesAffected = this.FileDatabase.CountAllCurrentlySelectedFiles - currentRow - 1;
             return (filesAffected > 0);
         }
 
@@ -621,7 +623,10 @@ namespace Timelapse.Controls
             bool checkCounter = control is DataEntryCounter;
             bool checkFlag = control is DataEntryFlag;
             int nearestRowWithCopyableValue = -1;
-            for (int fileIndex = this.ImageCache.CurrentRow - 1; fileIndex >= 0; fileIndex--)
+            // The current row depends on wheter we are in the thumbnail grid or the normal view
+            int currentRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
+
+            for (int fileIndex = currentRow - 1; fileIndex >= 0; fileIndex--)
             {
                 // Search for the row with some value in it, starting from the previous row
                 string valueToCopy = this.FileDatabase.FileTable[fileIndex].GetValueDatabaseString(control.DataLabel);
