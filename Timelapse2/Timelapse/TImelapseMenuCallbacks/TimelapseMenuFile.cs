@@ -136,12 +136,33 @@ namespace Timelapse
                 }
             }
 
-            // Generate the file names/path
+            // Generate the candidate file name/path 
             string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + ".csv";
             string csvFilePath = Path.Combine(this.FolderPath, csvFileName);
 
+            // Get the selected filepath from the user
+            if (false == Dialogs.TryGetFileFromUserUsingSaveFileDialog(
+                "Export and save your data as a CSV file",
+                csvFileName,
+                String.Format("CSV files (*{0})|*{0}", Constant.File.CsvFileExtension),
+                Constant.File.CsvFileExtension,
+                out string selectedCSVFilePath))
+            {
+                // Abort, as file selection is cancelled
+                this.StatusBar.SetMessage("Csv file export cancelled.");
+                return;
+            }
+
+            if (File.Exists(selectedCSVFilePath) && new System.IO.FileInfo(selectedCSVFilePath).Attributes.HasFlag(System.IO.FileAttributes.ReadOnly))
+            {
+                // The file exists but its read only...
+                Dialogs.FileCantOpen(GlobalReferences.MainWindow, selectedCSVFilePath, true);
+                this.StatusBar.SetMessage("Csv file export cancelled.");
+                return;
+            }
+
             // Backup the csv file if it exists, as the export will overwrite it. 
-            if (FileBackup.TryCreateBackup(this.FolderPath, csvFileName))
+            if (FileBackup.TryCreateBackup(this.FolderPath, selectedCSVFilePath))
             {
                 this.StatusBar.SetMessage("Backup of csv file made.");
             }
@@ -152,12 +173,16 @@ namespace Timelapse
 
             try
             {
-                CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, csvFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting);
+                if (false == CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, selectedCSVFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting))
+                {
+                    Dialogs.FileCantOpen(GlobalReferences.MainWindow, selectedCSVFilePath, true);
+                    return;
+                }
             }
-            catch (IOException exception)
+            catch (Exception exception)
             {
                 // Can't write the spreadsheet file
-                Dialogs.MenuFileCantWriteSpreadsheetFileDialog(this, csvFilePath, exception.GetType().FullName, exception.Message);
+                Dialogs.MenuFileCantWriteSpreadsheetFileDialog(this, selectedCSVFilePath, exception.GetType().FullName, exception.Message);
                 return;
             }
 
@@ -170,20 +195,20 @@ namespace Timelapse
                 {
                     UseShellExecute = true,
                     RedirectStandardOutput = false,
-                    FileName = csvFilePath
+                    FileName = selectedCSVFilePath
                 };
                 if (ProcessExecution.TryProcessStart(processStartInfo) == false)
                 {
                     // Can't open excel
-                    Dialogs.MenuFileCantOpenExcelDialog(this, csvFilePath);
+                    Dialogs.MenuFileCantOpenExcelDialog(this, selectedCSVFilePath);
                     return;
                 }
             }
             else if (this.State.SuppressCsvExportDialog == false)
             {
-                Dialogs.MenuFileCSVDataExportedDialog(this, csvFileName);
+                Dialogs.MenuFileCSVDataExportedDialog(this, selectedCSVFilePath);
             }
-            this.StatusBar.SetMessage("Data exported to " + csvFileName);
+            this.StatusBar.SetMessage("Data exported to " + selectedCSVFilePath);
         }
 
         // Import data from a CSV file. Display instructions and error messages as needed.

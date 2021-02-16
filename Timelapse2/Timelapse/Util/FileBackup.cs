@@ -17,18 +17,36 @@ namespace Timelapse.Database
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
             string sourceFileExtension = Path.GetExtension(sourceFilePath);
             string searchPattern = sourceFileNameWithoutExtension + "*" + sourceFileExtension;
-            return backupFolder.GetFiles(searchPattern);
+            try
+            {
+                return backupFolder.GetFiles(searchPattern);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static DateTime GetMostRecentBackup(string sourceFilePath)
         {
-            DirectoryInfo backupFolder = FileBackup.GetOrCreateBackupFolder(sourceFilePath);
-            FileInfo mostRecentBackupFile = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc).FirstOrDefault();
-            if (mostRecentBackupFile != null)
+            try
             {
-                return mostRecentBackupFile.LastWriteTimeUtc;
+                DirectoryInfo backupFolder = FileBackup.GetOrCreateBackupFolder(sourceFilePath);
+                FileInfo mostRecentBackupFile = null;
+                if (backupFolder != null)
+                {
+                    mostRecentBackupFile = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc).FirstOrDefault();
+                }
+                if (backupFolder != null && mostRecentBackupFile != null)
+                {
+                    return mostRecentBackupFile.LastWriteTimeUtc;
+                }
+                return DateTime.MinValue.ToUniversalTime();
             }
-            return DateTime.MinValue.ToUniversalTime();
+            catch
+            {
+                return DateTime.MinValue.ToUniversalTime();
+            }
         }
 
         public static DirectoryInfo GetOrCreateBackupFolder(string sourceFilePath)
@@ -37,7 +55,14 @@ namespace Timelapse.Database
             DirectoryInfo backupFolder = new DirectoryInfo(Path.Combine(sourceFolderPath, Constant.File.BackupFolder));   // The Backup Folder 
             if (backupFolder.Exists == false)
             {
-                backupFolder.Create();
+                try
+                {
+                    backupFolder.Create();
+                }
+                catch
+                {
+                    return null;
+                }
             }
             return backupFolder;
         }
@@ -96,7 +121,11 @@ namespace Timelapse.Database
 
             // create backup folder if needed
             DirectoryInfo backupFolder = FileBackup.GetOrCreateBackupFolder(sourceFilePath);
-
+            if (backupFolder == null)
+            {
+                // Something went wrong...
+                return false;
+            }
             // create a timestamped copy of the file
             // file names can't contain colons so use non-standard format for timestamp with dashes for 24 hour-minute-second separation
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFileName);
@@ -106,8 +135,14 @@ namespace Timelapse.Database
 
             try
             {
+                if (File.Exists(destinationFilePath) && new System.IO.FileInfo(destinationFilePath).Attributes.HasFlag(System.IO.FileAttributes.ReadOnly))
+                {
+                    // Can't overwrite it...
+                    return false;
+                }
                 if (moveInsteadOfCopy)
                 {
+                   
                     File.Move(sourceFilePath, destinationFilePath);
                 }
                 else
@@ -125,6 +160,11 @@ namespace Timelapse.Database
 
             // age out older backup files
             IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
+            if (backupFiles == null)
+            {
+                // We can't delete older backups, but at least we were able to create a backup.
+                return true;
+            }
             foreach (FileInfo file in backupFiles.Skip(Constant.File.NumberOfBackupFilesToKeep))
             {
                 File.Delete(file.FullName);

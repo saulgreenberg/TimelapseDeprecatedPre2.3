@@ -237,6 +237,47 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region SaveFileDialog: Get file or folder
+        /// <summary>
+        /// Prompt the user for a file location via an an open file dialog. Set selectedFilePath.
+        /// </summary>
+        /// <returns>True if the user indicated one, else false. selectedFilePath contains the selected path, if any, otherwise null </returns>
+        public static bool TryGetFileFromUserUsingSaveFileDialog(string title, string defaultFilePath, string filter, string defaultExtension, out string selectedFilePath)
+        {
+            // Get the template file, which should be located where the images reside
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog()
+            {
+                Title = title,
+                CheckFileExists = false,
+                CheckPathExists = true,
+                AutoUpgradeEnabled = true,
+
+                // Set filter for file extension and default file extension 
+                DefaultExt = defaultExtension,
+                Filter = filter
+            })
+            {
+                if (String.IsNullOrWhiteSpace(defaultFilePath))
+                {
+                    saveFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
+                else
+                {
+                    saveFileDialog.InitialDirectory = Path.GetDirectoryName(defaultFilePath);
+                    saveFileDialog.FileName = Path.GetFileName(defaultFilePath);
+                }
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    selectedFilePath = saveFileDialog.FileName;
+                    return true;
+                }
+                selectedFilePath = null;
+                return false;
+            }
+        }
+        #endregion
+
         #region MessageBox: Cannot read/write file
         public static void FileCantOpen (Window owner, string path, bool isFile)
         {

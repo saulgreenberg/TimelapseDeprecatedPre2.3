@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,11 +23,11 @@ namespace Timelapse.Database
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
-        public static void ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
+        public static bool ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
         {
             try
             {
-                using (TextWriter fileWriter = new StreamWriter(filePath, false))
+                using (StreamWriter fileWriter = new StreamWriter(filePath, false))
                 {
                     // Write the header as defined by the data labels in the template file
                     // If the data label is an empty string, we use the label instead.
@@ -62,10 +64,11 @@ namespace Timelapse.Database
                         fileWriter.WriteLine(csvRow.ToString());
                     }
                 }
+                return true;
             }
             catch
             {
-                Dialogs.FileCantOpen(GlobalReferences.MainWindow, filePath, true);
+                return false;
             }
         }
         #endregion
