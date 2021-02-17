@@ -759,7 +759,7 @@ namespace Timelapse.Images
                     }
                 }
             }
-            lock (this)
+            lock (this.ThumbnailGrid)
             {
                 // Request Zoom out on either an unscaled image or the thumbnail grid. 
                 // Note on why this is ambiguous: if the thumbnail grid is visible, it means the (hidden) image is also unscaled
@@ -1443,12 +1443,15 @@ namespace Timelapse.Images
 
             if (marker.ShowLabel)
             {
-                Label label = new Label();
-                label.Content = marker.Tooltip;
-                label.Opacity = 0.6;
-                label.Background = Brushes.White;
-                label.Padding = new Thickness(0, 0, 0, 0);
-                label.Margin = new Thickness(0, 0, 0, 0);
+                TextBlock label = new TextBlock()
+                {
+                    Text = marker.Tooltip,
+                    IsHitTestVisible = false,
+                    Opacity = 0.6,
+                    Background = Brushes.White,
+                    Padding = new Thickness(0, 0, 0, 0),
+                    Margin = new Thickness(0, 0, 0, 0)
+                };
                 markerCanvas.Children.Add(label);
 
                 position = (markerCanvas.Width / 2.0) + (whiteOutline.Width / 2.0);

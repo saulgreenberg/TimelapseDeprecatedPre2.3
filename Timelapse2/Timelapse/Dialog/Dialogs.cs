@@ -279,7 +279,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region MessageBox: Cannot read/write file
-        public static void FileCantOpen (Window owner, string path, bool isFile)
+        public static void FileCantOpen(Window owner, string path, bool isFile)
         {
             string entity = isFile ? "file" : "folder";
             // Tell the user we could not read or write the file
@@ -296,7 +296,7 @@ namespace Timelapse.Dialog
 
             messageBox.Message.Solution = "Check to see if: " + Environment.NewLine;
             messageBox.Message.Solution += "\u2022 the folder exists or if you can create it" + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 you can create a file in that folder"; 
+            messageBox.Message.Solution += "\u2022 you can create a file in that folder";
             if (isFile)
             {
                 messageBox.Message.Solution += Environment.NewLine;

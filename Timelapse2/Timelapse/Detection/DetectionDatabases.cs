@@ -313,7 +313,7 @@ namespace Timelapse.Detection
                         }
                     }
                     // If there are no detections, we populate it with values that indicate that.
-                    if (image.detections.Count == 0 || noDetectionsIncluded )
+                    if (image.detections.Count == 0 || noDetectionsIncluded)
                     {
                         string bboxAsString = String.Empty;
                         List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()

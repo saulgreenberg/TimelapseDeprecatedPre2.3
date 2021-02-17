@@ -81,7 +81,16 @@ namespace Timelapse.Images
                 Rectangle rect = new Rectangle();
                 SolidColorBrush brush;
                 bool colorblind = Util.GlobalReferences.TimelapseState.BoundingBoxColorBlindFriendlyColors;
-                byte opacity = colorblind ? (byte)255 : (byte)Math.Round(255 * bbox.Confidence);
+                byte opacity;
+                if (colorblind)
+                {
+                    opacity = 255;
+                }
+                else
+                {
+                    opacity = (byte)Math.Round(255 * bbox.Confidence);
+                }
+
                 switch (bbox.DetectionCategory)
                 {
                     // The color and opacity of the bounding box depends upon its category and whether we are using color-blind friendly colors

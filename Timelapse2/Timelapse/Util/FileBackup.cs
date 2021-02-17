@@ -142,7 +142,7 @@ namespace Timelapse.Database
                 }
                 if (moveInsteadOfCopy)
                 {
-                   
+
                     File.Move(sourceFilePath, destinationFilePath);
                 }
                 else

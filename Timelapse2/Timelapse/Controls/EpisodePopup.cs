@@ -72,7 +72,7 @@ namespace Timelapse.Controls
                 Orientation = Orientation.Horizontal
             };
             this.Child = sp;
-            
+
 
             double width = 0;  // Used to calculate the placement offset of the popup relative to the placement target
             double height;
@@ -248,7 +248,7 @@ namespace Timelapse.Controls
                 }
                 image.Tag = null;
             }
-            else if (image.Source?.Height > 0 && image.Height != image.Source.Height )
+            else if (image.Source?.Height > 0 && image.Height != image.Source.Height)
             {
                 // Need to adjust the image width due to differing dpi settings of the bitmap vs. device independent units used to actually display the bitmap
                 // as otherwise it may not be the correct size. It may not be the mose efficient way to do this, but it seems to work.
@@ -297,7 +297,7 @@ namespace Timelapse.Controls
             };
             return zoombox;
         }
- 
+
         private static Label CreateLabel(string content, double height)
         {
             return new Label

@@ -54,7 +54,7 @@ namespace Timelapse.Images
                 bitmap.UriSource = new Uri(filePath);
                 bitmap.EndInit();
                 bitmap.Freeze();
-                
+
                 isCorruptOrMissing = false;
                 return bitmap;
             }

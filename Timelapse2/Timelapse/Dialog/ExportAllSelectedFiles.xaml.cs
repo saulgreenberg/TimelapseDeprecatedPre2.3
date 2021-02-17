@@ -154,7 +154,7 @@ namespace Timelapse.Dialog
                         return;
                     }
 
-                    fileNamePrefix = renameFileWithPrefix 
+                    fileNamePrefix = renameFileWithPrefix
                     ? ir.RelativePath.Replace('\\', '.')
                     : String.Empty;
 
@@ -191,7 +191,7 @@ namespace Timelapse.Dialog
                 {
                     return String.Format("Export aborted, as duplicate file names exist." + Environment.NewLine + "Try using the Rename option to guarantee unique file names.");
                 }
-                
+
             }
             if (skippedFiles == 0)
             {
