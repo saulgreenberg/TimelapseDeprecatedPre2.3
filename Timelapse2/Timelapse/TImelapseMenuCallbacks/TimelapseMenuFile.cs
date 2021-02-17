@@ -138,7 +138,6 @@ namespace Timelapse
 
             // Generate the candidate file name/path 
             string csvFileName = Path.GetFileNameWithoutExtension(this.DataHandler.FileDatabase.FileName) + ".csv";
-            string csvFilePath = Path.Combine(this.FolderPath, csvFileName);
 
             // Get the selected filepath from the user
             if (false == Dialogs.TryGetFileFromUserUsingSaveFileDialog(

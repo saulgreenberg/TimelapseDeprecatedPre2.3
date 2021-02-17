@@ -197,7 +197,6 @@ namespace Timelapse.Database
             this.Database.CreateTable(Constant.DBTables.Markers, schemaColumnDefinitions);
         }
 
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1100:DoNotPrefixCallsWithBaseUnlessLocalImplementationExists", Justification = "StyleCop bug.")]
         protected override async Task OnExistingDatabaseOpenedAsync(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
             // Check the arguments for null 
