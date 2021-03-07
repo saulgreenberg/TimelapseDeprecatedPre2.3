@@ -259,7 +259,7 @@ namespace Timelapse.Util
         }
 
         // Return true if any of the files in the fileinfo list includes at least  image or video
-        private static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
+        public static bool CheckFolderForAtLeastOneImageOrVideoFiles(string folderPath)
         {
             DirectoryInfo directoryInfo;
             try
@@ -274,7 +274,6 @@ namespace Timelapse.Util
 
             foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
             {
-
                 List<FileInfo> fileInfoList = new List<FileInfo>();
                 try
                 {
@@ -293,6 +292,38 @@ namespace Timelapse.Util
             }
             return false;
         }
+
+        // Return a FileInfo List of files in the folderPath that are images or videos
+        public static List<FileInfo> GetAllImageOrVideoFilesFromFolder(string folderPath)
+        {
+            DirectoryInfo directoryInfo;
+            List<FileInfo> fileInfoList = new List<FileInfo>();
+            try
+            {
+                directoryInfo = new DirectoryInfo(folderPath);
+            }
+            catch
+            {
+                // The call may fail if the OS denies access because of an I/O error or a specific type of security error
+                return fileInfoList;
+            }
+
+            foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
+            {
+                try
+                {
+                    fileInfoList.AddRange(directoryInfo.GetFiles("*" + extension));
+                }
+                catch
+                {
+                    // The call may fail if the OS denies access because of an I/O error or a specific type of security error
+                    continue;
+                }
+            }
+            FilesRemoveAllButImagesAndVideos(fileInfoList);
+            return fileInfoList;
+        }
+
         #endregion
 
         #region Private (internal) methods

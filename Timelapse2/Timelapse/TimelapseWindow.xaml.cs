@@ -773,34 +773,44 @@ namespace Timelapse
         // If the DataGrid is visible, refresh it so its selected rows match the selections in the Overview. 
         private void DataGridSelectionsTimer_Tick(object sender, EventArgs e)
         {
-            if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
+            try
             {
-                this.DataGrid.UpdateLayout();
-                this.DataGridSelectionsTimer.Stop();
-                return;
-            }
-            //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
-            List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
-            if (this.IsDisplayingSingleImage())
-            {
-                // Only the current row is  selected in the single images view, so just use that.
-                int currentRowIndex = this.DataHandler.ImageCache.CurrentRow;
-                IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
-            }
-            else
-            {
-                // multiple selections are possible in the 
-                foreach (int rowIndex in this.MarkableCanvas.ThumbnailGrid.GetSelected())
+                if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
                 {
-                    IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
+                    this.DataGrid.UpdateLayout();
+                    this.DataGridSelectionsTimer.Stop();
+                    return;
                 }
+                //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
+                List<Tuple<long, int>> IdRowIndex = new List<Tuple<long, int>>();
+                if (this.IsDisplayingSingleImage())
+                {
+                    // Only the current row is  selected in the single images view, so just use that.
+                    int currentRowIndex = this.DataHandler.ImageCache.CurrentRow;
+                    IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[currentRowIndex].ID, currentRowIndex));
+                }
+                else
+                {
+                    // multiple selections are possible in the 
+                    foreach (int rowIndex in this.MarkableCanvas.ThumbnailGrid.GetSelected())
+                    {
+                        IdRowIndex.Add(new Tuple<long, int>(this.DataHandler.FileDatabase.FileTable[rowIndex].ID, rowIndex));
+                    }
+                }
+                if (this.DataGrid.Items.Count > 0)
+                {
+                    this.DataGrid.SelectAndScrollIntoView(IdRowIndex);
+                }
+                //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
+                this.DataGridSelectionsTimer_Reset();
             }
-            if (this.DataGrid.Items.Count > 0)
+            catch
             {
-                this.DataGrid.SelectAndScrollIntoView(IdRowIndex);
+                // The above can fail, for example, if an image is deleted while this is triggered...
+                // If this happens, its no big deal as we can just reset the timer and it will try again later when
+                // things have (hopefully) caught up...
+                this.DataGridSelectionsTimer_Reset();
             }
-            //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
-            this.DataGridSelectionsTimer_Reset();
         }
 
         // Reset the timer, where we start it up again if the datagrid pane is active, floating or visible
