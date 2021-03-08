@@ -134,7 +134,20 @@ namespace Timelapse.Util
         /// </summary>
         public static TimeSpan ParseDatabaseUtcOffsetString(string utcOffsetAsString)
         {
-            TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString));
+            // This used to fail when the culture allowed , decimal places. It should now be fixed. 
+            // Although  we do throw an error if it doesn't work
+            // TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString, CultureInfo.InvariantCulture));
+            TimeSpan utcOffset = TimeSpan.Zero;
+            NumberStyles style = NumberStyles.Number | NumberStyles.AllowDecimalPoint;
+            if (true == Double.TryParse(utcOffsetAsString, style, CultureInfo.InvariantCulture, out double utcOffsetDouble))
+            {
+                utcOffset = TimeSpan.FromHours(utcOffsetDouble);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(utcOffsetAsString), String.Format("UTC offset could not be parsed from {0}.", utcOffsetAsString));
+            }
+            //TimeSpan utcOffset = TimeSpan.FromHours();
             if ((utcOffset < Constant.Time.MinimumUtcOffset) ||
                 (utcOffset > Constant.Time.MaximumUtcOffset))
             {
