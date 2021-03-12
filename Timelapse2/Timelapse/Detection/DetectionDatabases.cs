@@ -204,6 +204,11 @@ namespace Timelapse.Detection
                 int fileCount = 0;
                 foreach (image image in detector.images)
                 {
+                    if (image.detections == null)
+                    {
+                        // The json file may actualy report some detections as null rather than an empty list, in which case we just skip it.
+                        continue;
+                    }
                     // The truncation prefix is a prefix of the folder path that should be removed from the file path (unless its empty, of course)
                     // As well, detections whose path is in the prefix should not be read in, as they are outside of this sub-folder
                     // It occurs when the actual images were in a subfolder, where that subfolder was read in separately as a datafile
@@ -262,7 +267,7 @@ namespace Timelapse.Detection
                     {
                         foreach (detection detection in image.detections)
                         {
-                            if (detection.conf > 0 && detection.conf < Constant.DetectionValues.MinimumDetectionValue)
+                            if (detection.conf < Constant.DetectionValues.MinimumDetectionValue)
                             {
                                 // Timelapse enforces a minimum detection confidence. That is, any value less than the MinimumDetectionValue 
                                 // is automatically thrown away

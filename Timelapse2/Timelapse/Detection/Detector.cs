@@ -119,7 +119,7 @@ namespace Timelapse.Detection
         #region Public Properties
         public int imageID { get; set; }
         public string file { get; set; }
-        public float max_detection_conf { get; set; }
+        public float? max_detection_conf { get; set; }
         public List<detection> detections { get; set; }
         #endregion
 
