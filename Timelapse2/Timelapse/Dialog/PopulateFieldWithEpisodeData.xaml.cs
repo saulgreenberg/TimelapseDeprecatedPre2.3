@@ -159,12 +159,12 @@ namespace Timelapse.Dialog
                         }
                         else if (this.SingletonAsZero)
                         {
-                            singletonData = "0:1/1";
+                            singletonData = "0:1|1";
                         }
                         else
                         {
                             this.EpisodeCount++;
-                            singletonData = String.Format("{0}1/1", this.IncludeAnEpisodeIDNumber ? this.EpisodeCount + ":" : String.Empty);
+                            singletonData = String.Format("{0}1|1", this.IncludeAnEpisodeIDNumber ? this.EpisodeCount + ":" : String.Empty);
                         }
                         List<ColumnTuple> ctl = new List<ColumnTuple>() { new ColumnTuple(this.dataLabelByLabel[this.dataFieldLabel], singletonData) };
                         imagesToUpdate.Add(new ColumnTuplesWithWhere(ctl, this.fileDatabase.FileTable[imageIndex].ID));
@@ -179,7 +179,7 @@ namespace Timelapse.Dialog
                         {
                             List<ColumnTuple> ctl = new List<ColumnTuple>() {
                                 new ColumnTuple(this.dataLabelByLabel[this.dataFieldLabel],
-                                String.Format("{0}{1}/{2}", this.IncludeAnEpisodeIDNumber ? this.EpisodeCount + ":" : String.Empty, episode.Value.Item1, episode.Value.Item2))};
+                                String.Format("{0}{1}|{2}", this.IncludeAnEpisodeIDNumber ? this.EpisodeCount + ":" : String.Empty, episode.Value.Item1, episode.Value.Item2))};
                             imagesToUpdate.Add(new ColumnTuplesWithWhere(ctl, this.fileDatabase.FileTable[imageIndex].ID));
                             imageIndex++;
                         }
@@ -203,22 +203,22 @@ namespace Timelapse.Dialog
             }
             if (true == this.CheckBoxIncludeEpisodeID.IsChecked)
             {
-                this.TBEpisode.Text = "Episode:    23:1/7";
+                this.TBEpisode.Text = "Episode:    23:1|7";
                 if (true == this.SingletonAsZero)
                 {
-                    this.TBSingleton.Text = "Singleton: 0:1/1";
+                    this.TBSingleton.Text = "Singleton: 0:1|1";
                 }
                 else if (true == this.SingletonAsEpisodeNumber)
                 {
-                    this.TBSingleton.Text = "Singleton: 23:1/1";
+                    this.TBSingleton.Text = "Singleton: 23:1|1";
                 }
             }
             else
             {
-                this.TBEpisode.Text = "Episode:    1/7";
+                this.TBEpisode.Text = "Episode:    1|7";
                 if (false == this.SingletonAsSingle)
                 {
-                    this.TBSingleton.Text = "Singleton: 1/1";
+                    this.TBSingleton.Text = "Singleton: 1|1";
                 }
             }
         }

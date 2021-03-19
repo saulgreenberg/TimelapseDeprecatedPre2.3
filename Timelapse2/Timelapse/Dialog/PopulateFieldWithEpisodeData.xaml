@@ -17,10 +17,10 @@
                             Icon="Question"
                             Title="Populate a Data Field with Episode data"
                             What="Associate Episode information with the files in your current selection, as illustrated in the examples below: 
-&#10;&#x2022; 23:1/7    identifies the first of seven files located in the 23rd Episode seen in the current selection.
-&#10;&#x2022; 1/7         as above, but the Episode numer is omitted if the checkbox below is unchecked
+&#10;&#x2022; 23:1|7    identifies the first of seven files located in the 23rd Episode seen in the current selection.
+&#10;&#x2022; 1|7         as above, but the Episode numer is omitted if the checkbox below is unchecked
 &#10;&#x2022; Singleton data, where the file does not belong in an Episode, depends on the chosen format, e.g., 
-&#10;  Single or 0:1/1 or 23:1/1 or 1/1"                                     
+&#10;  Single or 0:1|1 or 23:1|1 or 1|1"                                     
                             Solution="Select a field to populate with Episode data.
   
 &#10;1. Select a field from the menu below. Only Note fields are listed, as only those can accept text.
@@ -56,17 +56,17 @@
 
                                 <RadioButton Name="RBSingletonZero" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="20,5,0,0"  IsEnabled="True" IsChecked="False" 
                                   GroupName="SingletonFormat"  FontWeight="Normal"
-                                  Content="by 0:1/1"
+                                  Content="by 0:1|1"
                                   />
 
                                 <RadioButton Name="RBSingletonEpisodeNumber" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="20,5,0,0"  IsEnabled="True" IsChecked="False" 
                                   GroupName="SingletonFormat"  FontWeight="Normal"
-                                  Content="by Episode number:1/1"
+                                  Content="by Episode number:1|1"
                                   />
 
                                 <TextBlock Text="Examples of current format settings:"  Margin="0,10,0,0" FontWeight="DemiBold"></TextBlock>
-                                <TextBlock Name="TBEpisode" Text="Epsode:    23:1/7"  FontWeight="Normal" Margin="10,5,0,0"></TextBlock>
-                                <TextBlock Name="TBSingleton" Text="Singleton: 23:1/1"  FontWeight="Normal" Margin="10,5,0,0"></TextBlock>
+                                <TextBlock Name="TBEpisode" Text="Epsode:    23:1|7"  FontWeight="Normal" Margin="10,5,0,0"></TextBlock>
+                                <TextBlock Name="TBSingleton" Text="Singleton: 23:1|1"  FontWeight="Normal" Margin="10,5,0,0"></TextBlock>
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

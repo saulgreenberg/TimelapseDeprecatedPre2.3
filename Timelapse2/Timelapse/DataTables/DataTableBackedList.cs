@@ -75,6 +75,7 @@ namespace Timelapse.Database
         /// <param name="index">An index into a row in the DataTable</param>
         public TRow this[int index]
         {
+            /// SAULXXXBUG THIS CAN CRASH: NO ROW AT POSITION...
             get { return this.createRow(this.DataTable.Rows[index]); }
         }
 
