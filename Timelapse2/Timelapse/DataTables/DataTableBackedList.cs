@@ -76,7 +76,19 @@ namespace Timelapse.Database
         public TRow this[int index]
         {
             /// SAULXXXBUG THIS CAN CRASH: NO ROW AT POSITION...
-            get { return this.createRow(this.DataTable.Rows[index]); }
+            //get { return this.createRow(this.DataTable.Rows[index]); }
+            get
+            {
+                if (index < this.DataTable.Rows.Count)
+                {
+                    return this.createRow(this.DataTable.Rows[index]);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Print(String.Format("in DataTableBackedList:this. Datatable count is {0}, but index is out of bounds at: {1}", this.DataTable.Rows.Count, index));
+                    return null;
+                }
+            }
         }
 
         public TRow Find(long id)

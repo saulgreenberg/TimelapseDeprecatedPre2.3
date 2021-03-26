@@ -1284,6 +1284,11 @@ namespace Timelapse.Database
             {
                 // update data table
                 ImageRow image = this.FileTable[index];
+                if (null == image)
+                {
+                    System.Diagnostics.Debug.Print(String.Format("in FileDatabase.UpdateFiles v1: FileTable returned null as there is no index: {0}", index));
+                    continue;
+                }
                 image.SetValueFromDatabaseString(dataLabel, value);
 
                 // update database
@@ -1314,6 +1319,11 @@ namespace Timelapse.Database
             {
                 // update data table
                 ImageRow image = this.FileTable[fileIndex];
+                if (null == image)
+                {
+                    System.Diagnostics.Debug.Print(String.Format("in FileDatabase.UpdateFiles v2: FileTable returned null as there is no index: {0}", fileIndex));
+                    continue;
+                }
                 image.SetValueFromDatabaseString(dataLabel, value);
 
                 // update database

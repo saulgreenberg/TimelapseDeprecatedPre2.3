@@ -323,6 +323,10 @@ namespace Timelapse.Controls
             for (int previousIndex = currentRowIndex - 1; previousIndex >= 0; previousIndex--)
             {
                 ImageRow file = this.FileDatabase.FileTable[previousIndex];
+                if (file == null)
+                {
+                    continue;
+                }
                 valueToCopy = file.GetValueDatabaseString(control.DataLabel);
                 if (valueToCopy == null)
                 {
