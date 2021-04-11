@@ -35,7 +35,8 @@ namespace Timelapse.Util
                         }
                         else
                         {
-                            TracePrint.PrintMessage(String.Format("ImageMetadata Dictionary: Duplicate metadata key: {0}:{1} (Note that Quicktime may have multiple Track Headers)", metadataDirectory.Name, metadata.Key));
+                            // If you want to see if any Quicktime multiple Track Headers exist but where not added, just uncomment this line.
+                            // TracePrint.PrintMessage(String.Format("ImageMetadata Dictionary: Duplicate metadata key: {0}:{1} (Note that Quicktime may have multiple Track Headers)", metadataDirectory.Name, metadata.Key));
                         }
                     }
                 }

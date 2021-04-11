@@ -58,6 +58,14 @@ namespace Timelapse.Controls
         }
         public static readonly DependencyProperty IsBusyProperty =
             DependencyProperty.Register(nameof(IsBusy), typeof(bool), typeof(BusyCancelIndicator), new FrameworkPropertyMetadata(true));
+
+        public bool DisplayImmediately
+        {
+            set
+            {
+                this.Busy.DisplayAfter = value ? System.TimeSpan.FromSeconds(0) : System.TimeSpan.FromMilliseconds(100);
+            }
+        }
         #endregion
 
         #region IsIndeterminate

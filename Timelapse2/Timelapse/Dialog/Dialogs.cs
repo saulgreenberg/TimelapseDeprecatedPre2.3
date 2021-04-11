@@ -1221,6 +1221,16 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
 
+        public static void MenuEditRereadDateTimesFromMetadataDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Re-read date and times from a metadata field of your choosing.", owner);
+            messageBox.Message.Problem = "Timelapse can't extract any metadata, as the currently displayed image or video is missing or corrupted." + Environment.NewLine;
+            messageBox.Message.Reason = "Timelapse tries to examines the currently displayed image or video for its metadata.";
+            messageBox.Message.Hint = "Navigate to a displayable image or video, and try again.";
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.ShowDialog();
+        }
+
         public static void MenuEditNoFilesMarkedForDeletionDialog(Window owner)
         {
             MessageBox messageBox = new MessageBox("No files are marked for deletion", owner);

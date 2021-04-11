@@ -185,6 +185,9 @@
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
     <Compile Include="DataStructures\AmbiguousDateRange.cs" />
+    <Compile Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml.cs">
+      <DependentUpon>DateTimeRereadFromSelectedMetadataField.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
       <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
     </Compile>
@@ -423,6 +426,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\VideoPlayer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

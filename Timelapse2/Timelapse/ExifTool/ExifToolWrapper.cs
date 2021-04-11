@@ -205,8 +205,11 @@ namespace Timelapse.ExifTool
 
             this.Status = ExeStatus.Stopped;
 
-            this._waitHandle.Set();
-
+            try
+            { 
+                this._waitHandle.Set();
+            }
+            catch { }
             if (!this._stopRequested && this.Resurrect)
                 this.Start();
         }
@@ -230,8 +233,11 @@ namespace Timelapse.ExifTool
                     try
                     {
                         this._proc.Kill();
-                        this._proc.WaitForExit((int)(1000 * this.SecondsToWaitForStop / 2));
-                        this._proc.Dispose();
+                        this._proc.WaitForExit((int) (1000 * this.SecondsToWaitForStop / 2));
+                        if (this._proc !=null)
+                        { 
+                            this._proc.Dispose();
+                        }
                     }
                     catch (Exception xcp)
                     {
