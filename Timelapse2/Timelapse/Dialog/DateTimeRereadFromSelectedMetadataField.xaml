@@ -55,7 +55,7 @@
             <DockPanel LastChildFill="True" >
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="CancelButton" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
-                    <Button x:Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="Start_Click">_Populate</Button>
+                    <Button x:Name="StartDoneButton" IsDefault="True" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="Start_Click">_Start</Button>
                 </StackPanel>
 
                 <Grid Name="PrimaryPanel" Visibility="Visible">

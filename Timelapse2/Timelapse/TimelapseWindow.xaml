@@ -170,7 +170,7 @@
                         <MenuItem Name="MenuItemDateTimeFixedCorrection" Header="Correct for cameras not set to the right date and time..." Click="MenuItemDateTimeFixedCorrection_Click"  ToolTip="Correct for cameras  not initially set to the right date and/or time." IsEnabled="True" />
                         <MenuItem Name="MenuItemDateTimeLinearCorrection" Header="Correct for cameras whose cloc_k runs fast or slow..." Click="MenuItemDateTimeLinearCorrection_Click"  ToolTip="Correct for a camera's clock running fast or slow" IsEnabled="True" />
                         <MenuItem Name="MenuItemModifyAmbiguousDates" Header="Check and correct _ambiguous dates..." Click="MenuItemCorrectAmbiguousDates_Click"  ToolTip="Check and optionally correct ambiguous dates, where day-month could have been read as month-day" IsEnabled="True" />
-                        <MenuItem Name="MenuItemDateTimeRereadDatesFromSelectedMetadata" Header="Re-read dates and times from a metadata field..." Click="MenuItemRereadDateTimesfromMetadata_Click" ToolTip="Re-read the dates and times from a selected metadata field" IsEnabled="True" />
+                        <MenuItem Name="MenuItemDateTimeRereadDatesFromSelectedMetadata" Header="Read dates and times from a metadata field..." Click="MenuItemRereadDateTimesfromMetadata_Click" ToolTip="Read and update the dates and times from a metadata field of your choosing" IsEnabled="True" />
                         <MenuItem Name="MenuItemSetTimeZone" Header="Set time _zone..." Click="MenuItemSetTimeZone_Click" ToolTip="Reassign a group of images to a particular time zone " IsEnabled="True" Visibility="Collapsed"/>
                     </MenuItem>
 

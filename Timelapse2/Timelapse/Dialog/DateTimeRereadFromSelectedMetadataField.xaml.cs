@@ -348,7 +348,7 @@ namespace Timelapse.Dialog
             bool? metadataExtractorRBIsChecked = this.MetadataExtractorRB.IsChecked;
 
             // Update the UI to show the feedback datagrid, 
-            this.PopulatingMessage.Text = "Populating 'DateTime' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
+            this.PopulatingMessage.Text = "Scanning and updating 'DateTime' from each file's '" + this.MetadataDisplayText.Content + "' metadata ";
             this.CancelButton.IsEnabled = false;
             this.CancelButton.Visibility = Visibility.Hidden;
             this.StartDoneButton.Content = "_Done";
@@ -381,7 +381,7 @@ namespace Timelapse.Dialog
             }
             else
             {
-                this.PopulatingMessage.Text = "Populated 'DateTime' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows.";
+                this.PopulatingMessage.Text = "Updated 'DateTime' from each file's '" + this.MetadataDisplayText.Content + "' metadata as follows.";
             }
             if (this.exifTool != null)
             {
