@@ -27,8 +27,6 @@ namespace Timelapse.Dialog
         private ExifToolWrapper exifTool;
 
         private readonly Dictionary<string, string> dataLabelByLabel;
-        private bool clearIfNoMetadata;
-        private string dataFieldLabel;
         private bool dataFieldSelected;
 
         private Dictionary<string, ImageMetadata> metadataDictionary;
@@ -49,11 +47,8 @@ namespace Timelapse.Dialog
             this.fileDatabase = fileDatabase;
             this.filePath = filePath;
 
-            // Store various states as set by the user
-            this.clearIfNoMetadata = false;
-
+            // Store various states which will eventually be reset by the user
             this.dataLabelByLabel = new Dictionary<string, string>();
-            this.dataFieldLabel = Constant.DatabaseColumn.DateTime;// String.Empty;
             this.dataFieldSelected = true;
 
             this.metadataFieldName = String.Empty;
@@ -63,7 +58,6 @@ namespace Timelapse.Dialog
 
         // After the interface is loaded, 
         // - Load the metadata into the data grid
-        // - Load the names of the note controls into the listbox
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Set up a progress handler that will update the progress bar
@@ -72,16 +66,6 @@ namespace Timelapse.Dialog
             // Set up the initial UI and values
             this.lblImageName.Content = Path.GetFileName(this.filePath);
             this.lblImageName.ToolTip = this.lblImageName.Content;
-
-            //// Construct a list showing the available note fields
-            //foreach (ControlRow control in this.fileDatabase.Controls)
-            //{
-            //    if (control.Type == Constant.Control.Note)
-            //    {
-            //        this.dataLabelByLabel.Add(control.Label, control.DataLabel);
-            //        this.DataFields.Items.Add(control.Label);
-            //    }
-            //}
 
             // Show the metadata of the current image, depending on the kind of tool selected
             this.MetadataToolType_Checked(null, null);
@@ -106,7 +90,7 @@ namespace Timelapse.Dialog
             this.AvailableMetadataDataGrid.Columns[0].Header = "Key";
             this.AvailableMetadataDataGrid.Columns[1].Header = "Metadata kind";
             this.AvailableMetadataDataGrid.Columns[2].Header = "Metadata name";
-            this.AvailableMetadataDataGrid.Columns[3].Header = "Example value from current file";
+            this.AvailableMetadataDataGrid.Columns[3].Header = "Metadata's date/time value from the current file";
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);
             this.AvailableMetadataDataGrid.Columns[0].Visibility = Visibility.Collapsed;
             this.AvailableMetadataDataGrid.Columns[1].Visibility = Visibility.Collapsed;
@@ -141,7 +125,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region MetadataExtractor-specific methods
-        // Retrieve and show a single image's metadata in the datagrid
+        // Retrieve and show a single image's metadata in the datagrid, although filter out any metadata whose value is not a valid date.
         private void MetadataExtractorShowImageMetadata()
         {
             this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.filePath);
@@ -161,21 +145,16 @@ namespace Timelapse.Dialog
             foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
                 if (DateTime.TryParse(metadata.Value.Value.ToString(), out DateTime dateTime))
-                { 
-                    System.Diagnostics.Debug.Print(Util.DateTimeHandler.ToStringDisplayDateTime(dateTime));
+                {
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
                 }
-                else
-                {
-                    //System.Diagnostics.Debug.Print(String.Format("Could not parse {0}", metadata.Value.Value));
-                }
-                //metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
             }
             this.AvailableMetadataDataGrid.ItemsSource = metadataList;
         }
         #endregion
 
         #region ExifTool-specific methods
+        // Retrieve and show a single image's metadata in the datagrid, although filter out any metadata whose value is not a valid date.
         private void ExifToolShowImageMetadata()
         {
             // Clear the dictionary so we get fresh contents
@@ -202,24 +181,16 @@ namespace Timelapse.Dialog
                 this.noMetadataAvailable = false;
             }
 
-            // In order to populate the metadataDictionary and datagrid , we have to unpack the ExifTool dictionary, recreate the dictionary, and create a list containing four values
+            // In order to populate the metadataDictionary and datagrid, we have to unpack the ExifTool dictionary, recreate the dictionary, and create a list containing four values
             List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
             foreach (KeyValuePair<string, string> metadata in exifDictionary)
             {
+                // We only collect metadata for those fields whose value appears to have a valid date.
                 if (DateTime.TryParse(metadata.Value, out DateTime dateTime))
                 {
-                    System.Diagnostics.Debug.Print(Util.DateTimeHandler.ToStringDisplayDateTime(dateTime));
                     this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
-                    // metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value)); 
                 }
-                else
-                {
-                    //System.Diagnostics.Debug.Print(String.Format("Could not parse {0}", metadata.Value.Value));
-                }
-
-                //this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
-                //metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
             }
             this.AvailableMetadataDataGrid.ItemsSource = metadataList;
         }
@@ -236,16 +207,20 @@ namespace Timelapse.Dialog
             return await Task.Run(() =>
             {
                 // For each row in the database, get the image filename and try to extract the chosen metadata value.
-                // If we can't decide if we want to leave the data field alone or to clear it depending on the state of the isClearIfNoMetadata (set via the checkbox)
                 // Report progress as needed.
                 // This tuple list will hold the id, key and value that we will want to update in the database
-                string dataLabelToUpdate = this.dataFieldLabel; //this.dataLabelByLabel[this.dataFieldLabel];
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
                 TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
                 int percentDone = 0;
 
                 double totalImages = this.fileDatabase.CountAllCurrentlySelectedFiles;
                 Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
+                List<ImageRow> filesToAdjust = new List<ImageRow>();
+
+                // Start up the progress bar, so it shows something as even small data sets will have a delay in it.
+                this.Progress.Report(new ProgressBarArguments(percentDone, "Initializing...", true, false));
+                Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
+
                 for (int imageIndex = 0; imageIndex < totalImages; ++imageIndex)
                 {
                     // Provide feedback if the operation was cancelled during the database update
@@ -282,50 +257,22 @@ namespace Timelapse.Dialog
 
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
-                        if (this.clearIfNoMetadata)
-                        {
-                            // Clear the data field if there is no metadata...
-                            if (dataLabelToUpdate == Constant.DatabaseColumn.DateTime)
-                            {
-                                image.SetDateTimeOffsetFromFileInfo(this.fileDatabase.FolderPath);
-                                imagesToUpdate.Add(image.GetDateTimeColumnTuples());
-                                keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - date/time reread from file"));
-                            }
-                            else
-                            {
-                                List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(this.dataLabelByLabel[this.dataFieldLabel], String.Empty) };
-                                imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - data field is cleared"));
-                            }
-                        }
-                        else
-                        {
-                            keyValueList.Add(new KeyValuePair<string, string>(image.File, "No metadata found - data field remains unaltered"));
-                        }
-
+                        // System.Diagnostics.Debug.Print(String.Format("{0}: No metadata", image.File));
                         continue;
                     }
 
                     string metadataValue = metadata[this.metadataFieldName].Value;
                     ColumnTuplesWithWhere imageUpdate;
-                    if (dataLabelToUpdate == Constant.DatabaseColumn.DateTime)
+                    if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
                     {
-                        if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
-                        {
-                            image.SetDateTimeOffset(metadataDateTime);
-                            imageUpdate = image.GetDateTimeColumnTuples();
-                            keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
-                        }
-                        else
-                        {
-                            keyValueList.Add(new KeyValuePair<string, string>(image.File, String.Format("'{0}' - data field remains unaltered - not a valid date/time.", metadataValue)));
-                            continue;
-                        }
+                        image.SetDateTimeOffset(metadataDateTime);
+                        imageUpdate = image.GetDateTimeColumnTuples();
+                        keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
                     }
                     else
                     {
-                        imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                        keyValueList.Add(new KeyValuePair<string, string>(image.File, metadataValue));
+                        keyValueList.Add(new KeyValuePair<string, string>(image.File, String.Format("Data field unchanged - '{0}' is not a valid date/time.", metadataValue)));
+                        continue;
                     }
                     imagesToUpdate.Add(imageUpdate);
                 }
@@ -393,12 +340,6 @@ namespace Timelapse.Dialog
                 this.ExifToolShowImageMetadata();
             }
         }
-
-        // Checkbox callback sets the state as to whether the data field should be cleared or left alone if there is no metadata
-        private void ClearIfNoMetadata_Checked(object sender, RoutedEventArgs e)
-        {
-            this.clearIfNoMetadata = (this.ClearIfNoMetadata.IsChecked == true);
-        }
         #endregion
 
         #region Button callbacks
@@ -417,9 +358,7 @@ namespace Timelapse.Dialog
             this.BusyCancelIndicator.IsBusy = true;
             this.WindowCloseButtonIsEnabled(false);
 
-            this.ClearIfNoMetadata.Visibility = Visibility.Collapsed; // Hide the checkbox button for the same reason
             this.PrimaryPanel.Visibility = Visibility.Collapsed;  // Hide the various panels to reveal the feedback datagrid
-            //this.DataFields.Visibility = Visibility.Collapsed;
             this.FeedbackPanel.Visibility = Visibility.Visible;
             this.PanelHeader.Visibility = Visibility.Collapsed;
             this.ToolSelectionPanel.Visibility = Visibility.Collapsed;
