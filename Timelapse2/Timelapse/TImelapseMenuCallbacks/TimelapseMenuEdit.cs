@@ -461,6 +461,36 @@ namespace Timelapse
                 }
             }
         }
+
+
+        private async void MenuItemRereadDateTimesfromMetadata_Click(object sender, RoutedEventArgs e)
+        {
+            // If we are not in the selection All view, or if its a corrupt image or deleted image, or if its a video that no longer exists, tell the person. Selecting ok will shift the selection.
+            // We want to be on a valid image as otherwise the metadata of interest won't appear
+            if (this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath) == false)
+            {
+                // There are no displayable images, and thus no metadata to choose from, so abort
+                Dialogs.MenuEditPopulateDataFieldWithMetadataDialog(this);
+                return;
+            }
+
+            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
+            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
+                                                                           "'Re-read dates and times from a metadata field...'",
+                                                               (bool optOut) =>
+                                                               {
+                                                                   this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
+                                                               }))
+            {
+                using (DateTimeRereadFromSelectedMetadataField populateField = new DateTimeRereadFromSelectedMetadataField(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
+                {
+                    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
+                    {
+                        await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                    };
+                }
+            }
+        }
         #endregion
 
         #region Find Missing Files and Folders
