@@ -292,10 +292,13 @@ namespace Timelapse
         /// <param name="mathOperator"></param>
         /// <param name="value"></param>
         /// <returns>DataLabel operator "value", e.g., DataLabel > "5"</returns>
-        public static string DataLabelOperatorValue(string dataLabel, string mathOperator, string value)
+        public static string DataLabelOperatorValue(string dataLabel, string mathOperator, string value, bool castAsInteger)
         {
             value = value == null ? String.Empty : value.Trim();
-            return dataLabel + mathOperator + Sql.Quote(value);
+            
+            return castAsInteger
+                ? Sql.Cast + Sql.OpenParenthesis + dataLabel + Sql.AsInteger + Sql.CloseParenthesis + mathOperator + Sql.Quote(value) 
+                : dataLabel + mathOperator + Sql.Quote(value);
         }
 
         /// <summary>

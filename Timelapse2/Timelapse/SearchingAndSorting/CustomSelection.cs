@@ -369,15 +369,15 @@ namespace Timelapse.Database
                         // Special case for RelativePath and DataTable.RelativePath, 
                         // as we want to return images not only in the relative path folder, but its subfolder as well.
                         // Form: ( DataTable.RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
-                        string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue);
-                        string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*");
+                        string term1 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Equal), searchTerm.DatabaseValue, false);
+                        string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*", false);
                         whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
                     }
                     else
                     {
                         // Standard search term
                         // Form: dataLabel operator "value", e.g., DataLabel > "5"
-                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
+                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue, searchTerm.ControlType== Constant.Control.Counter);
                     }
 
 
@@ -549,8 +549,8 @@ namespace Timelapse.Database
             }
 
             // Form: ( DataTable.RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
-            string term1 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Equal), relativePath); ;
-            string term2 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Glob), System.IO.Path.Combine(relativePath, "*"));
+            string term1 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Equal), relativePath, false); 
+            string term2 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Glob), System.IO.Path.Combine(relativePath, "*"), false);
             return Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
         }
 
