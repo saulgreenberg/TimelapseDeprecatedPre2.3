@@ -181,8 +181,10 @@ namespace Timelapse
 
             if (!noteControlOk || !searchTermsOk || !sortTermsOk)
             {
-                Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(this, searchTermsOk, sortTermsOk);
-                return;
+                if (false == Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(this, searchTermsOk, sortTermsOk))
+                { 
+                    return;
+                }
             }
 
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.

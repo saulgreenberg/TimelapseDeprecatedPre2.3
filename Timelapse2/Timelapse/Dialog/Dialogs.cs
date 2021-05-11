@@ -1271,7 +1271,47 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
 
-        public static void MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(Window owner, bool searchTermsOk, bool sortTermsOk)
+        public static bool MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(Window owner, bool searchTermsOk, bool sortTermsOk)
+        {
+            MessageBox messageBox = new MessageBox("You may not want to populate this field with Episode data", owner, MessageBoxButton.OKCancel);
+            messageBox.Message.Problem = "You may not want to populate this field with Episode data.";
+            if (!searchTermsOk)
+            {
+                if (!sortTermsOk)
+                {
+                    messageBox.Message.Reason += "1. ";
+                }
+                messageBox.Message.Reason += "Your current file selection includes search terms that may omit files in an Episode.";
+                messageBox.Message.Hint += "Use the Select menu to select either:" + Environment.NewLine;
+                messageBox.Message.Hint += " - All files, or " + Environment.NewLine;
+                messageBox.Message.Hint += " - All files in a folder and its subfolders";
+                if (!sortTermsOk)
+                {
+                    messageBox.Message.Reason += Environment.NewLine;
+                    messageBox.Message.Hint += Environment.NewLine;
+                }
+            }
+
+            if (!sortTermsOk)
+            {
+                if (!searchTermsOk)
+                {
+                    messageBox.Message.Reason += "2. ";
+                }
+                messageBox.Message.Reason += "Your files should be sorted in ascending date order for this to make sense.";
+                messageBox.Message.Hint += "Use the Sort menu to sort either by:" + Environment.NewLine;
+                messageBox.Message.Hint += " - RelativePath then DateTime (both in ascending order), or " + Environment.NewLine;
+                messageBox.Message.Hint += " - DateTime only  (in ascending order)";
+            }
+
+            messageBox.Message.Solution = "Select:" + Environment.NewLine;
+            messageBox.Message.Solution += "- Okay to populate this field anyways, or " + Environment.NewLine;
+            messageBox.Message.Solution += "- Cancel to abort populating this field with episode data";
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            return messageBox.ShowDialog() == true;
+        }
+
+        public static void MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrongOriginal(Window owner, bool searchTermsOk, bool sortTermsOk)
         {
             MessageBox messageBox = new MessageBox("Cannot populate a field with Episode data", owner);
             messageBox.Message.Problem = "Timelapse cannot currently populate any fields with Episode data." + Environment.NewLine;
