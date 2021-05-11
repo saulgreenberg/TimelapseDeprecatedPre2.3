@@ -12,7 +12,6 @@ using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Constant
 {
-    [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1203:ConstantsMustAppearBeforeFields", Justification = "Reviewed.")]
     public static class AvalonDockValues
     {
         public const double DefaultTimelapseWindowHeight = 900.0;
@@ -302,6 +301,7 @@ namespace Timelapse.Constant
         public const int NumberOfBackupFilesToKeep = 8; // Maximum number of backup files to keep
         public const string RecognitionDataFileName = "recognitionData.csv";
         public const string RecognitionJsonDataFileName = "recognitionData.json";
+        public const string NetworkRecycleBin = "@Recycle";
         public const string TemplateDatabaseFileExtension = ".tdb";
         public const string VideoThumbnailFolderName = ".vthumb";
         public const string XmlTemplateFileName = "CodeTemplate.xml";

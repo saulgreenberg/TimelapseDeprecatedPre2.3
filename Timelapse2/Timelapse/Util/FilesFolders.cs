@@ -362,6 +362,10 @@ namespace Timelapse.Util
             }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(rootFolderPath);
+            if (IsFolderSystemOrHidden(directoryInfo.Attributes))
+            {
+                return;
+            }
             foreach (string extension in new List<string>() { Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension })
             {
                 // GetFiles has a 'bug', where it can match an extension even if there are more letters after the extension. 
@@ -384,7 +388,9 @@ namespace Timelapse.Util
             foreach (DirectoryInfo subDir in subDirs)
             {
                 // Skip the following folders
-                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder || subDir.Name == Constant.File.VideoThumbnailFolderName)
+                if (subDir.Name == Constant.File.BackupFolder || subDir.Name == Constant.File.DeletedFilesFolder 
+                    || subDir.Name == Constant.File.VideoThumbnailFolderName 
+                    || subDir.Name == Constant.File.NetworkRecycleBin)
                 {
                     continue;
                 }
@@ -402,6 +408,15 @@ namespace Timelapse.Util
                     fileInfoList = fileInfoList.OrderBy(file => file.FullName).ToList();
                 }
             }
+        }
+        #endregion
+
+        #region Identify System folders, including the recycle bin
+        static bool IsFolderSystemOrHidden(FileAttributes attributes)
+        {
+
+            return ((attributes & FileAttributes.System) == FileAttributes.System) ||
+                   ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden);
         }
         #endregion
     }
