@@ -621,6 +621,7 @@ namespace Timelapse.Controls
         // Return true if there is a non-empty value available
         public bool IsCopyFromLastNonEmptyValuePossible(DataEntryControl control)
         {
+            int currentIndex = 0; // So we can print the value in the catch
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
 
@@ -630,23 +631,34 @@ namespace Timelapse.Controls
             // The current row depends on wheter we are in the thumbnail grid or the normal view
             int currentRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
 
-            for (int fileIndex = currentRow - 1; fileIndex >= 0; fileIndex--)
+            // Its in a try/catch as very very occassionally we get a 'system.indexoutofrangeexception'
+            try
             {
-                // Search for the row with some value in it, starting from the previous row
-                string valueToCopy = this.FileDatabase.FileTable[fileIndex].GetValueDatabaseString(control.DataLabel);
-                if (String.IsNullOrWhiteSpace(valueToCopy) == false)
+                for (int fileIndex = currentRow - 1; fileIndex >= 0; fileIndex--)
                 {
-                    // for flags, we skip over falses
-                    // for counters, we skip over 0
-                    // for all others, any value will work as long as its not null or white space
-                    if ((checkFlag && !valueToCopy.Equals("false")) ||
-                         (checkCounter && !valueToCopy.Equals("0")) ||
-                         (!checkCounter && !checkFlag))
+                    currentIndex = fileIndex;
+                    // Search for the row with some value in it, starting from the previous row
+                    string valueToCopy = this.FileDatabase.FileTable[fileIndex].GetValueDatabaseString(control.DataLabel);
+                    if (String.IsNullOrWhiteSpace(valueToCopy) == false)
                     {
-                        nearestRowWithCopyableValue = fileIndex;    // We found a non-empty value
-                        break;
+                        // for flags, we skip over falses
+                        // for counters, we skip over 0
+                        // for all others, any value will work as long as its not null or white space
+                        if ((checkFlag && !valueToCopy.Equals("false")) ||
+                             (checkCounter && !valueToCopy.Equals("0")) ||
+                             (!checkCounter && !checkFlag))
+                        {
+                            nearestRowWithCopyableValue = fileIndex;    // We found a non-empty value
+                            break;
+                        }
                     }
                 }
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                // I don't know why we get this occassional error, so this is an attempt to print out the result so we can debug it
+                System.Diagnostics.Debug.Print(String.Format("IsCopyFromLastNonEmptyValuePossible: IndexOutOfRange Exception, where index is: {0}", currentIndex));
+                return (nearestRowWithCopyableValue >= 0);
             }
             return (nearestRowWithCopyableValue >= 0);
         }

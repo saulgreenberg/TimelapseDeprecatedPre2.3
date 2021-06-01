@@ -19,7 +19,7 @@ namespace Timelapse.Util
         #endregion
 
         #region Public Methods
-        protected RegistryKey OpenRegistryKey()
+        public RegistryKey OpenRegistryKey()
         {
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey(this.keyPath, true);
             if (registryKey == null)
