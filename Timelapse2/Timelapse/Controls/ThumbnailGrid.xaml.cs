@@ -766,7 +766,9 @@ namespace Timelapse.Controls
                         // and that it hasn't been deleted since the last refresh. 
                         string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
                         ThumbnailInCell thumbnailInCell = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
-                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null)
+                        // The Contains checks if the found thumbnail was a duplicate and thus already in the grid. If so we need to create a new thumbnail
+                        // A reusable thumbnail isn't available, so create one
+                        if (thumbnailInCell == null || thumbnailInCell.Image.Source == null || this.Grid.Children.Contains(thumbnailInCell))
                         {
                             // A reusable thumbnail isn't available, so create one
                             thumbnailInCell = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);

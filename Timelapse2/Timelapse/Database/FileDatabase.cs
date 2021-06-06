@@ -855,6 +855,13 @@ namespace Timelapse.Database
         }
         #endregion
 
+        #region Get the ID of the last row inserted into the database
+        public int GetLastInsertedRow(string datatable, string intfield)
+        {
+            return this.Database.ScalarGetMaxIntValue(datatable, intfield);
+        }
+        #endregion
+
         #region Exists (all return true or false)
         /// <summary>
         /// Return true/false if the relativePath and filename exist in the Database DataTable  
@@ -2177,6 +2184,15 @@ namespace Timelapse.Database
                 busyCancelIndicator.CancelButtonText = isCancelEnabled ? "Cancel" : "Processing detections...";
             });
         }
+        public void InsertDetection(List<List<ColumnTuple>> detectionInsertionStatements)
+        {
+            this.Database.Insert(Constant.DBTables.Detections, detectionInsertionStatements);
+        }
+
+        public void InsertClassifications(List<List<ColumnTuple>> classificationInsertionStatements)
+        {
+            this.Database.Insert(Constant.DBTables.Classifications, classificationInsertionStatements);
+        }
 
         public async Task<bool> PopulateDetectionTablesAsync(string path, List<string> foldersInDBListButNotInJSon, List<string> foldersInJsonButNotInDB, List<string> foldersInBoth)
         {
@@ -2335,6 +2351,15 @@ namespace Timelapse.Database
             return foldersInBoth.Count > 0;
         }
 
+        public void RefreshDetectionsDataTable()
+        {
+            this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
+        }
+
+        public void RefreshClassificationsDataTable()
+        {
+            this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
+        }
         // Get the detections associated with the current file, if any
         // As part of the, create a DetectionTable in memory that mirrors the database table
         public DataRow[] GetDetectionsFromFileID(long fileID)
@@ -2346,7 +2371,8 @@ namespace Timelapse.Database
                 // While this operation is only done once per image set session, it is still expensive. I suppose I could get it from the database on the fly, but 
                 // its important to show detection data (including bounding boxes) as rapidly as possible, such as when a user is quickly scrolling through images.
                 // So I am not clear on how to optimize this (although I suspect a thread running in the background when Timelapse is loaded could perhaps do this)
-                this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
+                this.RefreshDetectionsDataTable();
+                //this.detectionDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Detections);
             }
             // Retrieve the detection from the in-memory datatable.
             // Note that because IDs are in the database as a string, we convert it
@@ -2359,7 +2385,8 @@ namespace Timelapse.Database
         {
             if (this.classificationsDataTable == null)
             {
-                this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
+                //this.classificationsDataTable = this.Database.GetDataTableFromSelect(Sql.SelectStarFrom + Constant.DBTables.Classifications);
+                this.RefreshClassificationsDataTable();
             }
             // Note that because IDs are in the database as a string, we convert it
             return this.classificationsDataTable.Select(Constant.ClassificationColumns.DetectionID + Sql.Equal + detectionID.ToString());

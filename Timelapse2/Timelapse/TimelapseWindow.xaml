@@ -151,12 +151,17 @@
                     <!-- Populate a field with _metadata... Episode data-->
                     <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
                     <MenuItem Name="MenuItemEpisodePopulateField" Header="_Populate a field with episode data..." Click="MenuItemEditPopulateFieldWithEpisodeData_Click" IsEnabled="False" ToolTip="Populate a field for the currently selected files with Episode Information"/>
+                   
+                    <Separator />
                     
+                    <MenuItem Name="MenuItemDuplicateRecord" Header="_Duplicate this record..." Click="MenuItemEditDuplicateRecord_Click" IsEnabled="True" ToolTip="Create a duplicate of this record, which you can use to fill in additional information"/>
+                    <MenuItem Name="MenuItemCheckIfDuplicate" Header="_Check If Duplicate..." Click="MenuItemEditCheckIfDuplicate_Click" IsEnabled="True" ToolTip="Check if the current file is a duplicate image"/>
+
                     <Separator />
                     
                     <!-- Delete submenu-->
                     <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
-                        <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
+                        <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
                         <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the file, as well as the data entered for that file"/>
                         <Separator/>
                         <MenuItem Name="MenuItemDeleteFiles" Header="_All selected image or video files marked for deletion ..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes  images and videos in the current selection that are marked for deletion, but leaves entered data intact"/>

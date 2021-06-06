@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -9,6 +10,7 @@ using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
+using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 
@@ -182,7 +184,7 @@ namespace Timelapse
             if (!noteControlOk || !searchTermsOk || !sortTermsOk)
             {
                 if (false == Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(this, searchTermsOk, sortTermsOk))
-                { 
+                {
                     return;
                 }
             }
@@ -207,6 +209,127 @@ namespace Timelapse
         }
         #endregion
 
+        #region Dupicate the record
+        private async void MenuItemEditDuplicateRecord_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the current image and duplicate it
+            ImageRow row = this.DataHandler.ImageCache.Current;
+            FileInfo fileInfo = new FileInfo(row.File);
+            ImageRow duplicate = row.DuplicateRowWithCoreValues(this.DataHandler.FileDatabase.FileTable.NewRow(fileInfo));
+
+            // Insert the duplicated image into the filedata table
+            List<ImageRow> imagesToInsert = new List<ImageRow> { duplicate };
+            this.DataHandler.FileDatabase.AddFiles(imagesToInsert, null);
+
+            if (GlobalReferences.DetectionsExists)
+            {
+                // Get the ID of the duplicate file that was just inserted into the filedata table
+                int duplicateFileID = this.DataHandler.FileDatabase.GetLastInsertedRow(Constant.DBTables.FileData, Constant.DatabaseColumn.ID);
+
+                // Get the detections associated with the current row, if any
+                DataRow[] detectionRows = this.DataHandler.FileDatabase.GetDetectionsFromFileID(row.ID);
+                if (detectionRows.Length > 0)
+                {
+                    // Create a new detection for each detection row, but using the duplicate's ID
+                    List<List<ColumnTuple>> detectionInsertionStatements = new List<List<ColumnTuple>>();
+                    List<List<ColumnTuple>> classificationInsertionStatements = new List<List<ColumnTuple>>();
+                    foreach (DataRow detectionRow in detectionRows)
+                    {
+                        detectionInsertionStatements.Clear();
+
+                        // Fill it in with the current file's detection values
+                        List<ColumnTuple> detectionColumnsToUpdate = new List<ColumnTuple>()
+                        {
+                            new ColumnTuple(Constant.DetectionColumns.ImageID, duplicateFileID),
+                            new ColumnTuple(Constant.DetectionColumns.Category, (string) detectionRow[1]),
+                            new ColumnTuple(Constant.DetectionColumns.Conf, (float) Convert.ToDouble(detectionRow[2])),
+                            new ColumnTuple(Constant.DetectionColumns.BBox, (string) detectionRow[3]),
+                        };
+                        detectionInsertionStatements.Add(detectionColumnsToUpdate);
+
+                        // Instert the detections into the Detections table
+                        this.DataHandler.FileDatabase.InsertDetection(detectionInsertionStatements);
+
+                        // Get the ID of the duplicate file that was just inserted into the filedata table
+                        int detectionID = this.DataHandler.FileDatabase.GetLastInsertedRow(Constant.DBTables.Detections, Constant.DetectionColumns.DetectionID);
+
+                        // Now get the classifications associated with each detection, if any
+                        DataRow[] classificationDataTableRows = this.DataHandler.FileDatabase.GetClassificationsFromDetectionID((long)detectionRow[0]);
+                        if (classificationDataTableRows.Length > 0)
+                        {
+                            // Fill it in with the current file's classification values
+                            classificationInsertionStatements.Clear();
+                            foreach (DataRow classificationRow in classificationDataTableRows)
+                            {
+                                List<ColumnTuple> classificationColumnsToUpdate = new List<ColumnTuple>()
+                                {
+                                    new ColumnTuple(Constant.ClassificationColumns.DetectionID, detectionID),
+                                    new ColumnTuple(Constant.ClassificationColumns.Category, (string)classificationRow[1]),
+                                    new ColumnTuple(Constant.ClassificationColumns.Conf, (float)Convert.ToDouble(classificationRow[2]))
+                                };
+                                classificationInsertionStatements.Add(classificationColumnsToUpdate);
+                            }
+                            // Instert the classifications into the Classifications table
+                            this.DataHandler.FileDatabase.InsertClassifications(classificationInsertionStatements);
+                        }
+                    }
+                }
+
+                // Instert the detections into the Detections table
+                //this.DataHandler.FileDatabase.InsertDetection(detectionInsertionStatements);
+
+                // Regenerate the internal detections and classifications table to include the new detections andclassifications
+                this.DataHandler.FileDatabase.RefreshDetectionsDataTable();
+                this.DataHandler.FileDatabase.RefreshClassificationsDataTable();
+
+                // Check if we need this...
+                this.DataHandler.FileDatabase.IndexCreateForDetectionsAndClassifications();
+            }
+            await this.FilesSelectAndShowAsync();
+            this.TryFileShowWithoutSliderCallback(DirectionEnum.Next);
+            int dup = GetDuplicateSequenceNumberIfAny();
+        }
+        #endregion
+
+        private void MenuItemEditCheckIfDuplicate_Click(object sender, RoutedEventArgs e)
+        {
+            int dup = GetDuplicateSequenceNumberIfAny();
+            this.StatusBar.SetMessage("Duplicate is " + dup.ToString());
+        }
+
+        private int GetDuplicateSequenceNumberIfAny()
+        {
+            int numberDuplicates = 0;
+            if (this.DataHandler?.FileDatabase?.CountAllCurrentlySelectedFiles <= 0 || 
+                this.DataHandler?.ImageCache?.Current == null || 
+                this.DataHandler.ImageCache.CurrentRow <= 0)
+            {
+                // There are no images to navigate
+                return numberDuplicates;
+            }
+
+            // Get the path of the current image
+            string currentPath = Path.Combine(this.DataHandler.ImageCache.Current.RelativePath, this.DataHandler.ImageCache.Current.File);
+
+            // Loop backwards from the current image, counting how many previous images have the same path as the current image, until one differs.
+            // The count indicates the duplicate number
+            ImageRow previousImageRow;
+            string prevousPath;
+            for (int previousFileIndex = this.DataHandler.ImageCache.CurrentRow - 1; previousFileIndex >=0; previousFileIndex--)
+            {
+                previousImageRow = this.DataHandler.FileDatabase.FileTable[previousFileIndex];
+                prevousPath = Path.Combine(previousImageRow.RelativePath, previousImageRow.File);
+                if (prevousPath == currentPath)
+                {
+                    numberDuplicates++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return numberDuplicates;
+        }
         #region Delete (including sub-menu opening)
         // Delete sub-menu opening
         private void MenuItemDelete_SubmenuOpening(object sender, RoutedEventArgs e)
