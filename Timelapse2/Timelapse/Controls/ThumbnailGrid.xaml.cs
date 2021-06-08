@@ -707,6 +707,7 @@ namespace Timelapse.Controls
 
             int gridIndex = 0;
 
+            List<ThumbnailInCell> ticList;
             ThumbnailInCell tic;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 
@@ -718,14 +719,18 @@ namespace Timelapse.Controls
 
                     // Check to see if the thumbnail already exists in a reusable form in the grid. 
                     string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
-                    tic = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
-                    if (tic == null || tic.Image.Source == null)
+                    ticList = thumbnailsAlreadyInGrid.FindAll(x => String.Equals(x.Path, path));
+
+                    if (ticList == null || ticList.Count != 1 || ticList[0].Image.Source == null)
                     {
                         // A reusable thumbnail isn't available, so create one
+                        // Or, to make it work for duplicates, we recreate the thumbnail if more than one of them is already in the grid.
+                        // Otherwise, we will end up getting the first one (instead of the duplicates) and will try to add it. This will fail as its already a visual child.
                         tic = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
                     }
                     else
                     {
+                        tic = ticList[0];
                         // A reusable thumbnail is available. Reset its position in the grid
                         tic.GridIndex = gridIndex;
                         tic.Row = currentRow;
@@ -783,6 +788,7 @@ namespace Timelapse.Controls
                         }
                         Grid.SetRow(thumbnailInCell, currentRow);
                         Grid.SetColumn(thumbnailInCell, currentColumn);
+                        thumbnailInCell.RefreshBoundingBoxesDuplicatesAndEpisodeInfo(this.FileTable, fileTableIndex);
                         this.Grid.Children.Add(thumbnailInCell);
                         this.thumbnailInCells.Add(thumbnailInCell);
                         fileTableIndex++;
@@ -857,7 +863,7 @@ namespace Timelapse.Controls
                         return;
                     }
                     thumbnailInCell.SetThumbnail(lip.BitmapSource);
-                    thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, lip.FileTableIndex);
+                    thumbnailInCell.RefreshBoundingBoxesDuplicatesAndEpisodeInfo(this.FileTable, lip.FileTableIndex);
                 }
             }
             catch
@@ -911,7 +917,15 @@ namespace Timelapse.Controls
         {
             foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
             {
-                thumbnailInCell.RefreshBoundingBoxesAndEpisodeInfo(this.FileTable, thumbnailInCell.FileTableIndex);
+                thumbnailInCell.RefreshBoundingBoxesDuplicatesAndEpisodeInfo(this.FileTable, thumbnailInCell.FileTableIndex);
+            }
+        }
+
+        public void RefreshDuplicateTextIfWarranted()
+        {
+            foreach (ThumbnailInCell thumbnailInCell in this.thumbnailInCells)
+            {
+                thumbnailInCell.RefreshDuplicateInfo(this.FileTable, thumbnailInCell.FileTableIndex);
             }
         }
         #endregion

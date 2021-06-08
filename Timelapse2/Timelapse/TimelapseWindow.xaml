@@ -151,14 +151,11 @@
                     <!-- Populate a field with _metadata... Episode data-->
                     <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate a field with _metadata..." ToolTip="Match a data field with a metadata type. Then populate that field across all files with the corresponding metadata value." Click="MenuItemPopulateFieldFromMetadata_Click"/>
                     <MenuItem Name="MenuItemEpisodePopulateField" Header="_Populate a field with episode data..." Click="MenuItemEditPopulateFieldWithEpisodeData_Click" IsEnabled="False" ToolTip="Populate a field for the currently selected files with Episode Information"/>
-                   
-                    <Separator />
-                    
-                    <MenuItem Name="MenuItemDuplicateRecord" Header="_Duplicate this record..." Click="MenuItemEditDuplicateRecord_Click" IsEnabled="True" ToolTip="Create a duplicate of this record, which you can use to fill in additional information"/>
-                    <MenuItem Name="MenuItemCheckIfDuplicate" Header="_Check If Duplicate..." Click="MenuItemEditCheckIfDuplicate_Click" IsEnabled="True" ToolTip="Check if the current file is a duplicate image"/>
 
                     <Separator />
-                    
+                    <MenuItem Name="MenuItemDuplicateRecord" Header="_Duplicate this record..." Click="MenuItemEditDuplicateRecord_Click" IsEnabled="True" ToolTip="Create a duplicate of this record, which you can use to fill in additional information"/>
+                    <Separator />
+
                     <!-- Delete submenu-->
                     <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
                         <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
@@ -257,7 +254,7 @@
                         <MenuItem Name="MenuItemSelectOkFiles" IsCheckable="True" IsChecked="False" Header="_Ok" Click="MenuItemSelectFiles_Click" ToolTip="Shows all files whose ImageQuality = Ok (usually daytime shots)"/>
                         <MenuItem Name="MenuItemSelectDarkFiles" IsCheckable="True" IsChecked="False" Header="_Dark" Click="MenuItemSelectFiles_Click" ToolTip="Shows all files whose ImageQuality = Dark (usually night-time shots)"/>
                     </MenuItem>
-                  
+
                     <MenuItem Name="MenuItemSelectFilesMarkedForDeletion" IsCheckable="True" IsChecked="False" Header="All files marked for d_eletion" Click="MenuItemSelectFiles_Click" ToolTip="Shows all files marked for deletion"/>
                     <Separator/>
                     <MenuItem Name="MenuItemSelectCustomSelection" IsCheckable="True" IsChecked="False" Header="_Custom selection..."  ToolTip="Create a custom selection to display only particular files" Click="MenuItemSelectCustomSelection_Click"/>
@@ -517,6 +514,7 @@
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
+                                            
                                         </Grid.RowDefinitions>
 
                                         <Grid Grid.Row="1">
@@ -537,8 +535,14 @@
                                             LostFocus="FileNavigatorSlider_LostFocus"/>
                                             <controls:FilePlayer x:Name="FilePlayer" Grid.Row="0" Grid.Column="1" FilePlayerChange="FilePlayer_FilePlayerChange" Visibility="Collapsed"/>
                                         </Grid>
-                                        <images:MarkableCanvas x:Name="MarkableCanvas" Grid.Row="2" HorizontalAlignment="Stretch"/>
+                                        <images:MarkableCanvas x:Name="MarkableCanvas" Grid.Row="2" Grid.RowSpan="2" HorizontalAlignment="Stretch"/>
                                         <TextBlock Name="EpisodeText" Grid.Row="2"  IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Black" FontSize="40" Margin="5,20,0,0">
+                                            <TextBlock.Background>
+                                                <SolidColorBrush Color="AliceBlue" Opacity="0.6" />
+                                            </TextBlock.Background>
+                                        </TextBlock>
+
+                                        <TextBlock Name="DuplicateIndicatorInMainWindow" Text="Duplicate" Grid.Row="2" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Red" FontSize="16" FontStyle="Italic" Margin="5,0,0,0">
                                             <TextBlock.Background>
                                                 <SolidColorBrush Color="AliceBlue" Opacity="0.6" />
                                             </TextBlock.Background>

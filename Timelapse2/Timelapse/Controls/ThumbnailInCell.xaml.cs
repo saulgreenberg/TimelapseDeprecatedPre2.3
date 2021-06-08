@@ -170,11 +170,12 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        #region Episodes and Bounding Boxes
-        public void RefreshBoundingBoxesAndEpisodeInfo(FileTable fileTable, int fileIndex)
+        #region Episodes and Bounding Boxes and Duplicates
+        public void RefreshBoundingBoxesDuplicatesAndEpisodeInfo(FileTable fileTable, int fileIndex)
         {
             this.RefreshEpisodeInfo(fileTable, fileIndex);
             this.RefreshBoundingBoxes(true);
+            this.RefreshDuplicateInfo(fileTable, fileIndex);
         }
 
         /// <summary>
@@ -287,6 +288,28 @@ namespace Timelapse.Controls
             this.FileNameTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
             this.TimeTextBlock.Visibility = this.EpisodeTextBlock.Visibility;
         }
+
+        // Get and display the episode text if various conditions are met
+        public void RefreshDuplicateInfo(FileTable fileTable, int fileIndex)
+        {
+            if (fileIndex < 0 || fileIndex >= fileTable.RowCount)
+            {
+                // If the fileIndex is not in the fileTable, just abort.
+                return;
+            }
+
+            ImageRow imageRow = fileTable[fileIndex];
+            Point duplicateSequence = Util.GlobalReferences.MainWindow.DuplicatesGetSequenceNumberIfAny(imageRow, fileIndex);
+            if (duplicateSequence.Y > 1)
+            {
+                this.DuplicateIndicatorInOverview.Visibility = Visibility.Visible;
+                this.DuplicateIndicatorInOverview.Text = String.Format("Duplicate: {0}/{1}", duplicateSequence.X, duplicateSequence.Y);
+            }
+            else
+            {
+                this.DuplicateIndicatorInOverview.Visibility = Visibility.Collapsed;
+            }
+        }
         #endregion
 
         #region Private: Adjust Fonts and Margins of the Info Panel
@@ -298,6 +321,9 @@ namespace Timelapse.Controls
             this.FileNameTextBlock.FontSize = fontSize;
             this.TimeTextBlock.FontSize = fontSize;
             this.EpisodeTextBlock.FontSize = fontSize;
+
+            // This (more or less) fits in the available space 
+            this.DuplicateIndicatorInOverview.FontSize = fontSize/2.5;
         }
 
         // Most images have a black bar at its bottom and top. We want to align 

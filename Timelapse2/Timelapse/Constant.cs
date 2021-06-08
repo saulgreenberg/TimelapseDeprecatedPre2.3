@@ -526,6 +526,7 @@ namespace Timelapse.Constant
         public const string SuppressCsvExportDialog = "SuppressCsvExportDialog";
         public const string SuppressCsvImportPrompt = "SuppressCsvImportPrompt";
         public const string SuppressFileCountOnImportDialog = "SuppressFileCountOnImportDialog";
+        public const string SuppressHowDuplicatesWorkDialog = "SuppressHowDuplicatesWorkDialog";
         public const string SuppressMergeDatabasesDialog = "SuppressMergeDatabasesDialog";
         public const string SuppressSelectedAmbiguousDatesPrompt = "SuppressSelectedAmbiguousDatesPrompt";
         public const string SuppressSelectedCsvExportPrompt = "SuppressSelectedCsvExportPrompt";

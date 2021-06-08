@@ -185,12 +185,11 @@ namespace Timelapse
             // Refresh the markable canvas if needed
             this.MarkableCanvas.RefreshIfMultipleImagesAreDisplayed(isInSliderNavigation);
 
-            // Display the episode text as needed
+            // Display the episode and duplicate text as needed
             this.DisplayEpisodeTextInImageIfWarranted(fileIndex);
+            this.DuplicateDisplayTextInImageIfWarranted();
         }
         #endregion
-
-
 
         #region TryFileShow Without Slider Callback - various forms
         private bool TryFileShowWithoutSliderCallback(DirectionEnum direction)
