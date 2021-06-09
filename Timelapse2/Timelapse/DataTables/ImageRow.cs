@@ -222,6 +222,20 @@ namespace Timelapse.Database
         }
         #endregion
 
+        #region Public Methods - Duplicate an Image Row object with its core values
+        public ImageRow DuplicateRowWithCoreValues(ImageRow duplicate) 
+        {
+            duplicate.File = this.File;
+            duplicate.RelativePath = this.RelativePath;
+            duplicate.Date = this.Date;
+            duplicate.Time = this.Time;
+            duplicate.DateTime = this.DateTime;
+            duplicate.Folder = this.Folder;
+            duplicate.ImageQuality = duplicate.ImageQuality;
+            duplicate.UtcOffset = this.UtcOffset;
+            return duplicate;
+        }
+        #endregion
         #region ColumnTuplesWithWhere - Create it based on the stock Image Row values of the current row
         // Build a ColumnTuplesWithWhere containing the stock column values from the current image row  
         // Where identifies the ID of the current image row - note that this is done in the GetDateTimeColumnTuples()

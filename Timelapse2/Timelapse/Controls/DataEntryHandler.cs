@@ -657,7 +657,7 @@ namespace Timelapse.Controls
             catch (IndexOutOfRangeException e)
             {
                 // I don't know why we get this occassional error, so this is an attempt to print out the result so we can debug it
-                System.Diagnostics.Debug.Print(String.Format("IsCopyFromLastNonEmptyValuePossible: IndexOutOfRange Exception, where index is: {0}", currentIndex));
+                System.Diagnostics.Debug.Print(String.Format("IsCopyFromLastNonEmptyValuePossible: IndexOutOfRange Exception, where index is: {0}{1}{2}", currentIndex, Environment.NewLine, e.Message));
                 return (nearestRowWithCopyableValue >= 0);
             }
             return (nearestRowWithCopyableValue >= 0);

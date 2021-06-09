@@ -9,6 +9,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -16,7 +17,7 @@
 
         <!--The image-->
 
-        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Top"  />
+        <Image Name="Image" Margin="3" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Top"  />
         <Canvas Name="PlayButton" VerticalAlignment="Bottom" Grid.Row="2" Height="50" HorizontalAlignment="Stretch" Visibility="Collapsed" />
         <!--File name (only visible with episode on)-->
         <Grid Name="InfoPanel"  Grid.Row="0" Grid.Column="0" >
@@ -54,7 +55,16 @@
                 </TextBlock.Background>
             </TextBlock>
 
-
         </Grid>
+        
+        <!--Duplicate information-->
+            <TextBlock Name="DuplicateIndicatorInOverview" Text="Duplicate" 
+                       Grid.Row="0" Grid.Column="0" 
+                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3,0,0,0" Foreground="Red" 
+                       FontSize="14" FontStyle="Italic" FontWeight="DemiBold" IsHitTestVisible="False" Visibility="Collapsed">
+                <TextBlock.Background>
+                    <SolidColorBrush Color="AliceBlue" Opacity="0.8" />
+                </TextBlock.Background>
+            </TextBlock>
     </Grid>
 </UserControl>

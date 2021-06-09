@@ -30,8 +30,9 @@ namespace Timelapse.Dialog
             this.SuppressCsvExportDialog.IsChecked = this.state.SuppressCsvExportDialog;
             this.SuppressCsvExportDialog.IsChecked = this.state.SuppressCsvExportDialog;
             this.SuppressCsvImportPrompt.IsChecked = this.state.SuppressCsvImportPrompt;
-            this.SuppressSelectedAmbiguousDatesPrompt.IsChecked = this.state.SuppressSelectedAmbiguousDatesPrompt;
+            this.SuppressHowDuplicatesWorkPrompt.IsChecked = this.state.SuppressHowDuplicatesWork;
             this.SuppressMergeDatabasesPrompt.IsChecked = this.state.SuppressMergeDatabasesPrompt;
+            this.SuppressSelectedAmbiguousDatesPrompt.IsChecked = this.state.SuppressSelectedAmbiguousDatesPrompt; 
             this.SuppressSelectedCsvExportPrompt.IsChecked = this.state.SuppressSelectedCsvExportPrompt;
             this.SuppressSelectedDarkThresholdPrompt.IsChecked = this.state.SuppressSelectedDarkThresholdPrompt;
             this.SuppressSelectedDateTimeFixedCorrectionPrompt.IsChecked = this.state.SuppressSelectedDateTimeFixedCorrectionPrompt;
@@ -62,6 +63,11 @@ namespace Timelapse.Dialog
             this.state.SuppressCsvImportPrompt = cb.IsChecked == true;
         }
 
+        private void SuppressHowDuplicatesWorkPrompt_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox cb = (CheckBox)sender;
+            this.state.SuppressHowDuplicatesWork = cb.IsChecked == true;
+        }
         private void SuppressSelectedAmbiguousDatesPrompt_Click(object sender, RoutedEventArgs e)
         {
             CheckBox cb = (CheckBox)sender;
@@ -129,5 +135,6 @@ namespace Timelapse.Dialog
             this.DialogResult = true;
         }
         #endregion
+
     }
 }

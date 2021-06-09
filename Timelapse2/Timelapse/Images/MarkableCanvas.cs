@@ -579,6 +579,9 @@ namespace Timelapse.Images
             this.ThumbnailGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
+
+            // Show the DuplicateIndicator for the main window, if needed
+            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
         }
         public void SwitchToVideoView()
         {
@@ -598,6 +601,9 @@ namespace Timelapse.Images
             this.ThumbnailGrid.Visibility = Visibility.Collapsed;
             this.SwitchedToSingleImageViewEventAction();
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
+
+            // Show the DuplicateIndicator for the main window, if needed
+            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
         }
 
         public void SwitchToThumbnailGridView()
@@ -616,6 +622,9 @@ namespace Timelapse.Images
             this.SetMagnifiersAccordingToCurrentState(false, false);
             this.VideoPlayer.Visibility = Visibility.Collapsed;
             this.VideoPlayer.Pause();
+
+            // Hide the DuplicateIndicator for the main window
+            Util.GlobalReferences.MainWindow.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
         }
         #endregion
 
@@ -1222,6 +1231,7 @@ namespace Timelapse.Images
                         if (IsThumbnailGridVisible == false)
                         {
                             this.RefreshBoundingBoxes();
+                            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
                         }
                         else
                         {
@@ -1273,6 +1283,7 @@ namespace Timelapse.Images
                         if (IsThumbnailGridVisible == false)
                         {
                             this.RefreshBoundingBoxes();
+                            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
                         }
                         else
                         {

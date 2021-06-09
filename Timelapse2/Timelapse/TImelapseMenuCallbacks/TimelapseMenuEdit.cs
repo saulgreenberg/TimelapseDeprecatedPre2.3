@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -9,6 +10,7 @@ using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Dialog;
 using Timelapse.Enums;
+using Timelapse.Images;
 using Timelapse.QuickPaste;
 using Timelapse.Util;
 
@@ -42,6 +44,10 @@ namespace Timelapse
                 this.MenuItemRestoreDefaults.Header = "Restore default values for the checkmarked files";
                 this.MenuItemRestoreDefaults.ToolTip = "For all checkmarked files, revert their fields to their default values (excepting file paths and dates/times)";
             }
+
+            // Enable duplicates only if we have a single image in the main view to duplicate
+            // We don't allow duplications in the overview as the attempts to do so were somewhat buggy. It could be done, but I don't think its critical.
+            this.MenuItemDuplicateRecord.IsEnabled = state;
         }
         #endregion
 
@@ -182,7 +188,7 @@ namespace Timelapse
             if (!noteControlOk || !searchTermsOk || !sortTermsOk)
             {
                 if (false == Dialogs.MenuOptionsCantPopulateDataFieldWithEpisodeAsSortIsWrong(this, searchTermsOk, sortTermsOk))
-                { 
+                {
                     return;
                 }
             }
@@ -204,6 +210,20 @@ namespace Timelapse
                 }
             }
 
+        }
+        #endregion
+
+        #region Dupicate the record
+        private async void MenuItemEditDuplicateRecord_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.State.SuppressHowDuplicatesWork == false)
+            {
+                if (Dialogs.MenuEditHowDuplicatesWorkDialog(this) == false)
+                {
+                    return;
+                }
+            }
+            await this.DuplicateCurrentRecord();
         }
         #endregion
 
@@ -231,10 +251,13 @@ namespace Timelapse
 
                 this.MenuItemDeleteFiles.IsEnabled = deletedImages;
                 this.MenuItemDeleteFilesAndData.IsEnabled = deletedImages;
+                this.MenuItemDeleteFilesData.IsEnabled = deletedImages;
 
                 // Enable the delete current file option only if we are not on the thumbnail grid 
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false; // Only show this option if the thumbnail grid is visible
                 this.MenuItemDeleteCurrentFile.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false && this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath);
+                this.MenuItemDeleteCurrentData.IsEnabled = this.MarkableCanvas.IsThumbnailGridVisible == false;
+
             }
             catch (Exception exception)
             {
@@ -244,8 +267,10 @@ namespace Timelapse
                 // I couldn't figure out why, so I just put this fallback in here to catch that unusual case.
                 this.MenuItemDeleteFiles.IsEnabled = true;
                 this.MenuItemDeleteFilesAndData.IsEnabled = true;
+                this.MenuItemDeleteFilesData.IsEnabled = true;
                 this.MenuItemDeleteCurrentFile.IsEnabled = true;
                 this.MenuItemDeleteCurrentFileAndData.IsEnabled = true;
+                this.MenuItemDeleteCurrentData.IsEnabled = true;
             }
         }
 
@@ -261,11 +286,13 @@ namespace Timelapse
             // Thus we need to use two different methods to construct a table containing all the images marked for deletion
             List<ImageRow> filesToDelete;
             bool deleteCurrentImageOnly;
-            bool deleteFilesAndData;
-            if (menuItem.Name.Equals(this.MenuItemDeleteFiles.Name) || menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name))
+            bool deleteFiles;
+            bool deleteData;
+            if (menuItem.Name.Equals(this.MenuItemDeleteFiles.Name) || menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name) || menuItem.Name.Equals(this.MenuItemDeleteFilesData.Name))
             {
                 deleteCurrentImageOnly = false;
-                deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteFilesAndData.Name);
+                deleteFiles = false == menuItem.Name.Equals(this.MenuItemDeleteFilesData.Name); // this is the only condition where we don't delete the file
+                deleteData = false == menuItem.Name.Equals(this.MenuItemDeleteFiles.Name); // this is the only condition where we don't delete the data
                 // get list of all images marked for deletion in the current seletion
                 using (FileTable filetable = this.DataHandler.FileDatabase.SelectFilesMarkedForDeletion())
                 {
@@ -284,7 +311,9 @@ namespace Timelapse
             {
                 // Delete current image case. Get the ID of the current image and construct a datatable that contains that image's datarow
                 deleteCurrentImageOnly = true;
-                deleteFilesAndData = menuItem.Name.Equals(this.MenuItemDeleteCurrentFileAndData.Name);
+                deleteFiles = false == menuItem.Name.Equals(this.MenuItemDeleteCurrentData.Name); // this is the only condition where we don't delete the current file
+                deleteData = false == menuItem.Name.Equals(this.MenuItemDeleteCurrentFile.Name); // this is the only condition where we don't delete the current data
+
                 filesToDelete = new List<ImageRow>();
                 if (this.DataHandler.ImageCache.Current != null)
                 {
@@ -301,7 +330,7 @@ namespace Timelapse
                 return;
             }
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
-            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFilesAndData, deleteCurrentImageOnly);
+            DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFiles, deleteData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();
             if (result == true)
             {
@@ -310,7 +339,7 @@ namespace Timelapse
                 // Reload the file datatable. 
                 await this.FilesSelectAndShowAsync(currentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);
 
-                if (deleteFilesAndData)
+                if (deleteData)
                 {
                     // Find and show the image closest to the last one shown
                     if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles > 0)
