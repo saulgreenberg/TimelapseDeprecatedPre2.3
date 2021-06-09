@@ -544,7 +544,7 @@
                                             </TextBlock.Background>
                                         </TextBlock>
 
-                                        <TextBlock Name="DuplicateIndicatorInMainWindow" Text="Duplicate" Grid.Row="2" IsHitTestVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Red" FontSize="16" FontWeight="DemiBold" FontStyle="Italic" Margin="5,0,0,0">
+                                        <TextBlock Name="DuplicateIndicatorInMainWindow" Text="Duplicate" Grid.Row="2" Visibility="Collapsed" IsHitTestVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Red" FontSize="16" FontWeight="DemiBold" FontStyle="Italic" Margin="5,0,0,0">
                                             <TextBlock.Background>
                                                 <SolidColorBrush Color="AliceBlue" Opacity="0.8" />
                                             </TextBlock.Background>

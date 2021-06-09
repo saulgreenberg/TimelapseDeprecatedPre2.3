@@ -181,7 +181,7 @@ namespace Timelapse
 
             // Check: if the sort terms must be RelativePath x DateTime, or DateTime all ascending
             SortTerm sortTermDB1 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
-            SortTerm sortTermDB2 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(1); // Get the 1st sort term from the database
+            SortTerm sortTermDB2 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(1); // Get the 2nd sort term from the database
             bool sortTermsOk = (sortTermDB1.DataLabel == Constant.DatabaseColumn.RelativePath && Constant.BooleanValue.True == sortTermDB1.IsAscending && sortTermDB2.DataLabel == Constant.DatabaseColumn.DateTime && Constant.BooleanValue.True == sortTermDB1.IsAscending)
                                || (sortTermDB1.DataLabel == Constant.DatabaseColumn.DateTime && Constant.BooleanValue.True == sortTermDB1.IsAscending && String.IsNullOrWhiteSpace(sortTermDB2.DataLabel));
 
@@ -216,9 +216,17 @@ namespace Timelapse
         #region Dupicate the record
         private async void MenuItemEditDuplicateRecord_Click(object sender, RoutedEventArgs e)
         {
-            if (this.State.SuppressHowDuplicatesWork == false)
+            // Check: ideally the sort terms will be RelativePath x DateTime, as otherwise the duplicates may not be in sorted order.
+            // The various flags determine whether we show only a problem message, a duplicate info message, or both.
+            SortTerm sortTermDB1 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(0); // Get the 1st sort term from the database
+            SortTerm sortTermDB2 = this.DataHandler.FileDatabase.ImageSet.GetSortTerm(1); // Get the 2nd sort term from the database
+            bool sortTermsOKForDuplicateOrdering =
+                     (sortTermDB1.DataLabel == Constant.DatabaseColumn.RelativePath && sortTermDB2.DataLabel == Constant.DatabaseColumn.DateTime)
+                  || (sortTermDB1.DataLabel == Constant.DatabaseColumn.DateTime && String.IsNullOrWhiteSpace(sortTermDB2.DataLabel));
+
+            if (this.State.SuppressHowDuplicatesWork == false || sortTermsOKForDuplicateOrdering == false)
             {
-                if (Dialogs.MenuEditHowDuplicatesWorkDialog(this) == false)
+                if (Dialogs.MenuEditHowDuplicatesWorkDialog(this, sortTermsOKForDuplicateOrdering, this.State.SuppressHowDuplicatesWork) == false)
                 {
                     return;
                 }
@@ -324,17 +332,65 @@ namespace Timelapse
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...
-            if (filesToDelete == null || filesToDelete.Count < 1)
+            if (filesToDelete == null || filesToDelete.Count < 1 )
             {
                 Dialogs.MenuEditNoFilesMarkedForDeletionDialog(this);
                 return;
             }
+
+            // if we delete data records, we can sometimes get in the situation (particularly if we delete a duplicate) where the next fileID displayed is not the closest to the existing position.
+            // To resolve this, we get the closest non-deleted file ID before we do the deletion and then try to display that file.
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
+            if (deleteData == true)
+            {
+                foreach (ImageRow ir in filesToDelete)
+                {
+                    System.Diagnostics.Debug.Print(ir.ID.ToString());
+                }
+                // if we delete the data for the current image only but not the file , we can sometimes get in the situation (particularly if we delete a duplicate) where the next fileID displayed is not the closest to the existing position.
+                // To resolve this, we get the closest non-deleted file ID before we do the deletion.
+                int fileIndex = this.DataHandler.ImageCache.CurrentRow;
+                bool allDone = false;
+                for (int nextFileIndex = fileIndex; nextFileIndex < this.DataHandler.FileDatabase.FileTable.Count(); nextFileIndex++)
+                {
+                    // Check if is a deleted file. 
+                    if (this.DataHandler.FileDatabase.IsFileRowInRange(nextFileIndex))
+                    {
+                        System.Diagnostics.Debug.Print("-->" + this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID.ToString());
+                        if (false == filesToDelete.Any(file => file.ID == this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID))
+                        {
+                            // Its not a deleted file, so we have a valid next file to display!
+                            currentFileID = this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID;
+                            allDone = true;
+                            break;
+                        }
+                    }
+                }
+                if (allDone == false)
+                {
+                    for (int prevFileIndex = fileIndex; prevFileIndex >= 0; prevFileIndex--)
+                    {
+                        // Check if is a deleted file. 
+                        if (this.DataHandler.FileDatabase.IsFileRowInRange(prevFileIndex))
+                        {
+                            if (false == filesToDelete.Any(file => file.ID == this.DataHandler.FileDatabase.FileTable[prevFileIndex].ID))
+                            {
+                                // Its not a deleted file, so we have a valid next file to display!
+                                currentFileID = this.DataHandler.FileDatabase.FileTable[prevFileIndex].ID;
+                                allDone = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Delete the files
             DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFiles, deleteData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();
             if (result == true)
             {
-                // Delete the files
+
                 Mouse.OverrideCursor = Cursors.Wait;
                 // Reload the file datatable. 
                 await this.FilesSelectAndShowAsync(currentFileID, this.DataHandler.FileDatabase.ImageSet.FileSelection).ConfigureAwait(true);

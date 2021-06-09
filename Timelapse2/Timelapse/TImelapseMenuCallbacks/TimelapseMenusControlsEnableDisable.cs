@@ -70,6 +70,7 @@ namespace Timelapse
 
             if (filesSelected == false)
             {
+                this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
                 this.FileShow(Constant.DatabaseValues.InvalidRow);
                 this.StatusBar.SetMessage("Image set is empty.");
                 this.StatusBar.SetCurrentFile(0);

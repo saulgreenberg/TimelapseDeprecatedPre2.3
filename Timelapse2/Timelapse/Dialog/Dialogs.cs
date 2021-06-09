@@ -1198,30 +1198,47 @@ namespace Timelapse.Dialog
 
         #region MessageBox: MenuEdit
         /// <summary>
-        /// Tell the user how duplicates work. Give them the opportunity to abort.
+        /// Tell the user how duplicates work, including showing a problem statement if the sort order isn't optimal. Give them the opportunity to abort.
+        /// THe various flags determine whether to show or hide the duplicate information, and how to deal with the DontShowAgain checkbox, as we always want
+        /// the problem message to appear regardless of the state of DontShowAgain.
         /// </summary>
-        public static bool? MenuEditHowDuplicatesWorkDialog(Window owner)
+        public static bool? MenuEditHowDuplicatesWorkDialog(Window owner, bool sortTermsOKForDuplicateOrdering, bool showProblemDescriptionOnly)
         {
             MessageBox messageBox = new MessageBox("Duplicate this record - What it is for, and caveats", owner, MessageBoxButton.OKCancel);
-            messageBox.Message.What = "Duplicating a record will create a new copy of the current record populated with its default values." + Environment.NewLine;
-            messageBox.Message.What += "Duplicates provide you with the ability to have the same field describe multiple things in your image." + Environment.NewLine + Environment.NewLine;
-            messageBox.Message.What += "For example, let's say you have a Choice box called 'Species' used to identify animals in your image." + Environment.NewLine;
-            messageBox.Message.What += "If more than one animal is in the image, you can use the original image to record the first species (e.g., Deer)" + Environment.NewLine;
-            messageBox.Message.What += "and then use one (or more) dupicate records to record the other species that are present (e.g., Elk)" + Environment.NewLine + Environment.NewLine;
-            messageBox.Message.What += "If you export your data to a CSV file, each duplicates will appear in its own row ";
+            if (false == sortTermsOKForDuplicateOrdering)
+            {
+                messageBox.Message.Problem = "'Duplicate this record' works best with Sorting set to either 'Sort | By relative Path + DateTime (default)', or 'Sort |by DateTime'. Otherwise, duplicate records may not appear next to each other.";
+                if (showProblemDescriptionOnly)
+                { 
+                    messageBox.Message.Hint += "You may want to change your sort order before proceeding.";
+                }
+                else
+                {
+                    messageBox.Message.Problem += Environment.NewLine + "\u2022 You may want to change your sort order before proceeding.";
+                }
+            }
 
-            messageBox.Message.Hint = "Duplicates come with several caveats." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 Use 'Sort | Relative Path + Date Time' to ensure that duplicates appear in sequence." + Environment.NewLine; 
-            messageBox.Message.Hint += "\u2022 Duplicates can only be created in the main view, not in the overview." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 Duplicates in the exported CSV file are identifiable as rows with the same relative path and file name." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 Importing a modified CSV file with duplicates into Timelapse has an undesired side effect: Duplicates with the same" + Environment.NewLine;
-            messageBox.Message.Hint += "   relative path/file name in will have their values overwritten by the last row with that relative path/file name in the CSV file."; 
+            if (showProblemDescriptionOnly == false)
+            {
+                messageBox.Message.What += "Duplicating a record will create a new copy of the current record populated with its default values." + Environment.NewLine;
+                messageBox.Message.What += "Duplicates provide you with the ability to have the same field describe multiple things in your image." + Environment.NewLine + Environment.NewLine;
+                messageBox.Message.What += "For example, let's say you have a Choice box called 'Species' used to identify animals in your image." + Environment.NewLine;
+                messageBox.Message.What += "If more than one animal is in the image, you can use the original image to record the first species (e.g., Deer)" + Environment.NewLine;
+                messageBox.Message.What += "and then use one (or more) dupicate records to record the other species that are present (e.g., Elk)" + Environment.NewLine + Environment.NewLine;
+                messageBox.Message.What += "If you export your data to a CSV file, each duplicates will appear in its own row ";
 
-            messageBox.Message.Icon = MessageBoxImage.Information;
-            messageBox.DontShowAgain.Visibility = Visibility.Visible;
+                messageBox.Message.Hint = "Duplicates come with several caveats." + Environment.NewLine;
+                messageBox.Message.Hint += "\u2022 Use 'Sort | Relative Path + Date Time (default)' to ensure that duplicates appear in sequence." + Environment.NewLine;
+                messageBox.Message.Hint += "\u2022 Duplicates can only be created in the main view, not in the overview." + Environment.NewLine;
+                messageBox.Message.Hint += "\u2022 Duplicates in the exported CSV file are identifiable as rows with the same relative path and file name." + Environment.NewLine;
+                messageBox.Message.Hint += "\u2022 Importing a modified CSV file with duplicates into Timelapse has an undesired side effect: Duplicates with the same" + Environment.NewLine;
+                messageBox.Message.Hint += "   relative path/file name in will have their values overwritten by the last row with that relative path/file name in the CSV file.";
 
+                messageBox.Message.Icon = MessageBoxImage.Information;
+                messageBox.DontShowAgain.Visibility = Visibility.Visible;
+            }
             bool? result = messageBox.ShowDialog();
-            if (messageBox.DontShowAgain.IsChecked.HasValue)
+            if (messageBox.DontShowAgain.IsChecked.HasValue && showProblemDescriptionOnly == false)
             {
                 Util.GlobalReferences.TimelapseState.SuppressHowDuplicatesWork = messageBox.DontShowAgain.IsChecked.Value;
             }

@@ -52,7 +52,7 @@ namespace Timelapse.Dialog
             this.fileDatabase = fileDatabase;
             this.imageCache = imageCache;
             this.filesToDelete = filesToDelete;
-            //this.deleteImageAndData = deleteImageAndData;
+
             this.deleteImage = deleteImage;
             this.deleteData = deleteData;
             this.deleteCurrentImageOnly = deleteCurrentImageOnly;
