@@ -581,7 +581,7 @@ namespace Timelapse.Images
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
 
             // Show the DuplicateIndicator for the main window, if needed
-            Util.GlobalReferences.MainWindow.DuplicateDisplayTextInImageIfWarranted();
+            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
         }
         public void SwitchToVideoView()
         {
@@ -603,7 +603,7 @@ namespace Timelapse.Images
             this.DataEntryControls.SetEnableState(ControlsEnableStateEnum.SingleImageView, -1);
 
             // Show the DuplicateIndicator for the main window, if needed
-            Util.GlobalReferences.MainWindow.DuplicateDisplayTextInImageIfWarranted();
+            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
         }
 
         public void SwitchToThumbnailGridView()

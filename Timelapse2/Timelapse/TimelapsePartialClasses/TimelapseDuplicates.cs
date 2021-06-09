@@ -12,30 +12,8 @@ namespace Timelapse
 {
     public partial class TimelapseWindow : Window, IDisposable
     {
-        public void DuplicateDisplayTextInImageIfWarranted()
-        {
-            if (this.IsDisplayingMultipleImagesInOverview())
-            {
-                this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // Display the text "Duplicate x/y" if needed
-                // The returned point will be 1,1 if there are no duplicates,
-                // or position,count if there are duplicates e.g. 2/4 means its the 2nd image in a set of 4 duplicates
-                Point duplicateSequence = DuplicatesGetSequenceNumberIfAny();
-                if (duplicateSequence.Y > 1)
-                {
-                    this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Visible;
-                    this.DuplicateIndicatorInMainWindow.Text = String.Format("Duplicate: {0}/{1}", duplicateSequence.X, duplicateSequence.Y);
-                }
-                else
-                {
-                    this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
-                }
-            }
-        }
 
+        #region Duplicate the current record
         public async Task DuplicateCurrentRecord()
         {
             // Get the current image (or the selected image in the thumbnail grid) and duplicate it.
@@ -112,9 +90,6 @@ namespace Timelapse
                     }
                 }
 
-                // Instert the detections into the Detections table
-                //this.DataHandler.FileDatabase.InsertDetection(detectionInsertionStatements);
-
                 // Regenerate the internal detections and classifications table to include the new detections andclassifications
                 this.DataHandler.FileDatabase.RefreshDetectionsDataTable();
                 this.DataHandler.FileDatabase.RefreshClassificationsDataTable();
@@ -125,24 +100,54 @@ namespace Timelapse
             await this.FilesSelectAndShowAsync();
             this.TryFileShowWithoutSliderCallback(DirectionEnum.Next);
         }
+        #endregion
 
+
+        // Manage the display of the duplicate indicator (text in the form Duplicate: x/y) in the main window.
+        public void DuplicateDisplayIndicatorInImageIfWarranted()
+        {
+            if (this.IsDisplayingMultipleImagesInOverview())
+            {
+                this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Display the text "Duplicate x/y" if needed
+                // The returned point will be 1,1 if there are no duplicates,
+                // or position,count if there are duplicates e.g. 2/4 means its the 2nd image in a set of 4 duplicates
+                Point duplicateSequence = DuplicatesCheckIfDuplicateAndGetSequenceNumberIfAny();
+                if (duplicateSequence.Y > 1)
+                {
+                    this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Visible;
+                    this.DuplicateIndicatorInMainWindow.Text = String.Format("Duplicate: {0}/{1}", duplicateSequence.X, duplicateSequence.Y);
+                }
+                else
+                {
+                    this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
+        // Check if the current image is a duplicate, and if so get its sequence number
         // Starting from the curent position in the file table, check if this image has duplicates
         // We do this simply by comparing the relativePath,File of the surrounding images in the current selection
         // The returned point will beL
         // (0,0) if there is no current image or if for some reason this method blows up
         // (1,1) if there are no duplicates (i.e., image 1 out of a total count of 1)
         // (position,count) if there are duplicates e.g. (2,4) means its the 2nd image in a set of 4 duplicates
-        public Point DuplicatesGetSequenceNumberIfAny()
+
+        // This version invokes it on the current image (which works fine in the main view, but not in the overview)
+        public Point DuplicatesCheckIfDuplicateAndGetSequenceNumberIfAny()
         {
             if (this.DataHandler?.FileDatabase == null)
             {
                 return new Point(0, 0);
             }
-            // This version invokes it on the current image (which works fine in the main view, but not in the overview)
-            return this.DuplicatesGetSequenceNumberIfAny(this.DataHandler.ImageCache.Current, this.DataHandler.ImageCache.CurrentRow);
+
+            return this.DuplicatesCheckIfDuplicateAndGetSequenceNumberIfAny(this.DataHandler.ImageCache.Current, this.DataHandler.ImageCache.CurrentRow);
         }
 
-        public Point DuplicatesGetSequenceNumberIfAny(ImageRow selectedImageRow, int selectedRowIndex)
+        public Point DuplicatesCheckIfDuplicateAndGetSequenceNumberIfAny(ImageRow selectedImageRow, int selectedRowIndex)
         {
             try
             {

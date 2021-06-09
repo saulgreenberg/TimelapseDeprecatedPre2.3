@@ -187,7 +187,7 @@ namespace Timelapse
 
             // Display the episode and duplicate text as needed
             this.DisplayEpisodeTextInImageIfWarranted(fileIndex);
-            this.DuplicateDisplayTextInImageIfWarranted();
+            this.DuplicateDisplayIndicatorInImageIfWarranted();
         }
         #endregion
 

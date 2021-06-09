@@ -158,11 +158,13 @@
 
                     <!-- Delete submenu-->
                     <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
-                        <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the file, but leaves entered data intact"/>
-                        <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the file, as well as the data entered for that file"/>
+                        <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the current image or video file, but leaves entered data intact"/>
+                        <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the current image or video file, as well as the data entered for that file"/>
+                        <MenuItem Name="MenuItemDeleteCurrentData" Header="Only the data associated with the current file..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the data  entered for the current image or video file, but leaves the file in place"/>
                         <Separator/>
                         <MenuItem Name="MenuItemDeleteFiles" Header="_All selected image or video files marked for deletion ..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes  images and videos in the current selection that are marked for deletion, but leaves entered data intact"/>
                         <MenuItem Name="MenuItemDeleteFilesAndData" Header="All selected image or video files marked for deletion and their data..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes images and videos in the current selection that are marked for deletion, as well as the data entered for those files"/>
+                        <MenuItem Name="MenuItemDeleteFilesData" Header="Only the data associated with all selected image or video files marked for deletion..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the data  associated with images and videos in the current selection, but leaves the image and video files in place"/>
                     </MenuItem>
 
                     <!-- Date correction submenu-->

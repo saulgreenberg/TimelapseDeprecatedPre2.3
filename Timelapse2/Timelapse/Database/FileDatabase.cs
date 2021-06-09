@@ -959,7 +959,7 @@ namespace Timelapse.Database
             if (this.ImageSet != null)
             {
                 SortTerm[] sortTerm = new SortTerm[2];
-                string[] term = new string[] { String.Empty, String.Empty };
+                string[] term = new string[] { String.Empty, String.Empty, String.Empty };
 
                 // Special case for DateTime sorting.
                 // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
@@ -1004,6 +1004,11 @@ namespace Timelapse.Database
                             // THE COMMENTED OUT VERSION WHICH IGNORES UTCOFFSET
                             term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
                             //term[i] = String.Format("datetime({0})", Constant.DatabaseColumn.DateTime);
+
+                            // DUPLICATE RECORDS Special case. If there are multiple files with the same date/time and one of them is a duplicate,
+                            // then the duplicate may not necessarily appear in a sequence, as ambiguities just use the ID (remember that a duplicate is created with a new ID that may be very distant from the original record).
+                            // So, we add a final sort term of 'File'. However, we will decide later if we are going to actually use it
+                            term[2] = Constant.DatabaseColumn.File;
                         }
                         else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
                         {
@@ -1027,7 +1032,7 @@ namespace Timelapse.Database
                         }
                     }
                 }
-
+               
                 // Random selection - Add suffix
                 if (this.CustomSelection != null && this.CustomSelection.RandomSample > 0)
                 {
@@ -1043,10 +1048,15 @@ namespace Timelapse.Database
                     {
                         query += Sql.Comma + term[1];
                     }
+                    // If there is a third sort key (which would only ever be 'File') add it here.
+                    // NOTE: I am not sure if this will always work on every occassion, but my limited test says its ok.
+                    if (!String.IsNullOrEmpty(term[2]))
+                    {
+                        query += Sql.Comma + term[2];
+                    }
                     //query += Sql.Semicolon;
                 }
             }
-
 
             DataTable filesTable = await Task.Run(() =>
             {

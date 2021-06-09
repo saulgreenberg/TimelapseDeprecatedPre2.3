@@ -26,7 +26,7 @@
 
             <StackPanel Name="SingleFilePanel" Orientation="Vertical"  Grid.Row="2" Margin="10" Visibility="Collapsed">
                 <TextBlock FontWeight="DemiBold" Grid.Row="2" Margin="0,0,0,5">
-                    <Run Text="File to delete:" FontWeight="Bold"></Run>
+                    <Run Name="FileLabel" Text="File to delete:" FontWeight="Bold"></Run>
                     <Run Name="SingleFileNameRun" Text="" FontWeight="DemiBold"/>
                 </TextBlock>
                 <Image Name="SingleImageViewer" VerticalAlignment="Top" Width="540" Height="300" HorizontalAlignment="Left" Margin="0"/>
@@ -55,7 +55,7 @@
                 <CheckBox Name="chkboxConfirm" IsChecked="False" Margin="0,5,5,0" Height="40" 
                 Checked="ConfirmBox_Checked" Unchecked="ConfirmBox_Checked">
                     <TextBlock>
-                        <Run FontWeight="Bold" Text="Click to confirm deletion of selected files and data " />
+                        <Run Name="ConfirmCheckBoxText" FontWeight="Bold" Text="Click to confirm deletion of selected files and data " />
                         <LineBreak/>
                         <Run>(Deleted data is not recoverable)</Run>
                     </TextBlock>

@@ -292,6 +292,12 @@ namespace Timelapse.Controls
         // Get and display the episode text if various conditions are met
         public void RefreshDuplicateInfo(FileTable fileTable, int fileIndex)
         {
+            if (Keyboard.IsKeyDown(Key.H))
+            {
+                this.DuplicateIndicatorInOverview.Visibility = Visibility.Hidden;
+                return;
+            }
+
             if (fileIndex < 0 || fileIndex >= fileTable.RowCount)
             {
                 // If the fileIndex is not in the fileTable, just abort.
@@ -299,7 +305,7 @@ namespace Timelapse.Controls
             }
 
             ImageRow imageRow = fileTable[fileIndex];
-            Point duplicateSequence = Util.GlobalReferences.MainWindow.DuplicatesGetSequenceNumberIfAny(imageRow, fileIndex);
+            Point duplicateSequence = Util.GlobalReferences.MainWindow.DuplicatesCheckIfDuplicateAndGetSequenceNumberIfAny(imageRow, fileIndex);
             if (duplicateSequence.Y > 1)
             {
                 this.DuplicateIndicatorInOverview.Visibility = Visibility.Visible;
