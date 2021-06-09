@@ -1231,6 +1231,7 @@ namespace Timelapse.Images
                         if (IsThumbnailGridVisible == false)
                         {
                             this.RefreshBoundingBoxes();
+                            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
                         }
                         else
                         {
@@ -1282,6 +1283,7 @@ namespace Timelapse.Images
                         if (IsThumbnailGridVisible == false)
                         {
                             this.RefreshBoundingBoxes();
+                            Util.GlobalReferences.MainWindow.DuplicateDisplayIndicatorInImageIfWarranted();
                         }
                         else
                         {

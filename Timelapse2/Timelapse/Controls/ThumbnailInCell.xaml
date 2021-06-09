@@ -60,10 +60,10 @@
         <!--Duplicate information-->
             <TextBlock Name="DuplicateIndicatorInOverview" Text="Duplicate" 
                        Grid.Row="0" Grid.Column="0" 
-                       HorizontalAlignment="Left" VerticalAlignment="Top" Margin="3,0,0,0" Foreground="Red" 
-                       FontSize="14" FontStyle="Italic" IsHitTestVisible="False" Visibility="Collapsed">
+                       HorizontalAlignment="Right" VerticalAlignment="Top" Margin="3,0,0,0" Foreground="Red" 
+                       FontSize="14" FontStyle="Italic" FontWeight="DemiBold" IsHitTestVisible="False" Visibility="Collapsed">
                 <TextBlock.Background>
-                    <SolidColorBrush Color="AliceBlue" Opacity="0.6" />
+                    <SolidColorBrush Color="AliceBlue" Opacity="0.8" />
                 </TextBlock.Background>
             </TextBlock>
     </Grid>

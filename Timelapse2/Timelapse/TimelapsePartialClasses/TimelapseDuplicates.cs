@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -112,6 +113,11 @@ namespace Timelapse
             }
             else
             {
+                if (Keyboard.IsKeyDown(Key.H))
+                {
+                    this.DuplicateIndicatorInMainWindow.Visibility = Visibility.Collapsed;
+                    return;
+                }
                 // Display the text "Duplicate x/y" if needed
                 // The returned point will be 1,1 if there are no duplicates,
                 // or position,count if there are duplicates e.g. 2/4 means its the 2nd image in a set of 4 duplicates

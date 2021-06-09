@@ -318,7 +318,7 @@
                         <MenuItem Name="MenuItemWindowCustom3Load" Header="Layout _3" Click="MenuItemWindowRestore_Click" ToolTip="Restore the saved window layout" Tag="AvalonLayout_Custom3"/>
                     </MenuItem>
 
-                    <!--Custom congiurations: Save -->
+                    <!--Custom congfiurations: Save -->
                     <MenuItem Name="MenuItemWindowSaveCustom" Header="Save the Current Window Layout">
                         <MenuItem.Icon>
                             <Image Source="Icons/LayoutCustomSave_32x.png" />
@@ -544,9 +544,9 @@
                                             </TextBlock.Background>
                                         </TextBlock>
 
-                                        <TextBlock Name="DuplicateIndicatorInMainWindow" Text="Duplicate" Grid.Row="2" IsHitTestVisible="False" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="Red" FontSize="16" FontStyle="Italic" Margin="5,0,0,0">
+                                        <TextBlock Name="DuplicateIndicatorInMainWindow" Text="Duplicate" Grid.Row="2" IsHitTestVisible="False" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="Red" FontSize="16" FontWeight="DemiBold" FontStyle="Italic" Margin="5,0,0,0">
                                             <TextBlock.Background>
-                                                <SolidColorBrush Color="AliceBlue" Opacity="0.6" />
+                                                <SolidColorBrush Color="AliceBlue" Opacity="0.8" />
                                             </TextBlock.Background>
                                         </TextBlock>
                                     </Grid>
