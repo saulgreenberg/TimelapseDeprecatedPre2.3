@@ -26,9 +26,6 @@ namespace Timelapse.Dialog
 
         private ExifToolWrapper exifTool;
 
-        private readonly Dictionary<string, string> dataLabelByLabel;
-        private bool dataFieldSelected;
-
         private Dictionary<string, ImageMetadata> metadataDictionary;
         private string metadataFieldName;
         private bool metadataFieldSelected;
@@ -48,9 +45,6 @@ namespace Timelapse.Dialog
             this.filePath = filePath;
 
             // Store various states which will eventually be reset by the user
-            this.dataLabelByLabel = new Dictionary<string, string>();
-            this.dataFieldSelected = true;
-
             this.metadataFieldName = String.Empty;
             this.metadataFieldSelected = false;
             this.noMetadataAvailable = true;
@@ -144,7 +138,12 @@ namespace Timelapse.Dialog
             List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
             foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
-                if (DateTime.TryParse(metadata.Value.Value.ToString(), out DateTime dateTime))
+                if (metadata.Value == null || metadata.Value.Value == null)
+                {
+                    // Rare case where a user had a camera with a null Value.Value field
+                    continue;
+                }
+                if (DateTime.TryParse(metadata.Value.Value.ToString(), out DateTime _))
                 {
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
                 }
@@ -186,7 +185,7 @@ namespace Timelapse.Dialog
             foreach (KeyValuePair<string, string> metadata in exifDictionary)
             {
                 // We only collect metadata for those fields whose value appears to have a valid date.
-                if (DateTime.TryParse(metadata.Value, out DateTime dateTime))
+                if (DateTime.TryParse(metadata.Value, out _))
                 {
                     this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
@@ -213,7 +212,7 @@ namespace Timelapse.Dialog
                 TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
                 int percentDone = 0;
 
-                double totalImages = this.fileDatabase.CountAllCurrentlySelectedFiles;
+                double totalFiles = this.fileDatabase.CountAllCurrentlySelectedFiles;
                 Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
                 List<ImageRow> filesToAdjust = new List<ImageRow>();
 
@@ -221,7 +220,8 @@ namespace Timelapse.Dialog
                 this.Progress.Report(new ProgressBarArguments(percentDone, "Initializing...", true, false));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
 
-                for (int imageIndex = 0; imageIndex < totalImages; ++imageIndex)
+                int metadataUpdateCount = 0;
+                for (int imageIndex = 0; imageIndex < totalFiles; ++imageIndex)
                 {
                     // Provide feedback if the operation was cancelled during the database update
                     if (Token.IsCancellationRequested == true)
@@ -250,8 +250,8 @@ namespace Timelapse.Dialog
 
                     if (this.ReadyToRefresh())
                     {
-                        percentDone = Convert.ToInt32(imageIndex / totalImages * 100.0);
-                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", imageIndex, totalImages, image.File), true, false));
+                        percentDone = Convert.ToInt32(imageIndex / totalFiles * 100.0);
+                        this.Progress.Report(new ProgressBarArguments(percentDone, String.Format("{0}/{1} images. Processing {2}", imageIndex, totalFiles, image.File), true, false));
                         Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                     }
 
@@ -260,7 +260,7 @@ namespace Timelapse.Dialog
                         // System.Diagnostics.Debug.Print(String.Format("{0}: No metadata", image.File));
                         continue;
                     }
-
+                    metadataUpdateCount++;
                     string metadataValue = metadata[this.metadataFieldName].Value;
                     ColumnTuplesWithWhere imageUpdate;
                     if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
@@ -277,7 +277,7 @@ namespace Timelapse.Dialog
                     imagesToUpdate.Add(imageUpdate);
                 }
                 this.IsAnyDataUpdated = true;
-                this.Progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for {0} files. Please wait...", totalImages), false, true));
+                this.Progress.Report(new ProgressBarArguments(100, String.Format("Writing metadata for the {0}/{1} files that contain this metadata field. Please wait...", metadataUpdateCount, totalFiles), false, true));
                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                 this.fileDatabase.UpdateFiles(imagesToUpdate);
                 return keyValueList;
@@ -315,14 +315,14 @@ namespace Timelapse.Dialog
                 this.MetadataDisplayText.Content = this.metadataDictionary[this.metadataFieldName].Name;
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = true;
-                this.StartDoneButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
+                this.StartDoneButton.IsEnabled = this.metadataFieldSelected;
             }
             else
             {
                 this.MetadataDisplayText.Content = String.Empty;
                 // Note that metadata name may still has spaces in it. We will have to strip it out and check it to make sure its an acceptable data label
                 this.metadataFieldSelected = false;
-                this.StartDoneButton.IsEnabled = this.dataFieldSelected && this.metadataFieldSelected;
+                this.StartDoneButton.IsEnabled = this.metadataFieldSelected;
             }
         }
         #endregion

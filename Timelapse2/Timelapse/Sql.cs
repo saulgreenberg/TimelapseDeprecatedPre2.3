@@ -24,6 +24,8 @@ namespace Timelapse
         public const string Between = " BETWEEN ";
         public const string CaseWhen = " CASE WHEN ";
         public const string Cast = " CAST ";
+        public const string Count = " Count ";
+        public const string CountStar = Sql.Count + Sql.OpenParenthesis + Sql.Star + Sql.CloseParenthesis;
         public const string CreateIndex = " CREATE INDEX ";
         public const string CreateTable = " CREATE TABLE ";
         public const string CreateTemporaryTable = " CREATE TEMPORARY TABLE ";

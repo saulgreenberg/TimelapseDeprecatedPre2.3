@@ -1078,6 +1078,17 @@ namespace Timelapse.Database
             return new FileTable(filesTable);
         }
 
+        public List<long> SelectFilesByRelativePathAndFileName(string relativePath, string fileName)
+        {
+            string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(relativePath) + Sql.And + Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(fileName);
+            DataTable fileTable = this.Database.GetDataTableFromSelect(query); 
+            List<long> idList = new List<long>();
+            for (int i = 0; i < fileTable.Rows.Count; i++)
+            {
+                idList.Add((long)fileTable.Rows[i].ItemArray[0]);
+            }
+            return idList;
+        }
         // Check for the existence of missing files in the current selection, and return a list of IDs of those that are missing
         // PERFORMANCE this can be slow if there are many files
         public bool SelectMissingFilesFromCurrentlySelectedFiles()
@@ -1177,6 +1188,7 @@ namespace Timelapse.Database
         }
         #endregion
 
+
         // Return a new sorted list containing the distinct relative paths in the database,
         // and the (unique) parents of each relative path entry.
         // For example, if the relative paths were a/b, a/b/c, a/b/d and d/c it would return
@@ -1229,6 +1241,24 @@ namespace Timelapse.Database
                 }
             }
             return distinctValues;
+        }
+
+        // Get a list of RelativePath,File where that combination is duplicated in the database, i.e.,
+        // a list of duplicate RelativePath,File(s).
+        // Form: SELECT RelativePath, File FROM DataTable GROUP BY RelativePath, File HAVING COUNT(*) > 1
+        public List<string> GetDistinctRelativePathFileCombinationsDuplicates()
+        {
+           List<string> listOfDuplicatePaths = new List<string>();
+           string relativePathFile = Constant.DatabaseColumn.RelativePath + Sql.Comma + Constant.DatabaseColumn.File;
+            string query = Sql.Select + relativePathFile
+                + Sql.From + Constant.DBTables.FileData  
+                + Sql.GroupBy + relativePathFile + Sql.Having + Sql.CountStar + Sql.GreaterThan + "1";
+            DataTable dataTable = this.Database.GetDataTableFromSelect(query);
+            for (int i = 0; i < dataTable.Rows.Count; i++)
+            {
+                listOfDuplicatePaths.Add(Path.Combine((string)dataTable.Rows[i].ItemArray[0], (string)dataTable.Rows[i].ItemArray[1]));
+            }
+            return listOfDuplicatePaths;
         }
         #endregion
 
