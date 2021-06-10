@@ -1085,11 +1085,19 @@ namespace Timelapse.Dialog
         /// <summary>
         /// CSV file imported
         /// </summary>
-        public static void MenuFileCSVFileImportedDialog(Window owner, string csvFileName)
+        public static void MenuFileCSVFileImportedDialog(Window owner, string csvFileName, List<string> warnings)
         {
             MessageBox messageBox = new MessageBox("CSV file imported", owner);
             messageBox.Message.Icon = MessageBoxImage.Information;
             messageBox.Message.What = String.Format("The file {0} was successfully imported.", csvFileName);
+            if (warnings.Count != 0)
+            {
+                messageBox.Message.Result = "However, here are some warnings that you may want to check.";
+                foreach (string warning in warnings)
+                {
+                    messageBox.Message.Result += Environment.NewLine + "\u2022 " + warning;
+                }
+            }
             messageBox.Message.Hint = "\u2022 Check your data. If it is not what you expect, restore your data by using latest backup file in " + Constant.File.BackupFolder + ".";
             messageBox.ShowDialog();
 
@@ -1230,9 +1238,7 @@ namespace Timelapse.Dialog
                 messageBox.Message.Hint = "Duplicates come with several caveats." + Environment.NewLine;
                 messageBox.Message.Hint += "\u2022 Use 'Sort | Relative Path + Date Time (default)' to ensure that duplicates appear in sequence." + Environment.NewLine;
                 messageBox.Message.Hint += "\u2022 Duplicates can only be created in the main view, not in the overview." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 Duplicates in the exported CSV file are identifiable as rows with the same relative path and file name." + Environment.NewLine;
-                messageBox.Message.Hint += "\u2022 Importing a modified CSV file with duplicates into Timelapse has an undesired side effect: Duplicates with the same" + Environment.NewLine;
-                messageBox.Message.Hint += "   relative path/file name in will have their values overwritten by the last row with that relative path/file name in the CSV file.";
+                messageBox.Message.Hint += "\u2022 Duplicates in the exported CSV file are identifiable as rows with the same relative path and file name.";
 
                 messageBox.Message.Icon = MessageBoxImage.Information;
                 messageBox.DontShowAgain.Visibility = Visibility.Visible;

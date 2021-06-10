@@ -261,7 +261,7 @@ namespace Timelapse
                 else
                 {
                     // Importing done.
-                    Dialogs.MenuFileCSVFileImportedDialog(this, Path.GetFileName(csvFilePath));
+                    Dialogs.MenuFileCSVFileImportedDialog(this, Path.GetFileName(csvFilePath), resultAndImportErrors.Item2);
 
                     // Reload the data
                     this.BusyCancelIndicator.IsBusy = true;

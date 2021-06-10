@@ -80,7 +80,7 @@ namespace Timelapse.Database
         // - rows in the CSV file that are not in the .ddb file are ignored (not reported - maybe it should be?)
         // - rows in the .ddb file that are not in the CSV file are ignored
         // - if there are more duplicate rows for an image in the .csv file than there are in the .ddb file, those extra duplicates are ignored (not reported - maybe it should be?)
-         // - if there are more duplicate rows for an image in the .ddb file than there are in the .csv file, those extra duplicates are ignored (not reported - maybe it should be?)
+        // - if there are more duplicate rows for an image in the .ddb file than there are in the .csv file, those extra duplicates are ignored (not reported - maybe it should be?)
         public static async Task<Tuple<bool, List<string>>> TryImportFromCsv(string filePath, FileDatabase fileDatabase)
         {
             // Set up a progress handler that will update the progress bar
@@ -232,41 +232,50 @@ namespace Timelapse.Database
 
                     List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
 
+                    // Begin Handle duplicates
                     int nextRowIndex = 0;
-                    string currentPath = String.Empty;
-                    string examinedPath = String.Empty;
-                    string duplicatePath = String.Empty;
+                    string currentPath = String.Empty;   // the path of the current row 
+                    string examinedPath = String.Empty;  // the path of a surrounding row currently being examined to see if its a duplicate
+                    string duplicatePath = String.Empty; // a duplicate was identified, and this holds the duplicate path
                     List<Dictionary<string, string>> duplicatesDictionaryList = new List<Dictionary<string, string>>();
                     foreach (Dictionary<string, string> rowDict in sortedRowDictionaryList)
                     {
                         nextRowIndex++;
-                        // BEGIN CHECK DUPLICATE
 
-                        // Check if its a duplicate by looking at the paths
+                        // Duplicates are special cases, where we have to update each set of duplicates separately as a chunk.
+                        // To begin, check if its a duplicate, which occurs if the path (RelativePath/File) is identical
                         currentPath = Path.Combine(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]);
-                        System.Diagnostics.Debug.Print(currentPath);
+
                         if (currentPath == duplicatePath)
                         {
-                            // we are in the middle of a sequence, so the current record has to be a duplicate.
+                            // we are in the middle of a sequence, and this record has the same path as the previously identified duplicate.
+                            // Thus the current record has to be a duplicate.
                             // Add it to the list.
                             duplicatesDictionaryList.Add(rowDict);
 
-                            // Check if we are at the end of a sequence - this catches the condition where the very last entry in the sorted csv file is a duplicate
+                            // A check if we are at the end of the CSV file - this catches the condition where the very last entry in the sorted csv file is a duplicate
                             if (nextRowIndex >= sortedRowDictionaryList.Count())
                             {
-                                // This entry marks the end of a sequence as the paths aren't equal but we have duplicates. Process the prior sequence
-                                InsertDuplicates(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(duplicatePath), Path.GetFileName(duplicatePath));
+                                string error = UpdateDuplicatesInDatabase(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(duplicatePath), Path.GetFileName(duplicatePath));
+                                if (false == String.IsNullOrEmpty(error))
+                                {
+                                    importErrors.Add(error);
+                                }
                                 duplicatesDictionaryList.Clear();
                             }
                             continue;
                         }
                         else
                         {
-                            // Check if we are at the end of a sequence
+                            // Check if we are at the end of a duplicate sequence
                             if (duplicatesDictionaryList.Count > 0)
                             {
                                 // This entry marks the end of a sequence as the paths aren't equal but we have duplicates. Process the prior sequence
-                                InsertDuplicates(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(duplicatePath), Path.GetFileName(duplicatePath));
+                                string error = UpdateDuplicatesInDatabase(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(duplicatePath), Path.GetFileName(duplicatePath));
+                                if (false == String.IsNullOrEmpty(error))
+                                {
+                                    importErrors.Add(error);
+                                }
                                 duplicatesDictionaryList.Clear();
                             }
 
@@ -294,18 +303,20 @@ namespace Timelapse.Database
                                         // But, if the database contains a duplicate with the same relativePath/File, then we want to update just the first database duplicate, rather than update all those
                                         // database duplicates with the same value (if we let it fall thorugh
                                         duplicatesDictionaryList.Add(rowDict);
-                                        InsertDuplicates(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(currentPath), Path.GetFileName(currentPath));
+                                        string error = UpdateDuplicatesInDatabase(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(currentPath), Path.GetFileName(currentPath));
+                                        if (false == String.IsNullOrEmpty(error))
+                                        {
+                                            importErrors.Add(error);
+                                        }
                                         duplicatesDictionaryList.Clear();
                                         continue;
                                     }
                                 }
                             }
                         }
+                        // END Handle duplicates
 
-                        //System.Diagnostics.Debug.Print("Singleton: " + currentPath);
-                        // END CHECK DUPLICATE
-
-                        // Process each row
+                        // Process each non-duplicate row
                         ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
                         foreach (string header in rowDict.Keys)
                         {
@@ -321,7 +332,6 @@ namespace Timelapse.Database
                                 imageToUpdate.Columns.Add(new ColumnTuple(header, rowDict[header]));
                             }
                         }
-
 
                         // Add to the query only if there are columns to add!
                         if (imageToUpdate.Columns.Count > 0)
@@ -350,9 +360,13 @@ namespace Timelapse.Database
                 }).ConfigureAwait(true);
         }
 
-        private static void InsertDuplicates(FileDatabase fileDatabase, List<Dictionary<string, string>> duplicatesDictionaryList, string relativePath, string file)
+        // Given a list of duplicates and their common relative path, update the corresponding duplicates in the database
+        // We do this by getting the IDs of duplicates in the database, where we update each database by ID to a duplicate.
+        // If there is a mismatch in the number of duplicates in the database vs. in the CSV file, we just update whatever does match.
+        private static string UpdateDuplicatesInDatabase(FileDatabase fileDatabase, List<Dictionary<string, string>> duplicatesDictionaryList, string relativePath, string file)
         {
             List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
+            string errorMessage = String.Empty;
 
             // Find THE IDs of ImageRows with those RelativePath / File values
 
@@ -360,7 +374,9 @@ namespace Timelapse.Database
 
             if (duplicateIDS.Count != duplicatesDictionaryList.Count)
             {
-                System.Diagnostics.Debug.Print(String.Format("Mismatch {0} Database records and {1} CSV records with same {2}", duplicateIDS.Count, duplicatesDictionaryList.Count, Path.Combine(relativePath, file)));
+                string dbEntry = duplicateIDS.Count == 1 ? "entry" : "entries";
+                string csvEntry = duplicatesDictionaryList.Count == 1 ? "entry" : "entries";
+                errorMessage = String.Format("duplicate entry mismatch for {0}: {1} database {2} vs. {3} CSV {4}.", Path.Combine(relativePath, file), duplicateIDS.Count, dbEntry, duplicatesDictionaryList.Count, csvEntry);
             }
 
             int idIndex = 0;
@@ -368,10 +384,8 @@ namespace Timelapse.Database
             {
                 if (idIndex >= duplicateIDS.Count)
                 {
-                    System.Diagnostics.Debug.Print("More CSV rows than IDs:" + Path.Combine(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]));
                     break;
                 }
-                //System.Diagnostics.Debug.Print(Path.Combine(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]) + ":" + rowDict["Species"] + "|" + rowDict["Count"]);
 
                 // Process each row
                 ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
@@ -402,6 +416,7 @@ namespace Timelapse.Database
             {
                 fileDatabase.UpdateFiles(imagesToUpdate);
             }
+            return errorMessage;
         }
         #endregion
 
