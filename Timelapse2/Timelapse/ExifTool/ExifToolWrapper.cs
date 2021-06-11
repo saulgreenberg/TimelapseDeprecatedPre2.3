@@ -387,6 +387,13 @@ namespace Timelapse.ExifTool
             foreach (string s in cmdRes.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string[] kv = s.Split('\t');
+                if (kv.Length == 1 && kv[0] == "{ready0000}")
+                {
+                    // This was introduced in the results in a later version of EXIF.
+                    // I catch and discard it here as otherwise it generates the Debug.Assert message in the next test whenever exiftool is spawned.
+                    // System.Diagnostics.Debug.Print("ExifToolWrapper: Ready0000 caught and ignored.");
+                    continue;
+                }
                 Debug.Assert(kv.Length == 2, $"Can not parse line :'{s}'");
 
                 if (kv.Length != 2 || (!keepKeysWithEmptyValues && string.IsNullOrEmpty(kv[1])))
