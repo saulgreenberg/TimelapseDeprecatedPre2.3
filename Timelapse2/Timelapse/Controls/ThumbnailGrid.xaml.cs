@@ -707,7 +707,6 @@ namespace Timelapse.Controls
 
             int gridIndex = 0;
 
-            List<ThumbnailInCell> ticList;
             ThumbnailInCell tic;
             this.thumbnailInCells = new List<ThumbnailInCell>();
 
@@ -719,18 +718,21 @@ namespace Timelapse.Controls
 
                     // Check to see if the thumbnail already exists in a reusable form in the grid. 
                     string path = Path.Combine(this.FileTable[fileTableIndex].RelativePath, this.FileTable[fileTableIndex].File);
-                    ticList = thumbnailsAlreadyInGrid.FindAll(x => String.Equals(x.Path, path));
+                    tic = thumbnailsAlreadyInGrid.Find(x => String.Equals(x.Path, path));
 
-                    if (ticList == null || ticList.Count != 1 || ticList[0].Image.Source == null)
+                    if (tic == null ||  tic.Image.Source == null || this.Grid.Children.Contains(tic))
                     {
-                        // A reusable thumbnail isn't available, so create one
-                        // Or, to make it work for duplicates, we recreate the thumbnail if more than one of them is already in the grid.
+                        // 1. A reusable thumbnail isn't available, so create one
+                        // 2. Or, to make it work for duplicates, we recreate the thumbnail if more than one of them is already in the grid.
                         // Otherwise, we will end up getting the first one (instead of the duplicates) and will try to add it. This will fail as its already a visual child.
+                        // SAULXXX Note that I've tried to do this properly, where we could perhaps just clone the thumbnailInCell. But I didn't get it to work,
+                        // likely because the code elsewhere just looks at the relative path/file to try to get it.
+                        // It does deserve a revisit, e.g., something like (Code is in there, but commented out)
+                        //  thumbnailInCell = (ThumbnailInCell) thumbnailInCell.CloneMe(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
                         tic = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
                     }
                     else
                     {
-                        tic = ticList[0];
                         // A reusable thumbnail is available. Reset its position in the grid
                         tic.GridIndex = gridIndex;
                         tic.Row = currentRow;
@@ -775,7 +777,14 @@ namespace Timelapse.Controls
                         // A reusable thumbnail isn't available, so create one
                         if (thumbnailInCell == null || thumbnailInCell.Image.Source == null || this.Grid.Children.Contains(thumbnailInCell))
                         {
-                            // A reusable thumbnail isn't available, so create one
+                            // 1. A reusable thumbnail isn't available, so create one
+                            // 2. Or, to make it work for duplicates, we recreate the thumbnail if more than one of them is already in the grid.
+                            // Otherwise, we will end up getting the first one (instead of the duplicates) and will try to add it. This will fail as its already a visual child.
+                            // SAULXXX Note that I've tried to do this properly, where we could perhaps just clone the thumbnailInCell. But I didn't get it to work,
+                            // likely because the code elsewhere just looks at the relative path/file to try to get it.
+                            // It does deserve a revisit, e.g., something like (Code is in there, but commented out)
+                            //  thumbnailInCell = (ThumbnailInCell) thumbnailInCell.CloneMe(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
+                            // See also RebuildButReuseGrid
                             thumbnailInCell = CreateEmptyThumbnail(fileTableIndex, gridIndex, cellWidth, cellHeight, currentRow, currentColumn);
                         }
                         else
@@ -786,9 +795,11 @@ namespace Timelapse.Controls
                             thumbnailInCell.Column = currentColumn;
                             thumbnailInCell.DateTimeLastBitmapWasSet = DateTime.Now;
                         }
+
                         Grid.SetRow(thumbnailInCell, currentRow);
                         Grid.SetColumn(thumbnailInCell, currentColumn);
                         thumbnailInCell.RefreshBoundingBoxesDuplicatesAndEpisodeInfo(this.FileTable, fileTableIndex);
+
                         this.Grid.Children.Add(thumbnailInCell);
                         this.thumbnailInCells.Add(thumbnailInCell);
                         fileTableIndex++;

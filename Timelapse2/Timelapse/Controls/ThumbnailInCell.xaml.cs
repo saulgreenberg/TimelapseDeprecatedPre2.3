@@ -119,6 +119,28 @@ namespace Timelapse.Controls
             this.RootFolder = String.Empty;
         }
 
+        // I tried to create a clone so we can add duplicates, but its commented out for now as it doesn't seem to
+        // acheive the correct effect. The problem may not be here...
+        //public ThumbnailInCell CloneMe(int fileTableIndex, int gridIndex, double cellWidth, double cellHeight, int row, int column)
+        //{
+        //    ThumbnailInCell clone = new ThumbnailInCell(cellWidth, cellHeight);
+        //    clone.Image = this.Image;
+        //    clone.Image.Width = cellWidth;
+        //    clone.Image.MinWidth = cellWidth;
+        //    clone.Image.MaxWidth = cellWidth;
+        //    clone.DateTimeLastBitmapWasSet = this.DateTimeLastBitmapWasSet;
+        //    clone.IsBitmapSet = this.IsBitmapSet;
+        //    clone.GridIndex = gridIndex;
+        //    clone.Row = row;
+        //    clone.Column = column;
+        //    clone.Image = this.Image;
+        //    clone.BoundingBoxes = this.BoundingBoxes;
+        //    clone.ImageRow = this.ImageRow;
+        //    clone.RootFolder = this.RootFolder;
+        //    clone.FileTableIndex = this.FileTableIndex;
+        //    return clone;
+        //}
+
         private void ThumbnailInCell_Loaded(object sender, RoutedEventArgs e)
         {
             // Heuristic for setting font sizes
@@ -329,7 +351,7 @@ namespace Timelapse.Controls
             this.EpisodeTextBlock.FontSize = fontSize;
 
             // This (more or less) fits in the available space 
-            this.DuplicateIndicatorInOverview.FontSize = fontSize/2.5;
+            this.DuplicateIndicatorInOverview.FontSize = fontSize / 2.5;
         }
 
         // Most images have a black bar at its bottom and top. We want to align 
