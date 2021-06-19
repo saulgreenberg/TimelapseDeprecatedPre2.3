@@ -352,10 +352,81 @@
                             <Image Source="Icons/UserManual_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
+
+
                     <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download tutorial sample images (via your web browser)..." Click="MenuDownloadSampleImages_Click" ToolTip="Using your browser, it downloads the sample image files used in the  Tutorial Manual for you to practise with">
                         <MenuItem.Icon>
                             <Image Source="Icons/Download_32x.png" />
                         </MenuItem.Icon>
+                    </MenuItem>
+
+                    <Separator/>
+
+                    <MenuItem Name="MenuItemVideoOverviews" Header="Videos: Introductory overviews (you should watch these!)..." Click="MenuVideoPlay_Click" ToolTip="Open a page in your browser listing video tutorials illustrating particular Timelapse features.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                        <MenuItem Name="MenuItemVideoWhirlwindTour" Header="A whirlwind tour of Timelapse" Click="MenuVideoPlay_Click" ToolTip="A video overview showing off most Timelapse features that plays in your browser.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoTemplateEditor" Header="The template editor" Click="MenuVideoPlay_Click" ToolTip="The Template Editor lets you create a template file that specifies the project-specific fill-in fields seen in the Timelapse interface..">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoImageRecognition" Header="Image recognition for camera traps" Click="MenuVideoPlay_Click" ToolTip="A video explaining image recognition as used by wildlife ecologists.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+
+                    <MenuItem Name="MenuItemVideoFeatures" Header="Videos: Tutorials on specific Timelapse features..." Click="MenuVideoPlay_Click" ToolTip="Open a page in your browser listing video tutorials illustrating particular Timelapse features.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                        <MenuItem Name="MenuItemVideoPlayer" Header="Using the Timelapse video player to view video files" Click="MenuVideoPlay_Click" ToolTip="Timelapse works on images, video files, and a mix of the two. This tutorial illustrates features of the Timelapse video player.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoClassifyingDarkImages" Header="Classifying your dark images" Click="MenuVideoPlay_Click" ToolTip="Iimelapse can automatically classify your dark images, where you can exclude them from further analysis or even delete them.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoRepositionDataEntryPanel" Header="Repositioning your Tabs and the Data Entry Panel" Click="MenuVideoPlay_Click" ToolTip="How you can re-arrange your tabs and window layout.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoUsingOverview" Header="Using the Overview to enter data for Multiple files at a time" Click="MenuVideoPlay_Click" ToolTip="Selecting multiple thumbnails and entering data that describes them.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoPopulateEpisodeData" Header="How to populate a field with Episode data" Click="MenuVideoPlay_Click" ToolTip="Marking episodes of successive images taken within a short time interval.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoViewingPopups" Header="Viewing Episode images in a popup" Click="MenuVideoPlay_Click" ToolTip="How to quickly view surrounding Episode images in a popup.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoRandomSampling" Header="Randomly sampling images" Click="MenuVideoPlay_Click" ToolTip="View a randomly chosen subset of images from your current selection.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoDuplicatingRecords" Header="Duplicating a data record" Click="MenuVideoPlay_Click" ToolTip="Duplicate a record to reuse the fields on your image multiple times.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
 
                     <Separator/>
@@ -516,7 +587,7 @@
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
-                                            
+
                                         </Grid.RowDefinitions>
 
                                         <Grid Grid.Row="1">

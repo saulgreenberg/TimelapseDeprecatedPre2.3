@@ -204,6 +204,19 @@
 
                 <Separator />
 
+                <MenuItem Name="MenuItemVideoWhirlwindTour" Header="Video tutorial: A whirlwind tour of Timelapse" Click="MenuVideoPlay_Click" ToolTip="A video overview showing off most Timelapse features that plays in your browser.">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/MediaControl-PlayButton.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Name="MenuItemVideoTemplateEditor" Header="Video tutorial: The template editor" Click="MenuVideoPlay_Click" ToolTip="The Template Editor lets you create a template file that specifies the project-specific fill-in fields seen in the Timelapse interface..">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/MediaControl-PlayButton.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                
+                <Separator />
+                
                 <!-- Join Mailing List -->
                 <MenuItem Name="MenuHelpJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)" Click="MenuHelpJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
                     <MenuItem.Icon>

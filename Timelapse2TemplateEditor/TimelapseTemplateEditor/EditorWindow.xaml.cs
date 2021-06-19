@@ -1393,5 +1393,24 @@ namespace Timelapse.Editor
             DragDropFile.OnTemplateFilePreviewDrag(dragEvent);
         }
         #endregion
+
+        #region Timelapse web site: videos
+        public void MenuVideoPlay_Click(object sender, RoutedEventArgs e)
+        {
+            string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Videos/";
+            if (sender is MenuItem mi)
+            {
+                switch (mi.Name)
+                {
+                    case "MenuItemVideoWhirlwindTour":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4"));
+                        break;
+                    case "MenuItemVideoTemplateEditor":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "TemplateEditor.mp4"));
+                        break;
+                }
+            }
+        }
+        #endregion
     }
 }

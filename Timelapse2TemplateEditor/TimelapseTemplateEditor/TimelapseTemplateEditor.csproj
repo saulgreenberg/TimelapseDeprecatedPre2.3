@@ -283,6 +283,9 @@
   <ItemGroup>
     <Resource Include="Icons\CloseFile_40x.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\MediaControl-PlayButton.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.114.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

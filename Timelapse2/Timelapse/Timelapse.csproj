@@ -782,7 +782,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Icons\MediaControl-Pause.png" />
-    <Resource Include="Icons\MediaControl-PlaySpeed1.png" />
     <Resource Include="Icons\MediaControl-PlaySpeed2.png" />
     <Resource Include="Icons\MediaControl-PlaySpeed3.png" />
     <Resource Include="Icons\MediaControl-Rewind-Speed2.png" />
@@ -842,6 +841,7 @@
     <Content Include="ffmpeg.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\MediaControl-PlayButton.png" />
     <Resource Include="Icons\ExternalVideoPlayer.png" />
   </ItemGroup>
   <ItemGroup>

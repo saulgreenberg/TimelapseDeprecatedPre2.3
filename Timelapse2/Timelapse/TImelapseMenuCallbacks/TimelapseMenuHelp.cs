@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using Timelapse.Dialog;
 using Timelapse.Util;
 
@@ -33,6 +34,55 @@ namespace Timelapse
         {
             ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.UserGuide"));
         }
+        #endregion
+
+        #region Timelapse web site: videos
+        public void MenuVideoPlay_Click(object sender, RoutedEventArgs e)
+        {
+            string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Videos/";
+            if (sender is MenuItem mi)
+            {
+                switch (mi.Name)
+                {
+                    case "MenuItemVideoWhirlwindTour":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4")); 
+                        break;
+                    case "MenuItemVideoImageRecognition":
+                        ProcessExecution.TryProcessStart(new Uri("http://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2021-05-ImageRecognition-Video.mp4"));
+                        break;
+                    case "MenuItemVideoTemplateEditor":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "TemplateEditor.mp4"));
+                        break;
+                    case "MenuItemVideoPlayer":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "UsingVideo.mp4"));
+                        break;
+                    case "MenuItemVideoClassifyingDarkImages":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "Options-DarkThresholds.mp4"));
+                        break;
+                    case "MenuItemVideoRepositionDataEntryPanel":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "RepositioningTabsAndPanels.mp4"));
+                        break;
+                    case "MenuItemVideoUsingOverview":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "UsingTheOverview.mp4"));
+                        break;
+                    case "MenuItemVideoPopulateEpisodeData":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "PopulateEpisodeData.mp4"));
+                        break;
+                    case "MenuItemVideoViewingPopups":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "EpisodePopups.mp4"));
+                        break;
+                    case "MenuItemVideoRandomSampling":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "RandomSample.mp4"));
+                        break;
+                    case "MenuItemVideoDuplicatingRecords":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "DuplicateThisRecord.mp4"));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         #endregion
 
         #region Timelapse mailing list - Join and/or send email
