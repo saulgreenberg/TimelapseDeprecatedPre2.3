@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Timelapse.Enums;
 
 namespace Timelapse.Util
 {
@@ -36,21 +37,34 @@ namespace Timelapse.Util
         /// <param name="list1"></param>
         /// <param name="list2"></param>
         /// <returns></returns>
-        public static bool CompareLists(List<string> list1, List<string> list2)
+        public static ListComparisonEnum CompareLists(List<string> list1, List<string> list2)
         {
             if (list1 == null && list2 == null)
             {
                 // true as they both contain nothing
-                return true;
+                return ListComparisonEnum.Identical;
             }
             if (list1 == null || list2 == null)
             {
                 // false as one is null and the other isn't
-                return false;
+                return ListComparisonEnum.ElementsDiffer; ;
             }
             List<string> firstNotSecond = list1.Except(list2).ToList();
             List<string> secondNotFirst = list2.Except(list1).ToList();
-            return !firstNotSecond.Any() && !secondNotFirst.Any();
+            if (firstNotSecond.Any() || secondNotFirst.Any())
+            {
+                // At least one element in either list differs
+                return ListComparisonEnum.ElementsDiffer;
+            }
+            if (list1.SequenceEqual(list2))
+            {
+                return ListComparisonEnum.Identical;
+            } 
+            else
+            {
+                return ListComparisonEnum.ElementsSameButOrderDifferent;
+            }
+            
         }
 
         /// <summary>

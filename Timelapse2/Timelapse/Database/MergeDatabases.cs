@@ -93,6 +93,7 @@ namespace Timelapse.Database
                     // So just skip over it, as it no longer exists and we don't actually want it
                     continue;
                 }
+
                 // Try to merge each database into the merged database
                 await Task.Run(() =>
                 {
@@ -102,10 +103,14 @@ namespace Timelapse.Database
                         "Merging...",
                         false, false));
                     Thread.Sleep(250);
-                    if (MergeDatabases.InsertSourceDataBaseTablesintoDestinationDatabase(destinationDDB, sourceDDBFilePaths[i], rootFolderPath, mergedDDBDataLabels) == false)
+                    ListComparisonEnum listComparisonEnum = MergeDatabases.InsertSourceDataBaseTablesintoDestinationDatabase(destinationDDB, sourceDDBFilePaths[i], rootFolderPath, mergedDDBDataLabels);
+                    if (listComparisonEnum != ListComparisonEnum.Identical)
                     {
+                        string message = listComparisonEnum == ListComparisonEnum.ElementsDiffer
+                        ? "Its template uses different data labels"
+                        : "Its template has the same data labels, but in a different order";
                         string trimmedPath = sourceDDBFilePaths[i].Substring(rootFolderPath.Length + 1);
-                        errorMessages.Warnings.Add(String.Format("'{0}' was skipped. Its template uses different data labels", trimmedPath));
+                        errorMessages.Warnings.Add(String.Format("'{0}' was skipped. {1}", trimmedPath, message));
                     }
                 }).ConfigureAwait(true);
             }
@@ -131,9 +136,10 @@ namespace Timelapse.Database
         #endregion
 
         #region Private internal methods
+
         // Merge a .ddb file specified in the sourceDDBPath path into the destinationDDB database.
         // Also update the Relative path to reflect the new location of the sourceDDB paths as defined in the rootFolderPath
-        private static bool InsertSourceDataBaseTablesintoDestinationDatabase(SQLiteWrapper destinationDDB, string SourceDDBPath, string rootFolderPath, List<string> sourceDataLabels)
+        private static ListComparisonEnum InsertSourceDataBaseTablesintoDestinationDatabase(SQLiteWrapper destinationDDB, string SourceDDBPath, string rootFolderPath, List<string> sourceDataLabels)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(destinationDDB, nameof(destinationDDB));
@@ -142,9 +148,10 @@ namespace Timelapse.Database
             // If not, generate a warning and abort the merge
             SQLiteWrapper sourceDDB = new SQLiteWrapper(SourceDDBPath);
             List<string> destinationDataLabels = sourceDDB.SchemaGetColumns(Constant.DBTables.FileData);
-            if (Compare.CompareLists(sourceDataLabels, destinationDataLabels) == false)
+            ListComparisonEnum listComparisonEnum = Compare.CompareLists(sourceDataLabels, destinationDataLabels);
+            if (listComparisonEnum != ListComparisonEnum.Identical)
             {
-                return false;
+                return listComparisonEnum;
             }
 
             string attachedDB = "attachedDB";
@@ -246,7 +253,7 @@ namespace Timelapse.Database
             query += Sql.EndTransactionSemiColon;
             destinationDDB.ExecuteNonQuery(query);
 
-            return true;
+            return ListComparisonEnum.Identical;
         }
         #endregion
 
