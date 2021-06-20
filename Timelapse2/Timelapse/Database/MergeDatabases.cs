@@ -149,7 +149,8 @@ namespace Timelapse.Database
             SQLiteWrapper sourceDDB = new SQLiteWrapper(SourceDDBPath);
             List<string> destinationDataLabels = sourceDDB.SchemaGetColumns(Constant.DBTables.FileData);
             ListComparisonEnum listComparisonEnum = Compare.CompareLists(sourceDataLabels, destinationDataLabels);
-            if (listComparisonEnum != ListComparisonEnum.Identical)
+            //if (listComparisonEnum != ListComparisonEnum.Identical)
+            if (listComparisonEnum == ListComparisonEnum.ElementsDiffer)
             {
                 return listComparisonEnum;
             }
@@ -183,7 +184,8 @@ namespace Timelapse.Database
             query += QueryCreateTemporaryTableFromExistingTable(tempDataTable, attachedDB, Constant.DBTables.FileData);
             query += QueryAddOffsetToIDInTable(tempDataTable, Constant.DatabaseColumn.ID, offsetId);
             query += QueryAddPrefixToRelativePathInTable(tempDataTable, pathPrefixToAdd);
-            query += QueryInsertTable2DataIntoTable1(Constant.DBTables.FileData, tempDataTable);
+            // query += QueryInsertTable2DataIntoTable1(Constant.DBTables.FileData, tempDataTable);
+            query += QueryInsertTable2DataIntoTable1(Constant.DBTables.FileData, tempDataTable, sourceDataLabels);
 
             // Create the second part of the query to:
             // - Create a temporary Markers Table mirroring the one in the sourceDDB (so updates to that don't affect the original ddb)
@@ -297,6 +299,17 @@ namespace Timelapse.Database
         private static string QueryInsertTable2DataIntoTable1(string table1, string table2)
         {
             return Sql.InsertInto + table1 + Sql.SelectStarFrom + table2 + Sql.Semicolon;
+        }
+
+        private static string QueryInsertTable2DataIntoTable1(string table1, string table2, List<string> listDataLabels)
+        {
+            string dataLabels = String.Empty;
+            foreach (string datalabels in listDataLabels)
+            {
+                dataLabels += datalabels + ",";
+            }
+            dataLabels = dataLabels.TrimEnd(',');
+            return Sql.InsertInto + table1 + Sql.Select  + dataLabels + Sql.From + table2 + Sql.Semicolon;
         }
 
         //  Form: INSERT INTO table SELECT * FROM dataBase.table;
