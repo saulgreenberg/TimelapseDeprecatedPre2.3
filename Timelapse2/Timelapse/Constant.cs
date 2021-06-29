@@ -492,6 +492,9 @@ namespace Timelapse.Constant
 
         // most recently used operator for custom selections
         public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";
+        
+        // Format and column options when writing the date to the CSV file
+        public const string CSVDateTimeOptions = "CSVDateTimeOptions";
 
         // DarkPixelThreshold and Ratio used to determine image darkness
         public const string DarkPixelThreshold = "DarkPixelThreshold";
@@ -597,6 +600,8 @@ namespace Timelapse.Constant
         public const string DateFormat = "dd-MMM-yyyy";
         public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
         public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
+
+        public const string DateTimeCSVLocalDateTime = "yyyy-MM-dd'T'HH:mm:ss";
 
         public const int MonthsInYear = 12;
         public const string TimeFormat = "HH:mm:ss";

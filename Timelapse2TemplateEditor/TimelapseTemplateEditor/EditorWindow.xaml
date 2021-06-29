@@ -159,14 +159,10 @@
                 </MenuItem>
 
                 <!-- Show UTC DateTime -->
-                <MenuItem Name="MenuViewShowUTCDateTimeSettingsMenuItem"  IsCheckable="True" IsChecked="False" Header="_Enable UTC date/time settings" Click="MenuItemUseUTCDateTimeSettings_Click" >
+                <MenuItem Name="MenuViewShowUTCDateTimeSettingsMenuItem"  IsCheckable="True" IsChecked="False" Header="Show UTC Offset control row" Click="MenuItemUseUTCDateTimeSettings_Click" >
                     <MenuItem.ToolTip>
                         <TextBlock>
-                                Enables UTC Coordinate Universal Time. Use if you: 
-                                <LineBreak />
-                                - need to manipulate time zones  
-                                <LineBreak />
-                                - want to see and manipulate time as UTC time plus offset.
+                                Shows the UTC offset, i.e., time zone information. 
                         </TextBlock>
                     </MenuItem.ToolTip>
                     <MenuItem.Icon>
@@ -549,7 +545,7 @@
                                             </Border>
 
                                             <!-- Spreadsheet help text -->
-                                            <TextBlock Grid.Row="2" Margin="0,5,10,0" FontWeight="Bold" Text="The spreadsheet column order.  Drag and drop columns to re-arrange their order to your preference"></TextBlock>
+                                            <TextBlock Grid.Row="2" Margin="0,5,10,0" FontWeight="Bold" Text="The spreadsheet column order.  Drag and drop columns to re-arrange their order to your preference."></TextBlock>
 
                                             <!-- Spreadsheet preview -->
                                             <Border Grid.Row="3" BorderBrush="Gray" Background="White" BorderThickness="1" Margin="0,0,10,10" MinHeight="60">

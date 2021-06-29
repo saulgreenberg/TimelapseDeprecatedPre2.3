@@ -51,7 +51,6 @@ namespace Timelapse
 
         #region Private Variables
         private bool disposed;
-        private bool excludeDateTimeAndUTCOffsetWhenExporting;  // Whether to exclude the DateTime and UTCOffset when exporting to a .csv file
         private List<MarkersForCounter> markersOnCurrentFile;   // Holds a list of all markers for each counter on the current file
 
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
@@ -632,20 +631,6 @@ namespace Timelapse
                 if (controlType == Constant.DatabaseColumn.UtcOffset)
                 {
                     return !control.Visible;
-                }
-            }
-            return false;
-        }
-
-        private bool IsUTCOffsetVisible()
-        {
-            // Find the Utcoffset control
-            foreach (ControlRow control in this.templateDatabase.Controls)
-            {
-                string controlType = control.Type;
-                if (controlType == Constant.DatabaseColumn.UtcOffset)
-                {
-                    return control.Visible;
                 }
             }
             return false;

@@ -172,7 +172,7 @@ namespace Timelapse
 
             try
             {
-                if (false == CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, selectedCSVFilePath, this.excludeDateTimeAndUTCOffsetWhenExporting))
+                if (false == CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, selectedCSVFilePath, this.State.CSVDateTimeOptions))
                 {
                     Dialogs.FileCantOpen(GlobalReferences.MainWindow, selectedCSVFilePath, true);
                     return;

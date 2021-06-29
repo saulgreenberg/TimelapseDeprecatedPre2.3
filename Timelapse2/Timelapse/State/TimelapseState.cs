@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
+using Timelapse.Enums;
 
 namespace Timelapse.Util
 {
@@ -25,6 +26,8 @@ namespace Timelapse.Util
         public bool FirstTimeFileLoading { get; set; }
 
         public double BoundingBoxThresholdOveride { get; set; }
+
+       
         #endregion
 
         #region Private (internal) variables 

@@ -34,6 +34,20 @@ namespace Timelapse.Dialog
             // Deletion Management
             this.RadioButtonDeletionManagement_Set(this.timelapseState.DeleteFolderManagement);
 
+            // CSV DateTime options
+            if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
+            {
+                this.RadioButtonCSVDateAndTimeColumns.IsChecked = true;
+            }
+            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
+            {
+                this.RadioButtonCSVLocalDateTimeColumn.IsChecked = true;
+            }
+            else // if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
+            {
+                this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked = true;
+            }
+
             // Throttles
             this.ImageRendersPerSecond.Minimum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound;
             this.ImageRendersPerSecond.Maximum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound;
@@ -115,6 +129,35 @@ namespace Timelapse.Dialog
                     break;
                 default:
                     break;
+            }
+        }
+        #endregion
+
+        #region Callback - Reset CSV File Defaults
+        private void ResetCSVDefaults_Click(object sender, RoutedEventArgs e)
+        {
+            this.RadioButtonCSVDateAndTimeColumns.IsChecked = true;
+            this.SetCSVOptions();
+        }
+
+        private void RadioButtonCSVOptions_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetCSVOptions();
+        }
+
+        private void SetCSVOptions()
+        {
+            if (this.RadioButtonCSVDateAndTimeColumns.IsChecked == true)
+            {
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateAndTimeColumns;
+            }
+            else if (this.RadioButtonCSVLocalDateTimeColumn.IsChecked == true)
+            {
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.LocalDateTimeColumn;
+            }
+            else //if (this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked IsChecked == true)
+            {
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn;
             }
         }
         #endregion
@@ -247,5 +290,7 @@ namespace Timelapse.Dialog
             this.DialogResult = true;
         }
         #endregion
+
+
     }
 }

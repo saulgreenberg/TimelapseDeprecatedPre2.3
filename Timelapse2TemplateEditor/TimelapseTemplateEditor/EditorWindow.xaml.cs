@@ -1197,14 +1197,16 @@ namespace Timelapse.Editor
             // - the UtcOffset visibility is false
             foreach (ControlRow control in controlsInSpreadsheetOrder)
             {
-                if (control.Type == Constant.DatabaseColumn.DateTime || control.Type == Constant.DatabaseColumn.UtcOffset)
+                //if (control.Type == Constant.DatabaseColumn.DateTime || control.Type == Constant.DatabaseColumn.UtcOffset)
+                if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
+                    continue;
                     // SAULXX CHANGED TO NOT SHOW DATETIME and UTCOffset in spreadsheet previous unless UTCOffset is set to Visible
                     // if (this.userSettings.ShowUtcOffset == false) 
-                    if (utcOffsetControl == null || !utcOffsetControl.Visible)
-                    {
-                        continue;
-                    }
+                    //if (utcOffsetControl == null || !utcOffsetControl.Visible)
+                    //{
+                    //    continue;
+                    //}
                 }
                 DataGridTextColumn column = new DataGridTextColumn();
                 string dataLabel = control.DataLabel;

@@ -447,9 +447,6 @@ namespace Timelapse
             // Reset the folder list used to construct the Select Folders menu
             this.MenuItemSelectByFolder_ResetFolderList();
 
-            // Whether to exclude DateTime and UTCOffset columns when exporting to a .csv file
-            this.excludeDateTimeAndUTCOffsetWhenExporting = !this.IsUTCOffsetVisible();
-
             // Trigger updates to the datagrid pane, if its visible to the user.
             if (this.DataGridPane.IsVisible)
             {

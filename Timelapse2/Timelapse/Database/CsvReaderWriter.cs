@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Timelapse.Controls;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Database
@@ -21,7 +22,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
-        public static bool ExportToCsv(FileDatabase database, string filePath, bool excludeDateTimeAndUTCOffset)
+        public static bool ExportToCsv(FileDatabase database, string filePath, CSVDateTimeOptionsEnum csvDateTimeOptions)
         {
             try
             {
@@ -34,9 +35,21 @@ namespace Timelapse.Database
                     List<string> dataLabels = database.GetDataLabelsExceptIDInSpreadsheetOrder();
                     foreach (string dataLabel in dataLabels)
                     {
-                        // Skip the DateTime and Utc offset column headers
-                        if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
+                        if (dataLabel == Constant.DatabaseColumn.UtcOffset)
                         {
+                            // Always skip UTC Offset, as the user has the option of including that in the DateTime column instead
+                            continue;
+                        }
+                        // Skip the DateTime and Utc offset column headers
+                        //if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
+                        if ((dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time) && csvDateTimeOptions != CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                        {
+                            // Skip the Date column and Time column if the CSVDateTimeOptions are set to a parameter other than the two Date / Time columns 
+                            continue;
+                        }
+                        if (dataLabel == Constant.DatabaseColumn.DateTime && csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                        {
+                            // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
                             continue;
                         }
                         header.Append(AddColumnValue(dataLabel));
@@ -52,12 +65,39 @@ namespace Timelapse.Database
                         ImageRow image = database.FileTable[row];
                         foreach (string dataLabel in dataLabels)
                         {
-                            // Skip the DateTime and Utc offset data
-                            if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
+                            if (dataLabel == Constant.DatabaseColumn.UtcOffset)
                             {
+                                // Always skip UTC Offset, as the user has the option of including that in the DateTime column instead
                                 continue;
                             }
-                            csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                            if ((dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time) && csvDateTimeOptions != CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                            {
+                                // Skip the Date column and Time column if the CSVDateTimeOptions are set to a parameter other than the two Date / Time columns 
+                                continue;
+                            }
+                            if (dataLabel == Constant.DatabaseColumn.DateTime)
+                            {
+                                if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                                {
+                                    // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
+                                    continue;
+                                }
+                                else
+                                {
+                                    if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
+                                    {
+                                        csvRow.Append(AddColumnValue(image.GetValueCSVLocalDateTimeString()));
+                                    }
+                                    else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
+                                    {
+                                        csvRow.Append(AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                            }
                         }
                         fileWriter.WriteLine(csvRow.ToString());
                     }

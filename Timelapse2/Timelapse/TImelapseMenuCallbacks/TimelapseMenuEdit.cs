@@ -423,10 +423,7 @@ namespace Timelapse
         #region Date Correction (including sub-menu opening)
         private void MenuItemDateCorrection_SubmenuOpened(object sender, RoutedEventArgs e)
         {
-            if (this.IsUTCOffsetControlHidden())
-            {
-                this.MenuItemSetTimeZone.IsEnabled = false;
-            }
+            this.MenuItemSetTimeZone.IsEnabled = this.IsUTCOffsetControlHidden() == false;
         }
 
         // Re-read dates and times from files

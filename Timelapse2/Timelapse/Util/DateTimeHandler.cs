@@ -137,7 +137,7 @@ namespace Timelapse.Util
             // This used to fail when the culture allowed , decimal places. It should now be fixed. 
             // Although  we do throw an error if it doesn't work
             // TimeSpan utcOffset = TimeSpan.FromHours(double.Parse(utcOffsetAsString, CultureInfo.InvariantCulture));
-            TimeSpan utcOffset = TimeSpan.Zero;
+            TimeSpan utcOffset;
             NumberStyles style = NumberStyles.Number | NumberStyles.AllowDecimalPoint;
             if (true == Double.TryParse(utcOffsetAsString, style, CultureInfo.InvariantCulture, out double utcOffsetDouble))
             {
@@ -200,6 +200,26 @@ namespace Timelapse.Util
         public static string ToStringDisplayDateTimeUtcOffset(DateTimeOffset dateTime)
         {
             return dateTime.DateTime.ToString(Constant.Time.DateTimeDisplayFormat, CultureInfo.CreateSpecificCulture("en-US")) + " " + DateTimeHandler.ToStringDisplayUtcOffset(dateTime.Offset);
+        }
+
+        /// <summary>
+        /// Return "dd-MMM-yyyyTHH:mm:s" format for local DateTime in the CSV file  e.g. 05-Apr-2016T12:05:01
+        /// </summary>
+        public static string ToStringCSVLocalDateTimeColumn(DateTimeOffset dateTime)
+        {
+            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US"));
+        }
+
+        /// <summary>
+        /// The dateTime should be in ZULU time (i.e., not in local time)
+        /// Return "dd-MMM-yyyyTHH:mm:ssZ+hh:mm" format of a DateTimeOffset  e.g. 05-Apr-2016 12:05:01+5:00
+        /// </summary>
+        public static string ToStringCSVUtcWithOffsetDateTimeColumn(DateTimeOffset dateTime, TimeSpan offset)
+        {
+            string offsetAsString = String.Format("{0:+00;-00}:{1:00}", offset.Hours, offset.Minutes);
+            return String.Format("{0}Z{1}",
+                dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US")),
+                offsetAsString);
         }
 
         /// <summary>

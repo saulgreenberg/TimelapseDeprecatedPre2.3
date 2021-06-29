@@ -170,6 +170,19 @@ namespace Timelapse.Database
                : this.GetValueDisplayString(dataLabel);
         }
 
+        // Should be invoked only with the csvDateTimeOptions to one of the DateTime column formats
+        public string GetValueCSVLocalDateTimeString()
+        {
+            return DateTimeHandler.ToStringCSVLocalDateTimeColumn(this.DateTime);
+        }
+
+        public string GetValueCSVUTCWithOffsetDateTimeString()
+        {
+            // calculate the date in zulu time 
+            DateTime zuluTime = this.DateTime - this.UtcOffset;
+            return DateTimeHandler.ToStringCSVUtcWithOffsetDateTimeColumn(zuluTime, this.UtcOffset);
+        }
+
         // Given a data label, get its value as a string to display to the user in the UI
         // This requires a few values to be transformed (e.g., DateTime, UTCOffsets, ImageQuality)
         public string GetValueDisplayString(string dataLabel)
