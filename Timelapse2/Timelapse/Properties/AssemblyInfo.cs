@@ -46,7 +46,7 @@ using System.Windows;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("2.2.4.2")]
-[assembly: AssemblyFileVersion("2.2.4.1")]
+[assembly: AssemblyFileVersion("2.2.4.2")]
 
 [assembly: InternalsVisibleTo("Timelapse2.UnitTests")]
 [assembly: NeutralResourcesLanguage("en-US")]
