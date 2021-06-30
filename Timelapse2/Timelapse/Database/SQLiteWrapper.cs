@@ -169,10 +169,10 @@ namespace Timelapse.Database
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+//#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                         command.CommandText = query;
                         //System.Diagnostics.Debug.Print("Count: " + query);
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+//#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                         return command.ExecuteScalar();
                     }
                 }
@@ -869,12 +869,12 @@ namespace Timelapse.Database
                     // Create a new table 
                     string destTable = tableName + "NEW";
                     string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
-#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+//#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
                         command.ExecuteNonQuery();
                     }
-#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+//#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                     // Copy the old table's contents to the new table
                     CopyAllValuesFromTable(connection, tableName, tableName, destTable);
 

@@ -225,7 +225,7 @@ namespace Timelapse.Dialog
         /// <summary>
         /// Redo image quality calculations with current thresholds for all images selected.  Updates the database.
         /// </summary>
-        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:ParametersMustBeOnSameLineOrSeparateLines", Justification = "Reviewed.")]
+//        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1117:ParametersMustBeOnSameLineOrSeparateLines", Justification = "Reviewed.")]
 
         private async Task<string> BeginUpdateImageQualityForAllSelectedImagesAsync()
         {

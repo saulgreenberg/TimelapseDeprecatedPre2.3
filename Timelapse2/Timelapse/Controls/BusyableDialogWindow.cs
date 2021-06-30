@@ -16,9 +16,9 @@ namespace Timelapse.Controls
 
     // - Cancellation tokens (and disposes of them afterwards) are include
     // - CloseButtonIsEnabled(bool enable): the window's close button can be enabled or disabled
-#pragma warning disable CA1001 // Types that own disposable fields should be disposable. Reason: Handled in Closed event
+//#pragma warning disable CA1001 // Types that own disposable fields should be disposable. Reason: Handled in Closed event
     public class BusyableDialogWindow : Window
-#pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
+//#pragma warning restore CA1001 // Types that own disposable fields should be disposableReason: Handled in Closed event
     {
         #region Cancellation Token
         // Token to let us cancel the task

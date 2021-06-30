@@ -94,7 +94,7 @@ namespace Timelapse.Controls
         #endregion
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "StyleCop limitation.")]
+//    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "StyleCop limitation.")]
     /// <summary> A generic control comprises a stack panel containing 
     /// - a control containing at least a descriptive label 
     /// - another control for displaying / entering data at a given width

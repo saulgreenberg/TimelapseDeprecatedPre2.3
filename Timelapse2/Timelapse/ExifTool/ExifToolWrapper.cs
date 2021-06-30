@@ -14,9 +14,9 @@ namespace Timelapse.ExifTool
     /// <summary>
     /// This code was imported and slightly modified from a Github project see  http://brain2cpu.com/devtools.html
     /// </summary>
-#pragma warning disable CA1815 // Override equals and operator equals on value types
+//#pragma warning disable CA1815 // Override equals and operator equals on value types
     public struct ExifToolResponse
-#pragma warning restore CA1815 // Override equals and operator equals on value types
+//#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public bool IsSuccess { get; }
         public string Result { get; }
@@ -46,9 +46,9 @@ namespace Timelapse.ExifTool
         }
 
         //to use ExifToolResponse directly in if (discarding response)
-#pragma warning disable CA2225 // Operator overloads have named alternates. Reason: don't think this is necessary
+//#pragma warning disable CA2225 // Operator overloads have named alternates. Reason: don't think this is necessary
         public static implicit operator bool(ExifToolResponse r) => r.IsSuccess;
-#pragma warning restore CA2225 // Operator overloads have named alternates
+//#pragma warning restore CA2225 // Operator overloads have named alternates
     }
 
     public sealed class ExifToolWrapper : IDisposable

@@ -1,5 +1,4 @@
 ﻿using MetadataExtractor;
-using System;
 using System.Collections.Generic;
 
 namespace Timelapse.Util

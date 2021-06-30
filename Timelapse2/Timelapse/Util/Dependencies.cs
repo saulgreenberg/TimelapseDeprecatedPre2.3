@@ -18,9 +18,12 @@ namespace Timelapse.Util
 
             // ImageProcessor
             "ImageProcessor.dll",
+            "System.ValueTuple.dll",
+            "System.ValueTuple.xml",
 
             // MetadataExtractor
             "MetadataExtractor.dll",
+            "MetadataExtractor.xml",
             "XmpCore.dll",
             
             //  Newtonsoft
