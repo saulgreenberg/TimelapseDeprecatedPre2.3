@@ -59,6 +59,10 @@
                                              Content="DateTime column, local time (YYYY-MM-DDTHH:MM:SS) e.g., 2021-24-12T16:00:05" 
                                              ToolTip="Example: 2021-12-24T16:00:05 (December 24, 2021 Local time is 16:05, the 'T' is a separator)"
                                              Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions"  Click="RadioButtonCSVOptions_Click" />
+                                <RadioButton Name="RadioButtonCSVLocalDateTimeColumnWithoutT" Margin="30,0,0,0" 
+                                             Content="DateTime column, local time (YYYY-MM-DD HH:MM:SS)  e.g., 2021-24-12 16:00:05" 
+                                             ToolTip="Example: 2021-12-24 16:00:05 (December 24, 2021 Local time is 16:05, no 'T'separator)"
+                                             Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions"  Click="RadioButtonCSVOptions_Click" />
                                 <RadioButton Name="RadioButtonCSVUTCWithOffsetDateTimeColumn" Margin="30,0,0,0" 
                                              Content="DateTime column, UTC time+offset (YYYY-MM-DDTHH:MM:SSZ&#x00B1;HH:MM) e.g., 2021-12-24T22:00:05Z-06:00" 
                                              ToolTip="Example: 2021-12-24T22:00:05Z-06:00 (22:00:05 is Greenwich time. Local time is calculated with the -6 timezone offset to 16:00:05" 
