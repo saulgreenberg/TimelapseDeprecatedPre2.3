@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 #pragma warning disable IDE1006 // Naming Style - we are using lower case names to match the json structure, we  mute the warning
 namespace Timelapse.Detection
 {
-//    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Reviewed.")]
-//#pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
+    //    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter", Justification = "Reviewed.")]
+    //#pragma warning disable SA1300 // ElementMustBeginWithUpperCaseLetter
     // This file contains four classes, which will hold image recognition information read in from the Microsoft Megadetector JSON file
     // - Detector
     // - info
