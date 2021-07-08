@@ -211,6 +211,14 @@ namespace Timelapse.Util
         }
 
         /// <summary>
+        /// Return "dd-MMM-yyyy HH:mm:s" format for local DateTime in the CSV file  e.g. 05-Apr-2016 12:05:01
+        /// </summary>
+        public static string ToStringCSVLocalDateTimeWithoutTSeparatorColumn(DateTimeOffset dateTime)
+        {
+            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
+        }
+
+        /// <summary>
         /// The dateTime should be in ZULU time (i.e., not in local time)
         /// Return "dd-MMM-yyyyTHH:mm:ssZ+hh:mm" format of a DateTimeOffset  e.g. 05-Apr-2016 12:05:01+5:00
         /// </summary>

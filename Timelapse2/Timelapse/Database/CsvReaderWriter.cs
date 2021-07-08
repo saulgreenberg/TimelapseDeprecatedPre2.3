@@ -87,6 +87,10 @@ namespace Timelapse.Database
                                     {
                                         csvRow.Append(AddColumnValue(image.GetValueCSVLocalDateTimeString()));
                                     }
+                                    else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
+                                    {
+                                        csvRow.Append(AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
+                                    }
                                     else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
                                     {
                                         csvRow.Append(AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));

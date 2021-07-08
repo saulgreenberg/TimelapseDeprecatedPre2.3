@@ -601,6 +601,7 @@ namespace Timelapse.Constant
         public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
 
         public const string DateTimeCSVLocalDateTime = "yyyy-MM-dd'T'HH:mm:ss";
+        public const string DateTimeCSVLocalDateTimeWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
 
         public const int MonthsInYear = 12;
         public const string TimeFormat = "HH:mm:ss";

@@ -176,6 +176,12 @@ namespace Timelapse.Database
             return DateTimeHandler.ToStringCSVLocalDateTimeColumn(this.DateTime);
         }
 
+        // Should be invoked only with the csvDateTimeOptions to one of the DateTime column formats
+        public string GetValueCSVLocalDateTimeWithoutTSeparatorString()
+        {
+            return DateTimeHandler.ToStringCSVLocalDateTimeWithoutTSeparatorColumn(this.DateTime);
+        }
+
         public string GetValueCSVUTCWithOffsetDateTimeString()
         {
             // calculate the date in zulu time 

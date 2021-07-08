@@ -43,6 +43,10 @@ namespace Timelapse.Dialog
             {
                 this.RadioButtonCSVLocalDateTimeColumn.IsChecked = true;
             }
+            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
+            {
+                this.RadioButtonCSVLocalDateTimeColumnWithoutT.IsChecked = true;
+            }
             else // if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
             {
                 this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked = true;
@@ -154,6 +158,10 @@ namespace Timelapse.Dialog
             else if (this.RadioButtonCSVLocalDateTimeColumn.IsChecked == true)
             {
                 this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.LocalDateTimeColumn;
+            }
+            else if (this.RadioButtonCSVLocalDateTimeColumnWithoutT.IsChecked == true)
+            {
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn;
             }
             else //if (this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked IsChecked == true)
             {
