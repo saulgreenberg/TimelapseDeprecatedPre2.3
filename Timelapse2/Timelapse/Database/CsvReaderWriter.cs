@@ -139,6 +139,8 @@ namespace Timelapse.Database
 
             return await Task.Run(() =>
                 {
+                    int processedFilesCount = 0;
+                    const int bulkFilesToHandle = 500;
                     progress.Report(new ProgressBarArguments(0, "Reading the CSV file. Please wait", false, true));
                     List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
                     if (parsedFile == null)
@@ -269,8 +271,8 @@ namespace Timelapse.Database
                     List<string> databaseDuplicates = fileDatabase.GetDistinctRelativePathFileCombinationsDuplicates();
 
                     // Sort the rowDictionaryList so that duplicates in the CSV file (with the same relative path / File name) are in order, one after the other.
-                    IEnumerable<Dictionary<string, string>> sortedRowDictionaryList = rowDictionaryList.OrderBy(dict => dict["RelativePath"]).ThenBy(dict => dict["File"]);
-
+                    List<Dictionary<string, string>> sortedRowDictionaryList = rowDictionaryList.OrderBy(dict => dict["RelativePath"]).ThenBy(dict => dict["File"]).ToList();
+                    int sortedRowDictionaryListCount = sortedRowDictionaryList.Count();
                     // Create the data structure for the query
 
                     List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
@@ -297,7 +299,7 @@ namespace Timelapse.Database
                             duplicatesDictionaryList.Add(rowDict);
 
                             // A check if we are at the end of the CSV file - this catches the condition where the very last entry in the sorted csv file is a duplicate
-                            if (nextRowIndex >= sortedRowDictionaryList.Count())
+                            if (nextRowIndex >= sortedRowDictionaryListCount)
                             {
                                 string error = UpdateDuplicatesInDatabase(fileDatabase, duplicatesDictionaryList, Path.GetDirectoryName(duplicatePath), Path.GetFileName(duplicatePath));
                                 if (false == String.IsNullOrEmpty(error))
@@ -323,11 +325,11 @@ namespace Timelapse.Database
                             }
 
                             // We are either not in a sequence, or we completed the sequence. So we need to manage the current entry.
-                            if (nextRowIndex < sortedRowDictionaryList.Count())
+                            if (nextRowIndex < sortedRowDictionaryListCount)
                             {
                                 // We aren't currently in a sequence. Determine if the current entry is a singleton or the first duplicate in a sequence by checking its path against the next record.
                                 // If it is a duplicate, add it to the list.
-                                Dictionary<string, string> nextRow = sortedRowDictionaryList.ElementAt(nextRowIndex);
+                                Dictionary<string, string> nextRow = sortedRowDictionaryList[nextRowIndex];
                                 examinedPath = Path.Combine(nextRow[Constant.DatabaseColumn.RelativePath], nextRow[Constant.DatabaseColumn.File]);
                                 if (examinedPath == currentPath)
                                 {
@@ -358,7 +360,7 @@ namespace Timelapse.Database
                             }
                         }
                         // END Handle duplicates
-
+                       
                         // Process each non-duplicate row
                         ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
                         foreach (string header in rowDict.Keys)
@@ -390,9 +392,12 @@ namespace Timelapse.Database
                             imagesToUpdate.Add(imageToUpdate);
                         }
 
-                        // Write current batch of updates to database. Note that we Update the database 100 rows at a time.
-                        if (imagesToUpdate.Count >= 100)
+                         // Write current batch of updates to database. Note that we Update the database every number of rows as specified in bulkFilesToHandle.
+                         // We should probably put in a cancellation token somewhere around here...
+                        if (imagesToUpdate.Count >= bulkFilesToHandle)
                         {
+                            processedFilesCount += bulkFilesToHandle;
+                            progress.Report(new ProgressBarArguments(Convert.ToInt32(((double)processedFilesCount)/ sortedRowDictionaryListCount * 100.0), String.Format("Processing {0}/{1} files. Please wait...", processedFilesCount, sortedRowDictionaryListCount), false, false));
                             fileDatabase.UpdateFiles(imagesToUpdate);
                             imagesToUpdate.Clear();
                         }
@@ -402,6 +407,7 @@ namespace Timelapse.Database
                     return new Tuple<bool, List<string>>(true, importErrors);
                 }).ConfigureAwait(true);
         }
+
 
         // Given a list of duplicates and their common relative path, update the corresponding duplicates in the database
         // We do this by getting the IDs of duplicates in the database, where we update each database by ID to a duplicate.
