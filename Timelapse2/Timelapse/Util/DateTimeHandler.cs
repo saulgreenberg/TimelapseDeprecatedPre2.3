@@ -207,7 +207,7 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToStringCSVLocalDateTimeColumn(DateTimeOffset dateTime)
         {
-            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.LocalDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Timelapse.Util
         /// </summary>
         public static string ToStringCSVLocalDateTimeWithoutTSeparatorColumn(DateTimeOffset dateTime)
         {
-            return dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.LocalDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         /// <summary>
