@@ -139,40 +139,58 @@ namespace Timelapse.Database
 
             return await Task.Run(() =>
                 {
-                    int processedFilesCount = 0;
                     const int bulkFilesToHandle = 500;
+                    int processedFilesCount = 0;
                     progress.Report(new ProgressBarArguments(0, "Reading the CSV file. Please wait", false, true));
+
+                    //
+                    // Part 1. Abort if there is a problem in reading the CSV file or if the CSV file is empty.
+                    //
                     List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
+                    
+                    // Abort if the CSV file could not be read 
                     if (parsedFile == null)
                     {
                         // Could not open the file
-                        importErrors.Add(String.Format("The file '{0}' could not be read. To check: Is opened by another application? Is it a valid CSV file?", Path.GetFileName(filePath)));
+                        importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
 
+                    // Abort if The CSV file is empty or only contains a header row
                     if (parsedFile.Count < 2)
                     {
-                        // The CSV file is empty or only contains a header row
                         importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
 
-                    List<string> dataLabels = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                    //
+                    // Part 2. Abort if required CSV column are missing or there is a problem matching the CSV file headers against the DB headers.
+                    //
 
-                    // Get the header (and remove any empty trailing headers from the list)
-                    List<string> dataLabelsFromHeader = parsedFile[0].Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+                    // Get the dataLabels from the database and from the headers in the CSV files (and remove any empty trailing headers from the CSV file list)
+                    List<string> dataLabelsFromDB = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                    List<string> dataLabelsFromCSV = parsedFile[0].Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+                    List<string> dataLabelsInHeaderButNotFileDatabase = dataLabelsFromCSV.Except(dataLabelsFromDB).ToList();
 
-                    // validate .csv file headers against the database
-                    List<string> dataLabelsInHeaderButNotFileDatabase = dataLabelsFromHeader.Except(dataLabels).ToList();
-
-                    // File - Required datalabel and contents as we can't update the file's data row without it.
-                    if (dataLabelsFromHeader.Contains(Constant.DatabaseColumn.File) == false)
+                    // Abort if the File and Relative Path columns are missing from the CSV file 
+                    // While the CSV data labels can be a subset of the DB data labels,
+                    // the File and Relative Path are a required CSV datalabel, as we can't match the DB data row without it.
+                    if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false || dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
                     {
-                        importErrors.Add(String.Format("A '{0}' column containing matching file names to your images is required to do the update.", Constant.DatabaseColumn.File));
+                        importErrors.Add(String.Format("Columns necessary to match each CSV row with an image or video file are missing in your CSV file.", Constant.DatabaseColumn.File));
+                        if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false)
+                        {
+                            importErrors.Add(String.Format("-the '{0}' column containing the file names.", Constant.DatabaseColumn.File));
+                        }
+                        if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
+                        {
+                            importErrors.Add(String.Format("- the '{0}' column containing matching relative paths to the subfolders containing each file." , Constant.DatabaseColumn.RelativePath));
+                            importErrors.Add("  (If all your files are in the root  folder, you still need the RelativePath column, albeit with empty values");
+                        }
                         abort = true;
                     }
 
-                    // Required: the column headers must exist in the template as valid DataLabels
+                    // Abort if a column header in the CSV file does not exist in the template
                     // Note: could do this as a warning rather than as an abort, but...
                     foreach (string dataLabel in dataLabelsInHeaderButNotFileDatabase)
                     {
@@ -186,10 +204,15 @@ namespace Timelapse.Database
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
 
+                    //
+                    // Part 3. Get all data rows, and validate each column's data against its type.
+                    // Abort if the type does not match
+                    // 
+
                     // Create a List of all data rows, where each row is a dictionary containing the header and that row's valued for the header
                     List<Dictionary<string, string>> rowDictionaryList = new List<Dictionary<string, string>>();
                     int rowNumber = 0;
-                    int numberOfHeaders = dataLabelsFromHeader.Count;
+                    int numberOfHeaders = dataLabelsFromCSV.Count;
                     foreach (List<string> parsedRow in parsedFile)
                     {
                         // For each data row
@@ -205,17 +228,30 @@ namespace Timelapse.Database
                         for (int i = 0; i < numberOfHeaders; i++)
                         {
                             string valueToAdd = (i < parsedRow.Count) ? parsedRow[i] : String.Empty;
-                            rowDictionary.Add(dataLabelsFromHeader[i], parsedRow[i]);
+                            rowDictionary.Add(dataLabelsFromCSV[i], parsedRow[i]);
                         }
                         rowDictionaryList.Add(rowDictionary);
                     }
 
-                    // Validate each value in the dictionary against the Header type and expected
-                    foreach (string header in dataLabelsFromHeader)
+                    // For each column in the CSV file,
+                    // - get its type from the template
+                    // - for particular types, validate the data in the column against that type
+                    // Validation ignored for:
+                    // - Note, as it can hold any data
+                    // - Folder, as it is just a string (although we could check to see if it has invalid characters, the folder name is not used to do anything important)
+                    // - File, RelativePath, as that data row would be ignored if it does not create a valid path
+                    // Although dates are currently ignored, we could do selected DateTime formats 
+                    // - Date, Time format: ignore, as Excel will change it if it is written out again, Note that UtcOffset is not exported in this formaat
+                    // - DateTime, UtcOffset:
+                    //   - YYYY-MM-DDTHH:MM:SS (includes T separator, incorporates UTCoffset in its time): Check, as not altered by Excel, no UTC offset
+                    //   - YYYY-MM-DD HH:MM:SS (excludes T separator, incorporates UTCoffset in its time): Altered by Excel (e.g., leading 0s removed), no UTC offset
+                    //   - YYYY-MM-DDTHH:MM:SSZ+HH:MM (excludes T separator): (UTC format with offset that must be added in): Check, as not altered by Excel, no UTC offset
+                    //   - UtcOffset - it appears I never include that. Check this...
+                    foreach (string csvHeader in dataLabelsFromCSV) 
                     {
-                        ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(header);
+                        ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(csvHeader);
 
-                        // We don't need to worry about File-related or Date-related controls as they are mot updated
+                        // We don't need to worry about File-related or Date-related controls as they are not updated
                         if (controlRow.Type == Constant.Control.Flag ||
                             controlRow.Type == Constant.DatabaseColumn.DeleteFlag ||
                             controlRow.Type == Constant.Control.Counter ||
@@ -231,27 +267,27 @@ namespace Timelapse.Database
                                 {
                                     case Constant.Control.Flag:
                                     case Constant.DatabaseColumn.DeleteFlag:
-                                        if (!Boolean.TryParse(rowDict[header], out _))
+                                        if (!Boolean.TryParse(rowDict[csvHeader], out _))
                                         {
                                             // Flag values must be true or false, but its not. So raise an error
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be true or false, but is '{2}'", header, rowNumber, rowDict[header]));
+                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be true or false, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
                                             abort = true;
                                         }
                                         break;
                                     case Constant.Control.Counter:
-                                        if (!String.IsNullOrWhiteSpace(rowDict[header]) && !Int32.TryParse(rowDict[header], out _))
+                                        if (!String.IsNullOrWhiteSpace(rowDict[csvHeader]) && !Int32.TryParse(rowDict[csvHeader], out _))
                                         {
                                             // Counters must be integers / blanks 
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be blank or a number, but is '{2}'", header, rowNumber, rowDict[header]));
+                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be blank or a number, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
                                             abort = true;
                                         }
                                         break;
                                     case Constant.Control.FixedChoice:
                                     case Constant.DatabaseColumn.ImageQuality:
-                                        if (controlRow.List.Contains(rowDict[header]) == false)
+                                        if (controlRow.List.Contains(rowDict[csvHeader]) == false)
                                         {
                                             // Fixed Choices must be in the Choice List
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be in the template's choice list, but '{2}' isn't in it.", header, rowNumber, rowDict[header]));
+                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be in the template's choice list, but '{2}' isn't in it.", csvHeader, rowNumber, rowDict[csvHeader]));
                                             abort = true;
                                         }
                                         break;
@@ -263,10 +299,14 @@ namespace Timelapse.Database
                     }
                     if (abort)
                     {
-                        // We failed. abort.
+                        //Abort, as some of the data values do not match the type. 
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
 
+
+                    //
+                    // Part 4. Check and manage duplicates
+                    // 
                     // Get a list of duplicates in the database, i.e. rows with both the Same relativePath and File
                     List<string> databaseDuplicates = fileDatabase.GetDistinctRelativePathFileCombinationsDuplicates();
 
@@ -362,16 +402,20 @@ namespace Timelapse.Database
                         // END Handle duplicates
                        
                         // Process each non-duplicate row
+                        // Note that we never update:
+                        // - Path-related fields (File, RelativePath, Folder)
+                        // - Date and Time-related fields (DateTime, Date, Time, UtcOffset
                         ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
                         foreach (string header in rowDict.Keys)
                         {
                             ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(header);
                             // process each column but only if its off the specific type
-                            if (controlRow.Type == Constant.Control.Flag ||
-                                controlRow.Type != Constant.DatabaseColumn.DeleteFlag ||
+                            if (controlRow.Type == Constant.Control.Note || 
+                                controlRow.Type == Constant.Control.Flag ||
+                                controlRow.Type == Constant.DatabaseColumn.DeleteFlag ||
                                 controlRow.Type == Constant.Control.Counter ||
                                 controlRow.Type == Constant.Control.FixedChoice ||
-                                controlRow.Type == Constant.DatabaseColumn.ImageQuality
+                                controlRow.Type == Constant.DatabaseColumn.ImageQuality 
                                 )
                             {
                                 imageToUpdate.Columns.Add(new ColumnTuple(header, rowDict[header]));
@@ -407,7 +451,6 @@ namespace Timelapse.Database
                     return new Tuple<bool, List<string>>(true, importErrors);
                 }).ConfigureAwait(true);
         }
-
 
         // Given a list of duplicates and their common relative path, update the corresponding duplicates in the database
         // We do this by getting the IDs of duplicates in the database, where we update each database by ID to a duplicate.

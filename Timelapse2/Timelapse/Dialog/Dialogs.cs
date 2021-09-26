@@ -965,7 +965,7 @@ namespace Timelapse.Dialog
             messageBox.Message.Solution += "\u2022 click Cancel," + Environment.NewLine;
             messageBox.Message.Solution += "\u2022 select 'All Files' in the Selection menu, " + Environment.NewLine;
             messageBox.Message.Solution += "\u2022 retry exporting your data as a .csv file.";
-            messageBox.Message.Hint = "If you check don't show this message this dialog can be turned back on via the Options menu.";
+            messageBox.Message.Hint = "If you select 'Don't show this message this dialog can be turned back on via the Options |Show or hide... menu.";
             messageBox.Message.Icon = MessageBoxImage.Warning;
             messageBox.DontShowAgain.Visibility = Visibility.Visible;
 
@@ -1014,7 +1014,8 @@ namespace Timelapse.Dialog
             csvExportInformation.Message.Result = String.Format("This file is overwritten every time you export it (backups can be found in the {0} folder).", Constant.File.BackupFolder);
             csvExportInformation.Message.Hint = "\u2022 You can open this file with most spreadsheet programs, such as Excel." + Environment.NewLine;
             csvExportInformation.Message.Hint += "\u2022 If you make changes in the spreadsheet file, you will need to import it to see those changes." + Environment.NewLine;
-            csvExportInformation.Message.Hint += "\u2022 If you check don't show this message again you can still see the name of the .csv file in the status bar at the lower right corner of the main Carnassial window.  This dialog can also be turned back on through the Options menu.";
+            csvExportInformation.Message.Hint += "\u2022 You can change the Date and Time formats by selecting the Options | Preferences menu." + Environment.NewLine;
+            csvExportInformation.Message.Hint += "\u2022 If you select 'Don't show this message again', this dialog can be turned back on through the Options | Show or hide... menu.";
             csvExportInformation.Message.Icon = MessageBoxImage.Information;
             csvExportInformation.DontShowAgain.Visibility = Visibility.Visible;
 
@@ -1032,18 +1033,21 @@ namespace Timelapse.Dialog
         {
             MessageBox messageBox = new MessageBox("How importing .csv data works", owner, MessageBoxButton.OKCancel);
             messageBox.Message.What = "Importing data from a .csv (comma separated value) file follows the rules below.";
-            messageBox.Message.Reason = "\u2022 The first row in the CSV file must comprise column Headers that match the DataLabels in the .tdb template file." + Environment.NewLine;
-            messageBox.Message.Reason += "\u2022 The column Header 'File' must be included." + Environment.NewLine;
-            messageBox.Message.Reason += "\u2022 Subsequent rows defines the data for each File ." + Environment.NewLine;
-            messageBox.Message.Reason += "\u2022 Column data should match the Header type. In particular," + Environment.NewLine;
-            messageBox.Message.Reason += "  \u2022\u2022 File values should define name of the file you want to update." + Environment.NewLine;
-            messageBox.Message.Reason += "  \u2022\u2022 Counter values must be blank or a positive integer. " + Environment.NewLine;
-            messageBox.Message.Reason += "  \u2022\u2022 Flag and DeleteFlag values must be 'true' or 'false'." + Environment.NewLine;
-            messageBox.Message.Reason += "  \u2022\u2022 FixedChoice values should be a string that exactly matches one of the FixedChoice menu options, or empty. ";
-            messageBox.Message.Result = "Image values for identified files will be updated, except for values relating to a File's location or its dates / times.";
-            messageBox.Message.Hint = "\u2022 Your CSV file columns can be a subset of your template's DataLabels." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 Warning will be generated for non-matching CSV fields, which you can then fix." + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 If you check 'Don't show this message again' this dialog can be turned back on via the Options menu.";
+            messageBox.Message.Reason = "The first row in the CSV file must comprise column headers that match the DataLabels in the .tdb template file, where:" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 the header 'File' must be included." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 the header 'RelativePath' must be included if any of your images are in subfolders" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 remaining headers must match your template's DataLabels" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 headers can be a subset of your template's DataLabels." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Reason += "Subsequent rows define the data for each file. where it must match the Header type:" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 File data should match the name of the file you want to update." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 RelativePath data should match the sub-folder path containing that file, if any" + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 Counter data must be blank or 0 or a positive integer. " + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 Flag and DeleteFlag data must be 'true' or 'false'." + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 FixedChoice data should exactly match a corresponding list item defined in the template, or empty. ";
+            messageBox.Message.Result = "Database values will be updated only for matching RelativePath/File entries (non-matching entries are ignored)." + Environment.NewLine;
+            messageBox.Message.Result += "Due to issues in how Excel manages dates and times, Date, Time and DateTime columns (if included) are ignored.";
+            messageBox.Message.Hint = "Warnings will be generated for non-matching CSV headers, which you can then fix." + Environment.NewLine;
+            messageBox.Message.Hint += "If you select 'Don't show this message again', this dialog can be turned back on through the Options | Show or hide... menu.";
             messageBox.Message.Icon = MessageBoxImage.Warning;
             messageBox.DontShowAgain.Visibility = Visibility.Visible;
 
@@ -1063,22 +1067,25 @@ namespace Timelapse.Dialog
             MessageBox messageBox = new MessageBox("Can't import the .csv file.", owner);
             messageBox.Message.Icon = MessageBoxImage.Error;
             messageBox.Message.Problem = String.Format("The file {0} could not be read.", csvFileName);
-            messageBox.Message.Reason = "The .csv file is not compatible with the current image set.";
-            messageBox.Message.Solution = "Check that:" + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 The first row of the .csv file is a header line." + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 The column names in the header line match the database." + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 Choice and ImageQuality values are in that DataLabel's Choice list." + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 Counter values are numbers or blanks." + Environment.NewLine;
-            messageBox.Message.Solution += "\u2022 Flag and DeleteFlag values are either 'true' or 'false'.";
-            messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
+            messageBox.Message.Reason = "The .csv file is not compatible with the Timelapse template defining the current image set.";
             if (resultAndImportErrors != null)
             {
-                messageBox.Message.Hint = "Change your CSV file to fix the errors below and try again.";
+                messageBox.Message.Solution += "Change your .csv file to fix the errors below and try again.";
                 foreach (string importError in resultAndImportErrors)
                 {
-                    messageBox.Message.Hint += Environment.NewLine + "\u2022 " + importError;
+                    messageBox.Message.Solution += Environment.NewLine + "\u2022 " + importError;
                 }
             }
+            messageBox.Message.Hint = "Timelapse checks the following when importing the .csv file:" + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 The first row is a header whose column names match the data labels in the .tdb template file" + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 Counter data values are numbers or blanks." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 Flag and DeleteFlag values are either 'True' or 'False'." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 Choice and ImageQuality values are in that field's Choice list, defined in the template." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Hint += "Timelapse does not import or check .csv columns corresponding to:" + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 File, RelativePath, Folder," + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 DateTime, Date, Time, UtcOffset." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
+           
             messageBox.ShowDialog();
         }
 
