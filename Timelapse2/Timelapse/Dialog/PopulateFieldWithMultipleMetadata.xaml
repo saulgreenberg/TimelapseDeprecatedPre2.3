@@ -20,14 +20,14 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                             Title="Populate Data Fields with Selected Metadata when loading new images"
                             What="Images often embed metadata, some of which may be useful to capture as data.
                                           &#10;You can direct Timelapse on how to populate data fields with metadata."
-                            Solution="For all your files, you can choose and populate data fields with metadata of your choosing.
+                            Solution="Match the desired metadata to a data field to populate those data fields for all your currently selected files.
 &#10;1. Inspect the current file's metadata (and its example value) to see if your files contain metadata of interest
-&#10;2. For each metadata of interest, use the drop-down menu to select which field should be populated with that metadata values.                                          
-&#10;3. Click the Populate button to apply the above metadata selections to all your files."
-                            Hint="Try both inspection tools: MetadataExtractor is faster. ExifTool is better at finding all metadata fields but 15x slower.
-                                  &#10;Only Note fields and the DateTime field can be populated
-                                  &#10;Be patient! It does take time to do this if you have a large number of files."
-                            Result="Your files' data fields will be populated with the metadata you associated with it."
+&#10;2. For each metadata of interest, use the drop-down menu to select which data field should be populated with the metadata's value.                                          
+&#10;3. Click the Populate button to apply your metadata selections to all your currently selected files."
+                            Hint="Try both inspection tools: MetadataExtractor is faster. ExifTool is better at finding all metadata fields but much slower.
+                                  &#10; Only Note fields can be populated
+                                  &#10; Be patient! It does take time to do this (especially with ExifTool) if you have a large number of files."
+                            Result="Your file's' data fields will be populated with each file's metadata values you associated with it."
                             ShowExplanationVisibility="True" />
             <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
                 <Rectangle Fill="#FF868686" Height="2"></Rectangle>
@@ -74,7 +74,7 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                               EnableRowVirtualization="False"
                               Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5" AutoGenerateColumns="False" 
                               CanUserSortColumns="False"
-                              ItemsSource="{Binding Path=metadataList, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}">
+                              ItemsSource="{Binding Path=metadataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}">
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="{x:Type DataGridColumnHeader}">
                                 <Setter Property="FontWeight" Value="DemiBold" />
@@ -82,29 +82,26 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                         </DataGrid.ColumnHeaderStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Key" IsReadOnly="True" Visibility="Visible" Binding="{Binding Item1}" Width="0"/>
+                            <DataGridTextColumn Header="Key" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding Item1}" Width="0"/>
                             <DataGridTextColumn Header="Metadata kind" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding Item2}"/>
+                            <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding Item3}" Width="1*"/>
+                            <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding Item4}" Width="1*"/>
 
-                            <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding Item3}"/>
-                            <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding Item4}"  Width=".5*"/>
-
-                            <DataGridTemplateColumn Header="Data label">
+                            <DataGridTemplateColumn Header="Data label" Width=".5*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ComboBox 
                                         ItemsSource="{Binding Path=NoteLabels, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}"
-                                        SelectedItem="{Binding Item5, UpdateSourceTrigger=PropertyChanged}" 
-                                >
+                                        SelectedItem="{Binding Item5, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="ComboBox_SelectionChanged"
+                                        >
                                         </ComboBox>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <!--<ComboBox  SelectedValue="{Binding Path=metadataList,ElementName=Item5,Mode=OneWayToSource}"  ItemsSource="{Binding Path=NoteLabels, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}" BorderBrush="{x:Null}" Background="#00FFFFFF" SelectionChanged="ComboBox_SelectionChanged"/>-->
 
                 </Grid>
-                <!--<ComboBox SelectedValue="{Binding Item5,Mode=TwoWay}" ItemsSource="{Binding Path=NoteLabels, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}" BorderBrush="{x:Null}" Background="#00FFFFFF"/>-->
 
                 <Grid Name="FeedbackPanel" Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
