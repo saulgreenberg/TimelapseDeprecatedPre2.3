@@ -212,6 +212,9 @@
     <Compile Include="Dialog\PopulateFieldWithEpisodeData.xaml.cs">
       <DependentUpon>PopulateFieldWithEpisodeData.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\PopulateFieldWithMultipleMetadata.xaml.cs">
+      <DependentUpon>PopulateFieldWithMultipleMetadata.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\RandomSampleSelection.xaml.cs">
       <DependentUpon>RandomSampleSelection.xaml</DependentUpon>
     </Compile>
@@ -465,6 +468,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\PopulateFieldWithEpisodeData.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\PopulateFieldWithMultipleMetadata.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

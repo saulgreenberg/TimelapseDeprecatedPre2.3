@@ -785,12 +785,26 @@ namespace Timelapse.Database
 
                             // Find and then add the customizable types, populating it with their default values.
                             case Constant.Control.Note:
+                                // If a note already has a value in it (e.g., because it was optionally set via its metadata property on load), use that.
+                                // Otherwise populate it with its default value.
+                                string value = imageProperties.GetValueDisplayString(columnName);
+                                if (false == String.IsNullOrEmpty(value) && value != defaultValueLookup[columnName])
+                                {
+                                    // There is already a value in the note, so use that
+                                    queryValues.Append($"{Sql.Quote(imageProperties.GetValueDisplayString(columnName))}{Sql.Comma}");
+                                    // System.Diagnostics.Debug.Print("Value is: " + imageProperties.GetValueDisplayString(columnName));
+                                }
+                                else
+                                {  
+                                    // Use its defaults
+                                    queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
+                                }
+                                break;
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
-                                // Now initialize notes, flags, and fixed choices to the defaults
+                                // Initialize notes, flags, and fixed choices to the defaults values
                                 queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
-
                             case Constant.Control.Counter:
                                 queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
