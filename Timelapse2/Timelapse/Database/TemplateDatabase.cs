@@ -637,7 +637,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Public Methods - Get ControlFromTemplate, NextUniqueDataLabel
+        #region Public Methods - Get ControlFromTemplate, NextUniqueDataLabel, NextDataLabel
         /// <summary>Given a data label, get the corresponding data entry control</summary>
         public ControlRow GetControlFromTemplateTable(string dataLabel)
         {
@@ -660,22 +660,46 @@ namespace Timelapse.Database
         {
             // get all existing data labels, as we have to ensure that a new data label doesn't have the same name as an existing one
             List<string> dataLabels = new List<string>();
+            List<string> labels = new List<string>();
             foreach (ControlRow control in this.Controls)
             {
                 dataLabels.Add(control.DataLabel);
+                labels.Add(control.Label);
             }
 
-            // If the data label name exists, keep incrementing the count that is appended to the end
+            // If the data label name and/or the label exists, keep incrementing the count that is appended to the end
             // of the field type until it forms a unique data label name
             int dataLabelUniqueIdentifier = 0;
             string nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
-            while (dataLabels.Contains(nextDataLabel))
+            while (dataLabels.Contains(nextDataLabel) || labels.Contains(nextDataLabel))
             {
                 ++dataLabelUniqueIdentifier;
                 nextDataLabel = dataLabelPrefix + dataLabelUniqueIdentifier.ToString();
             }
 
             return nextDataLabel;
+        }
+
+        public string GetNextUniqueLabel(string labelPrefix)
+        {
+            // get all existing labels, as we have to ensure that a new label doesn't have the same name as an existing one
+            List<string> labels = new List<string>();
+            foreach (ControlRow control in this.Controls)
+            {
+                labels.Add(control.Label);
+            }
+
+            // If the  label name exists, keep incrementing the count that is appended to the end
+            // of the field type until it forms a unique data label name
+            int labelUniqueIdentifier = 0;
+            string nextLabel = labelPrefix + labelUniqueIdentifier.ToString();
+            while (labels.Contains(nextLabel))
+            {
+                ++labelUniqueIdentifier;
+                nextLabel = labelPrefix + labelUniqueIdentifier.ToString();
+            }
+
+            return nextLabel;
         }
         #endregion
 

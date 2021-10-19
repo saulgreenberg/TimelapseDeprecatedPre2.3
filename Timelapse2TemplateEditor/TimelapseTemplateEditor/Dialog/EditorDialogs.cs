@@ -137,6 +137,19 @@ namespace Timelapse.Editor.Dialog
         }
 
         /// <summary>
+        /// Labels must be unique
+        /// </summary>
+        public static void EditorLabelsMustBeUniqueDialog(Window owner, string label)
+        {
+            MessageBox messageBox = new MessageBox("Labels must be unique.", owner);
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.Message.Problem = "'" + label + "' is not a valid Label, as you have already used it in another row.";
+            messageBox.Message.Result = "We will automatically create a unique Label for you by adding a number to its end.";
+            messageBox.Message.Hint = "You can overwrite this label with your own choice of a unique label name.";
+            messageBox.ShowDialog();
+        }
+
+        /// <summary>
         /// DefaultChoiceValuesMustMatchChoiceLists
         /// </summary>
         public static void EditorDefaultChoicValuesMustMatchChoiceListsDialog(Window owner, string invalidDefaultValue)
