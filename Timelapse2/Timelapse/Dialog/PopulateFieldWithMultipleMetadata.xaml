@@ -82,17 +82,18 @@ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                         </DataGrid.ColumnHeaderStyle>
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Key" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding Item1}" Width="0"/>
-                            <DataGridTextColumn Header="Metadata kind" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding Item2}"/>
-                            <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding Item3}" Width="1*"/>
-                            <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding Item4}" Width="1*"/>
+                            <DataGridTextColumn Header="Key" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKey}" Width="0"/>
+                            <DataGridTextColumn Header="Metadata kind" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKind}"/>
+                            <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding MetadataName}" Width="1*"/>
+                            <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding MetadataValue}" Width="1*"/>
 
                             <DataGridTemplateColumn Header="Data label" Width=".5*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <ComboBox 
                                         ItemsSource="{Binding Path=NoteLabels, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type controls:BusyableDialogWindow}}}"
-                                        SelectedItem="{Binding Item5, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="ComboBox_SelectionChanged"
+                                        SelectedItem="{Binding AssignedDataLabel, UpdateSourceTrigger=PropertyChanged}" 
+                                        SelectionChanged="ComboBox_SelectionChanged"
                                         >
                                         </ComboBox>
                                     </DataTemplate>

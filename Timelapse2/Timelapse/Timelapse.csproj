@@ -169,6 +169,9 @@
       <DependentUpon>BusyCancelIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\BusyCancelIndicatorExtensions.cs" />
+    <Compile Include="Controls\MetadataGrid.xaml.cs">
+      <DependentUpon>MetadataGrid.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ThumbnailInCell.xaml.cs">
       <DependentUpon>ThumbnailInCell.xaml</DependentUpon>
     </Compile>
@@ -220,6 +223,9 @@
     </Compile>
     <Compile Include="Dialog\SkipHiddenFiles.xaml.cs">
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialog\TestPopulate.xaml.cs">
+      <DependentUpon>TestPopulate.xaml</DependentUpon>
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\CSVDateTimeOptionsEnum.cs" />
@@ -364,6 +370,7 @@
     <Compile Include="Enums\DeletiionManagementEnum.cs" />
     <Compile Include="DataStructures\ErrorsAndWarnings.cs" />
     <Compile Include="Util\IsCondition.cs" />
+    <Compile Include="Util\ViewModelBase.cs" />
     <Compile Include="Util\ProcessExecution.cs" />
     <Compile Include="Util\ProgressStream.cs" />
     <Compile Include="Util\SystemStatus.cs" />
@@ -416,6 +423,10 @@
     </Compile>
     <Compile Include="Util\VisualChildren.cs" />
     <Page Include="Controls\BusyCancelIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\MetadataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -480,6 +491,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\SkipHiddenFiles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\TestPopulate.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

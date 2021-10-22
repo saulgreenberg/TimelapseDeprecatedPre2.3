@@ -21,16 +21,16 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class PopulateFieldWithMultipleMetadata : BusyableDialogWindow, IDisposable
     {
-        // DEFUNCT - TO REMOVE
-        private bool clearIfNoMetadata;
-
         #region Private Variables
         private readonly FileDatabase fileDatabase;
         private readonly string filePath;
         private ExifToolWrapper exifTool;
 
+        // Collects the various metadata attributes from the file. The Key is the complete metadata name 
         private Dictionary<string, ImageMetadata> metadataDictionary;
-        private string metadataFieldName;
+
+        // Track the checkbox for clearing values if no matching metadata is found
+        private bool clearIfNoMetadata;
 
         // These are used to get the labels and data labels. 
         private readonly Dictionary<string, string> lookupNoteDataLabelByLabel;
@@ -54,9 +54,7 @@ namespace Timelapse.Dialog
 
             // Store various states as set by the user
             this.clearIfNoMetadata = false;
-
             this.lookupNoteDataLabelByLabel = new Dictionary<string, string>();
-            this.metadataFieldName = String.Empty;
         }
 
         // After the interface is loaded, 
@@ -77,12 +75,11 @@ namespace Timelapse.Dialog
             {
                 if (control.Type == Constant.Control.Note)
                 {
-                    if (this.lookupNoteDataLabelByLabel.ContainsKey(control.Label))
-                    {
-                        System.Windows.MessageBox.Show("Skipping " + control.Label + " as its a duplicate");
-                    }
-                    else
-                    {
+                    // Older templates allowed duplicate labels, which would break the dictionary as it would then have a duplicate key.
+                    // So we just skip those. This should be a rare to non-existent condition, but its
+                    // better than having Timelapse crash.
+                    if (false == this.lookupNoteDataLabelByLabel.ContainsKey(control.Label))
+                    {  
                         this.lookupNoteDataLabelByLabel.Add(control.Label, control.DataLabel);
                         this.NoteLabels.Add(control.Label);
                     }
@@ -108,7 +105,7 @@ namespace Timelapse.Dialog
         {
             this.FeedbackGrid.Columns[0].Header = "File Name";
             this.FeedbackGrid.Columns[1].Header = "Metadata name";
-            this.FeedbackGrid.Columns[1].Header = "Metadata Value";
+            this.FeedbackGrid.Columns[2].Header = "Metadata Value";
         }
         #endregion
 
@@ -205,7 +202,7 @@ namespace Timelapse.Dialog
             ObservableCollection<Tuple<string, string, string>> feedbackData = new ObservableCollection<Tuple<string, string, string>>();
 
             // Get the Metadata / Label pairs i.e., the rows with selected labels
-            Dictionary<string, string> selectedMetadataLabelPairs = GetSelectedFromMetadataList();
+            Dictionary<string, string> selectedMetadataLabelPairs = GetSelectedFromMetadataList(this.metadataList);
 
             // if there are no metadata / label pairs, =we are done.
             if (selectedMetadataLabelPairs.Count == 0)
@@ -349,11 +346,18 @@ namespace Timelapse.Dialog
         #region Combobox (in DataGrid) callbacks
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // We need to clear any other combobox fields whose selected value matches this one, 
+            // in case the user has selected a data field that was already assigned to a different metadata field.
+            if (sender is ComboBox cb)
+            {
+                DataGridClearComboBoxesWithMatchingSelectedItem(this.AvailableMetadataDataGrid, cb, "Data label");
+            }
+
             // Enable or disable the Start/Done (Populate) button depending on whether any data field is currently assigned.
             this.StartDoneButton.IsEnabled = false;
             foreach (DataContents dc in this.metadataList)
             {
-                if (false == String.IsNullOrEmpty(dc.Item5))
+                if (false == String.IsNullOrEmpty(dc.AssignedDataLabel))
                 {
                     this.StartDoneButton.IsEnabled = true;
                     return;
@@ -406,7 +410,7 @@ namespace Timelapse.Dialog
             }
             if (this.exifTool != null)
             {
-                this.exifTool.Stop();
+                    this.exifTool.Stop();   
             }
         }
 
@@ -424,27 +428,28 @@ namespace Timelapse.Dialog
         }
         #endregion
 
-        #region Helpers
-        private Dictionary<string, string> GetSelectedFromMetadataList()
-        {   // The selected items will have a non-empty datalabel in Item5
+        #region Static Helpers
+        // Return a dictionary comprised only of metadata fields with a non-empty data label (which is located in AssignedDataLabel)
+        private static Dictionary<string, string> GetSelectedFromMetadataList(ObservableCollection<DataContents>metadataList)
+        {   
             Dictionary<string, string> dict = new Dictionary<string, string>();
-            foreach (DataContents dc in this.metadataList)
+            foreach (DataContents dc in metadataList)
             {
-                if (false == String.IsNullOrWhiteSpace(dc.Item5))
+                if (false == String.IsNullOrWhiteSpace(dc.AssignedDataLabel))
                 {
-                    dict.Add(dc.Item1, dc.Item5);
+                    // We have a non-empty data label, so add it.
+                    dict.Add(dc.MetadataKey, dc.AssignedDataLabel);
                 }
             }
             return dict;
         }
-        #endregion
 
-        #region DEFUNCT
-        private static Dictionary<string, string> DEFUNCTDataGridGetSelectedMetadataLabelPairs(DataGrid dg, string metadataColumnHeader, string dataLabelColumnHeader)
+        // Purpose: Clear all comboboxes with the same data label as the currently selected one.
+        // This ensures that all metadata fields will be assigned (if at all) to unique data labels.
+        // Check all the comboboxes in the grid againste the currently selected combobox.
+        // If its value is the same as the currently selected one, clear it.
+        private static void DataGridClearComboBoxesWithMatchingSelectedItem(DataGrid dg, ComboBox selectedComboBox, string dataLabelColumnHeader)
         {
-            Dictionary<string, string> dict = new Dictionary<string, string>();
-            //int metadataColumnIndex = dg.Columns.IndexOf(dg.Columns.FirstOrDefault(c => (string)c.Header == metadataColumnHeader));
-            int metadataColumnIndex = dg.Columns.IndexOf(dg.Columns.FirstOrDefault(c => (string)c.Header == metadataColumnHeader));
             int datalabelColumnIndex = dg.Columns.IndexOf(dg.Columns.FirstOrDefault(c => (string)c.Header == dataLabelColumnHeader));
 
             for (int rowIndex = 0; rowIndex < dg.Items.Count; rowIndex++)
@@ -457,52 +462,39 @@ namespace Timelapse.Dialog
                 }
 
                 // Get the two grid cells
-                DataGridCellsPresenter presenter = Timelapse.Util.VisualChildren.GetVisualChild<DataGridCellsPresenter>(row);
-                DataGridCell metadataCell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(metadataColumnIndex);
+                DataGridCellsPresenter presenter = Util.VisualChildren.GetVisualChild<DataGridCellsPresenter>(row);
                 DataGridCell datalabelCell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(datalabelColumnIndex);
-                string metadata = "";
-                string datalabel = "";
-                if (datalabelCell.Content is ContentPresenter)
+                if (datalabelCell.Content is ContentPresenter presenter1)
                 {
-                    ComboBox cb = (ComboBox)System.Windows.Media.VisualTreeHelper.GetChild((ContentPresenter)datalabelCell.Content, 0);
-                    datalabel = cb.Text;
-                    if (String.IsNullOrWhiteSpace(datalabel))
+                    ComboBox cb = (ComboBox)System.Windows.Media.VisualTreeHelper.GetChild(presenter1, 0);
+                    //System.Diagnostics.Debug.Print(cb.Text + "|" + (string)chosenComboBox.SelectedValue);
+                    if (cb != selectedComboBox && cb.Text == (string)selectedComboBox.SelectedValue)
                     {
-                        // Skip rows where no datalabel is set
-                        continue;
+                        cb.Text = String.Empty;
                     }
                 }
-                if (metadataCell.Content is TextBlock tbCell)
-                {
-                    metadata = tbCell.Text;
-                }
-                // GOTTA DEAL WITH THE CASE WHERE THERE IS ALREADY A LABEL that is the SAME KEY
-                dict.Add(metadata, datalabel);
             }
-            return dict;
         }
         #endregion
 
-        // The model for each row in the DataGrid
+        #region DataContents: A class defining the data model behind each row in the AvailableMetadataDataGrid 
         public class DataContents
         {
-            public string Item1 { get; set; } = String.Empty;
-            public string Item2 { get; set; } = String.Empty;
-            public string Item3 { get; set; } = String.Empty;
-            public string Item4 { get; set; } = String.Empty;
-            public string Item5 { get; set; } = String.Empty;
-
-            public DataContents(string i1, string i2, string i3, string i4, string i5)
+            public string MetadataKey { get; set; } = String.Empty;
+            public string MetadataKind { get; set; } = String.Empty;
+            public string MetadataName { get; set; } = String.Empty;
+            public string MetadataValue { get; set; } = String.Empty;
+            public string AssignedDataLabel { get; set; } = String.Empty;
+            public DataContents(string metadataKey, string metadataKind, string metadataName, string metadataValue, string assignedDataLabel)
             {
-                this.Item1 = i1;
-                this.Item2 = i2;
-                this.Item3 = i3;
-                this.Item4 = i4;
-                this.Item5 = i5;
+                this.MetadataKey = metadataKey;
+                this.MetadataKind = metadataKind;
+                this.MetadataName = metadataName;
+                this.MetadataValue = metadataValue;
+                this.AssignedDataLabel = assignedDataLabel;
             }
         }
-
-
+        #endregion
     }
 }
 
