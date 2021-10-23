@@ -1629,7 +1629,7 @@ namespace Timelapse.Database
             bool skipWhere = false;
 
             // PART 1 of Query
-            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+           if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
@@ -1659,18 +1659,22 @@ namespace Timelapse.Database
             }
 
             // PART 2 of Query
-            // Now add the Where conditions to the query
-            if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
-            {
-                string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
-                if (!String.IsNullOrEmpty(where))
+            // Now add the Where conditions to the query.
+            // If the selection is All, there is no where clause needed.
+            if (fileSelection != FileSelectionEnum.All)
+            { 
+                if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
                 {
-                    query += where;
-                }
-                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
-                {
-                    // Add a close parenthesis if we are querying for detections
-                    query += Sql.CloseParenthesis;
+                    string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
+                    if (!String.IsNullOrEmpty(where))
+                    {
+                        query += where;
+                    }
+                    if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
+                    {
+                        // Add a close parenthesis if we are querying for detections
+                        query += Sql.CloseParenthesis;
+                    }
                 }
             }
             // Uncommment this to see the actual complete query
@@ -1683,7 +1687,7 @@ namespace Timelapse.Database
         // NOTE: This method is somewhat similar to CountAllFilesMatchingSelectionCondition. They could be combined, but its easier for now to keep them separate
         // Form examples
         // -  No detections:  SELECT EXISTS (  SELECT 1  FROM DataTable WHERE  ( DeleteFlag='true' )  )  //
-        // -  detectopms:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
+        // -  detections:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
         // -  recognitions:   SELECT EXISTS (  SELECT 1  FROM  (  SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
         //                    WHERE  ( DataTable.DeleteFlag='true' )  AND Classifications.category = 1 GROUP BY Classifications.classificationID HAVING  MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1 )  ) :1
         public bool ExistsFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)

@@ -117,26 +117,18 @@ namespace Timelapse
 
             // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
             if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedPopulateFieldFromMetadataPrompt,
-                                                                           "'Populate a data field with image metadata...'",
+                                                                           "'Populate data fields with image metadata...'",
                                                                (bool optOut) =>
                                                                {
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-                //using (PopulateFieldWithMultipleMetadata populateField = new PopulateFieldWithMultipleMetadata(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
-                //{
-                //    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
-                //    {
-                //        await this.FilesSelectAndShowAsync().ConfigureAwait(true);
-                //    };
-                //}
-                TestPopulate populateField = new TestPopulate(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
-                //{
-                    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
-                    {
-                        
-                    }
-                //}
+
+                PopulateFieldsWithMetadata populateField = new PopulateFieldsWithMetadata(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
+                if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
+                {
+                    await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                }
             }
         }
         #endregion
@@ -337,7 +329,7 @@ namespace Timelapse
             // If no images are selected for deletion. Warn the user.
             // Note that this should never happen, as the invoking menu item should be disabled (and thus not selectable)
             // if there aren't any images to delete. Still,...
-            if (filesToDelete == null || filesToDelete.Count < 1 )
+            if (filesToDelete == null || filesToDelete.Count < 1)
             {
                 Dialogs.MenuEditNoFilesMarkedForDeletionDialog(this);
                 return;
@@ -389,7 +381,7 @@ namespace Timelapse
                     }
                 }
             }
-            
+
             // Delete the files
             DeleteImages deleteImagesDialog = new DeleteImages(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache, filesToDelete, deleteFiles, deleteData, deleteCurrentImageOnly);
             bool? result = deleteImagesDialog.ShowDialog();

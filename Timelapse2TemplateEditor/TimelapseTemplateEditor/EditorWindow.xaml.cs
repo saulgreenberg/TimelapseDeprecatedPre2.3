@@ -1089,6 +1089,8 @@ namespace Timelapse.Editor
         // Check to see if the current label is a duplicate of another label
         private void ValidateLabels(DataGridCellEditEndingEventArgs e, DataGridRow currentRow)
         {
+            bool editorDialogAlreadyShown = false;
+
             // ControlRow currentControl = new ControlRow((currentRow.Item as DataRowView).Row);
             if (e.EditingElement is TextBox textBox)
             {
@@ -1096,7 +1098,20 @@ namespace Timelapse.Editor
                 // Check to see if the data label is empty. If it is, generate a unique data label and warn the user
                 if (String.IsNullOrWhiteSpace(label))
                 {
-                    return;
+                    EditorDialogs.EditorLabelsCannotBeEmptyDialog(this);
+                    if (currentRow != null)
+                    {
+                        DataGridCellsPresenter presenter = VisualChildren.GetVisualChild<DataGridCellsPresenter>(currentRow);
+
+                        // try to get the cell but it may possibly be virtualized
+                        DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(6);
+                        string s = (cell == null)
+                            ? "Label"
+                            : ((TextBlock)cell.Content).Text;
+                        textBox.Text = s; //this.templateDatabase.GetNextUniqueLabel(s);
+                        label = s;
+                        editorDialogAlreadyShown = true;
+                    }
                 }
 
                 // Check to see if the data label is unique. If not, generate a unique data label and warn the user
@@ -1109,12 +1124,15 @@ namespace Timelapse.Editor
                         {
                             continue; // Its the same row, so its the same key, so skip it
                         }
-                        EditorDialogs.EditorLabelsMustBeUniqueDialog(this, label);
+                        if (false == editorDialogAlreadyShown)
+                        {
+                            EditorDialogs.EditorLabelsMustBeUniqueDialog(this, label);
+                        }
                         textBox.Text = this.templateDatabase.GetNextUniqueLabel(label);
                         break;
                     }
                 }
-                System.Diagnostics.Debug.Print(textBox.Text);
+                //System.Diagnostics.Debug.Print(textBox.Text);
             }
         }
 

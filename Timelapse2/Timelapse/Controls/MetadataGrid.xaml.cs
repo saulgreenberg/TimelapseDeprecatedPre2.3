@@ -23,8 +23,17 @@ namespace Timelapse.Controls
         // Collects the various metadata attributes from the file. The Key is the complete metadata name 
         private Dictionary<string, ImageMetadata> metadataDictionary;
 
+        // Whether the metadataExtractor tool is selected (false means the ExifTool)
+        public bool IsMetadataExtractorSelected
+        {
+            get
+            {
+                return this.MetadataExtractorRB.IsChecked == true;
+            }
+        }
+
         // A handle to the ExifTool Wrapper
-        private ExifToolWrapper exifTool;
+        public ExifToolWrapper ExifTool { get; set; }
         #endregion
 
         #region ViewModel
@@ -39,13 +48,29 @@ namespace Timelapse.Controls
             set
             {
                 _dictDataLabel_Label = value;
+                // Note labels are a list of labels, with an Empty slot in the beginning to allow labels to be deselected
                 this.viewModel.noteLabels = new ObservableCollection<string>(_dictDataLabel_Label.Values);
+                this.viewModel.noteLabels.Insert(0, String.Empty);
             }
         }
         #endregion
 
         #region Property SelectedMetadata
         public ObservableCollection<KeyValuePair<string, string>> SelectedMetadata { get; set; }
+
+        // Returns a list of selected metadata tags
+        public string[] SelectedTags
+        {
+            get
+            {
+                List<string> tagList = new List<string>();
+                foreach (KeyValuePair<string, string> kvp in this.SelectedMetadata)
+                {
+                    tagList.Add(kvp.Key);
+                }
+                return tagList.ToArray();
+            }
+        }
 
         #endregion
 
@@ -84,9 +109,9 @@ namespace Timelapse.Controls
             if (disposing)
             {
                 // Dispose managed resources
-                if (this.exifTool != null)
+                if (this.ExifTool != null)
                 {
-                    this.exifTool.Dispose();
+                    this.ExifTool.Dispose();
                 }
             }
             // free native resources
@@ -114,7 +139,7 @@ namespace Timelapse.Controls
             }
 
             ObservableCollection<DataContents> temp = new ObservableCollection<DataContents>();
-            
+
             // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values, plus a fifth item that represents the empty datalabel as ComboBox
             foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
@@ -132,14 +157,14 @@ namespace Timelapse.Controls
             this.metadataDictionary.Clear();
 
             // Start the exifTool process if its not already started
-            if (this.exifTool == null)
+            if (this.ExifTool == null)
             {
-                this.exifTool = new ExifToolWrapper();
-                this.exifTool.Start();
+                this.ExifTool = new ExifToolWrapper();
+                this.ExifTool.Start();
             }
 
             // Fetch the exif data using ExifTool
-            Dictionary<string, string> exifDictionary = this.exifTool.FetchExifFrom(this.viewModel.FilePath);
+            Dictionary<string, string> exifDictionary = this.ExifTool.FetchExifFrom(this.viewModel.FilePath);
 
             // If there is no metadata, inform the user by setting bogus dictionary values which will appear on the grid
             if (exifDictionary.Count == 0)
@@ -180,8 +205,8 @@ namespace Timelapse.Controls
             {
                 // Clear other combobox fields whose selected value matches the current comboBox selection, 
                 // which guarantees thatmetadatafields will be assigned to unique labels
-                DataGridClearComboBoxesWithMatchingSelectedItem(this.AvailableMetadataDataGrid, cb, "Data label");
-                
+                DataGridClearComboBoxesWithMatchingSelectedItem(this.AvailableMetadataDataGrid, cb, "Data field");
+
                 // Update SelectedMetadata against the new contents, which in turn may trigger a CollectionChanged event
                 this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.metadataList, this.SelectedMetadata);
             }
@@ -189,8 +214,23 @@ namespace Timelapse.Controls
         #endregion
 
         #region Static Helpers
+        // Get the data label that first matches the label in the DictDataLabel_Label dictionary
+        // Note that this is like a reverse dictionary (where we look up the key from its value).
+        // This is done because its possible that labels aren't unique
+        // (while later versions of Timelapse ensures that templates have unique labels, earlier templates may not)
+        private string GetDataLabelFromLabel(string label)
+        {
+            foreach (KeyValuePair<string, string> kvp in this.DictDataLabel_Label)
+            {
+                if (kvp.Value == label)
+                {
+                    return kvp.Key;
+                }
+            }
+            return String.Empty;
+        }
         // Return a collection of keyvalue pairs comprised only of matching metadata fields and a non-empty data label
-        private static ObservableCollection<KeyValuePair<string, string>> GetSelectedFromMetadataList(ObservableCollection<DataContents> metadataList, ObservableCollection<KeyValuePair<string, string>> selectedMetadata)
+        private ObservableCollection<KeyValuePair<string, string>> GetSelectedFromMetadataList(ObservableCollection<DataContents> metadataList, ObservableCollection<KeyValuePair<string, string>> selectedMetadata)
         {
             if (selectedMetadata == null)
             {
@@ -199,10 +239,10 @@ namespace Timelapse.Controls
             selectedMetadata.Clear();
             foreach (DataContents dc in metadataList)
             {
-                if (false == String.IsNullOrWhiteSpace(dc.AssignedDataLabel))
+                if (false == String.IsNullOrWhiteSpace(dc.AssignedLabel))
                 {
                     // We have a non-empty data label, so add it.
-                    selectedMetadata.Add(new KeyValuePair<string, string>(dc.MetadataKey, dc.AssignedDataLabel));
+                    selectedMetadata.Add(new KeyValuePair<string, string>(dc.MetadataKey, this.GetDataLabelFromLabel(dc.AssignedLabel)));
                 }
             }
             return selectedMetadata;
@@ -278,7 +318,7 @@ namespace Timelapse.Controls
                 set
                 {
                     SetProperty(ref _metadataList, value);
-                    
+
                 }
             }
         }
@@ -291,14 +331,14 @@ namespace Timelapse.Controls
             public string MetadataKind { get; set; } = String.Empty;
             public string MetadataName { get; set; } = String.Empty;
             public string MetadataValue { get; set; } = String.Empty;
-            public string AssignedDataLabel { get; set; } = String.Empty;
+            public string AssignedLabel { get; set; } = String.Empty;
             public DataContents(string metadataKey, string metadataKind, string metadataName, string metadataValue, string assignedDataLabel)
             {
                 this.MetadataKey = metadataKey;
                 this.MetadataKind = metadataKind;
                 this.MetadataName = metadataName;
                 this.MetadataValue = metadataValue;
-                this.AssignedDataLabel = assignedDataLabel;
+                this.AssignedLabel = assignedDataLabel;
             }
         }
         #endregion

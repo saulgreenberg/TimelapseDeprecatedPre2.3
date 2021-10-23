@@ -60,12 +60,12 @@
                 <DataGridTextColumn Header="Metadata kind" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKind}"/>
                 <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding MetadataName}" Width="1*"/>
                 <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding MetadataValue}" Width="1*"/>
-                <DataGridTemplateColumn Header="Data label" Width=".5*" >
+                <DataGridTemplateColumn Header="Data field" Width=".5*" >
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox 
                                 ItemsSource="{Binding ElementName=MainWindow, Path=DataContext.noteLabels}"
-                                SelectedItem="{Binding AssignedDataLabel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                SelectedItem="{Binding AssignedLabel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                 SelectionChanged="ComboBox_SelectionChanged"
                                 />
                         </DataTemplate>

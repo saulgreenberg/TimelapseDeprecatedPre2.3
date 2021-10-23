@@ -215,17 +215,14 @@
     <Compile Include="Dialog\PopulateFieldWithEpisodeData.xaml.cs">
       <DependentUpon>PopulateFieldWithEpisodeData.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\PopulateFieldWithMultipleMetadata.xaml.cs">
-      <DependentUpon>PopulateFieldWithMultipleMetadata.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\RandomSampleSelection.xaml.cs">
       <DependentUpon>RandomSampleSelection.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\SkipHiddenFiles.xaml.cs">
       <DependentUpon>SkipHiddenFiles.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\TestPopulate.xaml.cs">
-      <DependentUpon>TestPopulate.xaml</DependentUpon>
+    <Compile Include="Dialog\PopulateFieldsWithMetadata.xaml.cs">
+      <DependentUpon>PopulateFieldsWithMetadata.xaml</DependentUpon>
     </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\CSVDateTimeOptionsEnum.cs" />
@@ -479,12 +476,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\PopulateFieldWithEpisodeData.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\PopulateFieldWithMultipleMetadata.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\RandomSampleSelection.xaml">
       <SubType>Designer</SubType>
@@ -494,7 +487,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\TestPopulate.xaml">
+    <Page Include="Dialog\PopulateFieldsWithMetadata.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -590,10 +583,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Dialog\PopulateFieldWithMetadata.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Dialog\RenameFileDatabaseFile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -654,9 +643,6 @@
     </Compile>
     <Compile Include="Dialog\DarkImagesThreshold.xaml.cs">
       <DependentUpon>DarkImagesThreshold.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Dialog\PopulateFieldWithMetadata.xaml.cs">
-      <DependentUpon>PopulateFieldWithMetadata.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialog\RenameFileDatabaseFile.xaml.cs">
       <DependentUpon>RenameFileDatabaseFile.xaml</DependentUpon>

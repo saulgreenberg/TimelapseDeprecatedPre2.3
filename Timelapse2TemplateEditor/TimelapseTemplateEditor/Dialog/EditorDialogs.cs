@@ -98,7 +98,7 @@ namespace Timelapse.Editor.Dialog
         }
 
         /// <summary>
-        /// Data lable is not a valid data label
+        /// Data label is not a valid data label
         /// </summary>
         public static void EditorDataLabelIsInvalidDialog(Window owner, string old_data_label, string new_data_label)
         {
@@ -149,6 +149,18 @@ namespace Timelapse.Editor.Dialog
             messageBox.ShowDialog();
         }
 
+        /// <summary>
+        /// Data Labels cannot be empty
+        /// </summary>
+        public static void EditorLabelsCannotBeEmptyDialog(Window owner)
+        {
+            MessageBox messageBox = new MessageBox("Labels cannot be empty", owner);
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.Message.Problem = "Labels cannot be empty. They identify what each data field represents to the Timelapse user.";
+            messageBox.Message.Result = "We will automatically create a uniquely named label for you.";
+            messageBox.Message.Hint = "Rename this to something meaningful. It only has to be different from the other labels.";
+            messageBox.ShowDialog();
+        }
         /// <summary>
         /// DefaultChoiceValuesMustMatchChoiceLists
         /// </summary>
