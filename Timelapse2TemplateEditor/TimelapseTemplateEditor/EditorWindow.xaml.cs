@@ -720,6 +720,7 @@ namespace Timelapse.Editor
                         e.Handled = true;
                     }
                     break;
+
                 case EditorConstant.ColumnHeader.DefaultValue:
                     // Restrict certain default values for counters, flags (and perhaps fixed choices in the future)
                     ControlRow control = new ControlRow((currentRow.Item as DataRowView).Row);
@@ -828,6 +829,9 @@ namespace Timelapse.Editor
                     break;
                 case EditorConstant.ColumnHeader.DefaultValue:
                     this.ValidateDefaults(e, editedRow);
+                    break;
+                case Constant.Control.Label:
+                    this.ValidateLabels(e, editedRow);
                     break;
                 case EditorConstant.ColumnHeader.Width:
                     ValidateWidths(e, editedRow);
@@ -1078,6 +1082,55 @@ namespace Timelapse.Editor
                     EditorDialogs.EditorDataLabelIsAReservedWordDialog(this, textBox.Text);
                     textBox.Text += "_";
                     break;
+                }
+            }
+        }
+
+        // Check to see if the current label is a duplicate of another label
+        private void ValidateLabels(DataGridCellEditEndingEventArgs e, DataGridRow currentRow)
+        {
+            bool editorDialogAlreadyShown = false;
+
+            // ControlRow currentControl = new ControlRow((currentRow.Item as DataRowView).Row);
+            if (e.EditingElement is TextBox textBox)
+            {
+                string label = textBox.Text;
+                // Check to see if the data label is empty. If it is, generate a unique data label and warn the user
+                if (String.IsNullOrWhiteSpace(label))
+                {
+                    EditorDialogs.EditorLabelsCannotBeEmptyDialog(this);
+                    if (currentRow != null)
+                    {
+                        DataGridCellsPresenter presenter = VisualChildren.GetVisualChild<DataGridCellsPresenter>(currentRow);
+
+                        // try to get the cell but it may possibly be virtualized
+                        DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(6);
+                        string s = (cell == null)
+                            ? "Label"
+                            : ((TextBlock)cell.Content).Text;
+                        textBox.Text = s; //this.templateDatabase.GetNextUniqueLabel(s);
+                        label = s;
+                        editorDialogAlreadyShown = true;
+                    }
+                }
+
+                // Check to see if the data label is unique. If not, generate a unique data label and warn the user
+                for (int row = 0; row < this.templateDatabase.Controls.RowCount; row++)
+                {
+                    ControlRow control = this.templateDatabase.Controls[row];
+                    if (label.Equals(control.Label))
+                    {
+                        if (this.TemplateDataGrid.SelectedIndex == row)
+                        {
+                            continue; // Its the same row, so its the same key, so skip it
+                        }
+                        if (false == editorDialogAlreadyShown)
+                        {
+                            EditorDialogs.EditorLabelsMustBeUniqueDialog(this, label);
+                        }
+                        textBox.Text = this.templateDatabase.GetNextUniqueLabel(label);
+                        break;
+                    }
                 }
             }
         }

@@ -164,7 +164,6 @@ namespace Timelapse.Database
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(row, nameof(row));
-
             row[column] = value;
         }
 

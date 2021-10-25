@@ -89,6 +89,13 @@ namespace Timelapse
             return;
         }
 
+        #region Ask to PopulateMetadata
+        private void MenuItemAskToPopulateMetadataOptions_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+        #endregion
+
         public void EpisodeShowHide(bool show)
         {
             Episodes.ShowEpisodes = show;

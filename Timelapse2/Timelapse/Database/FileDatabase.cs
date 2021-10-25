@@ -785,12 +785,26 @@ namespace Timelapse.Database
 
                             // Find and then add the customizable types, populating it with their default values.
                             case Constant.Control.Note:
+                                // If a note already has a value in it (e.g., because it was optionally set via its metadata property on load), use that.
+                                // Otherwise populate it with its default value.
+                                string value = imageProperties.GetValueDisplayString(columnName);
+                                if (false == String.IsNullOrEmpty(value) && value != defaultValueLookup[columnName])
+                                {
+                                    // There is already a value in the note, so use that
+                                    queryValues.Append($"{Sql.Quote(imageProperties.GetValueDisplayString(columnName))}{Sql.Comma}");
+                                    // System.Diagnostics.Debug.Print("Value is: " + imageProperties.GetValueDisplayString(columnName));
+                                }
+                                else
+                                {  
+                                    // Use its defaults
+                                    queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
+                                }
+                                break;
                             case Constant.Control.FixedChoice:
                             case Constant.Control.Flag:
-                                // Now initialize notes, flags, and fixed choices to the defaults
+                                // Initialize notes, flags, and fixed choices to the defaults values
                                 queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 break;
-
                             case Constant.Control.Counter:
                                 queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 markerRow.Add(new ColumnTuple(columnName, String.Empty));
@@ -1615,7 +1629,7 @@ namespace Timelapse.Database
             bool skipWhere = false;
 
             // PART 1 of Query
-            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+           if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
@@ -1645,18 +1659,22 @@ namespace Timelapse.Database
             }
 
             // PART 2 of Query
-            // Now add the Where conditions to the query
-            if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
-            {
-                string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
-                if (!String.IsNullOrEmpty(where))
+            // Now add the Where conditions to the query.
+            // If the selection is All, there is no where clause needed.
+            if (fileSelection != FileSelectionEnum.All)
+            { 
+                if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
                 {
-                    query += where;
-                }
-                if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
-                {
-                    // Add a close parenthesis if we are querying for detections
-                    query += Sql.CloseParenthesis;
+                    string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
+                    if (!String.IsNullOrEmpty(where))
+                    {
+                        query += where;
+                    }
+                    if (fileSelection == FileSelectionEnum.Custom && Util.GlobalReferences.TimelapseState.UseDetections == true && this.CustomSelection.DetectionSelections.Enabled == true)
+                    {
+                        // Add a close parenthesis if we are querying for detections
+                        query += Sql.CloseParenthesis;
+                    }
                 }
             }
             // Uncommment this to see the actual complete query
@@ -1669,7 +1687,7 @@ namespace Timelapse.Database
         // NOTE: This method is somewhat similar to CountAllFilesMatchingSelectionCondition. They could be combined, but its easier for now to keep them separate
         // Form examples
         // -  No detections:  SELECT EXISTS (  SELECT 1  FROM DataTable WHERE  ( DeleteFlag='true' )  )  //
-        // -  detectopms:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
+        // -  detections:     SELECT EXISTS (  SELECT 1  FROM Detections INNER JOIN DataTable ON DataTable.Id = Detections.Id WHERE  ( DataTable.DeleteFlag='true' )  GROUP BY Detections.Id HAVING  MAX  ( Detections.conf )  BETWEEN 0.8 AND 1 )
         // -  recognitions:   SELECT EXISTS (  SELECT 1  FROM  (  SELECT DISTINCT DataTable.* FROM Classifications INNER JOIN DataTable ON DataTable.Id = Detections.Id INNER JOIN Detections ON Detections.detectionID = Classifications.detectionID 
         //                    WHERE  ( DataTable.DeleteFlag='true' )  AND Classifications.category = 1 GROUP BY Classifications.classificationID HAVING  MAX  ( Classifications.conf )  BETWEEN 0.8 AND 1 )  ) :1
         public bool ExistsFilesMatchingSelectionCondition(FileSelectionEnum fileSelection)
