@@ -1132,7 +1132,6 @@ namespace Timelapse.Editor
                         break;
                     }
                 }
-                //System.Diagnostics.Debug.Print(textBox.Text);
             }
         }
 
