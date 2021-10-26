@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using Timelapse.Enums;
 using Timelapse.ExifTool;
 using Timelapse.Util;
 
@@ -24,11 +25,13 @@ namespace Timelapse.Controls
         private Dictionary<string, ImageMetadata> metadataDictionary;
 
         // Whether the metadataExtractor tool is selected (false means the ExifTool)
-        public bool IsMetadataExtractorSelected
+        public MetadataToolEnum MetadataToolSelected
         {
             get
             {
-                return this.MetadataExtractorRB.IsChecked == true;
+                return this.MetadataExtractorRB.IsChecked == true
+                    ? MetadataToolEnum.MetadataExtractor
+                    : MetadataToolEnum.ExifTool;
             }
         }
 
@@ -121,6 +124,20 @@ namespace Timelapse.Controls
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        #region Refresh
+        public void Refresh()
+        {
+            if (this.MetadataToolSelected == MetadataToolEnum.MetadataExtractor)
+            {
+                this.MetadataExtractorShowImageMetadata();
+            }
+            else
+            {
+                this.ExifToolShowImageMetadata();
+            }
         }
         #endregion
 

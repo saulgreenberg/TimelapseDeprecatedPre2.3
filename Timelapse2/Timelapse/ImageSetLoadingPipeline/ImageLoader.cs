@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline
 {
@@ -97,16 +98,14 @@ namespace Timelapse.ImageSetLoadingPipeline
             {
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
                 // We only do this for files, as videos do not have these metadata fields
-                // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                //this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
-                Dictionary <string,string> dictMetadataDatalabel = new Dictionary<string,string> ();
-                dictMetadataDatalabel.Add("Ambient Temperature", "Note1");
-                dictMetadataDatalabel.Add("Event Number", "Note3");
+
                
-                if (dictMetadataDatalabel != null && dictMetadataDatalabel.Count > 0)
+                //Check if there are any metadata fields we should apply when loading for the first time
+                if (GlobalReferences.TimelapseState.MetadataOnLoad != null && GlobalReferences.TimelapseState.MetadataOnLoad.SelectedMetadata != null &&
+                    GlobalReferences.TimelapseState.MetadataOnLoad.SelectedMetadata.Count > 0)
                 {
                     //Try to set the metadata fields, as well as the date from either the metadata or the file time depending on what is available
-                    this.File.TryReadDateTimeOriginalFromMetadataAndSetMetadataFields(this.FolderPath, this.ImageSetTimeZone, dictMetadataDatalabel);
+                    this.File.TryReadDateTimeOriginalFromMetadataAndSetMetadataFields(this.FolderPath, this.ImageSetTimeZone, GlobalReferences.TimelapseState.MetadataOnLoad);
                 }
                 else 
                 {

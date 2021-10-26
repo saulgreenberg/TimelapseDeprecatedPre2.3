@@ -12,7 +12,7 @@ namespace Timelapse.Dialog
         public TimeSpan EpisodeTimeThreshold { get; set; }
         #endregion
 
-        #region COnstructore, Loaded
+        #region Constructore, Loaded
         public EpisodeOptions(TimeSpan timeDifferenceThreshold, Window owner)
         {
             this.InitializeComponent();

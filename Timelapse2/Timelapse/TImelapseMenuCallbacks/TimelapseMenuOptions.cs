@@ -82,20 +82,20 @@ namespace Timelapse
         }
         #endregion
 
+        #region Ask to PopulateMetadata
+        private void MenuItemAskToPopulateMetadataOptions_Click(object sender, RoutedEventArgs e)
+        {
+            // Toggle whether we should ask to populate metadata when new files are first loaded.
+            this.State.MetadataAskOnLoad = this.MenuItemPopulateMetadataWhenLoadingOptions.IsChecked;
+        }
+        #endregion
+        
         #region Episode ShowHide / AdjustThreshold
         private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
         {
             this.EpisodeShowHide(!Episodes.ShowEpisodes);
             return;
         }
-
-        #region Ask to PopulateMetadata
-        private void MenuItemAskToPopulateMetadataOptions_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-        #endregion
-
         public void EpisodeShowHide(bool show)
         {
             Episodes.ShowEpisodes = show;

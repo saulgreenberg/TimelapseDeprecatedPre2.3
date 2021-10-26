@@ -212,6 +212,9 @@
     <Compile Include="Dialog\MissingFoldersLocateFolders.xaml.cs">
       <DependentUpon>MissingFoldersLocateFolders.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\PopulateFieldsWithMetadataOnLoad.xaml.cs">
+      <DependentUpon>PopulateFieldsWithMetadataOnLoad.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\PopulateFieldWithEpisodeData.xaml.cs">
       <DependentUpon>PopulateFieldWithEpisodeData.xaml</DependentUpon>
     </Compile>
@@ -230,6 +233,7 @@
     <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\ListComparisonEnum.cs" />
+    <Compile Include="Enums\MetadataToolEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
     <Compile Include="Enums\RecognitionType.cs" />
     <Compile Include="Enums\SelectTypesEnum.cs" />
@@ -329,6 +333,7 @@
     <Compile Include="DataStructures\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
+    <Compile Include="DataStructures\MetadataOnLoad.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDuplicates.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
@@ -472,6 +477,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\MissingFoldersLocateFolders.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\PopulateFieldsWithMetadataOnLoad.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

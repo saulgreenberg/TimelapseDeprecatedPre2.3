@@ -340,8 +340,7 @@ namespace Timelapse.Database
             foreach (KeyValuePair<string, string> kvp in dictMetadataDatalabel)
             {
                 string datalabel = kvp.Value;
-                string metadataName = kvp.Key;
-               
+
                 if (false == this.Contains(datalabel))
                 {
                     // NOTE: We should do this check well before this method is called, where dictMetadataDatalabel should only contain
@@ -355,7 +354,7 @@ namespace Timelapse.Database
             try
             {
                 int count = dictMetadataDatalabel.Count;
-                
+
                 // Get the metadata field names and update the ones that matcj
                 foreach (KeyValuePair<string, ImageMetadata> metadata in metadataDictionary)
                 {
@@ -386,128 +385,122 @@ namespace Timelapse.Database
         #endregion
 
         #region Public Methods - Try to Read the Date from the file's Metadata
-        public DateTimeAdjustmentEnum TryReadDateTimeOriginalFromMetadataAndSetMetadataFields(string folderPath, TimeZoneInfo imageSetTimeZone, Dictionary<string, string> dictMetadataDatalabel)
+        // PERFORMANCE Trying to read metadata and date/time from the image data could be somewhat expensive, especially if ExifTool is used.
+        // Tune this up as much as possible to ensure that only a single read from the file is done (especially the ExifTool side), and that the ExifTool is reused.
+        // We may have to create the exiftool in the calling method, so that we can reuse it. 
+        public DateTimeAdjustmentEnum TryReadDateTimeOriginalFromMetadataAndSetMetadataFields(string folderPath, TimeZoneInfo imageSetTimeZone, MetadataOnLoad metadataOnLoad)
         {
             try
             {
                 Dictionary<string, string> validatedDictMetadataDatalabel = new Dictionary<string, string>();
-                // The Metadata extractor data structure organizes the various fields in by directories (e.g., exifSubIFd),
-                // and then by tags in each directory
-                IReadOnlyList<MetadataDirectory> metadataDirectories = null;
+                Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
 
-                // If we can't read the file, it will jump into the catch
-                using (FileStream fS = new FileStream(this.GetFilePath(folderPath), FileMode.Open, FileAccess.Read, FileShare.Read, 64, FileOptions.SequentialScan))
+                if (metadataOnLoad.MetadataToolSelected == MetadataToolEnum.MetadataExtractor)
                 {
-                    // Note that if we can't read the file, it will immediately jump into the catch
-                    metadataDirectories = ImageMetadataReader.ReadMetadata(fS);
+                    // MetadataExtractor - specific code
+                    metadata = ImageMetadataDictionary.LoadMetadata(this.GetFilePath(folderPath));
                 }
-
-                // Deal with setting the various non-date metadata fields first.
-                // We do this by looking for each desired tag in each directory.
-
-                // First, check for valid data labels (the data label will be in kvp.Value)
-                // TODO: We should do this check well before this method is called, where dictMetadataDatalabel should only contain
-                // valid data labels. Otherwise we will have excessive checks
-                // Best by checking against the template,  
-                foreach (KeyValuePair<string, string> kvp in dictMetadataDatalabel)
+                else // if metadataToolSelected == MetadataToolEnum.ExifTool
                 {
-                    if (this.Contains(kvp.Value))
+                    //// ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
+                    //metadata.Clear();
+                    //Dictionary<string, string> exifData = this.MetadataGrid.ExifTool.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
+                    //foreach (string tag in tags)
+                    //{
+                    //    if (exifData.ContainsKey(tag))
+                    //    {
+                    //        metadata.Add(tag, new Timelapse.Util.ImageMetadata(String.Empty, tag, exifData[tag]));
+                    //    }
+                    //}
+                }
+                string dataLabelToUpdate = "";
+                foreach (KeyValuePair<string, string> kvp in metadataOnLoad.SelectedMetadata)
+                {
+                    string metadataTag = kvp.Key;
+                    string abbreviatedMetadataTag = metadataTag.Substring(metadataTag.LastIndexOf(".") + 1);
+                    dataLabelToUpdate = kvp.Value;
+                    bool containsKey = false;
+
+                    // For some reason, metadata.ContainKey wasn't working, so I am doing it manually
+                    foreach (string key in metadata.Keys)
                     {
-                        // The validated dictionary will skip over key value pairs whose data label does not exist.
-                        validatedDictMetadataDatalabel.Add(kvp.Key, kvp.Value);
+                        if (key == metadataTag)
+                        {
+                            containsKey = true;
+                            break;
+                        }
+                    }
+                    if (containsKey == false)
+                    {
+                        // Skip this metadata key as it was not found in the file's metadata
                         continue;
                     }
-                    else
-                    {
-                        //System.Diagnostics.Debug.Print(String.Format("Warning: data label {0} does not exist", kvp.Value));
-                    }
+                    // The current file contains this metadata key, so lets get this file's value so we can assign it to this image's row.
+                    this.Row.SetField(kvp.Value, metadata[metadataTag].Value);
                 }
-
-                foreach (MetadataDirectory metadataDirectory in metadataDirectories)
-                {
-                    int count = dictMetadataDatalabel.Count;
-                    foreach (KeyValuePair<string,string> kvp in validatedDictMetadataDatalabel)
-                    {
-                        IReadOnlyList<Tag> tags = metadataDirectory.Tags;
-                        Tag tag = tags.FirstOrDefault(x => x.Name == kvp.Key);
-                        if (tag == null)
-                        {
-                            //System.Diagnostics.Debug.Print("No such tag in : " + metadataDirectory.Name);
-                        }
-                        else 
-                        {
-                            this.Row.SetField(kvp.Value, tag.Description);
-                            count--;
-                            //System.Diagnostics.Debug.Print("Tag: " + tag.Name + "|" + tag.Description);
-                            if (0 == count)
-                            {
-                                // We've found all matching metadata fields
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // Now deal with the date
-                ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-                if (exifSubIfd == null)
-                {
-                    return DateTimeAdjustmentEnum.MetadataNotUsed;
-                }
-                if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out DateTime dateTimeOriginal) == false)
-                {
-                    // We couldn't read the metadata. In case its a reconyx camera, the fallback is to use the Reconyx-specific metadata 
-                    ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
-                    if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false))
-                    {
-                        return DateTimeAdjustmentEnum.MetadataNotUsed;
-                    }
-                }
-                DateTimeOffset exifDateTime = DateTimeHandler.CreateDateTimeOffset(dateTimeOriginal, imageSetTimeZone);
-
-                // get the current date time
-                DateTimeOffset currentDateTime = this.DateTimeIncorporatingOffset;
-                // measure the extent to which the file time and 'image taken' metadata are consistent
-                bool dateAdjusted = currentDateTime.Date != exifDateTime.Date;
-                bool timeAdjusted = currentDateTime.TimeOfDay != exifDateTime.TimeOfDay;
-                if (dateAdjusted || timeAdjusted)
-                {
-                    this.SetDateTimeOffset(exifDateTime);
-                }
-
-                // At least with several Bushnell Trophy HD and Aggressor models (119677C, 119775C, 119777C) file times are sometimes
-                // indicated an hour before the image taken time during standard time.  This is not known to occur during daylight 
-                // savings time and does not occur consistently during standard time.  It is problematic in the sense time becomes
-                // scrambled, meaning there's no way to detect and correct cases where an image taken time is incorrect because a
-                // daylight-standard transition occurred but the camera hadn't yet been serviced to put its clock on the new time,
-                // and needs to be reported separately as the change of day in images taken just after midnight is not an indicator
-                // of day-month ordering ambiguity in the image taken metadata.
-                bool standardTimeAdjustment = exifDateTime - currentDateTime == TimeSpan.FromHours(1);
-
-                // snap to metadata time and return the extent of the time adjustment
-                if (standardTimeAdjustment)
-                {
-                    return DateTimeAdjustmentEnum.MetadataDateAndTimeOneHourLater;
-                }
-                if (dateAdjusted && timeAdjusted)
-                {
-                    return DateTimeAdjustmentEnum.MetadataDateAndTimeUsed;
-                }
-                if (dateAdjusted)
-                {
-                    return DateTimeAdjustmentEnum.MetadataDateUsed;
-                }
-                if (timeAdjusted)
-                {
-                    return DateTimeAdjustmentEnum.MetadataTimeUsed;
-                }
-                return DateTimeAdjustmentEnum.SameFileAndMetadataTime;
+                return this.TryReadDateTimeOriginalFromMetadata(folderPath, imageSetTimeZone);
             }
             catch
             {
                 return DateTimeAdjustmentEnum.MetadataNotUsed;
             }
         }
+        //    // Now deal with the date
+        //    ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+        //    if (exifSubIfd == null)
+        //    {
+        //        return DateTimeAdjustmentEnum.MetadataNotUsed;
+        //    }
+        //    if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out DateTime dateTimeOriginal) == false)
+        //    {
+        //        // We couldn't read the metadata. In case its a reconyx camera, the fallback is to use the Reconyx-specific metadata 
+        //        ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
+        //        if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTimeOriginal) == false))
+        //        {
+        //            return DateTimeAdjustmentEnum.MetadataNotUsed;
+        //        }
+        //    }
+        //    DateTimeOffset exifDateTime = DateTimeHandler.CreateDateTimeOffset(dateTimeOriginal, imageSetTimeZone);
+
+        //    // get the current date time
+        //    DateTimeOffset currentDateTime = this.DateTimeIncorporatingOffset;
+        //    // measure the extent to which the file time and 'image taken' metadata are consistent
+        //    bool dateAdjusted = currentDateTime.Date != exifDateTime.Date;
+        //    bool timeAdjusted = currentDateTime.TimeOfDay != exifDateTime.TimeOfDay;
+        //    if (dateAdjusted || timeAdjusted)
+        //    {
+        //        this.SetDateTimeOffset(exifDateTime);
+        //    }
+
+        //    // At least with several Bushnell Trophy HD and Aggressor models (119677C, 119775C, 119777C) file times are sometimes
+        //    // indicated an hour before the image taken time during standard time.  This is not known to occur during daylight 
+        //    // savings time and does not occur consistently during standard time.  It is problematic in the sense time becomes
+        //    // scrambled, meaning there's no way to detect and correct cases where an image taken time is incorrect because a
+        //    // daylight-standard transition occurred but the camera hadn't yet been serviced to put its clock on the new time,
+        //    // and needs to be reported separately as the change of day in images taken just after midnight is not an indicator
+        //    // of day-month ordering ambiguity in the image taken metadata.
+        //    bool standardTimeAdjustment = exifDateTime - currentDateTime == TimeSpan.FromHours(1);
+
+        //    // snap to metadata time and return the extent of the time adjustment
+        //    if (standardTimeAdjustment)
+        //    {
+        //        return DateTimeAdjustmentEnum.MetadataDateAndTimeOneHourLater;
+        //    }
+        //    if (dateAdjusted && timeAdjusted)
+        //    {
+        //        return DateTimeAdjustmentEnum.MetadataDateAndTimeUsed;
+        //    }
+        //    if (dateAdjusted)
+        //    {
+        //        return DateTimeAdjustmentEnum.MetadataDateUsed;
+        //    }
+        //    if (timeAdjusted)
+        //    {
+        //        return DateTimeAdjustmentEnum.MetadataTimeUsed;
+        //    }
+        //    return DateTimeAdjustmentEnum.SameFileAndMetadataTime;
+        //}
+
         #endregion
         #region Public Methods - Try to Read the Date from the file's Metadata
         public DateTimeAdjustmentEnum TryReadDateTimeOriginalFromMetadata(string folderPath, TimeZoneInfo imageSetTimeZone)
@@ -525,7 +518,7 @@ namespace Timelapse.Database
                 {
                     metadataDirectories = ImageMetadataReader.ReadMetadata(fS);
                 }
-                
+
                 ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
                 if (exifSubIfd == null)
                 {

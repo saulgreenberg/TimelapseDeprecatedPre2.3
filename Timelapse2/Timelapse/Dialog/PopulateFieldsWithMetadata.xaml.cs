@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
@@ -100,7 +101,7 @@ namespace Timelapse.Dialog
             this.WindowCloseButtonIsEnabled(false); // Disable the window's close button
 
             // This call does all the actual populating...
-            ObservableCollection<Tuple<string, string, string>> feedbackData = await this.PopulateAsync(this.MetadataGrid.IsMetadataExtractorSelected).ConfigureAwait(true);
+            ObservableCollection<Tuple<string, string, string>> feedbackData = await this.PopulateAsync(this.MetadataGrid.MetadataToolSelected).ConfigureAwait(true);
 
             // Update the UI to its final state
             this.StartDoneButton.IsEnabled = true;
@@ -135,7 +136,7 @@ namespace Timelapse.Dialog
 
         #region Do the work: Populate the database 
         // Populate the database with the metadata for the selected note field
-        private async Task<ObservableCollection<Tuple<string, string, string>>> PopulateAsync(bool? metadataExtractorRBIsChecked)
+        private async Task<ObservableCollection<Tuple<string, string, string>>> PopulateAsync(MetadataToolEnum metadataToolSelected)
         {
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
@@ -180,11 +181,11 @@ namespace Timelapse.Dialog
 
                     ImageRow image = this.FileDatabase.FileTable[imageIndex];
 
-                    if (metadataExtractorRBIsChecked == true)
+                    if (metadataToolSelected == MetadataToolEnum.MetadataExtractor)
                     {   // MetadataExtractor specific code
                         metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.FileDatabase.FolderPath));
                     }
-                    else
+                    else // if metadataToolSelected == MetadataToolEnum.ExifTool
                     {
                         // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
                         metadata.Clear();
