@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
-using Timelapse.ExifTool;
 using Timelapse.Images;
 using Timelapse.Util;
 using Directory = System.IO.Directory;
