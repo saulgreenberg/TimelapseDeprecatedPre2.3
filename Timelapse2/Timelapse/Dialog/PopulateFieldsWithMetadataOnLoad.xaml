@@ -7,7 +7,7 @@
     xmlns:controls="clr-namespace:Timelapse.Controls"
     xmlns:local="clr-namespace:Timelapse.Dialog"
     mc:Ignorable="d"
-    Title="Populate a data field with metadata" 
+    Title="Populate data fields with metadata as new files are loaded" 
 	MinHeight="600" MinWidth="768"
 	Height="856" Width="840"
 	ResizeMode="CanResizeWithGrip"

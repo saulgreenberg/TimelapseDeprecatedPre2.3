@@ -26,6 +26,9 @@ namespace Timelapse.Dialog
             this.markableCanvas = markableCanvas;
             this.timelapseState = timelapseState;
 
+            // Metadata Populate On Load
+            this.CheckBoxEnablePopulateMetadataOnLoad.IsChecked = this.timelapseState.MetadataAskOnLoad;
+
             // Tab Order - set to current state.
             this.CheckBoxTabOrderDateTime.IsChecked = this.timelapseState.TabOrderIncludeDateTime;
             this.CheckBoxTabOrderDeleteFlag.IsChecked = this.timelapseState.TabOrderIncludeDeleteFlag;
@@ -84,6 +87,18 @@ namespace Timelapse.Dialog
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
             this.CheckBoxBoundingBoxAnnotate.IsEnabled = this.timelapseState.UseDetections;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
+        }
+        #endregion
+
+        #region Callbacks - Populate Metadata on Load
+        private void ResetPopulateMetadataDefaults_Click(object sender, RoutedEventArgs e)
+        {
+            this.CheckBoxEnablePopulateMetadataOnLoad.IsChecked = false;
+            this.timelapseState.MetadataAskOnLoad = false;
+        }
+        private void CheckBoxEnablePopulateMetadataOnLoad_Click(object sender, RoutedEventArgs e)
+        {
+            this.timelapseState.MetadataAskOnLoad = this.CheckBoxEnablePopulateMetadataOnLoad.IsChecked == true;
         }
         #endregion
 
@@ -297,6 +312,7 @@ namespace Timelapse.Dialog
         {
             this.DialogResult = true;
         }
+
         #endregion
 
 

@@ -514,6 +514,9 @@ namespace Timelapse.Constant
         // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
         public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
 
+        // Metadata: whether to ask for metadata / datalabel pairing when loading new files
+        public const string MetadataAskOnLoad = "MetadataAskOnLoad";
+
         // list of most recently image sets opened by Timelapse
         public const string MostRecentlyUsedImageSets = "MostRecentlyUsedImageSets";
 

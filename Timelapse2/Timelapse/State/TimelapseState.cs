@@ -27,7 +27,6 @@ namespace Timelapse.Util
         public double BoundingBoxThresholdOveride { get; set; }
 
         public MetadataOnLoad MetadataOnLoad { get; set; }
-        public bool MetadataAskOnLoad = false;
 
         #endregion
 
