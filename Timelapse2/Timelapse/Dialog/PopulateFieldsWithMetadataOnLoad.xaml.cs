@@ -18,9 +18,10 @@ namespace Timelapse.Dialog
         private readonly FileDatabase FileDatabase;
         #endregion
 
-
-        // Return a list of key value pairs that define the selected metadata and data label
+        #region Public variables
+        // Return a data structure containing a list of key value pairs that define the selected metadata and data label
         public MetadataOnLoad MetadataOnLoad = new MetadataOnLoad();
+        #endregion
 
         #region Initialization
         public PopulateFieldsWithMetadataOnLoad(Window owner, FileDatabase fileDatabase, string filePath)
@@ -85,6 +86,7 @@ namespace Timelapse.Dialog
         {
             this.MetadataOnLoad.SelectedMetadata = this.MetadataGrid.SelectedMetadata.ToList();
             this.MetadataOnLoad.MetadataToolSelected = this.MetadataGrid.MetadataToolSelected;
+            this.MetadataOnLoad.ExifTool = this.MetadataGrid.ExifTool;
             this.DialogResult = true;
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)

@@ -227,6 +227,9 @@
     <Compile Include="Dialog\PopulateFieldsWithMetadata.xaml.cs">
       <DependentUpon>PopulateFieldsWithMetadata.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\TestSomeCodeDialog.xaml.cs">
+      <DependentUpon>TestSomeCodeDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\CSVDateTimeOptionsEnum.cs" />
     <Compile Include="Enums\FileExtensionEnum.cs" />
@@ -256,6 +259,7 @@
     <Compile Include="DataTables\ControlRow.cs" />
     <Compile Include="Enums\ControlsEnableStateEnum.cs" />
     <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
+    <Compile Include="ExifTool\ExifToolManager.cs" />
     <Compile Include="Extensions\WriteableBitmapExtensions.cs" />
     <Compile Include="SearchingAndSorting\SortTerm.cs" />
     <Compile Include="SearchingAndSorting\SortTerms.cs" />
@@ -497,6 +501,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\PopulateFieldsWithMetadata.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\TestSomeCodeDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

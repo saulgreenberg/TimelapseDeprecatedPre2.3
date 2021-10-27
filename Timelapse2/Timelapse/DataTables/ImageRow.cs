@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Enums;
+using Timelapse.ExifTool;
 using Timelapse.Images;
 using Timelapse.Util;
 using Directory = System.IO.Directory;
@@ -255,6 +256,7 @@ namespace Timelapse.Database
             return duplicate;
         }
         #endregion
+
         #region ColumnTuplesWithWhere - Create it based on the stock Image Row values of the current row
         // Build a ColumnTuplesWithWhere containing the stock column values from the current image row  
         // Where identifies the ID of the current image row - note that this is done in the GetDateTimeColumnTuples()
@@ -383,7 +385,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Public Methods - Try to Read the Date from the file's Metadata
+        #region Public Methods - Try to Read both the metadata and the Date from the file's Metadata
         // PERFORMANCE Trying to read metadata and date/time from the image data could be somewhat expensive, especially if ExifTool is used.
         // Tune this up as much as possible to ensure that only a single read from the file is done (especially the ExifTool side), and that the ExifTool is reused.
         // We may have to create the exiftool in the calling method, so that we can reuse it. 
@@ -401,6 +403,15 @@ namespace Timelapse.Database
                 }
                 else // if metadataToolSelected == MetadataToolEnum.ExifTool
                 {
+                    ExifToolWrapper ExifTool = metadataOnLoad.ExifTool;
+                    if (ExifTool != null)
+                    {
+                        System.Diagnostics.Debug.Print("exiftool alive");
+                    }
+                    else 
+                    {
+                        System.Diagnostics.Debug.Print("exiftool null");
+                    }
                     //// ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
                     //metadata.Clear();
                     //Dictionary<string, string> exifData = this.MetadataGrid.ExifTool.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);

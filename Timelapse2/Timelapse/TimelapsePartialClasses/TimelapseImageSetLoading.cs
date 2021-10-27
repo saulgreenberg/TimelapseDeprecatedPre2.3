@@ -254,10 +254,6 @@ namespace Timelapse
                 }
                 Mouse.OverrideCursor = cursor;
             }
-            //else
-            //{
-            //    System.Diagnostics.Debug.Print("No metadata to add");
-            //}
 
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded

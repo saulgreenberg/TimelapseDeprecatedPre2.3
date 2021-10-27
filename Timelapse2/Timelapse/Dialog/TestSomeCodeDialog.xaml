@@ -1,0 +1,19 @@
+﻿<Window x:Class="Timelapse.Dialog.TestSomeCodeDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Timelapse.Dialog"
+        mc:Ignorable="d"
+        Title="Test Some Code Dialog" Height="450" Width="800">
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Button Name="ButtonStartExif" Content="Start Exif" Click="ButtonStartExif_Click"/>
+            <Button Name="ButtonStopExif" Content="Stop Exif" Click="ButtonStopExif_Click"/>
+            <Button Name="ButtonKillProcesses" Content="Kill Processes" Click="ButtonKillProcesses_Click"/>
+            <Button Name="ButtonShowStatus" Content="Status?" Click="ButtonShowStatus_Click"/>
+            <Button Name="ButtonShowMetadata" Content="Show Metadata" Click="ButtonShowMetadata_Click"/>
+        </StackPanel>
+        <ListBox Name="Feedback"/>
+    </StackPanel>
+</Window>

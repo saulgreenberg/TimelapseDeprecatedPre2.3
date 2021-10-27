@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Timelapse.Enums;
+using Timelapse.ExifTool;
 
 namespace Timelapse
 {
@@ -11,6 +12,8 @@ namespace Timelapse
         public MetadataToolEnum MetadataToolSelected { get; set; }
 
         // The  metadata / data field pairs that should be populated
-        public List<KeyValuePair<string, string>> SelectedMetadata {get; set;}
+        public List<KeyValuePair<string, string>> SelectedMetadata { get; set; }
+
+        public ExifToolWrapper ExifTool { get; set; }
     }
 }
