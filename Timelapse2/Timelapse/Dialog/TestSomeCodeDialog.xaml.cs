@@ -21,7 +21,9 @@ namespace Timelapse.Dialog
     /// </summary>
     public partial class TestSomeCodeDialog : Window
     {
-        ExifToolManager exifManager = new ExifToolManager();
+        private readonly ExifToolManager  exifManager = new ExifToolManager();
+        private readonly string Filepath = @"C:\Users\Owner\Desktop\Test sets\TutorialImageSet - Flat\IMG_0001.JPG";
+
         public TestSomeCodeDialog(Window owner)
         {
             InitializeComponent();
@@ -30,19 +32,29 @@ namespace Timelapse.Dialog
 
         private void ButtonStartExif_Click(object sender, RoutedEventArgs e)
         {
-            this.exifManager.Start();
+            this.exifManager.StartIfNotAlreadyStarted();
             this.StatusFeedback();
         }
 
         private void StatusFeedback()
         {
-            if (this.exifManager.IsStarted())
+            if (this.exifManager.IsStarted)
             {
-                this.Feedback.Items.Add("Started");
+                this.ListFeedback.Items.Insert(0, "Started");
             }
             else
             {
-                this.Feedback.Items.Add("Not Started");
+                this.ListFeedback.Items.Insert(0, "Not Started");
+            }
+        }
+
+        private void ShowExifDataInList(Dictionary<string, string> exifData)
+        {
+            this.ListExifData.Items.Clear();
+            this.ListExifData.Items.Add("Count is " + exifData.Count);
+            foreach (KeyValuePair<string, string> kvp in exifData)
+            {
+                this.ListExifData.Items.Add(kvp.Key + " | " + kvp.Value);
             }
         }
 
@@ -55,8 +67,6 @@ namespace Timelapse.Dialog
         {
             if (this.exifManager != null)
             {
-                //this.exifManager.Stop();
-                //Task.Run(() => this.exifManager.Stop());
                 this.exifManager.Stop();
                 StatusFeedback();
             }
@@ -78,17 +88,29 @@ namespace Timelapse.Dialog
 
         private void ShowMetadata()
         {
-            if (this.exifManager != null && this.exifManager.IsStarted())
+            if (this.exifManager != null && this.exifManager.IsStarted)
             {
-                string file = @"C:\Users\Owner\Desktop\Test sets\TutorialImageSet - Flat\IMG_0001.JPG";
-                DateTime? datetime = this.exifManager.ExifTool.GetCreationTime(file);
-                this.Feedback.Items.Add("creation time: "+ datetime.ToString());
+
+                DateTime? datetime = this.exifManager.ExifTool.GetCreationTime(this.Filepath);
+                this.ListFeedback.Items.Insert (0, "creation time: " + datetime.ToString());
             }
             else
             {
-                this.Feedback.Items.Add("Can't get creation time");
+                this.ListFeedback.Items.Insert(0, "Can't get creation time");
             }
         }
 
+        private void ButtonGetMetadataByTags_Click(object sender, RoutedEventArgs e)
+        {
+            string[] tags = new string[] { "Ambient Temperature", "Ambient Temperature Fahrenheit", "FOOBAR"};
+            Dictionary<string, string> exifData = this.exifManager.FetchExifFrom(this.Filepath, tags);
+            this.ShowExifDataInList(exifData);
+        }
+
+        private void ButtonGetAllMetadata_Click(object sender, RoutedEventArgs e)
+        {
+            Dictionary<string, string> exifData = this.exifManager.FetchExifFrom(this.Filepath);
+            this.ShowExifDataInList(exifData);
+        }
     }
 }

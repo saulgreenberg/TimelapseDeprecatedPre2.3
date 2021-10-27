@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Input;
+using Timelapse.ExifTool;
 
 namespace Timelapse.Util
 {
@@ -28,6 +29,8 @@ namespace Timelapse.Util
 
         public MetadataOnLoad MetadataOnLoad { get; set; }
 
+        public ExifToolManager ExifToolManager { get; set; }
+
         #endregion
 
         #region Private (internal) variables 
@@ -44,6 +47,7 @@ namespace Timelapse.Util
         public TimelapseState()
         {
             this.FirstTimeFileLoading = true;
+            this.ExifToolManager = new ExifToolManager();
             this.Reset();
         }
         #endregion

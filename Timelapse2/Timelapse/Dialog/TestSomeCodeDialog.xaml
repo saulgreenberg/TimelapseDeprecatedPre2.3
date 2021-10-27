@@ -12,8 +12,20 @@
             <Button Name="ButtonStopExif" Content="Stop Exif" Click="ButtonStopExif_Click"/>
             <Button Name="ButtonKillProcesses" Content="Kill Processes" Click="ButtonKillProcesses_Click"/>
             <Button Name="ButtonShowStatus" Content="Status?" Click="ButtonShowStatus_Click"/>
-            <Button Name="ButtonShowMetadata" Content="Show Metadata" Click="ButtonShowMetadata_Click"/>
+            <Button Name="ButtonGetAllMetadata" Content="Get All  Metadata" Click="ButtonGetAllMetadata_Click"/>
+            <Button Name="ButtonGetMetadataByTags" Content="Get Metadata by Tags" Click="ButtonGetMetadataByTags_Click"/>
         </StackPanel>
-        <ListBox Name="Feedback"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0">
+                <ListBox Name="ListFeedback"/>
+            </ScrollViewer>
+            <ScrollViewer Grid.Column="1">
+                <ListBox Name="ListExifData"/>
+            </ScrollViewer>
+        </Grid>
     </StackPanel>
 </Window>

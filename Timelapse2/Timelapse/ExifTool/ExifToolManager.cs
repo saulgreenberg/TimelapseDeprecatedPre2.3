@@ -17,13 +17,22 @@ namespace Timelapse.ExifTool
         private DispatcherTimer KillTimer;
         public ExifToolWrapper ExifTool { get; set; }
 
+        public bool IsStarted
+        {
+            get
+            {
+                if (this.ExifTool == null) return false;
+                return this.ExifTool.Status == ExifToolWrapper.ExeStatus.Ready;
+            }
+        }
+
         public Dictionary<string, ImageMetadata> metadata = new Dictionary<string, ImageMetadata>();
         public ExifToolManager()
         {
-
         }
 
-        public void Start()
+        #region Starting
+        public void StartIfNotAlreadyStarted()
         {
             // Check to see if the exiftool actually needs starting
             if (this.ExifTool == null)
@@ -32,43 +41,48 @@ namespace Timelapse.ExifTool
                 this.ExifTool.Start();
             }
         }
+        #endregion
 
+        #region Stopping
         public void Stop()
         {
             // Check to see if the exiftool actually needs stopping
             if (this.ExifTool != null)
             {
                 Task.Run(() => this.ExifTool.Stop());
-               
+
                 // Sometimes Exiftool process seems to linger. This is a further way to destroy those processes.
                 if (this.KillTimer == null)
                 {
                     //this.KillTimer = new DispatcherTimer(DispatcherPriority.Background, Application.Current.Dispatcher) { Interval = TimeSpan.FromSeconds(1) }; 
                     this.KillTimer = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(1) };
-                    this.KillTimer.Tick += this.KillTimer_Tick; 
+                    this.KillTimer.Tick += this.KillTimer_Tick;
                 }
                 this.KillTimer.Start();
             }
         }
 
+
         // Kill Exiftool processes.
         private void KillTimer_Tick(object sender, EventArgs e)
         {
-            Debug.Print("In kill timer");
-            foreach (var process in Process.GetProcessesByName("exiftool(-k)"))
+            try
             {
-                System.Diagnostics.Debug.Print(process.ProcessName);
-                process.Kill();
+                Debug.Print("In kill timer");
+                foreach (var process in Process.GetProcessesByName("exiftool(-k)"))
+                {
+                    System.Diagnostics.Debug.Print(process.ProcessName);
+                    process.Kill();
+                }
+                KillTimer.Stop();
+                this.ExifTool = null;
             }
-            KillTimer.Stop();
-            this.ExifTool = null;
+            catch
+            {
+                System.Diagnostics.Debug.Print("Catch in KillTimer");
+            }
         }
-
-        public bool IsStarted()
-        {
-            if (this.ExifTool == null) return false;
-            return this.ExifTool.Status == ExifToolWrapper.ExeStatus.Ready;
-        }
+        #endregion
 
         #region Disposing
         // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
@@ -91,6 +105,20 @@ namespace Timelapse.ExifTool
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        #region Fetch ExifData
+        public Dictionary<string, string> FetchExifFrom(string filepath, string[] tags)
+        {
+            this.StartIfNotAlreadyStarted();
+            return this.ExifTool.FetchExifFrom(filepath, tags);
+        }
+
+        public Dictionary<string, string> FetchExifFrom(string filepath)
+        {
+            this.StartIfNotAlreadyStarted();
+            return this.ExifTool.FetchExifFrom(filepath);
         }
         #endregion
     }
