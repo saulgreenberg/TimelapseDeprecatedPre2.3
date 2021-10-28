@@ -38,7 +38,6 @@
 
             <DockPanel LastChildFill="True">
                 <DockPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Stretch" >
-                    
                     <Button x:Name="DoneButton" IsDefault="True"  DockPanel.Dock="Right" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10"  IsEnabled="False" Click="Done_Click">_Populate</Button>
                     <Button x:Name="CancelButton" IsCancel="True" DockPanel.Dock="Right" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="CancelButton_Click">_Cancel</Button>
                     <Button Name="OpenFile" VerticalAlignment="Bottom"  DockPanel.Dock="Left" HorizontalAlignment="Left" Padding="10" Margin="10,10,5,10"  Click="OpenFile_Click">Inspect Another _File's Metadata</Button>

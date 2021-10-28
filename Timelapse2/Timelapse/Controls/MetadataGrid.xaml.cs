@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
 using Timelapse.Enums;
 using Timelapse.ExifTool;
 using Timelapse.Util;
@@ -38,9 +39,9 @@ namespace Timelapse.Controls
         // A handle to the ExifTool Manager
         public ExifToolManager ExifToolManager
         {
-            get 
-            {  
-                return Util.GlobalReferences.TimelapseState.ExifToolManager; 
+            get
+            {
+                return Util.GlobalReferences.TimelapseState.ExifToolManager;
             }
         }
 
@@ -59,7 +60,17 @@ namespace Timelapse.Controls
             }
         }
 
-       
+        // Show or hide the DataLabel Column. If we are just inspecting the metadata, we don't need to show that column
+        public bool HideDataLabelColumn
+        {
+            set
+            {
+                AvailableMetadataDataGrid.Columns[4].Visibility = (value == true)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        } 
+
 
         // A collection of selectedMetadata and Tags
         public ObservableCollection<KeyValuePair<string, string>> SelectedMetadata { get; set; }
@@ -79,9 +90,9 @@ namespace Timelapse.Controls
         }
 
         // The ViewModel, used to populate the grid and to reflect any changed values
-        #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE1006 // Naming Styles
         public ViewModel viewModel { get; set; } = new ViewModel();
-        #pragma warning restore IDE1006 // Naming Styles
+#pragma warning restore IDE1006 // Naming Styles
         #endregion
 
         #region Initialization, Loaded
@@ -115,6 +126,7 @@ namespace Timelapse.Controls
         #region Refresh the grid
         public void Refresh()
         {
+
             if (this.MetadataToolSelected == MetadataToolEnum.MetadataExtractor)
             {
                 this.MetadataExtractorShowImageMetadata();
@@ -123,6 +135,7 @@ namespace Timelapse.Controls
             {
                 this.ExifToolShowImageMetadata();
             }
+            
         }
         #endregion
 
@@ -185,6 +198,8 @@ namespace Timelapse.Controls
         // Checkbox callback sets which metadata tool should be used
         private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
         {
+            Cursor cursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = Cursors.Wait;
             if (this.MetadataExtractorRB.IsChecked == true)
             {
                 this.MetadataExtractorShowImageMetadata();
@@ -193,6 +208,7 @@ namespace Timelapse.Controls
             {
                 this.ExifToolShowImageMetadata();
             }
+            Mouse.OverrideCursor = cursor;
         }
         #endregion
 
@@ -204,6 +220,7 @@ namespace Timelapse.Controls
                 // Clear other combobox fields whose selected value matches the current comboBox selection, 
                 // which guarantees thatmetadatafields will be assigned to unique labels
                 DataGridClearComboBoxesWithMatchingSelectedItem(this.AvailableMetadataDataGrid, cb, "Data field");
+
 
                 // Update SelectedMetadata against the new contents, which in turn may trigger a CollectionChanged event
                 this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.MetadataList, this.SelectedMetadata);

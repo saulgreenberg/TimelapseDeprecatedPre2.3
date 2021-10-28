@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Timelapse.Dialog;
 using Timelapse.ExifTool;
 using Timelapse.Util;
@@ -13,194 +14,61 @@ namespace Timelapse.Editor.Dialog
     /// This dialog displays a list of metadata found in a selected file. 
     /// </summary>
     // Note: There are lots of commonalities between this dialog and DialogPopulate, but its not clear if it's worth the effort of factoring the two.
-    public partial class InspectMetadata : Window, IDisposable
+    public partial class InspectMetadata : Window
     {
-        private Dictionary<string, ImageMetadata> metadataDictionary = new Dictionary<string, ImageMetadata>();
-        private string metadataName = String.Empty;
+        #region Private variables
+        private string FilePath;
+        #endregion
 
-
-        private string imageFilePath;
-        private ExifToolWrapper exifTool;
 
         public InspectMetadata(Window owner)
         {
             this.InitializeComponent();
             this.Owner = owner;
+            this.FilePath = String.Empty;
         }
 
         // After the interface is loaded, try to adjust the position of the dialog box
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
-
-            // Add callbacks to the radio buttons here, so they are not invoked when the window is loaded.
-            this.MetadataExtractorRB.Checked += this.MetadataToolType_Checked;
-            this.ExifToolRB.Checked += this.MetadataToolType_Checked;
+            this.MetadataGrid.HideDataLabelColumn = true;
+            this.MetadataGrid.SelectedMetadata.CollectionChanged += this.SelectedMetadata_CollectionChanged;
         }
 
-        #region MetadataExtractor-specific methods
-        // Retrieve and show a single image's metadata in the datagrid
-        private void MetadataExtractorShowImageMetadata()
-        {
-            this.metadataDictionary = ImageMetadataDictionary.LoadMetadata(this.imageFilePath);
-            // If there is no metadata, this is an easy way to inform the user
-            if (this.metadataDictionary.Count == 0)
-            {
-                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the chosen image", String.Empty));
-            }
-
-            // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values
-            List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
-            foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
-            {
-                metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
-            }
-            this.dataGrid.ItemsSource = metadataList;
-        }
-        #endregion
-
-        #region ExifTool-specific methods
-        private void ExifToolShowImageMetadata()
-        {
-            // Clear the dictionary so we get fresh contents
-            this.metadataDictionary.Clear();
-
-            // Start the exifTool process if its not already started
-            if (this.exifTool == null)
-            {
-                this.exifTool = new ExifToolWrapper();
-                this.exifTool.Start();
-            }
-
-            // Fetch the exif data using ExifTool
-            Dictionary<string, string> exifDictionary = this.exifTool.FetchExifFrom(this.imageFilePath);
-
-            // If there is no metadata, inform the user by setting bogus dictionary values which will appear on the grid
-            if (exifDictionary.Count == 0)
-            {
-                this.metadataDictionary.Add("Empty", new Timelapse.Util.ImageMetadata("Empty", "No metadata found in the currently displayed image", "Navigate to a displayable image"));
-            }
-
-            // In order to populate the metadataDictionary and datagrid , we have to unpack the ExifTool dictionary, recreate the dictionary, and create a list containing four values
-            List<Tuple<string, string, string, string>> metadataList = new List<Tuple<string, string, string, string>>();
-            foreach (KeyValuePair<string, string> metadata in exifDictionary)
-            {
-                this.metadataDictionary.Add(metadata.Key, new Timelapse.Util.ImageMetadata(String.Empty, metadata.Key, metadata.Value));
-                metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, String.Empty, metadata.Key, metadata.Value));
-            }
-            this.dataGrid.ItemsSource = metadataList;
-        }
-        #endregion
-
-        #region Datagrid callbacks
-        // Configuring the data grid appearance and select the first row
-        private void Datagrid_AutoGeneratedColumns(object sender, EventArgs e)
-        {
-            this.dataGrid.Columns[0].Header = "Key";
-            this.dataGrid.Columns[1].Header = "Metadata kind";
-            this.dataGrid.Columns[2].Header = "Metadata name";
-            this.dataGrid.Columns[3].Header = "Example value from current file";
-            this.dataGrid.SortByColumnAscending(2);
-            this.dataGrid.Columns[0].Visibility = Visibility.Collapsed;
-            this.dataGrid.Columns[1].Visibility = Visibility.Collapsed;
-            this.dataGrid.Columns[1].Width = 130;
-
-            // Select the first row
-            if (this.dataGrid.Items.Count > 0)
-            {
-                this.dataGrid.SelectedIndex = 0;
-                this.dataGrid.Focus();
-            }
-        }
-
-        // The user has selected a row. Get the metadata from that row, and display the metadata name.
-        private void Datagrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
-        {
-            IList<DataGridCellInfo> selectedcells = e.AddedCells;
-
-            // Make sure there are actually some selected cells
-            if (selectedcells == null || selectedcells.Count == 0)
-            {
-                return;
-            }
-
-            // We should only have a single selected cell, so just grab the first one
-            DataGridCellInfo di = selectedcells[0];
-
-            // the selected item is the entire row, where the format returned is [MetadataName , MetadataValue] 
-            // Parse out the metadata name and display it
-            String[] s = di.Item.ToString().Split(',');  // Get the "[Metadataname" portion before the ','
-
-            this.metadataName = s[0].Substring(1);       // Remove the leading '[' or '('
-            if (this.metadataDictionary.ContainsKey(this.metadataName))
-            {
-                this.MetadataDisplayText.Text = this.metadataDictionary[this.metadataName].Name;
-                this.MetadataDisplayText.ToolTip = this.MetadataDisplayText.Text;
-            }
-            else
-            {
-                this.MetadataDisplayText.Text = String.Empty;
-                this.MetadataDisplayText.ToolTip = String.Empty;
-            }
-        }
-        #endregion
-
-        #region UI Button Callbacks
+         #region UI Button Callbacks
         // When the user opens the file, get its metadata and display it in the datagrid
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             string filter = String.Format("Images and videos (*{0};*{1};*{2};*{3})|*{0};*{1};*{2};*{3}", Constant.File.JpgFileExtension, Constant.File.AviFileExtension, Constant.File.Mp4FileExtension, Constant.File.ASFFileExtension);
-            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.imageFilePath) == true)
+            if (Dialogs.TryGetFileFromUserUsingOpenFileDialog("Select a typical file to inspect", ".", filter, Constant.File.JpgFileExtension, out this.FilePath) == true)
             {
-                this.ImageName.Content = Path.GetFileName(this.imageFilePath);
-                this.ImageName.ToolTip = this.ImageName.Content;
-                if (this.MetadataExtractorRB.IsChecked == true)
-                {
-                    this.MetadataExtractorShowImageMetadata();
-                }
-                else
-                {
-                    this.ExifToolShowImageMetadata();
-                }
+                Mouse.OverrideCursor = Cursors.Wait;
+                this.GetMetadataFromFile();
+                this.MetadataGrid.viewModel.FilePath = this.FilePath;
+                this.MetadataGrid.Refresh();
+                Mouse.OverrideCursor = null;
             }
         }
 
-        private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
+        private void GetMetadataFromFile ()
         {
-            if (this.MetadataExtractorRB.IsChecked == true)
-            {
-                this.MetadataExtractorShowImageMetadata();
-            }
-            else
-            {
-                this.ExifToolShowImageMetadata();
-            }
-        }
-
-        private void OkayButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
+            this.MetadataGrid.viewModel.FilePath = this.FilePath;
+            this.MetadataGrid.Refresh();
         }
         #endregion
 
-        #region Disposing
-        protected virtual void Dispose(bool disposing)
+        #region Change Notifications
+        private void SelectedMetadata_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            if (disposing)
-            {
-                // dispose managed resources
-                if (this.exifTool != null)
-                {
-                    this.exifTool.Dispose();
-                }
-            }
-            // free native resources
+            // MAY NOT NEED THIS
         }
+        #endregion
 
-        public void Dispose()
+        #region Button callbacks
+        private void OkayButton_Click(object sender, RoutedEventArgs e)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            this.DialogResult = true;
         }
         #endregion
     }

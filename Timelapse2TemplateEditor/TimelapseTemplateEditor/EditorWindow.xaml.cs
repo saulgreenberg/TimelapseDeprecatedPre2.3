@@ -40,6 +40,8 @@ namespace Timelapse.Editor
         // database where the template is stored
         private TemplateDatabase templateDatabase;
 
+        public TimelapseState State { get; set; }                       // Status information concerning the state of the UI
+
         #region Initialization, Window Loading, Closing and Crashing
         /// <summary>
         /// Starts the UI.
@@ -71,6 +73,9 @@ namespace Timelapse.Editor
 
             // Populate the most recent databases list
             this.MenuFileRecentTemplates_Refresh(true);
+
+            this.State = new TimelapseState();
+            GlobalReferences.TimelapseState = this.State;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -415,10 +420,9 @@ namespace Timelapse.Editor
         /// </summary>
         private void MenuItemInspectImageMetadata_Click(object sender, RoutedEventArgs e)
         {
-            using (InspectMetadata inspectMetadata = new InspectMetadata(this))
-            {
-                inspectMetadata.ShowDialog();
-            }
+            InspectMetadata inspectMetadata = new InspectMetadata(this);
+            inspectMetadata.ShowDialog();
+            this.State.ExifToolManager.Stop();
         }
         #endregion
 
