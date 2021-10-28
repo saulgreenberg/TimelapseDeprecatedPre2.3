@@ -45,7 +45,7 @@
                   EnableRowVirtualization="False"
                   AutoGenerateColumns="False" 
                   CanUserSortColumns="False"
-                  ItemsSource="{Binding Path=metadataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                  ItemsSource="{Binding Path=MetadataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 
             <!--Column Header Style-->
             <DataGrid.ColumnHeaderStyle>
@@ -64,7 +64,7 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox 
-                                ItemsSource="{Binding ElementName=MainWindow, Path=DataContext.noteLabels}"
+                                ItemsSource="{Binding ElementName=MainWindow, Path=DataContext.NoteLabels}"
                                 SelectedItem="{Binding AssignedLabel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                 SelectionChanged="ComboBox_SelectionChanged"
                                 />

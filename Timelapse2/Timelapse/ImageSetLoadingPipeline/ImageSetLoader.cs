@@ -165,7 +165,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                                                       this.LastIndexInsertComplete = fileIndex;
                                                   });
             });
-            // End Pass 2
+            // End Pass 2 
         }
         #endregion
 

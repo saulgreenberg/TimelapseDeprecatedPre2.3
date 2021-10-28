@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Timelapse.Util
 {
+    // This base class lets us implement a simplified MVVM pattern
+    // An example of using it is found in the MetadataGrid user control
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

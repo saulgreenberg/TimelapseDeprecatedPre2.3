@@ -142,10 +142,6 @@ namespace Timelapse.Dialog
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<Tuple<string, string, string>> feedbackData = new ObservableCollection<Tuple<string, string, string>>();
 
-            // Get the Metadata / Label pairs i.e., the rows with selected labels
-            //Dictionary<string, string> selectedMetadataDataLabelPairs = GetSelectedFromMetadataList(this.MetadataGrid.viewModel.metadataList);
-
-
             // if there are no metadata / label pairs, we are done.
             if (this.MetadataGrid.SelectedMetadata.Count == 0)
             {
@@ -182,14 +178,15 @@ namespace Timelapse.Dialog
                     ImageRow image = this.FileDatabase.FileTable[imageIndex];
 
                     if (metadataToolSelected == MetadataToolEnum.MetadataExtractor)
-                    {   // MetadataExtractor specific code
+                    {   
+                        // MetadataExtractor specific code
                         metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.FileDatabase.FolderPath));
                     }
                     else // if metadataToolSelected == MetadataToolEnum.ExifTool
                     {
                         // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
                         metadata.Clear();
-                        Dictionary<string, string> exifData = this.MetadataGrid.ExifTool.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
+                        Dictionary<string, string> exifData = this.MetadataGrid.ExifToolManager.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
                         foreach (string tag in tags)
                         {
                             if (exifData.ContainsKey(tag))
@@ -213,21 +210,11 @@ namespace Timelapse.Dialog
                         string metadataTag = kvp.Key;
                         string abbreviatedMetadataTag = metadataTag.Substring(metadataTag.LastIndexOf(".") + 1);
                         dataLabelToUpdate = kvp.Value;
-                        bool containsKey = false;
 
-                        // For some reason, metadata.ContainKey wasn't working, so I am doing it manually
-                        foreach (string key in metadata.Keys)
-                        {
-                            if (key == metadataTag)
-                            {
-                                containsKey = true;
-                                break;
-                            }
-                        }
-
-                        if (containsKey == false)
+                        if (false == metadata.ContainsKey(metadataTag))
                         {
                             // This just skips this metadata as it was not found in the file's metadata
+                            // However, we still need to supply feedback and (if the user has asked for that option) to clear the data field
                             if (this.clearIfNoMetadata)
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, String.Empty) };

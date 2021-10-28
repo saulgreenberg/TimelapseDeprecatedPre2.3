@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Timelapse.ExifTool;
 
 namespace Timelapse.Dialog
@@ -78,25 +67,6 @@ namespace Timelapse.Dialog
             {
                 System.Diagnostics.Debug.Print(process.ProcessName);
                 process.Kill();
-            }
-        }
-
-        private void ButtonShowMetadata_Click(object sender, RoutedEventArgs e)
-        {
-            this.ShowMetadata();
-        }
-
-        private void ShowMetadata()
-        {
-            if (this.exifManager != null && this.exifManager.IsStarted)
-            {
-
-                DateTime? datetime = this.exifManager.ExifTool.GetCreationTime(this.Filepath);
-                this.ListFeedback.Items.Insert (0, "creation time: " + datetime.ToString());
-            }
-            else
-            {
-                this.ListFeedback.Items.Insert(0, "Can't get creation time");
             }
         }
 

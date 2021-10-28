@@ -31,7 +31,6 @@ namespace Timelapse.Dialog
             this.FileDatabase = fileDatabase;
             this.Owner = owner;
         }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
@@ -49,7 +48,8 @@ namespace Timelapse.Dialog
                     collectLabels.Add(control.DataLabel, control.Label);
                 }
             }
-            // Setting DictDataLabel_Label will result in desired side effects in the MetadataGrid user control
+
+            // Setting DictDataLabel_Label will result in desired updating side effects in the MetadataGrid user control
             this.MetadataGrid.DictDataLabel_Label = collectLabels;
             this.MetadataGrid.SelectedMetadata.CollectionChanged += this.SelectedMetadata_CollectionChanged;
         }
@@ -84,9 +84,8 @@ namespace Timelapse.Dialog
         }
         private void Done_Click(object sender, RoutedEventArgs e)
         {
-            this.MetadataOnLoad.SelectedMetadata = this.MetadataGrid.SelectedMetadata.ToList();
+            this.MetadataOnLoad.SelectedMetadataDataLabels = this.MetadataGrid.SelectedMetadata.ToList();
             this.MetadataOnLoad.MetadataToolSelected = this.MetadataGrid.MetadataToolSelected;
-            this.MetadataOnLoad.ExifTool = this.MetadataGrid.ExifTool;
             this.DialogResult = true;
         }
         private void CancelButton_Click(object sender, RoutedEventArgs e)

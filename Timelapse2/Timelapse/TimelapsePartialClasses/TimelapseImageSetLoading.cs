@@ -357,6 +357,10 @@ namespace Timelapse
                         Dialogs.ImageSetLoadingDataImportedFromOldXMLFileDialog(this, SuccessSkippedFileCounter.Item1, SuccessSkippedFileCounter.Item2);
                     }
                 }
+
+                // Stop the ExifToolManager if it was invoked while loading files, which can occurs when populating metadata to a file via the EXIFTool on load.
+                this.State.ExifToolManager.Stop();
+
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator
             };
 
