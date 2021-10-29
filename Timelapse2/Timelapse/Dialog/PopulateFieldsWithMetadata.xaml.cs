@@ -26,14 +26,17 @@ namespace Timelapse.Dialog
 
         // Track the checkbox for clearing values if no matching metadata is found
         private bool clearIfNoMetadata;
+
+        private readonly bool useDateMetadataOnly;
         #endregion
 
         #region Initialization
-        public PopulateFieldsWithMetadata(Window owner, FileDatabase fileDatabase, string filePath) : base(owner)
+        public PopulateFieldsWithMetadata(Window owner, FileDatabase fileDatabase, string filePath, bool useDateMetadataOnly) : base(owner)
         {
             InitializeComponent();
             this.FilePath = filePath;
             this.FileDatabase = fileDatabase;
+            this.useDateMetadataOnly = useDateMetadataOnly;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -42,13 +45,32 @@ namespace Timelapse.Dialog
             this.InitalizeProgressHandler(this.BusyCancelIndicator);
             this.MetadataGrid.viewModel.FilePath = this.FilePath;
 
+            if (this.useDateMetadataOnly)
+            {
+                // The default is to use the Populate Fields ... help and Window title, and to include the Clear checkbox
+                // If we are using it only to select date metadata, we need to switch to that
+                this.PopulateAllMessage.Visibility = Visibility.Collapsed;
+                this.DatesOnlyMessage.Visibility = Visibility.Visible;
+                this.Title = "Read dates and times from a metadata field";
+                this.ClearIfNoMetadata.Visibility = Visibility.Collapsed;
+            }
+
+            // Set the grid to its all metadata form or its date only form  
+            this.MetadataGrid.UseDateMetadataOnly = this.useDateMetadataOnly;
+
             // Construct a dictionary of the available note fields as labels|datalabels
             // and a list of only the note field labels which will be used to populate the ComboBoxes in the datagrid
             Dictionary<string, string> collectLabels = new Dictionary<string, string>();
             foreach (ControlRow control in this.FileDatabase.Controls)
             {
-                if (control.Type == Constant.Control.Note)
+                if (true == this.useDateMetadataOnly && control.Type == Constant.DatabaseColumn.DateTime)
                 {
+                    // Only include the DateTime control
+                    collectLabels.Add(control.DataLabel, control.Label);
+                }
+                else if (false == this.useDateMetadataOnly && control.Type == Constant.Control.Note)
+                {
+                    // Include all Note controls
                     collectLabels.Add(control.DataLabel, control.Label);
                 }
             }
@@ -178,7 +200,7 @@ namespace Timelapse.Dialog
                     ImageRow image = this.FileDatabase.FileTable[imageIndex];
 
                     if (metadataToolSelected == MetadataToolEnum.MetadataExtractor)
-                    {   
+                    {
                         // MetadataExtractor specific code
                         metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.FileDatabase.FolderPath));
                     }
@@ -219,18 +241,36 @@ namespace Timelapse.Dialog
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, String.Empty) };
                                 imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field is cleared"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field cleared"));
                             }
                             else
                             {
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field remains unaltered"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field unchanged"));
                             }
                             continue;
                         }
                         string metadataValue = metadata[metadataTag].Value;
                         ColumnTuplesWithWhere imageUpdate;
-                        imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                        feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                        if (this.useDateMetadataOnly)
+                        {
+                            if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
+                            {
+                                image.SetDateTimeOffset(metadataDateTime);
+
+                                imageUpdate = image.GetDateTimeColumnTuples();
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                            }
+                            else
+                            {
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, String.Format("Data field unchanged - '{0}' is not a valid date/time.", metadataValue)));
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
+                            feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                        }
                         imagesToUpdate.Add(imageUpdate);
                     }
                 }

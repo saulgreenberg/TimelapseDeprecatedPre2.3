@@ -369,6 +369,7 @@ namespace Timelapse.Database
                 {
                     return DateTimeAdjustmentEnum.MetadataNotUsed;
                 }
+
                 if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out DateTime dateTimeOriginal) == false)
                 {
                     // We couldn't read the metadata. In case its a reconyx camera, the fallback is to use the Reconyx-specific metadata 

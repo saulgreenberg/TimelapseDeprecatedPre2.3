@@ -638,8 +638,8 @@ namespace Timelapse.Constant
                 "yyyy-MM-ddTHH:mm",
                 "yyyy:MM:dd",
                 "yyyy-MM-dd",
-                "yyyy-MM",
-                "yyyy",
+                //"yyyy-MM", We want at least a complete well formed date
+                //"yyyy",
                 // File.File Modified Date
                 "ddd MMM dd HH:mm:ss K yyyy"
             };

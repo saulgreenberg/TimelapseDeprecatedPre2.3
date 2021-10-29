@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -69,8 +70,11 @@ namespace Timelapse.Controls
                     ? Visibility.Collapsed
                     : Visibility.Visible;
             }
-        } 
+        }
 
+        // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+        // Otherwise all found metadata fields will be displayed
+        public bool UseDateMetadataOnly { get; set; } = false;
 
         // A collection of selectedMetadata and Tags
         public ObservableCollection<KeyValuePair<string, string>> SelectedMetadata { get; set; }
@@ -98,7 +102,7 @@ namespace Timelapse.Controls
         #region Initialization, Loaded
         public MetadataGrid()
         {
-            this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.MetadataList, this.SelectedMetadata);
+            this.SelectedMetadata = this.GetSelectedFromMetadataList(this.viewModel.MetadataList, this.SelectedMetadata);
             DataContext = viewModel;
             InitializeComponent();
 
@@ -135,7 +139,6 @@ namespace Timelapse.Controls
             {
                 this.ExifToolShowImageMetadata();
             }
-            
         }
         #endregion
 
@@ -158,7 +161,17 @@ namespace Timelapse.Controls
             // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values, plus a fifth item that represents the empty datalabel as ComboBox
             foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
-                temp.Add(new DataContents(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value, String.Empty));
+                // Reconyx cameras, for some reason, do not include the "Exif IFD0.Date/Time" tag, which should be there.
+                // Instead, they include a Reconyx HyperFire Makernote.Date/Time Original flag.
+                // Both should contain the valid date. Nothing needs to be done here, but just thought I would mention it.
+                // So we need an extra check to see if
+
+                // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+                if (false == this.UseDateMetadataOnly
+                    || DateTimeHandler.TryParseMetadataDateTaken(metadata.Value.Value.ToString(), out DateTime _))
+                {
+                    temp.Add(new DataContents(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value, String.Empty));
+                }
             }
             this.viewModel.MetadataList = temp;
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);
@@ -187,7 +200,12 @@ namespace Timelapse.Controls
             ObservableCollection<DataContents> temp = new ObservableCollection<DataContents>();
             foreach (KeyValuePair<string, string> metadata in exifDictionary)
             {
-                temp.Add(new DataContents(metadata.Key, String.Empty, metadata.Key, metadata.Value, ""));
+                // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+                if (false == this.UseDateMetadataOnly
+                    || DateTimeHandler.TryParseMetadataDateTaken(metadata.Value.ToString(), out DateTime _))
+                {
+                    temp.Add(new DataContents(metadata.Key, String.Empty, metadata.Key, metadata.Value, ""));
+                }
             }
             this.viewModel.MetadataList = temp;
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);

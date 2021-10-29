@@ -143,7 +143,8 @@ namespace Timelapse.Dialog
                     // Rare case where a user had a camera with a null Value.Value field
                     continue;
                 }
-                if (DateTime.TryParse(metadata.Value.Value.ToString(), out DateTime _))
+
+                if (DateTimeHandler.TryParseMetadataDateTaken(metadata.Value.Value.ToString(), out DateTime _))
                 {
                     metadataList.Add(new Tuple<string, string, string, string>(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value));
                 }
@@ -257,6 +258,8 @@ namespace Timelapse.Dialog
 
                     if (metadata.ContainsKey(this.metadataFieldName) == false)
                     {
+                        keyValueList.Add(new KeyValuePair<string, string>(image.File, String.Format("Data field unchanged - file is missing metatdata {0} ", this.metadataFieldName)));
+
                         // System.Diagnostics.Debug.Print(String.Format("{0}: No metadata", image.File));
                         continue;
                     }
