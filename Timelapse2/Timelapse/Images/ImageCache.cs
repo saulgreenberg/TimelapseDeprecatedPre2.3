@@ -16,6 +16,14 @@ namespace Timelapse.Images
     {
         #region Public Properties
         public ImageDifferenceEnum CurrentDifferenceState { get; private set; }
+
+        public BitmapSource GetCurrentImage
+        {
+            get
+            {
+                return this.differenceBitmapCache[this.CurrentDifferenceState];
+            }
+        }
         #endregion
 
         #region Private Variables
@@ -38,12 +46,6 @@ namespace Timelapse.Images
         }
         #endregion
 
-        #region Public Methods - Get Current Image, Reset
-        public BitmapSource GetCurrentImage()
-        {
-            return this.differenceBitmapCache[this.CurrentDifferenceState];
-        }
-        #endregion
 
         #region Public Methods - Navigate between image / differenced images 
         public void MoveToNextStateInCombinedDifferenceCycle()
@@ -264,8 +266,8 @@ namespace Timelapse.Images
                 this.unalteredBitmapsByID.AddOrUpdate(id,
                     (long newID) =>
                     {
-                        // if the bitmap cache is full make room for the incoming bitmap
-                        if (this.mostRecentlyUsedIDs.IsFull())
+                // if the bitmap cache is full make room for the incoming bitmap
+                if (this.mostRecentlyUsedIDs.IsFull())
                         {
                             if (this.mostRecentlyUsedIDs.TryGetLeastRecent(out long fileIDToRemove))
                             {
@@ -273,13 +275,13 @@ namespace Timelapse.Images
                             }
                         }
 
-                        // indicate to add the bitmap
-                        return bitmap;
+                // indicate to add the bitmap
+                return bitmap;
                     },
                     (long existingID, BitmapSource newBitmap) =>
                     {
-                        // indicate to update the bitmap
-                        return newBitmap;
+                // indicate to update the bitmap
+                return newBitmap;
                     });
                 this.mostRecentlyUsedIDs.SetMostRecent(id);
             }

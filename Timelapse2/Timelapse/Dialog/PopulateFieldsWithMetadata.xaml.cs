@@ -207,6 +207,7 @@ namespace Timelapse.Dialog
                     else // if metadataToolSelected == MetadataToolEnum.ExifTool
                     {
                         // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
+                        // Unlike MetadataExtractor, ExifTool returns TagName instad of Directory.TagName (I think - but does that mean it would break on duplicate values?
                         metadata.Clear();
                         Dictionary<string, string> exifData = this.MetadataGrid.ExifToolManager.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
                         foreach (string tag in tags)
@@ -217,6 +218,8 @@ namespace Timelapse.Dialog
                             }
                         }
                     }
+                    // At this point, the metadata Key should be the tag name, rather than Directory.TagName
+                    // (see ImageMetadataDiction.LoadDictionary to change it back so the key is the directory.name. I think Exif never returns the directory name, so thats ok too.
 
                     if (this.ReadyToRefresh())
                     {
@@ -230,7 +233,6 @@ namespace Timelapse.Dialog
                     foreach (KeyValuePair<string, string> kvp in this.MetadataGrid.SelectedMetadata)
                     {
                         string metadataTag = kvp.Key;
-                        string abbreviatedMetadataTag = metadataTag.Substring(metadataTag.LastIndexOf(".") + 1);
                         dataLabelToUpdate = kvp.Value;
 
                         if (false == metadata.ContainsKey(metadataTag))
@@ -241,11 +243,11 @@ namespace Timelapse.Dialog
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, String.Empty) };
                                 imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field cleared"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, "No metadata found - data field cleared"));
                             }
                             else
                             {
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field unchanged"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, "No metadata found - data field unchanged"));
                             }
                             continue;
                         }
@@ -258,18 +260,18 @@ namespace Timelapse.Dialog
                                 image.SetDateTimeOffset(metadataDateTime);
 
                                 imageUpdate = image.GetDateTimeColumnTuples();
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, metadataValue));
                             }
                             else
                             {
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, String.Format("Data field unchanged - '{0}' is not a valid date/time.", metadataValue)));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, String.Format("Data field unchanged - '{0}' is not a valid date/time.", metadataValue)));
                                 continue;
                             }
                         }
                         else
                         {
                             imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                            feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                            feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, metadataValue));
                         }
                         imagesToUpdate.Add(imageUpdate);
                     }

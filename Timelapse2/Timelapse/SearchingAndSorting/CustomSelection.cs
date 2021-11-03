@@ -377,7 +377,7 @@ namespace Timelapse.Database
                     {
                         // Standard search term
                         // Form: dataLabel operator "value", e.g., DataLabel > "5"
-                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue, searchTerm.ControlType== Constant.Control.Counter);
+                        whereForTerm = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue, searchTerm.ControlType == Constant.Control.Counter);
                     }
 
 
@@ -422,16 +422,19 @@ namespace Timelapse.Database
             return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
         }
 
-        public string GetRelativePathFolder()
+        public string GetRelativePathFolder
         {
-            foreach (SearchTerm searchTerm in this.SearchTerms)
+            get
             {
-                if (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
+                foreach (SearchTerm searchTerm in this.SearchTerms)
                 {
-                    return searchTerm.DatabaseValue;
+                    if (searchTerm.DataLabel == Constant.DatabaseColumn.RelativePath)
+                    {
+                        return searchTerm.DatabaseValue;
+                    }
                 }
+                return String.Empty;
             }
-            return String.Empty;
         }
         #endregion
 
@@ -549,7 +552,7 @@ namespace Timelapse.Database
             }
 
             // Form: ( DataTable.RelativePath='relpathValue' OR DataTable.RelativePath GLOB 'relpathValue\*' )
-            string term1 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Equal), relativePath, false); 
+            string term1 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Equal), relativePath, false);
             string term2 = SqlPhrase.DataLabelOperatorValue(relativePathColumnName, CustomSelection.TermToSqlOperator(Constant.SearchTermOperator.Glob), System.IO.Path.Combine(relativePath, "*"), false);
             return Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
         }

@@ -37,7 +37,7 @@ namespace Timelapse
             // The unaltered image will always be cached at this point, so there is no need to check.
             if (this.DataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered)
             {
-                this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
+                this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage);
 
                 // Check if its a corrupted image
                 if (!this.DataHandler.ImageCache.Current.IsDisplayable(this.FolderPath))
@@ -53,7 +53,7 @@ namespace Timelapse
             }
 
             // Generate and cache difference image if needed
-            if (this.DataHandler.ImageCache.GetCurrentImage() == null)
+            if (this.DataHandler.ImageCache.GetCurrentImage == null)
             {
                 ImageDifferenceResultEnum result = this.DataHandler.ImageCache.TryCalculateDifference();
                 switch (result)
@@ -75,7 +75,7 @@ namespace Timelapse
             // display the differenced image
             // the magnifying glass always displays the original non-diferenced image so ImageToDisplay is updated and ImageToMagnify left unchnaged
             // this allows the user to examine any particular differenced area and see what it really looks like in the non-differenced image. 
-            this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
+            this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage);
             this.StatusBar.SetMessage(String.Format("Viewing difference from {0} file.", this.DataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Previous ? "previous" : "next"));
         }
         #endregion
@@ -103,13 +103,13 @@ namespace Timelapse
             this.DataHandler.ImageCache.MoveToNextStateInCombinedDifferenceCycle();
             if (this.DataHandler.ImageCache.CurrentDifferenceState == ImageDifferenceEnum.Unaltered)
             {
-                this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
+                this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage);
                 this.StatusBar.ClearMessage();
                 return;
             }
 
             // Generate and cache difference image if needed
-            if (this.DataHandler.ImageCache.GetCurrentImage() == null)
+            if (this.DataHandler.ImageCache.GetCurrentImage == null)
             {
                 ImageDifferenceResultEnum result = this.DataHandler.ImageCache.TryCalculateCombinedDifference(this.State.DifferenceThreshold);
                 switch (result)
@@ -131,7 +131,7 @@ namespace Timelapse
             }
 
             // display differenced image
-            this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage());
+            this.MarkableCanvas.SetDisplayImage(this.DataHandler.ImageCache.GetCurrentImage);
             this.StatusBar.SetMessage("Viewing differences from both the next and previous files");
         }
         #endregion

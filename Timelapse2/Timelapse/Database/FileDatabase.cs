@@ -56,6 +56,19 @@ namespace Timelapse.Database
         // contains the markers
         public DataTableBackedList<MarkerRow> Markers { get; private set; }
 
+
+        // Return the selected folder (if any)
+        public string GetSelectedFolder
+        {
+            get
+            {
+                if (this.CustomSelection == null)
+                {
+                    return String.Empty;
+                }
+                return this.CustomSelection.GetRelativePathFolder;
+            }
+        }
         #endregion
 
         #region Create or Open the Database
@@ -795,7 +808,7 @@ namespace Timelapse.Database
                                     // System.Diagnostics.Debug.Print("Value is: " + imageProperties.GetValueDisplayString(columnName));
                                 }
                                 else
-                                {  
+                                {
                                     // Use its defaults
                                     queryValues.Append($"{Sql.Quote(defaultValueLookup[columnName])}{Sql.Comma}");
                                 }
@@ -929,7 +942,7 @@ namespace Timelapse.Database
                 }
 
                 // If its a pre-configured selection type, set the search terms to match that selection type
-                this.CustomSelection.SetSearchTermsFromSelection(selection, this.GetSelectedFolder());
+                this.CustomSelection.SetSearchTermsFromSelection(selection, this.GetSelectedFolder);
 
 
                 if (GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
@@ -1046,7 +1059,7 @@ namespace Timelapse.Database
                         }
                     }
                 }
-               
+
                 // Random selection - Add suffix
                 if (this.CustomSelection != null && this.CustomSelection.RandomSample > 0)
                 {
@@ -1095,7 +1108,7 @@ namespace Timelapse.Database
         public List<long> SelectFilesByRelativePathAndFileName(string relativePath, string fileName)
         {
             string query = Sql.SelectStarFrom + Constant.DBTables.FileData + Sql.Where + Constant.DatabaseColumn.RelativePath + Sql.Equal + Sql.Quote(relativePath) + Sql.And + Constant.DatabaseColumn.File + Sql.Equal + Sql.Quote(fileName);
-            DataTable fileTable = this.Database.GetDataTableFromSelect(query); 
+            DataTable fileTable = this.Database.GetDataTableFromSelect(query);
             List<long> idList = new List<long>();
             for (int i = 0; i < fileTable.Rows.Count; i++)
             {
@@ -1262,10 +1275,10 @@ namespace Timelapse.Database
         // Form: SELECT RelativePath, File FROM DataTable GROUP BY RelativePath, File HAVING COUNT(*) > 1
         public List<string> GetDistinctRelativePathFileCombinationsDuplicates()
         {
-           List<string> listOfDuplicatePaths = new List<string>();
-           string relativePathFile = Constant.DatabaseColumn.RelativePath + Sql.Comma + Constant.DatabaseColumn.File;
+            List<string> listOfDuplicatePaths = new List<string>();
+            string relativePathFile = Constant.DatabaseColumn.RelativePath + Sql.Comma + Constant.DatabaseColumn.File;
             string query = Sql.Select + relativePathFile
-                + Sql.From + Constant.DBTables.FileData  
+                + Sql.From + Constant.DBTables.FileData
                 + Sql.GroupBy + relativePathFile + Sql.Having + Sql.CountStar + Sql.GreaterThan + "1";
             DataTable dataTable = this.Database.GetDataTableFromSelect(query);
             for (int i = 0; i < dataTable.Rows.Count; i++)
@@ -1629,7 +1642,7 @@ namespace Timelapse.Database
             bool skipWhere = false;
 
             // PART 1 of Query
-           if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
+            if (fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections)
             {
                 // MISSING DETECTIONS
                 // Create a query that returns a count of missing detections
@@ -1662,7 +1675,7 @@ namespace Timelapse.Database
             // Now add the Where conditions to the query.
             // If the selection is All, there is no where clause needed.
             if (fileSelection != FileSelectionEnum.All)
-            { 
+            {
                 if ((GlobalReferences.DetectionsExists && this.CustomSelection.ShowMissingDetections == false) || skipWhere == false)
                 {
                     string where = this.CustomSelection.GetFilesWhere(); //this.GetFilesConditionalExpression(fileSelection);
@@ -2041,16 +2054,6 @@ namespace Timelapse.Database
         {
             this.CreateBackupIfNeeded();
             this.Database.Insert(table, insertionStatements);
-        }
-
-        // Return the selected folder (if any)
-        public string GetSelectedFolder()
-        {
-            if (this.CustomSelection == null)
-            {
-                return String.Empty;
-            }
-            return this.CustomSelection.GetRelativePathFolder();
         }
 
         // NO LONGER USED AS THESE HAVE ALL BEEN CENTRALIZED TO USE THE SEARCHTERM DATA STRUCTURE

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -23,6 +22,16 @@ namespace Timelapse.Controls
         #region Private Variables
         // Collects the various metadata attributes from the file. The Key is the complete metadata name 
         private Dictionary<string, ImageMetadata> metadataDictionary;
+
+        private bool HideMetadataKindColumn
+        {
+            set
+            {
+                this.AvailableMetadataDataGrid.Columns[1].Visibility = (value == true)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        }
         #endregion
 
         #region Public properties
@@ -66,11 +75,12 @@ namespace Timelapse.Controls
         {
             set
             {
-                AvailableMetadataDataGrid.Columns[4].Visibility = (value == true)
+                this.AvailableMetadataDataGrid.Columns[4].Visibility = (value == true)
                     ? Visibility.Collapsed
                     : Visibility.Visible;
             }
         }
+
 
         // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
         // Otherwise all found metadata fields will be displayed
@@ -375,5 +385,13 @@ namespace Timelapse.Controls
             }
         }
         #endregion
+
+        private void ShowMetadataDirectory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox cb)
+            {
+                this.HideMetadataKindColumn = cb.IsChecked == false;
+            }
+        }
     }
 }
