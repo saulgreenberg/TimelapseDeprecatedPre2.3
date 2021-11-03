@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -212,6 +213,9 @@
     <Compile Include="Dialog\MissingFoldersLocateFolders.xaml.cs">
       <DependentUpon>MissingFoldersLocateFolders.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\PopulateFieldsWithMetadataOnLoad.xaml.cs">
+      <DependentUpon>PopulateFieldsWithMetadataOnLoad.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\PopulateFieldWithEpisodeData.xaml.cs">
       <DependentUpon>PopulateFieldWithEpisodeData.xaml</DependentUpon>
     </Compile>
@@ -224,12 +228,16 @@
     <Compile Include="Dialog\PopulateFieldsWithMetadata.xaml.cs">
       <DependentUpon>PopulateFieldsWithMetadata.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Dialog\TestSomeCodeDialog.xaml.cs">
+      <DependentUpon>TestSomeCodeDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Enums\ComparisonEnum.cs" />
     <Compile Include="Enums\CSVDateTimeOptionsEnum.cs" />
     <Compile Include="Enums\FileExtensionEnum.cs" />
     <Compile Include="Enums\FlashEnum.cs" />
     <Compile Include="Enums\ImageDimensionEnum.cs" />
     <Compile Include="Enums\ListComparisonEnum.cs" />
+    <Compile Include="Enums\MetadataToolEnum.cs" />
     <Compile Include="Enums\OffsetLensDirection.cs" />
     <Compile Include="Enums\RecognitionType.cs" />
     <Compile Include="Enums\SelectTypesEnum.cs" />
@@ -252,6 +260,7 @@
     <Compile Include="DataTables\ControlRow.cs" />
     <Compile Include="Enums\ControlsEnableStateEnum.cs" />
     <Compile Include="Enums\CustomSelectionOperatorEnum.cs" />
+    <Compile Include="ExifTool\ExifToolManager.cs" />
     <Compile Include="Extensions\WriteableBitmapExtensions.cs" />
     <Compile Include="SearchingAndSorting\SortTerm.cs" />
     <Compile Include="SearchingAndSorting\SortTerms.cs" />
@@ -329,6 +338,7 @@
     <Compile Include="DataStructures\FolderLoadProgress.cs" />
     <Compile Include="Images\ZoomBookmark.cs" />
     <Compile Include="Sql.cs" />
+    <Compile Include="DataStructures\MetadataOnLoad.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDuplicates.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseCheckAndCorrectFolders.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseDetections.cs" />
@@ -344,7 +354,7 @@
     <Compile Include="TimelapsePartialClasses\TimelapseCopyPreviousValues.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFocus.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseKeyboardShortcuts.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenusControlsEnableDisable.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenusControlsEnableDisable.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileNavigationSlider.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFilePlayer.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseFileSelection.cs" />
@@ -352,14 +362,14 @@
     <Compile Include="TimelapsePartialClasses\TimelapseImageDifferencing.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseImageSetLoading.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseMarkingAndCounting.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuEdit.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuFile.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuHelp.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuOptions.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuSelection.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuSort.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuView.cs" />
-    <Compile Include="TImelapseMenuCallbacks\TimelapseMenuWindow.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuEdit.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuFile.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuHelp.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuOptions.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuSelection.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuSort.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuView.cs" />
+    <Compile Include="TimelapseMenuCallbacks\TimelapseMenuWindow.cs" />
     <Compile Include="TimelapsePartialClasses\TimelapseQuickPaste.cs" />
     <Compile Include="Extensions\DataGridExtensions.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
@@ -475,6 +485,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialog\PopulateFieldsWithMetadataOnLoad.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialog\PopulateFieldWithEpisodeData.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -488,6 +502,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\PopulateFieldsWithMetadata.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\TestSomeCodeDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -851,6 +869,7 @@
     <Content Include="ffmpeg.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Icons\MediaControl-PlaySpeed1.png" />
     <Resource Include="Icons\MediaControl-PlayButton.png" />
     <Resource Include="Icons\ExternalVideoPlayer.png" />
   </ItemGroup>
@@ -864,6 +883,10 @@
       <Name>Xceed.Wpf.Toolkit</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\analyzers\dotnet\cs\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -871,7 +894,10 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets'))" />
   </Target>
+  <Import Project="..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets" Condition="Exists('..\..\packages\Microsoft.CodeAnalysis.NetAnalyzers.5.0.3\build\Microsoft.CodeAnalysis.NetAnalyzers.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

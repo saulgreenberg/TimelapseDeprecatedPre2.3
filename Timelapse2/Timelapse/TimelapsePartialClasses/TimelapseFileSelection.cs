@@ -66,7 +66,7 @@ namespace Timelapse
             else
             {
                 // If its a folder selection, record it so we can save it later in the image set table 
-                this.DataHandler.FileDatabase.ImageSet.SelectedFolder = this.DataHandler.FileDatabase.GetSelectedFolder();
+                this.DataHandler.FileDatabase.ImageSet.SelectedFolder = this.DataHandler.FileDatabase.GetSelectedFolder;
 
                 // PERFORMANCE Select Files is a very slow operation as it runs a query over all files and returns everything it finds as datatables stored in memory.
                 this.BusyCancelIndicator.EnableForSelection(true);

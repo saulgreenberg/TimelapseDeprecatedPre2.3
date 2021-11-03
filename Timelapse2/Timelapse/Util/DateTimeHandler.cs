@@ -1,6 +1,12 @@
-﻿using System;
+﻿using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.Exif.Makernotes;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
-
+using System.IO;
+using System.Linq;
+using MetadataDirectory = MetadataExtractor.Directory;
 namespace Timelapse.Util
 {
     public static class DateTimeHandler
@@ -54,18 +60,43 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Parse a metadata-formatted date/time string into a DateTimeOffset. Return false on failure
+        /// Parse a metadata-formatted date/time string exactly into a DateTimeOffset. 
+        /// Note that this only accepts 'standard' date/time forms as described in Constant.Time.DateTimeMetadataFormat
+        /// Return false on failure
         /// </summary>
         public static bool TryParseMetadataDateTaken(string dateTimeAsString, TimeZoneInfo imageSetTimeZone, out DateTimeOffset dateTimeOffset)
         {
-            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime) == false)
+            if (false == DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dateTime))
             {
+                // Commented out section skips the general form, which can accept weird incomplete values that are not really useful e.g. 3.5
+                //if (false == DateTime.TryParse(dateTimeAsString, out dateTime))
+                //{
                 dateTimeOffset = DateTimeOffset.MinValue;
                 return false;
+                //}
+                //return false;
             }
 
             dateTimeOffset = DateTimeHandler.CreateDateTimeOffset(dateTime, imageSetTimeZone);
             return true;
+        }
+
+        /// <summary>
+        /// Parse a metadata-formatted date/time string into a DateTime. 
+        /// Note that this only accepts 'standard' date/time forms as described in Constant.Time.DateTimeMetadataFormats
+        /// Return false on failure
+        /// </summary>
+        public static bool TryParseMetadataDateTaken(string dateTimeAsString, out DateTime dateTime)
+        {
+            // Commented out section skips the general form, which can accept weird incomplete values that are not really useful e.g. 3.5
+            // Try the standard try parse first
+            //if (DateTime.TryParse(dateTimeAsString, out dateTime))
+            //{
+            //    return true;
+            //}
+
+            // No luck with the standard TryParse.So lets try our specialized Metadata formats.
+            return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime);
         }
 
         /// <summary>
@@ -158,6 +189,50 @@ namespace Timelapse.Util
                 throw new ArgumentOutOfRangeException(nameof(utcOffsetAsString), String.Format("UTC offset must be an exact multiple of {0} ({1}).", DateTimeHandler.ToStringDatabaseUtcOffset(Constant.Time.UtcOffsetGranularity), DateTimeHandler.ToStringDisplayUtcOffset(Constant.Time.UtcOffsetGranularity)));
             }
             return utcOffset;
+        }
+        #endregion
+
+        #region Try Reading DateTimeOriginalFromMetadata
+        // There is an issue with Reconyx cameras in how it stores the original 'Date / ime' metadata tag's value
+        // To get around this, we first try to get that tag's value using the standard method. If it doesn't work,
+        // we try again using the Reconyx-specific method.
+        public static bool TryReadDateTimeOriginalFromMetadata(string filePath, out DateTime dateTime)
+        {
+            dateTime = DateTime.MinValue;
+            // Use only on images, as video files don't contain the desired metadata. 
+            try
+            {
+                IReadOnlyList<MetadataDirectory> metadataDirectories = null;
+
+                // Performance tweaks. Reading in sequential scan, does this speed up? Under the covers, the MetadataExtractor is using a sequential read, allowing skip forward but not random access.
+                // Exif is small, do we need a big block?
+                using (FileStream fS = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 64, FileOptions.SequentialScan))
+                {
+                    metadataDirectories = ImageMetadataReader.ReadMetadata(fS);
+                }
+
+                ExifSubIfdDirectory exifSubIfd = metadataDirectories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+                if (exifSubIfd == null)
+                {
+                    
+                    return false;
+                }
+
+                if (exifSubIfd.TryGetDateTime(ExifSubIfdDirectory.TagDateTimeOriginal, out dateTime) == false)
+                { 
+                    // We couldn't read the metadata. In case its a reconyx camera, the fallback is to use the Reconyx-specific metadata using its DateTimeOriginal tag
+                    ReconyxHyperFireMakernoteDirectory reconyxMakernote = metadataDirectories.OfType<ReconyxHyperFireMakernoteDirectory>().FirstOrDefault();
+                    if ((reconyxMakernote == null) || (reconyxMakernote.TryGetDateTime(ReconyxHyperFireMakernoteDirectory.TagDateTimeOriginal, out dateTime) == false))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
         #endregion
 

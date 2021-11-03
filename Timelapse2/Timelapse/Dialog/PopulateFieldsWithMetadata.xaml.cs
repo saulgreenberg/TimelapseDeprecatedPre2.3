@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Timelapse.Controls;
 using Timelapse.Database;
+using Timelapse.Enums;
 using Timelapse.Util;
 
 namespace Timelapse.Dialog
@@ -25,14 +26,17 @@ namespace Timelapse.Dialog
 
         // Track the checkbox for clearing values if no matching metadata is found
         private bool clearIfNoMetadata;
+
+        private readonly bool useDateMetadataOnly;
         #endregion
 
         #region Initialization
-        public PopulateFieldsWithMetadata(Window owner, FileDatabase fileDatabase, string filePath) : base(owner)
+        public PopulateFieldsWithMetadata(Window owner, FileDatabase fileDatabase, string filePath, bool useDateMetadataOnly) : base(owner)
         {
             InitializeComponent();
             this.FilePath = filePath;
             this.FileDatabase = fileDatabase;
+            this.useDateMetadataOnly = useDateMetadataOnly;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -41,13 +45,32 @@ namespace Timelapse.Dialog
             this.InitalizeProgressHandler(this.BusyCancelIndicator);
             this.MetadataGrid.viewModel.FilePath = this.FilePath;
 
+            if (this.useDateMetadataOnly)
+            {
+                // The default is to use the Populate Fields ... help and Window title, and to include the Clear checkbox
+                // If we are using it only to select date metadata, we need to switch to that
+                this.PopulateAllMessage.Visibility = Visibility.Collapsed;
+                this.DatesOnlyMessage.Visibility = Visibility.Visible;
+                this.Title = "Read dates and times from a metadata field";
+                this.ClearIfNoMetadata.Visibility = Visibility.Collapsed;
+            }
+
+            // Set the grid to its all metadata form or its date only form  
+            this.MetadataGrid.UseDateMetadataOnly = this.useDateMetadataOnly;
+
             // Construct a dictionary of the available note fields as labels|datalabels
             // and a list of only the note field labels which will be used to populate the ComboBoxes in the datagrid
             Dictionary<string, string> collectLabels = new Dictionary<string, string>();
             foreach (ControlRow control in this.FileDatabase.Controls)
             {
-                if (control.Type == Constant.Control.Note)
+                if (true == this.useDateMetadataOnly && control.Type == Constant.DatabaseColumn.DateTime)
                 {
+                    // Only include the DateTime control
+                    collectLabels.Add(control.DataLabel, control.Label);
+                }
+                else if (false == this.useDateMetadataOnly && control.Type == Constant.Control.Note)
+                {
+                    // Include all Note controls
                     collectLabels.Add(control.DataLabel, control.Label);
                 }
             }
@@ -100,7 +123,7 @@ namespace Timelapse.Dialog
             this.WindowCloseButtonIsEnabled(false); // Disable the window's close button
 
             // This call does all the actual populating...
-            ObservableCollection<Tuple<string, string, string>> feedbackData = await this.PopulateAsync(this.MetadataGrid.IsMetadataExtractorSelected).ConfigureAwait(true);
+            ObservableCollection<Tuple<string, string, string>> feedbackData = await this.PopulateAsync(this.MetadataGrid.MetadataToolSelected).ConfigureAwait(true);
 
             // Update the UI to its final state
             this.StartDoneButton.IsEnabled = true;
@@ -135,15 +158,11 @@ namespace Timelapse.Dialog
 
         #region Do the work: Populate the database 
         // Populate the database with the metadata for the selected note field
-        private async Task<ObservableCollection<Tuple<string, string, string>>> PopulateAsync(bool? metadataExtractorRBIsChecked)
+        private async Task<ObservableCollection<Tuple<string, string, string>>> PopulateAsync(MetadataToolEnum metadataToolSelected)
         {
             // This list will hold key / value pairs that will be bound to the datagrid feedback, 
             // which is the way to make those pairs appear in the data grid during background worker progress updates
             ObservableCollection<Tuple<string, string, string>> feedbackData = new ObservableCollection<Tuple<string, string, string>>();
-
-            // Get the Metadata / Label pairs i.e., the rows with selected labels
-            //Dictionary<string, string> selectedMetadataDataLabelPairs = GetSelectedFromMetadataList(this.MetadataGrid.viewModel.metadataList);
-
 
             // if there are no metadata / label pairs, we are done.
             if (this.MetadataGrid.SelectedMetadata.Count == 0)
@@ -180,15 +199,17 @@ namespace Timelapse.Dialog
 
                     ImageRow image = this.FileDatabase.FileTable[imageIndex];
 
-                    if (metadataExtractorRBIsChecked == true)
-                    {   // MetadataExtractor specific code
+                    if (metadataToolSelected == MetadataToolEnum.MetadataExtractor)
+                    {
+                        // MetadataExtractor specific code
                         metadata = ImageMetadataDictionary.LoadMetadata(image.GetFilePath(this.FileDatabase.FolderPath));
                     }
-                    else
+                    else // if metadataToolSelected == MetadataToolEnum.ExifTool
                     {
                         // ExifTool specific code - note that we transform results into the same dictionary structure used by the MetadataExtractor
+                        // Unlike MetadataExtractor, ExifTool returns TagName instad of Directory.TagName (I think - but does that mean it would break on duplicate values?
                         metadata.Clear();
-                        Dictionary<string, string> exifData = this.MetadataGrid.ExifTool.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
+                        Dictionary<string, string> exifData = this.MetadataGrid.ExifToolManager.FetchExifFrom(image.GetFilePath(this.FileDatabase.FolderPath), tags);
                         foreach (string tag in tags)
                         {
                             if (exifData.ContainsKey(tag))
@@ -197,6 +218,8 @@ namespace Timelapse.Dialog
                             }
                         }
                     }
+                    // At this point, the metadata Key should be the tag name, rather than Directory.TagName
+                    // (see ImageMetadataDiction.LoadDictionary to change it back so the key is the directory.name. I think Exif never returns the directory name, so thats ok too.
 
                     if (this.ReadyToRefresh())
                     {
@@ -210,39 +233,46 @@ namespace Timelapse.Dialog
                     foreach (KeyValuePair<string, string> kvp in this.MetadataGrid.SelectedMetadata)
                     {
                         string metadataTag = kvp.Key;
-                        string abbreviatedMetadataTag = metadataTag.Substring(metadataTag.LastIndexOf(".") + 1);
                         dataLabelToUpdate = kvp.Value;
-                        bool containsKey = false;
 
-                        // For some reason, metadata.ContainKey wasn't working, so I am doing it manually
-                        foreach (string key in metadata.Keys)
-                        {
-                            if (key == metadataTag)
-                            {
-                                containsKey = true;
-                                break;
-                            }
-                        }
-
-                        if (containsKey == false)
+                        if (false == metadata.ContainsKey(metadataTag))
                         {
                             // This just skips this metadata as it was not found in the file's metadata
+                            // However, we still need to supply feedback and (if the user has asked for that option) to clear the data field
                             if (this.clearIfNoMetadata)
                             {
                                 List<ColumnTuple> clearField = new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, String.Empty) };
                                 imagesToUpdate.Add(new ColumnTuplesWithWhere(clearField, image.ID));
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field is cleared"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, "No metadata found - data field cleared"));
                             }
                             else
                             {
-                                feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, "No metadata found - data field remains unaltered"));
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, "No metadata found - data field unchanged"));
                             }
                             continue;
                         }
                         string metadataValue = metadata[metadataTag].Value;
                         ColumnTuplesWithWhere imageUpdate;
-                        imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
-                        feedbackData.Add(new Tuple<string, string, string>(image.File, abbreviatedMetadataTag, metadataValue));
+                        if (this.useDateMetadataOnly)
+                        {
+                            if (DateTimeHandler.TryParseMetadataDateTaken(metadataValue, imageSetTimeZone, out DateTimeOffset metadataDateTime))
+                            {
+                                image.SetDateTimeOffset(metadataDateTime);
+
+                                imageUpdate = image.GetDateTimeColumnTuples();
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, metadataValue));
+                            }
+                            else
+                            {
+                                feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, String.Format("Data field unchanged - '{0}' is not a valid date/time.", metadataValue)));
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            imageUpdate = new ColumnTuplesWithWhere(new List<ColumnTuple>() { new ColumnTuple(dataLabelToUpdate, metadataValue) }, image.ID);
+                            feedbackData.Add(new Tuple<string, string, string>(image.File, metadataTag, metadataValue));
+                        }
                         imagesToUpdate.Add(imageUpdate);
                     }
                 }

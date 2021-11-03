@@ -219,8 +219,12 @@ namespace Timelapse.ExifTool
             this._stopRequested = true;
 
             if (this.Status != ExeStatus.Ready)
-                throw new ExifToolException("Process must be ready");
-
+            {
+                System.Diagnostics.Debug.Print("ExifToolWrapper: Can't kill the process as its not ready");
+                // throw new ExifToolException("Process must be ready"); 
+                return;
+                
+            }
             this.Status = ExeStatus.Stopping;
 
             this._waitHandle.Reset();

@@ -231,6 +231,7 @@ namespace Timelapse
         {
             List<FileInfo> filesToAdd = new List<FileInfo>();
             List<string> filesSkipped = new List<string>();
+
             // Generate FileInfo list for every single image / video file in the folder path (including subfolders). These become the files to add to the database
             // PERFORMANCE - takes modest but noticable time to do if there are a huge number of files. 
             // TO DO: PUT THIS IN THE SHOW PROGRESS LOOP
@@ -242,18 +243,29 @@ namespace Timelapse
                 Dialogs.ImageSetLoadingNoImagesOrVideosWereFoundDialog(this, selectedFolderPath);
                 return false;
             }
+            if (this.State.MetadataAskOnLoad)
+            {
+                Cursor cursor = Mouse.OverrideCursor;
+                PopulateFieldsWithMetadataOnLoad populateField = new PopulateFieldsWithMetadataOnLoad(this, this.DataHandler.FileDatabase, filesToAdd[0].FullName);
+                if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
+                {
+                    this.State.MetadataOnLoad = populateField.MetadataOnLoad;
+                    
+                }
+                Mouse.OverrideCursor = cursor;
+            }
 
             // Load all the files (matching allowable file types) found in the folder
             // Show image previews of the files to the user as they are individually loaded
             // Generally, Background worker examines each image, and extracts data from it which it stores in a data structure, which in turn is used to compose bulk database inserts. 
             // PERFORMANCE This is likely the place that the best performance increases can be gained by transforming its foreach loop into a Parallel.ForEach. 
             // Indeed, you will see commented out remnants of a Parallel.ForEach in the code where this was done, but using it introduced errors. 
-//#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
+            //#pragma warning disable CA2000 // Dispose objects before losing scope. Reason: Not required as Dispose on BackgroundWorker doesn't do anything
             BackgroundWorker backgroundWorker = new BackgroundWorker()
             {
                 WorkerReportsProgress = true
             };
-//#pragma warning restore CA2000 // Dispose objects before losing scope
+            //#pragma warning restore CA2000 // Dispose objects before losing scope
 
             // folderLoadProgress contains data to be used to provide feedback on the folder loading state
             FolderLoadProgress folderLoadProgress = new FolderLoadProgress(filesToAdd.Count)
@@ -294,7 +306,6 @@ namespace Timelapse
                 {
                     message = String.Format("{0}Finalizing analysis of {1} files - could take several minutes ", message, folderLoadProgress.TotalFiles);
                 }
-
                 else
                 {
                     string what = (folderLoadProgress.CurrentPass == 1) ? "Analyzing file" : "Adding files to database";
@@ -346,6 +357,10 @@ namespace Timelapse
                         Dialogs.ImageSetLoadingDataImportedFromOldXMLFileDialog(this, SuccessSkippedFileCounter.Item1, SuccessSkippedFileCounter.Item2);
                     }
                 }
+
+                // Stop the ExifToolManager if it was invoked while loading files, which can occurs when populating metadata to a file via the EXIFTool on load.
+                this.State.ExifToolManager.Stop();
+
                 this.BusyCancelIndicator.IsBusy = false; // Hide the busy indicator
             };
 

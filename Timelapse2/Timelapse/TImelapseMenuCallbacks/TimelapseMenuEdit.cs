@@ -123,12 +123,14 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-
-                PopulateFieldsWithMetadata populateField = new PopulateFieldsWithMetadata(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath));
+                PopulateFieldsWithMetadata populateField = new PopulateFieldsWithMetadata(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath), false);
                 if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                 {
                     await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                    
                 }
+                // If the Populate dialog started the ExifToolManager, this will kill the no longer needed ExifTool processes. 
+                this.State.ExifToolManager.Stop();
             }
         }
         #endregion
@@ -563,13 +565,19 @@ namespace Timelapse
                                                                    this.State.SuppressSelectedPopulateFieldFromMetadataPrompt = optOut;
                                                                }))
             {
-                using (DateTimeRereadFromSelectedMetadataField populateField = new DateTimeRereadFromSelectedMetadataField(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
+                PopulateFieldsWithMetadata populateField = new PopulateFieldsWithMetadata(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath), true);
+                if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                 {
-                    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
-                    {
-                        await this.FilesSelectAndShowAsync().ConfigureAwait(true);
-                    };
+                    await this.FilesSelectAndShowAsync().ConfigureAwait(true);
                 }
+
+                //using (DateTimeRereadFromSelectedMetadataField populateField = new DateTimeRereadFromSelectedMetadataField(this, this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current.GetFilePath(this.FolderPath)))
+                //{
+                //    if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
+                //    {
+                //        await this.FilesSelectAndShowAsync().ConfigureAwait(true);
+                //    };
+                //}
             }
         }
         #endregion

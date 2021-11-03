@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
+using System.Windows.Input;
+using Timelapse.Enums;
 using Timelapse.ExifTool;
 using Timelapse.Util;
 
@@ -17,30 +17,46 @@ namespace Timelapse.Controls
     /// <summary>
     /// Interaction logic for MetadataGrid.xaml
     /// </summary>
-    public partial class MetadataGrid : UserControl, IDisposable
+    public partial class MetadataGrid : UserControl
     {
         #region Private Variables
         // Collects the various metadata attributes from the file. The Key is the complete metadata name 
         private Dictionary<string, ImageMetadata> metadataDictionary;
 
+        private bool HideMetadataKindColumn
+        {
+            set
+            {
+                this.AvailableMetadataDataGrid.Columns[1].Visibility = (value == true)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        }
+        #endregion
+
+        #region Public properties
         // Whether the metadataExtractor tool is selected (false means the ExifTool)
-        public bool IsMetadataExtractorSelected
+        public MetadataToolEnum MetadataToolSelected
         {
             get
             {
-                return this.MetadataExtractorRB.IsChecked == true;
+                return this.MetadataExtractorRB.IsChecked == true
+                    ? MetadataToolEnum.MetadataExtractor
+                    : MetadataToolEnum.ExifTool;
             }
         }
 
-        // A handle to the ExifTool Wrapper
-        public ExifToolWrapper ExifTool { get; set; }
-        #endregion
+        // A handle to the ExifTool Manager
+        public ExifToolManager ExifToolManager
+        {
+            get
+            {
+                return Util.GlobalReferences.TimelapseState.ExifToolManager;
+            }
+        }
 
-        #region ViewModel
-        public ViewModel viewModel { get; set; } = new ViewModel();
-        #endregion
-
-        #region Property DictDataLabel_Label
+        // A dictionary derived from the Note fields, where the key is a data field's DataLabel and its value is the Label
+        // And empty slot is included
         private Dictionary<string, string> _dictDataLabel_Label;
         public Dictionary<string, string> DictDataLabel_Label
         {
@@ -49,13 +65,28 @@ namespace Timelapse.Controls
             {
                 _dictDataLabel_Label = value;
                 // Note labels are a list of labels, with an Empty slot in the beginning to allow labels to be deselected
-                this.viewModel.noteLabels = new ObservableCollection<string>(_dictDataLabel_Label.Values);
-                this.viewModel.noteLabels.Insert(0, String.Empty);
+                this.viewModel.NoteLabels = new ObservableCollection<string>(_dictDataLabel_Label.Values);
+                this.viewModel.NoteLabels.Insert(0, String.Empty);
             }
         }
-        #endregion
 
-        #region Property SelectedMetadata
+        // Show or hide the DataLabel Column. If we are just inspecting the metadata, we don't need to show that column
+        public bool HideDataLabelColumn
+        {
+            set
+            {
+                this.AvailableMetadataDataGrid.Columns[4].Visibility = (value == true)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+            }
+        }
+
+
+        // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+        // Otherwise all found metadata fields will be displayed
+        public bool UseDateMetadataOnly { get; set; } = false;
+
+        // A collection of selectedMetadata and Tags
         public ObservableCollection<KeyValuePair<string, string>> SelectedMetadata { get; set; }
 
         // Returns a list of selected metadata tags
@@ -72,12 +103,16 @@ namespace Timelapse.Controls
             }
         }
 
+        // The ViewModel, used to populate the grid and to reflect any changed values
+#pragma warning disable IDE1006 // Naming Styles
+        public ViewModel viewModel { get; set; } = new ViewModel();
+#pragma warning restore IDE1006 // Naming Styles
         #endregion
 
         #region Initialization, Loaded
         public MetadataGrid()
         {
-            this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.metadataList, this.SelectedMetadata);
+            this.SelectedMetadata = this.GetSelectedFromMetadataList(this.viewModel.MetadataList, this.SelectedMetadata);
             DataContext = viewModel;
             InitializeComponent();
 
@@ -102,25 +137,18 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        #region Disposing
-        // To follow design pattern in  CA1001 Types that own disposable fields should be disposable
-        protected virtual void Dispose(bool disposing)
+        #region Refresh the grid
+        public void Refresh()
         {
-            if (disposing)
-            {
-                // Dispose managed resources
-                if (this.ExifTool != null)
-                {
-                    this.ExifTool.Dispose();
-                }
-            }
-            // free native resources
-        }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            if (this.MetadataToolSelected == MetadataToolEnum.MetadataExtractor)
+            {
+                this.MetadataExtractorShowImageMetadata();
+            }
+            else
+            {
+                this.ExifToolShowImageMetadata();
+            }
         }
         #endregion
 
@@ -143,9 +171,19 @@ namespace Timelapse.Controls
             // In order to populate the datagrid, we have to unpack the dictionary as a list containing four values, plus a fifth item that represents the empty datalabel as ComboBox
             foreach (KeyValuePair<string, ImageMetadata> metadata in this.metadataDictionary)
             {
-                temp.Add(new DataContents(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value, String.Empty));
+                // Reconyx cameras, for some reason, do not include the "Exif IFD0.Date/Time" tag, which should be there.
+                // Instead, they include a Reconyx HyperFire Makernote.Date/Time Original flag.
+                // Both should contain the valid date. Nothing needs to be done here, but just thought I would mention it.
+                // So we need an extra check to see if
+
+                // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+                if (false == this.UseDateMetadataOnly
+                    || DateTimeHandler.TryParseMetadataDateTaken(metadata.Value.Value.ToString(), out DateTime _))
+                {
+                    temp.Add(new DataContents(metadata.Key, metadata.Value.Directory, metadata.Value.Name, metadata.Value.Value, String.Empty));
+                }
             }
-            this.viewModel.metadataList = temp;
+            this.viewModel.MetadataList = temp;
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);
         }
         #endregion
@@ -157,14 +195,10 @@ namespace Timelapse.Controls
             this.metadataDictionary.Clear();
 
             // Start the exifTool process if its not already started
-            if (this.ExifTool == null)
-            {
-                this.ExifTool = new ExifToolWrapper();
-                this.ExifTool.Start();
-            }
+            this.ExifToolManager.StartIfNotAlreadyStarted();
 
             // Fetch the exif data using ExifTool
-            Dictionary<string, string> exifDictionary = this.ExifTool.FetchExifFrom(this.viewModel.FilePath);
+            Dictionary<string, string> exifDictionary = this.ExifToolManager.FetchExifFrom(this.viewModel.FilePath);
 
             // If there is no metadata, inform the user by setting bogus dictionary values which will appear on the grid
             if (exifDictionary.Count == 0)
@@ -176,9 +210,14 @@ namespace Timelapse.Controls
             ObservableCollection<DataContents> temp = new ObservableCollection<DataContents>();
             foreach (KeyValuePair<string, string> metadata in exifDictionary)
             {
-                temp.Add(new DataContents(metadata.Key, String.Empty, metadata.Key, metadata.Value, ""));
+                // If UseDateMetadata only is true, then only show metadata fields whose values are parseable as dates.
+                if (false == this.UseDateMetadataOnly
+                    || DateTimeHandler.TryParseMetadataDateTaken(metadata.Value.ToString(), out DateTime _))
+                {
+                    temp.Add(new DataContents(metadata.Key, String.Empty, metadata.Key, metadata.Value, ""));
+                }
             }
-            this.viewModel.metadataList = temp;
+            this.viewModel.MetadataList = temp;
             this.AvailableMetadataDataGrid.SortByColumnAscending(2);
         }
         #endregion
@@ -187,6 +226,8 @@ namespace Timelapse.Controls
         // Checkbox callback sets which metadata tool should be used
         private void MetadataToolType_Checked(object sender, RoutedEventArgs e)
         {
+            Cursor cursor = Mouse.OverrideCursor;
+            Mouse.OverrideCursor = Cursors.Wait;
             if (this.MetadataExtractorRB.IsChecked == true)
             {
                 this.MetadataExtractorShowImageMetadata();
@@ -195,6 +236,7 @@ namespace Timelapse.Controls
             {
                 this.ExifToolShowImageMetadata();
             }
+            Mouse.OverrideCursor = cursor;
         }
         #endregion
 
@@ -207,8 +249,9 @@ namespace Timelapse.Controls
                 // which guarantees thatmetadatafields will be assigned to unique labels
                 DataGridClearComboBoxesWithMatchingSelectedItem(this.AvailableMetadataDataGrid, cb, "Data field");
 
+
                 // Update SelectedMetadata against the new contents, which in turn may trigger a CollectionChanged event
-                this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.metadataList, this.SelectedMetadata);
+                this.SelectedMetadata = GetSelectedFromMetadataList(this.viewModel.MetadataList, this.SelectedMetadata);
             }
         }
         #endregion
@@ -281,7 +324,7 @@ namespace Timelapse.Controls
         }
         #endregion
 
-        #region ViewModel
+        #region Class ViewModel
         public class ViewModel : Util.ViewModelBase
         {
             // The full path of the file
@@ -305,14 +348,14 @@ namespace Timelapse.Controls
             }
 
             private ObservableCollection<string> _noteLabels = new ObservableCollection<string>();
-            public ObservableCollection<string> noteLabels
+            public ObservableCollection<string> NoteLabels
             {
                 get => _noteLabels;
                 set => SetProperty(ref _noteLabels, value);
             }
 
             private ObservableCollection<DataContents> _metadataList = new ObservableCollection<DataContents>();
-            public ObservableCollection<DataContents> metadataList
+            public ObservableCollection<DataContents> MetadataList
             {
                 get => _metadataList;
                 set
@@ -342,5 +385,13 @@ namespace Timelapse.Controls
             }
         }
         #endregion
+
+        private void ShowMetadataDirectory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox cb)
+            {
+                this.HideMetadataKindColumn = cb.IsChecked == false;
+            }
+        }
     }
 }

@@ -30,6 +30,16 @@ namespace Timelapse
         }
         #endregion
 
+        private void MenuItemTestSomeCode_Click(object sender, RoutedEventArgs e)
+        {
+            TestSomeCodeDialog testSomeCodeDialog = new TestSomeCodeDialog(this);
+            bool? result = testSomeCodeDialog.ShowDialog();
+            if (result == true)
+            {
+                return;
+            }
+        }
+
         #region Loading image sets
         // Load template, images, and video files...
         private async void MenuItemLoadImages_Click(object sender, RoutedEventArgs e)

@@ -28,9 +28,11 @@ namespace Timelapse.Util
                         // Note that Quicktime mp4s appear to have multiple directories called Quicktime Track Headers. 
                         // Exiftool seems to handle this properly but MetadataDetector generates duplicates.
                         // So only the first Quicktime track header is added to the dictionary.
-                        if (!metadataDictionary.ContainsKey(metadata.Key))
+                        //if (!metadataDictionary.ContainsKey(metadata.Key)) // Use this form If we want the key to be Directory.TagName
+                        if (!metadataDictionary.ContainsKey(metadata.Name))   // Use this form If we want the key to be TagName
                         {
-                            metadataDictionary.Add(metadata.Key, metadata);
+                            //metadataDictionary.Add(metadata.Key, metadata); // Use this form If we want the key to be Directory.TagName
+                            metadataDictionary.Add(metadata.Name, metadata); // Use this form If we want the key to be TagName
                         }
                         else
                         {
@@ -46,6 +48,19 @@ namespace Timelapse.Util
                 metadataDictionary.Clear();
             }
             return metadataDictionary;
+        }
+
+        // Return true if the metadataDictionary includes a tag Name (i.e. excludes the directory) that matches tagName
+        public static bool ContainsMetadataName(Dictionary<string, ImageMetadata> metadataDictionary, string tagName)
+        {
+            foreach (KeyValuePair<string, ImageMetadata> kvp in metadataDictionary)
+            {
+                if (kvp.Value.Name.Equals(tagName))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

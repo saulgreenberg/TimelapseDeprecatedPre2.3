@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Timelapse.Controls;
 using Timelapse.Database;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.ImageSetLoadingPipeline
 {
@@ -95,29 +95,20 @@ namespace Timelapse.ImageSetLoadingPipeline
 
             return Task.Run(() =>
             {
+                // Try to set the metadata fields specified in MetadataOnLoad, as well as the date from either the metadata or the file time depending on what is available
+                if (GlobalReferences.TimelapseState.MetadataOnLoad != null && GlobalReferences.TimelapseState.MetadataOnLoad.SelectedMetadataDataLabels != null &&
+                    GlobalReferences.TimelapseState.MetadataOnLoad.SelectedMetadataDataLabels.Count > 0)
+                {  
+                    this.File.TryReadMetadataAndSetMetadataFields(this.FolderPath, GlobalReferences.TimelapseState.MetadataOnLoad);
+                }
+
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
-                // We only do this for files, as videos do not have these metadata fields
-                // PERFORMANCE Trying to read the date/time from the image data also seems like a somewhat expensive operation. 
-                //this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
-                Dictionary <string,string> dictMetadataDatalabel = new Dictionary<string,string> ();
-                dictMetadataDatalabel.Add("Ambient Temperature", "Note1");
-                dictMetadataDatalabel.Add("Event Number", "Note3");
-               
-                if (dictMetadataDatalabel != null && dictMetadataDatalabel.Count > 0)
-                {
-                    //Try to set the metadata fields, as well as the date from either the metadata or the file time depending on what is available
-                    this.File.TryReadDateTimeOriginalFromMetadataAndSetMetadataFields(this.FolderPath, this.ImageSetTimeZone, dictMetadataDatalabel);
-                }
-                else 
-                {
-                    // Simpler form as no extra metadata field to read
-                    // Set date from either the metadata or the file time depending on what is available
-                    this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
-                }
+                // Note that videos do not have these metadata fields
+                // Strategy is to set date from either the metadata or the file time depending on what is available
+                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
 
                 // This completes processing, but it may be some time before the task is checked for completion.
                 // for purposes of reporting progress, call the completion delegate provided.
-
                 OnImageLoadComplete?.Invoke();
             });
         }

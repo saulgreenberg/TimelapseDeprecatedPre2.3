@@ -21,6 +21,7 @@
             <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
             <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
             <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
+            <CheckBox Name="ShowMetadataDirectory" Content="Details" VerticalAlignment="Center" Margin="15,0,0,0" ToolTip="Show full metadata details, such as the metadata directory (if any)" Click="ShowMetadataDirectory_Click"/>
         </StackPanel>
 
         <!--Row 1: Display the example file name-->
@@ -45,7 +46,7 @@
                   EnableRowVirtualization="False"
                   AutoGenerateColumns="False" 
                   CanUserSortColumns="False"
-                  ItemsSource="{Binding Path=metadataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                  ItemsSource="{Binding Path=MetadataList, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 
             <!--Column Header Style-->
             <DataGrid.ColumnHeaderStyle>
@@ -57,14 +58,14 @@
             <!--Column definitions-->
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Key" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKey}" Width="0"/>
-                <DataGridTextColumn Header="Metadata kind" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKind}"/>
+                <DataGridTextColumn Header="Metadata directory" IsReadOnly="True" Visibility="Collapsed" Binding="{Binding MetadataKind}"/>
                 <DataGridTextColumn Header="Metadata name" IsReadOnly="True" Binding="{Binding MetadataName}" Width="1*"/>
                 <DataGridTextColumn Header="Example value from current file" IsReadOnly="True" Binding="{Binding MetadataValue}" Width="1*"/>
                 <DataGridTemplateColumn Header="Data field" Width=".5*" >
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox 
-                                ItemsSource="{Binding ElementName=MainWindow, Path=DataContext.noteLabels}"
+                                ItemsSource="{Binding ElementName=MainWindow, Path=DataContext.NoteLabels}"
                                 SelectedItem="{Binding AssignedLabel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                 SelectionChanged="ComboBox_SelectionChanged"
                                 />

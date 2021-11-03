@@ -12,8 +12,10 @@
 		ResizeMode="CanResizeWithGrip"
 		ShowInTaskbar="False"
 		WindowStartupLocation="CenterOwner" BorderBrush="Black" Loaded="Window_Loaded">
-    <DockPanel>
-        <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
+    <Grid>
+        <DockPanel Grid.Row="0">
+
+            <controls:StockMessageControl x:Name="Message" DockPanel.Dock="Top" 
                             Icon="Question"
                             Title="See what metadata is available in a file of your choosing"
                             What="Cameras typically embed metadata into image files, some of which may be useful to capture as data. 
@@ -26,53 +28,16 @@
 &#10;    'Populate a field with metadata...' from the Timelapse 'Edit' menu"
                             Hint="As metadata can be camera-specific, inspect files produced by each camera model you have to see what metadata is available."
                             ShowExplanationVisibility="True"/>
-        <StackPanel Orientation="Vertical" DockPanel.Dock="Top" VerticalAlignment="Stretch">
-            <Rectangle Fill="#FF868686" Height="2"></Rectangle>
-            <StackPanel Name="ToolSelectionPanel" Orientation="Horizontal">
-                <Label Content="Choose a metadata inspection tool:" FontWeight="Bold" Margin="5,0,20,0"/>
-                <RadioButton Name="MetadataExtractorRB" Content="MetadataExtractor (faster)" IsChecked="True" VerticalAlignment="Center" GroupName="MetadataToolType"/>
-                <RadioButton Name="ExifToolRB" Content="ExifTool (slower, more comprehensive)" VerticalAlignment="Center" Margin="15,0,0,0" GroupName="MetadataToolType"/>
-            </StackPanel>
-            <Rectangle Fill="#FF868686" Height="2">
-            </Rectangle>
-            <Grid Name="PanelHeader">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition MinWidth="80" Width="Auto" />
-                </Grid.ColumnDefinitions>
 
-                <Button Name="OpenFile" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="10" Margin="10,10,5,10"  Click="OpenFile_Click">Open _File</Button>
-                <Label Content="File currently open:" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="1"/>
-                <Label Content="--" Name="ImageName" MinWidth="100" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"  FontSize="12" FontWeight="Normal" Grid.Column="2"/>
-                <Label Content="Metadata name :" Height="28" Margin="5,0,0,0" HorizontalContentAlignment="Left" FontSize="12" FontWeight="Bold" Grid.Column="3"/>
-                <TextBox Text="--" Name="MetadataDisplayText" MinWidth="100" Height="28" Margin="0,0,0,0" HorizontalAlignment="Stretch"   VerticalContentAlignment="Center" FontSize="12" FontWeight="Normal" Grid.Column="4"/>
-            </Grid>
-        </StackPanel>
+            <DockPanel LastChildFill="True">
+                <DockPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Stretch" >
+                    <Button x:Name="OkayButton" IsDefault="True"  DockPanel.Dock="Right" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="OkayButton_Click">_Okay</Button>
+                    <Button Name="OpenFile" VerticalAlignment="Bottom" HorizontalAlignment="Left" Padding="10" Margin="10,10,5,10"  Click="OpenFile_Click">Open _File</Button>
+                </DockPanel>
 
-        <DockPanel LastChildFill="True" >
-            <DockPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Stretch">
-                <Button Name="btnOkay"  DockPanel.Dock="Right" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Right" Padding="10" Margin="10,10,10,10" Click="OkayButton_Click">_Okay</Button>
+                <controls:MetadataGrid x:Name="MetadataGrid"  DockPanel.Dock="Top" VerticalAlignment="Stretch"/>
+                
             </DockPanel>
-
-            <Grid Name="PrimaryPanel">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="159*"/>
-                    <ColumnDefinition Width="119*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock FontWeight="Bold" Text="Metadata (including sample values from this image)" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="275,10,264.333,0" Grid.ColumnSpan="2"/>
-                <DataGrid Name="dataGrid" Margin="10,0,10.333,0" ColumnWidth="*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    AutoGenerateColumns="True" AutoGeneratedColumns="Datagrid_AutoGeneratedColumns" 
-                    SelectionUnit="FullRow" SelectionMode="Single" SelectedCellsChanged="Datagrid_SelectedCellsChanged" 
-                    Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
-                </DataGrid>
-            </Grid>
         </DockPanel>
-    </DockPanel>
+    </Grid>
 </Window>

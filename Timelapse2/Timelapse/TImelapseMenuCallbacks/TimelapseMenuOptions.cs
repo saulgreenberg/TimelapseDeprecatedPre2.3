@@ -81,21 +81,13 @@ namespace Timelapse
             filePlayerOptions.ShowDialog();
         }
         #endregion
-
+               
         #region Episode ShowHide / AdjustThreshold
         private void MenuItemEpisodeShowHide_Click(object sender, RoutedEventArgs e)
         {
             this.EpisodeShowHide(!Episodes.ShowEpisodes);
             return;
         }
-
-        #region Ask to PopulateMetadata
-        private void MenuItemAskToPopulateMetadataOptions_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-        #endregion
-
         public void EpisodeShowHide(bool show)
         {
             Episodes.ShowEpisodes = show;

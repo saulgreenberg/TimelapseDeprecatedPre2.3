@@ -132,7 +132,7 @@ namespace Timelapse
                 }
                 else
                 {
-                    this.MarkableCanvas.SetNewImage(this.DataHandler.ImageCache.GetCurrentImage(), displayMarkers);
+                    this.MarkableCanvas.SetNewImage(this.DataHandler.ImageCache.GetCurrentImage, displayMarkers);
                     // Draw markers for this file
                     this.MarkableCanvas_UpdateMarkers();
                     this.MarkableCanvas.BoundingBoxes = bboxes;
