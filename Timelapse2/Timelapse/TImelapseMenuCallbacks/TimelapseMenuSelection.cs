@@ -260,7 +260,8 @@ namespace Timelapse
             }
 
             // show the dialog and process the resuls
-            Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.DataHandler.FileDatabase, this.DataEntryControls, this, this.IsUTCOffsetControlHidden(), this.DataHandler.FileDatabase.CustomSelection.DetectionSelections)
+            //Dialog.CustomSelection customSelection = new Dialog.CustomSelection(this.DataHandler.FileDatabase, this.DataEntryControls, this, this.IsUTCOffsetControlHidden(), this.DataHandler.FileDatabase.CustomSelection.DetectionSelections)
+            Dialog.CustomSelectionWithEpisodes customSelection = new Dialog.CustomSelectionWithEpisodes(this.DataHandler.FileDatabase, this.DataEntryControls, this, this.IsUTCOffsetControlHidden(), this.DataHandler.FileDatabase.CustomSelection.DetectionSelections)
             {
                 Owner = this
             };

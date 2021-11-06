@@ -1085,6 +1085,14 @@ namespace Timelapse.Database
                 }
             }
 
+            // EPISODESXXX If the episodes stuff is turned on with a valid Note field, then add a wrapper
+            if (this.CustomSelection != null && this.CustomSelection.EpisodeShowAllIfAnyMatch && this.CustomSelection.EpisodeNoteField != String.Empty)
+            {
+                string frontWrapper = String.Format("Select * from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From (", this.CustomSelection.EpisodeNoteField);
+                string backWrapper = "))";
+                query = frontWrapper + query + backWrapper;
+            }
+            System.Diagnostics.Debug.Print(query);
             DataTable filesTable = await Task.Run(() =>
             {
                 // System.Diagnostics.Debug.Print("Select Query: " + query);
@@ -1690,8 +1698,19 @@ namespace Timelapse.Database
                     }
                 }
             }
+            System.Diagnostics.Debug.Print("File Counts before: " + query);
+            // EPISODESXXX If the episodes stuff is turned on with a valid Note field, and we are doing detections or classifications, then add a wrapper
+            if ( this.CustomSelection.EpisodeShowAllIfAnyMatch && this.CustomSelection.EpisodeNoteField != String.Empty
+                && fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true ) 
+            {
+                // Remove from the front of the string
+                query = query.Replace("SELECT COUNT  ( * )  FROM ", String.Empty);
+                string frontWrapper = String.Format("Select  COUNT  ( * ) from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From ", this.CustomSelection.EpisodeNoteField);
+                string backWrapper = ")";
+                query = frontWrapper + query + backWrapper;
+            }
             // Uncommment this to see the actual complete query
-            //    System.Diagnostics.Debug.Print("File Counts: " + query);
+            // System.Diagnostics.Debug.Print("File Counts: " + query);
             return this.Database.ScalarGetCountFromSelect(query);
         }
 

@@ -21,6 +21,10 @@ namespace Timelapse.Database
         public CustomSelectionOperatorEnum TermCombiningOperator { get; set; }
         public bool ShowMissingDetections { get; set; }
         public Detection.DetectionSelections DetectionSelections { get; set; }
+
+        // Episode-specific data
+        public bool EpisodeShowAllIfAnyMatch { get; set; } = false;
+        public string EpisodeNoteField { get; set; } = String.Empty;
         #endregion
 
         #region Constructor

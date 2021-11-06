@@ -189,6 +189,9 @@
     <Compile Include="Detection\Detector.cs" />
     <Compile Include="Detection\DetectionSelections.cs" />
     <Compile Include="DataStructures\AmbiguousDateRange.cs" />
+    <Compile Include="Dialog\CustomSelectionWithEpisodes.xaml.cs">
+      <DependentUpon>CustomSelectionWithEpisodes.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml.cs">
       <DependentUpon>DateTimeRereadFromSelectedMetadataField.xaml</DependentUpon>
     </Compile>
@@ -452,6 +455,10 @@
     <Page Include="Controls\VideoPlayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialog\CustomSelectionWithEpisodes.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml">
       <SubType>Designer</SubType>
