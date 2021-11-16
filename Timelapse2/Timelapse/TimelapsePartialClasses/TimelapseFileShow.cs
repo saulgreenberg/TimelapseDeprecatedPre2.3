@@ -173,6 +173,20 @@ namespace Timelapse
                 this.FilePlayer.ForwardsControlsEnabled(true);
             }
 
+            // Refresh the Magnifier if needed
+            if (this.IsDisplayingSingleImage())
+            {
+                if (this.DataHandler.ImageCache.Current.IsVideo)
+                { 
+                    this.MarkableCanvas.SetMagnifiersAccordingToCurrentState(false, true);
+                }
+                else
+                {
+                    this.MarkableCanvas.SetMagnifiersAccordingToCurrentState(true, false);
+                }
+            }
+ 
+
             // Refresh the CopyPreviousButton and its Previews as needed
             this.CopyPreviousValuesSetEnableStatePreviewsAndGlowsAsNeeded();
 

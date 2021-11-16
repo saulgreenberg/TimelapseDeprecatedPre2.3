@@ -137,7 +137,7 @@
                 <MenuItem Name="MenuItemEdit" Header="_Edit" IsEnabled="false" IsTabStop="false" SubmenuOpened="Edit_SubmenuOpening" >
 
                     <!-- Find image -->
-                    <MenuItem Name="MenuItemFindImage" Header="_Find image" Click="MenuItemFindByFileName_Click" ToolTip="Find an image whose filename contains your case-insensitive search term" InputGestureText="control-F"/>
+                    <MenuItem Name="MenuItemFindImage" Header="_Find file" Click="MenuItemFindByFileName_Click" ToolTip="Find an image or video file whose filename contains your case-insensitive search term" InputGestureText="control-F"/>
 
                     <Separator />
 
@@ -628,7 +628,7 @@
 
                                 <!-- Data Pane -->
                                 <xcad:LayoutDocument x:Name="DataGridPane" ContentId="ContentIDDataGridPane"
-                                                 Title="Data Table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
+                                                 Title="Data table  " CanClose="False" IsActiveChanged="DataGridPane_IsActiveChanged" CanFloat="True" 
                                                  ToolTip="Data Table shows all your data. Pull it out as a separate window by dragging its title bar">
                                     <Grid>
                                         <Grid.RowDefinitions>

@@ -724,12 +724,12 @@ namespace Timelapse.Images
             return this.magnifyingGlass.ZoomFactor;
         }
 
-        private void RedrawMagnifyingGlassIfVisible()
+        public void RedrawMagnifyingGlassIfVisible()
         {
             this.magnifyingGlass.RedrawIfVisible(NativeMethods.GetCursorPos(this), this.canvasToMagnify);
         }
 
-        private void SetMagnifiersAccordingToCurrentState(bool showMagnifier, bool showOffset)
+        public void SetMagnifiersAccordingToCurrentState(bool showMagnifier, bool showOffset)
         {
             this.magnifyingGlass.Show = showMagnifier && this.MagnifiersEnabled && this.displayingImage;
 
@@ -949,6 +949,16 @@ namespace Timelapse.Images
                 // Panning: ensure we are reset to false at the beginning of a mouse down
                 this.isPanning = false;
             }
+        }
+
+        // Unused. Trigger a mouse move event. This is used to keep th emagnifying glass in view when switching files.
+        public void TriggerMouseMoveEvent()
+        {
+            MouseEventArgs e = new MouseEventArgs(Mouse.PrimaryDevice, 0)
+            {
+                RoutedEvent = Mouse.MouseMoveEvent
+            };
+            this.RaiseEvent(e);
         }
 
         // If we move the mouse with the left mouse button press, translate the image

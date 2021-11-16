@@ -28,7 +28,7 @@ namespace Timelapse
     /// </summary>
     public partial class TimelapseWindow : Window, IDisposable
     {
-        #region Public Properties
+        #region Public Properties 
         public DataEntryHandler DataHandler { get; set; }
         public TimelapseState State { get; set; }                       // Status information concerning the state of the UI
 
