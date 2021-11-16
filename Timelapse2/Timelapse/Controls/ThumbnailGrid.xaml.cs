@@ -158,7 +158,7 @@ namespace Timelapse.Controls
             }
 
             // Now perform various checks if the refresh was due to a navigation or resize (i.e., a change in zoom level was not explicitly requested when zoomIn is null)
-            this.thumbnailsAlreadyInGrid.Clear(); // we will fill this only if we are navigating
+            //this.thumbnailsAlreadyInGrid.Clear(); // we will fill this only if we are navigating
             int desiredCellWidth = 0;
             bool navigating = false;
             if (showFewerCells == null)
@@ -184,7 +184,10 @@ namespace Timelapse.Controls
                     else if (this.AvailableRows == Convert.ToInt32(Math.Floor(gridHeight / desiredCellHeight))
                           && this.AvailableColumns == Convert.ToInt32(Math.Floor(gridWidth / desiredCellWidth)))
                     {
-                        // Resize aborted, as the number of available rows/columns hasn't changed, then we don't have to do anything
+                        // A possible resize did not affect the number of available rows/columns, then we don't have to do anything
+                        // Although we still ahve to save the old size, as otherwise it won't recognize that things have changed.
+                        this.oldGridWidth = gridWidth;
+                        this.oldGridHeight = gridHeight;
                         return ThumbnailGridRefreshStatus.Ok;
                     }
                     else if (desiredCellHeight < Constant.ThumbnailGrid.MinumumThumbnailHeight)
@@ -202,6 +205,7 @@ namespace Timelapse.Controls
                     }
                 }
             }
+            this.thumbnailsAlreadyInGrid.Clear(); // we will fill this only if we are navigating
             int fileTableCount = this.FileTable.RowCount;
             if (showFewerCells == null)
             {
