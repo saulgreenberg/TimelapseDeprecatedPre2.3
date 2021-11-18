@@ -40,14 +40,14 @@ namespace Timelapse.Dialog
 
         // Variables
         private readonly FileDatabase database;
-        private ImageRow currentImageRow;
+        private readonly ImageRow currentImageRow;
         private readonly DataEntryControls dataEntryControls;
         private readonly TimeZoneInfo imageSetTimeZone;
         private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
 
-        // Dictionary
-        Dictionary<string, string> dictLabelToDataLabel;
+        // Remember note fields that contain Episode data
+        string NoteDataLabelContainingEpisodeData;
 
         // And/Or RadioButtons use to combine non-standard terms
         private readonly RadioButton RadioButtonTermCombiningAnd = new RadioButton()
@@ -201,6 +201,12 @@ namespace Timelapse.Dialog
             {
                 this.SetDetectionCriteria();
                 this.ShowMissingDetectionsCheckbox.IsChecked = this.database.CustomSelection.ShowMissingDetections;
+                this.NoteDataLabelContainingEpisodeData = this.database.CustomSelection.EpisodeNoteField;
+                if (true == this.database.CustomSelection.EpisodeShowAllIfAnyMatch && EpisodeFieldCheckFormat(this.currentImageRow, this.NoteDataLabelContainingEpisodeData))
+                {
+                    // Only check the checkbox if it was previously checked and the data field still contains valid Episode data
+                    this.CheckboxShowAllEpisodeImages.IsChecked = this.database.CustomSelection.EpisodeShowAllIfAnyMatch;
+                }
             }
             this.InitiateShowCountsOfMatchingFiles();
             this.DetectionCategoryComboBox.SelectionChanged += this.DetectionCategoryComboBox_SelectionChanged;
@@ -587,43 +593,20 @@ namespace Timelapse.Dialog
 
             // Load the available note fields in the Episode ComboBox
             // and set the CustomSelection to the current values
-            this.dictLabelToDataLabel = new Dictionary<string, string>();
+            this.NoteDataLabelContainingEpisodeData = String.Empty;
             foreach (ControlRow control in this.database.Controls)
             {
-                if (control.Type == Constant.Control.Note)
+                if (control.Type == Constant.Control.Note && EpisodeFieldCheckFormat(this.currentImageRow, control.DataLabel))
                 {
-                    // Add the note control's Label and DataLabel as long as its not a duplicate, if any
-                    if (false == this.dictLabelToDataLabel.Keys.Contains(control.Label))
-                    {
-                        this.dictLabelToDataLabel.Add(control.Label, control.DataLabel);
-                    }
+                    // We found a note data label whose value in the current image follows the expected Episode format.
+                    // So save it
+                    this.NoteDataLabelContainingEpisodeData = control.DataLabel;
+                    break;
                 }
             }
-            // The combobox menu will contain the collected Note labels.
-            // We can later use the dictLabelToDataLabel to find that Note's data label
-            this.ComboBoxNoteFields.ItemsSource = this.dictLabelToDataLabel.Keys;
 
-            // We initially set the selected item to not have anything in it
-
-            // Find a note field, if any, that contains the current file's value that follows the expected Episode format
-            // i.e., <sequence id as number>:<number in sequence>|<total number>
-            // The Selected Item of the combobox is initially empty
-            string dataLabelCandidate = String.Empty;
-            if (this.currentImageRow != null)
-            {
-                foreach (string dataLabel in this.dictLabelToDataLabel.Values)
-                {
-                    if (EpisodeFieldCheckFormat(this.currentImageRow, dataLabel))
-                    {
-                        // We found a data label whose value in the current image follows the expected Episode format.
-                        // So set the Combobox's Selected Item to that, as its a more than reasonable starting point.
-                        dataLabelCandidate = dataLabel;
-                        this.ComboBoxNoteFields.SelectedItem = dictLabelToDataLabel.FirstOrDefault(x => x.Value == dataLabel).Key;
-                        break;
-                    }
-                }
-            }
-            this.database.CustomSelection.EpisodeNoteField = dataLabelCandidate; // (string)this.ComboBoxNoteFields.SelectedItem;
+            // Set the selected item to the Note field with episode data in it.
+            this.database.CustomSelection.EpisodeNoteField = this.NoteDataLabelContainingEpisodeData;
             this.database.CustomSelection.EpisodeShowAllIfAnyMatch = this.CheckboxShowAllEpisodeImages.IsChecked == true;
         }
         #endregion
@@ -1167,8 +1150,6 @@ namespace Timelapse.Dialog
             // The episode contorls are only enabled if detections is enabled
             this.CheckboxShowAllEpisodeImages.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
             this.CheckboxShowAllEpisodeImages.IsEnabled = isEnabled;
-            this.ComboBoxNoteFields.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
-            this.ComboBoxNoteFields.IsEnabled = isEnabled;
 
             // There remainder depends upon the use detections isEnable state only
             this.DetectionCategoryComboBox.IsEnabled = isEnabled;
@@ -1280,85 +1261,27 @@ namespace Timelapse.Dialog
         {
             if (this.database == null)
             {
-                return;
-            }
-            if (strue == this.CheckboxShowAllEpisodeImages.IsChecked)
-            { 
-                this.CheckEpisodeField();
-            }
-            this.database.CustomSelection.EpisodeShowAllIfAnyMatch = this.CheckboxShowAllEpisodeImages.IsChecked == true;
-            this.UpdateSearchDialogFeedback();
-        }
-
-        // Set the Episode data label based on the ComboBox selection.
-        // If something is off, just set it to empty.
-        private void ComboBoxNoteFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-            if (this.database == null)
-            {
+                this.CheckboxShowAllEpisodeImages.IsChecked = false;
                 return;
             }
 
-            //if (false == CheckEpisodeField())
-            //{
-
-            //}
-            // Get the label
-            string label = (string)this.ComboBoxNoteFields.SelectedItem;
-            if (String.IsNullOrWhiteSpace(label) || false == this.dictLabelToDataLabel.ContainsKey(label))
+            if (true == this.CheckboxShowAllEpisodeImages.IsChecked)
             {
-                // We don't have a valid label
-                this.database.CustomSelection.EpisodeNoteField = String.Empty;
-            }
-            else
-            {
-                // Get the data label from the label
-                string dataLabel = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
-
-                if (String.IsNullOrWhiteSpace(dataLabel))
+                if (String.IsNullOrEmpty(this.NoteDataLabelContainingEpisodeData))
                 {
-                    // We don't have a valid data label
-                    this.database.CustomSelection.EpisodeNoteField = String.Empty;
+                    // No note fields contain the expected Episode data. Disable this operation and get the heck out of here.
+                    Dialogs.CustomSelectEpisodeDataLabelProblem(this.Owner);
+                    this.CheckboxShowAllEpisodeImages.IsChecked = false;
+                    this.database.CustomSelection.EpisodeShowAllIfAnyMatch = false;
+                    return;
+                }
 
-                }
-                else
-                {
-                    // Set the Episode note field to the non-empty data label
-                    this.database.CustomSelection.EpisodeNoteField = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
-                }
             }
+            this.database.CustomSelection.EpisodeShowAllIfAnyMatch = true == this.CheckboxShowAllEpisodeImages.IsChecked;
             this.UpdateSearchDialogFeedback();
         }
 
-        private bool CheckEpisodeField()
-        {
-            string label = (string)this.ComboBoxNoteFields.SelectedItem;
-            if (String.IsNullOrWhiteSpace(label))
-            {
-                Dialogs.CustomSelectEpisodeDataLabelProblem(this.Owner, label, true);
-                // Dialogs.CustomSelectEpisodeEmptyoDataLabel(this.Owner);
-                return false;
-            }
-
-            // Get the data label from the label
-            string dataLabel = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
-
-            if (String.IsNullOrWhiteSpace(dataLabel))
-            {
-                // We don't have a valid data label
-                return false;
-            }
-            if (false == EpisodeFieldCheckFormat(this.currentImageRow, dataLabel))
-            {
-                // A different dialog?
-                Dialogs.CustomSelectEpisodeDataLabelProblem(this.Owner, label, false);
-                return false;
-            }
-            return true;
-        }
-
-        static bool EpisodeFieldCheckFormat(ImageRow row, string dataLabel)
+        private static bool EpisodeFieldCheckFormat(ImageRow row, string dataLabel)
         {
             Regex rgx = new Regex(@"^[0-9]+:[0-9]+\|[0-9]+$");
             string value = row.GetValueDisplayString(dataLabel);

@@ -86,11 +86,9 @@
                     <StackPanel Name="ShowEpisodeOptionsPanel" Orientation="Horizontal" Margin="0,5,0,0"  Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4">
                         <CheckBox Name="CheckboxShowAllEpisodeImages"  Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" 
                               VerticalContentAlignment="Center" FontWeight="DemiBold"
-                              Content="To show all episode files, select the episode field:" IsChecked="False"
+                              Content="Include all files in an episode when at least one file matches" IsChecked="False"
                               Checked="CheckboxShowAllEpisodeImages_CheckedChanged" Unchecked="CheckboxShowAllEpisodeImages_CheckedChanged"
                                   ToolTip="Show all files in an episodewhere at least one file in that episode matches the search criteria"/>
-                        <ComboBox Name="ComboBoxNoteFields" Margin="10,0,0,0" MinWidth="100" SelectionChanged="ComboBoxNoteFields_SelectionChanged"
-                                  ToolTip="Select the data field containing Episode information formatted as e.g., 25:2|7"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
