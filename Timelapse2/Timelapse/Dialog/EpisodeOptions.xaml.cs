@@ -24,10 +24,12 @@ namespace Timelapse.Dialog
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
 
-            this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum;
-            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum;
+            this.TimeThresholdSlider.Minimum = Constant.EpisodeDefaults.TimeThresholdMinimum*60;
+            this.TimeThresholdSlider.Maximum = Constant.EpisodeDefaults.TimeThresholdMaximum*60;
+            this.TimeThresholdSlider.SmallChange = 1;
+            this.TimeThresholdSlider.LargeChange = 1;
             this.TimeThresholdSlider.ValueChanged += this.TimeThresholdSlider_ValueChanged;
-            this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalMinutes;
+            this.TimeThresholdSlider.Value = this.EpisodeTimeThreshold.TotalSeconds;
             this.DisplayFeedback();
         }
         #endregion
@@ -35,7 +37,7 @@ namespace Timelapse.Dialog
         #region Private Methods - Display Feedback
         private void DisplayFeedback()
         {
-            TimeSpan duration = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
+            TimeSpan duration = TimeSpan.FromSeconds(this.TimeThresholdSlider.Value);
             string label = (duration >= TimeSpan.FromMinutes(1)) ? "minutes" : "seconds";
             this.TimeThresholdText.Text = String.Format("{0:m\\:ss} {1}", duration, label);
         }
@@ -46,12 +48,12 @@ namespace Timelapse.Dialog
         {
             // this.state.FilePlayerSlowValue = this.SlowSpeedSlider.Value;
             this.DisplayFeedback();
-            this.EpisodeTimeThreshold = TimeSpan.FromMinutes(this.TimeThresholdSlider.Value);
+            this.EpisodeTimeThreshold = TimeSpan.FromSeconds(this.TimeThresholdSlider.Value);
         }
 
         private void ResetTimeThresholdSlider_Click(object sender, RoutedEventArgs e)
         {
-            this.TimeThresholdSlider.Value = Constant.EpisodeDefaults.TimeThresholdDefault;
+            this.TimeThresholdSlider.Value = Constant.EpisodeDefaults.TimeThresholdDefault * 60;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

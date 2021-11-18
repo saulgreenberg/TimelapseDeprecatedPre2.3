@@ -89,7 +89,7 @@ namespace Timelapse.Util
                 this.DarkPixelRatioThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.GetInteger(Constant.WindowRegistryKeys.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
                 this.DeleteFolderManagement = (DeleteFolderManagementEnum)registryKey.GetInteger(Constant.WindowRegistryKeys.DeleteFolderManagementValue, (int)DeleteFolderManagementEnum.ManualDelete);
-                this.EpisodeTimeThreshold = registryKey.GetTimeSpanAsSeconds(Constant.WindowRegistryKeys.EpisodeTimeThreshold, TimeSpan.FromMinutes(Constant.EpisodeDefaults.TimeThresholdDefault));
+                this.EpisodeTimeThreshold = registryKey.GetTimeSpanAsSeconds(Constant.WindowRegistryKeys.EpisodeTimeThreshold, TimeSpan.FromSeconds(Constant.EpisodeDefaults.TimeThresholdDefault));
                 this.FilePlayerSlowValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MagnifyingGlassOffsetLensEnabled = registryKey.GetBoolean(Constant.WindowRegistryKeys.MagnifyingGlassOffsetLensEnabled, true);
