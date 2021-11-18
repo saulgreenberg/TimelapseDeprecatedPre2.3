@@ -1480,5 +1480,81 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
         #endregion
+
+        #region MessageBox: related to selecting Episodes in the custom select
+        public static void CustomSelectEpisodeDataLabelNotInEpisodeFormat(Window owner)
+        {
+            string title = "Select a data field containing valid Episode information";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = title + ". Otherwise, this option won't do anything." + Environment.NewLine;
+
+            messageBox.Message.Reason += "When you choose this option to show all Episode files, Timelapse will search for Episodes that have one or more" + Environment.NewLine;
+            messageBox.Message.Reason += "files matching your search criteria. All files contained in those Episodes will be displayed." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Reason += "For this to work properly, select a Note data field containing Episode data." + Environment.NewLine;
+            messageBox.Message.Reason += "That note field should have been filled in using Edit | Populate a field with episode data..., where:" + Environment.NewLine;
+            messageBox.Message.Reason += "    \u2022 the Episode format includes the episode sequence number as its prefix, e.g. 25:1|3" + Environment.NewLine;
+            messageBox.Message.Reason += "    \u2022 it was applied to all currently selected files, as otherwise some episodes may have the same sequence number" + Environment.NewLine;
+
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.ShowDialog();
+        }
+
+        public static void CustomSelectEpisodeNoValidDataLabelFound(Window owner)
+        {
+            string title = "Warning: The current file does not have a data field containing the expected Episode information";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            messageBox.Message.What = title + Environment.NewLine;
+            messageBox.Message.What += "While other files may hae a data field that contains the necessary information, you should  check." + Environment.NewLine;
+            messageBox.Message.What += "Otherwise, this operation won't have any effect";
+
+            messageBox.Message.Reason += "When you choose this option to show all Episode files, Timelapse searches for Episodes that have one or more" + Environment.NewLine;
+            messageBox.Message.Reason += "files matching your search criteria. All files contained in those Episodes are then displayed." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Reason += "For this to work properly, one of your Note data fields needs to contain Episode data in the required format." + Environment.NewLine;
+            messageBox.Message.Reason += "That note field should have been filled in using Edit | Populate a field with episode data..., where:" + Environment.NewLine;
+            messageBox.Message.Reason += "    \u2022 the Episode format includes the episode sequence number as its prefix, e.g. 25:1|3" + Environment.NewLine;
+            messageBox.Message.Reason += "    \u2022 all currently selected files were populated at the same time, as otherwise some episodes may have the same sequence number" + Environment.NewLine;
+
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.ShowDialog();
+        }
+
+        // There are two version of this warning dialog
+        // - If the flag is true, the text informs that Timelapse could not find a data field in the expected episode format
+        // - If the flag is false, the text informs that the currently selected data field is not in the expected format
+        public static void CustomSelectEpisodeDataLabelProblem(Window owner, string label, bool noDataLabelFoundInExpectedFormatFound)
+        {
+            string title = noDataLabelFoundInExpectedFormatFound
+            ? "The current file does not appear to have a data field containing the expected episode information" 
+            : "'" + label + "' may not have the required episode information";
+            Dialog.MessageBox messageBox = new Dialog.MessageBox(title, owner, MessageBoxButton.OK);
+
+            //messageBox.Message.What = noDataLabelFoundInExpectedFormatFound
+            //? "The current file does not appear to have a data field containing the expected Episode information." + Environment.NewLine
+            //: "'" + label + " 'may not have the required Episode information." + Environment.NewLine;
+
+            messageBox.Message.What = noDataLabelFoundInExpectedFormatFound
+                ? ""
+                : "'" + label + "'is selected, but its value in the current file is not in the expected Episode format." + Environment.NewLine;
+
+
+            messageBox.Message.What += "While other files may contain the necessary information, you should likely check." + Environment.NewLine
+                                     + "Otherwise, this operation won't have any effect.";
+
+            messageBox.Message.Reason += "When you choose this option, Timelapse searches for episodes having at least one file " + Environment.NewLine;
+            messageBox.Message.Reason += "matching your search criteria. If so, all files contained in those episodes are then displayed." + Environment.NewLine + Environment.NewLine;
+            messageBox.Message.Reason += "For this to work properly, one of your data fields must have been filled in using " + Environment.NewLine;
+            messageBox.Message.Reason += "Edit | Populate a field with episode data..., where:" + Environment.NewLine;
+            messageBox.Message.Reason += " \u2022 the episode format includes the episode sequence number as its prefix, e.g. 25:1|3," + Environment.NewLine;
+            messageBox.Message.Reason += " \u2022 all currently selected files were populated with Episode information at the same time.";
+
+            messageBox.Message.Hint = "See the Timelapse Reference Guide about how this operation works, what is required, and what it is for.";
+
+            messageBox.Message.Icon = MessageBoxImage.Warning;
+            messageBox.ShowDialog();
+        }
+
+        #endregion
     }
 }

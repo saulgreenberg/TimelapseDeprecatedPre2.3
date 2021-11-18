@@ -40,10 +40,14 @@ namespace Timelapse.Dialog
 
         // Variables
         private readonly FileDatabase database;
+        private ImageRow currentImageRow;
         private readonly DataEntryControls dataEntryControls;
         private readonly TimeZoneInfo imageSetTimeZone;
         private readonly bool excludeUTCOffset;
         private bool dontUpdate = true;
+
+        // Dictionary
+        Dictionary<string, string> dictLabelToDataLabel;
 
         // And/Or RadioButtons use to combine non-standard terms
         private readonly RadioButton RadioButtonTermCombiningAnd = new RadioButton()
@@ -72,7 +76,7 @@ namespace Timelapse.Dialog
         #endregion
 
         #region Constructors and Loading
-        public CustomSelectionWithEpisodes(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections)
+        public CustomSelectionWithEpisodes(FileDatabase database, DataEntryControls dataEntryControls, Window owner, bool excludeUTCOffset, DetectionSelections detectionSelections, ImageRow currentImageRow)
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(database, nameof(database));
@@ -80,6 +84,7 @@ namespace Timelapse.Dialog
             this.InitializeComponent();
 
             this.database = database;
+            this.currentImageRow = currentImageRow;
             this.dataEntryControls = dataEntryControls;
             this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
             this.Owner = owner;
@@ -582,21 +587,43 @@ namespace Timelapse.Dialog
 
             // Load the available note fields in the Episode ComboBox
             // and set the CustomSelection to the current values
-            List<string> noteControls = new List<string> { "" }; 
+            this.dictLabelToDataLabel = new Dictionary<string, string>();
             foreach (ControlRow control in this.database.Controls)
             {
                 if (control.Type == Constant.Control.Note)
                 {
-                    // SAULXXX: Need to do show Label instead of DataLabel
-                    noteControls.Add(control.DataLabel);
+                    // Add the note control's Label and DataLabel as long as its not a duplicate, if any
+                    if (false == this.dictLabelToDataLabel.Keys.Contains(control.Label))
+                    {
+                        this.dictLabelToDataLabel.Add(control.Label, control.DataLabel);
+                    }
                 }
             }
-            this.ComboBoxNoteFields.ItemsSource = noteControls;
-            if (noteControls.Count > 0)
+            // The combobox menu will contain the collected Note labels.
+            // We can later use the dictLabelToDataLabel to find that Note's data label
+            this.ComboBoxNoteFields.ItemsSource = this.dictLabelToDataLabel.Keys;
+
+            // We initially set the selected item to not have anything in it
+
+            // Find a note field, if any, that contains the current file's value that follows the expected Episode format
+            // i.e., <sequence id as number>:<number in sequence>|<total number>
+            // The Selected Item of the combobox is initially empty
+            string dataLabelCandidate = String.Empty;
+            if (this.currentImageRow != null)
             {
-                this.ComboBoxNoteFields.SelectedItem = noteControls[1];
+                foreach (string dataLabel in this.dictLabelToDataLabel.Values)
+                {
+                    if (EpisodeFieldCheckFormat(this.currentImageRow, dataLabel))
+                    {
+                        // We found a data label whose value in the current image follows the expected Episode format.
+                        // So set the Combobox's Selected Item to that, as its a more than reasonable starting point.
+                        dataLabelCandidate = dataLabel;
+                        this.ComboBoxNoteFields.SelectedItem = dictLabelToDataLabel.FirstOrDefault(x => x.Value == dataLabel).Key;
+                        break;
+                    }
+                }
             }
-            this.database.CustomSelection.EpisodeNoteField = (string)this.ComboBoxNoteFields.SelectedItem;
+            this.database.CustomSelection.EpisodeNoteField = dataLabelCandidate; // (string)this.ComboBoxNoteFields.SelectedItem;
             this.database.CustomSelection.EpisodeShowAllIfAnyMatch = this.CheckboxShowAllEpisodeImages.IsChecked == true;
         }
         #endregion
@@ -1132,16 +1159,22 @@ namespace Timelapse.Dialog
             this.DetectionConfidenceSpinnerLower.IsEnabled = confidenceControlsEnabled;
             this.DetectionConfidenceSpinnerHigher.IsEnabled = confidenceControlsEnabled;
             this.DetectionRangeSlider.IsEnabled = confidenceControlsEnabled;
-            this.ConfidenceLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.FromLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
-            this.ToLabel.FontWeight = confidenceControlsEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.ConfidenceLabel.FontWeight = confidenceControlsEnabled ? FontWeights.Normal : FontWeights.Light;
+            this.FromLabel.FontWeight = confidenceControlsEnabled ? FontWeights.Normal : FontWeights.Light;
+            this.ToLabel.FontWeight = confidenceControlsEnabled ? FontWeights.Normal : FontWeights.Light;
             this.DetectionRangeSlider.RangeBackground = confidenceControlsEnabled ? Brushes.Gold : Brushes.LightGray;
+
+            // The episode contorls are only enabled if detections is enabled
+            this.CheckboxShowAllEpisodeImages.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
+            this.CheckboxShowAllEpisodeImages.IsEnabled = isEnabled;
+            this.ComboBoxNoteFields.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
+            this.ComboBoxNoteFields.IsEnabled = isEnabled;
 
             // There remainder depends upon the use detections isEnable state only
             this.DetectionCategoryComboBox.IsEnabled = isEnabled;
-            this.CategoryLabel.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.CategoryLabel.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
             this.RankByConfidenceCheckbox.IsEnabled = isEnabled;
-            this.RankByConfidenceCheckbox.FontWeight = isEnabled ? FontWeights.DemiBold : FontWeights.Normal;
+            this.RankByConfidenceCheckbox.FontWeight = isEnabled ? FontWeights.Normal : FontWeights.Light;
 
             // CHECK THE ONES BELOW TO SEE IF THIS IS THE BEST WAY TO DO THESE
             this.SelectionGroupBox.IsEnabled = !this.database.CustomSelection.ShowMissingDetections;
@@ -1249,18 +1282,89 @@ namespace Timelapse.Dialog
             {
                 return;
             }
+            if (strue == this.CheckboxShowAllEpisodeImages.IsChecked)
+            { 
+                this.CheckEpisodeField();
+            }
             this.database.CustomSelection.EpisodeShowAllIfAnyMatch = this.CheckboxShowAllEpisodeImages.IsChecked == true;
             this.UpdateSearchDialogFeedback();
         }
+
+        // Set the Episode data label based on the ComboBox selection.
+        // If something is off, just set it to empty.
         private void ComboBoxNoteFields_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+
             if (this.database == null)
             {
                 return;
             }
-            this.database.CustomSelection.EpisodeNoteField = (string)this.ComboBoxNoteFields.SelectedItem;
+
+            //if (false == CheckEpisodeField())
+            //{
+
+            //}
+            // Get the label
+            string label = (string)this.ComboBoxNoteFields.SelectedItem;
+            if (String.IsNullOrWhiteSpace(label) || false == this.dictLabelToDataLabel.ContainsKey(label))
+            {
+                // We don't have a valid label
+                this.database.CustomSelection.EpisodeNoteField = String.Empty;
+            }
+            else
+            {
+                // Get the data label from the label
+                string dataLabel = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
+
+                if (String.IsNullOrWhiteSpace(dataLabel))
+                {
+                    // We don't have a valid data label
+                    this.database.CustomSelection.EpisodeNoteField = String.Empty;
+
+                }
+                else
+                {
+                    // Set the Episode note field to the non-empty data label
+                    this.database.CustomSelection.EpisodeNoteField = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
+                }
+            }
             this.UpdateSearchDialogFeedback();
         }
+
+        private bool CheckEpisodeField()
+        {
+            string label = (string)this.ComboBoxNoteFields.SelectedItem;
+            if (String.IsNullOrWhiteSpace(label))
+            {
+                Dialogs.CustomSelectEpisodeDataLabelProblem(this.Owner, label, true);
+                // Dialogs.CustomSelectEpisodeEmptyoDataLabel(this.Owner);
+                return false;
+            }
+
+            // Get the data label from the label
+            string dataLabel = this.dictLabelToDataLabel[(string)this.ComboBoxNoteFields.SelectedItem];
+
+            if (String.IsNullOrWhiteSpace(dataLabel))
+            {
+                // We don't have a valid data label
+                return false;
+            }
+            if (false == EpisodeFieldCheckFormat(this.currentImageRow, dataLabel))
+            {
+                // A different dialog?
+                Dialogs.CustomSelectEpisodeDataLabelProblem(this.Owner, label, false);
+                return false;
+            }
+            return true;
+        }
+
+        static bool EpisodeFieldCheckFormat(ImageRow row, string dataLabel)
+        {
+            Regex rgx = new Regex(@"^[0-9]+:[0-9]+\|[0-9]+$");
+            string value = row.GetValueDisplayString(dataLabel);
+            return (null != value && rgx.IsMatch(value));
+        }
+
         #endregion
     }
 }
