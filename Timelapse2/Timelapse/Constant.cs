@@ -189,6 +189,7 @@ namespace Timelapse.Constant
             + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Sql.StringType + "," + Constant.BooleanValue.True;
         public const string DefaultQuickPasteXML = "<Entries></Entries>";
         public const string IndexRelativePath = "IndexRelativePath";
+        public const string IndexRelativePathFile = "IndexRelativePathFile";
         public const string IndexFile = "IndexFile";
         public const string IndexID = "IndexDetectionID";
         public const string IndexDetectionID = "IndexDetectionID";

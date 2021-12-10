@@ -72,7 +72,7 @@ namespace Timelapse.Database
 
         #region Indexes: Create or Drop (Public)
         // Create an index in table tableName named index name to the column names
-        public void IndexCreate(string indexName, string tableName, string columnNames)
+        public void IndexCreateIfNotExists(string indexName, string tableName, string columnNames)
         {
             // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
             string query = Sql.CreateIndex + Sql.IfNotExists + indexName + Sql.On + tableName + Sql.OpenParenthesis + columnNames + Sql.CloseParenthesis;
@@ -169,10 +169,10 @@ namespace Timelapse.Database
                     connection.Open();
                     using (SQLiteCommand command = new SQLiteCommand(connection))
                     {
-//#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+                        //#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                         command.CommandText = query;
                         //System.Diagnostics.Debug.Print("Count: " + query);
-//#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                        //#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                         return command.ExecuteScalar();
                     }
                 }
@@ -475,7 +475,7 @@ namespace Timelapse.Database
         // Form: "SELECT MAX(field) From DataTable"
         // The field should contain an int value
         public int ScalarGetMaxIntValue(string dataTable, string intfield)
-        { 
+        {
             return this.ScalarGetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + intfield + Sql.CloseParenthesis + Sql.From + dataTable);
         }
         #endregion
@@ -558,7 +558,7 @@ namespace Timelapse.Database
                             rowsUpdated += command.ExecuteNonQuery();
 
                             // END
-                            if (statementsInQuery >= MaxStatementCount)
+                            if (statementsInQuery > MaxStatementCount)
                             {
                                 command.CommandText = Sql.EndTransaction;
                                 rowsUpdated += command.ExecuteNonQuery();
@@ -869,12 +869,12 @@ namespace Timelapse.Database
                     // Create a new table 
                     string destTable = tableName + "NEW";
                     string sql = Sql.CreateTable + destTable + Sql.OpenParenthesis + newSchema + Sql.CloseParenthesis;
-//#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+                    //#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
                     {
                         command.ExecuteNonQuery();
                     }
-//#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+                    //#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
                     // Copy the old table's contents to the new table
                     CopyAllValuesFromTable(connection, tableName, tableName, destTable);
 

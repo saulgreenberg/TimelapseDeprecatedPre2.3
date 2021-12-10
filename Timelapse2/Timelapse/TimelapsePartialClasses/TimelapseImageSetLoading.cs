@@ -220,6 +220,12 @@ namespace Timelapse
             {
                 await this.OnFolderLoadingCompleteAsync(false).ConfigureAwait(true);
             }
+
+            // Create an index on RelativePath, File,and RelativePath/File if it doesn't already exist
+            // This is really just a version check in case old databases don't have the index created,
+            // Newer databases (from 2.2.4.4 onwards) will have these indexes created and updated whenever images are loaded or added for the first time.
+            // If the index exists, this is a very cheap operation so there really is no need to do it by a version number check.
+            this.DataHandler.FileDatabase.IndexCreateForFileAndRelativePathIfNotExists();
             return true;
         }
         #endregion
@@ -330,6 +336,9 @@ namespace Timelapse
                 {
                     throw new FileLoadException("Folder loading failed unexpectedly.  See inner exception for details.", ea.Error);
                 }
+
+                // Create an index on RelativePath, File,and RelativePath/File if it doesn't already exist
+                this.DataHandler.FileDatabase.IndexCreateForFileAndRelativePathIfNotExists();
 
                 // Show the file slider
                 this.FileNavigatorSlider.Visibility = Visibility.Visible;

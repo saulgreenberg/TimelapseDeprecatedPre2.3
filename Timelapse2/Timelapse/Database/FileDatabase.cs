@@ -1063,7 +1063,9 @@ namespace Timelapse.Database
                 // Random selection - Add suffix
                 if (this.CustomSelection != null && this.CustomSelection.RandomSample > 0)
                 {
-                    query += String.Format(" ) ORDER BY RANDOM() LIMIT {0} )", this.CustomSelection.RandomSample);
+                    // Original form is  query += String.Format(" ) ORDER BY RANDOM() LIMIT {0} )", this.CustomSelection.RandomSample);
+                    query += Sql.CloseParenthesis + Sql.OrderByRandom + Sql.Limit + this.CustomSelection.RandomSample + Sql.CloseParenthesis;
+
                 }
 
                 if (!String.IsNullOrEmpty(term[0]))
@@ -1085,14 +1087,16 @@ namespace Timelapse.Database
                 }
             }
 
-            // EPISODESXXX If the episodes stuff is turned on with a valid Note field, then add a wrapper
+            // EPISODES-related addition to query.
+            // If the Detectionsand Episodes  is turned on, then the Episode Note field contains values in the Episode format (e.g.) 25:1/8.
+            // We construct a wrapper for selecting files where all files in an episode have at least one file matching the surrounded search condition 
             if (this.CustomSelection != null && this.CustomSelection.EpisodeShowAllIfAnyMatch && this.CustomSelection.EpisodeNoteField != String.Empty)
             {
-                string frontWrapper = String.Format("Select * from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From (", this.CustomSelection.EpisodeNoteField);
-                string backWrapper = "))";
+                string frontWrapper = SqlPhrase.CountOrSelectFilesInEpisodeIfOneFileMatchesFrontWrapper(Constant.DBTables.FileData, this.CustomSelection.EpisodeNoteField, false);
+                string backWrapper = Sql.CloseParenthesis + Sql.CloseParenthesis;
                 query = frontWrapper + query + backWrapper;
             }
-            System.Diagnostics.Debug.Print(query);
+
             DataTable filesTable = await Task.Run(() =>
             {
                 // System.Diagnostics.Debug.Print("Select Query: " + query);
@@ -1698,15 +1702,17 @@ namespace Timelapse.Database
                     }
                 }
             }
-            System.Diagnostics.Debug.Print("File Counts before: " + query);
-            // EPISODESXXX If the episodes stuff is turned on with a valid Note field, and we are doing detections or classifications, then add a wrapper
-            if ( this.CustomSelection.EpisodeShowAllIfAnyMatch && this.CustomSelection.EpisodeNoteField != String.Empty
-                && fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true ) 
+
+            // EPISODES-related addition to query.
+            // If the Detectionsand Episodes  is turned on, then the Episode Note field contains values in the Episode format (e.g.) 25:1/8.
+            // We construct a wrapper for counting  files where all files in an episode have at least one file matching the surrounded search condition 
+            if (this.CustomSelection.EpisodeShowAllIfAnyMatch && this.CustomSelection.EpisodeNoteField != String.Empty
+                && fileSelection == FileSelectionEnum.Custom && GlobalReferences.DetectionsExists && this.CustomSelection.DetectionSelections.Enabled == true)
             {
                 // Remove from the front of the string
-                query = query.Replace("SELECT COUNT  ( * )  FROM ", String.Empty);
-                string frontWrapper = String.Format("Select  COUNT  ( * ) from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From ", this.CustomSelection.EpisodeNoteField);
-                string backWrapper = ")";
+                query = query.Replace(Sql.SelectCountStarFrom, String.Empty);
+                string frontWrapper = SqlPhrase.CountOrSelectFilesInEpisodeIfOneFileMatchesFrontWrapper(Constant.DBTables.FileData, this.CustomSelection.EpisodeNoteField, true);
+                string backWrapper = Sql.CloseParenthesis;
                 query = frontWrapper + query + backWrapper;
             }
             // Uncommment this to see the actual complete query
@@ -2037,19 +2043,20 @@ namespace Timelapse.Database
         #endregion
 
         #region Index creation and dropping
-        public void IndexCreateForDetectionsAndClassifications()
+        public void IndexCreateForDetectionsAndClassificationsIfNotExists()
         {
-            this.Database.IndexCreate(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
-            this.Database.IndexCreate(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
+            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexID, Constant.DBTables.Detections, Constant.DatabaseColumn.ID);
+            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexDetectionID, Constant.DBTables.Classifications, Constant.DetectionColumns.DetectionID);
         }
 
-        public void IndexCreateForFileAndRelativePath()
+        public void IndexCreateForFileAndRelativePathIfNotExists()
         {
-            this.Database.IndexCreate(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-            this.Database.IndexCreate(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
+            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
+            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
+            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePathFile, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File);
         }
 
-        public void IndexDropForFileAndRelativePath()
+        public void IndexDropForFileAndRelativePathIfExists()
         {
             this.Database.IndexDrop(Constant.DatabaseValues.IndexRelativePath);
             this.Database.IndexDrop(Constant.DatabaseValues.IndexFile);

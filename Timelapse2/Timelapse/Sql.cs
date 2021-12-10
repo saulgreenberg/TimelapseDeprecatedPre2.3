@@ -68,6 +68,7 @@ namespace Timelapse
         public const string Limit = " LIMIT ";
         public const string LimitOne = Limit + " 1 ";
         public const string Max = " MAX ";
+        public const string MasterTableList = "sqlite_master"; 
         public const string Name = " NAME ";
         public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
         public const string Not = " NOT ";
@@ -80,6 +81,7 @@ namespace Timelapse
         public const string OpenParenthesis = " ( ";
         public const string Or = " OR ";
         public const string OrderBy = " ORDER BY ";
+        public const string OrderByRandom = Sql.OrderBy + " RANDOM() ";
         public const string Plus = " + ";
         public const string PragmaTableInfo = " PRAGMA TABLE_INFO ";
         public const string PragmaSetForeignKeys = " PRAGMA foreign_keys=1 ";
@@ -107,7 +109,8 @@ namespace Timelapse
         public const string Set = " SET ";
         public const string Star = "*";
         public const string StringType = " STRING ";
-        public const string MasterTableList = "sqlite_master";
+        public const string Substr = " SUBSTR ";
+
         public const string Real = " REAL ";
         public const string Text = "TEXT";
         public const string Then = " THEN ";
@@ -350,5 +353,39 @@ namespace Timelapse
                 Sql.OpenParenthesis + Constant.DBTables.Classifications + "." + Constant.DetectionColumns.Conf + Sql.CloseParenthesis +
                 Sql.Between + lowerBound.ToString() + Sql.And + upperBound.ToString();
         }
+
+        /// <summary>
+        /// Episode-related phrases. Used in constructing a front wrapper for selecting or counting  files where all files in an episode have at least one file matching the surrounded search condition 
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="episodeNoteField"></param>
+        public static string CountOrSelectFilesInEpisodeIfOneFileMatchesFrontWrapper(string tableName, string episodeNoteField, bool CountOnly)
+        {
+            // using DataTable and Episode,
+            // Select Complete form:  String.Format("Select * from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From (", episodeNoteField);
+            // Count Complete formstring frontWrapper = String.Format("Select  COUNT  ( * ) from DataTable WHERE SUBSTR(DataTable.{0}, 0, instr(DataTable.{0}, ':')) in (Select substr({0}, 0, instr({0}, ':')) From ", this.CustomSelection.EpisodeNoteField);
+            // Line by line form:  
+            // Count Form:  Select Count (*) from 
+            // Select Form: Select * from 
+            // DataTable WHERE SUBSTR(DataTable.{0}, 0,
+            //                           instr(DataTable.{0}, ':'))
+            // IN (Selectsubstr({0}, 0
+            //                          instr({0}, ':'))
+            // FROM 
+            // Count form:   
+            // Select form:  (
+            string frontwrapper = CountOnly
+                ? Sql.SelectCountStarFrom 
+                : Sql.SelectStarFrom;
+            frontwrapper += tableName + Sql.Where + Sql.Substr + Sql.OpenParenthesis + tableName + Sql.Dot + episodeNoteField + Sql.Comma + "0" + Sql.Comma
+                                + Sql.Instr + Sql.OpenParenthesis + tableName + Sql.Dot + episodeNoteField + Sql.Comma + Sql.Quote(":") + Sql.CloseParenthesis + Sql.CloseParenthesis
+                                + Sql.In + Sql.OpenParenthesis + Sql.Select + Sql.Substr + Sql.OpenParenthesis + episodeNoteField + Sql.Comma + "0" + Sql.Comma
+                                + Sql.Instr + Sql.OpenParenthesis + episodeNoteField + Sql.Comma + Sql.Quote(":") + Sql.CloseParenthesis + Sql.CloseParenthesis
+                                + Sql.From;
+            frontwrapper += CountOnly
+                ? String.Empty 
+                : Sql.OpenParenthesis;
+            return frontwrapper;
+        }       
     }
 }

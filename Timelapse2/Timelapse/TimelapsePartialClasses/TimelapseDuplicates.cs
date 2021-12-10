@@ -96,7 +96,7 @@ namespace Timelapse
                 this.DataHandler.FileDatabase.RefreshClassificationsDataTable();
 
                 // Check if we need this...
-                this.DataHandler.FileDatabase.IndexCreateForDetectionsAndClassifications();
+                this.DataHandler.FileDatabase.IndexCreateForDetectionsAndClassificationsIfNotExists();
             }
             await this.FilesSelectAndShowAsync();
             this.TryFileShowWithoutSliderCallback(DirectionEnum.Next);

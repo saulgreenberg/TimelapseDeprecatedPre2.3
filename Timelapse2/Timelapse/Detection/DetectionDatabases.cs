@@ -338,7 +338,7 @@ namespace Timelapse.Detection
                 }
                 detectionDB.Insert(Constant.DBTables.Detections, detectionInsertionStatements);
                 detectionDB.Insert(Constant.DBTables.Classifications, classificationInsertionStatements);
-                fileDatabase.IndexCreateForDetectionsAndClassifications();
+                fileDatabase.IndexCreateForDetectionsAndClassificationsIfNotExists();
                 // System.Diagnostics.Debug.Print("Files: " + fileCount + " Detections: " + detectionInsertionStatements.Count() + " Classifications: " + classificationInsertionStatements.Count());
                 if (dataTable != null)
                 {
