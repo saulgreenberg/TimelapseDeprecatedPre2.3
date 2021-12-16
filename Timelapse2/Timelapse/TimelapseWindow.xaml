@@ -350,14 +350,49 @@
                             <Image Source="Icons/Home_32x.png" />
                         </MenuItem.Icon>
                     </MenuItem>
-                    <MenuItem Name="MenuItemTutorialManual" Header="Tutorial _manual (via your web browser)..." Click="MenuTutorialManual_Click" ToolTip="Displays the Tutorial Manual - a large PDF file - in your browser">
+
+                    <MenuItem Name="MenuItemGuidesAndManuals" Header="Guides and manuals" ToolTip="Various manuals and guides, from a QuickStart guide to detailed reference guides .">
                         <MenuItem.Icon>
-                            <Image Source="Icons/UserManual_32x.png" />
+                            <Image Source="Icons/OpenFile_32x.png" />
                         </MenuItem.Icon>
+                        <MenuItem Name="MenuItemGoToManualsPage" Header="The Timelapse guides and manuals web page (via your web browser) " Click="MenuItemGuidesAndManuals_Click" ToolTip="The essential starter guide on how to download and use the most basic features of Timelapse. [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemQuickStartGuide" Header="Part 1: Timelapse Quickstart Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="The essential starter guide on how to download and use the most basic features of Timelapse. [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemReferenceGuide" Header="Part 2: Timelapse Reference Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A reference guide to all Timelapse features plus tips on how to use them. [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemTemplateGuide" Header="Part 3: Timelapse Template Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to creating Timelapse templates. [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemImageRecognitionGuide" Header="Part 4: Timelapse Image Recognition Guide(pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="How to incorporate and use image recognition in Timelapse. [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemDatabaseGuide" Header="Part 5: Timelapse Database Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to the internal structure of Timelapse Database tables [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemConvertingOldTimelapseGuide" Header="Part 6: Timelapse Template Conversion Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to the internal structure of Timelapse Database tables [PDF]">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/OpenFile_32x.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuItem>
 
-
-                    <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download tutorial sample images (via your web browser)..." Click="MenuDownloadSampleImages_Click" ToolTip="Using your browser, it downloads the sample image files used in the  Tutorial Manual for you to practise with">
+                    <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download practice image sets (via your web browser)..." Click="MenuDownloadSampleImages_Click" ToolTip="Open the Timelapse web page where you can download various practice image sets as used in various Timelapse guides." >
                         <MenuItem.Icon>
                             <Image Source="Icons/Download_32x.png" />
                         </MenuItem.Icon>
@@ -426,6 +461,11 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Name="MenuItemVideoDuplicatingRecords" Header="Duplicating a data record" Click="MenuVideoPlay_Click" ToolTip="Duplicate a record to reuse the fields on your image multiple times.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoCompanionImageRecognition" Header="Video Companion - Timelapse Image Recognition" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Image Recognition Guide, where it mirrors the workflow described there.">
                             <MenuItem.Icon>
                                 <Image Source="Icons/MediaControl-PlayButton.png" />
                             </MenuItem.Icon>

@@ -150,6 +150,7 @@
       <DependentUpon>InspectMetadata.xaml</DependentUpon>
     </Compile>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="TemplateEditorMenuHelp.cs" />
     <Compile Include="Util\CodeTemplateImporter.cs" />
     <Compile Include="EditorConstant.cs" />
     <Compile Include="Dialog\EditChoiceList.xaml.cs">

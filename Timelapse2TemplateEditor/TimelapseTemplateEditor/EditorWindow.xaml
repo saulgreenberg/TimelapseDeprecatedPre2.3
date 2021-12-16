@@ -133,6 +133,7 @@
             </MenuItem>
 
             <!-- View Menu -->
+           
             <MenuItem Name="MenuView" Header="_View" IsEnabled="False" SubmenuOpened="ViewMenu_SubmenuOpened" >
 
                 <!-- Inspect metadata -->
@@ -171,68 +172,163 @@
                 </MenuItem>
 
             </MenuItem>
-
+            
+            <!--COPY EVERYTHING BETWEEEN BRACKETS FROM  TimelapseWindow | MenuItemHelp}-->
             <!-- Help Menu -->
-            <MenuItem Header="_Help" >
+            <MenuItem Name="MenuItemHelp" Header="_Help" IsEnabled="true" IsTabStop="false" SubmenuOpened="Help_SubmenuOpening" >
 
-                <!-- Home Page -->
-                <MenuItem Name="MenuHelpTimelapseWebPage" Header="The Timelapse _web page (via your web browser)" Click="MenuHelpTimelapseWebPage_Click" ToolTip="Displays the Timelapse Image Analyzer web page in your browser">
+                <MenuItem Name="MenuItemTimelapseHomePage" Header="The Timelapse _web page (via your web browser)..." Click="MenuTimelapseWebPage_Click" ToolTip="Displays the Timelapse Image Analyzer web page in your browser">
                     <MenuItem.Icon>
                         <Image Source="Icons/Home_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
 
-                <Separator />
-
-                <!-- Tutorial Manual -->
-                <MenuItem Name="MenuHelpTutorialManual" Header="Tutorial _manual (via your web browser)" Click="MenuHelpTutorialManual_Click" ToolTip="Displays the Tutorial Manual - a large PDF file - in your browser">
+                <MenuItem Name="MenuItemGuidesAndManuals" Header="Guides and manuals" ToolTip="Various manuals and guides, from a QuickStart guide to detailed reference guides .">
                     <MenuItem.Icon>
-                        <Image Source="Icons/UserManual_32x.png" />
+                        <Image Source="Icons/OpenFile_32x.png" />
                     </MenuItem.Icon>
+                    <MenuItem Name="MenuItemGoToManualsPage" Header="The Timelapse guides and manuals web page (via your web browser) " Click="MenuItemGuidesAndManuals_Click" ToolTip="The essential starter guide on how to download and use the most basic features of Timelapse. [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemQuickStartGuide" Header="Part 1: Timelapse Quickstart Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="The essential starter guide on how to download and use the most basic features of Timelapse. [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemReferenceGuide" Header="Part 2: Timelapse Reference Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A reference guide to all Timelapse features plus tips on how to use them. [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemTemplateGuide" Header="Part 3: Timelapse Template Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to creating Timelapse templates. [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemImageRecognitionGuide" Header="Part 4: Timelapse Image Recognition Guide(pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="How to incorporate and use image recognition in Timelapse. [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemDatabaseGuide" Header="Part 5: Timelapse Database Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to the internal structure of Timelapse Database tables [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemConvertingOldTimelapseGuide" Header="Part 6: Timelapse Template Conversion Guide (pdf)" Click="MenuItemGuidesAndManuals_Click" ToolTip="A guide to the internal structure of Timelapse Database tables [PDF]">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/OpenFile_32x.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
 
-                <!-- Sample Images -->
-                <MenuItem Name="MenuHelpDownloadSampleImages" Header="_Download tutorial sample images (via your web browser)" Click="MenuHelpDownloadSampleImages_Click" ToolTip="Using your browser, it downloads the sample image files used in the  Tutorial Manual for you to practise with">
+                <MenuItem Name="MenuItemDownloadSampleImages" Header="_Download practice image sets (via your web browser)..." Click="MenuDownloadSampleImages_Click" ToolTip="Open the Timelapse web page where you can download various practice image sets as used in various Timelapse guides." >
                     <MenuItem.Icon>
                         <Image Source="Icons/Download_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
 
-                <Separator />
+                <Separator/>
 
-                <MenuItem Name="MenuItemVideoWhirlwindTour" Header="Video tutorial: A whirlwind tour of Timelapse" Click="MenuVideoPlay_Click" ToolTip="A video overview showing off most Timelapse features that plays in your browser.">
+                <MenuItem Name="MenuItemVideoOverviews" Header="Videos: Introductory overviews (you should watch these!)..." Click="MenuVideoPlay_Click" ToolTip="Open a page in your browser listing video tutorials illustrating particular Timelapse features.">
                     <MenuItem.Icon>
                         <Image Source="Icons/MediaControl-PlayButton.png" />
                     </MenuItem.Icon>
+                    <MenuItem Name="MenuItemVideoWhirlwindTour" Header="A whirlwind tour of Timelapse" Click="MenuVideoPlay_Click" ToolTip="A video overview showing off most Timelapse features that plays in your browser.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoTemplateEditor" Header="The template editor" Click="MenuVideoPlay_Click" ToolTip="The Template Editor lets you create a template file that specifies the project-specific fill-in fields seen in the Timelapse interface..">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoImageRecognition" Header="Image recognition for camera traps" Click="MenuVideoPlay_Click" ToolTip="A video explaining image recognition as used by wildlife ecologists.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                <MenuItem Name="MenuItemVideoTemplateEditor" Header="Video tutorial: The template editor" Click="MenuVideoPlay_Click" ToolTip="The Template Editor lets you create a template file that specifies the project-specific fill-in fields seen in the Timelapse interface..">
+
+                <MenuItem Name="MenuItemVideoFeatures" Header="Videos: Tutorials on specific Timelapse features..." Click="MenuVideoPlay_Click" ToolTip="Open a page in your browser listing video tutorials illustrating particular Timelapse features.">
                     <MenuItem.Icon>
                         <Image Source="Icons/MediaControl-PlayButton.png" />
                     </MenuItem.Icon>
+                    <MenuItem Name="MenuItemVideoPlayer" Header="Using the Timelapse video player to view video files" Click="MenuVideoPlay_Click" ToolTip="Timelapse works on images, video files, and a mix of the two. This tutorial illustrates features of the Timelapse video player.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoClassifyingDarkImages" Header="Classifying your dark images" Click="MenuVideoPlay_Click" ToolTip="Iimelapse can automatically classify your dark images, where you can exclude them from further analysis or even delete them.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoRepositionDataEntryPanel" Header="Repositioning your Tabs and the Data Entry Panel" Click="MenuVideoPlay_Click" ToolTip="How you can re-arrange your tabs and window layout.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoUsingOverview" Header="Using the Overview to enter data for Multiple files at a time" Click="MenuVideoPlay_Click" ToolTip="Selecting multiple thumbnails and entering data that describes them.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoPopulateEpisodeData" Header="How to populate a field with Episode data" Click="MenuVideoPlay_Click" ToolTip="Marking episodes of successive images taken within a short time interval.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoViewingPopups" Header="Viewing Episode images in a popup" Click="MenuVideoPlay_Click" ToolTip="How to quickly view surrounding Episode images in a popup.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoRandomSampling" Header="Randomly sampling images" Click="MenuVideoPlay_Click" ToolTip="View a randomly chosen subset of images from your current selection.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoDuplicatingRecords" Header="Duplicating a data record" Click="MenuVideoPlay_Click" ToolTip="Duplicate a record to reuse the fields on your image multiple times.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Name="MenuItemVideoCompanionImageRecognition" Header="Video Companion - Timelapse Image Recognition" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Image Recognition Guide, where it mirrors the workflow described there.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </MenuItem>
-                
-                <Separator />
-                
-                <!-- Join Mailing List -->
-                <MenuItem Name="MenuHelpJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)" Click="MenuHelpJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
+
+                <Separator/>
+
+                <MenuItem Name="MenuItemJoinMailingList" Header="Timelapse mailing list - _Join it (via your web browser)..." Click="MenuJoinTimelapseMailingList_Click" ToolTip="Using your browser, go to the page that lets you join the timelapse mailing list. You will be informed about updates, and you can post requests to it.">
                     <MenuItem.Icon>
                         <Image Source="Icons/JoinMailingList_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-
-                <!-- Send Mail -->
-                <MenuItem Name="MenuHelpMailToTimelapseMailingList" Header="Timelapse mailing list - Send _email " Click="MenuHelpMailToTimelapseMailingList_Click" ToolTip="Post an email to the Timelapse mailing list. You should join the mailing list before doing this.">
+                <MenuItem Name="MenuItemMailToMailingList" Header="Timelapse mailing list - Send _email..." Click="MenuMailToTimelapseMailingList_Click" ToolTip="Post an email to the Timelapse mailing list. You should join the mailing list before doing this.">
                     <MenuItem.Icon>
                         <Image Source="Icons/EmailSend_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
 
-                <Separator />
+                <Separator/>
 
-                <!-- About -->
-                <MenuItem Name="MenuHelpAbout" Header="_About" Click="MenuHelpAbout_Click" ToolTip="Displays version information about this program and how to contact its creator">
+                <MenuItem Name="MenuItemMailToTimelapseDevelopers" Header="Email the Timelapse developer..." Click="MenuMailToTimelapseDevelopers_Click" ToolTip="Post an email to the Timelapse developers. Feedback, bug reports, feature requests, etc are all appreciated.">
                     <MenuItem.Icon>
                         <Image Source="Icons/EmailSend_32x.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+
+                <MenuItem Name="MenuItemAbout" Header="_About..." Click="MenuItemAbout_Click" ToolTip="Displays version information about this program and how to contact its creator">
+                    <MenuItem.Icon>
+                        <Image Source="Icons/About_32x.png" />
                     </MenuItem.Icon>
                 </MenuItem>
             </MenuItem>

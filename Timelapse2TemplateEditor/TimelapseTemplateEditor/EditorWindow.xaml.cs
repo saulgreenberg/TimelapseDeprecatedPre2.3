@@ -426,47 +426,6 @@ namespace Timelapse.Editor
         }
         #endregion
 
-        #region Help Menu Callbacks
-        /// <summary>Display the Timelapse home page </summary> 
-        private void MenuHelpTimelapseWebPage_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse"));
-        }
-
-        /// <summary>Display the manual in a web browser </summary> 
-        private void MenuHelpTutorialManual_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse/uploads/Installs/Timelapse2/Timelapse2Manual.pdf"));
-        }
-
-        /// <summary>Display the page in the web browser that lets you join the Timelapse mailing list</summary>
-        private void MenuHelpJoinTimelapseMailingList_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessExecution.TryProcessStart(new Uri("http://mailman.ucalgary.ca/mailman/listinfo/timelapse-l"));
-        }
-
-        /// <summary>Download the sample images from a web browser</summary>
-        private void MenuHelpDownloadSampleImages_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessExecution.TryProcessStart(new Uri("http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.UserGuide"));
-        }
-
-        /// <summary>Send mail to the timelapse mailing list</summary> 
-        private void MenuHelpMailToTimelapseMailingList_Click(object sender, RoutedEventArgs e)
-        {
-            ProcessExecution.TryProcessStart(new Uri("mailto:timelapse-l@mailman.ucalgary.ca"));
-        }
-
-        private void MenuHelpAbout_Click(object sender, RoutedEventArgs e)
-        {
-            Timelapse.Dialog.AboutTimelapse about = new Timelapse.Dialog.AboutTimelapse(this);
-            if ((about.ShowDialog() == true) && about.MostRecentCheckForUpdate.HasValue)
-            {
-                this.userSettings.MostRecentCheckForUpdates = about.MostRecentCheckForUpdate.Value;
-            }
-        }
-        #endregion
-
         #region Other menu related items
         /// <summary>
         /// Update the list of recent databases (ensuring they still exist) displayed under File -> Recent Databases.
@@ -1453,23 +1412,23 @@ namespace Timelapse.Editor
         }
         #endregion
 
-        #region Timelapse web site: videos
-        public void MenuVideoPlay_Click(object sender, RoutedEventArgs e)
-        {
-            string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Videos/";
-            if (sender is MenuItem mi)
-            {
-                switch (mi.Name)
-                {
-                    case "MenuItemVideoWhirlwindTour":
-                        ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4"));
-                        break;
-                    case "MenuItemVideoTemplateEditor":
-                        ProcessExecution.TryProcessStart(new Uri(prefix + "TemplateEditor.mp4"));
-                        break;
-                }
-            }
-        }
-        #endregion
+        //#region Timelapse web site: videos
+        //public void MenuVideoPlay_Click(object sender, RoutedEventArgs e)
+        //{
+        //    string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Videos/";
+        //    if (sender is MenuItem mi)
+        //    {
+        //        switch (mi.Name)
+        //        {
+        //            case "MenuItemVideoWhirlwindTour":
+        //                ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4"));
+        //                break;
+        //            case "MenuItemVideoTemplateEditor":
+        //                ProcessExecution.TryProcessStart(new Uri(prefix + "TemplateEditor.mp4"));
+        //                break;
+        //        }
+        //    }
+        //}
+        //#endregion
     }
 }

@@ -1,18 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Dialog;
 using Timelapse.Util;
 
-namespace Timelapse
+namespace Timelapse.Editor
 {
-    // Help Menu Callbacks
-    public partial class TimelapseWindow : Window, IDisposable
+    public partial class EditorWindow : Window
     {
+        // COPY EVERYTHING BETWEEEN BRACKETS FROM  TimelapseMenuCallbacks | TimelapseMenuHelp.cs file}
+        // NOTE: COMMENT OUT FILEPLAYER_STOP AS NOT USED IN THE EDITOR
         #region Help sub-menu opening
         private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            this.FilePlayer_Stop(); // In case the FilePlayer is going
+            // this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
         #endregion
 
@@ -32,7 +37,7 @@ namespace Timelapse
         // Tutorial guides (via your browser) 
         private void MenuItemGuidesAndManuals_Click(object sender, RoutedEventArgs e)
         {
-            string prefix ="https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/";
+            string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Guides/";
             if (sender is MenuItem mi)
             {
                 switch (mi.Name)
@@ -77,7 +82,7 @@ namespace Timelapse
                 switch (mi.Name)
                 {
                     case "MenuItemVideoWhirlwindTour":
-                        ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4")); 
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4"));
                         break;
                     case "MenuItemVideoImageRecognition":
                         ProcessExecution.TryProcessStart(new Uri("http://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2021-05-ImageRecognition-Video.mp4"));
