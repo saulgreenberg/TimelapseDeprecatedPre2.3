@@ -55,6 +55,8 @@ namespace Timelapse.Dialog
                 this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked = true;
             }
 
+            this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked = this.timelapseState.CSVInsertSpaceBeforeDates == true;
+
             // Throttles
             this.ImageRendersPerSecond.Minimum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound;
             this.ImageRendersPerSecond.Maximum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound;
@@ -164,6 +166,12 @@ namespace Timelapse.Dialog
             this.SetCSVOptions();
         }
 
+
+        private void CheckBoxCSVInsertSpaceBeforeDate_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetCSVOptions();
+        }
+
         private void SetCSVOptions()
         {
             if (this.RadioButtonCSVDateAndTimeColumns.IsChecked == true)
@@ -182,6 +190,8 @@ namespace Timelapse.Dialog
             {
                 this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn;
             }
+
+            this.timelapseState.CSVInsertSpaceBeforeDates = this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked == true;
         }
         #endregion
 
@@ -313,8 +323,8 @@ namespace Timelapse.Dialog
             this.DialogResult = true;
         }
 
-        #endregion
 
+        #endregion
 
     }
 }

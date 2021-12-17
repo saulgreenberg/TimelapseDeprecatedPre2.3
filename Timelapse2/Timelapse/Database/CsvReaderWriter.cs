@@ -21,7 +21,7 @@ namespace Timelapse.Database
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
-        public static bool ExportToCsv(FileDatabase database, string filePath, CSVDateTimeOptionsEnum csvDateTimeOptions)
+        public static bool ExportToCsv(FileDatabase database, string filePath, CSVDateTimeOptionsEnum csvDateTimeOptions, bool csvInsertSpaceBeforeDates)
         {
             try
             {
@@ -83,19 +83,25 @@ namespace Timelapse.Database
                                 }
                                 else
                                 {
+                                    string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
                                     if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
                                     {
-                                        csvRow.Append(AddColumnValue(image.GetValueCSVLocalDateTimeString()));
+                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeString()));
                                     }
                                     else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
                                     {
-                                        csvRow.Append(AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
+                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
                                     }
                                     else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
                                     {
-                                        csvRow.Append(AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
+                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
                                     }
                                 }
+                            }
+                            else if (dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time)
+                            {
+                                string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
+                                csvRow.Append(prefix + AddColumnValue(image.GetValueDatabaseString(dataLabel)));
                             }
                             else
                             {

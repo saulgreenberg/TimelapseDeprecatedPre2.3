@@ -20,6 +20,7 @@ namespace Timelapse.Util
         public bool BoundingBoxColorBlindFriendlyColors { get; set; }
         public CustomSelectionOperatorEnum CustomSelectionTermCombiningOperator { get; set; }
         public CSVDateTimeOptionsEnum CSVDateTimeOptions { get; set; }
+        public bool CSVInsertSpaceBeforeDates { get; set; }
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
         public TimeSpan EpisodeTimeThreshold { get; set; }
@@ -85,6 +86,7 @@ namespace Timelapse.Util
                 this.BoundingBoxAnnotate = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxAnnotate, false);
                 this.BoundingBoxColorBlindFriendlyColors = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, false);
                 this.CSVDateTimeOptions = registryKey.GetEnum<CSVDateTimeOptionsEnum>(Constant.WindowRegistryKeys.CSVDateTimeOptions, CSVDateTimeOptionsEnum.DateAndTimeColumns);
+                this.CSVInsertSpaceBeforeDates = registryKey.GetBoolean(Constant.WindowRegistryKeys.CSVInsertSpaceBeforeDates, false);
                 this.CustomSelectionTermCombiningOperator = registryKey.GetEnum<CustomSelectionOperatorEnum>(Constant.WindowRegistryKeys.CustomSelectionTermCombiningOperator, CustomSelectionOperatorEnum.And);
                 this.DarkPixelRatioThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.DarkPixelRatio, Constant.ImageValues.DarkPixelRatioThresholdDefault);
                 this.DarkPixelThreshold = registryKey.GetInteger(Constant.WindowRegistryKeys.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
@@ -190,6 +192,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxAnnotate, this.BoundingBoxAnnotate);
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, this.BoundingBoxColorBlindFriendlyColors);
                 registryKey.Write(Constant.WindowRegistryKeys.CSVDateTimeOptions, this.CSVDateTimeOptions.ToString());
+                registryKey.Write(Constant.WindowRegistryKeys.CSVInsertSpaceBeforeDates, this.CSVInsertSpaceBeforeDates);
                 registryKey.Write(Constant.WindowRegistryKeys.CustomSelectionTermCombiningOperator, this.CustomSelectionTermCombiningOperator.ToString());
                 registryKey.Write(Constant.WindowRegistryKeys.DarkPixelRatio, this.DarkPixelRatioThreshold);
                 registryKey.Write(Constant.WindowRegistryKeys.DarkPixelThreshold, this.DarkPixelThreshold);
