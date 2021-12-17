@@ -160,7 +160,7 @@
                 </MenuItem>
 
                 <!-- Show UTC DateTime -->
-                <MenuItem Name="MenuViewShowUTCDateTimeSettingsMenuItem"  IsCheckable="True" IsChecked="False" Header="Show UTC Offset control row" Click="MenuItemUseUTCDateTimeSettings_Click" >
+                <MenuItem Name="MenuViewShowUTCDateTimeSettingsMenuItem"  Visibility="Collapsed" IsCheckable="True" IsChecked="False" Header="Show UTC Offset control row" Click="MenuItemUseUTCDateTimeSettings_Click" >
                     <MenuItem.ToolTip>
                         <TextBlock>
                                 Shows the UTC offset, i.e., time zone information. 

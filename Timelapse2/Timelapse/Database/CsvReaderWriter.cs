@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -153,7 +154,7 @@ namespace Timelapse.Database
                     // Part 1. Abort if there is a problem in reading the CSV file or if the CSV file is empty.
                     //
                     List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
-                    
+
                     // Abort if the CSV file could not be read 
                     if (parsedFile == null)
                     {
@@ -190,7 +191,7 @@ namespace Timelapse.Database
                         }
                         if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
                         {
-                            importErrors.Add(String.Format("- the '{0}' column containing matching relative paths to the subfolders containing each file." , Constant.DatabaseColumn.RelativePath));
+                            importErrors.Add(String.Format("- the '{0}' column containing matching relative paths to the subfolders containing each file.", Constant.DatabaseColumn.RelativePath));
                             importErrors.Add("  (If all your files are in the root  folder, you still need the RelativePath column, albeit with empty values");
                         }
                         abort = true;
@@ -253,7 +254,7 @@ namespace Timelapse.Database
                     //   - YYYY-MM-DD HH:MM:SS (excludes T separator, incorporates UTCoffset in its time): Altered by Excel (e.g., leading 0s removed), no UTC offset
                     //   - YYYY-MM-DDTHH:MM:SSZ+HH:MM (excludes T separator): (UTC format with offset that must be added in): Check, as not altered by Excel, no UTC offset
                     //   - UtcOffset - it appears I never include that. Check this...
-                    foreach (string csvHeader in dataLabelsFromCSV) 
+                    foreach (string csvHeader in dataLabelsFromCSV)
                     {
                         ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(csvHeader);
 
@@ -406,7 +407,7 @@ namespace Timelapse.Database
                             }
                         }
                         // END Handle duplicates
-                       
+
                         // Process each non-duplicate row
                         // Note that we never update:
                         // - Path-related fields (File, RelativePath, Folder)
@@ -416,15 +417,45 @@ namespace Timelapse.Database
                         {
                             ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(header);
                             // process each column but only if its off the specific type
-                            if (controlRow.Type == Constant.Control.Note || 
+                            if (controlRow.Type == Constant.Control.Note ||
                                 controlRow.Type == Constant.Control.Flag ||
                                 controlRow.Type == Constant.DatabaseColumn.DeleteFlag ||
                                 controlRow.Type == Constant.Control.Counter ||
                                 controlRow.Type == Constant.Control.FixedChoice ||
-                                controlRow.Type == Constant.DatabaseColumn.ImageQuality 
+                                controlRow.Type == Constant.DatabaseColumn.ImageQuality
                                 )
                             {
                                 imageToUpdate.Columns.Add(new ColumnTuple(header, rowDict[header]));
+                            }
+                            else if (controlRow.Type == Constant.DatabaseColumn.DateTime)
+                            {
+                                bool result;
+                                CultureInfo provider = CultureInfo.InvariantCulture;
+                                //string standardFormat = Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator; // "yyyy-MM-dd HH:mm:ss";
+                                //string standardTFormat = "yyyy-MM-ddTHH:mm:ss
+                                string offsetFormat = "yyyy-MM-ddTHH:mm:ss'Z'zzzz";
+                                string strDateTime = rowDict[header];
+                                DateTime dateTime;
+
+                                if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
+                                {
+                                    System.Diagnostics.Debug.Print("Standard: " + dateTime.ToString());
+                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                                }
+                                else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTime, provider, DateTimeStyles.None, out dateTime))
+                                {
+                                    System.Diagnostics.Debug.Print("StandardT: " + dateTime.ToString());
+                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                                }
+                                else if (DateTimeOffset.TryParseExact(strDateTime, offsetFormat, provider, DateTimeStyles.None, out DateTimeOffset dto))
+                                {
+                                    System.Diagnostics.Debug.Print("UTC: " + dto.ToString());
+                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dto)));
+                                }
+                                else
+                                {
+                                    System.Diagnostics.Debug.Print(String.Format("'{0}' not in the format: '{1}'", strDateTime, provider));
+                                }
                             }
                         }
 
@@ -442,12 +473,12 @@ namespace Timelapse.Database
                             imagesToUpdate.Add(imageToUpdate);
                         }
 
-                         // Write current batch of updates to database. Note that we Update the database every number of rows as specified in bulkFilesToHandle.
-                         // We should probably put in a cancellation token somewhere around here...
+                        // Write current batch of updates to database. Note that we Update the database every number of rows as specified in bulkFilesToHandle.
+                        // We should probably put in a cancellation token somewhere around here...
                         if (imagesToUpdate.Count >= bulkFilesToHandle)
                         {
                             processedFilesCount += bulkFilesToHandle;
-                            progress.Report(new ProgressBarArguments(Convert.ToInt32(((double)processedFilesCount)/ sortedRowDictionaryListCount * 100.0), String.Format("Processing {0}/{1} files. Please wait...", processedFilesCount, sortedRowDictionaryListCount), false, false));
+                            progress.Report(new ProgressBarArguments(Convert.ToInt32(((double)processedFilesCount) / sortedRowDictionaryListCount * 100.0), String.Format("Processing {0}/{1} files. Please wait...", processedFilesCount, sortedRowDictionaryListCount), false, false));
                             fileDatabase.UpdateFiles(imagesToUpdate);
                             imagesToUpdate.Clear();
                         }

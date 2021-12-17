@@ -30,7 +30,8 @@ namespace Timelapse.Editor.Util
             {
                 this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
                 this.MostRecentTemplates = registryKey.GetRecencyOrderedList(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates);
-                this.ShowUtcOffset = registryKey.GetBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);
+                // We no longer want to show the UtcOffset, so even if it was set in the past, make sure its always false.
+                this.ShowUtcOffset = false; // registryKey.GetBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);
             }
         }
 
@@ -40,7 +41,8 @@ namespace Timelapse.Editor.Util
             {
                 registryKey.Write(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, this.MostRecentCheckForUpdates);
                 registryKey.Write(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates, this.MostRecentTemplates);
-                registryKey.Write(EditorConstant.Registry.EditorKey.ShowUtcOffset, this.ShowUtcOffset);
+                // We no longer want to show the UtcOffset, so there is no longer a need to write it to the registry. 
+                // registryKey.Write(EditorConstant.Registry.EditorKey.ShowUtcOffset, this.ShowUtcOffset);
             }
         }
     }
