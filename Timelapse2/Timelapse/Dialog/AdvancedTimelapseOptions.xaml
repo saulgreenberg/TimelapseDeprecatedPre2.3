@@ -42,30 +42,34 @@
                 <GroupBox Header="Exporting CSV File - Date and Time Formats" FontWeight="Bold" FontSize="12"  Margin="15,0,15,5" Padding="10,0,10,0"  Width="776" Height="Auto">
                     <DockPanel Width="751">
                         <StackPanel Orientation="Vertical" >
-                            <TextBlock Text="Dates and times can be output in one of these formats." DockPanel.Dock="Top" FontWeight="Normal" FontStyle="Normal" FontSize="12" Width="656" />
+                            <TextBlock DockPanel.Dock="Top" FontWeight="Normal" FontStyle="Normal" FontSize="12" Width="656" >
+                                Dates and times can be output in one of these formats.<LineBreak/><Italic><Bold>Important:</Bold></Italic> Excel converts the 1st and 3rd date/time format to its own internal format, unless a space is inserted. 
+                            </TextBlock>
                             <StackPanel Orientation="Vertical" DockPanel.Dock="Top"  Margin="0,10,0,0">
                                 <!--<CheckBox Name="CheckBoxCSVFolder" Margin="30,0,0,0" Content="Folder" Height="22" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxCSVOptions_Click" />
                                 <CheckBox Name="CheckBoxCSVImageQuality" Margin="30,0,0,0" Content="Image Quality" Height="22" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxCSVOptions_Click" />-->
                                 <RadioButton Name="RadioButtonCSVDateAndTimeColumns" Margin="30,0,0,0" 
                                              Content="Date column (DD-MMM-YYYY), Time column (HH:MM:SS) e.g., 24-Dec-2021, 16:00:05" 
-                                             ToolTip="Example: Date column has 24-Dec-2021, Time column has 16:00:05 (all in local time)"
+                                             ToolTip="Example: Date column has 24-Dec-2021, Time column has 16:00:05"
                                              Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions" Click="RadioButtonCSVOptions_Click" 
                                              IsChecked="True"/>
                                 <RadioButton Name="RadioButtonCSVLocalDateTimeColumn" Margin="30,0,0,0" 
-                                             Content="DateTime column, local time (YYYY-MM-DDTHH:MM:SS) e.g., 2021-24-12T16:00:05    (includes 'T' separator)" 
-                                             ToolTip="Example: 2021-12-24T16:00:05 (December 24, 2021 Local time is 16:05, the 'T' is a separator)"
+                                             Content="DateTime column (YYYY-MM-DDTHH:MM:SS) e.g., 2021-24-12T16:00:05  (includes 'T' separator)" 
+                                             ToolTip="Example: 2021-12-24T16:00:05 (December 24, 2021 Time is 16:00:05, the 'T' is a separator)"
                                              Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions"  Click="RadioButtonCSVOptions_Click" />
                                 <RadioButton Name="RadioButtonCSVLocalDateTimeColumnWithoutT" Margin="30,0,0,0" 
-                                             Content="DateTime column, local time (YYYY-MM-DD HH:MM:SS)  e.g., 2021-24-12 16:00:05    (excludes 'T' separator)" 
+                                             Content="DateTime column (YYYY-MM-DD HH:MM:SS)  e.g., 2021-24-12 16:00:05  (excludes 'T' separator)" 
                                              ToolTip="Example: 2021-12-24 16:00:05 (December 24, 2021 Local time is 16:05, no 'T'separator)"
                                              Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions"  Click="RadioButtonCSVOptions_Click" />
+                                <!--This item is collapsed,as it is now defunct. We leave it here just in case anyone complains or needs it. -->
                                 <RadioButton Name="RadioButtonCSVUTCWithOffsetDateTimeColumn" Margin="30,0,0,0" 
                                              Content="DateTime column, UTC time+offset (YYYY-MM-DDTHH:MM:SSZ&#x00B1;HH:MM) e.g., 2021-12-24T22:00:05Z-06:00" 
                                              ToolTip="Example: 2021-12-24T22:00:05Z-06:00 (22:00:05 is Greenwich time. Local time is calculated with the -6 timezone offset to 16:00:05" 
-                                             Height="22" FontWeight="Normal" VerticalAlignment="Top" GroupName="CSVOptions" 
+                                             Height="22" FontWeight="Normal" VerticalAlignment="Top" Visibility="Collapsed" GroupName="CSVOptions" 
                                              Click="RadioButtonCSVOptions_Click" />
                                 <CheckBox Name="CheckBoxCSVInsertSpaceBeforeDates" Margin="30,0,0,0" FontWeight="Normal"
-                                          Content="Insert a space before the date / time. This stops Excel from converting dates / times to its own internal format"
+                                          Content="Insert a space before the date/time. Otherwise Excel converts date/time formats to its own internal format"
+                                          IsChecked="True"
                                           ToolTip="Excel recognizes and converts imported dates and times to its own internal format, and displays it according to its format settings. 
 &#10;This can lead to both confusion and issues, especially when the Excel file is imported back into Timelapse.
 &#10;Putting a space in front of the date and time forces Excel to treat it as plain text."

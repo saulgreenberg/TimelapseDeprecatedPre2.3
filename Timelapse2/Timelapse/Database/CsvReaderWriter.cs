@@ -148,27 +148,34 @@ namespace Timelapse.Database
                 {
                     const int bulkFilesToHandle = 500;
                     int processedFilesCount = 0;
+                    int totalFilesProcessed = 0;
+                    int dateTimeErrors = 0;
                     progress.Report(new ProgressBarArguments(0, "Reading the CSV file. Please wait", false, true));
 
                     //
                     // Part 1. Abort if there is a problem in reading the CSV file or if the CSV file is empty.
                     //
-                    List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
-
-                    // Abort if the CSV file could not be read 
-                    if (parsedFile == null)
+                    List<List<string>> parsedFile;
+                    if (false == TryReadingCSVFile(filePath, out parsedFile, importErrors))
                     {
-                        // Could not open the file
-                        importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
+                    //List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
 
-                    // Abort if The CSV file is empty or only contains a header row
-                    if (parsedFile.Count < 2)
-                    {
-                        importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
-                        return new Tuple<bool, List<string>>(false, importErrors);
-                    }
+                    //// Abort if the CSV file could not be read 
+                    //if (parsedFile == null)
+                    //{
+                    //    // Could not open the file
+                    //    importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
+                    //    return new Tuple<bool, List<string>>(false, importErrors);
+                    //}
+
+                    //// Abort if The CSV file is empty or only contains a header row
+                    //if (parsedFile.Count < 2)
+                    //{
+                    //    importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
+                    //    return new Tuple<bool, List<string>>(false, importErrors);
+                    //}
 
                     //
                     // Part 2. Abort if required CSV column are missing or there is a problem matching the CSV file headers against the DB headers.
@@ -184,7 +191,7 @@ namespace Timelapse.Database
                     // the File and Relative Path are a required CSV datalabel, as we can't match the DB data row without it.
                     if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false || dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
                     {
-                        importErrors.Add(String.Format("Columns necessary to match each CSV row with an image or video file are missing in your CSV file.", Constant.DatabaseColumn.File));
+                        importErrors.Add("Columns necessary to match each CSV row with an image or video file are missing in your CSV file: ");
                         if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false)
                         {
                             importErrors.Add(String.Format("-the '{0}' column containing the file names.", Constant.DatabaseColumn.File));
@@ -247,13 +254,11 @@ namespace Timelapse.Database
                     // - Note, as it can hold any data
                     // - Folder, as it is just a string (although we could check to see if it has invalid characters, the folder name is not used to do anything important)
                     // - File, RelativePath, as that data row would be ignored if it does not create a valid path
-                    // Although dates are currently ignored, we could do selected DateTime formats 
-                    // - Date, Time format: ignore, as Excel will change it if it is written out again, Note that UtcOffset is not exported in this formaat
-                    // - DateTime, UtcOffset:
+                    // Although dates following selected exact DateTime formats are imported, otherwise they are ignored 
+                    //   - Date, Time formats must match exactl
+                    // Day: 03-Jul-2017  Time: 12:30:57
                     //   - YYYY-MM-DDTHH:MM:SS (includes T separator, incorporates UTCoffset in its time): Check, as not altered by Excel, no UTC offset
                     //   - YYYY-MM-DD HH:MM:SS (excludes T separator, incorporates UTCoffset in its time): Altered by Excel (e.g., leading 0s removed), no UTC offset
-                    //   - YYYY-MM-DDTHH:MM:SSZ+HH:MM (excludes T separator): (UTC format with offset that must be added in): Check, as not altered by Excel, no UTC offset
-                    //   - UtcOffset - it appears I never include that. Check this...
                     foreach (string csvHeader in dataLabelsFromCSV)
                     {
                         ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(csvHeader);
@@ -413,6 +418,10 @@ namespace Timelapse.Database
                         // - Path-related fields (File, RelativePath, Folder)
                         // - Date and Time-related fields (DateTime, Date, Time, UtcOffset
                         ColumnTuplesWithWhere imageToUpdate = new ColumnTuplesWithWhere();
+                        CultureInfo provider = CultureInfo.InvariantCulture;
+                        DateTime datePortion = DateTime.MinValue;
+                        DateTime timePortion = DateTime.MinValue;
+                        DateTime dateTime = DateTime.MinValue;
                         foreach (string header in rowDict.Keys)
                         {
                             ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(header);
@@ -429,35 +438,64 @@ namespace Timelapse.Database
                             }
                             else if (controlRow.Type == Constant.DatabaseColumn.DateTime)
                             {
-                                bool result;
-                                CultureInfo provider = CultureInfo.InvariantCulture;
-                                //string standardFormat = Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator; // "yyyy-MM-dd HH:mm:ss";
-                                //string standardTFormat = "yyyy-MM-ddTHH:mm:ss
-                                string offsetFormat = "yyyy-MM-ddTHH:mm:ss'Z'zzzz";
                                 string strDateTime = rowDict[header];
-                                DateTime dateTime;
 
                                 if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
                                 {
                                     System.Diagnostics.Debug.Print("Standard: " + dateTime.ToString());
-                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
                                 }
                                 else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTime, provider, DateTimeStyles.None, out dateTime))
                                 {
                                     System.Diagnostics.Debug.Print("StandardT: " + dateTime.ToString());
-                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
                                 }
-                                else if (DateTimeOffset.TryParseExact(strDateTime, offsetFormat, provider, DateTimeStyles.None, out DateTimeOffset dto))
+                            }
+                            else if (controlRow.Type == Constant.DatabaseColumn.Date)
+                            {
+                                string strDateTime = rowDict[header];
+                                if (DateTime.TryParseExact(strDateTime, Constant.Time.DateFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
                                 {
-                                    System.Diagnostics.Debug.Print("UTC: " + dto.ToString());
-                                    imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dto)));
+                                    System.Diagnostics.Debug.Print("Date only: " + tempDateTime.ToString());
+                                    datePortion = tempDateTime;
+                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
                                 }
-                                else
+                            }
+                            else if (controlRow.Type == Constant.DatabaseColumn.Time)
+                            {
+                                string strDateTime = rowDict[header];
+                                //DateTime dateTime;
+                                if (DateTime.TryParseExact(strDateTime, Constant.Time.TimeFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
                                 {
-                                    System.Diagnostics.Debug.Print(String.Format("'{0}' not in the format: '{1}'", strDateTime, provider));
+                                    System.Diagnostics.Debug.Print("Time only: " + tempDateTime.ToString());
+                                    timePortion = tempDateTime;
+                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
                                 }
                             }
                         }
+                        totalFilesProcessed++;
+                        if (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue)
+                        {
+                            // We have a valid separate date and time. Combine it.
+                            dateTime = datePortion.Date + timePortion.TimeOfDay;
+                            System.Diagnostics.Debug.Print("Date and Time columns: " + dateTime.ToString());
+                            //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dt)));
+                        }
+                        if (dateTime != DateTime.MinValue)
+                        {
+                            System.Diagnostics.Debug.Print("FinalDateTime: " + dateTime.ToString());
+                            // Need to update date, time and datetime!
+                            // imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                        }
+                        else
+                        {
+                            dateTimeErrors++;
+                            importErrors.Add(String.Format("{0}: Could not extract datetime", currentPath));
+                            System.Diagnostics.Debug.Print("Could not extract datetime");
+                        }
+                        dateTime = DateTime.MinValue;
+                        datePortion = DateTime.MinValue;
+                        timePortion = DateTime.MinValue;
 
                         // Add to the query only if there are columns to add!
                         if (imageToUpdate.Columns.Count > 0)
@@ -484,11 +522,39 @@ namespace Timelapse.Database
                         }
                     }
                     // perform any remaining updates
+                    if (dateTimeErrors != 0)
+                    {
+                        // Need to check IF THIS WORKS FOR files with no date-time fields!
+                        importErrors.Add(String.Format("Warning: the Date/Time could not be updated for {0} / {1} files", dateTimeErrors, totalFilesProcessed));
+                    }
                     fileDatabase.UpdateFiles(imagesToUpdate);
                     return new Tuple<bool, List<string>>(true, importErrors);
                 }).ConfigureAwait(true);
         }
 
+        #region Helpers for WriteCSV
+        static private bool TryReadingCSVFile(string filePath, out List<List<string>> parsedFile, List<string> importErrors)
+        {
+            parsedFile = ReadAndParseCSVFile(filePath);
+
+            // Abort if the CSV file could not be read 
+            if (parsedFile == null)
+            {
+                // Could not open the file
+                importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
+                return false;
+            }
+
+            // Abort if The CSV file is empty or only contains a header row
+            if (parsedFile.Count < 2)
+            {
+                importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
+                return false;
+            }
+            return true;
+        }
+
+        #endregion
         // Given a list of duplicates and their common relative path, update the corresponding duplicates in the database
         // We do this by getting the IDs of duplicates in the database, where we update each database by ID to a duplicate.
         // If there is a mismatch in the number of duplicates in the database vs. in the CSV file, we just update whatever does match.

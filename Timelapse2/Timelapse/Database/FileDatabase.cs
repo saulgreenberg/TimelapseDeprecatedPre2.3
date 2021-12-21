@@ -218,6 +218,24 @@ namespace Timelapse.Database
             // Perform TemplateTable initializations.
             await base.OnExistingDatabaseOpenedAsync(templateDatabase, null).ConfigureAwait(true);
 
+            // Backwards compatability: We no longer show UTCOffset control, so try to ensure its visibility is false.
+            // This may not be the best place to put this check; should likely refactor all this, but it does have the intended effect.
+            foreach (string dataLabel in this.GetDataLabelsExceptIDInSpreadsheetOrder())
+            {
+                ControlRow imageDatabaseControl = this.GetControlFromTemplateTable(dataLabel);
+                ControlRow templateControl = templateDatabase.GetControlFromTemplateTable(dataLabel);
+                if (imageDatabaseControl?.DataLabel == Constant.DatabaseColumn.UtcOffset)
+                {
+                    imageDatabaseControl.Visible = false;
+                    this.SyncControlToDatabase(imageDatabaseControl);
+                }
+                if (templateControl?.DataLabel == Constant.DatabaseColumn.UtcOffset)
+                {
+                    templateControl.Visible = false;
+                    this.SyncControlToDatabase(templateControl);
+                }
+            }
+
             // If directed to use the template found in the template database, 
             // check and repair differences between the .tdb and .ddb template tables due to  missing or added controls 
             if (templateSyncResults.UseTemplateDBTemplate)
