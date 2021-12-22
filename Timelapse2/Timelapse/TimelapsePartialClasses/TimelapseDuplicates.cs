@@ -63,7 +63,7 @@ namespace Timelapse
                         };
                         detectionInsertionStatements.Add(detectionColumnsToUpdate);
 
-                        // Instert the detections into the Detections table
+                        // Insert the detections into the Detections table
                         this.DataHandler.FileDatabase.InsertDetection(detectionInsertionStatements);
 
                         // Get the ID of the duplicate file that was just inserted into the filedata table

@@ -495,6 +495,7 @@ namespace Timelapse.Constant
         
         // Format and column options when writing the date to the CSV file
         public const string CSVDateTimeOptions = "CSVDateTimeOptions";
+        public const string CSVInsertSpaceBeforeDates = "CSVInsertSpaceBeforeDates";
 
         // DarkPixelThreshold and Ratio used to determine image darkness
         public const string DarkPixelThreshold = "DarkPixelThreshold";

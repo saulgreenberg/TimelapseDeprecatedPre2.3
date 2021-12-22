@@ -244,6 +244,7 @@ namespace Timelapse.Database
             {
                 this.GetControlsSortedByControlOrder();
                 this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureUtcOffsetControlNotVisible();
                 this.EnsureCurrentSchema();
             }).ConfigureAwait(true);
         }
@@ -254,6 +255,7 @@ namespace Timelapse.Database
             {
                 this.GetControlsSortedByControlOrder();
                 this.EnsureDataLabelsAndLabelsNotEmpty();
+                this.EnsureUtcOffsetControlNotVisible();
                 this.EnsureCurrentSchema();
             }).ConfigureAwait(true);
         }
@@ -794,6 +796,39 @@ namespace Timelapse.Database
             }
         }
 
+        // We no longer want to show the UtcOffset control, but templates may have set it to visible,
+        // So this should over-ride and rewrite that.
+        private void EnsureUtcOffsetControlNotVisible()
+        {
+            try
+            {
+                foreach (ControlRow control in this.Controls)
+                {
+                    if (control.DataLabel == Constant.DatabaseColumn.UtcOffset)
+                    {
+                        if (control.Visible == false)
+                        {
+                            return;
+                        }
+                        ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
+                        control.Visible = false;
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, control.Visible));
+                        columnsToUpdate.SetWhere(control.ID);
+                        this.Database.Update(Constant.DBTables.Controls, columnsToUpdate);
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // Throw a custom exception so we can give a more informative fatal error message.
+                // While this method does not normally fail, one user did report it crashing here due to his Citrix system
+                // limiting how the template file is manipulated. The actual failure happens before this, but this
+                // is where it is caught.
+                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
+                throw custom_e;
+            }
+        }
         /// <summary>
         /// Supply default values for any empty labels or data labels are non-empty, updating both TemplateTable and the database as needed
         /// </summary>

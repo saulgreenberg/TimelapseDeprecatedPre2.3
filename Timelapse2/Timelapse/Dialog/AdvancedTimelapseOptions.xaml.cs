@@ -55,6 +55,8 @@ namespace Timelapse.Dialog
                 this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked = true;
             }
 
+            this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked = this.timelapseState.CSVInsertSpaceBeforeDates == true;
+
             // Throttles
             this.ImageRendersPerSecond.Minimum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondLowerBound;
             this.ImageRendersPerSecond.Maximum = Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondUpperBound;
@@ -156,6 +158,7 @@ namespace Timelapse.Dialog
         private void ResetCSVDefaults_Click(object sender, RoutedEventArgs e)
         {
             this.RadioButtonCSVDateAndTimeColumns.IsChecked = true;
+            this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked = true;
             this.SetCSVOptions();
         }
 
@@ -164,8 +167,15 @@ namespace Timelapse.Dialog
             this.SetCSVOptions();
         }
 
+
+        private void CheckBoxCSVInsertSpaceBeforeDate_Click(object sender, RoutedEventArgs e)
+        {
+            this.SetCSVOptions();
+        }
+
         private void SetCSVOptions()
         {
+            // Note that some of these are now defunct
             if (this.RadioButtonCSVDateAndTimeColumns.IsChecked == true)
             {
                 this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateAndTimeColumns;
@@ -180,8 +190,11 @@ namespace Timelapse.Dialog
             }
             else //if (this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked IsChecked == true)
             {
+                // This is now defunct and should not be activated
                 this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn;
             }
+
+            this.timelapseState.CSVInsertSpaceBeforeDates = this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked == true;
         }
         #endregion
 
@@ -313,8 +326,8 @@ namespace Timelapse.Dialog
             this.DialogResult = true;
         }
 
-        #endregion
 
+        #endregion
 
     }
 }

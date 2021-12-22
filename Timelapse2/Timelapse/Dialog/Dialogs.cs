@@ -1071,9 +1071,11 @@ namespace Timelapse.Dialog
             if (resultAndImportErrors != null)
             {
                 messageBox.Message.Solution += "Change your .csv file to fix the errors below and try again.";
+                string prefix;
                 foreach (string importError in resultAndImportErrors)
                 {
-                    messageBox.Message.Solution += Environment.NewLine + "\u2022 " + importError;
+                    prefix = (importError[0] == '-') ? "   " : "\u2022 ";
+                    messageBox.Message.Solution += Environment.NewLine + prefix + importError;
                 }
             }
             messageBox.Message.Hint = "Timelapse checks the following when importing the .csv file:" + Environment.NewLine;
@@ -1100,9 +1102,11 @@ namespace Timelapse.Dialog
             if (warnings.Count != 0)
             {
                 messageBox.Message.Result = "However, here are some warnings that you may want to check.";
+                string prefix;
                 foreach (string warning in warnings)
                 {
-                    messageBox.Message.Result += Environment.NewLine + "\u2022 " + warning;
+                    prefix = (warning[0] == '-') ? "   " : "\u2022 ";
+                    messageBox.Message.Result += Environment.NewLine + prefix + warning;
                 }
             }
             messageBox.Message.Hint = "\u2022 Check your data. If it is not what you expect, restore your data by using latest backup file in " + Constant.File.BackupFolder + ".";

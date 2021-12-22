@@ -69,7 +69,8 @@ namespace Timelapse.Editor
 
             // Recall state from prior sessions
             this.userSettings = new EditorUserRegistrySettings();
-            this.MenuViewShowUTCDateTimeSettingsMenuItem.IsChecked = this.userSettings.ShowUtcOffset;
+            // We no longer show UTC, so set it to false
+            this.MenuViewShowUTCDateTimeSettingsMenuItem.IsChecked = false; // this.userSettings.ShowUtcOffset;
 
             // Populate the most recent databases list
             this.MenuFileRecentTemplates_Refresh(true);
@@ -233,6 +234,9 @@ namespace Timelapse.Editor
                 this.HelpMessageInitial.Visibility = Visibility.Collapsed;
                 this.MenuFileClose.IsEnabled = true;
             }
+
+            // We no longer show UTC, so set its visibility to false in this template (just in case it was set to true)
+            this.SetUtcToFalse();
         }
 
         // Open a recently used template
@@ -372,11 +376,13 @@ namespace Timelapse.Editor
             {
                 if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
-                    this.MenuViewShowUTCDateTimeSettingsMenuItem.IsEnabled = !control.Visible;
+                    // We no longer show UtcOffset, so set it to false
+                    this.MenuViewShowUTCDateTimeSettingsMenuItem.IsEnabled = false; // !control.Visible;
                     break;
                 }
             }
         }
+
 
         /// <summary>
         /// Depending on the menu's checkbox state, show all columns or hide selected columns
@@ -410,7 +416,8 @@ namespace Timelapse.Editor
                 // Confirm Showing UTC Date/Time Settings
                 mi.IsChecked = EditorDialogs.EditorConfirmShowingUTCDateTimeDialog(this) == true;
             }
-            this.userSettings.ShowUtcOffset = mi.IsChecked;
+            // We no longer show UtcOffset, so set it to false
+            this.userSettings.ShowUtcOffset = false; //mi.IsChecked;
             this.controls.Generate(this.ControlsPanel, this.templateDatabase.Controls);
             this.GenerateSpreadsheet();
         }
@@ -477,6 +484,20 @@ namespace Timelapse.Editor
             this.userSettings.MostRecentTemplates.SetMostRecent(templateDatabaseFilePath);
             this.ResetUIElements(true, this.templateDatabase.FilePath);
             return true;
+        }
+
+        private void SetUtcToFalse()
+        {
+            // Find the UtcOffset Control and set it to false (as we no longer show it)
+            List<ControlRow> controlsInControlOrder = this.templateDatabase.Controls.OrderBy(control => control.ControlOrder).ToList();
+            foreach (ControlRow control in controlsInControlOrder)
+            {
+                if (control.Type == Constant.DatabaseColumn.UtcOffset)
+                {
+                    control.Visible = false;
+                    break;
+                }
+            }
         }
         #endregion DataGrid and New Database Initialization
 
@@ -930,13 +951,14 @@ namespace Timelapse.Editor
                 return;
             }
             // Find the UtcOffset Control and check its visibility
-            bool utcIsVisibile = false;
+            bool utcIsVisible = false;
             List<ControlRow> controlsInControlOrder = this.templateDatabase.Controls.OrderBy(control => control.ControlOrder).ToList();
             foreach (ControlRow control in controlsInControlOrder)
             {
                 if (control.Type == Constant.DatabaseColumn.UtcOffset)
                 {
-                    utcIsVisibile = control.Visible;
+                    // We no longer show UtcOffset, so set it to false
+                    utcIsVisible = false;// control.Visible;
                     break;
                 }
             }
@@ -944,15 +966,17 @@ namespace Timelapse.Editor
             // Now adjust the row's visibility. 
             if (controlType == Constant.DatabaseColumn.UtcOffset)
             {
-                if (utcIsVisibile == true)
+                if (utcIsVisible == true)
                 {
                     // If the Utc control is set to visible, we should always show the row.
-                    row.Visibility = Visibility.Visible;
+                    // We no longer show UtcOffset, so set it to collapsed
+                    row.Visibility = Visibility.Collapsed; // Visibility.Visible;
                 }
                 else
                 {
                     // Otherwise, the visibility depends on the user settings
-                    row.Visibility = (this.userSettings.ShowUtcOffset == true) ? Visibility.Visible : Visibility.Collapsed;
+                    // We no longer show UtcOffset, so set it to collapsed
+                    row.Visibility = Visibility.Collapsed; // row.Visibility = (this.userSettings.ShowUtcOffset == true) ? Visibility.Visible : Visibility.Collapsed;
                 }
             }
             // Always hide the Date/Time rows, as they are now internal to Timelapse.
@@ -1411,24 +1435,6 @@ namespace Timelapse.Editor
             DragDropFile.OnTemplateFilePreviewDrag(dragEvent);
         }
         #endregion
-
-        //#region Timelapse web site: videos
-        //public void MenuVideoPlay_Click(object sender, RoutedEventArgs e)
-        //{
-        //    string prefix = "https://saul.cpsc.ucalgary.ca/timelapse/uploads/Videos/";
-        //    if (sender is MenuItem mi)
-        //    {
-        //        switch (mi.Name)
-        //        {
-        //            case "MenuItemVideoWhirlwindTour":
-        //                ProcessExecution.TryProcessStart(new Uri(prefix + "WhirlwindTourOfTimelapse.mp4"));
-        //                break;
-        //            case "MenuItemVideoTemplateEditor":
-        //                ProcessExecution.TryProcessStart(new Uri(prefix + "TemplateEditor.mp4"));
-        //                break;
-        //        }
-        //    }
-        //}
         //#endregion
     }
 }

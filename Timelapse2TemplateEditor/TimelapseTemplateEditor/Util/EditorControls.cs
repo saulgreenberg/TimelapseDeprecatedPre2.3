@@ -70,6 +70,9 @@ namespace Timelapse.Editor.Util
                     case Constant.DatabaseColumn.UtcOffset:
                         Label utcOffsetLabel = EditorControls.CreateLabel(styleProvider, control);
                         UtcOffsetUpDown utcOffsetContent = this.CreateUtcOffsetPicker(control);
+                        // We don't show UtcOffset any more, so just collapse it.
+                        utcOffsetLabel.Visibility = Visibility.Collapsed;
+                        utcOffsetContent.Visibility = Visibility.Collapsed;
                         stackPanel = EditorControls.CreateStackPanel(styleProvider, utcOffsetLabel, utcOffsetContent);
                         break;
                     default:
