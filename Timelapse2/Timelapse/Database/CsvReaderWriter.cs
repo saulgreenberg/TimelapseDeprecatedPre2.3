@@ -141,9 +141,7 @@ namespace Timelapse.Database
             });
             IProgress<ProgressBarArguments> progress = progressHandler;
 
-            bool abort = false;
             List<string> importErrors = new List<string>();
-
             return await Task.Run(() =>
                 {
                     const int bulkFilesToHandle = 500;
@@ -151,170 +149,31 @@ namespace Timelapse.Database
                     int totalFilesProcessed = 0;
                     int dateTimeErrors = 0;
                     progress.Report(new ProgressBarArguments(0, "Reading the CSV file. Please wait", false, true));
-
-                    //
-                    // Part 1. Abort if there is a problem in reading the CSV file or if the CSV file is empty.
-                    //
                     List<List<string>> parsedFile;
+
+                    // PART 1. Read in the CSV file. Return false if there is a problem in reading the CSV file or if the CSV file is empty
                     if (false == TryReadingCSVFile(filePath, out parsedFile, importErrors))
                     {
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
-                    //List<List<string>> parsedFile = ReadAndParseCSVFile(filePath);
 
-                    //// Abort if the CSV file could not be read 
-                    //if (parsedFile == null)
-                    //{
-                    //    // Could not open the file
-                    //    importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
-                    //    return new Tuple<bool, List<string>>(false, importErrors);
-                    //}
-
-                    //// Abort if The CSV file is empty or only contains a header row
-                    //if (parsedFile.Count < 2)
-                    //{
-                    //    importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
-                    //    return new Tuple<bool, List<string>>(false, importErrors);
-                    //}
-
-                    //
-                    // Part 2. Abort if required CSV column are missing or there is a problem matching the CSV file headers against the DB headers.
-                    //
-
-                    // Get the dataLabels from the database and from the headers in the CSV files (and remove any empty trailing headers from the CSV file list)
-                    List<string> dataLabelsFromDB = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+                    // Now that we have a parsed file, get its headers, which we will use as DataLabels
                     List<string> dataLabelsFromCSV = parsedFile[0].Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-                    List<string> dataLabelsInHeaderButNotFileDatabase = dataLabelsFromCSV.Except(dataLabelsFromDB).ToList();
 
-                    // Abort if the File and Relative Path columns are missing from the CSV file 
-                    // While the CSV data labels can be a subset of the DB data labels,
-                    // the File and Relative Path are a required CSV datalabel, as we can't match the DB data row without it.
-                    if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false || dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
+                    // Part 2. Abort if required CSV column are missing or there is a problem matching the CSV file headers against the DB headers.
+                    if (false == VerifyCSVHeaders(fileDatabase, dataLabelsFromCSV, importErrors))
                     {
-                        importErrors.Add("Columns necessary to match each CSV row with an image or video file are missing in your CSV file: ");
-                        if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false)
-                        {
-                            importErrors.Add(String.Format("-the '{0}' column containing the file names.", Constant.DatabaseColumn.File));
-                        }
-                        if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
-                        {
-                            importErrors.Add(String.Format("- the '{0}' column containing matching relative paths to the subfolders containing each file.", Constant.DatabaseColumn.RelativePath));
-                            importErrors.Add("  (If all your files are in the root  folder, you still need the RelativePath column, albeit with empty values");
-                        }
-                        abort = true;
-                    }
-
-                    // Abort if a column header in the CSV file does not exist in the template
-                    // Note: could do this as a warning rather than as an abort, but...
-                    foreach (string dataLabel in dataLabelsInHeaderButNotFileDatabase)
-                    {
-                        importErrors.Add(String.Format("The column heading '{0}' in the CSV file does not match any DataLabel in the template.", dataLabel));
-                        abort = true;
-                    }
-
-                    if (abort)
-                    {
-                        // We failed. abort.
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
 
-                    //
-                    // Part 3. Get all data rows, and validate each column's data against its type.
-                    // Abort if the type does not match
-                    // 
+                    // Part 3: Create a List of all data rows, where each row is a dictionary containing the header and that row's valued for the header
+                    List<Dictionary<string, string>> rowDictionaryList = GetAllDataRows(dataLabelsFromCSV, parsedFile); new List<Dictionary<string, string>>();
 
-                    // Create a List of all data rows, where each row is a dictionary containing the header and that row's valued for the header
-                    List<Dictionary<string, string>> rowDictionaryList = new List<Dictionary<string, string>>();
-                    int rowNumber = 0;
-                    int numberOfHeaders = dataLabelsFromCSV.Count;
-                    foreach (List<string> parsedRow in parsedFile)
+                    // Part 4. For every row, validate each column's data against its type. Abort if the type does not match
+                    if (false == VerifyDataInColumns(fileDatabase, dataLabelsFromCSV, rowDictionaryList, importErrors))
                     {
-                        // For each data row
-                        rowNumber++;
-                        if (rowNumber == 1)
-                        {
-                            // Skip the 1st header row
-                            continue;
-                        }
-
-                        // for this row, create a dictionary of matching the CSV column Header and that column's value 
-                        Dictionary<string, string> rowDictionary = new Dictionary<string, string>();
-                        for (int i = 0; i < numberOfHeaders; i++)
-                        {
-                            string valueToAdd = (i < parsedRow.Count) ? parsedRow[i] : String.Empty;
-                            rowDictionary.Add(dataLabelsFromCSV[i], parsedRow[i]);
-                        }
-                        rowDictionaryList.Add(rowDictionary);
-                    }
-
-                    // For each column in the CSV file,
-                    // - get its type from the template
-                    // - for particular types, validate the data in the column against that type
-                    // Validation ignored for:
-                    // - Note, as it can hold any data
-                    // - Folder, as it is just a string (although we could check to see if it has invalid characters, the folder name is not used to do anything important)
-                    // - File, RelativePath, as that data row would be ignored if it does not create a valid path
-                    // Although dates following selected exact DateTime formats are imported, otherwise they are ignored 
-                    //   - Date, Time formats must match exactl
-                    // Day: 03-Jul-2017  Time: 12:30:57
-                    //   - YYYY-MM-DDTHH:MM:SS (includes T separator, incorporates UTCoffset in its time): Check, as not altered by Excel, no UTC offset
-                    //   - YYYY-MM-DD HH:MM:SS (excludes T separator, incorporates UTCoffset in its time): Altered by Excel (e.g., leading 0s removed), no UTC offset
-                    foreach (string csvHeader in dataLabelsFromCSV)
-                    {
-                        ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(csvHeader);
-
-                        // We don't need to worry about File-related or Date-related controls as they are not updated
-                        if (controlRow.Type == Constant.Control.Flag ||
-                            controlRow.Type == Constant.DatabaseColumn.DeleteFlag ||
-                            controlRow.Type == Constant.Control.Counter ||
-                            controlRow.Type == Constant.Control.FixedChoice ||
-                            controlRow.Type == Constant.DatabaseColumn.ImageQuality
-                           )
-                        {
-                            rowNumber = 0;
-                            foreach (Dictionary<string, string> rowDict in rowDictionaryList)
-                            {
-                                rowNumber++;
-                                switch (controlRow.Type)
-                                {
-                                    case Constant.Control.Flag:
-                                    case Constant.DatabaseColumn.DeleteFlag:
-                                        if (!Boolean.TryParse(rowDict[csvHeader], out _))
-                                        {
-                                            // Flag values must be true or false, but its not. So raise an error
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be true or false, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
-                                            abort = true;
-                                        }
-                                        break;
-                                    case Constant.Control.Counter:
-                                        if (!String.IsNullOrWhiteSpace(rowDict[csvHeader]) && !Int32.TryParse(rowDict[csvHeader], out _))
-                                        {
-                                            // Counters must be integers / blanks 
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be blank or a number, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
-                                            abort = true;
-                                        }
-                                        break;
-                                    case Constant.Control.FixedChoice:
-                                    case Constant.DatabaseColumn.ImageQuality:
-                                        if (controlRow.List.Contains(rowDict[csvHeader]) == false)
-                                        {
-                                            // Fixed Choices must be in the Choice List
-                                            importErrors.Add(String.Format("Error in row {1}. {0} values must be in the template's choice list, but '{2}' isn't in it.", csvHeader, rowNumber, rowDict[csvHeader]));
-                                            abort = true;
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    if (abort)
-                    {
-                        //Abort, as some of the data values do not match the type. 
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
-
 
                     //
                     // Part 4. Check and manage duplicates
@@ -329,19 +188,22 @@ namespace Timelapse.Database
 
                     List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
 
-                    // Begin Handle duplicates
+                    // Handle duplicates and more
                     int nextRowIndex = 0;
                     string currentPath = String.Empty;   // the path of the current row 
                     string examinedPath = String.Empty;  // the path of a surrounding row currently being examined to see if its a duplicate
                     string duplicatePath = String.Empty; // a duplicate was identified, and this holds the duplicate path
                     List<Dictionary<string, string>> duplicatesDictionaryList = new List<Dictionary<string, string>>();
+                    
                     foreach (Dictionary<string, string> rowDict in sortedRowDictionaryList)
                     {
+                        // For every row...
                         nextRowIndex++;
+                        currentPath = Path.Combine(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]);
 
+                        #region Handle duplicates
                         // Duplicates are special cases, where we have to update each set of duplicates separately as a chunk.
                         // To begin, check if its a duplicate, which occurs if the path (RelativePath/File) is identical
-                        currentPath = Path.Combine(rowDict[Constant.DatabaseColumn.RelativePath], rowDict[Constant.DatabaseColumn.File]);
 
                         if (currentPath == duplicatePath)
                         {
@@ -411,8 +273,9 @@ namespace Timelapse.Database
                                 }
                             }
                         }
-                        // END Handle duplicates
+                        #endregion Handle duplicates
 
+                        #region Process each column in a row by its header type
                         // Process each non-duplicate row
                         // Note that we never update:
                         // - Path-related fields (File, RelativePath, Folder)
@@ -424,74 +287,81 @@ namespace Timelapse.Database
                         DateTime dateTime = DateTime.MinValue;
                         foreach (string header in rowDict.Keys)
                         {
+                            // For every column ...
                             ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(header);
-                            // process each column but only if its off the specific type
-                            if (controlRow.Type == Constant.Control.Note ||
-                                controlRow.Type == Constant.Control.Flag ||
-                                controlRow.Type == Constant.DatabaseColumn.DeleteFlag ||
-                                controlRow.Type == Constant.Control.Counter ||
-                                controlRow.Type == Constant.Control.FixedChoice ||
-                                controlRow.Type == Constant.DatabaseColumn.ImageQuality
-                                )
+                            // process each column but only if its of the specific type
+                            if (IsStandardColumn(controlRow.Type))
                             {
                                 imageToUpdate.Columns.Add(new ColumnTuple(header, rowDict[header]));
                             }
-                            else if (controlRow.Type == Constant.DatabaseColumn.DateTime)
+                            else
                             {
-                                string strDateTime = rowDict[header];
+                                // Its not a standard control, so check if its a date/time control and handle that as these are special cases
+                                if (controlRow.Type == Constant.DatabaseColumn.DateTime)
+                                {
+                                    string strDateTime = rowDict[header];
+                                    if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
+                                    {
+                                        // Standard DateTime
+                                        // System.Diagnostics.Debug.Print("Standard: " + dateTime.ToString());
+                                    }
+                                    else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTime, provider, DateTimeStyles.None, out dateTime))
+                                    {
+                                        // Standard DateTime wit T separator
+                                        // System.Diagnostics.Debug.Print("StandardT: " + dateTime.ToString());
+                                    }
+                                }
+                                else if (controlRow.Type == Constant.DatabaseColumn.Date)
+                                {
+                                    // Date only
+                                    string strDateTime = rowDict[header];
+                                    if (DateTime.TryParseExact(strDateTime, Constant.Time.DateFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
+                                    {
+                                        datePortion = tempDateTime;
+                                    }
+                                }
+                                else if (controlRow.Type == Constant.DatabaseColumn.Time)
+                                {
+                                    // Time only
+                                    string strDateTime = rowDict[header];
+                                    if (DateTime.TryParseExact(strDateTime, Constant.Time.TimeFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
+                                    {
+                                        //System.Diagnostics.Debug.Print("Time only: " + tempDateTime.ToString());
+                                        timePortion = tempDateTime;
+                                    }
+                                }
+                            }
+                        }
+                        #endregion Process each column by its header type
 
-                                if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
-                                {
-                                    System.Diagnostics.Debug.Print("Standard: " + dateTime.ToString());
-                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
-                                }
-                                else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTime, provider, DateTimeStyles.None, out dateTime))
-                                {
-                                    System.Diagnostics.Debug.Print("StandardT: " + dateTime.ToString());
-                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
-                                }
-                            }
-                            else if (controlRow.Type == Constant.DatabaseColumn.Date)
-                            {
-                                string strDateTime = rowDict[header];
-                                if (DateTime.TryParseExact(strDateTime, Constant.Time.DateFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
-                                {
-                                    System.Diagnostics.Debug.Print("Date only: " + tempDateTime.ToString());
-                                    datePortion = tempDateTime;
-                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
-                                }
-                            }
-                            else if (controlRow.Type == Constant.DatabaseColumn.Time)
-                            {
-                                string strDateTime = rowDict[header];
-                                //DateTime dateTime;
-                                if (DateTime.TryParseExact(strDateTime, Constant.Time.TimeFormat, provider, DateTimeStyles.None, out DateTime tempDateTime))
-                                {
-                                    System.Diagnostics.Debug.Print("Time only: " + tempDateTime.ToString());
-                                    timePortion = tempDateTime;
-                                    //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
-                                }
-                            }
-                        }
+                        // We've now looked at all the columns in a row, so continue processing that row as needed
                         totalFilesProcessed++;
-                        if (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue)
+                       
+
+                        if (dateTime != DateTime.MinValue || (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue))
                         {
-                            // We have a valid separate date and time. Combine it.
-                            dateTime = datePortion.Date + timePortion.TimeOfDay;
-                            System.Diagnostics.Debug.Print("Date and Time columns: " + dateTime.ToString());
-                            //imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dt)));
-                        }
-                        if (dateTime != DateTime.MinValue)
-                        {
-                            System.Diagnostics.Debug.Print("FinalDateTime: " + dateTime.ToString());
-                            // Need to update date, time and datetime!
-                            // imageToUpdate.Columns.Add(new ColumnTuple(header, Util.DateTimeHandler.ToStringDatabaseDateTime(dateTime)));
+                            // If the separate date and time fields were used, update dateTime from them
+                            if (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue)
+                            {
+                                // We have a valid separate date and time. Combine it.
+                                dateTime = datePortion.Date + timePortion.TimeOfDay;
+                            }
+                            // Because we expect a UTC date/time, set its kind
+                            dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+
+                            // We should now have a valid dateTime. Add it to the database. 
+                            // Note that this resets UtcOffset to 0, as its recorded in  local time
+                            imageToUpdate.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.DateTime, dateTime));
+                            imageToUpdate.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.UtcOffset, new TimeSpan(0)));
+                            imageToUpdate.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.Date, DateTimeHandler.ToStringDisplayDate(dateTime)));
+                            imageToUpdate.Columns.Add(new ColumnTuple(Constant.DatabaseColumn.Time, DateTimeHandler.ToStringDisplayTime(dateTime)));
+                            // System.Diagnostics.Debug.Print("Wrote DateTime: " + dateTime.ToString());
                         }
                         else
                         {
                             dateTimeErrors++;
-                            importErrors.Add(String.Format("{0}: Could not extract datetime", currentPath));
-                            System.Diagnostics.Debug.Print("Could not extract datetime");
+                            // importErrors.Add(String.Format("{0}: Could not extract datetime", currentPath));
+                            // System.Diagnostics.Debug.Print("Could not extract datetime");
                         }
                         dateTime = DateTime.MinValue;
                         datePortion = DateTime.MinValue;
@@ -525,14 +395,23 @@ namespace Timelapse.Database
                     if (dateTimeErrors != 0)
                     {
                         // Need to check IF THIS WORKS FOR files with no date-time fields!
-                        importErrors.Add(String.Format("Warning: the Date/Time could not be updated for {0} / {1} files", dateTimeErrors, totalFilesProcessed));
+                        importErrors.Add(String.Format("The Date/Time was not be updated for {0} / {1} files. ", dateTimeErrors, totalFilesProcessed));
+                        if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.DateTime) || (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.Date) && dataLabelsFromCSV.Contains(Constant.DatabaseColumn.Time)))
+                        {
+                            importErrors.Add("- some date / time values in the DateTime, Date or Time columns are in an unexpected format (see manual)");
+                        }
+                        else
+                        {
+                            importErrors.Add("- the CSV file is missing either a DateTime column or both Date and Time columns (this is ok if it was intended)");
+                        }
                     }
                     fileDatabase.UpdateFiles(imagesToUpdate);
                     return new Tuple<bool, List<string>>(true, importErrors);
                 }).ConfigureAwait(true);
         }
 
-        #region Helpers for WriteCSV
+        #region Helpers for TryImportFromCsv. These just reduce the size of the method to make it easier to debug.
+        // Read in the CSV file. Return false if there is a problem in reading the CSV file or if the CSV file is empty
         static private bool TryReadingCSVFile(string filePath, out List<List<string>> parsedFile, List<string> importErrors)
         {
             parsedFile = ReadAndParseCSVFile(filePath);
@@ -541,12 +420,19 @@ namespace Timelapse.Database
             if (parsedFile == null)
             {
                 // Could not open the file
-                importErrors.Add(String.Format("The file '{0}' could not be read. This could happen if the file is currently opened by another application, or if its not a valid CSV file.", Path.GetFileName(filePath)));
+                importErrors.Add(String.Format("The file '{0}' could not be read. Things to check:", Path.GetFileName(filePath)));
+                importErrors.Add("- Is the file is currently opened by another application?");
+                importErrors.Add("- Do you have permission to read this file (especially network file systems, which sometimes limit access).");
                 return false;
             }
 
             // Abort if The CSV file is empty or only contains a header row
-            if (parsedFile.Count < 2)
+            if (parsedFile.Count < 1)
+            {
+                importErrors.Add(String.Format("The file '{0}' appears to be empty.", Path.GetFileName(filePath)));
+                return false;
+            }
+            else if (parsedFile.Count < 2)
             {
                 importErrors.Add(String.Format("The file '{0}' does not contain any data.", Path.GetFileName(filePath)));
                 return false;
@@ -554,6 +440,179 @@ namespace Timelapse.Database
             return true;
         }
 
+        // Return false if required CSV column are missing or there is a problem matching the CSV file headers against the DB headers.
+        static private bool VerifyCSVHeaders(FileDatabase fileDatabase, List<string> dataLabelsFromCSV, List<string> importErrors)
+        {
+            bool abort = false;
+            // Get the dataLabels from the database and from the headers in the CSV files (and remove any empty trailing headers from the CSV file list)
+            List<string> dataLabelsFromDB = fileDatabase.GetDataLabelsExceptIDInSpreadsheetOrder();
+            List<string> dataLabelsInHeaderButNotFileDatabase = dataLabelsFromCSV.Except(dataLabelsFromDB).ToList();
+
+            // Abort if the File and Relative Path columns are missing from the CSV file 
+            // While the CSV data labels can be a subset of the DB data labels,
+            // the File and Relative Path are a required CSV datalabel, as we can't match the DB data row without it.
+            if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false || dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
+            {
+                importErrors.Add("CSV columns necessary to locate your image or video files are missing: ");
+                if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.File) == false)
+                {
+                    importErrors.Add(String.Format("- the '{0}' column.", Constant.DatabaseColumn.File));
+                }
+                if (dataLabelsFromCSV.Contains(Constant.DatabaseColumn.RelativePath) == false)
+                {
+                    importErrors.Add(String.Format("- the '{0}' column (You still need it even if your files are all in your root folder).", Constant.DatabaseColumn.RelativePath));
+                }
+                abort = true;
+            }
+
+            // Abort if a column header in the CSV file does not exist in the template
+            // NOTE: could do this as a warning rather than as an abort, but...
+            if (dataLabelsInHeaderButNotFileDatabase.Count != 0)
+            {
+                importErrors.Add("These CSV column headings do not match any of the template'sDataLabels:");
+                foreach (string dataLabel in dataLabelsInHeaderButNotFileDatabase)
+                {
+                    importErrors.Add(String.Format("- {0}", dataLabel));
+                    abort = true;
+                }
+            }
+
+            if (abort)
+            {
+                // We failed. abort.
+                return false;
+            }
+            return true;
+        }
+
+
+        // Get all the data rows from the CSV file. Each dictionary entry is a row with a list of matching  CSV column Headers and column value 
+        static private List<Dictionary<string, string>> GetAllDataRows(List<string> dataLabelsFromCSV, List<List<string>> parsedFile)
+        {
+            List<Dictionary<string, string>> rowDictionaryList = new List<Dictionary<string, string>>();
+
+            // Part 3. Get all data rows, and validate each column's data against its type. Abort if the type does not match
+            int rowNumber = 0;
+            int numberOfHeaders = dataLabelsFromCSV.Count;
+            foreach (List<string> parsedRow in parsedFile)
+            {
+                // For each data row
+                rowNumber++;
+                if (rowNumber == 1)
+                {
+                    // Skip the 1st header row
+                    continue;
+                }
+
+                // for this row, create a dictionary of matching the CSV column Header and that column's value 
+                Dictionary<string, string> rowDictionary = new Dictionary<string, string>();
+                for (int i = 0; i < numberOfHeaders; i++)
+                {
+                    string valueToAdd = (i < parsedRow.Count) ? parsedRow[i] : String.Empty;
+                    rowDictionary.Add(dataLabelsFromCSV[i], parsedRow[i]);
+                }
+                rowDictionaryList.Add(rowDictionary);
+            }
+            return rowDictionaryList;
+        }
+
+        // Validate Data columns against data type. Return false if any of the types don't match
+        static private bool VerifyDataInColumns(FileDatabase fileDatabase, List<string> dataLabelsFromCSV, List<Dictionary<string, string>> rowDictionaryList, List<string> importErrors)
+        {
+            bool abort = false;
+            // For each column in the CSV file,
+            // - get its type from the template
+            // - for particular types, validate the data in the column against that type
+            // Validation ignored for:
+            // - Note, as it can hold any data
+            // - Folder, as it is just a string (although we could check to see if it has invalid characters, the folder name is not used to do anything important)
+            // - File, RelativePath, as that data row would be ignored if it does not create a valid path
+            // Although dates following selected exact DateTime formats are imported, otherwise they are ignored 
+            //   - Date, Time formats must match exactl
+            // Day: 03-Jul-2017  Time: 12:30:57
+            //   - YYYY-MM-DDTHH:MM:SS (includes T separator, incorporates UTCoffset in its time): Check, as not altered by Excel, no UTC offset
+            //   - YYYY-MM-DD HH:MM:SS (excludes T separator, incorporates UTCoffset in its time): Altered by Excel (e.g., leading 0s removed), no UTC offset
+            int rowNumber = 0;
+            bool errorInRow;
+            int numberRowsWithErrors = 0;
+            int maxRowsToReportWithErrors = 2;
+            // For every row
+            foreach (Dictionary<string, string> rowDict in rowDictionaryList)
+            {
+                rowNumber++;
+                errorInRow = false;
+
+                // For every column
+                foreach (string csvHeader in dataLabelsFromCSV)
+                {
+                    // Get the header type
+                    ControlRow controlRow = fileDatabase.GetControlFromTemplateTable(csvHeader);
+                    string controlRowType = controlRow.Type;
+                    if (IsStandardColumn(controlRowType))
+                    {
+                        // Validate the data as needed for each of these columns in the row
+                        switch (controlRowType)
+                        {
+                            case Constant.Control.Flag:
+                            case Constant.DatabaseColumn.DeleteFlag:
+                                if (!Boolean.TryParse(rowDict[csvHeader], out _))
+                                {
+                                    // Flag values must be true or false, but its not. So raise an error
+                                    importErrors.Add(String.Format("- error in row {1} as {0} values must be true or false, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
+                                    abort = true;
+                                }
+                                break;
+                            case Constant.Control.Counter:
+                                if (!String.IsNullOrWhiteSpace(rowDict[csvHeader]) && !Int32.TryParse(rowDict[csvHeader], out _))
+                                {
+                                    // Counters must be integers / blanks 
+                                    importErrors.Add(String.Format("- error in row {1} as {0} values must be blank or a number, but is '{2}'", csvHeader, rowNumber, rowDict[csvHeader]));
+                                    abort = true;
+                                }
+                                break;
+                            case Constant.Control.FixedChoice:
+                            case Constant.DatabaseColumn.ImageQuality:
+                                if (controlRow.List.Contains(rowDict[csvHeader]) == false)
+                                {
+                                    // Fixed Choices must be in the Choice List
+                                    importErrors.Add(String.Format("- error in row {1} as {0} values must be in the template's choice list, but '{2}' isn't in it.", csvHeader, rowNumber, rowDict[csvHeader]));
+                                    abort = true;
+                                }
+                                break;
+                            case Constant.DatabaseColumn.Folder:
+                            case Constant.Control.Note:
+                            default:
+                                // as these can be any string, they don't require checking
+                                break;
+                        }
+                        if (!errorInRow && abort)
+                        {
+                            // If there is an error, only count one error per row.
+                            numberRowsWithErrors++;
+                            errorInRow = true;
+                        }
+                        if (numberRowsWithErrors > maxRowsToReportWithErrors)
+                        {
+                            importErrors.Add(String.Format("- Timelapse only reports data errors for a maximum of {0} rows. Use the information above to start fixing them.", maxRowsToReportWithErrors));
+                            importErrors.Add("- Use the information above to check the data values in those columns for all rows.");
+                            return false;
+                        }
+                    }
+                }
+            }
+            return abort ? false : true;
+        }
+
+        static private bool IsStandardColumn(string controlRowType)
+        {
+            return controlRowType == Constant.DatabaseColumn.Folder ||
+                    controlRowType == Constant.DatabaseColumn.ImageQuality ||
+                    controlRowType == Constant.DatabaseColumn.DeleteFlag ||
+                    controlRowType == Constant.Control.Note ||
+                    controlRowType == Constant.Control.Flag ||
+                    controlRowType == Constant.Control.Counter ||
+                    controlRowType == Constant.Control.FixedChoice;
+        }
         #endregion
         // Given a list of duplicates and their common relative path, update the corresponding duplicates in the database
         // We do this by getting the IDs of duplicates in the database, where we update each database by ID to a duplicate.
