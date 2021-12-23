@@ -1041,11 +1041,10 @@ namespace Timelapse.Dialog
             messageBox.Message.Reason += "Subsequent rows define the data for each file. where it must match the Header type:" + Environment.NewLine;
             messageBox.Message.Reason += "\u2022 File data should match the name of the file you want to update." + Environment.NewLine;
             messageBox.Message.Reason += "\u2022 RelativePath data should match the sub-folder path containing that file, if any" + Environment.NewLine;
-            messageBox.Message.Reason += "\u2022 Counter data must be blank or 0 or a positive integer. " + Environment.NewLine;
+            messageBox.Message.Reason += "\u2022 Counter data must be blank, 0, or a positive integer. " + Environment.NewLine;
             messageBox.Message.Reason += "\u2022 Flag and DeleteFlag data must be 'true' or 'false'." + Environment.NewLine;
             messageBox.Message.Reason += "\u2022 FixedChoice data should exactly match a corresponding list item defined in the template, or empty. ";
             messageBox.Message.Result = "Database values will be updated only for matching RelativePath/File entries (non-matching entries are ignored)." + Environment.NewLine;
-            messageBox.Message.Result += "Due to issues in how Excel manages dates and times, Date, Time and DateTime columns (if included) are ignored.";
             messageBox.Message.Hint = "Warnings will be generated for non-matching CSV headers, which you can then fix." + Environment.NewLine;
             messageBox.Message.Hint += "If you select 'Don't show this message again', this dialog can be turned back on through the Options | Show or hide... menu.";
             messageBox.Message.Icon = MessageBoxImage.Warning;
@@ -1083,9 +1082,11 @@ namespace Timelapse.Dialog
             messageBox.Message.Hint += "\u2022 Counter data values are numbers or blanks." + Environment.NewLine;
             messageBox.Message.Hint += "\u2022 Flag and DeleteFlag values are either 'True' or 'False'." + Environment.NewLine;
             messageBox.Message.Hint += "\u2022 Choice and ImageQuality values are in that field's Choice list, defined in the template." + Environment.NewLine + Environment.NewLine;
-            messageBox.Message.Hint += "Timelapse does not import or check .csv columns corresponding to:" + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 File, RelativePath, Folder," + Environment.NewLine;
-            messageBox.Message.Hint += "\u2022 DateTime, Date, Time, UtcOffset." + Environment.NewLine + Environment.NewLine;
+
+            messageBox.Message.Hint += "While Timelapse will do the best it can to update your fields: " + Environment.NewLine; ;
+            messageBox.Message.Hint += "\u2022 the csv row is skipped if its RelativePath/File location do not match a file in the Timelapse database ." + Environment.NewLine;
+            messageBox.Message.Hint += "\u2022 the csv row's Date/Time is updated only if it is in the expected format (see Timelapse Reference Guide).";
+
             messageBox.Message.Result = "Importing of data from the CSV file was aborted. No changes were made.";
            
             messageBox.ShowDialog();

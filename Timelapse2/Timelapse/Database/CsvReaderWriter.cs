@@ -144,7 +144,7 @@ namespace Timelapse.Database
             List<string> importErrors = new List<string>();
             return await Task.Run(() =>
                 {
-                    const int bulkFilesToHandle = 500;
+                    const int bulkFilesToHandle = 2000;
                     int processedFilesCount = 0;
                     int totalFilesProcessed = 0;
                     int dateTimeErrors = 0;

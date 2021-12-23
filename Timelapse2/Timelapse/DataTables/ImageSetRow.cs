@@ -93,7 +93,10 @@ namespace Timelapse.Database
         #region Public Methods - Gets
         public TimeZoneInfo GetSystemTimeZone()
         {
-            return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
+            // We now ignore time zone. 
+            return TimeZoneInfo.CreateCustomTimeZone("GMT", new TimeSpan(0), "GMT", "GMT");
+            //return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone)
+            //return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
         }
         #endregion
 

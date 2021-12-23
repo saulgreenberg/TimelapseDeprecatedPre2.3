@@ -35,6 +35,7 @@ namespace Timelapse
         public const string CollateNocase = " COLLATE NOCASE ";
         public const string Comma = ", ";
         public const string DataSource = "Data Source=";
+        public const string DateTimeFunction = " DateTime ";
         public const string Default = " DEFAULT ";
         public const string DeleteFrom = "DELETE FROM ";
         public const string Do = " DO ";
@@ -53,6 +54,7 @@ namespace Timelapse
         public const string GreaterThan = " > ";
         public const string GroupBy = " GROUP BY ";
         public const string Having = " HAVING ";
+        public const string HoursQuoted = "' hours'";
         public const string IfNotExists = " IF NOT EXISTS ";
         public const string IfExists = " IF EXISTS ";
         public const string In = " In ";
