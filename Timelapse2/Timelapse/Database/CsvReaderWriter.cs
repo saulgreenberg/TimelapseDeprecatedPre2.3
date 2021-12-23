@@ -22,47 +22,27 @@ namespace Timelapse.Database
         /// <summary>
         /// Export all the database data associated with the selected view to the .csv file indicated in the file path so that spreadsheet applications (like Excel) can display it.
         /// </summary>
-        public static bool ExportToCsv(FileDatabase database, string filePath, CSVDateTimeOptionsEnum csvDateTimeOptions, bool csvInsertSpaceBeforeDates)
+        public static async Task<bool> ExportToCsv(FileDatabase database, string filePath, CSVDateTimeOptionsEnum csvDateTimeOptions, bool csvInsertSpaceBeforeDates)
         {
-            try
+            // Set up a progress handler that will update the progress bar
+            Progress<ProgressBarArguments> progressHandler = new Progress<ProgressBarArguments>(value =>
             {
-                using (StreamWriter fileWriter = new StreamWriter(filePath, false))
+                // Update the progress bar
+                CsvReaderWriter.UpdateProgressBar(GlobalReferences.BusyCancelIndicator, value.PercentDone, value.Message, value.IsCancelEnabled, value.IsIndeterminate);
+            });
+            IProgress<ProgressBarArguments> progress = progressHandler;
+            return await Task.Run(() =>
+            {
+                try
                 {
-                    // Write the header as defined by the data labels in the template file
-                    // If the data label is an empty string, we use the label instead.
-                    // The append sequence results in a trailing comma which is retained when writing the line.
-                    StringBuilder header = new StringBuilder();
-                    List<string> dataLabels = database.GetDataLabelsExceptIDInSpreadsheetOrder();
-                    foreach (string dataLabel in dataLabels)
+                    progress.Report(new ProgressBarArguments(0, "Writing the CSV file. Please wait", false, true));
+                    using (StreamWriter fileWriter = new StreamWriter(filePath, false))
                     {
-                        if (dataLabel == Constant.DatabaseColumn.UtcOffset)
-                        {
-                            // Always skip UTC Offset, as the user has the option of including that in the DateTime column instead
-                            continue;
-                        }
-                        // Skip the DateTime and Utc offset column headers
-                        //if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
-                        if ((dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time) && csvDateTimeOptions != CSVDateTimeOptionsEnum.DateAndTimeColumns)
-                        {
-                            // Skip the Date column and Time column if the CSVDateTimeOptions are set to a parameter other than the two Date / Time columns 
-                            continue;
-                        }
-                        if (dataLabel == Constant.DatabaseColumn.DateTime && csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
-                        {
-                            // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
-                            continue;
-                        }
-                        header.Append(AddColumnValue(dataLabel));
-                    }
-                    fileWriter.WriteLine(header.ToString());
-
-                    // For each row in the data table, write out the columns in the same order as the 
-                    // data labels in the template file
-                    int countAllCurrentlySelectedFiles = database.CountAllCurrentlySelectedFiles;
-                    for (int row = 0; row < countAllCurrentlySelectedFiles; row++)
-                    {
-                        StringBuilder csvRow = new StringBuilder();
-                        ImageRow image = database.FileTable[row];
+                        // Write the header as defined by the data labels in the template file
+                        // If the data label is an empty string, we use the label instead.
+                        // The append sequence results in a trailing comma which is retained when writing the line.
+                        StringBuilder header = new StringBuilder();
+                        List<string> dataLabels = database.GetDataLabelsExceptIDInSpreadsheetOrder();
                         foreach (string dataLabel in dataLabels)
                         {
                             if (dataLabel == Constant.DatabaseColumn.UtcOffset)
@@ -70,54 +50,89 @@ namespace Timelapse.Database
                                 // Always skip UTC Offset, as the user has the option of including that in the DateTime column instead
                                 continue;
                             }
+                            // Skip the DateTime and Utc offset column headers
+                            //if (excludeDateTimeAndUTCOffset == true && (dataLabel == Constant.DatabaseColumn.DateTime || dataLabel == Constant.DatabaseColumn.UtcOffset))
                             if ((dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time) && csvDateTimeOptions != CSVDateTimeOptionsEnum.DateAndTimeColumns)
                             {
                                 // Skip the Date column and Time column if the CSVDateTimeOptions are set to a parameter other than the two Date / Time columns 
                                 continue;
                             }
-                            if (dataLabel == Constant.DatabaseColumn.DateTime)
+                            if (dataLabel == Constant.DatabaseColumn.DateTime && csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
                             {
-                                if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                                // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
+                                continue;
+                            }
+                            header.Append(AddColumnValue(dataLabel));
+                        }
+                        fileWriter.WriteLine(header.ToString());
+
+                        // For each row in the data table, write out the columns in the same order as the 
+                        // data labels in the template file
+                        int countAllCurrentlySelectedFiles = database.CountAllCurrentlySelectedFiles;
+                        for (int row = 0; row < countAllCurrentlySelectedFiles; row++)
+                        {
+                            StringBuilder csvRow = new StringBuilder();
+                            ImageRow image = database.FileTable[row];
+                            foreach (string dataLabel in dataLabels)
+                            {
+                                if (dataLabel == Constant.DatabaseColumn.UtcOffset)
                                 {
-                                    // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
+                                    // Always skip UTC Offset, as the user has the option of including that in the DateTime column instead
                                     continue;
+                                }
+                                if ((dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time) && csvDateTimeOptions != CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                                {
+                                    // Skip the Date column and Time column if the CSVDateTimeOptions are set to a parameter other than the two Date / Time columns 
+                                    continue;
+                                }
+                                if (dataLabel == Constant.DatabaseColumn.DateTime)
+                                {
+                                    if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateAndTimeColumns)
+                                    {
+                                        // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
+                                        if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
+                                        {
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeString()));
+                                        }
+                                        else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
+                                        {
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
+                                        }
+                                        else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
+                                        {
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
+                                        }
+                                    }
+                                }
+                                else if (dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time)
+                                {
+                                    string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
+                                    csvRow.Append(prefix + AddColumnValue(image.GetValueDatabaseString(dataLabel)));
                                 }
                                 else
                                 {
-                                    string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
-                                    if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
-                                    {
-                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeString()));
-                                    }
-                                    else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
-                                    {
-                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
-                                    }
-                                    else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
-                                    {
-                                        csvRow.Append(prefix + AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
-                                    }
+                                    csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
                                 }
                             }
-                            else if (dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time)
+                            fileWriter.WriteLine(csvRow.ToString());
+                            if (row % 5000 == 0)
                             {
-                                string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
-                                csvRow.Append(prefix + AddColumnValue(image.GetValueDatabaseString(dataLabel)));
-                            }
-                            else
-                            {
-                                csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                                progress.Report(new ProgressBarArguments(Convert.ToInt32(((double)row) / countAllCurrentlySelectedFiles * 100.0), String.Format("Writing {0}/{1} file entries to CSV file. Please wait...", row, countAllCurrentlySelectedFiles), false, false));
                             }
                         }
-                        fileWriter.WriteLine(csvRow.ToString());
                     }
+                    return true;
                 }
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+                catch
+                {
+                    return false;
+                }
+            }).ConfigureAwait(true);
         }
         #endregion
 
@@ -194,7 +209,7 @@ namespace Timelapse.Database
                     string examinedPath = String.Empty;  // the path of a surrounding row currently being examined to see if its a duplicate
                     string duplicatePath = String.Empty; // a duplicate was identified, and this holds the duplicate path
                     List<Dictionary<string, string>> duplicatesDictionaryList = new List<Dictionary<string, string>>();
-                    
+
                     foreach (Dictionary<string, string> rowDict in sortedRowDictionaryList)
                     {
                         // For every row...
@@ -336,7 +351,7 @@ namespace Timelapse.Database
 
                         // We've now looked at all the columns in a row, so continue processing that row as needed
                         totalFilesProcessed++;
-                       
+
 
                         if (dateTime != DateTime.MinValue || (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue))
                         {

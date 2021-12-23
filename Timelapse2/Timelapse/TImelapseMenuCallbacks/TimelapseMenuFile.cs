@@ -134,7 +134,7 @@ namespace Timelapse
         #region Export/Import CSV file
         // Export data for this image set as a .csv file
         // Export data for this image set as a .csv file and preview in Excel 
-        private void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemExportCsv_Click(object sender, RoutedEventArgs e)
         {
             if (this.State.SuppressSelectedCsvExportPrompt == false &&
                 this.DataHandler.FileDatabase.ImageSet.FileSelection != FileSelectionEnum.All)
@@ -182,11 +182,15 @@ namespace Timelapse
 
             try
             {
-                if (false == CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, selectedCSVFilePath, this.State.CSVDateTimeOptions, this.State.CSVInsertSpaceBeforeDates))
+                // Show the Busy indicator
+                this.BusyCancelIndicator.IsBusy = true;
+                if (false == await CsvReaderWriter.ExportToCsv(this.DataHandler.FileDatabase, selectedCSVFilePath, this.State.CSVDateTimeOptions, this.State.CSVInsertSpaceBeforeDates))
                 {
                     Dialogs.FileCantOpen(GlobalReferences.MainWindow, selectedCSVFilePath, true);
                     return;
                 }
+                // Hide the Busy indicator
+                this.BusyCancelIndicator.IsBusy = false;
             }
             catch (Exception exception)
             {
