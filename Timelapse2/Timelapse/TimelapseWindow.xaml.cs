@@ -763,6 +763,7 @@ namespace Timelapse
                 if (this.DataHandler.FileDatabase.CountAllCurrentlySelectedFiles == 0)
                 {
                     this.DataGrid.UpdateLayout();
+
                     this.DataGridSelectionsTimer.Stop();
                     return;
                 }
@@ -786,6 +787,19 @@ namespace Timelapse
                 {
                     this.DataGrid.SelectAndScrollIntoView(IdRowIndex);
                 }
+
+                // Hide the DateTime column as it is redundant, and the UtcOffset column as its no longer needed
+                DataGridColumn utcColumn = this.DataGrid.Columns.FirstOrDefault(c => (string)c.Header == Constant.DatabaseColumn.UtcOffset);
+                DataGridColumn dateTimeColumn = this.DataGrid.Columns.FirstOrDefault(c => (string)c.Header == Constant.DatabaseColumn.DateTime);
+                if (utcColumn != null)
+                {
+                    utcColumn.Visibility = Visibility.Collapsed;
+                }
+                if (dateTimeColumn != null)
+                {
+                    dateTimeColumn.Visibility = Visibility.Collapsed;
+                }
+
                 //this.DataGrid.UpdateLayout(); // Doesn't seem to be needed, but just in case...
                 this.DataGridSelectionsTimer_Reset();
             }
