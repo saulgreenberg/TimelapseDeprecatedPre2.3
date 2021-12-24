@@ -610,9 +610,6 @@ namespace Timelapse.Database
                 this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
-            // Update DateTime to local time with an offset of 0, while changing Utc to 0
-            // This essentially removes any value of having time in UTC, which makes life way easier.
-            string firstVersionWithUTCSetToZero = "2.2.4.4";
 
 
             // Updates the UTCOffset format. The issue is that the offset could have been written in the form +3,00 instead of +3.00 (i.e. with a comma)
@@ -627,6 +624,9 @@ namespace Timelapse.Database
                     Sql.Where + Sql.Instr + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.CloseParenthesis + Sql.GreaterThan + "0");
             }
 
+            // Update DateTime to local time with an offset of 0, while changing Utc to 0
+            // This essentially removes any value of having time in UTC, which makes life way easier.
+            string firstVersionWithUTCSetToZero = "2.2.4.4";
             // Updates the DateTime and UTCOffset to always be local time. This removes all the UTC offset junk from the stored date time, although the UTC format is still there and calculated from 0 Utc.
             if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithUTCSetToZero, imageSetVersionNumber))
             {

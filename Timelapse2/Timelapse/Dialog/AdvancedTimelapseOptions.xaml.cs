@@ -328,7 +328,7 @@ namespace Timelapse.Dialog
 
         private void SetSliderSetEpisodeMaxRangeFeedack(int episodeThreshold)
         {
-            TextEpisodeFeedback.Text = String.Format("Check up to {0} files for the beginning and end of an episode", episodeThreshold);
+            TextEpisodeFeedback.Text = String.Format("Check up to {0} surrounding files to determine the episode range", episodeThreshold);
             this.SliderSetEpisodeMaxRange.ToolTip = episodeThreshold;
         }
 
