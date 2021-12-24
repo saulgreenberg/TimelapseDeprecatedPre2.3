@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Timelapse.Enums;
 using Timelapse.Images;
@@ -63,6 +64,12 @@ namespace Timelapse.Dialog
             this.ImageRendersPerSecond.Value = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
             this.ImageRendersPerSecond.ValueChanged += this.ImageRendersPerSecond_ValueChanged;
             this.ImageRendersPerSecond.ToolTip = this.timelapseState.Throttles.DesiredImageRendersPerSecond;
+
+            // The EpisodeMaxRangeToSearch Threshold values 
+            this.SliderSetEpisodeMaxRange.Value = this.timelapseState.EpisodeMaxRangeToSearch;
+            this.SetSliderSetEpisodeMaxRangeFeedack(this.timelapseState.EpisodeMaxRangeToSearch);
+            this.SliderSetEpisodeMaxRange.Maximum = Constant.EpisodeDefaults.MaximumRangeToSearch;
+             this.SliderSetEpisodeMaxRange.Minimum = 50;
 
             // The Max Zoom Value
             this.MaxZoom.Value = this.markableCanvas.ZoomMaximum;
@@ -262,7 +269,8 @@ namespace Timelapse.Dialog
         private void ResetDetections_Click(object sender, RoutedEventArgs e)
         {
             this.CheckBoxUseDetections.IsChecked = false;
-            this.timelapseState.UseDetections = false;
+            //this.timelapseState.UseDetections = false
+            this.timelapseState.UseDetections = true;
             this.CheckBoxBoundingBoxAnnotate.IsChecked = true;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
@@ -302,6 +310,29 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Callbacks - Episode searching threshold
+        private void SliderSetEpisodeMaxRange_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            this.timelapseState.EpisodeMaxRangeToSearch = Convert.ToInt32(this.SliderSetEpisodeMaxRange.Value);
+            this.SetSliderSetEpisodeMaxRangeFeedack(this.timelapseState.EpisodeMaxRangeToSearch);
+            Episodes.Reset();
+        }
+
+        // Reset theEpisode searching threshold to the amount specified below;
+        private void ResetSliderSetEpisodeMaxRange_Click(object sender, RoutedEventArgs e)
+        {
+            // As a side effect, this will invoke the above ValueChanged method which sets the state and provides feedback
+            this.SliderSetEpisodeMaxRange.Value = Constant.EpisodeDefaults.DefaultRangeToSearch;
+            Episodes.Reset();
+        }
+
+        private void SetSliderSetEpisodeMaxRangeFeedack(int episodeThreshold)
+        {
+            TextEpisodeFeedback.Text = String.Format("Check up to {0} files for the beginning and end of an episode", episodeThreshold);
+            this.SliderSetEpisodeMaxRange.ToolTip = episodeThreshold;
+        }
+
+        #endregion
         #region Callbacks - Maxium zoom
         // Callback: The user has changed the maximum zoom value
         private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

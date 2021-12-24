@@ -263,7 +263,8 @@ namespace Timelapse.Constant
         public static readonly double TimeThresholdDefault = 2; // 2 Minutes - the default
         public static readonly double TimeThresholdMinimum = 0.0166666667; // 1 second miminum
         public static readonly double TimeThresholdMaximum = 10; // 10 minutes max
-        public static readonly int MaxRangeToSearch = 100; // How many files ahead / behind to search for the episode limits
+        public static readonly int DefaultRangeToSearch = 1000; // How many files ahead / behind to search for the episode limits
+        public static readonly int MaximumRangeToSearch = 10000; // How many files ahead / behind to search for the episode limits
     }
 
     public static class ExceptionTypes
@@ -505,6 +506,7 @@ namespace Timelapse.Constant
         public const string DeleteFolderManagementValue = "DeleteFolderManagement";
 
         public const string EpisodeTimeThreshold = "EpisodeTimeThreshold";
+        public const string EpisodeMaxRangeToSearch = "EpisodeMaxFilesToSearch";
 
         // File Player play speeds (slow and fast)
         public const string FilePlayerSlowValue = "FilePlayerSlowValue";

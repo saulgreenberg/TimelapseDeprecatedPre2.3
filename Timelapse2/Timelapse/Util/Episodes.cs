@@ -53,7 +53,7 @@ namespace Timelapse
         /// <param name="fileTableIndex"></param>
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex)
         {
-            EpisodeGetEpisodesInRange(fileTable, fileTableIndex, Constant.EpisodeDefaults.MaxRangeToSearch);
+            EpisodeGetEpisodesInRange(fileTable, fileTableIndex, Util.GlobalReferences.TimelapseState.EpisodeMaxRangeToSearch);
         }
 
         public static void EpisodeGetEpisodesInRange(FileTable fileTable, int fileTableIndex, int maxRangeToSearch)
@@ -122,7 +122,7 @@ namespace Timelapse
             {
                 // go forwards in the filetable until we find the last file in the episode, or we fail
                 // as we have gone forwards maxSearch times
-                int maxSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+                int maxSearch = Util.GlobalReferences.TimelapseState.EpisodeMaxRangeToSearch;
                 while (current < fileCount && maxSearch != 0)
                 {
                     file = files[current];
@@ -145,7 +145,7 @@ namespace Timelapse
             // What is left is direction == DirectionEnum.Previous
             // If we are on the first image in the episode, we want the previous Episode in the backwards direction
             // Otherwise we want the first image in the episode (maybe??)
-            int minSearch = Constant.EpisodeDefaults.MaxRangeToSearch;
+            int minSearch = Util.GlobalReferences.TimelapseState.EpisodeMaxRangeToSearch;
             current = index - 1;
             // Go backwards in the filetable until we find the first file in the episode, or we fail
             // as we have gone back minSearch times
