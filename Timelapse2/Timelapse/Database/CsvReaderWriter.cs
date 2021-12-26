@@ -164,10 +164,9 @@ namespace Timelapse.Database
                     int totalFilesProcessed = 0;
                     int dateTimeErrors = 0;
                     progress.Report(new ProgressBarArguments(0, "Reading the CSV file. Please wait", false, true));
-                    List<List<string>> parsedFile;
 
                     // PART 1. Read in the CSV file. Return false if there is a problem in reading the CSV file or if the CSV file is empty
-                    if (false == TryReadingCSVFile(filePath, out parsedFile, importErrors))
+                    if (false == TryReadingCSVFile(filePath, out List<List<string>> parsedFile, importErrors))
                     {
                         return new Tuple<bool, List<string>>(false, importErrors);
                     }
