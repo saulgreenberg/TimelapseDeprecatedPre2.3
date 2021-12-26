@@ -422,9 +422,6 @@
     <Compile Include="Dialog\ChooseFileDatabase.xaml.cs">
       <DependentUpon>ChooseFileDatabase.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\CustomSelection.xaml.cs">
-      <DependentUpon>CustomSelection.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\DateTimeRereadFromFiles.xaml.cs">
       <DependentUpon>DateTimeRereadFromFiles.xaml</DependentUpon>
     </Compile>
@@ -549,10 +546,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Dialog\ChooseFileDatabase.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\CustomSelection.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
