@@ -551,16 +551,19 @@ namespace Timelapse.Database
                             if (statementsInQuery == 1)
                             {
                                 command.CommandText = Sql.BeginTransaction;
+                                //System.Diagnostics.Debug.Print(command.CommandText);
                                 command.ExecuteNonQuery();
                             }
 
                             command.CommandText = statement;
+                            //System.Diagnostics.Debug.Print(command.CommandText);
                             rowsUpdated += command.ExecuteNonQuery();
 
                             // END
                             if (statementsInQuery > MaxStatementCount)
                             {
                                 command.CommandText = Sql.EndTransaction;
+                                //System.Diagnostics.Debug.Print(command.CommandText);
                                 rowsUpdated += command.ExecuteNonQuery();
                                 statementsInQuery = 0;
                             }
@@ -569,6 +572,7 @@ namespace Timelapse.Database
                         if (statementsInQuery != 0)
                         {
                             command.CommandText = Sql.EndTransaction;
+                            //System.Diagnostics.Debug.Print(command.CommandText);
                             rowsUpdated += command.ExecuteNonQuery();
                         }
                     }

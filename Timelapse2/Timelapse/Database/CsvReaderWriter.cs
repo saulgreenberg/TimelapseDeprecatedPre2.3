@@ -181,7 +181,7 @@ namespace Timelapse.Database
                     }
 
                     // Part 3: Create a List of all data rows, where each row is a dictionary containing the header and that row's valued for the header
-                    List<Dictionary<string, string>> rowDictionaryList = GetAllDataRows(dataLabelsFromCSV, parsedFile); new List<Dictionary<string, string>>();
+                    List<Dictionary<string, string>> rowDictionaryList = GetAllDataRows(dataLabelsFromCSV, parsedFile); 
 
                     // Part 4. For every row, validate each column's data against its type. Abort if the type does not match
                     if (false == VerifyDataInColumns(fileDatabase, dataLabelsFromCSV, rowDictionaryList, importErrors))
@@ -197,7 +197,7 @@ namespace Timelapse.Database
 
                     // Sort the rowDictionaryList so that duplicates in the CSV file (with the same relative path / File name) are in order, one after the other.
                     List<Dictionary<string, string>> sortedRowDictionaryList = rowDictionaryList.OrderBy(dict => dict["RelativePath"]).ThenBy(dict => dict["File"]).ToList();
-                    int sortedRowDictionaryListCount = sortedRowDictionaryList.Count();
+                    int sortedRowDictionaryListCount = sortedRowDictionaryList.Count;
                     // Create the data structure for the query
 
                     List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
@@ -381,6 +381,12 @@ namespace Timelapse.Database
                         datePortion = DateTime.MinValue;
                         timePortion = DateTime.MinValue;
 
+                        // NOTE: We currently do NOT report an error if there is a row in the csv file whose location does not match
+                        // the location in the database. We could do this by performing a check before submitting a query, eg. something like:
+                        //  Select Count (*) from DataTable where File='IMG_00197.JPG' or File='IMG_01406.JPG' or File='XX.JPG'
+                        // where we would then compare the counts against the rows. However, this likely has a performance hit, and it doesn't 
+                        // return the erroneous rows... So its not done yet.
+
                         // Add to the query only if there are columns to add!
                         if (imageToUpdate.Columns.Count > 0)
                         {
@@ -522,7 +528,7 @@ namespace Timelapse.Database
                 Dictionary<string, string> rowDictionary = new Dictionary<string, string>();
                 for (int i = 0; i < numberOfHeaders; i++)
                 {
-                    string valueToAdd = (i < parsedRow.Count) ? parsedRow[i] : String.Empty;
+                    //string valueToAdd = (i < parsedRow.Count) ? parsedRow[i] : String.Empty;
                     rowDictionary.Add(dataLabelsFromCSV[i], parsedRow[i]);
                 }
                 rowDictionaryList.Add(rowDictionary);
@@ -614,7 +620,7 @@ namespace Timelapse.Database
                     }
                 }
             }
-            return abort ? false : true;
+            return !abort;
         }
 
         static private bool IsStandardColumn(string controlRowType)

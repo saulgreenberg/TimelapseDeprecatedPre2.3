@@ -400,6 +400,28 @@
 
                     <Separator/>
 
+                    <MenuItem Name="MenuItemVideoCompanions" Header="Videos: Companions to the Timelapse Guides..." Click="MenuVideoPlay_Click" ToolTip="These videos mirror what is done (more or less) in several of the Timelapse Guides above.">
+                        <MenuItem.Icon>
+                            <Image Source="Icons/MediaControl-PlayButton.png" />
+                        </MenuItem.Icon>
+
+                        <MenuItem Name="MenuItemVideoCompanionQuickStart" Header="Video Companion - Timelapse Quick Start Guide" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Quick Start Guide, where it mirrors what is described there.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoTemplateEditor" Header="Video Companion - Timelapse Template Guide" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Template Guide, where it explains how to create templates of custom data fields.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Name="MenuItemVideoCompanionImageRecognition" Header="Video Companion - Timelapse Image Recognition" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Image Recognition Guide, where it mirrors the workflow described there.">
+                            <MenuItem.Icon>
+                                <Image Source="Icons/MediaControl-PlayButton.png" />
+                            </MenuItem.Icon>
+                        </MenuItem>          
+                    </MenuItem>
+                    
                     <MenuItem Name="MenuItemVideoOverviews" Header="Videos: Introductory overviews (you should watch these!)..." Click="MenuVideoPlay_Click" ToolTip="Open a page in your browser listing video tutorials illustrating particular Timelapse features.">
                         <MenuItem.Icon>
                             <Image Source="Icons/MediaControl-PlayButton.png" />
@@ -409,11 +431,7 @@
                                 <Image Source="Icons/MediaControl-PlayButton.png" />
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Name="MenuItemVideoTemplateEditor" Header="The template editor" Click="MenuVideoPlay_Click" ToolTip="The Template Editor lets you create a template file that specifies the project-specific fill-in fields seen in the Timelapse interface..">
-                            <MenuItem.Icon>
-                                <Image Source="Icons/MediaControl-PlayButton.png" />
-                            </MenuItem.Icon>
-                        </MenuItem>
+
                         <MenuItem Name="MenuItemVideoImageRecognition" Header="Image recognition for camera traps" Click="MenuVideoPlay_Click" ToolTip="A video explaining image recognition as used by wildlife ecologists.">
                             <MenuItem.Icon>
                                 <Image Source="Icons/MediaControl-PlayButton.png" />
@@ -461,11 +479,6 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Name="MenuItemVideoDuplicatingRecords" Header="Duplicating a data record" Click="MenuVideoPlay_Click" ToolTip="Duplicate a record to reuse the fields on your image multiple times.">
-                            <MenuItem.Icon>
-                                <Image Source="Icons/MediaControl-PlayButton.png" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem Name="MenuItemVideoCompanionImageRecognition" Header="Video Companion - Timelapse Image Recognition" Click="MenuVideoPlay_Click" ToolTip="A video companion to the Timelapse Image Recognition Guide, where it mirrors the workflow described there.">
                             <MenuItem.Icon>
                                 <Image Source="Icons/MediaControl-PlayButton.png" />
                             </MenuItem.Icon>

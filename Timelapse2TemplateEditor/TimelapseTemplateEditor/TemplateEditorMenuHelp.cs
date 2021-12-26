@@ -13,7 +13,7 @@ namespace Timelapse.Editor
         #region Help sub-menu opening
         private void Help_SubmenuOpening(object sender, RoutedEventArgs e)
         {
-            // this.FilePlayer_Stop(); // In case the FilePlayer is going
+            //this.FilePlayer_Stop(); // In case the FilePlayer is going
         }
         #endregion
 
@@ -112,6 +112,9 @@ namespace Timelapse.Editor
                         break;
                     case "MenuItemVideoCompanionImageRecognition":
                         ProcessExecution.TryProcessStart(new Uri(prefix + "Video-TimelapseImageRecognitionGuide.mp4"));
+                        break;
+                    case "MenuItemVideoCompanionQuickStart":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "Video-TimelapseQuickStartGuide.mp4"));
                         break;
                     default:
                         break;

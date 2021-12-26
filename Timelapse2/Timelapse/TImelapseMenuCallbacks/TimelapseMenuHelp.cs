@@ -112,6 +112,9 @@ namespace Timelapse
                     case "MenuItemVideoCompanionImageRecognition":
                         ProcessExecution.TryProcessStart(new Uri(prefix + "Video-TimelapseImageRecognitionGuide.mp4"));
                         break;
+                    case "MenuItemVideoCompanionQuickStart":
+                        ProcessExecution.TryProcessStart(new Uri(prefix + "Video-TimelapseQuickStartGuide.mp4"));
+                        break;
                     default:
                         break;
                 }
