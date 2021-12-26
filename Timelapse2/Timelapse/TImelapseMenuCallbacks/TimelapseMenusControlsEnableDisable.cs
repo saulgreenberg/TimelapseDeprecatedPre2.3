@@ -20,7 +20,7 @@ namespace Timelapse
             this.MenuItemAddFilesToImageSet.IsEnabled = imageSetAvailable;
             this.MenuItemLoadFiles.IsEnabled = !imageSetAvailable;
             this.MenuItemRecentImageSets.IsEnabled = !imageSetAvailable;
-            this.MenuItemImportDetectionData.IsEnabled = filesSelected;
+            this.MenuItemImportDetectionData.IsEnabled = filesSelected ;
             this.MenuItemExportThisImage.IsEnabled = filesSelected;
             this.MenuItemExportSelectedImages.IsEnabled = filesSelected;
             this.MenuItemExportAsCsvAndPreview.IsEnabled = filesSelected;
@@ -28,8 +28,8 @@ namespace Timelapse
             this.MenuItemImportFromCsv.IsEnabled = filesSelected;
             this.MenuItemRenameFileDatabaseFile.IsEnabled = filesSelected;
             this.MenuFileCloseImageSet.IsEnabled = imageSetAvailable;
-            this.MenuItemImportDetectionData.Visibility = this.State.UseDetections ? Visibility.Visible : Visibility.Collapsed;
-            this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable && this.State.UseDetections;
+            this.MenuItemImportDetectionData.Visibility = Visibility.Visible; // this.State.UseDetections ? Visibility.Visible : Visibility.Collapsed;
+            this.MenuItemImportDetectionData.IsEnabled = imageSetAvailable; //&& this.State.UseDetections;
 
             // Edit menu
             this.MenuItemEdit.IsEnabled = filesSelected;

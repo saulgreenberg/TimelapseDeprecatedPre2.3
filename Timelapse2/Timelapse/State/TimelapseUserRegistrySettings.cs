@@ -24,6 +24,7 @@ namespace Timelapse.Util
         public int DarkPixelThreshold { get; set; }
         public double DarkPixelRatioThreshold { get; set; }
         public TimeSpan EpisodeTimeThreshold { get; set; }
+        public int EpisodeMaxRangeToSearch { get; set; }
         public DeleteFolderManagementEnum DeleteFolderManagement { get; set; }
         public double FilePlayerSlowValue { get; set; }
         public double FilePlayerFastValue { get; set; }
@@ -98,6 +99,7 @@ namespace Timelapse.Util
                 this.DarkPixelThreshold = registryKey.GetInteger(Constant.WindowRegistryKeys.DarkPixelThreshold, Constant.ImageValues.DarkPixelThresholdDefault);
                 this.DeleteFolderManagement = (DeleteFolderManagementEnum)registryKey.GetInteger(Constant.WindowRegistryKeys.DeleteFolderManagementValue, (int)DeleteFolderManagementEnum.ManualDelete);
                 this.EpisodeTimeThreshold = registryKey.GetTimeSpanAsSeconds(Constant.WindowRegistryKeys.EpisodeTimeThreshold, TimeSpan.FromSeconds(Constant.EpisodeDefaults.TimeThresholdDefault));
+                this.EpisodeMaxRangeToSearch = registryKey.GetInteger(Constant.WindowRegistryKeys.EpisodeMaxRangeToSearch, Constant.EpisodeDefaults.DefaultRangeToSearch);
                 this.FilePlayerSlowValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerSlowValue, Constant.FilePlayerValues.PlaySlowDefault.TotalSeconds);
                 this.FilePlayerFastValue = registryKey.GetDouble(Constant.WindowRegistryKeys.FilePlayerFastValue, Constant.FilePlayerValues.PlayFastDefault.TotalSeconds);
                 this.MagnifyingGlassOffsetLensEnabled = registryKey.GetBoolean(Constant.WindowRegistryKeys.MagnifyingGlassOffsetLensEnabled, true);
@@ -126,7 +128,7 @@ namespace Timelapse.Util
                 this.TabOrderIncludeImageQuality = registryKey.GetBoolean(Constant.WindowRegistryKeys.TabOrderIncludeImageQuality, false);
                 this.Throttles.SetDesiredImageRendersPerSecond(registryKey.GetDouble(Constant.WindowRegistryKeys.DesiredImageRendersPerSecond, Constant.ThrottleValues.DesiredMaximumImageRendersPerSecondDefault));
                 this.TimelapseWindowPosition = registryKey.GetRect(Constant.WindowRegistryKeys.TimelapseWindowPosition, new Rect(0.0, 0.0, 1350.0, 900.0));
-                this.UseDetections = registryKey.GetBoolean(Constant.WindowRegistryKeys.UseDetections, false);
+                this.UseDetections = true; // registryKey.GetBoolean(Constant.WindowRegistryKeys.UseDetections, false);
             }
         }
 
@@ -204,6 +206,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.DarkPixelThreshold, this.DarkPixelThreshold);
                 registryKey.Write(Constant.WindowRegistryKeys.DeleteFolderManagementValue, (int)this.DeleteFolderManagement);
                 registryKey.Write(Constant.WindowRegistryKeys.EpisodeTimeThreshold, this.EpisodeTimeThreshold);
+                registryKey.Write(Constant.WindowRegistryKeys.EpisodeMaxRangeToSearch, this.EpisodeMaxRangeToSearch);
                 registryKey.Write(Constant.WindowRegistryKeys.FilePlayerSlowValue, this.FilePlayerSlowValue);
                 registryKey.Write(Constant.WindowRegistryKeys.FilePlayerFastValue, this.FilePlayerFastValue);
                 registryKey.Write(Constant.WindowRegistryKeys.DesiredImageRendersPerSecond, this.Throttles.DesiredImageRendersPerSecond);

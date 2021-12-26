@@ -21,12 +21,12 @@
                                DockPanel.Dock="Top" TextWrapping="Wrap" FontWeight="Normal" FontStyle="Normal" FontSize="12" Width="656" />
                             <StackPanel Orientation="Vertical" DockPanel.Dock="Top" Margin="0,10,0,0" >
                                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="0,0,0,0" >
-                                    <CheckBox Name="CheckBoxUseDetections" Margin="30,0,0,0" Content="Enable image recognition controls" Height="22" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxUseDetections_Click" />
-                                    <CheckBox Name="CheckBoxBoundingBoxColorBlindFriendlyColors" Content="Use color-blind friendly colors" Margin="34,0,0,0" ToolTip="Apply a bounding box color without transparency that is somewhat better for color-blind people" FontWeight="Normal" Click="CheckBoxBounidngBoxColorBlindRinedlyColors_Click"/>
-                                    <CheckBox Name="CheckBoxBoundingBoxAnnotate" Content="Annotate bounding box" Margin="10,0,0,0" FontWeight="Normal"  IsChecked ="True" ToolTip="Annotate each bounding box with a label or menu containing the recognizer's classification.&#x0a;This adds information at the expense of some clutter." Click="CheckBoxBounidngBoxAnnotate_Click"/>
+                                    <CheckBox Name="CheckBoxUseDetections" Margin="30,0,0,0" Content="Enable image recognition controls" Height="22" FontWeight="Normal" VerticalAlignment="Top" Click="CheckBoxUseDetections_Click" Visibility="Collapsed"/>
+                                    <CheckBox Name="CheckBoxBoundingBoxAnnotate" Content="Annotate bounding box" Margin="27,0,0,0" FontWeight="Normal"  IsChecked ="True" ToolTip="Annotate each bounding box with a label or menu containing the recognizer's classification.&#x0a;This adds information at the expense of some clutter." Click="CheckBoxBounidngBoxAnnotate_Click"/>
+                                    <CheckBox Name="CheckBoxBoundingBoxColorBlindFriendlyColors" Content="Use color-blind friendly colors" Margin="15,0,0,0" ToolTip="Apply a bounding box color without transparency that is somewhat better for color-blind people" FontWeight="Normal" Click="CheckBoxBounidngBoxColorBlindRinedlyColors_Click"/>
                                 </StackPanel>
 
-                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top"  Margin="30,0,0,0">
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top"  Margin="30,10,0,0">
                                     <Slider Name="BoundingBoxDisplayThresholdSlider" Width="200" ValueChanged="BoundingBoxDisplayThreshold_ValueChanged" VerticalAlignment="Top" IsSnapToTickEnabled="True" TickFrequency="0.05" Minimum="0" Maximum="1" LargeChange="0.05"/>
                                     <TextBlock Name="BoundingBoxThresholdDisplayValue"  FontWeight="Normal" Text="0.00" MinWidth="40"/>
                                     <TextBlock Name="BoundingBoxThresholdDisplayText" Text="Always display bounding boxes above this confidence threshold" FontWeight="Normal"/>
@@ -128,7 +128,24 @@
                         <Button Name="ResetTabOrder" Content="Reset" FontWeight="Normal" Height="30" Width="60" Margin="0,0,0,10" VerticalAlignment="Bottom" Click="ResetTabOrder_Click"></Button>
                     </DockPanel>
                 </GroupBox>
-                
+
+                <!--Episode searching thresholde-->
+                <GroupBox Header="Episodes: How many files to check" Name="groupBox2" FontWeight="Bold" FontSize="12" Margin="15,0,15,5" Padding="10,0,10,0"  Width="776"  Height="90">
+                    <DockPanel Width="751">
+                        <StackPanel Orientation="Vertical" >
+                            <TextBlock Text="When displaying episode information, Timelapse examines surrounding files to determing the episode range." DockPanel.Dock="Top" FontWeight="Normal" FontStyle="Normal" FontSize="12" Width="656" />
+                            <TextBlock Text="For long episodes, Timelapse searches up to this maximum before giving up (high maximums may affect navigation speed)." DockPanel.Dock="Top" FontWeight="Normal" FontStyle="Normal" FontSize="12" Width="656" />
+
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top"  Margin="0,10,0,0">
+                                <!--<TextBlock Text="Minimal zoom " FontWeight="Normal" Height="26" Width="127" VerticalAlignment="Top" TextAlignment="Right"/>-->
+                                <Slider Name="SliderSetEpisodeMaxRange" Width="250" ValueChanged="SliderSetEpisodeMaxRange_ValueChanged" VerticalAlignment="Top" />
+                                <TextBlock Name="TextEpisodeFeedback" Text="" TextWrapping="Wrap" FontWeight="Normal"  />
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Name="ResetEpisodeThreshold" Content="Reset" FontWeight="Normal" Height="30" Width="60" Margin="0,0,0,5" VerticalAlignment="Bottom" Click="ResetSliderSetEpisodeMaxRange_Click"></Button>
+                    </DockPanel>
+                </GroupBox>
+
                 <!--Zooming within the Main Image-->
                 <GroupBox Header="Zooming within the Main Image" Name="groupBox1" FontWeight="Bold" FontSize="12" Margin="15,0,15,5" Padding="10,0,10,0"  Width="776"  Height="70">
                     <DockPanel Width="751">
