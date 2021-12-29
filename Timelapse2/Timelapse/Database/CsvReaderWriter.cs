@@ -95,17 +95,22 @@ namespace Timelapse.Database
                                     else
                                     {
                                         string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
-                                        if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
+                                        if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeColumnWithTSeparator)
                                         {
-                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeString()));
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithTSeparatorString()));
                                         }
-                                        else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
+                                        else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeWithoutTSeparatorColumn)
                                         {
-                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVLocalDateTimeWithoutTSeparatorString()));
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithoutTSeparatorString()));
                                         }
-                                        else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
+                                        else
                                         {
-                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVUTCWithOffsetDateTimeString()));
+                                            //Defunct, no longer used, should not get here
+                                            System.Diagnostics.Debug.Print("In CSVWriter: Should not be trying to write a UTC Offset formatted date!");
+                                            //if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeUTCWithOffset)
+                                            //{
+                                            //    csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeUTCWithOffsetString()));
+                                            //}
                                         }
                                     }
                                 }
@@ -181,7 +186,7 @@ namespace Timelapse.Database
                     }
 
                     // Part 3: Create a List of all data rows, where each row is a dictionary containing the header and that row's valued for the header
-                    List<Dictionary<string, string>> rowDictionaryList = GetAllDataRows(dataLabelsFromCSV, parsedFile); 
+                    List<Dictionary<string, string>> rowDictionaryList = GetAllDataRows(dataLabelsFromCSV, parsedFile);
 
                     // Part 4. For every row, validate each column's data against its type. Abort if the type does not match
                     if (false == VerifyDataInColumns(fileDatabase, dataLabelsFromCSV, rowDictionaryList, importErrors))
@@ -314,12 +319,12 @@ namespace Timelapse.Database
                                 if (controlRow.Type == Constant.DatabaseColumn.DateTime)
                                 {
                                     string strDateTime = rowDict[header];
-                                    if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
+                                    if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVWithoutTSeparator, provider, DateTimeStyles.None, out dateTime))
                                     {
                                         // Standard DateTime
                                         // System.Diagnostics.Debug.Print("Standard: " + dateTime.ToString());
                                     }
-                                    else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVLocalDateTime, provider, DateTimeStyles.None, out dateTime))
+                                    else if (DateTime.TryParseExact(strDateTime, Constant.Time.DateTimeCSVWithTSeparator, provider, DateTimeStyles.None, out dateTime))
                                     {
                                         // Standard DateTime wit T separator
                                         // System.Diagnostics.Debug.Print("StandardT: " + dateTime.ToString());

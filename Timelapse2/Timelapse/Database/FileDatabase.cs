@@ -176,7 +176,8 @@ namespace Timelapse.Database
                 new ColumnTuple(Constant.DatabaseColumn.MostRecentFileID, Constant.DatabaseValues.InvalidID),
                 new ColumnTuple(Constant.DatabaseColumn.Selection, allImages.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.WhiteSpaceTrimmed, Constant.BooleanValue.True),
-                new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
+                new ColumnTuple(Constant.DatabaseColumn.TimeZone, Constant.Time.NeutralTimeZone),
+                //new ColumnTuple(Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id),
                 new ColumnTuple(Constant.DatabaseColumn.VersionCompatabily, timelapseCurrentVersionNumber.ToString()),
                 new ColumnTuple(Constant.DatabaseColumn.SortTerms, Constant.DatabaseValues.DefaultSortTerms),
                 new ColumnTuple(Constant.DatabaseColumn.QuickPasteXML, Constant.DatabaseValues.DefaultQuickPasteXML)
@@ -610,8 +611,6 @@ namespace Timelapse.Database
                 this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
 
-
-
             // Updates the UTCOffset format. The issue is that the offset could have been written in the form +3,00 instead of +3.00 (i.e. with a comma)
             // depending on the computer's culture. 
             string firstVersionWithUTCOffsetCheck = "2.2.3.8";
@@ -635,6 +634,7 @@ namespace Timelapse.Database
                         + Sql.OpenParenthesis + Constant.DatabaseColumn.DateTime + Sql.Comma + Constant.DatabaseColumn.UtcOffset + Sql.Concatenate + Sql.HoursQuoted + Sql.CloseParenthesis);
 
                 this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.UtcOffset + Sql.Equal + "'0.0'");
+                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.TimeZone + Sql.Equal + Sql.Quote(Constant.Time.NeutralTimeZone));
             }
 
 
@@ -688,7 +688,8 @@ namespace Timelapse.Database
             {
                 // create default time zone entry and refresh the image set.
                 this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.TimeZone, Sql.Text));
-                this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
+                //this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, TimeZoneInfo.Local.Id);
+                this.Database.SetColumnToACommonValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.TimeZone, Constant.Time.NeutralTimeZone);
                 this.ImageSetLoadFromDatabase();
             }
 

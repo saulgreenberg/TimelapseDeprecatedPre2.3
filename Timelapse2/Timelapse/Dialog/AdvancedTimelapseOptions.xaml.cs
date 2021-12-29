@@ -43,11 +43,11 @@ namespace Timelapse.Dialog
             {
                 this.RadioButtonCSVDateAndTimeColumns.IsChecked = true;
             }
-            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeColumn)
+            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeColumnWithTSeparator)
             {
                 this.RadioButtonCSVLocalDateTimeColumn.IsChecked = true;
             }
-            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn)
+            else if (this.timelapseState.CSVDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeWithoutTSeparatorColumn)
             {
                 this.RadioButtonCSVLocalDateTimeColumnWithoutT.IsChecked = true;
             }
@@ -189,16 +189,16 @@ namespace Timelapse.Dialog
             }
             else if (this.RadioButtonCSVLocalDateTimeColumn.IsChecked == true)
             {
-                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.LocalDateTimeColumn;
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateTimeColumnWithTSeparator;
             }
             else if (this.RadioButtonCSVLocalDateTimeColumnWithoutT.IsChecked == true)
             {
-                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.LocalDateTimeWithoutTSeparatorColumn;
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateTimeWithoutTSeparatorColumn;
             }
             else //if (this.RadioButtonCSVUTCWithOffsetDateTimeColumn.IsChecked IsChecked == true)
             {
                 // This is now defunct and should not be activated
-                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn;
+                this.timelapseState.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateTimeUTCWithOffset;
             }
 
             this.timelapseState.CSVInsertSpaceBeforeDates = this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked == true;

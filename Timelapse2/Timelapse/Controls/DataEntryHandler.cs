@@ -134,8 +134,10 @@ namespace Timelapse.Controls
                         DataEntryDateTime dateTime = (DataEntryDateTime)pair.Value;
                         dateTime.ContentControl.ValueChanged += this.DateTimeControl_ValueChanged;
                         // We need the lines below as otherwise it will show the panel's context menu, which is confusing, instead of nothing
-                        dateTime.ContentControl.ContextMenu = new ContextMenu();
-                        dateTime.ContentControl.ContextMenu.Visibility = Visibility.Collapsed;
+                        dateTime.ContentControl.ContextMenu = new ContextMenu
+                        {
+                            Visibility = Visibility.Collapsed
+                        };
 
                         // SAULXXX DateTimePicker Workaround. 
                         // We need to access the calendar part of the DateTImePicker, but 
@@ -146,8 +148,10 @@ namespace Timelapse.Controls
                         DataEntryUtcOffset utcOffset = (DataEntryUtcOffset)pair.Value;
                         utcOffset.ContentControl.ValueChanged += this.UtcOffsetControl_ValueChanged;
                         // We need the lines below as otherwise it will show the panel's context menu, which is confusing, instead of nothing
-                        utcOffset.ContentControl.ContextMenu = new ContextMenu();
-                        utcOffset.ContentControl.ContextMenu.Visibility = Visibility.Collapsed;
+                        utcOffset.ContentControl.ContextMenu = new ContextMenu
+                        {
+                            Visibility = Visibility.Collapsed
+                        };
                         break;
                     case Constant.DatabaseColumn.DeleteFlag:
                     case Constant.Control.Flag:

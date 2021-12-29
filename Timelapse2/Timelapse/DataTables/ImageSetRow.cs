@@ -94,13 +94,14 @@ namespace Timelapse.Database
         public TimeZoneInfo GetSystemTimeZone()
         {
             // We now ignore time zone. 
-            return TimeZoneInfo.CreateCustomTimeZone("GMT", new TimeSpan(0), "GMT", "GMT");
-            //return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone)
+            TimeZoneInfo.AdjustmentRule[] adjustmentRules = new TimeZoneInfo.AdjustmentRule[0];
+            return TimeZoneInfo.CreateCustomTimeZone(Constant.Time.NeutralTimeZone, new TimeSpan(0), Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, adjustmentRules, true);
+            //return TimeZoneInfo.CreateCustomTimeZone("GMT", new TimeSpan(0), "GMT", "GMT");
             //return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
         }
         #endregion
 
-        #region Public Methods - Create ColumnTuplesWithWher 
+        #region Public Methods - Create ColumnTuplesWithWhere 
         // Construct a ColumnTuplesWithWhere containing the entire row contents 
         // Where is the current (and only?) imageset ID
         public override ColumnTuplesWithWhere CreateColumnTuplesWithWhereByID()

@@ -3,8 +3,8 @@
     public enum CSVDateTimeOptionsEnum
     {
         DateAndTimeColumns,
-        LocalDateTimeColumn,
-        LocalDateTimeWithoutTSeparatorColumn,
-        UTCWithOffsetDateTimeColumn
+        DateTimeColumnWithTSeparator,
+        DateTimeWithoutTSeparatorColumn,
+        DateTimeUTCWithOffset
     }
 }

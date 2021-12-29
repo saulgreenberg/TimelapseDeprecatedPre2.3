@@ -171,23 +171,26 @@ namespace Timelapse.Database
         }
 
         // Should be invoked only with the csvDateTimeOptions to one of the DateTime column formats
-        public string GetValueCSVLocalDateTimeString()
+        public string GetValueCSVDateTimeWithTSeparatorString()
         {
-            return DateTimeHandler.ToStringCSVLocalDateTimeColumn(this.DateTime);
+            // Convert this.DateTime (a DateTimeOffset) to a DateTime, where we add in the offset amount
+            return DateTimeHandler.ToStringCSVDateTimeWithTSeparator(new DateTime((this.DateTime + this.UtcOffset).Ticks));
         }
 
         // Should be invoked only with the csvDateTimeOptions to one of the DateTime column formats
-        public string GetValueCSVLocalDateTimeWithoutTSeparatorString()
+        public string GetValueCSVDateTimeWithoutTSeparatorString()
         {
-            return DateTimeHandler.ToStringCSVLocalDateTimeWithoutTSeparatorColumn(this.DateTime);
+            // Convert this.DateTime (a DateTimeOffset) to a DateTime, where we add in the offset amount
+            return DateTimeHandler.ToStringCSVDateTimeWithoutTSeparator(new DateTime((this.DateTime + this.UtcOffset).Ticks));
         }
 
-        public string GetValueCSVUTCWithOffsetDateTimeString()
-        {
-            // calculate the date in zulu time 
-            DateTime zuluTime = this.DateTime - this.UtcOffset;
-            return DateTimeHandler.ToStringCSVUtcWithOffsetDateTimeColumn(zuluTime, this.UtcOffset);
-        }
+        // DEFUNCT AS WE NO LONGER EXPORT OR IMPORT A CSV COLUMN IN THIS FOMRAT
+        //public string GetValueCSVDateTimeUTCWithOffsetString()
+        //{
+        //    // calculate the date in zulu time 
+        //    DateTime zuluTime = this.DateTime - this.UtcOffset;
+        //    return DateTimeHandler.ToStringCSVUtcWithOffset(zuluTime, this.UtcOffset);
+        //}
 
         // Given a data label, get its value as a string to display to the user in the UI
         // This requires a few values to be transformed (e.g., DateTime, UTCOffsets, ImageQuality)
@@ -287,9 +290,11 @@ namespace Timelapse.Database
         #region DateTime Methods - sets various date-related values, possibly using various transformation 
         public void SetDateTimeOffset(DateTimeOffset dateTime)
         {
+            // Convert the dateTime to an offset of zero
             this.Date = DateTimeHandler.ToStringDisplayDate(dateTime);
-            this.DateTime = dateTime.UtcDateTime;
-            this.UtcOffset = dateTime.Offset;
+            DateTimeOffset dto = new DateTimeOffset(dateTime.Ticks, TimeSpan.Zero);
+            this.DateTime = dto.UtcDateTime;
+            this.UtcOffset =TimeSpan.Zero;
             this.Time = DateTimeHandler.ToStringDisplayTime(dateTime);
         }
 

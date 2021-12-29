@@ -87,7 +87,7 @@ namespace Timelapse.Util
                 this.BoundingBoxAnnotate = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxAnnotate, false);
                 this.BoundingBoxColorBlindFriendlyColors = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, false);
                 this.CSVDateTimeOptions = registryKey.GetEnum<CSVDateTimeOptionsEnum>(Constant.WindowRegistryKeys.CSVDateTimeOptions, CSVDateTimeOptionsEnum.DateAndTimeColumns);
-                if (this.CSVDateTimeOptions == CSVDateTimeOptionsEnum.UTCWithOffsetDateTimeColumn)
+                if (this.CSVDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeUTCWithOffset)
                 {
                     // We no longer use the above option, so revert it to the default CSV setting
                     this.CSVDateTimeOptions = CSVDateTimeOptionsEnum.DateAndTimeColumns;

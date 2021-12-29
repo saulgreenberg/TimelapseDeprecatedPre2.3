@@ -603,12 +603,13 @@ namespace Timelapse.Constant
     public static class Time
     {
         // The standard date format, e.g., 05-Apr-2011
+        public const string NeutralTimeZone = "Neutral Time Zone";
         public const string DateFormat = "dd-MMM-yyyy";
         public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
         public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
 
-        public const string DateTimeCSVLocalDateTime = "yyyy-MM-dd'T'HH:mm:ss";
-        public const string DateTimeCSVLocalDateTimeWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
+        public const string DateTimeCSVWithTSeparator = "yyyy-MM-dd'T'HH:mm:ss";
+        public const string DateTimeCSVWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
 
         public const int MonthsInYear = 12;
         public const string TimeFormat = "HH:mm:ss";

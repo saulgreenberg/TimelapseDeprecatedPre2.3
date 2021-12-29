@@ -280,28 +280,29 @@ namespace Timelapse.Util
         /// <summary>
         /// Return "dd-MMM-yyyyTHH:mm:s" format for local DateTime in the CSV file  e.g. 05-Apr-2016T12:05:01
         /// </summary>
-        public static string ToStringCSVLocalDateTimeColumn(DateTimeOffset dateTime)
+        public static string ToStringCSVDateTimeWithTSeparator(DateTimeOffset dateTime)
         {
-            return dateTime.LocalDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US"));
+            //return dateTime.LocalDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.ToString(Constant.Time.DateTimeCSVWithTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         /// <summary>
-        /// Return "dd-MMM-yyyy HH:mm:s" format for local DateTime in the CSV file  e.g. 05-Apr-2016 12:05:01
+        /// Return "dd-MMM-yyyy HH:mm:s" CSV format for DateTime Column e.g. 05-Apr-2016 12:05:01
         /// </summary>
-        public static string ToStringCSVLocalDateTimeWithoutTSeparatorColumn(DateTimeOffset dateTime)
+        public static string ToStringCSVDateTimeWithoutTSeparator(DateTime dateTime)
         {
-            return dateTime.LocalDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTimeWithoutTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
+            return dateTime.ToString(Constant.Time.DateTimeCSVWithoutTSeparator, CultureInfo.CreateSpecificCulture("en-US"));
         }
 
         /// <summary>
         /// The dateTime should be in ZULU time (i.e., not in local time)
         /// Return "dd-MMM-yyyyTHH:mm:ssZ+hh:mm" format of a DateTimeOffset  e.g. 05-Apr-2016 12:05:01+5:00
         /// </summary>
-        public static string ToStringCSVUtcWithOffsetDateTimeColumn(DateTimeOffset dateTime, TimeSpan offset)
+        public static string ToStringCSVUtcWithOffset(DateTimeOffset dateTime, TimeSpan offset)
         {
             string offsetAsString = String.Format("{0:+00;-00}:{1:00}", offset.Hours, offset.Minutes);
             return String.Format("{0}Z{1}",
-                dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVLocalDateTime, CultureInfo.CreateSpecificCulture("en-US")),
+                dateTime.UtcDateTime.ToString(Constant.Time.DateTimeCSVWithTSeparator, CultureInfo.CreateSpecificCulture("en-US")),
                 offsetAsString);
         }
 
