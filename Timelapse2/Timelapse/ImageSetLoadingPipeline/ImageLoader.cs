@@ -20,11 +20,6 @@ namespace Timelapse.ImageSetLoadingPipeline
             get { return this.dataHandler.FileDatabase.FolderPath; }
         }
 
-        public TimeZoneInfo ImageSetTimeZone
-        {
-            get { return DateTimeHandler.GetNeutralTimeZone(); }
-        }
-
         public bool RequiresDatabaseInsert
         {
             get;
@@ -105,7 +100,7 @@ namespace Timelapse.ImageSetLoadingPipeline
                 // Try to update the datetime (which is currently recorded as the file's date) with the metadata date time the image was taken instead
                 // Note that videos do not have these metadata fields
                 // Strategy is to set date from either the metadata or the file time depending on what is available
-                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, this.ImageSetTimeZone);
+                this.File.TryReadDateTimeOriginalFromMetadata(this.FolderPath, DateTimeHandler.GetNeutralTimeZone());
 
                 // This completes processing, but it may be some time before the task is checked for completion.
                 // for purposes of reporting progress, call the completion delegate provided.
