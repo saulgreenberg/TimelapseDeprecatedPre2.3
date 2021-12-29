@@ -422,7 +422,6 @@ namespace Timelapse
         #region Date Correction (including sub-menu opening)
         private void MenuItemDateCorrection_SubmenuOpened(object sender, RoutedEventArgs e)
         {
-            this.MenuItemSetTimeZone.IsEnabled = this.IsUTCOffsetControlHidden() == false;
         }
 
         // Re-read dates and times from files
@@ -524,27 +523,6 @@ namespace Timelapse
                 }
             }
         }
-
-        // Reassign a group of images to a particular time zone
-        // SAULXXX DEPRACATED. THE MENU ITEM IS THERE BUT DISABLED and INVISIBLE. NEED TO SEE IF IT ACTUALLY WORKS BEFORE ENABLING IT
-        private async void MenuItemSetTimeZone_Click(object sender, RoutedEventArgs e)
-        {
-            // Warn the user that they are currently in a selection displaying only a subset of files, and make sure they want to continue.
-            if (Dialogs.MaybePromptToApplyOperationOnSelectionDialog(this, this.DataHandler.FileDatabase, this.State.SuppressSelectedSetTimeZonePrompt,
-                                                                           "'Set the time zone of every date/time...'",
-                                                               (bool optOut) =>
-                                                               {
-                                                                   this.State.SuppressSelectedSetTimeZonePrompt = optOut;
-                                                               }))
-            {
-                DateTimeSetTimeZone fixedDateCorrection = new DateTimeSetTimeZone(this.DataHandler.FileDatabase, this.DataHandler.ImageCache.Current, this);
-                if (this.ShowDialogAndCheckIfChangesWereMade(fixedDateCorrection))
-                {
-                    await this.FilesSelectAndShowAsync().ConfigureAwait(true);
-                }
-            }
-        }
-
 
         private async void MenuItemRereadDateTimesfromMetadata_Click(object sender, RoutedEventArgs e)
         {

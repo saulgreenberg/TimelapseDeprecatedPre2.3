@@ -195,9 +195,6 @@
     <Compile Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml.cs">
       <DependentUpon>DateTimeRereadFromSelectedMetadataField.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialog\DateTimeSetTimeZone.xaml.cs">
-      <DependentUpon>DateTimeSetTimeZone.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Dialog\EpisodeOptions.xaml.cs">
       <DependentUpon>EpisodeOptions.xaml</DependentUpon>
     </Compile>
@@ -458,10 +455,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialog\DateTimeRereadFromSelectedMetadataField.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Dialog\DateTimeSetTimeZone.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
