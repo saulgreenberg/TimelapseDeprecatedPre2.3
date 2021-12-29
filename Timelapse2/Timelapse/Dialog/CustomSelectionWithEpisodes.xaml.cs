@@ -86,7 +86,7 @@ namespace Timelapse.Dialog
             this.database = database;
             this.currentImageRow = currentImageRow;
             this.dataEntryControls = dataEntryControls;
-            this.imageSetTimeZone = this.database.ImageSet.GetSystemTimeZone();
+            this.imageSetTimeZone = DateTimeHandler.GetNeutralTimeZone(); ;
             this.Owner = owner;
             this.excludeUTCOffset = excludeUTCOffset;
             this.countTimer.Interval = TimeSpan.FromMilliseconds(500);

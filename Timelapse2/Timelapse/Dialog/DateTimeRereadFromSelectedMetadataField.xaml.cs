@@ -210,7 +210,7 @@ namespace Timelapse.Dialog
                 // Report progress as needed.
                 // This tuple list will hold the id, key and value that we will want to update in the database
                 List<ColumnTuplesWithWhere> imagesToUpdate = new List<ColumnTuplesWithWhere>();
-                TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
+                TimeZoneInfo imageSetTimeZone = DateTimeHandler.GetNeutralTimeZone();
                 int percentDone = 0;
 
                 double totalFiles = this.fileDatabase.CountAllCurrentlySelectedFiles;

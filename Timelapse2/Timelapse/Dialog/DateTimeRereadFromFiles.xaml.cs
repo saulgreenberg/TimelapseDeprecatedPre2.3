@@ -76,7 +76,7 @@ namespace Timelapse.Dialog
                 // Pass 1. For each file, check to see what dates/times need updating.
                 this.Progress.Report(new ProgressBarArguments(0, "Pass 1: Examining image and video dates...", true, false));
                 int count = this.fileDatabase.CountAllCurrentlySelectedFiles;
-                TimeZoneInfo imageSetTimeZone = this.fileDatabase.ImageSet.GetSystemTimeZone();
+                TimeZoneInfo imageSetTimeZone = DateTimeHandler.GetNeutralTimeZone();
 
                 // Get the list of image rows (files) whose dates have changed
                 List<ImageRow> filesToAdjust = GetImageRowsWithChangedDates(this.Progress, count, imageSetTimeZone, feedbackRows, out int missingFiles);

@@ -90,16 +90,7 @@ namespace Timelapse.Database
         }
         #endregion
 
-        #region Public Methods - Gets
-        public TimeZoneInfo GetSystemTimeZone()
-        {
-            // We now ignore time zone. 
-            TimeZoneInfo.AdjustmentRule[] adjustmentRules = new TimeZoneInfo.AdjustmentRule[0];
-            return TimeZoneInfo.CreateCustomTimeZone(Constant.Time.NeutralTimeZone, new TimeSpan(0), Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, adjustmentRules, true);
-            //return TimeZoneInfo.CreateCustomTimeZone("GMT", new TimeSpan(0), "GMT", "GMT");
-            //return TimeZoneInfo.FindSystemTimeZoneById(this.TimeZone);
-        }
-        #endregion
+ 
 
         #region Public Methods - Create ColumnTuplesWithWhere 
         // Construct a ColumnTuplesWithWhere containing the entire row contents 

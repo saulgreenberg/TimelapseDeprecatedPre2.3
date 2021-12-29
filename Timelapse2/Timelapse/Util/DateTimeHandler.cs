@@ -236,6 +236,17 @@ namespace Timelapse.Util
         }
         #endregion
 
+        #region Public Static GetNeutralTimeZone
+        // Return a custom Neutral Time zone that has an offset of 0.0 and is always on standard time
+        public static TimeZoneInfo GetNeutralTimeZone()
+        {
+            // We now ignore time zone. 
+            TimeZoneInfo.AdjustmentRule[] adjustmentRules = new TimeZoneInfo.AdjustmentRule[0];
+            return TimeZoneInfo.CreateCustomTimeZone(Constant.Time.NeutralTimeZone, new TimeSpan(0), Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, adjustmentRules, true);
+        }
+        #endregion
+
+
         #region Private Static Convert To String
         /// <summary>
         /// Return "yyyy-MM-ddTHH:mm:ss.fffZ" database string format of DateTimeOffset

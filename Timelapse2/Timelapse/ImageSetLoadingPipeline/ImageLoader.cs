@@ -22,7 +22,7 @@ namespace Timelapse.ImageSetLoadingPipeline
 
         public TimeZoneInfo ImageSetTimeZone
         {
-            get { return this.dataHandler.FileDatabase.ImageSet.GetSystemTimeZone(); }
+            get { return DateTimeHandler.GetNeutralTimeZone(); }
         }
 
         public bool RequiresDatabaseInsert

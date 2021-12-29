@@ -696,7 +696,7 @@ namespace Timelapse.Database
             // Populate DateTime column if the column has just been added
             if (!timeZoneColumnIsNotPopulated)
             {
-                TimeZoneInfo imageSetTimeZone = this.ImageSet.GetSystemTimeZone();
+                TimeZoneInfo imageSetTimeZone = DateTimeHandler.GetNeutralTimeZone();
                 List<ColumnTuplesWithWhere> updateQuery = new List<ColumnTuplesWithWhere>();
                 // PERFORMANCE, BUT RARE: We invoke this to update various date/time values on all rows based on existing values. However, its rarely called
                 // PROGRESSBAR - Add to all calls to SelectFiles, perhaps after a .5 second delay
