@@ -417,13 +417,22 @@ namespace Timelapse.Database
         #endregion
 
         #region Public Methods - Various Gets
-        public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
-        {
-            // Check the arguments for null 
-            ThrowIf.IsNullArgument(imageSetTimeZone, nameof(imageSetTimeZone));
+        
+        // DEFUNCT AS WE NO LONGER USE THE TIME ZONE
+        //public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeZoneInfo imageSetTimeZone)
+        //{
+        //    // Check the arguments for null 
+        //    ThrowIf.IsNullArgument(imageSetTimeZone, nameof(imageSetTimeZone));
+        //    DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
+        //    return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
+        //}
 
+        public DateTimeOffset GetDateTime(int dateTimeSearchTermIndex, TimeSpan offset)
+        {
+            // Get the date/time correcting for the offset, if any.
+            // Note that as of this version, all offsets should be 0 so this may not be necessary
             DateTime dateTime = this.SearchTerms[dateTimeSearchTermIndex].GetDateTime();
-            return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(dateTime, imageSetTimeZone.GetUtcOffset(dateTime));
+            return DateTimeHandler.FromDatabaseDateTimeIncorporatingOffset(new DateTime( (dateTime + offset).Ticks), TimeSpan.Zero);
         }
 
         public string GetRelativePathFolder
@@ -505,10 +514,9 @@ namespace Timelapse.Database
         #endregion
 
         #region Public Methods - Various Sets to initialize DateTimes and Offsets
-        public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime, TimeZoneInfo imageSetTimeZone)
+        public void SetDateTime(int dateTimeSearchTermIndex, DateTimeOffset newDateTime)
         {
-            DateTimeOffset dateTime = this.GetDateTime(dateTimeSearchTermIndex, imageSetTimeZone);
-            this.SearchTerms[dateTimeSearchTermIndex].SetDatabaseValue(new DateTimeOffset(newDateTime.DateTime, dateTime.Offset));
+            this.SearchTerms[dateTimeSearchTermIndex].SetDatabaseValue(new DateTimeOffset(newDateTime.DateTime, TimeSpan.Zero));
         }
 
         public void SetDateTimesAndOffset(DateTimeOffset dateTime)

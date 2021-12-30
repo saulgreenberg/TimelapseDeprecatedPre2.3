@@ -74,6 +74,7 @@ namespace Timelapse
         public const string Name = " NAME ";
         public const string NameFromSqliteMaster = " NAME FROM SQLITE_MASTER ";
         public const string Not = " NOT ";
+        public const string NotEqual = " <> ";
         public const string NotNull = " NOT NULL ";
         public const string Null = " NULL ";
         public const string NullAs = Null + " " + As;
@@ -110,6 +111,7 @@ namespace Timelapse
         public const string Semicolon = " ; ";
         public const string Set = " SET ";
         public const string Star = "*";
+        public const string Strftime = " Strftime ";
         public const string StringType = " STRING ";
         public const string Substr = " SUBSTR ";
 

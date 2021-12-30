@@ -366,8 +366,12 @@ namespace Timelapse.Dialog
                 // However, counter textboxes are modified to only allow integer input (both direct typing or pasting are checked)
                 if (controlType == Constant.DatabaseColumn.DateTime)
                 {
-                    DateTimeOffset dateTime = this.database.CustomSelection.GetDateTime(gridRowIndex - 1, this.imageSetTimeZone);
+                    //DateTimeOffset dateTime = this.database.CustomSelection.GetDateTime(gridRowIndex - 1, this.imageSetTimeZone);
 
+                    TimeSpan offset = currentImageRow.UtcOffset;
+                    DateTimeOffset dateTime = this.database.CustomSelection.GetDateTime(gridRowIndex - 1, offset);
+
+                    dateTime = new DateTimeOffset( (dateTime + dateTime.Offset).Ticks, TimeSpan.Zero);
                     DateTimePicker dateValue = new DateTimePicker()
                     {
                         FontWeight = FontWeights.Normal,
@@ -781,7 +785,7 @@ namespace Timelapse.Dialog
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
                 if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
                 {
-                    this.database.CustomSelection.SetDateTime(row - 1, newDateTime, this.imageSetTimeZone);
+                    this.database.CustomSelection.SetDateTime(row - 1, newDateTime);
                     this.UpdateSearchDialogFeedback();
                 }
             }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -623,20 +624,32 @@ namespace Timelapse.Database
                     Sql.Where + Sql.Instr + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.CloseParenthesis + Sql.GreaterThan + "0");
             }
 
-            // Update DateTime to local time with an offset of 0, while changing Utc to 0
-            // This essentially removes any value of having time in UTC, which makes life way easier.
-            string firstVersionWithUTCSetToZero = "2.2.4.4";
-            // Updates the DateTime and UTCOffset to always be local time. This removes all the UTC offset junk from the stored date time, although the UTC format is still there and calculated from 0 Utc.
-            if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithUTCSetToZero, imageSetVersionNumber))
-            {
-                // This updates DateTime by adding the UTC offset to it. Note that we only have to change DateTime, as date and time are already in local time
-                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.DateTime + Sql.Equal + Sql.DateTimeFunction
-                        + Sql.OpenParenthesis + Constant.DatabaseColumn.DateTime + Sql.Comma + Constant.DatabaseColumn.UtcOffset + Sql.Concatenate + Sql.HoursQuoted + Sql.CloseParenthesis);
-
-                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set + Constant.DatabaseColumn.UtcOffset + Sql.Equal + "'0.0'");
-                this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.ImageSet + Sql.Set + Constant.DatabaseColumn.TimeZone + Sql.Equal + Sql.Quote(Constant.Time.NeutralTimeZone));
-            }
-
+            // As if Version 2.2.4.4...
+            // For non-zero offsets, correct DateTime to local time and set its UtcOffset to 0
+            // This essentially will convert all dates to local time, which makes life way easier.
+            // string firstVersionWithUTCSetToZero = "2.2.4.4";
+            // This operation takes about 450ms to convert 112K rows when all rows have non-zero UtcOffset
+            // However, if only a few rows have a non-zero UtcOffset, it is very fast (i.. ~ 37ms for 112K rows)
+            // So we do this check every time we open a database file, just in case that db file had been opened by 
+            // a version ofTimelapse earlier than 2.2.4.4, which could write the times back in non-zero UTC times.
+            // The expression:
+            // Update DataTable Set
+            //        datetime = DateTime(datetime, UtcOffset || ' hours'),
+            //        UtcOffset = '0.0'
+            //    WHERE UtcOffset<> '0.0'
+            this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set
+                + Constant.DatabaseColumn.DateTime + Sql.Equal
+                + Sql.Strftime + Sql.OpenParenthesis + Sql.Quote(Constant.Time.DateTimeFormatForWritingTimelapseDB) + Sql.Comma
+                + Sql.DateTimeFunction + Sql.OpenParenthesis + Constant.DatabaseColumn.DateTime + Sql.Comma + Constant.DatabaseColumn.UtcOffset + Sql.Concatenate + Sql.HoursQuoted + Sql.CloseParenthesis
+                + Sql.CloseParenthesis
+                + Sql.Comma
+                + Constant.DatabaseColumn.UtcOffset + Sql.Equal + Sql.Quote("0.0")
+                + Sql.Where + Constant.DatabaseColumn.UtcOffset + Sql.NotEqual + Sql.Quote("0.0"));
+            // We also reset the TimeZone column in the ImageSet if its not already set to the Neutral Time Zone
+            //this.Database.ExecuteNonQuery(
+            //    Sql.Update + Constant.DBTables.ImageSet + Sql.Set 
+            //    + Constant.DatabaseColumn.TimeZone + Sql.Equal + Sql.Quote(Constant.Time.NeutralTimeZone) 
+            //    + Sql.Where + Constant.DatabaseColumn.TimeZone + Sql.NotEqual + Sql.Quote(Constant.Time.NeutralTimeZone));
 
             // STEP 3. Check both templates and update if needed (including values)
 
@@ -718,8 +731,6 @@ namespace Timelapse.Database
                 this.Database.Update(Constant.DBTables.FileData, updateQuery);
                 // Note that the FileTable is now stale as we have updated the database directly
             }
-
-
         }
         #endregion
 

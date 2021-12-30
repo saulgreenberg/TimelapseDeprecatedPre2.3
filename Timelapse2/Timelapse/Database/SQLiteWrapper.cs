@@ -503,7 +503,7 @@ namespace Timelapse.Database
                     {
                         command.CommandText = commandString;
                         command.ExecuteNonQuery();
-                        //System.Diagnostics.Debug.Print(commandString);
+                        System.Diagnostics.Debug.Print(commandString);
                     }
                 }
             }

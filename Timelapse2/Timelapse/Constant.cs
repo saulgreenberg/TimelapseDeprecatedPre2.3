@@ -603,9 +603,10 @@ namespace Timelapse.Constant
     public static class Time
     {
         // The standard date format, e.g., 05-Apr-2011
-        public const string NeutralTimeZone = "Neutral Time Zone";
+        public static string NeutralTimeZone = TimeZoneInfo.Local.Id; //"UTC";
         public const string DateFormat = "dd-MMM-yyyy";
         public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
+        //public const string DateTimeDatabaseFormat = "yyyy-MM-dd HH:mm:ss";
         public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
 
         public const string DateTimeCSVWithTSeparator = "yyyy-MM-dd'T'HH:mm:ss";
@@ -623,6 +624,8 @@ namespace Timelapse.Constant
         public static readonly TimeSpan MinimumUtcOffset = TimeSpan.FromHours(-12.0);
         public static readonly TimeSpan UtcOffsetGranularity = TimeSpan.FromTicks(9000000000); // 15 minutes
 
+        //public static readonly string DateTimeFormatForWritingTimelapseDB = "%Y-%m-%dT%H:%M:%S.000Z";
+        public static readonly string DateTimeFormatForWritingTimelapseDB = "%Y-%m-%d %H:%M:%S";
         public static readonly string[] DateTimeMetadataFormats =
         {
                 // known formats supported by Metadata Extractor

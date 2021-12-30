@@ -12,7 +12,7 @@ namespace Timelapse.Util
     public static class DateTimeHandler
     {
 
-        #region Public Static Create / Parse to get DateTimeOffset
+        #region Public Static Create DateTimeOffset
         /// <summary>
         /// Create a DateTimeOffset given a dateTime and timezoneinfo
         /// </summary>
@@ -33,7 +33,9 @@ namespace Timelapse.Util
         {
             return new DateTimeOffset((dateTime + utcOffset).AsUnspecifed(), utcOffset);
         }
+        #endregion
 
+        #region TryParse on various DateTimes
         /// <summary>
         /// Parse a utcOffsetAsString from its double representation. Return false on failure or on reasonableness checks
         /// </summary>
@@ -98,7 +100,9 @@ namespace Timelapse.Util
             // No luck with the standard TryParse.So lets try our specialized Metadata formats.
             return DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateTimeMetadataFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime);
         }
+        #endregion
 
+        #region TrySwapDayMonth
         /// <summary>
         /// Swap the day and month of a DateTimeOffset if possible. Otherwise use the same DateTimeOffset. Return false if we cannot do the swap.
         /// </summary>
@@ -245,7 +249,6 @@ namespace Timelapse.Util
             return TimeZoneInfo.CreateCustomTimeZone(Constant.Time.NeutralTimeZone, new TimeSpan(0), Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, Constant.Time.NeutralTimeZone, adjustmentRules, true);
         }
         #endregion
-
 
         #region Private Static Convert To String
         /// <summary>
