@@ -11,7 +11,6 @@ namespace Timelapse.Util
     public class TimelapseUserRegistrySettings : UserRegistrySettings
     {
         #region Public Properties - Settings that will be saved into the registry
-
         public bool AudioFeedback { get; set; }
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
@@ -30,7 +29,6 @@ namespace Timelapse.Util
         public double FilePlayerFastValue { get; set; }
         public bool MagnifyingGlassOffsetLensEnabled { get; set; }
         public double MagnifyingGlassZoomFactor { get; set; }
-
         public bool MetadataAskOnLoad { get; set; }
         public double OffsetLensZoomFactor { get; set; }
         public DateTime MostRecentCheckForUpdates { get; set; }
@@ -105,7 +103,7 @@ namespace Timelapse.Util
                 this.MagnifyingGlassOffsetLensEnabled = registryKey.GetBoolean(Constant.WindowRegistryKeys.MagnifyingGlassOffsetLensEnabled, true);
                 this.MagnifyingGlassZoomFactor = registryKey.GetDouble(Constant.WindowRegistryKeys.MagnifyingGlassZoomFactor, Constant.MarkableCanvas.MagnifyingGlassDefaultZoom);
                 this.MetadataAskOnLoad = registryKey.GetBoolean(Constant.WindowRegistryKeys.MetadataAskOnLoad, false);
-                this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
+                this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.Now);
                 this.MostRecentImageSets = registryKey.GetRecencyOrderedList(Constant.WindowRegistryKeys.MostRecentlyUsedImageSets);
                 this.OffsetLensZoomFactor = registryKey.GetDouble(Constant.WindowRegistryKeys.OffsetLensZoomFactor, Constant.MarkableCanvas.OffsetLensDefaultZoom);
                 this.QuickPasteWindowPosition = registryKey.GetRect(Constant.WindowRegistryKeys.QuickPasteWindowPosition, new Rect(0.0, 0.0, 0.0, 0.0));

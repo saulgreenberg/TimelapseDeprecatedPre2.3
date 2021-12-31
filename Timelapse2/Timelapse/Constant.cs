@@ -493,7 +493,7 @@ namespace Timelapse.Constant
 
         // most recently used operator for custom selections
         public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";
-        
+
         // Format and column options when writing the date to the CSV file
         public const string CSVDateTimeOptions = "CSVDateTimeOptions";
         public const string CSVInsertSpaceBeforeDates = "CSVInsertSpaceBeforeDates";
@@ -603,20 +603,55 @@ namespace Timelapse.Constant
     public static class Time
     {
         // The standard date format, e.g., 05-Apr-2011
-        public static string NeutralTimeZone = TimeZoneInfo.Local.Id; //"UTC";
-        public const string DateFormat = "dd-MMM-yyyy";
-        public const string DateTimeDatabaseFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";
-        //public const string DateTimeDatabaseFormat = "yyyy-MM-dd HH:mm:ss";
-        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
+        public static string NeutralTimeZone = TimeZoneInfo.Local.Id; // For backwards compatabity, we use the local time zone. Eventually, this will disapper. 
 
+
+        public const string DateFormat = "dd-MMM-yyyy";
+
+
+        // DateTimes as stored in the database. The 2nd form is so it can read in from the DB both the legacy (UTC) format and current simpler format 
+        public const string DateTimeDatabaseLegacyUTCFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";  // legacy DatabaseFormat
+        public const string DateTimeDatabaseFormat = "yyyy-MM-dd HH:mm:ss";
+        public static readonly string[] DateTimeDatabaseFormats = { Constant.Time.DateTimeDatabaseFormat, Constant.Time.DateTimeDatabaseLegacyUTCFormat }; 
+
+        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
         public const string DateTimeCSVWithTSeparator = "yyyy-MM-dd'T'HH:mm:ss";
         public const string DateTimeCSVWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
+
+        // This is an SQL format for writing date/time, and is equivalent to the DateTimeDatabaseFormat
+        public static readonly string DateTimeSQLFormatForWritingTimelapseDB = "%Y-%m-%d %H:%M:%S";
+
+        // known formats supported by Metadata Extractor. All these can be read without ambiguity
+        public static readonly string[] DateTimeMetadataFormats =
+        {
+            "yyyy:MM:dd HH:mm:ss.fff",
+            "yyyy:MM:dd HH:mm:ss",
+            "yyyy:MM:dd HH:mm",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm",
+            "yyyy.MM.dd HH:mm:ss",
+            "yyyy.MM.dd HH:mm",
+            "yyyy-MM-ddTHH:mm:ss.fff",
+            "yyyy-MM-ddTHH:mm:ss.ff",
+            "yyyy-MM-ddTHH:mm:ss.f",
+            "yyyy-MM-ddTHH:mm:ss",
+            "yyyy-MM-ddTHH:mm.fff",
+            "yyyy-MM-ddTHH:mm.ff",
+            "yyyy-MM-ddTHH:mm.f",
+            "yyyy-MM-ddTHH:mm",
+            "yyyy:MM:dd",
+            "yyyy-MM-dd",
+            "ddd MMM dd HH:mm:ss K yyyy" // File.File Modified Date
+        };
 
         public const int MonthsInYear = 12;
         public const string TimeFormat = "HH:mm:ss";
         public const string TimeSpanDisplayFormat = @"hh\:mm\:ss";
+
+        // Various UTC Formats
         public const string UtcOffsetDatabaseFormat = "0.00";
         public const string UtcOffsetDisplayFormat = @"hh\:mm";
+
         public const string VideoPositionFormat = @"mm\:ss";
 
         public static readonly TimeSpan DateTimeDatabaseResolution = TimeSpan.FromMilliseconds(1.0);
@@ -624,33 +659,7 @@ namespace Timelapse.Constant
         public static readonly TimeSpan MinimumUtcOffset = TimeSpan.FromHours(-12.0);
         public static readonly TimeSpan UtcOffsetGranularity = TimeSpan.FromTicks(9000000000); // 15 minutes
 
-        //public static readonly string DateTimeFormatForWritingTimelapseDB = "%Y-%m-%dT%H:%M:%S.000Z";
-        public static readonly string DateTimeFormatForWritingTimelapseDB = "%Y-%m-%d %H:%M:%S";
-        public static readonly string[] DateTimeMetadataFormats =
-        {
-                // known formats supported by Metadata Extractor
-                "yyyy:MM:dd HH:mm:ss.fff",
-                "yyyy:MM:dd HH:mm:ss",
-                "yyyy:MM:dd HH:mm",
-                "yyyy-MM-dd HH:mm:ss",
-                "yyyy-MM-dd HH:mm",
-                "yyyy.MM.dd HH:mm:ss",
-                "yyyy.MM.dd HH:mm",
-                "yyyy-MM-ddTHH:mm:ss.fff",
-                "yyyy-MM-ddTHH:mm:ss.ff",
-                "yyyy-MM-ddTHH:mm:ss.f",
-                "yyyy-MM-ddTHH:mm:ss",
-                "yyyy-MM-ddTHH:mm.fff",
-                "yyyy-MM-ddTHH:mm.ff",
-                "yyyy-MM-ddTHH:mm.f",
-                "yyyy-MM-ddTHH:mm",
-                "yyyy:MM:dd",
-                "yyyy-MM-dd",
-                //"yyyy-MM", We want at least a complete well formed date
-                //"yyyy",
-                // File.File Modified Date
-                "ddd MMM dd HH:mm:ss K yyyy"
-            };
+
     }
 
     public static class Unicode

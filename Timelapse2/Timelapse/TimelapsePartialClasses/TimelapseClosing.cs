@@ -158,6 +158,7 @@ namespace Timelapse
             }
 
             // Save the state by writing it to the registry
+            // Note that this gets called whenever we close an image set, and again when we exit Timelapse
             this.State.WriteSettingsToRegistry();
 
             // Clear the arguments, as we are starting a new session.

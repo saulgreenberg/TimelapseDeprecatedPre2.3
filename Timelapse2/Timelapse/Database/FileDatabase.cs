@@ -639,7 +639,7 @@ namespace Timelapse.Database
             //    WHERE UtcOffset<> '0.0'
             this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set
                 + Constant.DatabaseColumn.DateTime + Sql.Equal
-                + Sql.Strftime + Sql.OpenParenthesis + Sql.Quote(Constant.Time.DateTimeFormatForWritingTimelapseDB) + Sql.Comma
+                + Sql.Strftime + Sql.OpenParenthesis + Sql.Quote(Constant.Time.DateTimeSQLFormatForWritingTimelapseDB) + Sql.Comma
                 + Sql.DateTimeFunction + Sql.OpenParenthesis + Constant.DatabaseColumn.DateTime + Sql.Comma + Constant.DatabaseColumn.UtcOffset + Sql.Concatenate + Sql.HoursQuoted + Sql.CloseParenthesis
                 + Sql.CloseParenthesis
                 + Sql.Comma

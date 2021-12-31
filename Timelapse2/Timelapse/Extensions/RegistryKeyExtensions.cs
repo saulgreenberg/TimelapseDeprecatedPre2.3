@@ -24,12 +24,11 @@ namespace Timelapse.Util
                     return value;
                 }
             }
-
             return defaultValue;
         }
 
         /// <summary>
-        /// Get a DateTime value from the registry
+        /// Get a DateTime value from the registry. 
         /// </summary>
         public static DateTime GetDateTime(this RegistryKey registryKey, string subKeyPath, DateTime defaultValue)
         {
@@ -38,8 +37,9 @@ namespace Timelapse.Util
             {
                 return defaultValue;
             }
-
-            return DateTime.ParseExact(value, Constant.Time.DateTimeDatabaseFormat, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
+            return DateTime.TryParseExact(value, Constant.Time.DateTimeDatabaseFormats, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out DateTime dateTime)
+                ? dateTime
+                : defaultValue;
         }
 
         /// <summary>
@@ -52,7 +52,9 @@ namespace Timelapse.Util
             {
                 return defaultValue;
             }
-            return int.TryParse(value, out int seconds) ? TimeSpan.FromSeconds(seconds) : defaultValue;
+            return int.TryParse(value, out int seconds)
+                ? TimeSpan.FromSeconds(seconds)
+                : defaultValue;
         }
 
         /// <summary>
@@ -68,7 +70,6 @@ namespace Timelapse.Util
                     return value;
                 }
             }
-
             return defaultValue;
         }
 
@@ -78,11 +79,17 @@ namespace Timelapse.Util
         public static TEnum GetEnum<TEnum>(this RegistryKey registryKey, string subKeyPath, TEnum defaultValue) where TEnum : struct, IComparable, IConvertible, IFormattable
         {
             string valueAsString = registryKey.GetString(subKeyPath);
-            if (valueAsString != null)
+            try
             {
-                return (TEnum)Enum.Parse(typeof(TEnum), valueAsString);
+                if (valueAsString != null)
+                {
+                    return (TEnum)Enum.Parse(typeof(TEnum), valueAsString);
+                }
             }
-
+            catch
+            {
+                // This will drop through to return default value
+            }
             return defaultValue;
         }
 
@@ -115,8 +122,7 @@ namespace Timelapse.Util
             {
                 return Int32.Parse(@string);
             }
-
-            throw new NotSupportedException(String.Format("Registry key {0}\\{1} has unhandled type {2}.", registryKey.Name, subKeyPath, value.GetType().FullName));
+            return defaultValue;
         }
 
         /// <summary>
@@ -133,14 +139,14 @@ namespace Timelapse.Util
             try
             {
                 Rect rectangle = Rect.Parse(rectAsString);
+                return rectangle;
             }
             catch
             {
                 // The parse can fail if the number format was saved as a non-American number, eg, Portugese uses , vs. as the decimal place.
-                // This shouldn't happen as I have used an invarient to save numbers, but just in case...
-                return defaultValue;
+                // This shouldn't happen as I have used an invarient to save numbers, but just in case... this will drop through to return default value
             }
-            return Rect.Parse(rectAsString);
+            return defaultValue;
         }
 
         /// <summary>
@@ -153,7 +159,17 @@ namespace Timelapse.Util
             {
                 return defaultValue;
             }
-            return Size.Parse(sizeAsString);
+            try
+            {
+                Size size = Size.Parse(sizeAsString);
+                return size;
+            }
+            catch
+            {
+                // This will drop through to return default value.
+
+            }
+            return defaultValue;
         }
 
         /// <summary>
@@ -176,7 +192,6 @@ namespace Timelapse.Util
         {
             // Check the arguments for null 
             ThrowIf.IsNullArgument(registryKey, nameof(registryKey));
-
             return (string)registryKey.GetValue(subKeyPath);
         }
 
@@ -221,7 +236,8 @@ namespace Timelapse.Util
         /// </summary>
         public static void Write(this RegistryKey registryKey, string subKeyPath, DateTime value)
         {
-            registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseFormat));
+            // For backwards compatability, we use the UTC format as otherwise older versions of Timelapse will not open
+            registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseLegacyUTCFormat));
         }
 
         /// <summary>

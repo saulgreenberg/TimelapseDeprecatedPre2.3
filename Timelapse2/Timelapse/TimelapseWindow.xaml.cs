@@ -165,7 +165,7 @@ namespace Timelapse
             {
                 VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryCheckForNewVersionAndDisplayResultsAsNeeded(false);
-                this.State.MostRecentCheckForUpdates = DateTime.UtcNow;
+                this.State.MostRecentCheckForUpdates = DateTime.Now;
             }
             if (this.State.FirstTimeFileLoading)
             {
