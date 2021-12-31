@@ -427,7 +427,7 @@ namespace Timelapse.Database
             foreach (string dataLabel in imageDataLabels.Keys)
             {
                 // if the .ddb dataLabel is not in the .tdb template, this will be dealt with later 
-                if (!templateDataLabels.Keys.Contains(dataLabel))
+                if (!templateDataLabels.ContainsKey(dataLabel))
                 {
                     continue;
                 }
