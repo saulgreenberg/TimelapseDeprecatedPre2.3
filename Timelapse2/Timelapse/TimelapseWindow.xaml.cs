@@ -240,6 +240,10 @@ namespace Timelapse
                     this.Arguments = new DataStructures.Arguments(null);
                 }
             }
+            if (this.State.SuppressOpeningMessageDialog == false)
+            {
+                Dialogs.OpeningMessage(this);
+            }
         }
 
 

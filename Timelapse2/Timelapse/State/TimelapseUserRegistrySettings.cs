@@ -39,6 +39,7 @@ namespace Timelapse.Util
         public bool SuppressCsvImportPrompt { get; set; }
         public bool SuppressHowDuplicatesWork { get; set; }
         public bool SuppressMergeDatabasesPrompt { get; set; }
+        public bool SuppressOpeningMessageDialog { get; set; }
         public bool SuppressSelectedAmbiguousDatesPrompt { get; set; }
         public bool SuppressSelectedCsvExportPrompt { get; set; }
         public bool SuppressSelectedDarkThresholdPrompt { get; set; }
@@ -112,6 +113,7 @@ namespace Timelapse.Util
                 this.SuppressCsvImportPrompt = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressCsvImportPrompt, false);
                 this.SuppressHowDuplicatesWork = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressHowDuplicatesWorkDialog, false);
                 this.SuppressMergeDatabasesPrompt = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressMergeDatabasesDialog, false);
+                this.SuppressOpeningMessageDialog = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressOpeningMessageDialog, false); 
                 this.SuppressSelectedAmbiguousDatesPrompt = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressSelectedAmbiguousDatesPrompt, false);
                 this.SuppressSelectedCsvExportPrompt = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressSelectedCsvExportPrompt, false);
                 this.SuppressSelectedDarkThresholdPrompt = registryKey.GetBoolean(Constant.WindowRegistryKeys.SuppressSelectedDarkThresholdPrompt, false);
@@ -220,6 +222,7 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressCsvImportPrompt, this.SuppressCsvImportPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressHowDuplicatesWorkDialog, this.SuppressHowDuplicatesWork);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressMergeDatabasesDialog, this.SuppressMergeDatabasesPrompt);
+                registryKey.Write(Constant.WindowRegistryKeys.SuppressOpeningMessageDialog, this.SuppressOpeningMessageDialog);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedAmbiguousDatesPrompt, this.SuppressSelectedAmbiguousDatesPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedCsvExportPrompt, this.SuppressSelectedCsvExportPrompt);
                 registryKey.Write(Constant.WindowRegistryKeys.SuppressSelectedDarkThresholdPrompt, this.SuppressSelectedDarkThresholdPrompt);

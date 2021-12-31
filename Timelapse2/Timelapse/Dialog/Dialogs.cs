@@ -1512,5 +1512,29 @@ namespace Timelapse.Dialog
             messageBox.ShowDialog();
         }
         #endregion
+
+        /// <summary>
+        /// Give the user some feedback about the CSV export operation
+        /// </summary>
+        public static void OpeningMessage(Window owner)
+        {
+            // since the exported file isn't shown give the user some feedback about the export operation
+            MessageBox openingMessage = new MessageBox("Important Message Concerning this Update...", owner);
+            openingMessage.Message.What = "This update fixes long-standing issues in how dates are stored in the Timelapse Database." + Environment.NewLine;
+            openingMessage.Message.What += "As some of these database changes are not backward compatable," + Environment.NewLine;
+            openingMessage.Message.What += "you should only use the latest version of Timelapse to open your image sets.";
+            openingMessage.Message.Reason = "If you re-open image sets previously opened by this new version, " + Environment.NewLine;
+            openingMessage.Message.Reason += "these date-related features (and perhaps more) will not work properly: " + Environment.NewLine;
+            openingMessage.Message.Reason += "\u2022 Episodes, " + Environment.NewLine;
+            openingMessage.Message.Reason += "\u2022 Custom Select on DateTime";
+            openingMessage.Message.Icon = MessageBoxImage.Information;
+            openingMessage.DontShowAgain.Visibility = Visibility.Visible;
+
+            bool? result = openingMessage.ShowDialog();
+            if (result.HasValue && result.Value && openingMessage.DontShowAgain.IsChecked.HasValue)
+            {
+                Util.GlobalReferences.TimelapseState.SuppressOpeningMessageDialog = openingMessage.DontShowAgain.IsChecked.Value;
+            }
+        }
     }
 }
