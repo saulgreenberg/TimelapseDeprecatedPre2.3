@@ -237,7 +237,7 @@ namespace Timelapse.Util
         public static void Write(this RegistryKey registryKey, string subKeyPath, DateTime value)
         {
             // For backwards compatability, we use the UTC format as otherwise older versions of Timelapse will not open
-            registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseLegacyUTCFormat));
+            registryKey.Write(subKeyPath, value.ToString(Constant.Time.DateTimeDatabaseFormat));
         }
 
         /// <summary>

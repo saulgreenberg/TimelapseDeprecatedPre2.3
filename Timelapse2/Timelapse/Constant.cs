@@ -495,7 +495,7 @@ namespace Timelapse.Constant
         public const string CustomSelectionTermCombiningOperator = "CustomSelectionTermCombiningOperator";
 
         // Format and column options when writing the date to the CSV file
-        public const string CSVDateTimeOptions = "CSVDateTimeOptions";
+        public const string CSVDateTimeOptions = "CSVDateTimeOptions2";
         public const string CSVInsertSpaceBeforeDates = "CSVInsertSpaceBeforeDates";
 
         // DarkPixelThreshold and Ratio used to determine image darkness
@@ -516,7 +516,7 @@ namespace Timelapse.Constant
         public const string DesiredImageRendersPerSecond = "DesiredImageRendersPerSecond";
 
         // The date/time the last check for timelapse updates was done (used to decide whether to check for updates)
-        public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates";
+        public const string MostRecentCheckForUpdates = "MostRecentCheckForUpdates2";
 
         // Metadata: whether to ask for metadata / datalabel pairing when loading new files
         public const string MetadataAskOnLoad = "MetadataAskOnLoad";

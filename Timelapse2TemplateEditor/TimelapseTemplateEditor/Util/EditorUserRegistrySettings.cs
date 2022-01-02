@@ -28,7 +28,7 @@ namespace Timelapse.Editor.Util
         {
             using (RegistryKey registryKey = this.OpenRegistryKey())
             {
-                this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.UtcNow);
+                this.MostRecentCheckForUpdates = registryKey.GetDateTime(Constant.WindowRegistryKeys.MostRecentCheckForUpdates, DateTime.Now);
                 this.MostRecentTemplates = registryKey.GetRecencyOrderedList(EditorConstant.Registry.EditorKey.MostRecentlyUsedTemplates);
                 // We no longer want to show the UtcOffset, so even if it was set in the past, make sure its always false.
                 this.ShowUtcOffset = false; // registryKey.GetBoolean(EditorConstant.Registry.EditorKey.ShowUtcOffset, false);

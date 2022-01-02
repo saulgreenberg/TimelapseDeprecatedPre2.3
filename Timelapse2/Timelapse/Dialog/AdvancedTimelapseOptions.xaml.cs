@@ -84,7 +84,7 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
 
             // Detections
-            this.CheckBoxUseDetections.IsChecked = this.timelapseState.UseDetections;
+            this.CheckBoxUseDetections.IsChecked = true;
             this.CheckBoxBoundingBoxAnnotate.IsChecked = this.timelapseState.BoundingBoxAnnotate;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
         }
@@ -92,10 +92,10 @@ namespace Timelapse.Dialog
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Dialogs.TryPositionAndFitDialogIntoWindow(this);
-            this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = true;
             this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
-            this.CheckBoxBoundingBoxAnnotate.IsEnabled = this.timelapseState.UseDetections;
-            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxAnnotate.IsEnabled = true;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = true;
         }
         #endregion
 
@@ -164,7 +164,7 @@ namespace Timelapse.Dialog
         #region Callback - Reset CSV File Defaults
         private void ResetCSVDefaults_Click(object sender, RoutedEventArgs e)
         {
-            this.RadioButtonCSVDateAndTimeColumns.IsChecked = true;
+            this.RadioButtonCSVLocalDateTimeColumnWithoutT.IsChecked = true;
             this.CheckBoxCSVInsertSpaceBeforeDates.IsChecked = true;
             this.SetCSVOptions();
         }
@@ -260,10 +260,10 @@ namespace Timelapse.Dialog
         #region Callbacks - Detection and Bounding Boxsettings
         private void CheckBoxUseDetections_Click(object sender, RoutedEventArgs e)
         {
-            this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;
-            this.BoundingBoxDisplayThresholdSlider.IsEnabled = this.timelapseState.UseDetections;
-            this.CheckBoxBoundingBoxAnnotate.IsEnabled = this.timelapseState.UseDetections;
-            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = this.timelapseState.UseDetections;
+            this.timelapseState.UseDetections = this.CheckBoxUseDetections.IsChecked == true;//this.timelapseState.UseDetections;
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = true;//this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxAnnotate.IsEnabled = true;//this.timelapseState.UseDetections;
+            this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsEnabled = true;//this.timelapseState.UseDetections;
         }
 
         private void ResetDetections_Click(object sender, RoutedEventArgs e)
@@ -273,7 +273,7 @@ namespace Timelapse.Dialog
             this.timelapseState.UseDetections = true;
             this.CheckBoxBoundingBoxAnnotate.IsChecked = true;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = false;
-            this.BoundingBoxDisplayThresholdSlider.IsEnabled = false;
+            this.BoundingBoxDisplayThresholdSlider.IsEnabled = true;
             this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;
         }
 
@@ -359,6 +359,5 @@ namespace Timelapse.Dialog
 
 
         #endregion
-
     }
 }

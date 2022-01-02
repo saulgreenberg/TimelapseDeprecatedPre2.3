@@ -88,7 +88,7 @@ namespace Timelapse.Editor
             {
                 VersionChecks updater = new VersionChecks(this, Constant.VersionUpdates.ApplicationName, Constant.VersionUpdates.LatestVersionFileNameXML);
                 updater.TryCheckForNewVersionAndDisplayResultsAsNeeded(false);
-                this.userSettings.MostRecentCheckForUpdates = DateTime.UtcNow;
+                this.userSettings.MostRecentCheckForUpdates = DateTime.Now;
             }
         }
 
