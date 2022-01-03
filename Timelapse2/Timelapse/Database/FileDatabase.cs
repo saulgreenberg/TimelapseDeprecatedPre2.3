@@ -233,8 +233,11 @@ namespace Timelapse.Database
                 }
                 if (templateControl?.DataLabel == Constant.DatabaseColumn.UtcOffset)
                 {
-                    templateControl.Visible = false;
-                    this.SyncControlToDatabase(templateControl);
+                    // We now hide the UTC Offset control
+                    // Also, it uses the UtcOffset datalabel in the Where condition to find the correct row to update
+                    // This is far more reliable than the default Id, as the Id could change between the two templates
+                    templateControl.Visible = false;             
+                    this.SyncControlToDatabase(templateControl, Constant.DatabaseColumn.UtcOffset); 
                 }
             }
 
@@ -1085,6 +1088,11 @@ namespace Timelapse.Database
                         {
                             // File: the modified term creates a file path by concatonating relative path and file
                             term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
+                        }
+                        else if (false == this.CustomSelection?.SearchTerms?.Exists(x => x.DataLabel == sortTerm[i].DataLabel))
+                        {
+                            //SAULXXXXXX
+                            break;
                         }
                         else if (sortTerm[i].ControlType == Constant.Control.Counter)
                         {
@@ -2095,9 +2103,17 @@ namespace Timelapse.Database
 
         public void IndexCreateForFileAndRelativePathIfNotExists()
         {
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePathFile, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File);
+            // If even one of the indexes doesn't exist, they would all have to be created
+            if (0 == this.Database.ScalarGetCountFromSelect(Sql.SelectCountFromSqliteMasterWhereTypeEqualIndexAndNameEquals + Sql.Quote("IndexFile")))
+            {
+                List<Tuple<string, string, string>> tuples = new List<Tuple<string, string, string>>
+                {
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File),
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexRelativePathFile, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File)
+                };
+                this.Database.IndexCreateMultipleIfNotExists(tuples);
+            }
         }
 
         public void IndexDropForFileAndRelativePathIfExists()
