@@ -12,6 +12,17 @@ namespace Timelapse.Database
         /// Note that each sort term is a triplet indicating the Data Label, Label, and a string flag on whether the sort should be ascending (default) or descending.
         /// </summary>
         #region Public Static Methods - Get Sort Terms
+        // Construct a list of sort terms holding the default Sort criteria,
+        // That is, by RelativePath and DateTime both ascending
+        public static List<SortTerm> GetDefaultSortTerms()
+        {
+            List<SortTerm> sortTerms = new List<SortTerm>
+            {
+                new SortTerm(Constant.DatabaseColumn.RelativePath, Constant.SortTermValues.RelativePathDisplayLabel, Constant.DatabaseColumn.RelativePath, Constant.BooleanValue.True),
+                new SortTerm(Constant.DatabaseColumn.DateTime, Constant.SortTermValues.DateDisplayLabel, Constant.DatabaseColumn.DateTime, Constant.BooleanValue.True)
+            };
+            return sortTerms;
+        }
         public static List<SortTerm> GetSortTerms(List<SearchTerm> searchTerms)
         {
             // Check the arguments for null 

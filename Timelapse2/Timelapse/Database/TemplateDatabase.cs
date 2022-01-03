@@ -249,6 +249,7 @@ namespace Timelapse.Database
             }).ConfigureAwait(true);
         }
 
+        // Note the extra call in here, where we try to guarantee that the DateTime Defaults are in the new format.
         protected async virtual Task OnExistingDatabaseOpenedAsync(TemplateDatabase other, TemplateSyncResults templateSyncResults)
         {
             await Task.Run(() =>
@@ -256,6 +257,7 @@ namespace Timelapse.Database
                 this.GetControlsSortedByControlOrder();
                 this.EnsureDataLabelsAndLabelsNotEmpty();
                 this.EnsureUtcOffsetControlNotVisible();
+                this.EnsureDateTimeDefaultInNewFormat();
                 this.EnsureCurrentSchema();
             }).ConfigureAwait(true);
         }
@@ -501,15 +503,35 @@ namespace Timelapse.Database
         #region Public /Private Methods Sync - ControlToDatabase, TemplateTableCOntrolAndSpreadsheetOrderToDatabase
         public void SyncControlToDatabase(ControlRow control)
         {
+            // This form sync's by the ID
+            SyncControlToDatabase(control, String.Empty);
+            //// Check the arguments for null 
+            //ThrowIf.IsNullArgument(control, nameof(control));
+
+            //this.CreateBackupIfNeeded();
+            //this.Database.Update(Constant.DBTables.Controls, control.CreateColumnTuplesWithWhereByID());
+
+            //// it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
+            //this.GetControlsSortedByControlOrder();
+        }
+
+        public void SyncControlToDatabase(ControlRow control, string dataLabel)
+        {
+            // This generic form sync's by ID, or by a non-empty datalabel 
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
 
             this.CreateBackupIfNeeded();
-            this.Database.Update(Constant.DBTables.Controls, control.CreateColumnTuplesWithWhereByID());
+            // Create the where condition with the ID, but if the dataLabel is not empty, use the dataLabel as the where condition
+            ColumnTuplesWithWhere ctw = dataLabel == String.Empty
+                ? control.CreateColumnTuplesWithWhereByID() 
+                : new ColumnTuplesWithWhere(control.CreateColumnTuplesWithWhereByID().Columns, new ColumnTuple(Constant.Control.DataLabel, dataLabel));
+            this.Database.Update(Constant.DBTables.Controls, ctw);
 
             // it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
             this.GetControlsSortedByControlOrder();
         }
+
 
         // Update all ControlOrder and SpreadsheetOrder column entries in the template database to match their in-memory counterparts
         public void SyncTemplateTableControlAndSpreadsheetOrderToDatabase()
@@ -825,6 +847,39 @@ namespace Timelapse.Database
                 // While this method does not normally fail, one user did report it crashing here due to his Citrix system
                 // limiting how the template file is manipulated. The actual failure happens before this, but this
                 // is where it is caught.
+                Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
+                throw custom_e;
+            }
+        }
+
+        // In the upgrade to 2.2.5.0, the format for the DefaultValue for DateTime was changed.
+        // This upgrades the default in the template to the new format.
+        private void EnsureDateTimeDefaultInNewFormat()
+        {
+            try
+            {
+                foreach (ControlRow control in this.Controls)
+                {
+                    if (control.DataLabel == Constant.DatabaseColumn.DateTime)
+                    {
+                        string defaultDateTime = Util.DateTimeHandler.ToStringDatabaseDateTime(Constant.ControlDefault.DateTimeValue);
+                        if (control.DefaultValue == defaultDateTime)
+                        {
+                            return;
+                        }
+                        ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
+                        control.DefaultValue = defaultDateTime;
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DefaultValue, control.DefaultValue));
+                        columnsToUpdate.SetWhere(control.ID);
+                        this.Database.Update(Constant.DBTables.Controls, columnsToUpdate);
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // Throw a custom exception so we can give a more informative fatal error message.
+                // This method is not expected to fail, but...
                 Exception custom_e = new Exception(Constant.ExceptionTypes.TemplateReadWriteException, null);
                 throw custom_e;
             }

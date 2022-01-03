@@ -233,8 +233,11 @@ namespace Timelapse.Database
                 }
                 if (templateControl?.DataLabel == Constant.DatabaseColumn.UtcOffset)
                 {
-                    templateControl.Visible = false;
-                    this.SyncControlToDatabase(templateControl);
+                    // We now hide the UTC Offset control
+                    // Also, it uses the UtcOffset datalabel in the Where condition to find the correct row to update
+                    // This is far more reliable than the default Id, as the Id could change between the two templates
+                    templateControl.Visible = false;             
+                    this.SyncControlToDatabase(templateControl, Constant.DatabaseColumn.UtcOffset); 
                 }
             }
 
@@ -1031,15 +1034,6 @@ namespace Timelapse.Database
             {
                 SortTerm[] sortTerm = new SortTerm[2];
                 string[] term = new string[] { String.Empty, String.Empty, String.Empty };
-
-                // Special case for DateTime sorting.
-                // DateTime is UTC i.e., local time corrected by the UTCOffset. Although I suspect this is rare, 
-                // this can result in odd DateTime sorts (assuming intermixed images with similar datetimes but with different UTCOffsets)
-                // where the user is expected sorting by local time. 
-                // To sort by true local time rather then UTC, we need to alter
-                // OrderBy DateTime to OrderBy datetime(DateTime, UtcOffset || ' hours' )
-                // This datetime function adds the number of hours in the UtcOffset to the date/time recorded in DateTime
-                // that is, it turns it into local time, e.g., 2009-08-14T23:40:00.000Z, this can be sorted alphabetically
                 if (this.CustomSelection != null && this.CustomSelection.DetectionSelections.UseRecognition && this.CustomSelection.DetectionSelections.RecognitionType == RecognitionType.Classification && this.CustomSelection.DetectionSelections.RankByConfidence)
                 {
                     // Classifications: Override any sorting as we have asked to rank the results by confidence values
@@ -1056,35 +1050,45 @@ namespace Timelapse.Database
                 }
                 else
                 {
+                    // Get the specified sort order. We do this by retrieving the two sort terms
                     // Given the format of the corrected DateTime
                     for (int i = 0; i <= 1; i++)
                     {
                         sortTerm[i] = this.ImageSet.GetSortTerm(i);
-
                         // If we see an empty data label, we don't have to construct any more terms as there will be nothing more to sort
                         if (string.IsNullOrEmpty(sortTerm[i].DataLabel))
                         {
+                            if (i == 0)
+                            {
+                                // If the first term is not set, reset the sort back to the default
+                                this.ResetSortTermsToDefault(term);
+                            }
                             break;
                         }
                         else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.DateTime)
                         {
-                            // First Check for special cases, where we want to modify how sorting is done
-                            // DateTime:the modified query adds the UTC Offset to it
-                            // NOTE SAULXXX I Had A BUG WHERE IN SOME CULTURES UTC IS RECORDED AS EG +3,00 rather than +3.00 WHICH BLOWS UP THE DATE SORT
-                            // I now repaired the UTC OFFSET ROW IN  ALL THESE INSTANCES ON DATABASE OPEN, BUT IF THIS CONTINUES TO BE A PROBLEM USED
-                            // THE COMMENTED OUT VERSION WHICH IGNORES UTCOFFSET
-                            term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
-                            //term[i] = String.Format("datetime({0})", Constant.DatabaseColumn.DateTime);
+                            // We no longer need to consider UtcOffset (as its all normalized to 0.0, so this line that adds UTCOffset is defunct
+                            //term[i] = String.Format("datetime({0}, {1} || ' hours')", Constant.DatabaseColumn.DateTime, Constant.DatabaseColumn.UtcOffset);
+                            term[i] = String.Format("datetime({0})", Constant.DatabaseColumn.DateTime);
 
-                            // DUPLICATE RECORDS Special case. If there are multiple files with the same date/time and one of them is a duplicate,
-                            // then the duplicate may not necessarily appear in a sequence, as ambiguities just use the ID (remember that a duplicate is created with a new ID that may be very distant from the original record).
-                            // So, we add a final sort term of 'File'. However, we will decide later if we are going to actually use it
+                            // DUPLICATE RECORDS Special case if DateTime is the first search term and there is no 2nd search term. 
+                            // If there are multiple files with the same date/time and one of them is a duplicate,
+                            // then the duplicate may not necessarily appear in a sequence, as ambiguities just use the ID (a duplicate is created with a new ID that may be very distant from the original record).
+                            // So, we default the final sort term to 'File'. However, if this is not the first search term, it can be over-written 
                             term[2] = Constant.DatabaseColumn.File;
                         }
                         else if (sortTerm[i].DataLabel == Constant.DatabaseColumn.File)
                         {
                             // File: the modified term creates a file path by concatonating relative path and file
                             term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
+                        }
+                        else if (false == this.CustomSelection?.SearchTerms?.Exists(x => x.DataLabel == sortTerm[i].DataLabel))
+                        {
+                            // The Sorting data label doesn't exist (likely because that datalabel was deleted or renamed in the template)
+
+                            // Revert back to the default sort everywhere.
+                            this.ResetSortTermsToDefault(term);
+                            break;
                         }
                         else if (sortTerm[i].ControlType == Constant.Control.Counter)
                         {
@@ -1151,6 +1155,38 @@ namespace Timelapse.Database
                 return this.Database.GetDataTableFromSelect(query);
             }).ConfigureAwait(true);
             this.FileTable = new FileTable(filesTable);
+        }
+
+        // Used by the above
+        // Reset sort terms back to the defaults
+        private void ResetSortTermsToDefault(string[] term)
+        {
+            
+            // The Search terms should contain some of the necessary information
+            SearchTerm st1 = this.CustomSelection.SearchTerms.Find(x => x.DataLabel == Constant.DatabaseColumn.RelativePath);
+            SearchTerm st2 = this.CustomSelection.SearchTerms.Find(x => x.DataLabel == Constant.DatabaseColumn.DateTime);
+
+            SortTerm s1;
+            SortTerm s2;
+            if (st1 == null || st2 == null)
+            {
+                // Just in case the search terms aren't filled in, we use default values.
+                // This will work, but the Label may not be the one defined by the use which shouldn't be a big deal
+                List<SortTerm> defaultSortTerms = SortTerms.GetDefaultSortTerms();
+                s1 = defaultSortTerms[0];
+                s2 = defaultSortTerms[1];
+            }
+            else
+            {
+                s1 = new SortTerm(st1.DataLabel, st1.Label, st1.ControlType, Constant.BooleanValue.True);
+                s2 = new SortTerm(st2.DataLabel, st2.Label, st2.ControlType, Constant.BooleanValue.True);
+            }
+            term[0] = s1.DataLabel;
+            term[1] = s2.DataLabel;
+
+            // Update the Image Set with the new sort terms
+            this.ImageSet.SetSortTerm(s1, s2);
+            this.UpdateSyncImageSetToDatabase();
         }
 
         // Select all files in the file table
@@ -2095,9 +2131,17 @@ namespace Timelapse.Database
 
         public void IndexCreateForFileAndRelativePathIfNotExists()
         {
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath);
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File);
-            this.Database.IndexCreateIfNotExists(Constant.DatabaseValues.IndexRelativePathFile, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File);
+            // If even one of the indexes doesn't exist, they would all have to be created
+            if (0 == this.Database.ScalarGetCountFromSelect(Sql.SelectCountFromSqliteMasterWhereTypeEqualIndexAndNameEquals + Sql.Quote("IndexFile")))
+            {
+                List<Tuple<string, string, string>> tuples = new List<Tuple<string, string, string>>
+                {
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexRelativePath, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath),
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexFile, Constant.DBTables.FileData, Constant.DatabaseColumn.File),
+                    new Tuple<string, string, string>(Constant.DatabaseValues.IndexRelativePathFile, Constant.DBTables.FileData, Constant.DatabaseColumn.RelativePath + "," + Constant.DatabaseColumn.File)
+                };
+                this.Database.IndexCreateMultipleIfNotExists(tuples);
+            }
         }
 
         public void IndexDropForFileAndRelativePathIfExists()

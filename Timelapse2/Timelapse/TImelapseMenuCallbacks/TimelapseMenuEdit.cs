@@ -342,10 +342,10 @@ namespace Timelapse
             long currentFileID = this.DataHandler.ImageCache.Current.ID;
             if (deleteData == true)
             {
-                foreach (ImageRow ir in filesToDelete)
-                {
-                    System.Diagnostics.Debug.Print(ir.ID.ToString());
-                }
+                //foreach (ImageRow ir in filesToDelete)
+                //{
+                //    System.Diagnostics.Debug.Print(ir.ID.ToString());
+                //}
                 // if we delete the data for the current image only but not the file , we can sometimes get in the situation (particularly if we delete a duplicate) where the next fileID displayed is not the closest to the existing position.
                 // To resolve this, we get the closest non-deleted file ID before we do the deletion.
                 int fileIndex = this.DataHandler.ImageCache.CurrentRow;

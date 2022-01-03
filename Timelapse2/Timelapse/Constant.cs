@@ -185,8 +185,10 @@ namespace Timelapse.Constant
         public const int RowsPerInsert = 5000;
         public const int UtcOffsetPosition = 5;
         //public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.IntegerType + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
-        public const string DefaultSortTerms = Constant.DatabaseColumn.RelativePath + "," + Constant.SortTermValues.RelativePathDisplayLabel + "," + Sql.StringType + "," + Constant.BooleanValue.True + ","
-            + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Sql.StringType + "," + Constant.BooleanValue.True;
+        //public const string DefaultSortTerms = Constant.DatabaseColumn.RelativePath + "," + Constant.SortTermValues.RelativePathDisplayLabel + "," + Sql.StringType + "," + Constant.BooleanValue.True + ","
+        //    + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Sql.StringType + "," + Constant.BooleanValue.True;
+        public const string DefaultSortTerms = Constant.DatabaseColumn.RelativePath + "," + Constant.SortTermValues.RelativePathDisplayLabel + "," + Constant.DatabaseColumn.RelativePath + "," + Constant.BooleanValue.True + ","
+            + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Constant.BooleanValue.True;
         public const string DefaultQuickPasteXML = "<Entries></Entries>";
         public const string IndexRelativePath = "IndexRelativePath";
         public const string IndexRelativePathFile = "IndexRelativePathFile";

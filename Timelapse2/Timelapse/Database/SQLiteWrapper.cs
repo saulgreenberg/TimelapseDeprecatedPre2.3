@@ -71,7 +71,9 @@ namespace Timelapse.Database
         #endregion
 
         #region Indexes: Create or Drop (Public)
-        // Create an index in table tableName named index name to the column names
+        // Creates or drops various indexes in table tableName named index name to the column names
+
+        // Create a single index named indexName if it doesn't already exist
         public void IndexCreateIfNotExists(string indexName, string tableName, string columnNames)
         {
             // Form: CREATE INDEX IF NOT EXISTS indexName ON tableName  (column1, column2...);
@@ -79,12 +81,24 @@ namespace Timelapse.Database
             this.ExecuteNonQuery(query);
         }
 
-        // Drop an index named indexName if it exists
+        // Drop a single index named indexName if it exists
         public void IndexDrop(string indexName)
         {
             // Form: DROP INDEX IF EXISTS indexName 
             string query = Sql.DropIndex + Sql.IfExists + indexName;
             this.ExecuteNonQuery(query);
+        }
+
+        // Create multiple indexes wrapped in a begin / end 
+        // Each tuple provides the indexName, tableName, and columnNames
+        public void IndexCreateMultipleIfNotExists(List<Tuple<string, string, string>> tuples)
+        {
+            List<string> queries = new List<string>();
+            foreach (Tuple<string, string, string> tuple in tuples)
+            {
+                queries.Add(Sql.CreateIndex + Sql.IfNotExists + tuple.Item1 + Sql.On + tuple.Item2 + Sql.OpenParenthesis + tuple.Item3 + Sql.CloseParenthesis);
+            }
+            this.ExecuteNonQueryWrappedInBeginEnd(queries);
         }
         #endregion
 
@@ -503,7 +517,7 @@ namespace Timelapse.Database
                     {
                         command.CommandText = commandString;
                         command.ExecuteNonQuery();
-                        System.Diagnostics.Debug.Print(commandString);
+                        //System.Diagnostics.Debug.Print(commandString);
                     }
                 }
             }
@@ -673,13 +687,15 @@ namespace Timelapse.Database
         /// <returns>a list of all the column names in the  table</returns>
         private static List<string> GetSchemaColumnNamesAsList(SQLiteConnection connection, string tableName)
         {
-            SQLiteDataReader reader = GetSchema(connection, tableName);
-            List<string> columnNames = new List<string>();
-            while (reader.Read())
+            using (SQLiteDataReader reader = GetSchema(connection, tableName))
             {
-                columnNames.Add(reader[1].ToString());
+                List<string> columnNames = new List<string>();
+                while (reader.Read())
+                {
+                    columnNames.Add(reader[1].ToString());
+                }
+                return columnNames;
             }
-            return columnNames;
         }
 
         /// <summary>
@@ -761,13 +777,15 @@ namespace Timelapse.Database
                 using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
-                    SQLiteDataReader reader = GetSchema(connection, tableName);
-                    List<string> columnsList = new List<string>();
-                    while (reader.Read())
+                    using (SQLiteDataReader reader = GetSchema(connection, tableName))
                     {
-                        columnsList.Add(reader[1].ToString());
+                        List<string> columnsList = new List<string>();
+                        while (reader.Read())
+                        {
+                            columnsList.Add(reader[1].ToString());
+                        }
+                        return columnsList;
                     }
-                    return columnsList;
                 }
             }
             catch (Exception exception)
@@ -787,13 +805,15 @@ namespace Timelapse.Database
                 using (SQLiteConnection connection = SQLiteWrapper.GetNewSqliteConnection(this.connectionString))
                 {
                     connection.Open();
-                    SQLiteDataReader reader = GetSchema(connection, tableName);
-                    Dictionary<string, string> columndefaultsDict = new Dictionary<string, string>();
-                    while (reader.Read())
+                    using (SQLiteDataReader reader = GetSchema(connection, tableName))
                     {
-                        columndefaultsDict.Add(reader[1].ToString(), reader[4] != null ? reader[4].ToString() : String.Empty);
+                        Dictionary<string, string> columndefaultsDict = new Dictionary<string, string>();
+                        while (reader.Read())
+                        {
+                            columndefaultsDict.Add(reader[1].ToString(), reader[4] != null ? reader[4].ToString() : String.Empty);
+                        }
+                        return columndefaultsDict;
                     }
-                    return columndefaultsDict;
                 }
             }
             catch (Exception exception)
@@ -1051,48 +1071,50 @@ namespace Timelapse.Database
         private static string SchemaCloneButRenameColumn(SQLiteConnection connection, string tableName, string existingColumnName, string newColumnName)
         {
             string newSchema = String.Empty;
-            SQLiteDataReader reader = GetSchema(connection, tableName);
-            while (reader.Read())
+            using (SQLiteDataReader reader = GetSchema(connection, tableName))
             {
-                string existingColumnDefinition = String.Empty;
-
-                // Copy the existing column definition unless its the column named columnNam
-                for (int field = 0; field < reader.FieldCount; field++)
+                while (reader.Read())
                 {
-                    switch (field)
+                    string existingColumnDefinition = String.Empty;
+
+                    // Copy the existing column definition unless its the column named columnNam
+                    for (int field = 0; field < reader.FieldCount; field++)
                     {
-                        case 0:  // cid (Column Index)
-                            break;
-                        case 1:  // name (Column Name)
-                            // Rename the column if it is the one to be renamed
-                            existingColumnDefinition += (reader[1].ToString() == existingColumnName) ? newColumnName : reader[1].ToString();
-                            existingColumnDefinition += " ";
-                            break;
-                        case 2:  // type (Column type)
-                            existingColumnDefinition += reader[field].ToString() + " ";
-                            break;
-                        case 3:  // notnull (Column has a NOT NULL constraint)
-                            if (reader[field].ToString() != "0")
-                            {
-                                existingColumnDefinition += Sql.NotNull;
-                            }
-                            break;
-                        case 4:  // dflt_value (Column has a default value)
-                            if (String.IsNullOrEmpty(reader[field].ToString()))
-                            {
-                                existingColumnDefinition += Sql.Default + Sql.Quote(reader[field].ToString()) + " ";
-                            }
-                            break;
-                        case 5:  // pk (Column is part of the primary key)
-                            if (reader[field].ToString() != "0")
-                            {
-                                existingColumnDefinition += Sql.PrimaryKey;
-                            }
-                            break;
+                        switch (field)
+                        {
+                            case 0:  // cid (Column Index)
+                                break;
+                            case 1:  // name (Column Name)
+                                     // Rename the column if it is the one to be renamed
+                                existingColumnDefinition += (reader[1].ToString() == existingColumnName) ? newColumnName : reader[1].ToString();
+                                existingColumnDefinition += " ";
+                                break;
+                            case 2:  // type (Column type)
+                                existingColumnDefinition += reader[field].ToString() + " ";
+                                break;
+                            case 3:  // notnull (Column has a NOT NULL constraint)
+                                if (reader[field].ToString() != "0")
+                                {
+                                    existingColumnDefinition += Sql.NotNull;
+                                }
+                                break;
+                            case 4:  // dflt_value (Column has a default value)
+                                if (String.IsNullOrEmpty(reader[field].ToString()))
+                                {
+                                    existingColumnDefinition += Sql.Default + Sql.Quote(reader[field].ToString()) + " ";
+                                }
+                                break;
+                            case 5:  // pk (Column is part of the primary key)
+                                if (reader[field].ToString() != "0")
+                                {
+                                    existingColumnDefinition += Sql.PrimaryKey;
+                                }
+                                break;
+                        }
                     }
+                    existingColumnDefinition = existingColumnDefinition.TrimEnd(' ');
+                    newSchema += existingColumnDefinition + ", ";
                 }
-                existingColumnDefinition = existingColumnDefinition.TrimEnd(' ');
-                newSchema += existingColumnDefinition + ", ";
             }
             newSchema = newSchema.TrimEnd(',', ' '); // remove last comma
             return newSchema;

@@ -168,7 +168,6 @@ namespace Timelapse
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
             Dictionary<string, string> columndefaultdict = fileDatabase.SchemaGetColumnsAndDefaultValues(Constant.DBTables.FileData);
             char[] quote = { '\'' };
-
             foreach (KeyValuePair<string, string> pair in columndefaultdict)
             {
                 ControlRow row = this.templateDatabase.GetControlFromTemplateTable(pair.Key);
@@ -179,7 +178,6 @@ namespace Timelapse
                     break;
                 }
             }
-
             // Check to see if the root folder stored in the database is the same as the actual root folder. If not, ask the user if it should be changed.
             this.CheckAndCorrectRootFolder(fileDatabase);
 
@@ -211,6 +209,12 @@ namespace Timelapse
                 this.DataHandler.FileDatabase.UpdateSyncImageSetToDatabase();
             }
 
+            // Create an index on RelativePath, File,and RelativePath/File if it doesn't already exist
+            // This is really just a version check in case old databases don't have the index created,
+            // Newer databases (from 2.2.4.4 onwards) will have these indexes created and updated whenever images are loaded or added for the first time.
+            // If the index exists, this is a very cheap operation so there really is no need to do it by a version number check.
+            this.DataHandler.FileDatabase.IndexCreateForFileAndRelativePathIfNotExists();
+
             // If this is a new image database, try to load images (if any) from the folder...  
             if (importImages)
             {
@@ -220,12 +224,6 @@ namespace Timelapse
             {
                 await this.OnFolderLoadingCompleteAsync(false).ConfigureAwait(true);
             }
-
-            // Create an index on RelativePath, File,and RelativePath/File if it doesn't already exist
-            // This is really just a version check in case old databases don't have the index created,
-            // Newer databases (from 2.2.4.4 onwards) will have these indexes created and updated whenever images are loaded or added for the first time.
-            // If the index exists, this is a very cheap operation so there really is no need to do it by a version number check.
-            this.DataHandler.FileDatabase.IndexCreateForFileAndRelativePathIfNotExists();
             return true;
         }
         #endregion
