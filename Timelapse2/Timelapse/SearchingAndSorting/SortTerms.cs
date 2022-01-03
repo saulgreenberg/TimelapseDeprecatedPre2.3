@@ -18,7 +18,8 @@ namespace Timelapse.Database
         {
             List<SortTerm> sortTerms = new List<SortTerm>
             {
-                new SortTerm(Constant.DatabaseColumn.RelativePath, Constant.SortTermValues.RelativePathDisplayLabel, Constant.DatabaseColumn.RelativePath, Constant.BooleanValue.True)
+                new SortTerm(Constant.DatabaseColumn.RelativePath, Constant.SortTermValues.RelativePathDisplayLabel, Constant.DatabaseColumn.RelativePath, Constant.BooleanValue.True),
+                new SortTerm(Constant.DatabaseColumn.DateTime, Constant.SortTermValues.DateDisplayLabel, Constant.DatabaseColumn.DateTime, Constant.BooleanValue.True)
             };
             return sortTerms;
         }

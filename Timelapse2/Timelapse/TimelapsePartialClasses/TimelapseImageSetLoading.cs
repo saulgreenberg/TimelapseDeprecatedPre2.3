@@ -336,7 +336,6 @@ namespace Timelapse
                 }
 
                 // Create an index on RelativePath, File,and RelativePath/File if it doesn't already exist
-                System.Diagnostics.Debug.Print("XXXXX Here2");
                 this.DataHandler.FileDatabase.IndexCreateForFileAndRelativePathIfNotExists();
 
                 // Show the file slider
