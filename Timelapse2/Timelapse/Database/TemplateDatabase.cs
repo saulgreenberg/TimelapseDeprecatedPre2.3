@@ -27,7 +27,7 @@ namespace Timelapse.Database
         #region Private Variables
         private bool disposed;
         private DataGrid editorDataGrid;
-        private DateTime mostRecentBackup;
+        public DateTime mostRecentBackup = DateTime.MinValue;
         private DataRowChangeEventHandler onTemplateTableRowChanged;
         #endregion
 
@@ -505,14 +505,6 @@ namespace Timelapse.Database
         {
             // This form sync's by the ID
             SyncControlToDatabase(control, String.Empty);
-            //// Check the arguments for null 
-            //ThrowIf.IsNullArgument(control, nameof(control));
-
-            //this.CreateBackupIfNeeded();
-            //this.Database.Update(Constant.DBTables.Controls, control.CreateColumnTuplesWithWhereByID());
-
-            //// it's possible the passed data row isn't attached to TemplateTable, so refresh the table just in case
-            //this.GetControlsSortedByControlOrder();
         }
 
         public void SyncControlToDatabase(ControlRow control, string dataLabel)
@@ -521,10 +513,11 @@ namespace Timelapse.Database
             // Check the arguments for null 
             ThrowIf.IsNullArgument(control, nameof(control));
 
-            this.CreateBackupIfNeeded();
+            // this.CreateBackupIfNeeded();
+
             // Create the where condition with the ID, but if the dataLabel is not empty, use the dataLabel as the where condition
             ColumnTuplesWithWhere ctw = dataLabel == String.Empty
-                ? control.CreateColumnTuplesWithWhereByID() 
+                ? control.CreateColumnTuplesWithWhereByID()
                 : new ColumnTuplesWithWhere(control.CreateColumnTuplesWithWhereByID().Columns, new ColumnTuple(Constant.Control.DataLabel, dataLabel));
             this.Database.Update(Constant.DBTables.Controls, ctw);
 
@@ -585,16 +578,16 @@ namespace Timelapse.Database
             this.GetControlsSortedByControlOrder();
         }
 
+
         protected void CreateBackupIfNeeded()
         {
-            if (DateTime.UtcNow - this.mostRecentBackup < Constant.File.BackupInterval)
+            if (DateTime.Now - this.mostRecentBackup < Constant.File.BackupInterval)
             {
                 // not due for a new backup yet
                 return;
             }
-
             FileBackup.TryCreateBackup(this.FilePath);
-            this.mostRecentBackup = DateTime.UtcNow;
+            this.mostRecentBackup = DateTime.Now;
         }
 
         public void UpdateDisplayOrder(string orderColumnName, Dictionary<string, long> newOrderByDataLabel)

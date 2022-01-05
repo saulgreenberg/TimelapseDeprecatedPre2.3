@@ -103,7 +103,7 @@ namespace Timelapse
             // - upgrade the template tables if needed for backwards compatability (done automatically)
             // - compare the controls in the .tdb and .ddb template tables to see if there are any added or missing controls 
             TemplateSyncResults templateSyncResults = new Database.TemplateSyncResults();
-
+            bool backUpJustMade = false;
             using (FileDatabase fileDB = await FileDatabase.UpgradeDatabasesAndCompareTemplates(fileDatabaseFilePath, this.templateDatabase, templateSyncResults).ConfigureAwait(true))
             {
                 // A file database was available to open
@@ -156,14 +156,16 @@ namespace Timelapse
                     Mouse.OverrideCursor = null;
                     Dialogs.DatabaseFileNotLoadedAsCorruptDialog(this, fileDatabaseFilePath, isEmpty);
                     return false;
-                }
+                };
+                backUpJustMade = fileDB.mostRecentBackup != DateTime.MinValue;
             }
+
             // At this point:
             // - for backwards compatability, all old databases will have been updated (if needed) to the current version standard
             // - we should have a valid template and image database loaded
             // - we know if the user wants to use the old or the new template
             // So lets load the database for real. The useTemplateDBTemplate signals whether to use the template stored in the DDB, or to use the TDB template.
-            FileDatabase fileDatabase = await FileDatabase.CreateOrOpenAsync(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults).ConfigureAwait(true);
+            FileDatabase fileDatabase = await FileDatabase.CreateOrOpenAsync(fileDatabaseFilePath, this.templateDatabase, this.State.CustomSelectionTermCombiningOperator, templateSyncResults, backUpJustMade).ConfigureAwait(true);
 
             // The next test is to test and syncronize (if needed) the default values stored in the fileDB table schema to those stored in the template
             Dictionary<string, string> columndefaultdict = fileDatabase.SchemaGetColumnsAndDefaultValues(Constant.DBTables.FileData);

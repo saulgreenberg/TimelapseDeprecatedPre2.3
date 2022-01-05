@@ -12,14 +12,20 @@ namespace Timelapse.Database
     public static class FileBackup
     {
         #region Public Static Methods - Get Backup-related things
-        private static IEnumerable<FileInfo> GetBackupFiles(DirectoryInfo backupFolder, string sourceFilePath)
+        private static IEnumerable<FileInfo> GetBackupFiles(DirectoryInfo backupFolder, string sourceFilePath, bool excludeCheckpointFiles)
         {
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFilePath);
             string sourceFileExtension = Path.GetExtension(sourceFilePath);
             string searchPattern = sourceFileNameWithoutExtension + "*" + sourceFileExtension;
             try
             {
-                return backupFolder.GetFiles(searchPattern);
+                IEnumerable<FileInfo> backupFiles = backupFolder.GetFiles(searchPattern);
+                //Skip files that have the Constant.File.BackupCheckpointIndicator, as those are left for manual removal
+                if (excludeCheckpointFiles)
+                {
+                    backupFiles = backupFiles.Where(x => x.Name.Contains(Constant.File.BackupCheckpointIndicator) == false);
+                }
+                return backupFiles;
             }
             catch
             {
@@ -35,17 +41,17 @@ namespace Timelapse.Database
                 FileInfo mostRecentBackupFile = null;
                 if (backupFolder != null)
                 {
-                    mostRecentBackupFile = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc).FirstOrDefault();
+                    mostRecentBackupFile = FileBackup.GetBackupFiles(backupFolder, sourceFilePath, false).OrderByDescending(file => file.LastWriteTime).FirstOrDefault();
                 }
                 if (backupFolder != null && mostRecentBackupFile != null)
                 {
-                    return mostRecentBackupFile.LastWriteTimeUtc;
+                    return mostRecentBackupFile.LastWriteTime;
                 }
-                return DateTime.MinValue.ToUniversalTime();
+                return DateTime.MinValue;
             }
             catch
             {
-                return DateTime.MinValue.ToUniversalTime();
+                return DateTime.MinValue;
             }
         }
 
@@ -66,27 +72,6 @@ namespace Timelapse.Database
             }
             return backupFolder;
         }
-
-        // UNUSED - but keep just in case 
-        //public static string GetLastBackupFilePath(string sourceFilePath)
-        //{
-        //    string sourceFolderPath = Path.GetDirectoryName(sourceFilePath);
-        //    DirectoryInfo backupFolder = new DirectoryInfo(Path.Combine(sourceFolderPath, Constant.File.BackupFolder));   // The Backup Folder 
-        //    if (backupFolder.Exists == false)
-        //    {
-        //        // If there is no backp folder, then there is no backup file
-        //        return String.Empty;
-        //    }
-
-        //    // Get the backup files
-        //    IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
-        //    if (backupFiles.Any() == false)
-        //    {
-        //        // No backup files 
-        //        return String.Empty;
-        //    }
-        //    return backupFiles.Last().FullName;
-        //}
         #endregion
 
         #region Public Static Methods -TryCreateBackup, various versions
@@ -109,8 +94,15 @@ namespace Timelapse.Database
             return FileBackup.TryCreateBackup(folderPath, sourceFileName, false);
         }
 
-        // Full version: Copy or move file to backup version with separated path/source file name
+        // Creates a standard backup file
         public static bool TryCreateBackup(string folderPath, string sourceFileName, bool moveInsteadOfCopy)
+        {
+            return TryCreateBackup(folderPath, sourceFileName, moveInsteadOfCopy, String.Empty);
+        }
+
+        // Full version: Copy or move file to backup version with separated path/source file name
+        // If specialBackup is non-empty, it creates a special checkpointfile, usually to flag a non=-backwards compatable upgrade to the tdb and ddb files
+        public static bool TryCreateBackup(string folderPath, string sourceFileName, bool moveInsteadOfCopy, string specialBackup)
         {
             string sourceFilePath = Path.Combine(folderPath, sourceFileName);
             if (File.Exists(sourceFilePath) == false)
@@ -128,9 +120,13 @@ namespace Timelapse.Database
             }
             // create a timestamped copy of the file
             // file names can't contain colons so use non-standard format for timestamp with dashes for 24 hour-minute-second separation
+            // If there is a specialBackup term, then we modify anadd it before the timestamp
             string sourceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFileName);
             string sourceFileExtension = Path.GetExtension(sourceFileName);
-            string destinationFileName = String.Concat(sourceFileNameWithoutExtension, ".", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"), sourceFileExtension);
+            specialBackup = specialBackup == String.Empty
+                ? String.Empty
+                : Constant.File.BackupCheckpointIndicator + specialBackup;
+            string destinationFileName = String.Concat(sourceFileNameWithoutExtension, specialBackup, ".", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"), sourceFileExtension);
             string destinationFilePath = Path.Combine(backupFolder.FullName, destinationFileName);
 
             try
@@ -158,8 +154,8 @@ namespace Timelapse.Database
                 return false;
             }
 
-            // age out older backup files
-            IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath).OrderByDescending(file => file.LastWriteTimeUtc);
+            // age out older backup files (this skips the special checkpoint files)
+            IEnumerable<FileInfo> backupFiles = FileBackup.GetBackupFiles(backupFolder, sourceFilePath, true).OrderByDescending(file => file.LastWriteTimeUtc);
             if (backupFiles == null)
             {
                 // We can't delete older backups, but at least we were able to create a backup.
@@ -171,7 +167,6 @@ namespace Timelapse.Database
             }
             return true;
         }
-
         #endregion
     }
 }

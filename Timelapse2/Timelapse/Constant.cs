@@ -184,6 +184,7 @@ namespace Timelapse.Constant
         public const int RelativePathPosition = 2;
         public const int RowsPerInsert = 5000;
         public const int UtcOffsetPosition = 5;
+        public const string VersionNumberMinimum = "1.0.0.0";
         //public const string DefaultSortTerms = Constant.DatabaseColumn.ID + "," + Constant.DatabaseColumn.ID + "," + Sql.IntegerType + "," + Constant.BooleanValue.True + ",,," + Constant.BooleanValue.True;
         //public const string DefaultSortTerms = Constant.DatabaseColumn.RelativePath + "," + Constant.SortTermValues.RelativePathDisplayLabel + "," + Sql.StringType + "," + Constant.BooleanValue.True + ","
         //    + Constant.DatabaseColumn.DateTime + "," + Constant.DatabaseColumn.DateTime + "," + Sql.StringType + "," + Constant.BooleanValue.True;
@@ -288,6 +289,7 @@ namespace Timelapse.Constant
     {
         public const string AviFileExtension = ".avi";
         public const string BackupFolder = "Backups"; // Sub-folder that will contain database and csv file backups  
+        public const string BackupCheckpointIndicator = ".Checkpoint-"; // string added to the backup file path for special backup files
 
         public const string CsvFileExtension = ".csv";
         public const string DeletedFilesFolder = "DeletedFiles"; // Sub-folder that will contain backups of deleted images 

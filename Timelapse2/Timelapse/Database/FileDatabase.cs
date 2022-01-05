@@ -95,14 +95,18 @@ namespace Timelapse.Database
             return fileDatabase;
         }
 
-
-        public static async Task<FileDatabase> CreateOrOpenAsync(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults)
+        public static async Task<FileDatabase> CreateOrOpenAsync(string filePath, TemplateDatabase templateDatabase, CustomSelectionOperatorEnum customSelectionTermCombiningOperator, TemplateSyncResults templateSyncResults, bool backupFileJustMade)
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
-
+            
             FileDatabase fileDatabase = new FileDatabase(filePath);
-
+            if (backupFileJustMade)
+            { 
+                // if a backup of the db was very recently made, we just update it in this version to avoid doubly creating a backup file
+                // a bit of a hack, but it works.
+                fileDatabase.mostRecentBackup = DateTime.Now;
+            }
             if (populateDatabase)
             {
                 // initialize the database if it's newly created
@@ -236,8 +240,8 @@ namespace Timelapse.Database
                     // We now hide the UTC Offset control
                     // Also, it uses the UtcOffset datalabel in the Where condition to find the correct row to update
                     // This is far more reliable than the default Id, as the Id could change between the two templates
-                    templateControl.Visible = false;             
-                    this.SyncControlToDatabase(templateControl, Constant.DatabaseColumn.UtcOffset); 
+                    templateControl.Visible = false;
+                    this.SyncControlToDatabase(templateControl, Constant.DatabaseColumn.UtcOffset);
                 }
             }
 
@@ -404,9 +408,31 @@ namespace Timelapse.Database
 
         protected async override Task UpgradeDatabasesAndCompareTemplatesAsync(TemplateDatabase templateDatabase, TemplateSyncResults templateSyncResults)
         {
+
             // Check the arguments for null 
             ThrowIf.IsNullArgument(templateDatabase, nameof(templateDatabase));
             ThrowIf.IsNullArgument(templateSyncResults, nameof(templateSyncResults));
+
+            // This backup check forces Timelapse to create, if needed, special checkpoint files for both .ddb and .tdb files before any templates or databases are updated.
+            // This is usually reserved for non-backwards compatable database changes, just in case.
+            // Here, we want to ensure we checkpoint v2.2.5.0
+            if (this.TryGetImageSetVersionNumber(out string imageSetVersionNumber, false))
+            {
+                string criticalVersionNumber = "2.2.5.0";
+                if (VersionChecks.IsVersion1GreaterThanVersion2(criticalVersionNumber, imageSetVersionNumber))
+                {
+                    // Create the special backups file
+                    string criticalVersionNumberFileAddition = "pre-v" + criticalVersionNumber;
+                    
+                    // the .ddb file
+                    FileBackup.TryCreateBackup(Path.GetDirectoryName(this.FilePath), Path.GetFileName(this.FilePath), false, criticalVersionNumberFileAddition);
+                    this.mostRecentBackup = DateTime.Now;
+
+                    // the .tdb file - note that this will have been upgraded. I'm not sure how to get the original version, but the updates shouldn't be critical to this purpose 
+                    FileBackup.TryCreateBackup(Path.GetDirectoryName(this.FilePath), Path.GetFileName(templateDatabase.FilePath), false, criticalVersionNumberFileAddition);
+                    templateDatabase.mostRecentBackup = DateTime.Now;
+                }
+            }
 
             // perform TemplateTable initializations and migrations, then check for synchronization issues
             await base.UpgradeDatabasesAndCompareTemplatesAsync(templateDatabase, null).ConfigureAwait(true);
@@ -519,7 +545,7 @@ namespace Timelapse.Database
             // Note that we avoid Selecting * from the DataTable, as that could be an expensive operation
             // Instead, we operate directly on the database. There is only one exception (updating DateTime),
             // as we have to regenerate all the column's values
-
+            // TODO XXXX: REPLACE CODE BELOW WITH new existing function this.TryGetImageSetVersionNumber(out string imageSetVersionNumber, false)), AS IT DOES EVERYTHING
             // Get the image set. We will be checking some of its values as we go along
             this.ImageSetLoadFromDatabase();
 
@@ -627,7 +653,7 @@ namespace Timelapse.Database
                     Sql.Where + Sql.Instr + Sql.OpenParenthesis + utcColumnName + Sql.Comma + Sql.Quote(",") + Sql.CloseParenthesis + Sql.GreaterThan + "0");
             }
 
-            // As if Version 2.2.4.4...
+            // As if Version 2.2.5.0...
             // For non-zero offsets, correct DateTime to local time and set its UtcOffset to 0
             // This essentially will convert all dates to local time, which makes life way easier.
             // string firstVersionWithUTCSetToZero = "2.2.4.4";
@@ -640,6 +666,7 @@ namespace Timelapse.Database
             //        datetime = DateTime(datetime, UtcOffset || ' hours'),
             //        UtcOffset = '0.0'
             //    WHERE UtcOffset<> '0.0'
+
             this.Database.ExecuteNonQuery(Sql.Update + Constant.DBTables.FileData + Sql.Set
                 + Constant.DatabaseColumn.DateTime + Sql.Equal
                 + Sql.Strftime + Sql.OpenParenthesis + Sql.Quote(Constant.Time.DateTimeSQLFormatForWritingTimelapseDB) + Sql.Comma
@@ -648,8 +675,9 @@ namespace Timelapse.Database
                 + Sql.Comma
                 + Constant.DatabaseColumn.UtcOffset + Sql.Equal + Sql.Quote("0.0")
                 + Sql.Where + Constant.DatabaseColumn.UtcOffset + Sql.NotEqual + Sql.Quote("0.0"));
-            // We also reset the TimeZone column in the ImageSet if its not already set to the Neutral Time Zone
-            //this.Database.ExecuteNonQuery(
+            // We don't have to reset the TimeZone column in the ImageSet. It is ignored in this version, but still useful if opened in prior versions (I think)
+            // So this code is commented out.
+            // this.Database.ExecuteNonQuery(
             //    Sql.Update + Constant.DBTables.ImageSet + Sql.Set 
             //    + Constant.DatabaseColumn.TimeZone + Sql.Equal + Sql.Quote(Constant.Time.NeutralTimeZone) 
             //    + Sql.Where + Constant.DatabaseColumn.TimeZone + Sql.NotEqual + Sql.Quote(Constant.Time.NeutralTimeZone));
@@ -1161,7 +1189,7 @@ namespace Timelapse.Database
         // Reset sort terms back to the defaults
         private void ResetSortTermsToDefault(string[] term)
         {
-            
+
             // The Search terms should contain some of the necessary information
             SearchTerm st1 = this.CustomSelection.SearchTerms.Find(x => x.DataLabel == Constant.DatabaseColumn.RelativePath);
             SearchTerm st2 = this.CustomSelection.SearchTerms.Find(x => x.DataLabel == Constant.DatabaseColumn.DateTime);
@@ -2300,6 +2328,32 @@ namespace Timelapse.Database
             {
                 imageSetTable.Dispose();
             }
+        }
+
+        // Try getting the version number as recorded in the ImageSet datatable.
+        private bool TryGetImageSetVersionNumber(out string versionNumber, bool forceUpdate)
+        {
+            versionNumber = String.Empty;
+            if (this.Database == null)
+            {
+                // THe database hasn't been loaded yet
+                return false;
+            }
+
+            if (this.ImageSet == null || forceUpdate)
+            {
+                // The image set hasn't been loaded yet, so try to load it
+                this.ImageSetLoadFromDatabase();
+            }
+            if (false == this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.VersionCompatabily))
+            {
+                // As there is no version column, this must be a really early version.
+                // Return some very low number, which should trigger most checks and updates
+                versionNumber = Constant.DatabaseValues.VersionNumberMinimum; ;
+                return true;
+            }
+            versionNumber = this.ImageSet.VersionCompatability;
+            return true;
         }
         #endregion
 
