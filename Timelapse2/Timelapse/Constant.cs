@@ -608,7 +608,7 @@ namespace Timelapse.Constant
     public static class Time
     {
         // The standard date format, e.g., 05-Apr-2011
-        public static string NeutralTimeZone = TimeZoneInfo.Local.Id; // For backwards compatabity, we use the local time zone. Eventually, this will disapper. 
+        public static readonly string NeutralTimeZone = TimeZoneInfo.Local.Id; // For backwards compatabity, we use the local time zone. Eventually, this will disapper. 
 
 
         public const string DateFormat = "dd-MMM-yyyy";

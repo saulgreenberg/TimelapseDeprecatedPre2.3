@@ -146,6 +146,7 @@ namespace Timelapse
                         // Non critical differences in template, so these don't need reporting
                         templateSyncResults.UseTemplateDBTemplate = true;
                     }
+                    backUpJustMade = fileDB.mostRecentBackup != DateTime.MinValue;
                 }
                 else if (File.Exists(fileDatabaseFilePath) == true)
                 {
@@ -157,7 +158,6 @@ namespace Timelapse
                     Dialogs.DatabaseFileNotLoadedAsCorruptDialog(this, fileDatabaseFilePath, isEmpty);
                     return false;
                 };
-                backUpJustMade = fileDB.mostRecentBackup != DateTime.MinValue;
             }
 
             // At this point:
@@ -256,7 +256,7 @@ namespace Timelapse
                 if (this.ShowDialogAndCheckIfChangesWereMade(populateField))
                 {
                     this.State.MetadataOnLoad = populateField.MetadataOnLoad;
-                    
+
                 }
                 Mouse.OverrideCursor = cursor;
             }
