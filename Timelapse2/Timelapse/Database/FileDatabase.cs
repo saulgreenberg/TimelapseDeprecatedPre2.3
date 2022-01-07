@@ -1110,10 +1110,12 @@ namespace Timelapse.Database
                             // File: the modified term creates a file path by concatonating relative path and file
                             term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
                         }
-                        else if (false == this.CustomSelection?.SearchTerms?.Exists(x => x.DataLabel == sortTerm[i].DataLabel))
+                        else if (sortTerm[i].DataLabel != Constant.DatabaseColumn.ID  
+                                 && false == this.CustomSelection?.SearchTerms?.Exists(x => x.DataLabel == sortTerm[i].DataLabel))
                         {
-                            // The Sorting data label doesn't exist (likely because that datalabel was deleted or renamed in the template)
 
+                            // The Sorting data label doesn't exist (likely because that datalabel was deleted or renamed in the template)
+                            // Note: as ID isn't in the list, we have to check that so it can pass through as a sort option
                             // Revert back to the default sort everywhere.
                             this.ResetSortTermsToDefault(term);
                             break;
