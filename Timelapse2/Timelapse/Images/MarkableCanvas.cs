@@ -731,22 +731,24 @@ namespace Timelapse.Images
 
         public void SetMagnifiersAccordingToCurrentState(bool showMagnifier, bool showOffset)
         {
-            this.magnifyingGlass.Show = showMagnifier && this.MagnifiersEnabled && this.displayingImage;
+            this.magnifyingGlass.Show = showMagnifier && this.MagnifiersEnabled && this.displayingImage && IsMouseOverImage();
+            // We can't show the offset lens on the scaled video, as scaling the video also scales the offset lens (at least, not until we fix it)!
+            this.OffsetLens.Show = showOffset & this.MagnifiersEnabled && this.displayingImage == false && this.VideoPlayer.IsUnScaled && this.IsThumbnailGridVisible == false && IsMouseOverVideo();
+        }
 
-            if (showOffset & this.MagnifiersEnabled && this.displayingImage == false && this.VideoPlayer.IsUnScaled & this.IsThumbnailGridVisible == false)
-            {
-                // Check if the cursor is over the video
-                Point mousePositionOnVideo = Mouse.GetPosition(this.VideoPlayer.Video);
-                Point transformedSize = this.transformGroup.Transform(new Point(this.VideoPlayer.Video.ActualWidth, this.VideoPlayer.Video.ActualHeight));
+        // Return true if the mouse cursor is over the image, otherwise false
+        private bool IsMouseOverImage()
+        {
+            Point mousePosition = Mouse.GetPosition(this.ImageToDisplay);
+            return  mousePosition.X >= 0 && mousePosition.X <= this.ImageToDisplay.ActualWidth &&
+                    mousePosition.Y >= 0 && mousePosition.Y <= this.ImageToDisplay.ActualHeight;
+        }
 
-                bool mouseOverVideo = (mousePositionOnVideo.X <= transformedSize.X) && (mousePositionOnVideo.Y <= transformedSize.Y);
-                this.OffsetLens.Show = mouseOverVideo;
-                //this.OffsetLens.Show = showOffset ? this.MagnifiersEnabled && this.displayingImage == false && this.VideoToDisplay.IsUnScaled : false;
-            }
-            else
-            {
-                this.OffsetLens.Show = false;
-            }
+        private bool IsMouseOverVideo()
+        {
+            Point mousePosition = Mouse.GetPosition(this.VideoPlayer.Video);
+            return mousePosition.X >= 0 && mousePosition.X <= this.VideoPlayer.Video.ActualWidth &&
+                   mousePosition.Y >= 0 && mousePosition.Y <= this.VideoPlayer.Video.ActualHeight;
         }
         #endregion
 
@@ -978,20 +980,15 @@ namespace Timelapse.Images
             // Note that it uses the actual (transformed) bounds of the image            
             if (this.magnifyingGlass.IsEnabled && this.displayingImage)
             {
-                Point transformedSize = this.transformGroup.Transform(new Point(this.ImageToDisplay.ActualWidth, this.ImageToDisplay.ActualHeight));
-                bool mouseOverImage = (mousePosition.X <= transformedSize.X) && (mousePosition.Y <= transformedSize.Y);
-                this.SetMagnifiersAccordingToCurrentState(mouseOverImage, false);
+                this.SetMagnifiersAccordingToCurrentState(true, false);
             }
             else if (this.OffsetLens.IsEnabled && this.displayingImage == false)
             {
-                Point transformedSize = this.transformGroup.Transform(new Point(this.VideoPlayer.Video.ActualWidth, this.VideoPlayer.Video.ActualHeight));
-                bool mouseOverVideo = (mousePosition.X <= transformedSize.X) && (mousePosition.Y <= transformedSize.Y);
-                this.SetMagnifiersAccordingToCurrentState(false, mouseOverVideo);
+                this.SetMagnifiersAccordingToCurrentState(false, true);
             }
 
             if (this.isPanning)
             {
-
                 // If the left button is pressed, translate (pan) across the scaled image or video
                 // We hide the magnifying glass during panning so it won't be distracting.
                 if (e.LeftButton == MouseButtonState.Pressed)
