@@ -377,6 +377,11 @@ namespace Timelapse.Database
                         string term2 = SqlPhrase.DataLabelOperatorValue(dataLabel, TermToSqlOperator(Constant.SearchTermOperator.Glob), searchTerm.DatabaseValue + @"\*", false);
                         whereForTerm += Sql.OpenParenthesis + term1 + Sql.Or + term2 + Sql.CloseParenthesis;
                     }
+                    else if (dataLabel == Constant.DatabaseColumn.DateTime)
+                    {
+                        // A special form for DateTime, as we only want to consider the Date portion of the DateTime
+                        whereForTerm = SqlPhrase.DataLabelDateTimeOperatorValue(dataLabel, TermToSqlOperator(searchTerm.Operator), searchTerm.DatabaseValue);
+                    }
                     else
                     {
                         // Standard search term

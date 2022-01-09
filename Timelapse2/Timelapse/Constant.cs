@@ -617,9 +617,9 @@ namespace Timelapse.Constant
         // DateTimes as stored in the database. The 2nd form is so it can read in from the DB both the legacy (UTC) format and current simpler format 
         public const string DateTimeDatabaseLegacyUTCFormat = "yyyy-MM-ddTHH:mm:ss.fffZ";  // legacy DatabaseFormat
         public const string DateTimeDatabaseFormat = "yyyy-MM-dd HH:mm:ss";
-        public static readonly string[] DateTimeDatabaseFormats = { Constant.Time.DateTimeDatabaseFormat, Constant.Time.DateTimeDatabaseLegacyUTCFormat }; 
+        public static readonly string[] DateTimeDatabaseFormats = { Constant.Time.DateTimeDatabaseFormat, Constant.Time.DateTimeDatabaseLegacyUTCFormat };
 
-        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
+        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss"; 
         public const string DateTimeCSVWithTSeparator = "yyyy-MM-dd'T'HH:mm:ss";
         public const string DateTimeCSVWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
 

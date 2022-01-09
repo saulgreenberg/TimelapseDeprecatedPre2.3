@@ -476,6 +476,9 @@ namespace Timelapse
             {
                 this.DataGridPane_IsActiveChanged(null, null);
             }
+
+            // We have to do this again, to ensure that we have switched to the ImageSetPane
+            this.ImageSetPane.IsActive = true;
         }
         #endregion
 

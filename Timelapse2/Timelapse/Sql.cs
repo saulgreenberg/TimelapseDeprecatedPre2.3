@@ -35,6 +35,7 @@ namespace Timelapse
         public const string CollateNocase = " COLLATE NOCASE ";
         public const string Comma = ", ";
         public const string DataSource = "Data Source=";
+        public const string DateFunction = " Date ";
         public const string DateTimeFunction = " DateTime ";
         public const string Default = " DEFAULT ";
         public const string DeleteFrom = "DELETE FROM ";
@@ -314,6 +315,13 @@ namespace Timelapse
             return castAsInteger
                 ? Sql.Cast + Sql.OpenParenthesis + dataLabel + Sql.AsInteger + Sql.CloseParenthesis + mathOperator + Sql.Quote(value) 
                 : dataLabel + mathOperator + Sql.Quote(value);
+        }
+
+        /// <returns>DataLabel operator "value", e.g., Date(datetime)= Date('2016-08-19 19:08:22')</returns>
+        public static string DataLabelDateTimeOperatorValue(string dataLabel, string mathOperator, string value)
+        {
+            value = value == null ? String.Empty : value.Trim();
+            return Sql.DateFunction + Sql.OpenParenthesis + dataLabel + Sql.CloseParenthesis + mathOperator + Sql.DateFunction + Sql.OpenParenthesis + Sql.Quote(value) + Sql.CloseParenthesis;
         }
 
         /// <summary>

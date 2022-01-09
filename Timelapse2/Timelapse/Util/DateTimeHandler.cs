@@ -161,6 +161,22 @@ namespace Timelapse.Util
                 return false;
             };
         }
+
+        /// <summary>
+        /// Parse a Date from its display format string representation "dd-MMM-yyyy". Return false on failure
+        /// </summary>
+        public static bool TryParseDisplayDateOnlyString(string dateTimeAsString, out DateTime dateTime)
+        {
+            if (DateTime.TryParseExact(dateTimeAsString, Constant.Time.DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime) == true)
+            {
+                return true;
+            }
+            else
+            {
+                dateTime = DateTime.MinValue;
+                return false;
+            };
+        }
         #endregion
 
         #region Public Static Parse to get TimeSpan

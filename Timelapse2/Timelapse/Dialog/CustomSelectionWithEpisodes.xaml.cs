@@ -274,17 +274,21 @@ namespace Timelapse.Dialog
                     Margin = new Thickness(5)
                 };
 
-                if (searchTerm.Label != Constant.DatabaseColumn.RelativePath)
+                if (searchTerm.Label == Constant.DatabaseColumn.DateTime)
                 {
-                    // Not relative path, so just use the label's name
-                    controlLabel.Text = searchTerm.Label;
+                    // Change DateTime to Date
+                    controlLabel.Text = Constant.DatabaseColumn.Date;
                 }
-                else
+                else if (searchTerm.Label == Constant.DatabaseColumn.RelativePath)
                 {
                     // RelativePath label adds details
                     controlLabel.Inlines.Add(searchTerm.Label + " folder");
                     controlLabel.Inlines.Add(new Run(Environment.NewLine + "includes subfolders") { FontStyle = FontStyles.Italic, FontSize = 10 });
-
+                }
+                else
+                {
+                    // Just use the label's name
+                    controlLabel.Text = searchTerm.Label;
                 }
                 Grid.SetRow(controlLabel, gridRowIndex);
                 Grid.SetColumn(controlLabel, CustomSelectionWithEpisodes.LabelColumn);
@@ -372,15 +376,17 @@ namespace Timelapse.Dialog
                     DateTimeOffset dateTime = this.database.CustomSelection.GetDateTime(gridRowIndex - 1, offset);
 
                     dateTime = new DateTimeOffset( (dateTime + dateTime.Offset).Ticks, TimeSpan.Zero);
+                    // The DateTime Picker is set to show only the date portion 
                     DateTimePicker dateValue = new DateTimePicker()
                     {
                         FontWeight = FontWeights.Normal,
                         Format = DateTimeFormat.Custom,
-                        FormatString = Constant.Time.DateTimeDisplayFormat,
+                        FormatString = Constant.Time.DateFormat,
                         IsEnabled = searchTerm.UseForSearching,
                         Width = DefaultControlWidth,
                         CultureInfo = CultureInfo.CreateSpecificCulture("en-US"),
-                        Value = dateTime.DateTime
+                        Value = dateTime.DateTime,
+                        TimePickerVisibility = Visibility.Collapsed
                     };
                     dateValue.ValueChanged += this.DateTime_SelectedDateChanged;
                     Grid.SetRow(dateValue, gridRowIndex);
@@ -783,7 +789,8 @@ namespace Timelapse.Dialog
                 int row = Grid.GetRow(datePicker);
                 // Because of the bug in the DateTimePicker, we have to get the changed value from the string
                 // as DateTimePicker.Value.Value can have the old date rather than the new one.
-                if (DateTimeHandler.TryParseDisplayDateTimeString(datePicker.Text, out DateTime newDateTime))
+                // Note that the DateTimePicker is set to only show the Date, so we parse for the DateOnly
+                if (DateTimeHandler.TryParseDisplayDateOnlyString(datePicker.Text, out DateTime newDateTime))
                 {
                     this.database.CustomSelection.SetDateTime(row - 1, newDateTime);
                     this.UpdateSearchDialogFeedback();
