@@ -163,7 +163,7 @@ namespace Timelapse.Util
         }
 
         /// <summary>
-        /// Parse a Datee from its display format string representation "dd-MMM-yyyy". Return false on failure
+        /// Parse a Date from its display format string representation "dd-MMM-yyyy". Return false on failure
         /// </summary>
         public static bool TryParseDisplayDateOnlyString(string dateTimeAsString, out DateTime dateTime)
         {
