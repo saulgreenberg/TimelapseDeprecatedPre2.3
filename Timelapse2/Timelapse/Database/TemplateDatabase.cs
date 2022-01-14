@@ -895,13 +895,29 @@ namespace Timelapse.Database
                     // Check if various values are empty, and if so update the row and fill the dataline with appropriate defaults
                     ColumnTuplesWithWhere columnsToUpdate = new ColumnTuplesWithWhere();    // holds columns which have changed for the current control
                     bool noDataLabel = String.IsNullOrWhiteSpace(control.DataLabel);
-                    if (noDataLabel && String.IsNullOrWhiteSpace(control.Label))
+                    bool noLabel = String.IsNullOrWhiteSpace(control.Label);
+                    if (noDataLabel && noLabel)
                     {
                         string dataLabel = this.GetNextUniqueDataLabel(control.Type);
                         columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, dataLabel));
                         columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.DataLabel, dataLabel));
                         control.Label = dataLabel;
                         control.DataLabel = dataLabel;
+                    }
+                    else if (noLabel)
+                    {
+                        string label = control.DataLabel;
+                        foreach (ControlRow tmpcontrol in this.Controls)
+                        {
+                            if (tmpcontrol.Label == label)
+                            {
+                                // check if a label of the same name already exists
+                                label = this.GetNextUniqueDataLabel(tmpcontrol.Type);
+                                break;
+                            }
+                        }
+                        columnsToUpdate.Columns.Add(new ColumnTuple(Constant.Control.Label, label));
+                        control.Label = label;
                     }
                     else if (noDataLabel)
                     {
