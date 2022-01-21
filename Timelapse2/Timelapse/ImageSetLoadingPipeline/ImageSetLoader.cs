@@ -91,7 +91,9 @@ namespace Timelapse.ImageSetLoadingPipeline
             // The eventindicates explicitly when the first pass is done.
             ConcurrentQueue<ImageRow> databaseInsertionQueue = new ConcurrentQueue<ImageRow>();
 
-            string absolutePathPart = imageSetFolderPath + @"\";
+            // We trim as well, as it handles both the case where it already has a trailing \ and when it is missing it.
+            // For example, if we opened a template in a top level drive, it would have a following '\'
+            string absolutePathPart = imageSetFolderPath.TrimEnd(Path.DirectorySeparatorChar) + @"\";
 
             // Pass 1
             this.pass1 = new Task(() =>
