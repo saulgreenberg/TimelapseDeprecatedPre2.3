@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using Timelapse.Database;
 using Timelapse.Enums;
 using Timelapse.Util;
@@ -47,8 +48,10 @@ namespace Timelapse.Dialog
         // Note that all uses of this method is by dialog box windows (which should be initialy positioned relative to the main timelapse window) by a call to SetDefaultDialogPosition), 
         // rather than the main timelapse window (whose position, size and layout  is managed by the TimelapseAvalonExtension methods). 
         // We could likely collapse the two, but its not worth the bother. 
+        // This will sort of fail if a window's minimum size is larger than the available screen space. It should still show the window, but it may cut off the bottom of it.
         public static bool TryFitDialogInWorkingArea(Window window)
         {
+            int makeItATouchSmaller = 10;
             if (window == null)
             {
                 return false;
@@ -62,55 +65,80 @@ namespace Timelapse.Dialog
                 window.Top = 0;
             }
 
-            // If needed, adjust the window's height to be somewhat smaller than the screen 
-            // We allow some space for the task bar, assuming its visible at the screen's bottom
-            // and place the window at the very top. Note that this won't cater for the situation when
-            // the task bar is at the top of the screen, but so it goes.
-            int typicalTaskBarHeight = 40;
-            double availableScreenHeight = System.Windows.SystemParameters.PrimaryScreenHeight - typicalTaskBarHeight;
-            if (window.Height > availableScreenHeight)
+            // Get DPI factor from the main window
+            // Not sure how this would all work if multi-monitors had different dpis...
+            double dpiWidthFactor = 1;
+            double dpiHeightFactor = 1;
+            Window mainWindow = System.Windows.Application.Current.MainWindow;
+            PresentationSource presentationSource = PresentationSource.FromVisual(mainWindow);
+            if (presentationSource != null)
             {
-                window.Height = availableScreenHeight;
+                CompositionTarget compositionTarget = presentationSource.CompositionTarget;
+                Matrix m = compositionTarget.TransformToDevice;
+                //Matrix m = PresentationSource.FromVisual(System.Windows.Application.Current.MainWindow).CompositionTarget.TransformToDevice;
+                dpiWidthFactor = m.M11;
+                dpiHeightFactor = m.M22;
+            }
+
+            // Get the monitor screen that this window appears to be on
+            Screen screenInDpi = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(window).Handle);
+
+            // Get a rectangle defining the current window, converted to dpi
+            Rectangle windowPositionInDpi = new Rectangle(
+                        (int)(window.Left * dpiWidthFactor),
+                        (int)(window.Top * dpiHeightFactor),
+                        (int)(window.Width * dpiWidthFactor),
+                        (int)(window.Height * dpiHeightFactor));
+
+            // Get a rectangle defining the working area for this window, which should be dpi
+            // We will compare the two to see how the window fits into the working area.
+            Rectangle workingAreaInDpi = Screen.GetWorkingArea(windowPositionInDpi);
+
+            // If needed, adjust the window's height to be somewhat smaller than the screen's height 
+            // Allow some space for the task bar at the screen's bottom and place
+            // the window at the screen's top. Note that this won't cater for the situation when
+            // the task bar is at the top of the screen, but so it goes.
+            if (windowPositionInDpi.Height > screenInDpi.WorkingArea.Height)
+            {
+                window.Height = (screenInDpi.WorkingArea.Height - makeItATouchSmaller) / dpiHeightFactor;
                 window.Top = 0;
             }
 
-            Rectangle windowPosition = new Rectangle((int)window.Left, (int)window.Top, (int)window.Width, (int)window.Height);
-            Rectangle workingArea = Screen.GetWorkingArea(windowPosition);
             bool windowFitsInWorkingArea = true;
-
             // move window up if it extends below the working area
-            if (windowPosition.Bottom > workingArea.Bottom)
+            if (windowPositionInDpi.Bottom > workingAreaInDpi.Bottom)
             {
-                int pixelsToMoveUp = windowPosition.Bottom - workingArea.Bottom;
-                if (pixelsToMoveUp > windowPosition.Top)
+                int dpiToMoveUp = Convert.ToInt32(windowPositionInDpi.Bottom) - workingAreaInDpi.Bottom;
+                if (dpiToMoveUp > windowPositionInDpi.Top)
                 {
                     // window is too tall and has to shorten to fit screen
                     window.Top = 0;
-                    window.Height = workingArea.Bottom;
+                    window.Height = workingAreaInDpi.Bottom / dpiHeightFactor - makeItATouchSmaller;
                     windowFitsInWorkingArea = false;
                 }
-                else if (pixelsToMoveUp > 0)
+                else if (dpiToMoveUp > 0)
                 {
                     // move window up
-                    window.Top -= pixelsToMoveUp;
+                    window.Top -= dpiToMoveUp / dpiHeightFactor;
                 }
             }
 
             // move window left if it extends right of the working area
-            if (windowPosition.Right > workingArea.Right)
+            if (windowPositionInDpi.Right > workingAreaInDpi.Right)
             {
-                int pixelsToMoveLeft = windowPosition.Right - workingArea.Right;
-                if (pixelsToMoveLeft > windowPosition.Left)
+                int dpiToMoveLeft = windowPositionInDpi.Right - workingAreaInDpi.Right;
+                if (windowPositionInDpi.Left >= 0 && dpiToMoveLeft > windowPositionInDpi.Left)
                 {
                     // window is too wide and has to narrow to fit screen
                     window.Left = 0;
-                    window.Width = workingArea.Width;
+                    // So we don't get massively sized windows in case its a large working area with multiple monitors
+                    window.Width = Math.Min(workingAreaInDpi.Width, windowPositionInDpi.Width);
                     windowFitsInWorkingArea = false;
                 }
-                else if (pixelsToMoveLeft > 0)
+                else if (dpiToMoveLeft > 0)
                 {
                     // move window left
-                    window.Left -= pixelsToMoveLeft;
+                    window.Left -= dpiToMoveLeft / dpiWidthFactor;
                 }
             }
             return windowFitsInWorkingArea;
