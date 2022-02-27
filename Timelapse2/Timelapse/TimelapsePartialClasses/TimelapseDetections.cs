@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Windows;
 using BoundingBox = Timelapse.Images.BoundingBox;
 using BoundingBoxes = Timelapse.Images.BoundingBoxes;
@@ -27,6 +28,7 @@ namespace Timelapse
                         // This shouldn't happen, but...
                         continue;
                     }
+                    
                     float confidence = float.Parse(detectionRow[2].ToString());
                     string category = (string)detectionRow[1];
                     // Determine the maximum confidence of these detections

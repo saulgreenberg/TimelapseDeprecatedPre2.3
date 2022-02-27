@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using Timelapse.Database;
 using Timelapse.Util;
@@ -279,7 +280,7 @@ namespace Timelapse.Detection
                                 // Populate each classification category row
                                 string bboxAsString = (detection.bbox == null || detection.bbox.Length != 4)
                                     ? String.Empty
-                                    : String.Format("{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
+                                    : String.Format(CultureInfo.InvariantCulture, "{0}, {1}, {2}, {3}", detection.bbox[0], detection.bbox[1], detection.bbox[2], detection.bbox[3]);
                                 detection.detectionID = detectionIndex;
                                 noDetectionsIncluded = false;
 

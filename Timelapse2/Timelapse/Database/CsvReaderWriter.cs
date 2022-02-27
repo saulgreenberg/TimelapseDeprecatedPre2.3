@@ -33,6 +33,11 @@ namespace Timelapse.Database
             IProgress<ProgressBarArguments> progress = progressHandler;
             return await Task.Run(() =>
             {
+                //The separator, while normally a comma, can be different in some countries
+                // We special case the separator as a ';' for countries that us a comma for a decimal point, e.g., Germany 
+                String separator = String.Equals(",", System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                    ? ";"
+                    : ",";
                 try
                 {
                     progress.Report(new ProgressBarArguments(0, "Writing the CSV file. Please wait", false, true));
@@ -62,7 +67,7 @@ namespace Timelapse.Database
                                 // Skip the DateTime column if the CSVDateTimeOptions is set to show the two Date / Time columns instead
                                 continue;
                             }
-                            header.Append(AddColumnValue(dataLabel));
+                            header.Append(AddColumnValue(dataLabel, separator));
                         }
                         fileWriter.WriteLine(header.ToString());
 
@@ -97,11 +102,11 @@ namespace Timelapse.Database
                                         string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
                                         if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeColumnWithTSeparator)
                                         {
-                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithTSeparatorString()));
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithTSeparatorString(), separator));
                                         }
                                         else if (csvDateTimeOptions == CSVDateTimeOptionsEnum.DateTimeWithoutTSeparatorColumn)
                                         {
-                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithoutTSeparatorString()));
+                                            csvRow.Append(prefix + AddColumnValue(image.GetValueCSVDateTimeWithoutTSeparatorString(), separator));
                                         }
                                         else
                                         {
@@ -117,11 +122,11 @@ namespace Timelapse.Database
                                 else if (dataLabel == Constant.DatabaseColumn.Date || dataLabel == Constant.DatabaseColumn.Time)
                                 {
                                     string prefix = csvInsertSpaceBeforeDates ? " " : String.Empty;
-                                    csvRow.Append(prefix + AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                                    csvRow.Append(prefix + AddColumnValue(image.GetValueDatabaseString(dataLabel), separator));
                                 }
                                 else
                                 {
-                                    csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel)));
+                                    csvRow.Append(AddColumnValue(image.GetValueDatabaseString(dataLabel), separator));
                                 }
                             }
                             fileWriter.WriteLine(csvRow.ToString());
@@ -355,7 +360,6 @@ namespace Timelapse.Database
 
                         // We've now looked at all the columns in a row, so continue processing that row as needed
                         totalFilesProcessed++;
-
 
                         if (dateTime != DateTime.MinValue || (datePortion != DateTime.MinValue && timePortion != DateTime.MinValue))
                         {
@@ -727,31 +731,37 @@ namespace Timelapse.Database
         #region Private Methods - Used by above
         // Given a string representing a comma-separated row of values, add a value to it.
         // If special characters are in the string,  escape the string as needed
-        private static string AddColumnValue(string value)
+        // Note that the separator, while normally a comma, can be different in some countries
+        // that reserve comma for a decimal point, e.g., Germany 
+        private static string AddColumnValue(string value, string separator)
         {
             if (value == null)
             {
-                return ",";
+                return separator;
             }
-            if (value.IndexOfAny("\",\x0A\x0D".ToCharArray()) > -1)
+            // if (value.IndexOfAny("\",\x0A\x0D".ToCharArray()) > -1)
+            if (value.IndexOfAny(("\"" + separator + "\x0A\x0D").ToCharArray()) > -1)
             {
                 // commas, double quotation marks, line feeds (\x0A), and carriage returns (\x0D) require leading and ending double quotation marks be added
                 // double quotation marks within the field also have to be escaped as double quotes
-                return "\"" + value.Replace("\"", "\"\"") + "\"" + ",";
+                return "\"" + value.Replace("\"", "\"\"") + "\"" + separator;
             }
-
-            return value + ",";
+            return value + separator;
+            //return value + ",";
         }
 
         // Parse the rows in a CSV file and return it as a list   of lines, each line being a list of values
         private static List<List<string>> ReadAndParseCSVFile(string path)
         {
+            String separator = String.Equals(",", System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
+                    ? ";"
+                    : ",";
             try
             {
                 List<List<string>> parsedRows = new List<List<string>>();
                 using (TextFieldParser parser = new TextFieldParser(path))
                 {
-                    parser.Delimiters = new string[] { "," };
+                    parser.Delimiters = new string[] { separator };
                     while (true)
                     {
                         string[] parts = parser.ReadFields();

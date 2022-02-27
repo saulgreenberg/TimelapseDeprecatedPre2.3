@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using Timelapse.Util;
@@ -38,7 +39,7 @@ namespace Timelapse.Images
             // Check the arguments for null 
             ThrowIf.IsNullArgument(coordinates, nameof(coordinates));
 
-            float[] coords = Array.ConvertAll(coordinates.Split(','), float.Parse);
+            float[] coords = Array.ConvertAll(coordinates.Split(','), s => float.Parse(s, CultureInfo.InvariantCulture));
             this.SetValues(coords[0], coords[1], coords[2], coords[3], confidence, detectionCategory, detectionLabel, classifications);
         }
         #endregion

@@ -2460,7 +2460,7 @@ namespace Timelapse.Database
                             {
                                 JsonSerializer serializer = new JsonSerializer();
                                 Detector detector = serializer.Deserialize<Detector>(reader);
-
+                                    
                                 // If detection population was previously done in this session, resetting these tables to null 
                                 // will force reading the new values into them
                                 this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
