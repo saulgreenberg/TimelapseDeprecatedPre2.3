@@ -62,7 +62,7 @@ namespace Timelapse.Database
             if (this.TableExists(tableName))
             {
                 // Just in case the table exists, we will want to remove it before trying to create it.
-                this.DropTable(tableName);
+               this.DropTable(tableName);
             }
 
             string query = Sql.CreateTable + tableName + Sql.OpenParenthesis + Environment.NewLine;               // CREATE TABLE <tablename> (

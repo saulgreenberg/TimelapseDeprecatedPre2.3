@@ -32,7 +32,7 @@ namespace Timelapse.Database
         // Set/Get the raw datetime value
         public DateTime DateTime
         {
-            get { return this.Row.GetDateTimeField(Constant.DatabaseColumn.DateTime); }
+            get { return this.Row.GetDateTimeField(Constant.DatabaseColumn.DateTime);}
             private set { this.Row.SetField(Constant.DatabaseColumn.DateTime, value); }
         }
 

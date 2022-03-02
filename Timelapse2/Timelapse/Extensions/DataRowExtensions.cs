@@ -23,12 +23,18 @@ namespace Timelapse.Database
 
         public static DateTime GetDateTimeField(this DataRow row, string column)
         {
-            // Check the arguments for null 
+            // Check the arguments for null. 
             ThrowIf.IsNullArgument(row, nameof(row));
-
-            DateTime dateTime = (DateTime)row[column];
-            Debug.Assert(dateTime.Kind == DateTimeKind.Utc, String.Format("Unexpected kind {0} for date time {1}.", dateTime.Kind, dateTime));
-            return dateTime;
+            try
+            {
+                return (DateTime)row[column];
+            }
+            catch
+            {
+                // If for some reason we have an invalid date time (e.g., a null entry), always return a valid but improbable date (Jan 1 1900 midnight).
+                System.Diagnostics.Debug.Print("GetDateTimeField: Unexpected kind for date time in row with ID " + row.GetID());
+                return new DateTime(1900, 1, 1, 12, 0, 0, 0);
+            }
         }
 
         public static TEnum GetEnumField<TEnum>(this DataRow row, string column) where TEnum : struct, IComparable, IFormattable, IConvertible
@@ -40,7 +46,7 @@ namespace Timelapse.Database
                 return default;
             }
 
-            // WHile the code below returns the same result value, it is left as is to help future debugging, if needed.
+            // While the code below returns the same result value, it is left as is to help future debugging, if needed.
             if (Enum.TryParse(fieldAsString, out TEnum result))
             {
                 // The parse succeeded, where the TEnum result is in result
