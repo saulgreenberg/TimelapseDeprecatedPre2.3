@@ -122,7 +122,7 @@ namespace Timelapse.Controls
             // Note that if control is null (which shouldn't happen) we use an autoheight
             CheckBox popupText = new CheckBox
             {
-                Width = width,
+                Width = width < 20 ? 80 : width,
                 Height = (control == null) ? Double.NaN : control.Height,
                 Padding = padding,
                 VerticalAlignment = VerticalAlignment.Center,

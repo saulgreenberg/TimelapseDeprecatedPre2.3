@@ -223,7 +223,7 @@ namespace Timelapse.Controls
             TextBlock popupText = new TextBlock
             {
                 Text = String.Empty,
-                Width = width,
+                Width = width < 20 ? 80 : width,
                 Height = (control == null) ? Double.NaN : control.Height,
                 Padding = padding,
                 VerticalAlignment = VerticalAlignment.Bottom,
