@@ -209,7 +209,7 @@ namespace Timelapse
             this.BusyCancelIndicator.IsBusy = true;
             this.WindowCloseButtonIsEnabled(false);
 
-            TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime;
+            TimeSpan newestImageAdjustment = this.dateTimePickerLatestDateTime.Value.Value - this.latestImageDateTime.DateTime;
             TimeSpan intervalFromOldestToNewestImage = this.latestImageDateTime - this.earliestImageDateTime;
             if (newestImageAdjustment == TimeSpan.Zero)
             {
