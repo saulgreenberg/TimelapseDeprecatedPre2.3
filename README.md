@@ -9,14 +9,14 @@ Timelapse is currently in use across the world by various biologists and resourc
 * they have their own needs and ways for performing analytics on that data.
 Timelapse 2 helps in the 2nd step, where users then export the data so that it can be analyzed in another package of their choosing (e.g., R, spreadsheets, etc.)
 
-We are now working with Microsoft's AI for Earth, where one of their team perform image recognition of wildlife images submitted to Timelapse imports a recognition file they produce, and displays detected items within bounding boxes. Queries can be run against recognized entities.
+We also collaborated with Microsoft's AI for Earth team, especially Dan Morris, who created the Megadetector image recognition system. Megadetector is excellent at detecting, locating and broadly classifying detected entities (wildlife, people and vehicles) in images. If you submit your images to Megadetector, an image recognition file is produced.  Timelapse can import that file, and display detected items within bounding boxes. Queries can also be run against recognized entities.
 
 ### Contributing
 
 Bug reports, feature requests, and feedback are most welcome. Let us know! We can't improve the system if we don't hear from you. If you wish to co-develop this project, see below. 
 
 ### History
-Timelapse was originally designed for a fisheries biologist who ran many field cameras in Timelapse mode, hence its name. Over time, its interface and functionality has been extended to meet the needs of a broad variety of biologists who use field cameras in many different ways. 
+Timelapse was originally designed for a fisheries biologist who ran many field cameras in Timelapse mode, hence its name. Over time, its interface and functionality has been extended to meet the needs of a broad variety of scientists, agencies, researchers and educators who use field cameras in many different ways. 
 
 In 2016, another developer joined forces to overhaul Timelapse for improved code quality and flexibility. In late 2016, our coding effort diverged: see [Carnassial](https://github.com/CascadesCarnivoreProject/Carnassial) - although it appears that development has ceased on that project. Divergence happened mostly due to differing project requirements.  
 
