@@ -1,13 +1,13 @@
 # Timelapse2
 This repository contains the source code for and releases of [Timelapse 2](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.HomePage), created by Saul Greenberg of the University of Calgary and Greenberg Consulting Inc, and revised with the help of others.
 
-Timelapse2 is an Image Analyser for Camera Traps, where it is used by scientists to visually analyze and encode data from thousands of images and videos. See  the [Timelapse web site](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?) for packaged downloads, a tutorial guide and manual oriented towards end-users, and other resources.
+Timelapse2 is an Image Analyser for Camera Traps, where it is used by scientists, researchers, resource managers, educators and students to visually analyze and encode data from thousands of images and videos. See the [Timelapse web site](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?) for packaged downloads, tutorial guides oriented towards end-users, samples to play with and other resources.
 
-Timelapse is currently in use across the world by various biologists and resource managers within broadly varying institutions --- national and regional parks, ecological agencies, fishery departments, conservation societies, university groups, etc. --- for quite different needs (e.g., wildlife monitoring, fisheries usage, resource monitoring and management). What they have in common is
+Timelapse is currently in use across the world within broadly varying institutions --- national and regional parks, ecological agencies, fishery departments, conservation societies, university groups, etc. --- for quite different needs (e.g., wildlife monitoring, fisheries usage, resource monitoring and management, and even social science studies). What they have in common is
 * they collect large numbers of images from one to very many field cameras
-* they are interested in examining images and encoding data that is usually specific to their projects
+* they are interested in examining images and encoding (tagging) data that is usually specific to their projects
 * they have their own needs and ways for performing analytics on that data.
-Timelapse 2 helps in the 2nd step, where users then export the data so that it can be analyzed in another package of their choosing (e.g., R, spreadsheets, etc.)
+Timelapse 2 helps in the 2nd step, where users then export the entered data so that it can be analyzed in another package of their choosing (e.g., R, spreadsheets, etc.)
 
 We also collaborated with Microsoft's AI for Earth team, especially Dan Morris, who created the Megadetector image recognition system. Megadetector is excellent at detecting, locating and broadly classifying detected entities (wildlife, people and vehicles) in images. If you submit your images to Megadetector, an image recognition file is produced.  Timelapse can import that file, and display detected items within bounding boxes. Queries can also be run against recognized entities.
 
