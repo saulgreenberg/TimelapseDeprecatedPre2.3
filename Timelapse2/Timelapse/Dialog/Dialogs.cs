@@ -51,6 +51,7 @@ namespace Timelapse.Dialog
         // This will sort of fail if a window's minimum size is larger than the available screen space. It should still show the window, but it may cut off the bottom of it.
         public static bool TryFitDialogInWorkingArea(Window window)
         {
+            int minimumWidthOrHeightValue = 200;
             int makeItATouchSmaller = 10;
             if (window == null)
             {
@@ -79,9 +80,15 @@ namespace Timelapse.Dialog
                 dpiWidthFactor = m.M11;
                 dpiHeightFactor = m.M22;
             }
-
             // Get the monitor screen that this window appears to be on
             Screen screenInDpi = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(window).Handle);
+
+            // A user reported a bug where the window height was negative. Not sure what value we should
+            // really be testing against... Maybe MinWidth? Anyways, this should at least catch the worst of it.
+            if (window.Width * dpiWidthFactor <= minimumWidthOrHeightValue || window.Height * dpiHeightFactor <= minimumWidthOrHeightValue)
+            {
+                return false;
+            }
 
             // Get a rectangle defining the current window, converted to dpi
             Rectangle windowPositionInDpi = new Rectangle(
@@ -100,7 +107,10 @@ namespace Timelapse.Dialog
             // the task bar is at the top of the screen, but so it goes.
             if (windowPositionInDpi.Height > screenInDpi.WorkingArea.Height)
             {
-                window.Height = (screenInDpi.WorkingArea.Height - makeItATouchSmaller) / dpiHeightFactor;
+                double height = (screenInDpi.WorkingArea.Height - makeItATouchSmaller) / dpiHeightFactor;
+                if (height < minimumWidthOrHeightValue)
+                    return false;
+                window.Height = height;
                 window.Top = 0;
             }
 
