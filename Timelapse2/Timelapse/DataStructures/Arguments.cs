@@ -9,12 +9,15 @@ namespace Timelapse.DataStructures
         // argument strings
         private const string templateFlag = "-templatepath";
         private const string relativePathFlag = "-relativepath";
+        private const string isReadOnlyFlag = "-readonly";
 
         // The full Timelape template path
         public string Template { get; set; } = String.Empty;
 
         // Constrain all database actions to the relative path and its subfolders
         public string RelativePath { get; set; } = String.Empty;
+
+        public bool IsReadOnly { get; set; } = false;
 
         // Constrain all database actions to the relative path and its subfolders
         // if ConstrainToRelativePath is true, the user is contrained to select folders that are either the relative path or subfolders of it.
@@ -52,6 +55,9 @@ namespace Timelapse.DataStructures
                         {
                             this.RelativePath = arguments[index + 1];
                         }
+                        break;
+                    case isReadOnlyFlag:
+                        this.IsReadOnly = true;
                         break;
                     default:
                         break;

@@ -1046,19 +1046,22 @@ namespace Timelapse.Images
             {
                 if (this.displayingImage)
                 {
-                    // Get the current point, and create a marker on it.
-                    Point position = e.GetPosition(this.ImageToDisplay);
-                    position = Marker.ConvertPointToRatio(position, this.ImageToDisplay.ActualWidth, this.ImageToDisplay.ActualHeight);
-                    if (Marker.IsPointValidRatio(position))
+                    if (Util.GlobalReferences.MainWindow.IsReadOnly == false)
                     {
-                        // Add the marker if its between 0,0 and 1,1. This should always be the case, but there was one case
-                        // where it was recorded in the database as Ininity, INfinity, so this should guard against that.
-                        Marker marker = new Marker(null, position);
+                        // Get the current point, and create a marker on it.
+                        Point position = e.GetPosition(this.ImageToDisplay);
+                        position = Marker.ConvertPointToRatio(position, this.ImageToDisplay.ActualWidth, this.ImageToDisplay.ActualHeight);
+                        if (Marker.IsPointValidRatio(position))
+                        {
+                            // Add the marker if its between 0,0 and 1,1. This should always be the case, but there was one case
+                            // where it was recorded in the database as Ininity, INfinity, so this should guard against that.
+                            Marker marker = new Marker(null, position);
 
-                        // don't add marker to the marker list
-                        // Main window is responsible for filling in remaining properties and adding it.
-                        this.SendMarkerEvent(new MarkerEventArgs(marker, true));
-                        e.Handled = true;
+                            // don't add marker to the marker list
+                            // Main window is responsible for filling in remaining properties and adding it.
+                            this.SendMarkerEvent(new MarkerEventArgs(marker, true));
+                            e.Handled = true;
+                        }
                     }
                 }
                 else
@@ -1077,6 +1080,10 @@ namespace Timelapse.Images
         // Remove a marker on a right mouse button up event
         private void Marker_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
+            if (Util.GlobalReferences.MainWindow.IsReadOnly == true)
+            {
+                return;
+            }
             Canvas canvas = (Canvas)sender;
             Marker marker = (Marker)canvas.Tag;
             this.Markers.Remove(marker);

@@ -27,7 +27,6 @@ namespace Timelapse.Dialog
             Dialogs.TryFitDialogInWorkingArea(window);
         }
 
-
         // Position the dialog box within its owner's window
         public static void SetDefaultDialogPosition(Window window)
         {

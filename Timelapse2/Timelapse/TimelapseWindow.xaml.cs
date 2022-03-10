@@ -47,10 +47,14 @@ namespace Timelapse
                 }
             }
         }
+
+        // Whether the user should be allowed to change any Timelapse data
+        public bool IsReadOnly { get; set; } = false;
         #endregion
 
         #region Private Variables
         private bool disposed;
+
         private List<MarkersForCounter> markersOnCurrentFile;   // Holds a list of all markers for each counter on the current file
 
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
@@ -194,6 +198,16 @@ namespace Timelapse
             menuRestoreDefaults.Opened += this.MenuRestoreDefaults_Opened;
             menuRestoreDefaults.Items.Add(menuItemRestoreDefaults);
             this.DataEntryControls.ContextMenu = menuRestoreDefaults;
+
+            if (this.Arguments.IsReadOnly)
+            {
+                this.IsReadOnly = true;
+
+                // Because its readonly, disable the data entry panel and the copy previous values button
+                this.DataEntryControls.IsEnabled = false;
+                this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+                this.EnableOrDisableMenusAndControls();
+            }
 
             this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
