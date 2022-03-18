@@ -544,6 +544,33 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region MessageBox: .tdb is in a root or system folder
+        public static void TemplateInDisallowedFolder(Window owner, bool isDrive, string path)
+        {
+            string title = "Your template file is in a problematic location";
+            MessageBox messageBox = new MessageBox(title, owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Title = title;
+            messageBox.Message.Problem = "The location of your template is problematic. It should be in a normal folder." + Environment.NewLine;
+            messageBox.Message.Reason = "Timelapse expects templates and images to be in a normal folder." + Environment.NewLine;
+            if (isDrive)
+            {
+                messageBox.Message.Problem += String.Format("The issue is that your files are located in the top-level root drive '{0}' rather than a folder.{1}", path, Environment.NewLine);
+                messageBox.Message.Problem += "Timelapse disallows this as the entire drive would be searched for images. ";
+                messageBox.Message.Reason += "Timelapse cannot tell if this location is a massive drive containing all your files" + Environment.NewLine;
+                messageBox.Message.Reason += "(which would take ages to search and would retrieve every single image on it)," + Environment.NewLine;
+                messageBox.Message.Reason += "or, for example, an SD card that only contains your image set images.";
+            }
+            else
+            {
+                messageBox.Message.Problem += "The issue is that your files are located in a system or hidden folder:" + Environment.NewLine + "\u2022 " + path;
+                messageBox.Message.Reason += "As system or hidden folders shouldn't normally contain user files, this could lead to future problems.";
+            }
+            messageBox.Message.Solution = "Create a new folder, and try moving your files to that folder";
+            messageBox.ShowDialog();
+        }
+        #endregion
+
         #region MessageBox: Corrupted template
         public static void TemplateFileNotLoadedAsCorruptDialog(Window owner, string templateDatabasePath)
         {

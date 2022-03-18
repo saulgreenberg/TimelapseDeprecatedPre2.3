@@ -46,6 +46,16 @@ namespace Timelapse
         {
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
+                if (FilesFolders.IsFolderPathADriveLetter(Path.GetDirectoryName(templateDatabasePath)))
+                {
+                    Dialog.Dialogs.TemplateInDisallowedFolder(this, true, Path.GetDirectoryName(templateDatabasePath));
+                    return;
+                }
+                if (FilesFolders.IsFolderSystemOrHidden(Path.GetDirectoryName(templateDatabasePath)))
+                {
+                    Dialog.Dialogs.TemplateInDisallowedFolder(this, false, Path.GetDirectoryName(templateDatabasePath));
+                    return;
+                }
                 Mouse.OverrideCursor = Cursors.Wait;
                 this.StatusBar.SetMessage("Loading images, please wait...");
                 await this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath).ConfigureAwait(true);
