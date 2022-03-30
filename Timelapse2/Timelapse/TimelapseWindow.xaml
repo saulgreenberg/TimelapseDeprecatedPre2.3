@@ -139,29 +139,29 @@
                     <!-- Find image -->
                     <MenuItem Name="MenuItemFindImage" Header="_Find file" Click="MenuItemFindByFileName_Click" ToolTip="Find an image or video file whose filename contains your case-insensitive search term" InputGestureText="control-F"/>
 
-                    <Separator />
+                    <Separator Name="MenuS1"/>
 
                     <!-- QuickPaste Window-->
                     <MenuItem Name="MenuItemShowQuickPasteWindow" IsEnabled="True" Header="Show QuickPaste Window" Click="MenuItemQuickPasteWindowShow_Click" InputGestureText="Q" ToolTip="Display the Quickpaste window, which lets you create, selected, edit and delete QuickPaste items"/>
                     <MenuItem Name="MenuItemImportQuickPasteFromDB" IsEnabled="True" Header="Import QuickPaste Items from .ddb file..." Click="MenuItemQuickPasteImportFromDB_Click" ToolTip="Import Quickpaste items that were created in another timelapse database (.ddb) file"/>
-                    <Separator />
+                    <Separator Name="MenuS2"/>
 
                     <!-- Copy previous values / Restore Defaults-->
                     <MenuItem Name="MenuItemCopyPreviousValues" Header="_Copy previous values" Click="MenuItemCopyPreviousValues_Click" InputGestureText="C" ToolTip="Copy selected data as recorded on the previous file. Applies only to data marked 'Copyable' in the code template."/>
                     <MenuItem Name="MenuItemRestoreDefaults" Header="_Restore default values for this file" Click=" MenuItemRestoreDefaultValues_Click" ToolTip="For the currently displayed file, revert all fields to its default values (excepting file paths and dates/times)."/>
 
-                    <Separator/>
+                    <Separator Name="MenuS3"/>
 
                     <!-- Populate field with _metadata... Episode data-->
                     <MenuItem Name="MenuItemPopulateFieldFromMetadata" Header="Populate one or more fields with _metadata..." ToolTip="Match data fields with the desired metadata. Then populate those fields across all files with the corresponding metadata values." Click="MenuItemPopulateFieldFromMetadata_Click"/>
                     <MenuItem Name="MenuItemEpisodePopulateField" Header="_Populate a field with episode data..." Click="MenuItemEditPopulateFieldWithEpisodeData_Click" IsEnabled="False" ToolTip="Populate a field for the currently selected files with Episode Information"/>
 
-                    <Separator />
+                    <Separator Name="MenuS4"/>
                     <MenuItem Name="MenuItemDuplicateRecord" Header="_Duplicate this record..." Click="MenuItemEditDuplicateRecord_Click" IsEnabled="True" ToolTip="Create a duplicate of this record, which you can use to fill in additional information"/>
-                    <Separator />
+                    <Separator Name="MenuS5"/>
 
                     <!-- Delete submenu-->
-                    <MenuItem Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
+                    <MenuItem Name="MenuItemDelete" Header="D_elete"  SubmenuOpened="MenuItemDelete_SubmenuOpening"  >
                         <MenuItem Name="MenuItemDeleteCurrentFile" Header="The current image or video _file..." Click="MenuItemDeleteFiles_Click"  ToolTip="Deletes the current image or video file, but leaves entered data intact"/>
                         <MenuItem Name="MenuItemDeleteCurrentFileAndData" Header="The current image or video file and its _data..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the current image or video file, as well as the data entered for that file"/>
                         <MenuItem Name="MenuItemDeleteCurrentData" Header="Only the data associated with the current file..." Click="MenuItemDeleteFiles_Click" ToolTip="Deletes the data  entered for the current image or video file, but leaves the file in place"/>
@@ -172,7 +172,7 @@
                     </MenuItem>
 
                     <!-- Date correction submenu-->
-                    <MenuItem Header="_Date correction" SubmenuOpened="MenuItemDateCorrection_SubmenuOpened" >
+                    <MenuItem Name="MenuItmeDateCorrection" Header="_Date correction" SubmenuOpened="MenuItemDateCorrection_SubmenuOpened" >
                         <MenuItem Name="MenuItemRereadDatesfromImages" Header="_Re-read dates and times from files..." Click="MenuItemRereadDateTimesfromFiles_Click"  ToolTip="Re-read the dates and times from files" IsEnabled="True" />
                         <MenuItem Name="MenuItemDaylightSavingsTimeCorrection" Header="Correct for standard and _daylight savings time changes..." Click="MenuItemDaylightSavingsTimeCorrection_Click"  ToolTip="Correct daylight saving time issues" IsEnabled="True" />
                         <MenuItem Name="MenuItemDateTimeFixedCorrection" Header="Correct for cameras not set to the right date and time..." Click="MenuItemDateTimeFixedCorrection_Click"  ToolTip="Correct for cameras  not initially set to the right date and/or time." IsEnabled="True" />
@@ -181,7 +181,7 @@
                         <MenuItem Name="MenuItemDateTimeRereadDatesFromSelectedMetadata" Header="Read dates and times from a metadata field..." Click="MenuItemRereadDateTimesfromMetadata_Click" ToolTip="Read and update the dates and times from a metadata field of your choosing" IsEnabled="True" />
                     </MenuItem>
 
-                    <Separator/>
+                    <Separator Name="MenuS6"/>
                     <!-- Missing folders  or files -->
                     <MenuItem Name="MenuItemFindMissingImage" Header="Try to find this (and other) missing files ..." IsEnabled="True" Click="MenuItemEditFindMissingImage_Click" ToolTip="Try to find the currently displayed missing file, as well as other missing images in the same folder as this one "  />
                     <MenuItem Name="MenuItemFindMissingFolder" Header="Try to find any missing folders ..." IsEnabled="True" Click="MenuItemEditFindMissingFolder_Click" ToolTip="Check to see if any folders are missing. If so, try to find them."  />

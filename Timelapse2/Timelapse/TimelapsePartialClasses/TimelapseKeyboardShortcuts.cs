@@ -168,7 +168,10 @@ namespace Timelapse
                     }
                     break;
                 case Key.C:
-                    this.CopyPreviousValues_Click();
+                    if (this.State.IsViewOnly == false)
+                    { 
+                        this.CopyPreviousValues_Click();
+                    }
                     break;
                 case Key.E:
                     this.MenuItemEpisodeShowHide_Click(null, null);
@@ -177,7 +180,10 @@ namespace Timelapse
                     // Toggle the QuickPaste window
                     if (this.quickPasteWindow == null || (this.quickPasteWindow.Visibility != Visibility.Visible))
                     {
-                        this.QuickPasteWindowShow();
+                        if (this.State.IsViewOnly == false)
+                        {
+                            this.QuickPasteWindowShow();
+                        }
                     }
                     else
                     {

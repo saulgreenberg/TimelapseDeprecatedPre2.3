@@ -18,6 +18,10 @@ namespace Timelapse.Util
         // Whether the FileNavigator slider is being dragged
         public bool FileNavigatorSliderDragging { get; set; }
 
+        // Whether or not Timelapse is opened with a -viewonly arguement,
+        // where users will be able to view but not edit any data
+        public bool IsViewOnly { get; set; }
+
         // Whether the mouse is over a counter control
         public string MouseOverCounter { get; set; }
 

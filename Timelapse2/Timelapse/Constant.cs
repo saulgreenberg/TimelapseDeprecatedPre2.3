@@ -11,6 +11,12 @@ using Xceed.Wpf.Toolkit;
 
 namespace Timelapse.Constant
 {
+    public static class Arguments
+    {
+        public const string TemplateArgument = "-templatepath";
+        public const string RelativePathArgument = "-relativepath";
+        public const string ViewOnlyArgument = "-viewonly";
+    }
     public static class AvalonDockValues
     {
         public const double DefaultTimelapseWindowHeight = 900.0;

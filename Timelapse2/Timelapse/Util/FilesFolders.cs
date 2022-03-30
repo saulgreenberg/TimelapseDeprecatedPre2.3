@@ -362,7 +362,7 @@ namespace Timelapse.Util
             }
 
             DirectoryInfo directoryInfo = new DirectoryInfo(rootFolderPath);
-            // If its a system or hidden folder, skip it. (drive letters are system folders!)
+            // If its a system or hidden folder, skip it. (drive letters are normally system folders!)
             if (IsFolderSystemOrHidden(directoryInfo.Attributes))
             {
                 return;
@@ -420,7 +420,6 @@ namespace Timelapse.Util
 
         public static bool IsFolderSystemOrHidden(FileAttributes attributes)
         {
-
             return ((attributes & FileAttributes.System) == FileAttributes.System) ||
                    ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden);
         }

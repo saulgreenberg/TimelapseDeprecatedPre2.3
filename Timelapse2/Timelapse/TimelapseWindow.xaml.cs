@@ -51,6 +51,7 @@ namespace Timelapse
 
         #region Private Variables
         private bool disposed;
+
         private List<MarkersForCounter> markersOnCurrentFile;   // Holds a list of all markers for each counter on the current file
 
         private readonly SpeechSynthesizer speechSynthesizer;                    // Enables speech feedback
@@ -195,6 +196,16 @@ namespace Timelapse
             menuRestoreDefaults.Items.Add(menuItemRestoreDefaults);
             this.DataEntryControls.ContextMenu = menuRestoreDefaults;
 
+            if (this.Arguments.IsViewOnly)
+            {
+                this.State.IsViewOnly = true;
+                // Because its readonly, disable the data entry panel, the copy previous values button, the data entry panels' context menu etc.
+                // Individual controls are disabled in the DataEntryX panel
+                this.DataEntryControls.ContextMenu = null;
+                this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+                this.EnableOrDisableMenusAndControls();
+            }
+
             this.DataEntryControlPanel.IsVisible = false;
             this.InstructionPane.IsActive = true;
 
@@ -239,6 +250,10 @@ namespace Timelapse
                     Dialogs.ArgumentTemplatePathDialog(this, this.Arguments.Template, this.Arguments.RelativePath);
                     this.Arguments = new DataStructures.Arguments(null);
                 }
+            }
+            if (this.State.IsViewOnly)
+            {
+                Dialog.Dialogs.OpeningMessageReadOnly(this);
             }
             if (this.State.SuppressOpeningMessageDialog == false)
             {

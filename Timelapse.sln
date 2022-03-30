@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29102.190
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32228.430
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimelapseTemplateEditor", "Timelapse2TemplateEditor\TimelapseTemplateEditor\TimelapseTemplateEditor.csproj", "{38A59036-3982-4DC8-A19A-ADA1D8C1529A}"
 EndProject
@@ -17,6 +17,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.AvalonDock", "..\wpftoolkit-4.0.2-Modifed\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.AvalonDock\Xceed.Wpf.AvalonDock.csproj", "{DB81988F-E0F2-45A0-A1FD-8C37F3D35244}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.Toolkit", "..\wpftoolkit-4.0.2-Modifed\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.Toolkit\Xceed.Wpf.Toolkit.csproj", "{72E591D6-8F83-4D8C-8F67-9C325E623234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timelapse-ViewOnly", "Timelapse-ViewOnly\Timelapse-ViewOnly.csproj", "{B098399F-48CD-4D27-BEDC-E9CAA8635162}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +68,14 @@ Global
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|Any CPU.Build.0 = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.ActiveCfg = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.Build.0 = Release|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|x86.Build.0 = Debug|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|x86.ActiveCfg = Release|Any CPU
+		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

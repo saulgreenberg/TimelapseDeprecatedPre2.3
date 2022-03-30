@@ -76,6 +76,51 @@ namespace Timelapse
                 this.StatusBar.SetCurrentFile(0);
                 this.StatusBar.SetCount(0);
             }
+
+            if (this.State.IsViewOnly)
+            {
+                this.MenuItemAddFilesToImageSet.Visibility = Visibility.Collapsed;
+                this.MenuItemImportDetectionData.Visibility = Visibility.Collapsed;
+                this.MenuItemImportFromCsv.Visibility = Visibility.Collapsed;
+                this.MenuItemRenameFileDatabaseFile.Visibility = Visibility.Collapsed;
+                this.MenuItemMergeDatabases.Visibility = Visibility.Collapsed;
+                this.MenuItemImportDetectionData.Visibility = Visibility.Collapsed;
+                this.MenuItemImportDetectionData.Visibility = Visibility.Collapsed;
+                this.MenuItemDeleteCurrentFile.Visibility = Visibility.Collapsed;
+                this.MenuItemRestoreDefaults.Visibility = Visibility.Collapsed;
+
+                this.MenuItemShowQuickPasteWindow.Visibility = Visibility.Collapsed;
+                this.MenuItemImportQuickPasteFromDB.Visibility = Visibility.Collapsed;
+                this.MenuItemCopyPreviousValues.Visibility = Visibility.Collapsed;
+                this.MenuItemRestoreDefaults.Visibility = Visibility.Collapsed;
+                this.MenuItemPopulateFieldFromMetadata.Visibility = Visibility.Collapsed;
+                this.MenuItemEpisodePopulateField.Visibility = Visibility.Collapsed;
+                this.MenuItemDuplicateRecord.Visibility = Visibility.Collapsed;
+                this.MenuItemDelete.Visibility = Visibility.Collapsed;
+                this.MenuItmeDateCorrection.Visibility = Visibility.Collapsed;
+                this.MenuItemFindMissingImage.Visibility = Visibility.Collapsed;
+                this.MenuItemFindMissingFolder.Visibility = Visibility.Collapsed;
+                this.MenuItemOptionsDarkImages.Visibility = Visibility.Collapsed;
+
+                this.MenuS1.Visibility = Visibility.Collapsed;
+                this.MenuS2.Visibility = Visibility.Collapsed;
+                this.MenuS3.Visibility = Visibility.Collapsed;
+                this.MenuS4.Visibility = Visibility.Collapsed; 
+                this.MenuS5.Visibility = Visibility.Collapsed; 
+                this.MenuS6.Visibility = Visibility.Collapsed;
+
+                this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+                //if (this.DataEntryControls?.Controls?.Count > 0)
+                //{
+                //    foreach (DataEntryControl control in this.DataEntryControls.Controls)
+                //    {
+                //        control.ContentReadOnly = true;
+                //    }
+                //}
+                // Still to do:
+                // - Make colors bolder in fields
+                // - add Flag
+            }
         }
         #endregion
 

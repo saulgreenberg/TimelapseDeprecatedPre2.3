@@ -34,7 +34,18 @@ namespace Timelapse.Controls
         public override bool ContentReadOnly
         {
             get { return this.ContentControl.IsReadOnly; }
-            set { this.ContentControl.IsReadOnly = value; }
+            set
+            {
+                if (Util.GlobalReferences.TimelapseState.IsViewOnly)
+                {
+                    this.ContentControl.IsReadOnly = true;
+                    this.ContentControl.IsHitTestVisible = false;
+                }
+                else
+                {
+                    this.ContentControl.IsReadOnly = value;
+                }
+            }
         }
         #endregion
 
