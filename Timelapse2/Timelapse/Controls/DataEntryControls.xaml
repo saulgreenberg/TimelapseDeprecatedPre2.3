@@ -83,7 +83,7 @@
             <Setter Property="Focusable" Value="True" />
             <Setter Property="IsReadOnly" Value="False" />
             <Setter Property="Margin" Value="-5,0,0,0" />
-            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Minimum" Value="0"/>
             <Setter Property="DisplayDefaultValueOnEmptyText" Value="true" />
             <Setter Property="DefaultValue" Value="{x:Null}" />
             <Setter Property="AllowTextInput" Value="true" />
@@ -209,7 +209,7 @@
                                     ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
 
                                 <!--PART_EditableTextBox-->                                
-                                <TextBox Name="PART_EditableTextBox" Margin="3, 3, 23, 3"                     
+                                <TextBox Name="PART_EditableTextBox" Margin="3, 3, 23, 3"  
                                 IsReadOnly="{TemplateBinding IsReadOnly}"
                                 Visibility="Hidden" Background="Transparent"
                                 HorizontalAlignment="Left" VerticalAlignment="Center"

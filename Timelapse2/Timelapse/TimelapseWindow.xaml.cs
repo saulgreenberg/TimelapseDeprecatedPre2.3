@@ -47,9 +47,6 @@ namespace Timelapse
                 }
             }
         }
-
-        // Whether the user should be allowed to change any Timelapse data
-        public bool IsReadOnly { get; set; } = false;
         #endregion
 
         #region Private Variables
@@ -199,12 +196,12 @@ namespace Timelapse
             menuRestoreDefaults.Items.Add(menuItemRestoreDefaults);
             this.DataEntryControls.ContextMenu = menuRestoreDefaults;
 
-            if (this.Arguments.IsReadOnly)
+            if (this.Arguments.IsViewOnly)
             {
-                this.IsReadOnly = true;
-
-                // Because its readonly, disable the data entry panel and the copy previous values button
-                this.DataEntryControls.IsEnabled = false;
+                this.State.IsViewOnly = true;
+                // Because its readonly, disable the data entry panel, the copy previous values button, the data entry panels' context menu etc.
+                // Individual controls are disabled in the DataEntryX panel
+                this.DataEntryControls.ContextMenu = null;
                 this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
                 this.EnableOrDisableMenusAndControls();
             }
@@ -253,6 +250,10 @@ namespace Timelapse
                     Dialogs.ArgumentTemplatePathDialog(this, this.Arguments.Template, this.Arguments.RelativePath);
                     this.Arguments = new DataStructures.Arguments(null);
                 }
+            }
+            if (this.State.IsViewOnly)
+            {
+                Dialog.Dialogs.OpeningMessageReadOnly(this);
             }
             if (this.State.SuppressOpeningMessageDialog == false)
             {

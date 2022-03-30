@@ -196,6 +196,11 @@ namespace Timelapse.Controls
         // Create the Context menu, incluidng settings its callbakcs
         private void SetContextMenuCallbacks(DataEntryControl control)
         {
+            if (Util.GlobalReferences.TimelapseState.IsViewOnly)
+            {
+                return;
+
+            }
             // Start with an empty clipboard
             // Its in a try / catch as one user reported an unusual error: OpenClipboardFailed
             try
@@ -638,12 +643,12 @@ namespace Timelapse.Controls
             bool checkCounter = control is DataEntryCounter;
             bool checkFlag = control is DataEntryFlag;
             int nearestRowWithCopyableValue = -1;
-            // The current row depends on wheter we are in the thumbnail grid or the normal view
-            int currentRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
 
             // Its in a try/catch as very very occassionally we get a 'system.indexoutofrangeexception'
             try
             {
+                // The current row depends on wheter we are in the thumbnail grid or the normal view 
+                int currentRow = (this.ThumbnailGrid.IsVisible == false) ? this.ImageCache.CurrentRow : this.ThumbnailGrid.GetSelected()[0];
                 for (int fileIndex = currentRow - 1; fileIndex >= 0; fileIndex--)
                 {
                     currentIndex = fileIndex;

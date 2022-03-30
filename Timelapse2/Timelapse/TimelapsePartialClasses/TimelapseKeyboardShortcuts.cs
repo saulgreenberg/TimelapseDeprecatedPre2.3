@@ -168,7 +168,7 @@ namespace Timelapse
                     }
                     break;
                 case Key.C:
-                    if (this.IsReadOnly == false)
+                    if (this.State.IsViewOnly == false)
                     { 
                         this.CopyPreviousValues_Click();
                     }
@@ -180,7 +180,7 @@ namespace Timelapse
                     // Toggle the QuickPaste window
                     if (this.quickPasteWindow == null || (this.quickPasteWindow.Visibility != Visibility.Visible))
                     {
-                        if (this.IsReadOnly == false)
+                        if (this.State.IsViewOnly == false)
                         {
                             this.QuickPasteWindowShow();
                         }

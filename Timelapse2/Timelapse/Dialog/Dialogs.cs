@@ -543,6 +543,35 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region MessageBox: .tdb is in a root or system folder
+        public static void TemplateInDisallowedFolder(Window owner, bool isDrive, string path)
+        {
+            string title = "Your template file is in a problematic location";
+            MessageBox messageBox = new MessageBox(title, owner);
+            messageBox.Message.Icon = MessageBoxImage.Error;
+            messageBox.Message.Title = title;
+            messageBox.Message.Problem = "The location of your template is problematic. It should be in a normal folder." + Environment.NewLine;
+            messageBox.Message.Reason = "Timelapse expects templates and images to be in a normal folder." + Environment.NewLine;
+            messageBox.Message.Solution = "Create a new folder, and try moving your files to that folder.";
+            if (isDrive)
+            {
+                messageBox.Message.Problem += String.Format("The issue is that your files are located in the top-level root drive '{0}' rather than a folder.{1}", path, Environment.NewLine);
+                messageBox.Message.Problem += "Timelapse disallows this as the entire drive would be searched for images. ";
+                messageBox.Message.Reason += "Timelapse cannot tell if this location is a massive drive containing all your files" + Environment.NewLine;
+                messageBox.Message.Reason += "(which would take ages to search and would retrieve every single image on it)," + Environment.NewLine;
+                messageBox.Message.Reason += "or, for example, an SD card that only contains your image set images.";
+            }
+            else
+            {
+                messageBox.Message.Problem += "The issue is that your files are located in a system or hidden folder:" + Environment.NewLine + "\u2022 " + path;
+                messageBox.Message.Reason += "As system or hidden folders shouldn't normally contain user files, this could lead to future problems.";
+                messageBox.Message.Solution += Environment.NewLine + "Or, you may be able to change the folder's attributes by selecting 'Properties' from";
+                messageBox.Message.Solution += Environment.NewLine + "its context menu, and reviewing the 'Attributes' settings on the 'General' tab";
+            }
+            messageBox.ShowDialog();
+        }
+        #endregion
+
         #region MessageBox: Corrupted template
         public static void TemplateFileNotLoadedAsCorruptDialog(Window owner, string templateDatabasePath)
         {
@@ -1550,12 +1579,12 @@ namespace Timelapse.Dialog
         }
         #endregion
 
+        #region Opening Messages
         /// <summary>
-        /// Give the user some feedback about the CSV export operation
+        /// Give the user various opening mesages
         /// </summary>
         public static void OpeningMessage(Window owner)
         {
-            // since the exported file isn't shown give the user some feedback about the export operation
             MessageBox openingMessage = new MessageBox("Important Message Concerning this Update...", owner);
             openingMessage.Message.What = "This update fixes long-standing issues in how dates are stored in the Timelapse Database." + Environment.NewLine;
             openingMessage.Message.What += "As some of these database changes are not backward compatable," + Environment.NewLine;
@@ -1573,5 +1602,21 @@ namespace Timelapse.Dialog
                 Util.GlobalReferences.TimelapseState.SuppressOpeningMessageDialog = openingMessage.DontShowAgain.IsChecked.Value;
             }
         }
+
+        /// Give the user various opening mesages
+        public static void OpeningMessageReadOnly(Window owner)
+        {
+            MessageBox openingMessage = new MessageBox("You are using the Timelapse 'Read Only' version ...", owner);
+            openingMessage.Message.What = "You started the read only version of the Timelapse program. " + Environment.NewLine;
+            openingMessage.Message.What += "\u2022 You can open and view existing images, videos and any previously entered data." + Environment.NewLine;
+            openingMessage.Message.What += "\u2022 You will not be able to edit or alter that data." + Environment.NewLine;
+            openingMessage.Message.Reason = "This Timelapse version is handy if you only want to view an image set and its data," + Environment.NewLine;
+            openingMessage.Message.Reason += "as it ensures that no accidental changes to the data will be made.";
+            openingMessage.Message.Hint = "If you want to edit data, then you should start the normal Timelapse program.";
+            openingMessage.Message.Details += "Menu items that alter data are hidden from view, and data entry controls are disabled.";
+            openingMessage.Message.Icon = MessageBoxImage.Information;
+            openingMessage.ShowDialog();
+        }
+        #endregion
     }
 }

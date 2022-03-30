@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Timelapse_ViewOnly</RootNamespace>
+    <ApplicationIcon>Timelapse-ViewOnly.ico</ApplicationIcon>
+    <IsPublishable>False</IsPublishable>
+    <BaseOutputPath>..\Timelapse2\Timelapse\bin\</BaseOutputPath>
+	<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Timelapse-ViewOnly.ico" />
+  </ItemGroup>
+
+</Project>

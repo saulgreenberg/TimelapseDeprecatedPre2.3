@@ -37,11 +37,21 @@ namespace Timelapse.Controls
         {
             get { return (this.ContentControl.IsChecked != null && (bool)this.ContentControl.IsChecked == true) ? Constant.BooleanValue.True : Constant.BooleanValue.False; }
         }
-
+        private bool contentReadOnly;
         public override bool ContentReadOnly
         {
-            get { return false; }
-            set { }
+            get { return this.contentReadOnly; }
+            set {
+                if (Util.GlobalReferences.TimelapseState.IsViewOnly)
+                {
+                    this.contentReadOnly = true;
+                    this.ContentControl.IsHitTestVisible = false;
+                }
+                else
+                {
+                    this.contentReadOnly = value;
+                }
+            }
             // SAULXXX: Not sure why the original code below isn't working. The issue is that when we close and re-open an image set, 
             // the newly created content control for the flag seems to be set to IsEnabled is false, but I can't track down why that change happens.
             // However, since flags and DeleteFlag is always writeable, we can just fake it

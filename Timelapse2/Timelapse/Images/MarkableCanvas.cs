@@ -1046,7 +1046,7 @@ namespace Timelapse.Images
             {
                 if (this.displayingImage)
                 {
-                    if (Util.GlobalReferences.MainWindow.IsReadOnly == false)
+                    if (Util.GlobalReferences.TimelapseState.IsViewOnly == false)
                     {
                         // Get the current point, and create a marker on it.
                         Point position = e.GetPosition(this.ImageToDisplay);
@@ -1080,7 +1080,7 @@ namespace Timelapse.Images
         // Remove a marker on a right mouse button up event
         private void Marker_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (Util.GlobalReferences.MainWindow.IsReadOnly == true)
+            if (Util.GlobalReferences.TimelapseState.IsViewOnly == true)
             {
                 return;
             }

@@ -77,7 +77,7 @@ namespace Timelapse
                 this.StatusBar.SetCount(0);
             }
 
-            if (this.IsReadOnly)
+            if (this.State.IsViewOnly)
             {
                 this.MenuItemAddFilesToImageSet.Visibility = Visibility.Collapsed;
                 this.MenuItemImportDetectionData.Visibility = Visibility.Collapsed;
@@ -110,6 +110,13 @@ namespace Timelapse
                 this.MenuS6.Visibility = Visibility.Collapsed;
 
                 this.CopyPreviousValuesButton.Visibility = Visibility.Collapsed;
+                //if (this.DataEntryControls?.Controls?.Count > 0)
+                //{
+                //    foreach (DataEntryControl control in this.DataEntryControls.Controls)
+                //    {
+                //        control.ContentReadOnly = true;
+                //    }
+                //}
                 // Still to do:
                 // - Make colors bolder in fields
                 // - add Flag

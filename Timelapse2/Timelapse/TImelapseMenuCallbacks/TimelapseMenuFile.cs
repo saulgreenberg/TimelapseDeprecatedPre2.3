@@ -46,6 +46,18 @@ namespace Timelapse
         {
             if (this.TryGetTemplatePath(out string templateDatabasePath))
             {
+                // We don't allow templates in root drive letters (e.g., D:) or in System or Hidden folders
+                if (FilesFolders.IsFolderPathADriveLetter(Path.GetDirectoryName(templateDatabasePath)))
+                {
+                    Dialog.Dialogs.TemplateInDisallowedFolder(this, true, Path.GetDirectoryName(templateDatabasePath));
+                    return;
+                }
+                if (FilesFolders.IsFolderSystemOrHidden(Path.GetDirectoryName(templateDatabasePath)))
+                {
+                    Dialog.Dialogs.TemplateInDisallowedFolder(this, false, Path.GetDirectoryName(templateDatabasePath));
+                    return;
+                }
+
                 Mouse.OverrideCursor = Cursors.Wait;
                 this.StatusBar.SetMessage("Loading images, please wait...");
                 await this.TryOpenTemplateAndBeginLoadFoldersAsync(templateDatabasePath).ConfigureAwait(true);
