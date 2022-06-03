@@ -488,6 +488,12 @@ namespace Timelapse.Editor
 
         private void SetUtcToFalse()
         {
+            if (this?.templateDatabase?.Controls == null)
+            {
+                // A user reported occassional errors here due to object reference not set to an instance, so we added this check
+                return;
+            }
+            
             // Find the UtcOffset Control and set it to false (as we no longer show it)
             List<ControlRow> controlsInControlOrder = this.templateDatabase.Controls.OrderBy(control => control.ControlOrder).ToList();
             foreach (ControlRow control in controlsInControlOrder)
