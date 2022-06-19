@@ -37,7 +37,7 @@ After installation clone the repository locally through Visual Studio's Team Exp
 
 After installation clone the repository locally through Visual Studio's Team Explorer or by using a GIT interface such as SourceTree.
 
-Development must be done against .NET 4.5, as we target Timelapse users who may not have newer versions available on their systems or the ability to update .NET (e.g., locked down institutional machines).
+Development must be done against .NET 4.8, as we target Timelapse users who may not have newer versions available on their systems or the ability to update .NET (e.g., locked down institutional machines).
 
 Also helpful are
 
@@ -47,7 +47,7 @@ Also helpful are
 
 ### Dependencies
 * Timelapse and the template editor require .NET 4.5 or newer.
-* Timelapse and the template editor are tested on Windows 10 and - as far as we know - should run without issue on earlier versions of Windows. End users will need to [install .NET 4.5 or newer](https://msdn.microsoft.com/en-us/library/bb822049.aspx) if it's not already present. However, expect some performance degradation on really old machiines or Windows versions, as they are less able to handle rapid display of large images.
+* Timelapse and the template editor are tested on Windows 10 and - as far as we know - should run without issue on earlier versions of Windows. End users will need to [install .NET 4.5 or newer](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) if it's not already present. However, expect some performance degradation on really old machiines or Windows versions, as they are less able to handle rapid display of large images.
 * Timelapse uses various packages (including dlls available via NuGet). See the License file for a list of packages and their particular license terms.s
 * Screen size of 1600 x 900 or larger is preferred, although it is usable on smaller displays.
 
