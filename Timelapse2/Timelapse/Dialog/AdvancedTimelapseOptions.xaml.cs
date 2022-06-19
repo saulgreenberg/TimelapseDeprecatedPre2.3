@@ -12,15 +12,15 @@ namespace Timelapse.Dialog
         #region Private Variables
         private readonly MarkableCanvas markableCanvas;
         private readonly TimelapseState timelapseState;
-        private readonly bool isFileDatabaseAvailable;
+        private readonly bool detectionsLoaded;
         #endregion
 
         #region Constructor and Loaded
-        public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner, bool isFileDatabaseAvailable)
+        public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner, bool detectionsLoaded)
         {
             this.InitializeComponent();
             this.Owner = owner;
-            this.isFileDatabaseAvailable = isFileDatabaseAvailable;
+            this.detectionsLoaded = detectionsLoaded;
 
             // Check the arguments for null 
             ThrowIf.IsNullArgument(timelapseState, nameof(timelapseState));
@@ -90,7 +90,7 @@ namespace Timelapse.Dialog
             this.CheckBoxUseDetections.IsChecked = true;
             this.CheckBoxBoundingBoxAnnotate.IsChecked = this.timelapseState.BoundingBoxAnnotate;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
-            this.AutomatedImageRecognitionPanel.IsEnabled = this.isFileDatabaseAvailable;
+            this.AutomatedImageRecognitionPanel.IsEnabled = detectionsLoaded;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
